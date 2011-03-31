@@ -40,7 +40,7 @@ task stubs {
 }
 
 task docs {
-    destinationDir = 'doc'
+    destinationDir = file("${projectDir}/doc")
 }
 
 task javadoc(type:Javadoc) {
@@ -79,25 +79,41 @@ task groovydoc(type:Groovydoc) {
 //    link("http://download.oracle.com/javaee/5/api", "javax.")
 }
 
-task gdoc(dependsOn: groovydoc) << {
+task fetchGrailsDocsSource << {
     ant {
         mkdir dir: buildDir
         get src:"http://nodeload.github.com/grails/grails-doc/zipball/master", dest:"${buildDir}/grails-docs-src.zip", verbose:"true"
         unzip(src: "${buildDir}/grails-docs-src.zip", dest: buildDir) {
             mapper type: 'regexp', from:/(grails-grails-doc-[\w]*\/)(.*)/, to:/grails-docs-src\/\2/
         }
-        ant(target: 'distclean', dir: "${buildDir}/grails-docs-src/", inheritAll: false)
-        ant(target: 'dist-nojavadoc', dir: "${buildDir}/grails-docs-src/", inheritAll: false) {
-            property(name: "base.dir", value: "${buildDir}/grails-docs-src/")
-            property(name: "grails.home", value:projectDir)
-        }
-        copy(todir:"$projectDir/dist") {
-            fileset(dir: "${buildDir}/grails-docs-src/dist")
-        }
     }
-    copy {
-        from(new File("${buildDir}/grails-docs-src/output"))
-        into docs.destinationDir
+}
+
+task gdoc(type: GradleBuild, dependsOn: ["groovydoc", "fetchGrailsDocsSource"]) {
+    buildFile = "${buildDir}/grails-docs-src/build.gradle"
+    tasks = ["clean", "assemble"]
+
+    doFirst {
+        project.oldGrailsHome = System.getProperty("grails.home")
+        System.setProperty("grails.home", projectDir.absolutePath)
+        System.setProperty("disable.groovydocs", "true")
+    }
+
+    doLast {
+        if (project.oldGrailsHome) System.setProperty("grails.home", project.oldGrailsHome)
+        else System.clearProperty("grails.home")
+        System.clearProperty("disable.groovydocs")
+
+        ant.mkdir dir: "${projectDir}/dist"
+        copy {
+            from "${buildDir}/grails-docs-src/build/distributions"
+            into "${projectDir}/dist"
+        }
+
+        copy {
+            from file("${buildDir}/grails-docs-src/build/docs")
+            into docs.destinationDir
+        }
     }
 }
 

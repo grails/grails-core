@@ -14,42 +14,18 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-
-import java.lang.reflect.Modifier;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
-import org.hibernate.Criteria;
-import org.hibernate.EntityMode;
-import org.hibernate.FetchMode;
-import org.hibernate.FlushMode;
-import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Order;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.SessionImplementor;
@@ -64,6 +40,10 @@ import org.hibernate.type.AbstractComponentType;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+
+import java.lang.reflect.Modifier;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Utility methods for configuring Hibernate inside Grails.
@@ -105,18 +85,11 @@ public class GrailsHibernateUtil {
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
         ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
-        Map defaultContraints = Collections.emptyMap();
-        if (artefactHandler instanceof DomainClassArtefactHandler) {
-            final Map map = ((DomainClassArtefactHandler) artefactHandler).getDefaultConstraints();
-            if (map != null) {
-                defaultContraints = map;
-            }
-        }
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
             configureDomainClass(sessionFactory, application, classMetadata,
                     classMetadata.getMappedClass(EntityMode.POJO),
-                    hibernateDomainClassMap, defaultContraints);
+                    hibernateDomainClassMap);
         }
         configureInheritanceMappings(hibernateDomainClassMap);
     }
@@ -145,8 +118,7 @@ public class GrailsHibernateUtil {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application,
-            ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap,
-            Map defaultContraints) {
+                                             ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap) {
 
         if (Modifier.isAbstract(persistentClass.getModifiers())) {
             return;
@@ -157,13 +129,88 @@ public class GrailsHibernateUtil {
         if (dc == null) {
             // a patch to add inheritance to this system
             GrailsHibernateDomainClass ghdc = new GrailsHibernateDomainClass(
-                    persistentClass, sessionFactory, application, cmd, defaultContraints);
+                    persistentClass, sessionFactory, application, cmd);
 
             hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
             dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
         }
     }
 
+
+    /**
+     * Populates criteria arguments for the given target class and arguments map
+     *
+     * @param targetClass The target class
+     * @param c The criteria instance
+     * @param argMap The arguments map
+     *
+
+     */
+    @SuppressWarnings("rawtypes")
+    public static void populateArgumentsForCriteria(GrailsApplication grailsApplication, Class<?> targetClass, Criteria c, Map argMap) {
+        Integer maxParam = null;
+        Integer offsetParam = null;
+        if (argMap.containsKey(ARGUMENT_MAX)) {
+            maxParam = converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
+        }
+        if (argMap.containsKey(ARGUMENT_OFFSET)) {
+            offsetParam = converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
+        }
+        String orderParam = (String)argMap.get(ARGUMENT_ORDER);
+        Object fetchObj = argMap.get(ARGUMENT_FETCH);
+        if (fetchObj instanceof Map) {
+            Map fetch = (Map)fetchObj;
+            for (Object o : fetch.keySet()) {
+                String associationName = (String) o;
+                c.setFetchMode(associationName, getFetchMode(fetch.get(associationName)));
+            }
+        }
+
+        final String sort = (String)argMap.get(ARGUMENT_SORT);
+        final String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC;
+        final int max = maxParam == null ? -1 : maxParam;
+        final int offset = offsetParam == null ? -1 : offsetParam;
+        if (max > -1) {
+            c.setMaxResults(max);
+        }
+        if (offset > -1) {
+            c.setFirstResult(offset);
+        }
+        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_CACHE, argMap)) {
+            c.setCacheable(true);
+        }
+        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_LOCK, argMap)) {
+            c.setLockMode(LockMode.UPGRADE);
+        }
+        else {
+            if (argMap.get(ARGUMENT_CACHE) == null) {
+                cacheCriteriaByMapping(targetClass, c);
+            }
+        }
+        if (sort != null) {
+            boolean ignoreCase = true;
+            Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
+            if (caseArg instanceof Boolean) {
+                ignoreCase = (Boolean) caseArg;
+            }
+            addOrderPossiblyNested(grailsApplication,c, targetClass, sort, order, ignoreCase);
+        }
+        else {
+            Mapping m = GrailsDomainBinder.getMapping(targetClass);
+            if (m != null && !StringUtils.isBlank(m.getSort())) {
+                addOrderPossiblyNested(grailsApplication, c, targetClass, m.getSort(), m.getOrder(), true);
+            }
+        }
+    }
+    /**
+     * Populates criteria arguments for the given target class and arguments map
+     *
+     * @param targetClass The target class
+     * @param c The criteria instance
+     * @param argMap The arguments map
+     *
+     * @deprecated Use {@link #populateArgumentsForCriteria(org.codehaus.groovy.grails.commons.GrailsApplication, Class, org.hibernate.Criteria, java.util.Map)} instead
+     */
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Class<?> targetClass, Criteria c, Map argMap) {
         Integer maxParam = null;
@@ -211,12 +258,12 @@ public class GrailsHibernateUtil {
             if (caseArg instanceof Boolean) {
                 ignoreCase = (Boolean) caseArg;
             }
-            addOrderPossiblyNested(c, targetClass, sort, order, ignoreCase);
+            addOrderPossiblyNested(null, c, targetClass, sort, order, ignoreCase);
         }
         else {
             Mapping m = GrailsDomainBinder.getMapping(targetClass);
             if (m != null && !StringUtils.isBlank(m.getSort())) {
-                addOrderPossiblyNested(c, targetClass, m.getSort(), m.getOrder(), true);
+                addOrderPossiblyNested(null, c, targetClass, m.getSort(), m.getOrder(), true);
             }
         }
     }
@@ -224,21 +271,21 @@ public class GrailsHibernateUtil {
     /**
      * Add order to criteria, creating necessary subCriteria if nested sort property (ie. sort:'nested.property').
      */
-    private static void addOrderPossiblyNested(Criteria c, Class<?> targetClass, String sort, String order, boolean ignoreCase) {
+    private static void addOrderPossiblyNested(GrailsApplication grailsApplication, Criteria c, Class<?> targetClass, String sort, String order, boolean ignoreCase) {
         int firstDotPos = sort.indexOf(".");
         if (firstDotPos == -1) {
             addOrder(c, sort, order, ignoreCase);
         } else { // nested property
             String sortHead = sort.substring(0,firstDotPos);
             String sortTail = sort.substring(firstDotPos+1);
-            GrailsDomainClassProperty property = getGrailsDomainClassProperty(targetClass, sortHead);
+            GrailsDomainClassProperty property = getGrailsDomainClassProperty(grailsApplication, targetClass, sortHead);
             if (property.isEmbedded()) {
                 // embedded objects cannot reference entities (at time of writing), so no more recursion needed
                 addOrder(c, sort, order, ignoreCase);
             } else {
                 Criteria subCriteria = c.createCriteria(sortHead);
                 Class<?> propertyTargetClass = property.getReferencedDomainClass().getClazz();
-                addOrderPossiblyNested(subCriteria, propertyTargetClass, sortTail, order, ignoreCase); // Recurse on nested sort
+                addOrderPossiblyNested(grailsApplication, subCriteria, propertyTargetClass, sortTail, order, ignoreCase); // Recurse on nested sort
             }
         }
     }
@@ -259,8 +306,8 @@ public class GrailsHibernateUtil {
      * Get hold of the GrailsDomainClassProperty represented by the targetClass' propertyName,
      * assuming targetClass corresponds to a GrailsDomainClass.
      */
-    private static GrailsDomainClassProperty getGrailsDomainClassProperty(Class<?> targetClass, String propertyName) {
-        GrailsClass grailsClass = ApplicationHolder.getApplication().getArtefact(DomainClassArtefactHandler.TYPE, targetClass.getName());
+    private static GrailsDomainClassProperty getGrailsDomainClassProperty(GrailsApplication grailsApplication, Class<?> targetClass, String propertyName) {
+        GrailsClass grailsClass = grailsApplication != null ? grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, targetClass.getName()) : null;
         if (!(grailsClass instanceof GrailsDomainClass)) {
             throw new IllegalArgumentException("Unexpected: class is not a domain class:"+targetClass.getName());
         }
@@ -283,7 +330,7 @@ public class GrailsHibernateUtil {
 
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Criteria c, Map argMap) {
-        populateArgumentsForCriteria(null, c, argMap);
+        populateArgumentsForCriteria(null,null, c, argMap);
     }
 
     /**
@@ -422,7 +469,7 @@ public class GrailsHibernateUtil {
     }
 
     public static boolean isCacheQueriesByDefault() {
-        Object o = ConfigurationHolder.getFlatConfig().get(CONFIG_PROPERTY_CACHE_QUERIES);
+        Object o = GrailsWebUtil.currentFlatConfiguration().get(CONFIG_PROPERTY_CACHE_QUERIES);
         return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
     }
 

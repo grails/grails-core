@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrors
 
 import grails.converters.XML
 import grails.converters.JSON
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -62,7 +63,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
         // Register some common classes so that they can be converted to XML, JSON, etc.
         def convertersInit = new ConvertersConfigurationInitializer()
-        convertersInit.initialize()
+        convertersInit.initialize(new DefaultGrailsApplication())
         [ List, Set, Map, Errors ].each { addConverters(it) }
         def xmlErrorMarshaller = new XmlErrorsMarshaller()
         XML.registerObjectMarshaller(xmlErrorMarshaller)

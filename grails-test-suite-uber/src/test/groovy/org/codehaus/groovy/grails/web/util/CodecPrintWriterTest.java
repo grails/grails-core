@@ -1,46 +1,29 @@
 package org.codehaus.groovy.grails.web.util;
 
-import static org.junit.Assert.assertEquals;
 import groovy.util.ConfigObject;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.ArtefactHandler;
-import org.codehaus.groovy.grails.commons.ArtefactInfo;
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+
 public class CodecPrintWriterTest {
 
     private static GrailsApplication initialGrailsApplication = null;
 
-    @BeforeClass
-    public static void setupMockGrailsApplication() {
-        initialGrailsApplication = ApplicationHolder.getApplication();
-        ApplicationHolder.setApplication(new MockGrailsApplication());
-    }
-
-    @AfterClass
-    public static void restoreInitialGrailsApplication() {
-        ApplicationHolder.setApplication(initialGrailsApplication);
-    }
 
     @Test
     public void testPrintString() {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, HTMLCodec.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, HTMLCodec.class);
         writer.print("&&");
         assertEquals("&amp;&amp;", stringwriter.getValue());
     }
@@ -48,7 +31,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStringWithClosure() {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, CodecWithClosureProperties.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, CodecWithClosureProperties.class);
         writer.print("hello");
         assertEquals("-> hello <-", stringwriter.getValue());
     }
@@ -56,7 +39,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStreamCharBuffer() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, HTMLCodec.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, HTMLCodec.class);
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("&&");
         writer.write(buf);
@@ -66,7 +49,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStreamCharBufferWithClosure() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, CodecWithClosureProperties.class);
+        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, CodecWithClosureProperties.class);
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("hola");
         writer.write(buf);

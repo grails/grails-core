@@ -16,25 +16,18 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Validator;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
+import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -726,12 +719,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
     private void initializeConstraints() {
         // process the constraints
-        if (defaultConstraints != null) {
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), persistentProperties, defaultConstraints);
-        }
-        else {
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), persistentProperties);
-        }
+        final ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
+        constraints = constraintsEvaluator.evaluate(getClazz(), persistentProperties);
     }
 
     /* (non-Javadoc)
@@ -765,11 +754,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     public void refreshConstraints() {
+        final ConstraintsEvaluator constraintEvaluator = getConstraintsEvaluator();
         if (defaultConstraints!=null) {
-            constraints = new DefaultConstraintEvaluator(defaultConstraints).evaluate(getClazz(), persistentProperties);
+
+            constraints = constraintEvaluator.evaluate(getClazz(), persistentProperties);
         }
         else {
-            constraints = new DefaultConstraintEvaluator(defaultConstraints).evaluate(getClazz(), persistentProperties);
+            constraints = constraintEvaluator.evaluate(getClazz(), persistentProperties);
         }
 
         // Embedded components have their own ComponentDomainClass instance which
@@ -779,6 +770,16 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 property.getComponent().refreshConstraints();
             }
         }
+    }
+
+    private ConstraintsEvaluator getConstraintsEvaluator() {
+        if(grailsApplication != null && grailsApplication.getMainContext() != null) {
+            final ApplicationContext context = grailsApplication.getMainContext();
+            if(context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+                return context.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator.class);
+            }
+        }
+        return new DefaultConstraintEvaluator(defaultConstraints);
     }
 
     public Map getMappedBy() {

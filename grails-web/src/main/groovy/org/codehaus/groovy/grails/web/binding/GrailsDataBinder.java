@@ -15,74 +15,21 @@
 package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistry;
-import groovy.lang.MetaProperty;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-
-import java.beans.PropertyEditor;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.security.AccessControlException;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Currency;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TimeZone;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-
+import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.ConfigurablePropertyAccessor;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyAccessor;
-import org.springframework.beans.PropertyAccessorUtils;
-import org.springframework.beans.PropertyEditorRegistrar;
-import org.springframework.beans.PropertyEditorRegistry;
+import org.springframework.beans.*;
 import org.springframework.beans.PropertyValue;
-import org.springframework.beans.PropertyValues;
-import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
@@ -96,6 +43,19 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import java.beans.PropertyEditor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.security.AccessControlException;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
@@ -135,6 +95,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
 
     private GrailsDomainClass domainClass;
+    private GrailsApplication grailsApplication;
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -154,22 +115,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             transients = (List)tmpTransients;
         }
 
-        String[] disallowed = new String[0];
-        GrailsApplication grailsApplication = ApplicationHolder.getApplication();
-        if (grailsApplication != null && grailsApplication.isArtefactOfType(
-                DomainClassArtefactHandler.TYPE, target.getClass())) {
-            if (target instanceof GroovyObject) {
-                disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
-            }
-            else {
-                disallowed = DOMAINCLASS_DISALLOWED;
-            }
-            domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
-        }
-        else if (target instanceof GroovyObject) {
-            disallowed = GROOVY_DISALLOWED;
-        }
-        setDisallowedFields(disallowed);
+        setDisallowedFields(GROOVY_DISALLOWED);
         setAllowedFields(ALL_OTHER_FIELDS_ALLOWED_BY_DEFAULT);
         setIgnoreInvalidFields(true);
     }
@@ -178,10 +124,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * Collects all PropertyEditorRegistrars in the application context and
      * calls them to register their custom editors
      *
+     * @param servletContext
      * @param registry The PropertyEditorRegistry instance
      */
-    private static void registerCustomEditors(PropertyEditorRegistry registry) {
-        final ServletContext servletContext = ServletContextHolder.getServletContext();
+    private static void registerCustomEditors(ServletContext servletContext, PropertyEditorRegistry registry) {
         if (servletContext == null) {
             return;
         }
@@ -207,18 +153,50 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      */
     public static GrailsDataBinder createBinder(Object target, String objectName, HttpServletRequest request) {
         GrailsDataBinder binder = createBinder(target,objectName);
+        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+        initializeFromWebRequest(binder, webRequest);
+
         Locale locale = RequestContextUtils.getLocale(request);
-        registerCustomEditors(binder, locale);
+        registerCustomEditors(webRequest, binder, locale);
         return binder;
+    }
+
+    private static void initializeFromWebRequest(GrailsDataBinder binder, GrailsWebRequest webRequest) {
+        if(webRequest != null) {
+            final GrailsApplication grailsApplication = webRequest.getAttributes().getGrailsApplication();
+            binder.setGrailsApplication(grailsApplication);
+
+        }
+    }
+
+    private void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+        String[] disallowed = new String[0];
+        final Object target = getTarget();
+        if (grailsApplication != null && grailsApplication.isArtefactOfType(
+                DomainClassArtefactHandler.TYPE, target.getClass())) {
+            if (target instanceof GroovyObject) {
+                disallowed = GROOVY_DOMAINCLASS_DISALLOWED;
+            }
+            else {
+                disallowed = DOMAINCLASS_DISALLOWED;
+            }
+            domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().getName());
+        }
+        else if (target instanceof GroovyObject) {
+            disallowed = GROOVY_DISALLOWED;
+        }
+        setDisallowedFields(disallowed);
     }
 
     /**
      * Registers all known
      *
+     * @param grailsWebRequest
      * @param registry
      * @param locale
      */
-    public static void registerCustomEditors(PropertyEditorRegistry registry, Locale locale) {
+    public static void registerCustomEditors(GrailsWebRequest grailsWebRequest, PropertyEditorRegistry registry, Locale locale) {
         // Formatters for the different number types.
         NumberFormat floatFormat = NumberFormat.getInstance(locale);
         NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
@@ -241,7 +219,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         registry.registerCustomEditor(Date.class, new StructuredDateEditor(dateFormat,true));
         registry.registerCustomEditor(Calendar.class, new StructuredDateEditor(dateFormat,true));
 
-        registerCustomEditors(registry);
+        ServletContext servletContext = grailsWebRequest != null ? grailsWebRequest.getServletContext() : null;
+        registerCustomEditors(servletContext, registry);
     }
 
     /**
@@ -260,7 +239,17 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor(TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor(URI.class, new UriEditor());
 
-        registerCustomEditors(binder);
+
+        final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        if(webRequest != null) {
+            initializeFromWebRequest(binder, webRequest);
+            Locale locale = RequestContextUtils.getLocale(webRequest.getCurrentRequest());
+            registerCustomEditors(webRequest, binder, locale);
+        }
+        else {
+            registerCustomEditors(null, binder);
+        }
+
 
         return binder;
     }
@@ -385,7 +374,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Map resolveConstrainedProperties(Object object) {
-        GrailsApplication grailsApplication = ApplicationHolder.getApplication();
         return resolveConstrainedProperties(object, (grailsApplication != null)?((GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, object.getClass().getName())):null);
     }
 
@@ -720,8 +708,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             else {
                 if (isReadableAndPersistent(propertyName)) {
                     Class<?> type = getPropertyTypeForPath(propertyName);
-                    if (Collection.class.isAssignableFrom(type)) {
-                        bindCollectionAssociation(mpvs, pv);
+                    if(type != null) {
+                        if (Collection.class.isAssignableFrom(type)) {
+                            bindCollectionAssociation(mpvs, pv);
+                        }
                     }
                 }
             }
@@ -857,7 +847,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Class<?> getReferencedTypeForCollection(String name, Object target) {
-        final GrailsApplication grailsApplication = ApplicationHolder.getApplication();
         if (grailsApplication != null) {
             GrailsDomainClass dc = (GrailsDomainClass) grailsApplication.getArtefact(
                     DomainClassArtefactHandler.TYPE, target.getClass().getName());

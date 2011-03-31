@@ -1,10 +1,11 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.springframework.jdbc.datasource.DataSourceTransactionManager
+import org.springframework.beans.factory.config.RuntimeBeanReference
 
 class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -63,7 +64,7 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
      * @author Luke Daley
      */
     void testBeanPropertyOverride() {
-        ConfigurationHolder.config = new ConfigSlurper().parse('''
+        ga.config = new ConfigSlurper().parse('''
             dataSource {
                 pooled = true
                 driverClassName = "org.h2.Driver"
@@ -85,15 +86,15 @@ class CoreGrailsPluginTests extends AbstractGrailsMockTests {
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
         def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
         def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
-        def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
-        def hibernatePlugin = new DefaultGrailsPlugin(hibernatePluginClass, ga)
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
+
+        def txMgr = springConfig.addSingletonBean("transactionManager", DataSourceTransactionManager)
+        txMgr.addProperty("dataSource", new RuntimeBeanReference("dataSource"))
         springConfig.servletContext = createMockServletContext()
 
         corePlugin.doWithRuntimeConfiguration(springConfig)
         dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
-        hibernatePlugin.doWithRuntimeConfiguration(springConfig)
 
         def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
         def plugin = new DefaultGrailsPlugin(pluginClass, ga)

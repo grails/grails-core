@@ -15,10 +15,9 @@
 package grails.util;
 
 import groovy.lang.GroovyObject;
-
-import javax.servlet.http.HttpServletRequest;
-
+import groovy.util.ConfigObject;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;
@@ -26,7 +25,14 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Utility methods for clients using the web framework.
@@ -38,6 +44,61 @@ public class GrailsWebUtil {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
+
+    /**
+     * Looks up a GrailsApplication instance from the ServletContext
+     *
+     * @param servletContext The ServletContext
+     * @return A GrailsApplication or null if there isn't one
+     */
+    public static GrailsApplication lookupApplication(ServletContext servletContext) {
+        if(servletContext != null) {
+            final WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+            if(context != null) {
+                if(context.containsBean(GrailsApplication.APPLICATION_ID)) {
+                    return context.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return The currently bound GrailsApplication instance
+     * @since 1.4
+     */
+    public static GrailsApplication currentApplication() {
+        final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        if(requestAttributes instanceof GrailsWebRequest) {
+            GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
+            return webRequest.getAttributes().getGrailsApplication();
+        }
+        return null;
+    }
+
+    /**
+     * @return The currently bound GrailsApplication instance
+     * @since 1.4
+     */
+    public static Map currentConfiguration() {
+        GrailsApplication application = currentApplication();
+        if(application != null) {
+            return application.getConfig();
+        }
+        return new ConfigObject();
+    }
+
+    /**
+     * @return The currently bound GrailsApplication instance
+     * @since 1.4
+     */
+    public static Map currentFlatConfiguration() {
+        GrailsApplication application = currentApplication();
+        if(application != null) {
+            return application.getFlatConfig();
+        }
+        return Collections.emptyMap();
+    }
 
     /**
      * Binds a Mock implementation of a GrailsWebRequest object to the current thread. The mock version uses

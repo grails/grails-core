@@ -18,18 +18,10 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.Metadata;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
@@ -40,6 +32,10 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A ReloadableResourceBundleMessageSource that is capable of loading message sources from plugins.
@@ -146,6 +142,16 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 }
             }
         }
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+        for (GrailsPlugin plugin : allPlugins) {
+            if (plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
+                if (binaryPluginProperties != null) {
+                    mergedProps.putAll(binaryPluginProperties);
+                }
+            }
+        }
         cachedMergedPluginProperties.put(locale, mergedHolder);
         return mergedHolder;
     }
@@ -172,16 +178,75 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         else {
-            for (String pluginBaseName : pluginBaseNames) {
-                List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
-                for (String filename : filenames) {
-                    PropertiesHolder holder = getProperties(filename);
-                    String result = holder.getProperty(code);
-                    if (result != null) return result;
+            String result = findMessageInSourcePlugins(code, locale);
+            if(result != null) return result;
+
+            result = findCodeInBinaryPlugins(code, locale);
+            if(result != null) return result;
+
+        }
+        return null;
+    }
+
+    private String findCodeInBinaryPlugins(String code, Locale locale) {
+        String result = null;
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+        for (GrailsPlugin plugin : allPlugins) {
+            if (plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
+                if (binaryPluginProperties != null) {
+                    result = binaryPluginProperties.getProperty(code);
+                    if(result != null) break;
                 }
             }
         }
-        return null;
+        return result;
+    }
+
+    private String findMessageInSourcePlugins(String code, Locale locale) {
+        String result = null;
+        for (String pluginBaseName : pluginBaseNames) {
+            List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
+            for (String filename : filenames) {
+                PropertiesHolder holder = getProperties(filename);
+                result = holder.getProperty(code);
+                if (result != null) break;
+            }
+        }
+        return result;
+    }
+
+    private MessageFormat findMessageFormatInBinaryPlugins(String code, Locale locale) {
+        MessageFormat result = null;
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+        for (GrailsPlugin plugin : allPlugins) {
+            if (plugin instanceof BinaryGrailsPlugin) {
+                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
+                if (binaryPluginProperties != null) {
+                    String foundCode = binaryPluginProperties.getProperty(code);
+                    if(foundCode != null) {
+                        result = new MessageFormat(foundCode, locale);
+                    }
+                    if(result != null) break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private MessageFormat findMessageFormatInSourcePlugins(String code, Locale locale) {
+        MessageFormat result = null;
+        for (String pluginBaseName : pluginBaseNames) {
+            List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
+            for (String filename : filenames) {
+                PropertiesHolder holder = getProperties(filename);
+                result = holder.getMessageFormat(code, locale);
+                if (result != null) break;
+            }
+        }
+        return result;
     }
 
     /**
@@ -200,14 +265,11 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         else {
-            for (String pluginBaseName : pluginBaseNames) {
-                List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
-                for (String filename : filenames) {
-                    PropertiesHolder holder = getProperties(filename);
-                    MessageFormat result = holder.getMessageFormat(code, locale);
-                    if (result != null) return result;
-                }
-            }
+            MessageFormat result = findMessageFormatInSourcePlugins(code, locale);
+            if(result != null) return result;
+
+            result = findMessageFormatInBinaryPlugins(code, locale);
+            if(result != null) return result;
         }
         return null;
     }

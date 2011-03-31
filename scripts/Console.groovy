@@ -23,7 +23,6 @@
  */
 
 import org.codehaus.groovy.grails.support.*
-import org.codehaus.groovy.grails.web.context.ServletContextHolder as SCH
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
@@ -70,7 +69,6 @@ createConsole = {
     def b = new Binding()
     b.ctx = appCtx
     b.grailsApplication = grailsApp
-    SCH.servletContext = grailsApp.mainContext.servletContext
 
     def console = new groovy.ui.Console(grailsApp.classLoader, b)
     console.beforeExecution = {

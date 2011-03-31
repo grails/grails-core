@@ -12,7 +12,7 @@ import org.springframework.core.io.Resource;
 class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
 
     protected void onSetUp() {
-        def config = new ConfigSlurper().parse('''
+        gcl.parseClass('''
             dataSource {
                 pooled = true
                 driverClassName = "org.h2.Driver"
@@ -20,9 +20,9 @@ class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
                 password = ""
                 dbCreate = "create-drop"
             }
-''')
+''', "Config")
 
-        ConfigurationHolder.config = config
+
         gcl.parseClass(
 """
 class Test {
@@ -40,9 +40,6 @@ class TestTagLib {
 """)
     }
 
-    protected void onTearDown() {
-        ConfigurationHolder.config = null
-    }
 
     void testScaffoldingPlugin() {
 

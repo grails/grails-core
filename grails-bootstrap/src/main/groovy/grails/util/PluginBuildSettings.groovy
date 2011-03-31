@@ -15,20 +15,15 @@
 package grails.util
 
 import groovy.util.slurpersupport.GPathResult
-
-import java.io.File;
 import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.lang.ArrayUtils
-
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
-
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.util.AntPathMatcher;
+import org.springframework.util.AntPathMatcher
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -187,29 +182,41 @@ class PluginBuildSettings {
         }
 
         def pluginDirs = getPluginDirectories()
-        if (!pluginDirs) {
-            return null
-        }
-
-        for (Resource pluginDir in pluginDirs) {
-            def pluginPath = pluginDir.file.canonicalPath + File.separator
-            def sourcePath = new File(sourceFile).canonicalPath
-            if (sourcePath.startsWith(pluginPath)) {
-                // Check the path of the source file relative to the
-                // plugin directory. If the source file is in the
-                // plugin's "test" directory, we ignore it. It's a
-                // bit of a HACK, but not much else we can do without
-                // a refactor of the plugin management.
-                sourcePath = sourcePath.substring(pluginPath.length())
-                if (!sourcePath.startsWith("test" + File.separator)) {
-                    GrailsPluginInfo info = getPluginInfo(pluginPath)
-                    if (info) {
-                        pluginInfoToSourceMap[sourceFile] = info
+        if (pluginDirs) {
+            for (Resource pluginDir in pluginDirs) {
+                def pluginPath = pluginDir.file.canonicalPath + File.separator
+                def sourcePath = new File(sourceFile).canonicalPath
+                if (sourcePath.startsWith(pluginPath)) {
+                    // Check the path of the source file relative to the
+                    // plugin directory. If the source file is in the
+                    // plugin's "test" directory, we ignore it. It's a
+                    // bit of a HACK, but not much else we can do without
+                    // a refactor of the plugin management.
+                    sourcePath = sourcePath.substring(pluginPath.length())
+                    if (!sourcePath.startsWith("test" + File.separator)) {
+                        GrailsPluginInfo info = getPluginInfo(pluginPath)
+                        if (info) {
+                            pluginInfoToSourceMap[sourceFile] = info
+                        }
+                        return info
                     }
-                    return info
                 }
             }
         }
+
+        def baseDir = buildSettings?.getBaseDir()?.getCanonicalPath()
+        if(baseDir != null) {
+
+            if(sourceFile.startsWith(baseDir)) {
+                def basePluginInfo = getPluginInfo(baseDir)
+                if(basePluginInfo != null) {
+                    pluginInfoToSourceMap[sourceFile] = basePluginInfo
+                    return basePluginInfo
+                }
+            }
+        }
+
+        return null
     }
 
     /**

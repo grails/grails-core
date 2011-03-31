@@ -2,10 +2,8 @@ package org.codehaus.groovy.grails.plugins.web
 
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import org.springframework.core.io.FileSystemResource
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
@@ -100,10 +98,9 @@ class FormTagLib {
 
     void testCommonsMultipartCanBeDisabled() {
         tearDown()
-        ConfigurationHolder.setConfig(null)
 
         gcl = new GroovyClassLoader()
-        gcl.parseClass("grails.disableCommonsMultipart=true", 'Config.groovy')
+        gcl.parseClass("grails.disableCommonsMultipart=true", 'Config')
         setUp()
 
         assertTrue ga.config.grails.disableCommonsMultipart
@@ -112,7 +109,6 @@ class FormTagLib {
         }
 
         tearDown()
-        ConfigurationHolder.setConfig(null)
         gcl = new GroovyClassLoader()
         setUp()
 

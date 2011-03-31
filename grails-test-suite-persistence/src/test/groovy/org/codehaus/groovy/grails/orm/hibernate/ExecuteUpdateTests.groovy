@@ -13,18 +13,12 @@ class ExecuteUpdateTests extends AbstractGrailsHibernateTests {
     private ids = []
     private custClass
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-class Customer {
-    Long id
-    Long version
-    String name
-}
-'''
+    protected getDomainClasses() {
+        [Customer]
     }
 
     def init() {
-        custClass = ga.getDomainClass("Customer").clazz
+        custClass = ga.getDomainClass(Customer.name).clazz
 
         for (name in names) {
             def customer = custClass.newInstance(name: name).save()
@@ -83,3 +77,10 @@ class Customer {
         assertEquals 1, custClass.count()
     }
 }
+
+class Customer {
+    Long id
+    Long version
+    String name
+}
+

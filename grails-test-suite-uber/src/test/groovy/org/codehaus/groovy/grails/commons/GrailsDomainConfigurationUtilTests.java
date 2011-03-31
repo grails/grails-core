@@ -16,22 +16,21 @@ package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
-
-import java.net.URI;
-import java.net.URL;
-import java.util.Date;
-import java.util.Map;
-
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
+import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.NullableConstraint;
 import org.hibernate.cfg.ImprovedNamingStrategy;
+
+import java.net.URI;
+import java.net.URL;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * Tests for the GrailsDomainConfigurationUtil class.
@@ -113,7 +112,7 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
         );
 
         getDomainConfig(cl, new Class[] { domainClass.getClazz() });
-        Map<String, ConstrainedProperty> mapping = GrailsDomainConfigurationUtil.evaluateConstraints(domainClass.getClazz(),domainClass.getProperties(),null);
+        Map<String, ConstrainedProperty> mapping = new HibernateConstraintsEvaluator().evaluate(domainClass.getClazz(), domainClass.getProperties());
         ConstrainedProperty property1 = mapping.get("testString1");
         assertTrue("constraint was not nullable and should be", ((NullableConstraint)property1.getAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)).isNullable());
         ConstrainedProperty property2 = mapping.get("testString2");

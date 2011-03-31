@@ -15,11 +15,12 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
+import grails.util.GrailsNameUtils
 import java.lang.reflect.Modifier
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.hibernate.criterion.CriteriaSpecification
-import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 
 /**
  * A builder that implements the ORM named queries DSL.
@@ -49,7 +50,7 @@ class HibernateNamedQueriesBuilder {
             new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-            new ListOrderByPersistentMethod(sessionFactory, classLoader)
+            new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader)
         ]
     }
 
@@ -90,7 +91,7 @@ class HibernateNamedQueriesBuilder {
 class NamedCriteriaProxy {
 
     private criteriaClosure
-    private domainClass
+    private GrailsDomainClass domainClass
     private dynamicMethods
     private namedCriteriaParams
     private previousInChain
@@ -114,7 +115,8 @@ class NamedCriteriaProxy {
                 paramsMap = params[-1]
             }
             if (paramsMap) {
-                GrailsHibernateUtil.populateArgumentsForCriteria domainClass.clazz, queryBuilder.instance, paramsMap
+                domainClass.grailsApplication
+                GrailsHibernateUtil.populateArgumentsForCriteria domainClass.grailsApplication, domainClass.clazz, queryBuilder.instance, paramsMap
             }
             if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY

@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * Tests using domain events.
  *
@@ -10,7 +12,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
 
     // test for GRAILS-4059
     void testLastUpdateDoesntChangeWhenNotDirty() {
-        def personClass = ga.getDomainClass("PersonEvent").clazz
+        def personClass = ga.getDomainClass(PersonDomainEvent.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -27,7 +29,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
 
         session.flush()
 
-        personClass.executeQuery("select f from PersonEvent f join fetch f.addresses") // cause auto-flush of session
+        personClass.executeQuery("select f from PersonDomainEvent f join fetch f.addresses") // cause auto-flush of session
 
         def now = address.lastUpdated
 
@@ -37,7 +39,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     // test for GRAILS-4041
     void testNoModifyVersion() {
 
-        def personClass = ga.getDomainClass("PersonEvent2").clazz
+        def personClass = ga.getDomainClass(PersonDomainEvent2.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -51,7 +53,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     }
 
     void testDisabledAutoTimestamps() {
-        def personClass = ga.getDomainClass("PersonEvent2")
+        def personClass = ga.getDomainClass(PersonDomainEvent2.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -73,7 +75,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     }
 
     void testAutoTimestamps() {
-        def personClass = ga.getDomainClass("PersonEvent")
+        def personClass = ga.getDomainClass(PersonDomainEvent.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -95,7 +97,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     }
 
     void testOnloadEvent() {
-        def personClass = ga.getDomainClass("PersonEvent")
+        def personClass = ga.getDomainClass(PersonDomainEvent.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -108,7 +110,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     }
 
     void testBeforeDeleteEvent() {
-        def personClass = ga.getDomainClass("PersonEvent")
+        def personClass = ga.getDomainClass(PersonDomainEvent.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -123,7 +125,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     }
 
     void testBeforeUpdateEvent() {
-        def personClass = ga.getDomainClass("PersonEvent2").clazz
+        def personClass = ga.getDomainClass(PersonDomainEvent2.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -145,7 +147,7 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
     }
 
     void testBeforeInsertEvent() {
-        def personClass = ga.getDomainClass("PersonEvent").clazz
+        def personClass = ga.getDomainClass(PersonDomainEvent.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -167,12 +169,13 @@ class DomainEventsTests extends AbstractGrailsHibernateTests {
         assertEquals "Bob", p.name
     }
 
-    void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
+    protected getDomainClasses() {
+        [PersonDomainEvent, DomainEventAddress, PersonDomainEvent2]
+    }
+}
 
 @Entity
-class PersonEvent {
+class PersonDomainEvent {
     Long id
     Long version
     String name
@@ -186,17 +189,17 @@ class PersonEvent {
     def beforeUpdate = {}
     def beforeInsert = {}
 
-    static hasMany = [addresses:Address]
+    static hasMany = [addresses:DomainEventAddress]
 }
 
 @Entity
-class Address {
+class DomainEventAddress {
     String postCode
     Date lastUpdated
-    static belongsTo = [person:PersonEvent]
+    static belongsTo = [person:PersonDomainEvent]
 }
 
-class PersonEvent2 {
+class PersonDomainEvent2 {
     Long id
     Long version
     String name
@@ -212,6 +215,4 @@ class PersonEvent2 {
         lastUpdated nullable:true
     }
 }
-'''
-    }
-}
+

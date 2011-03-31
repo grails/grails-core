@@ -1,3 +1,3 @@
-class JSecurityGrailsPlugin {
+class JsecurityGrailsPlugin {
     def version = "0.3"
 }

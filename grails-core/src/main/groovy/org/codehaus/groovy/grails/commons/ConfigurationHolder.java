@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsUtil;
 import groovy.util.ConfigObject;
 
 import java.util.Collections;
@@ -24,7 +25,10 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @since 0.6
+ *
+ * @deprecated  Use dependency injection instead
  */
+@Deprecated
 public class ConfigurationHolder {
 
     private static ConfigObject config;
@@ -34,7 +38,10 @@ public class ConfigurationHolder {
     /**
      * Sets the ConfigObject. Synchronized to avoid the flatten() method being called concurrently.
      * @param newConfig
+     *
+     * @deprecated Use dependency injection instead
      */
+    @Deprecated
     public static synchronized void setConfig(ConfigObject newConfig) {
         config = newConfig;
         // reset flat config
@@ -51,8 +58,12 @@ public class ConfigurationHolder {
      * during development, so this is not an issue.
      *
      * @return The ConfigObject
+     *
+      @deprecated Use dependency injection instead
      */
+    @Deprecated
     public static ConfigObject getConfig() {
+        GrailsUtil.deprecated("Method ConfigurationHolder.getConfig() is deprecated and will be removed in a future version of Grails.");
         return config;
     }
 
@@ -60,8 +71,11 @@ public class ConfigurationHolder {
      * Returns the ConfigObject has a flattened map for easy access from Java in a properties file like way.
      *
      * @return The flattened ConfigObject
+     *
+     * @deprecated Use dependency injection instead
      */
     @SuppressWarnings("rawtypes")
+    @Deprecated
     public static Map getFlatConfig() {
         return flatConfig != null ? flatConfig : Collections.EMPTY_MAP;
     }

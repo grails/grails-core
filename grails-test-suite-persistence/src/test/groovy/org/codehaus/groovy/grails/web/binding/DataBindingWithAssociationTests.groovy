@@ -1,9 +1,9 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -49,6 +49,12 @@ class Captain {
 }
 ''')
     }
+
+    @Override protected void onTearDown() {
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
+
 
     void testDataBindingWithAssociation() {
         def Author = ga.getDomainClass("Author").clazz
@@ -110,6 +116,7 @@ class Captain {
     }
 
     void testBindToNewInstance() {
+        super.buildMockRequest()
         def Author = ga.getDomainClass("Author").clazz
         def Book = ga.getDomainClass("Book").clazz
 

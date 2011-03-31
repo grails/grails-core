@@ -19,7 +19,7 @@ import groovy.util.ConfigObject;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 
 /**
@@ -30,9 +30,15 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  */
 public class GrailsPlaceholderConfigurer extends PropertyPlaceholderConfigurer {
 
+    private GrailsApplication grailsApplication;
+
+    public GrailsPlaceholderConfigurer(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
+
     @Override
     protected void loadProperties(Properties props) throws IOException {
-        ConfigObject config = ConfigurationHolder.getConfig();
+        ConfigObject config =   grailsApplication.getConfig();
         if (config != null) {
             props.putAll(config.toProperties());
         }

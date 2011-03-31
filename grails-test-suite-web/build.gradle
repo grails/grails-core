@@ -3,6 +3,7 @@ dependencies {
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'
     testCompile project(':grails-test-suite-base'),
 	            project(':grails-plugin-testing'),
+                project(':grails-plugin-codecs'),
 				project(':grails-plugin-datasource'),
 				project(':grails-plugin-i18n'),				
 				project(':grails-plugin-servlets'),								
@@ -15,6 +16,26 @@ dependencies {
 test {
     maxParallelForks = 4
     forkEvery = 100
-    maxHeapSize = '1024m'
+    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
+    excludes = ["**/*TestCase.class", 
+				"**/*\$*.class", 
+				"**/ContentFormatControllerTests.class",
+				"**/JSONBindingTests.class",
+				"**/AutoParams*MarshallingTests.class"]
 }
+
+task isolatedTestsOne(type:Test) {
+    includes = [
+				"**/ContentFormatControllerTests.class",
+				]	
+}
+task isolatedTestsTwo(type:Test) {
+    includes = [
+				"**/JSONBindingTests.class",
+				"**/AutoParams*MarshallingTests.class"]	
+}
+
+
+test.dependsOn isolatedTestsOne, isolatedTestsTwo
+
 

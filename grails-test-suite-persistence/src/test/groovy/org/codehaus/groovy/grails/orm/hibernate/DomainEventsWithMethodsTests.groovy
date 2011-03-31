@@ -1,14 +1,20 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
 class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
 
+    protected getDomainClasses() {
+        [PersonEvent, PersonEvent2, Address, PersonWithOverloadedBeforeValidate, PersonWithNoArgBeforeValidate, PersonWithListArgBeforeValidate]
+    }
+    
     // test for GRAILS-4059
     void testLastUpdateDoesntChangeWhenNotDirty() {
-        def personClass = ga.getDomainClass("PersonEvent").clazz
+        def personClass = ga.getDomainClass(PersonEvent.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -34,7 +40,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     // test for GRAILS-4041
     void testNoModifyVersion() {
 
-        def personClass = ga.getDomainClass("PersonEvent2").clazz
+        def personClass = ga.getDomainClass(PersonEvent2.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -47,7 +53,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testDisabledAutoTimestamps() {
-        def personClass = ga.getDomainClass("PersonEvent2")
+        def personClass = ga.getDomainClass(PersonEvent2.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -69,7 +75,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testAutoTimestamps() {
-        def personClass = ga.getDomainClass("PersonEvent")
+        def personClass = ga.getDomainClass(PersonEvent.name)
         def p = personClass.newInstance()
         p.name = "Fred"
         p.save()
@@ -89,7 +95,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testOnloadEvent() {
-        def personClass = ga.getDomainClass("PersonEvent")
+        def personClass = ga.getDomainClass(PersonEvent.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -102,7 +108,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testBeforeDeleteEvent() {
-        def personClass = ga.getDomainClass("PersonEvent")
+        def personClass = ga.getDomainClass(PersonEvent.name)
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -116,7 +122,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testBeforeUpdateEvent() {
-        def personClass = ga.getDomainClass("PersonEvent2").clazz
+        def personClass = ga.getDomainClass(PersonEvent2.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -137,7 +143,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testBeforeInsertEvent() {
-        def personClass = ga.getDomainClass("PersonEvent").clazz
+        def personClass = ga.getDomainClass(PersonEvent.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -158,7 +164,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testNoArgBeforeValidateWhenCallingSave() {
-        def personClass = ga.getDomainClass("PersonWithNoArgBeforeValidate").clazz
+        def personClass = ga.getDomainClass(PersonWithNoArgBeforeValidate.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -171,7 +177,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testOverloadedBeforeValidateWhenCallingSave() {
-        def personClass = ga.getDomainClass("PersonWithOverloadedBeforeValidate").clazz
+        def personClass = ga.getDomainClass(PersonWithOverloadedBeforeValidate.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -184,7 +190,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testNoArgBeforeValidateWhenCallingValidate() {
-        def personClass = ga.getDomainClass("PersonWithNoArgBeforeValidate").clazz
+        def personClass = ga.getDomainClass(PersonWithNoArgBeforeValidate.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -196,7 +202,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testListArgBeforeValidateWhenCallingSave() {
-        def personClass = ga.getDomainClass("PersonWithListArgBeforeValidate").clazz
+        def personClass = ga.getDomainClass(PersonWithListArgBeforeValidate.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -208,7 +214,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testListArgBeforeValidateWhenCallingValidate() {
-        def personClass = ga.getDomainClass("PersonWithListArgBeforeValidate").clazz
+        def personClass = ga.getDomainClass(PersonWithListArgBeforeValidate.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -238,7 +244,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     }
 
     void testOverloadedBeforeValidateWhenCallingValidate() {
-        def personClass = ga.getDomainClass("PersonWithOverloadedBeforeValidate").clazz
+        def personClass = ga.getDomainClass(PersonWithOverloadedBeforeValidate.name).clazz
         def p = personClass.newInstance()
 
         p.name = "Fred"
@@ -270,6 +276,11 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     void onSetUp() {
         gcl.parseClass '''
 import grails.persistence.*
+
+'''
+    }
+}
+
 
 @Entity
 class PersonWithNoArgBeforeValidate {
@@ -360,8 +371,5 @@ class PersonEvent2 {
     static constraints = {
         dateCreated nullable:true
         lastUpdated nullable:true
-    }
-}
-'''
     }
 }

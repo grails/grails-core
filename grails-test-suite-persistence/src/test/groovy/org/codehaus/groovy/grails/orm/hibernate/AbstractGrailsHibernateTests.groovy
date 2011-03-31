@@ -1,18 +1,19 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.GrailsUtil
+import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
-import org.hibernate.EntityMode;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.hibernate.EntityMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.hibernate.metadata.ClassMetadata
@@ -24,7 +25,9 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Log4jConfigurer
-import net.sf.ehcache.CacheManager
+import org.springframework.web.context.WebApplicationContext
+import org.codehaus.groovy.grails.plugins.*
+import org.springframework.mock.web.MockServletContext
 
 /**
  * @author Graeme Rocher
@@ -82,7 +85,6 @@ hibernate {
         mockManager = new MockGrailsPluginManager(ga)
 
         ctx.registerMockBean("pluginManager", mockManager)
-        PluginManagerHolder.setPluginManager(mockManager)
 
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -109,16 +111,19 @@ hibernate {
         afterPluginInitialization()
 
         ga.initialise()
+        onApplicationCreated()
+        domainClasses?.each { dc ->
+            ga.addArtefact 'Domain', dc
+        }
         ga.setApplicationContext(ctx)
-        ApplicationHolder.setApplication(ga)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
           doWithRuntimeConfiguration dependentPlugins, springConfig
 
+        ga.setMainContext(springConfig.getUnrefreshedApplicationContext())
         appCtx = springConfig.getApplicationContext()
-        ga.setMainContext(appCtx)
         applicationContext = appCtx
         dependentPlugins*.doWithApplicationContext(appCtx)
 
@@ -132,11 +137,33 @@ hibernate {
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
     }
+    
+    void onApplicationCreated() {}
 
+    /**
+     * Subclasses may override this method to return a list of classes which should
+     * be added to the GrailsApplication as domain classes
+     * 
+     * @return a list of classes
+     */
+    protected getDomainClasses() {
+        Collections.EMPTY_LIST
+    }
+    
     protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
      }
+
+    GrailsWebRequest buildMockRequest(ConfigObject config = null) throws Exception {
+        if(config != null)
+            ga.config = config
+        def servletContext = new MockServletContext()
+        appCtx.setServletContext(servletContext)
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+        return GrailsWebUtil.bindMockWebRequest(appCtx)
+    }
 
     protected void tearDown() {
 
@@ -161,7 +188,8 @@ hibernate {
             // means it is not active, ignore
         }
         try {
-            CacheManager.getInstance()?.shutdown()
+            getClass().classLoader.loadClass("net.sf.ehcache.CacheManager")
+                                    .getInstance()?.shutdown()
         }
         catch(e) {
             // means there is no cache, ignore
@@ -174,10 +202,8 @@ hibernate {
         ctx = null
         appCtx = null
 
-        ApplicationHolder.setApplication(null)
-        ExpandoMetaClass.disableGlobally()
 
-        PluginManagerHolder.setPluginManager(null)
+        ExpandoMetaClass.disableGlobally()
 
         originalHandler = null
 

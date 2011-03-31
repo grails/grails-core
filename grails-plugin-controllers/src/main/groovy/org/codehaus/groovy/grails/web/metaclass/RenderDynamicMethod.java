@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -78,22 +77,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_JSON = "json";
 
     private static final String TEXT_HTML = "text/html";
-    private String gspEncoding;
+    private String gspEncoding = DEFAULT_ENCODING;
     private static final String DEFAULT_ENCODING = "utf-8";
     private Object ARGUMENT_PLUGIN = "plugin";
 
     public RenderDynamicMethod() {
         super(METHOD_PATTERN);
+    }
 
-        Map config = ConfigurationHolder.getFlatConfig();
-        Object gspEnc = config.get("grails.views.gsp.encoding");
-
-        if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-            gspEncoding = gspEnc.toString();
-        }
-        else {
-            gspEncoding = DEFAULT_ENCODING;
-        }
+    public void setGspEncoding(String gspEncoding) {
+        this.gspEncoding = gspEncoding;
     }
 
     @Override

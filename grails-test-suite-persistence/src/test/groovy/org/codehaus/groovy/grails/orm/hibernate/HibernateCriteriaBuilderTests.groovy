@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.runtime.InvokerInvocationException
+import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
 
 /**
  * @author Graeme Rocher
@@ -10,37 +11,14 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
  */
 class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
-
-@Entity
-class CriteriaBuilderTestClass {
-    String firstName
-    String lastName
-    Integer age
-    CriteriaBuilderTestClass parent
-    static hasMany = [children:CriteriaBuilderTestClass, children2:CriteriaBuilderTestClass2]
-
-    static constraints = {
-        firstName(size:4..15)
-        age(nullable:true)
-        parent(nullable:true)
-    }
-}
-
-@Entity
-class CriteriaBuilderTestClass2 {
-   String firstName
-   Date dateCreated
-}
-'''
+    protected getDomainClasses() {
+        [CriteriaBuilderTestClass, CriteriaBuilderTestClass2]
     }
 
     List retrieveListOfNames() { ['bart'] }
 
     void testResultTransformerWithMapParamToList() {
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         def obj = domainClass.newInstance()
         obj.firstName = "Jeff"
@@ -70,7 +48,7 @@ class CriteriaBuilderTestClass2 {
 
     void testSizeErrorMessages() {
         // GRAILS-6691
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
         def crit = domainClass.createCriteria()
 
         def methodNames = ['sizeGt', 'sizeGe', 'sizeLe', 'sizeLt', 'sizeNe']
@@ -85,7 +63,7 @@ class CriteriaBuilderTestClass2 {
     void testSqlRestriction() {
         createDomainData()
 
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         // should retrieve bart and lisa, not homer and maggie
         def results = domainClass.withCriteria {
@@ -105,7 +83,7 @@ class CriteriaBuilderTestClass2 {
     void testOrderByProjection() {
         createDomainData()
 
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         def results = domainClass.withCriteria {
             projections {
@@ -122,7 +100,7 @@ class CriteriaBuilderTestClass2 {
 
     // test for GRAILS-4377
     void testResolveOrder() {
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
         assertNotNull domainClass
 
         def obj = domainClass.newInstance()
@@ -144,7 +122,7 @@ class CriteriaBuilderTestClass2 {
     // test for GRAILS-3174
     void testDuplicateAlias() {
 
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         def obj = domainClass.newInstance()
         obj.firstName = "Mike"
@@ -176,7 +154,7 @@ class CriteriaBuilderTestClass2 {
     }
 
     void testWithGString() {
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         assertNotNull(domainClass)
 
@@ -195,7 +173,7 @@ class CriteriaBuilderTestClass2 {
     }
 
     void testAssociations() {
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         assertNotNull(domainClass)
 
@@ -230,7 +208,7 @@ class CriteriaBuilderTestClass2 {
     void testNestedAssociations() {
         createDomainData()
 
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
         List results = domainClass.createCriteria().list {
             children {
                 eq('firstName','bart')
@@ -243,7 +221,7 @@ class CriteriaBuilderTestClass2 {
     }
 
     private createDomainData() {
-        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
         assertNotNull(domainClass)
 
@@ -278,7 +256,7 @@ class CriteriaBuilderTestClass2 {
     // TODO: Need to tidy them up into more elegant Groovy code at some point
 
     void testUniqueResult() {
-        String clazzName = "CriteriaBuilderTestClass"
+        String clazzName = CriteriaBuilderTestClass.name
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
                 clazzName)
 
@@ -296,7 +274,7 @@ class CriteriaBuilderTestClass2 {
 
         Object result = parse(".list { " +
                         "eq('firstName','homer');" +
-                "}", "Test1", "CriteriaBuilderTestClass",true)
+                "}", "Test1", CriteriaBuilderTestClass.name,true)
 
         assertEquals clazzName , result.getClass().getName()
 
@@ -304,13 +282,13 @@ class CriteriaBuilderTestClass2 {
     // returns a List
         List results = parse(".list { " +
                         "eq('firstName','homer');" +
-                "}", "Test1","CriteriaBuilderTestClass", false)
+                "}", "Test1",CriteriaBuilderTestClass.name, false)
         assertTrue List.isAssignableFrom(results.getClass())
     }
 
     void testNestedAssociation() {
         GrailsDomainClass domainClass =  grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -343,7 +321,7 @@ class CriteriaBuilderTestClass2 {
                             "eq('firstName','bart');" +
                         "}" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1 , results.size()
 
@@ -354,7 +332,7 @@ class CriteriaBuilderTestClass2 {
                             "eq('firstName','bart');" +
                         "}" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2 , results.size()
     }
@@ -362,7 +340,7 @@ class CriteriaBuilderTestClass2 {
 
      void testNestedAssociationIsNullField() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -395,7 +373,7 @@ class CriteriaBuilderTestClass2 {
                             "isNull('lastName');" +
                         "}" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1 , results.size()
 
@@ -406,13 +384,13 @@ class CriteriaBuilderTestClass2 {
                             "isNotNull('lastName');" +
                         "}" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2 , results.size()
     }
 
     void testResultTransformer() {
-        GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,"CriteriaBuilderTestClass")
+        GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,CriteriaBuilderTestClass.name)
         assertNotNull(domainClass)
 
         GroovyObject obj = domainClass.newInstance()
@@ -445,14 +423,14 @@ class CriteriaBuilderTestClass2 {
                     "} \n" +
                 "} \n" +
                 "resultTransformer(org.hibernate.criterion.CriteriaSpecification.DISTINCT_ROOT_ENTITY) \n" +
-            "}", "Test1","CriteriaBuilderTestClass")
+            "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1 , results.size()
     }
 
     void testJunctions() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -488,7 +466,7 @@ class CriteriaBuilderTestClass2 {
                         "eq('lastName', 'flintstone');" +
                         "eq('age', 12);" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 3, results.size()
 
@@ -496,7 +474,7 @@ class CriteriaBuilderTestClass2 {
                     "or { " +
                         "eq('lastName', 'flintstone');" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
 
@@ -508,14 +486,14 @@ class CriteriaBuilderTestClass2 {
                             "eq('lastName', 'flintstone');" +
                         "}" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
     }
 
     void testDistinct() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -543,7 +521,7 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "distinct('lastName');" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
         assertTrue results.contains("flintstone")
@@ -553,14 +531,14 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "distinct(['lastName','age']);" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 3, results.size()
     }
 
     void testHibernateCriteriaBuilder() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -588,7 +566,7 @@ class CriteriaBuilderTestClass2 {
                         "eq('firstName','fred');" +
                         "eq('lastName', 'flintstone');" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         results = parse("{\n" +
                         "and {\n" +
                             "eq(\"firstName\",\"Fred\");\n" +
@@ -597,12 +575,12 @@ class CriteriaBuilderTestClass2 {
                                 "eq(\"lastName\", \"flintstone\")\n" +
                              "}\n" +
                         "}\n" +
-                    "}", "Test2","CriteriaBuilderTestClass")
+                    "}", "Test2",CriteriaBuilderTestClass.name)
         results = parse(   "{\n" +
                         "eq(\"firstName\",\"Fred\");\n" +
                         "order(\"firstName\")\n" +
                         "maxResults(10)\n" +
-                    "}", "Test3","CriteriaBuilderTestClass")
+                    "}", "Test3",CriteriaBuilderTestClass.name)
 
         shouldFail(MissingMethodException) {
             // rubbish argument
@@ -614,13 +592,13 @@ class CriteriaBuilderTestClass2 {
                             "rubbish()\n" +
                          "}\n" +
                     "}\n" +
-                "}", "Test5","CriteriaBuilderTestClass")
+                "}", "Test5",CriteriaBuilderTestClass.name)
         }
     }
 
     void testProjectionProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -635,14 +613,14 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "property('lastName',)" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
     }
 
     void testProjectionAvg() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -665,7 +643,7 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "avg('age',)" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
     Double result = (Double) results.get(0)
         assertEquals 40, result.longValue()
@@ -673,7 +651,7 @@ class CriteriaBuilderTestClass2 {
 
    void testProjectionCount() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -696,13 +674,13 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "count('firstName')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 2, results.get(0)
    }
 
    void testProjectionCountDistinct() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -725,13 +703,13 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "countDistinct('lastName')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.get(0)
    }
 
    void testProjectionMax() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -753,13 +731,13 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "max('age')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 45, results.get(0)
    }
 
    void testProjectionMin() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -782,13 +760,13 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "min('age')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 35, results.get(0)
    }
 
    void testProjectionRowCount() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -811,13 +789,13 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "rowCount()" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 2, results.get(0)
    }
 
    void testProjectionSum() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -840,13 +818,13 @@ class CriteriaBuilderTestClass2 {
                     "projections { " +
                         "sum('age')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 80, results.get(0)
    }
 
    void testOrderAsc() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -870,12 +848,12 @@ class CriteriaBuilderTestClass2 {
                         "property('firstName');" +
                         "order('firstName', 'asc');" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
    }
 
    void testOrderDesc() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -898,12 +876,12 @@ class CriteriaBuilderTestClass2 {
                         "property('firstName');" +
                         "order('firstName','desc');" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
    }
 
    void testEqProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -931,13 +909,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "eqProperty('firstName','lastName')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 2, results.size()
    }
 
    void testGtProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -958,13 +936,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "gtProperty('firstName','lastName')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
    }
 
    void testGe() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -986,13 +964,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "ge('age',43)" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 2, results.size()
    }
 
    void testLe() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1013,14 +991,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "le('age',45)" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
    }
 
    void testLt() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1041,14 +1019,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "lt('age',44)" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
    }
 
    void testEq() {
         GrailsDomainClass domainClass =  grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1068,13 +1046,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "eq('firstName','fred')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
    }
 
     void testEqCaseInsensitive() {
       GrailsDomainClass domainClass =  grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-      "CriteriaBuilderTestClass")
+      CriteriaBuilderTestClass.name)
 
       assertNotNull(domainClass)
 
@@ -1094,33 +1072,33 @@ class CriteriaBuilderTestClass2 {
 
       List results = parse(  "{ " +
             "eq('firstName','Fred')" +
-            "}", "Test1","CriteriaBuilderTestClass")
+            "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'default not ignoring case', 0, results.size()
 
       results = parse(  "{ " +
             "eq 'firstName','Fred', ignoreCase: false" +
-            "}", "Test1","CriteriaBuilderTestClass")
+            "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'explicitly not ignoring case', 0, results.size()
 
       results = parse(  "{ " +
             "eq 'firstName', 'Fred', ignoreCase: true" +
-            "}", "Test1","CriteriaBuilderTestClass")
+            "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'ignoring case should match one', 1, results.size()
 
       results = parse(  "{ " +
               "eq('firstName', 'Fred', [ignoreCase: true])" +
-              "}", "Test1","CriteriaBuilderTestClass")
+              "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'ignoring case should match one', 1, results.size()
 
       results = parse(  "{ " +
             "eq 'firstName', 'Fred', dontKnowWhatToDoWithThis: 'foo'" +
-            "}", "Test1","CriteriaBuilderTestClass")
+            "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'an unknown parameter should be ignored', 0, results.size()
    }
 
     void testNe() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1141,13 +1119,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "ne('firstName','fred')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
    }
 
    void testLtProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1168,13 +1146,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "ltProperty('firstName','lastName')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
    }
 
    void testGeProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1195,14 +1173,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "geProperty('firstName','lastName')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
    }
 
    void testLeProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1223,14 +1201,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "leProperty('firstName','lastName')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
    }
 
    void testNeProperty() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1251,14 +1229,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "neProperty('firstName','lastName')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
    }
 
    void testBetween() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1286,14 +1264,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "between('age',40, 46)" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
    }
 
    void testIlike() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1314,14 +1292,14 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "ilike('lastName', 'flint%')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
    }
 
    void testIn() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1342,13 +1320,13 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse(   "{ " +
                         "'in'('firstName',['fred','donkey'])" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
    }
 
    void testAnd() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1372,7 +1350,7 @@ class CriteriaBuilderTestClass2 {
                         "eq('age', 35);" +
                         "eq('firstName', 'fred');" +
                         "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 0, results.size()
 
@@ -1380,7 +1358,7 @@ class CriteriaBuilderTestClass2 {
                         "not{" +
                         "eq('age', 35);" +
                         "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
 
@@ -1388,12 +1366,12 @@ class CriteriaBuilderTestClass2 {
             results = parse(   "{ " +
                     "not{" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         }
     }
 
     void testIsNullAndIsNotNull() {
-        GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, "CriteriaBuilderTestClass")
+        GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1416,19 +1394,19 @@ class CriteriaBuilderTestClass2 {
 
         List results = parse("{ " +
                 "isNull('age')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 2, results.size()
         results = parse("{ " +
                 "isNotNull('age')" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
 
         assertEquals 1, results.size()
     }
 
     void testPaginationParams() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
-            "CriteriaBuilderTestClass")
+            CriteriaBuilderTestClass.name)
 
         assertNotNull(domainClass)
 
@@ -1458,7 +1436,7 @@ class CriteriaBuilderTestClass2 {
                     "children { " +
                         "eq('firstName','bart')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 0 , results.size()
 
         // Now try sorting on the integer field.
@@ -1466,7 +1444,7 @@ class CriteriaBuilderTestClass2 {
                     "children { " +
                         "eq('firstName','bart')" +
                     "}" +
-                "}", "Test1","CriteriaBuilderTestClass")
+                "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1 , results.size()
     }
 
@@ -1502,3 +1480,25 @@ class CriteriaBuilderTestClass2 {
         return parse(groovy,testClassName,criteriaClassName,false)
     }
 }
+
+@Entity
+class CriteriaBuilderTestClass {
+    String firstName
+    String lastName
+    Integer age
+    CriteriaBuilderTestClass parent
+    static hasMany = [children:CriteriaBuilderTestClass, children2:CriteriaBuilderTestClass2]
+
+    static constraints = {
+        firstName(size:4..15)
+        age(nullable:true)
+        parent(nullable:true)
+    }
+}
+
+@Entity
+class CriteriaBuilderTestClass2 {
+   String firstName
+   Date dateCreated
+}
+

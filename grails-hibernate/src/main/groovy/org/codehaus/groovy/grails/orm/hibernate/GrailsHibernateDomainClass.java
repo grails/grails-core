@@ -14,19 +14,13 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
@@ -36,9 +30,12 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.AnyType;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.validation.Validator;
+
+import java.util.*;
 
 /**
  * An implementation of the GrailsDomainClass interface that allows Classes
@@ -66,7 +63,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     private Set subClasses = new HashSet();
     private Map constraints = Collections.emptyMap();
-    private Map<String, Object> defaultConstraints = Collections.emptyMap();
+
 
     /**
      * Contructor to be used by all child classes to create a new instance
@@ -75,16 +72,14 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
      * @param clazz          the Grails class
      * @param sessionFactory The Hibernate SessionFactory instance
      * @param metaData       The ClassMetaData for this class retrieved from the SF
-     * @param defaultConstraints The default global constraints definition
      */
     public GrailsHibernateDomainClass(Class<?> clazz, SessionFactory sessionFactory, GrailsApplication application,
-            ClassMetadata metaData, Map<String, Object> defaultConstraints) {
+            ClassMetadata metaData) {
         super(clazz, "");
         this.application = application;
 
         new StandardAnnotationMetadata(clazz);
         String ident = metaData.getIdentifierPropertyName();
-        this.defaultConstraints = defaultConstraints;
         if (ident != null) {
             Class<?> identType = getPropertyType(ident);
             identifier = new GrailsHibernateDomainClassProperty(this, ident);
@@ -151,18 +146,29 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     /**
      * Evaluates the constraints closure to build the list of constraints
-     * @param defaultContraints The default global constraints definition
+
      */
     private void evaluateConstraints() {
         Map existing = (Map) getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.CONSTRAINTS, Map.class);
         if (existing == null) {
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
-                    getClazz(), getProperties(), defaultConstraints);
+            final ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
+            constraints = constraintsEvaluator.evaluate(getClazz(), getProperties());
         }
         else {
             constraints = existing;
         }
     }
+
+    private ConstraintsEvaluator getConstraintsEvaluator() {
+        if(application != null && application.getMainContext() != null) {
+            final ApplicationContext context = application.getMainContext();
+            if(context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+                return context.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator.class);
+            }
+        }
+        return new DefaultConstraintEvaluator();
+    }
+
 
     public boolean isOwningClass(Class domainClass) {
         return false;

@@ -8,18 +8,12 @@ package org.codehaus.groovy.grails.orm.hibernate
  */
 class AttachMethodTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-class AttachMethod {
-    Long id
-    Long version
-    String name
-}
-'''
+    protected getDomainClasses() {
+        [AttachMethod]
     }
 
     void testAttachMethod() {
-        def testClass = ga.getDomainClass("AttachMethod").clazz
+        def testClass = ga.getDomainClass(AttachMethod.name).clazz
 
         def test = testClass.newInstance(name:"foo")
 
@@ -45,4 +39,10 @@ class AttachMethod {
 
         assertEquals test, test.attach()
     }
+}
+
+class AttachMethod {
+    Long id
+    Long version
+    String name
 }

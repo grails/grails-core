@@ -26,7 +26,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -125,7 +124,7 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source, List include, List exclude, String filter) {
-        GrailsApplication application = ApplicationHolder.getApplication();
+        GrailsApplication application = GrailsWebRequest.lookupApplication();
         GrailsDomainClass domain = null;
         if (application != null) {
             domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,object.getClass().getName());

@@ -16,11 +16,10 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.PluginBuildSettings;
+import org.springframework.core.io.Resource;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.core.io.Resource;
 
 /**
  * Combines different implementation into one.
@@ -33,8 +32,8 @@ public class CompositePluginDescriptorReader implements PluginDescriptorReader {
     private List<PluginDescriptorReader> pluginDescriptorReaders = new ArrayList<PluginDescriptorReader>();
 
     public CompositePluginDescriptorReader(PluginBuildSettings pluginSettings) {
-        pluginDescriptorReaders.add(new XmlPluginDescriptorReader(pluginSettings));
         pluginDescriptorReaders.add(new AstPluginDescriptorReader());
+        pluginDescriptorReaders.add(new XmlPluginDescriptorReader(pluginSettings));
     }
 
     public GrailsPluginInfo readPluginInfo(Resource r) {

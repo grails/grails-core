@@ -1,15 +1,16 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.commons.*
+import grails.persistence.Entity
 import grails.validation.ValidationException
+
 import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor
 
 class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testFlush() {
-        def bookClass = ga.getDomainClass("grails.tests.SaveBook")
-        def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
-        def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
+        def bookClass = ga.getDomainClass(SavePersistentMethodBook.name)
+        def authorClass = ga.getDomainClass(SavePersistentMethodAuthor.name)
+        def addressClass = ga.getDomainClass(SavePersistentMethodAddress.name)
 
         def book = bookClass.newInstance()
         book.title = "Foo"
@@ -26,9 +27,9 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testToOneCascadingValidation() {
-        def bookClass = ga.getDomainClass("grails.tests.SaveBook")
-        def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
-        def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
+        def bookClass = ga.getDomainClass(SavePersistentMethodBook.name)
+        def authorClass = ga.getDomainClass(SavePersistentMethodAuthor.name)
+        def addressClass = ga.getDomainClass(SavePersistentMethodAddress.name)
 
         def book = bookClass.newInstance()
 
@@ -61,9 +62,9 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testToManyCascadingValidation() {
-        def bookClass = ga.getDomainClass("grails.tests.SaveBook")
-        def authorClass = ga.getDomainClass("grails.tests.SaveAuthor")
-        def addressClass = ga.getDomainClass("grails.tests.SaveAddress")
+        def bookClass = ga.getDomainClass(SavePersistentMethodBook.name)
+        def authorClass = ga.getDomainClass(SavePersistentMethodAuthor.name)
+        def addressClass = ga.getDomainClass(SavePersistentMethodAddress.name)
 
         def author = authorClass.newInstance()
 
@@ -91,7 +92,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testValidationAfterBindingErrors() {
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'validation should have failed', team.save()
@@ -107,7 +108,7 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testFailOnErrorTrueWithValidationErrors() {
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         def msg = shouldFail(ValidationException) {
@@ -123,23 +124,22 @@ class SavePersistentMethodTests extends AbstractGrailsHibernateTests {
         }
         assertEquals '''\
 Validation Error(s) occurred during save():
-- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
-- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'homePage': rejected value [null]; codes [typeMismatch.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'name': rejected value [null]; codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error,savePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.error.name,savePersistentMethodTeam.name.nullable.error.java.lang.String,savePersistentMethodTeam.name.nullable.error,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable,savePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.name,savePersistentMethodTeam.name.nullable.java.lang.String,savePersistentMethodTeam.name.nullable,nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam]; default message [Property [{0}] of class [{1}] cannot be null]
 ''', msg
     }
 
     void testFailOnErrorFalseWithValidationErrors() {
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'save should have returned null', team.save(failOnError: false)
     }
 
     void testFailOnErrorConfigTrueWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true")
+        ga.config.grails.gorm.failOnError = true
 
-        ConfigurationHolder.config = config
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         def msg = shouldFail(ValidationException) {
@@ -147,15 +147,15 @@ Validation Error(s) occurred during save():
         }
         assertEquals '''\
 Validation Error(s) occurred during save():
-- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
-- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'homePage': rejected value [null]; codes [typeMismatch.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'name': rejected value [null]; codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error,savePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.error.name,savePersistentMethodTeam.name.nullable.error.java.lang.String,savePersistentMethodTeam.name.nullable.error,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable,savePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.name,savePersistentMethodTeam.name.nullable.java.lang.String,savePersistentMethodTeam.name.nullable,nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam]; default message [Property [{0}] of class [{1}] cannot be null]
 ''', msg
     }
 
     void testFailOnErrorConfigTrueWithValidationErrorsAndAutoFlush() {
         def interceptor = appCtx.getBean("eventTriggeringInterceptor")
         interceptor.failOnError=true
-        def teamClass = ga.getDomainClass('grails.tests.Team').clazz
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name).clazz
         def team = teamClass.newInstance(name:"Manchester United", homePage:new URL("http://www.manutd.com/"))
         assertNotNull "should have saved", team.save(flush:true)
 
@@ -172,7 +172,7 @@ Validation Error(s) occurred during save():
         ClosureEventTriggeringInterceptor interceptor = appCtx.getBean("eventTriggeringInterceptor")
         interceptor.failOnError=true
         interceptor.failOnErrorPackages = ['foo.bar']
-        def teamClass = ga.getDomainClass('grails.tests.Team').clazz
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name).clazz
         def team = teamClass.newInstance(name:"Manchester United", homePage:new URL("http://www.manutd.com/"))
         assertNotNull "should have saved", team.save(flush:true)
 
@@ -180,26 +180,24 @@ Validation Error(s) occurred during save():
 
         team = teamClass.get(1)
         team.name = ''
-        // should not throw exception for the grails.test package
+        // should not throw exception for the org.codehaus.groovy.grails.orm.hibernate package
         session.flush()
 
-        interceptor.failOnErrorPackages = ['grails.tests']
+        interceptor.failOnErrorPackages = ['org.codehaus.groovy.grails.orm.hibernate']
         interceptor.eventListeners.clear()
 
         session.clear()
         team = teamClass.get(1)
         team.name = ''
-        // should not throw exception for the grails.test package
+        // should not throw exception for the org.codehaus.groovy.grails.orm.hibernate package
         shouldFail(ValidationException) {
             session.flush()
         }
     }
 
     void testFailOnErrorConfigIncludesMatchingPackageWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'grails.tests', 'com.bar']")
-
-        ConfigurationHolder.config = config
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        ga.config.grails.gorm.failOnError = ['com.foo', 'org.codehaus.groovy.grails.orm.hibernate', 'com.bar']
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         def msg = shouldFail(ValidationException) {
@@ -207,46 +205,39 @@ Validation Error(s) occurred during save():
         }
         assertEquals '''\
 Validation Error(s) occurred during save():
-- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
-- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'homePage': rejected value [null]; codes [typeMismatch.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'name': rejected value [null]; codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error,savePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.error.name,savePersistentMethodTeam.name.nullable.error.java.lang.String,savePersistentMethodTeam.name.nullable.error,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable,savePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.name,savePersistentMethodTeam.name.nullable.java.lang.String,savePersistentMethodTeam.name.nullable,nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam]; default message [Property [{0}] of class [{1}] cannot be null]
 ''', msg
     }
 
     void testFailOnErrorConfigDoesNotIncludeMatchingPackageWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = ['com.foo', 'com.bar']")
-
-        ConfigurationHolder.config = config
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        ga.config.grails.gorm.failOnError = ['com.foo', 'com.bar']
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'save should have returned null', team.save()
     }
 
     void testFailOnErrorConfigFalseWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false")
+        ga.config.grails.gorm.failOnError = false
 
-        ConfigurationHolder.config = config
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'save should have returned null', team.save()
     }
 
     void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = true")
-
-        ConfigurationHolder.config = config
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        ga.config.grails.gorm.failOnError = true
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         assertNull 'save should have returned null', team.save(failOnError: false)
     }
 
     void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
-        def config = new ConfigSlurper().parse("grails.gorm.failOnError = false")
-
-        ConfigurationHolder.config = config
-        def teamClass = ga.getDomainClass('grails.tests.Team')
+        ga.config.grails.gorm.failOnError = true
+        def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
         def msg = shouldFail(ValidationException) {
@@ -254,13 +245,13 @@ Validation Error(s) occurred during save():
         }
         assertEquals '''\
 Validation Error(s) occurred during save():
-- Field error in object 'grails.tests.Team' on field 'homePage': rejected value [null]; codes [typeMismatch.grails.tests.Team.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [grails.tests.Team.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
-- Field error in object 'grails.tests.Team' on field 'name': rejected value [null]; codes [grails.tests.Team.name.nullable.error.grails.tests.Team.name,grails.tests.Team.name.nullable.error.name,grails.tests.Team.name.nullable.error.java.lang.String,grails.tests.Team.name.nullable.error,team.name.nullable.error.grails.tests.Team.name,team.name.nullable.error.name,team.name.nullable.error.java.lang.String,team.name.nullable.error,grails.tests.Team.name.nullable.grails.tests.Team.name,grails.tests.Team.name.nullable.name,grails.tests.Team.name.nullable.java.lang.String,grails.tests.Team.name.nullable,team.name.nullable.grails.tests.Team.name,team.name.nullable.name,team.name.nullable.java.lang.String,team.name.nullable,nullable.grails.tests.Team.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class grails.tests.Team]; default message [Property [{0}] of class [{1}] cannot be null]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'homePage': rejected value [null]; codes [typeMismatch.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,typeMismatch.homePage,typeMismatch.java.net.URL,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.homePage,homePage]; arguments []; default message [homePage]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.net.URL' for property 'homePage'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [invalidurl]: class path resource [invalidurl] cannot be resolved to URL because it does not exist]
+- Field error in object 'org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam' on field 'name': rejected value [null]; codes [org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.error,savePersistentMethodTeam.name.nullable.error.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.error.name,savePersistentMethodTeam.name.nullable.error.java.lang.String,savePersistentMethodTeam.name.nullable.error,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.name,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable.java.lang.String,org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name.nullable,savePersistentMethodTeam.name.nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,savePersistentMethodTeam.name.nullable.name,savePersistentMethodTeam.name.nullable.java.lang.String,savePersistentMethodTeam.name.nullable,nullable.org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam.name,nullable.name,nullable.java.lang.String,nullable]; arguments [name,class org.codehaus.groovy.grails.orm.hibernate.SavePersistentMethodTeam]; default message [Property [{0}] of class [{1}] cannot be null]
 ''', msg
     }
 
     void testSaveWithoutValidation() {
-        def dcClass = ga.getDomainClass('grails.tests.SaveCustomValidation')
+        def dcClass = ga.getDomainClass(SavePersistentMethodCustomValidation.name)
         def dc = dcClass.newInstance()
         dc.properties = [ title: 'Test' ]
 
@@ -290,14 +281,14 @@ Validation Error(s) occurred during save():
         }
     }
 
-    void onSetUp() {
-        gcl.parseClass '''
-package grails.tests
+    protected getDomainClasses() {
+        [SavePersistentMethodTeam, SavePersistentMethodBook, SavePersistentMethodAuthor, SavePersistentMethodAddress, SavePersistentMethodCustomValidation]
+    }
+}
 
-import grails.persistence.*
 
 @Entity
-class Team {
+class SavePersistentMethodTeam {
     String name
     URL homePage
 
@@ -307,10 +298,10 @@ class Team {
 }
 
 @Entity
-class SaveBook {
+class SavePersistentMethodBook {
     String title
-    SaveAuthor author
-    static belongsTo = SaveAuthor
+    SavePersistentMethodAuthor author
+    static belongsTo = SavePersistentMethodAuthor
     static constraints = {
        title(blank:false, size:1..255)
        author(nullable:true)
@@ -318,10 +309,10 @@ class SaveBook {
 }
 
 @Entity
-class SaveAuthor {
+class SavePersistentMethodAuthor {
    String name
-   SaveAddress address
-   static hasMany = [books:SaveBook]
+   SavePersistentMethodAddress address
+   static hasMany = [books:SavePersistentMethodBook]
    static constraints = {
         address(nullable:true)
         name(size:1..255, blank:false)
@@ -329,10 +320,10 @@ class SaveAuthor {
 }
 
 @Entity
-class SaveAddress {
-    SaveAuthor author
+class SavePersistentMethodAddress {
+    SavePersistentMethodAuthor author
     String location
-    static belongsTo = SaveAuthor
+    static belongsTo = SavePersistentMethodAuthor
     static constraints = {
        author(nullable:true)
        location(blank:false)
@@ -340,17 +331,11 @@ class SaveAddress {
 }
 
 @Entity
-class SaveCustomValidation {
+class SavePersistentMethodCustomValidation {
     String title
 
     static constraints = {
         title(validator: { val, obj -> throw new IllegalStateException() })
     }
 }
-'''
-    }
 
-    void onTearDown() {
-        ConfigurationHolder.config = null
-    }
-}

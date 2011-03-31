@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -39,13 +41,14 @@ import org.springframework.web.context.ServletContextAware;
  * @since 0.5
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware, PluginManagerAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
     private UrlMappingEvaluator mappingEvaluator;
     private ServletContext servletContext;
+    private GrailsPluginManager pluginManager;
 
     public UrlMappingsHolder getObject() throws Exception {
         return urlMappingsHolder;
@@ -67,7 +70,10 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
 
-        mappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
+        final DefaultUrlMappingEvaluator defaultUrlMappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
+        defaultUrlMappingEvaluator.setPluginManager(pluginManager);
+        mappingEvaluator = defaultUrlMappingEvaluator;
+
 
         for (GrailsClass mapping : mappings) {
             GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
@@ -119,5 +125,9 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
+    }
+
+    public void setPluginManager(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
     }
 }

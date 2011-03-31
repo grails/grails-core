@@ -81,107 +81,32 @@ target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plu
  * of the plugin descriptor.
  */
 generatePluginXml = { File descriptor, boolean compilePlugin = true ->
-    // Load the plugin descriptor class and instantiate it so we can access its properties.
-    Class pluginClass
-    def plugin
+    def pluginBaseDir = descriptor.parentFile
+    def pluginProps = pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
+    pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
 
-    if (compilePlugin) {
-        try {
-            // Rather than compiling the descriptor via Ant, we just load
-            // the Groovy file into a GroovyClassLoader. We add the classes
-            // directory to the class loader in case it didn't exist before
-            // the associated plugin's sources were compiled.
-            def gcl = new GroovyClassLoader(classLoader)
-            gcl.addURL(grailsSettings.classesDir.toURI().toURL())
-
-            pluginClass = gcl.parseClass(descriptor)
-            plugin = pluginClass.newInstance()
-        }
-        catch (Throwable t) {
-            event("StatusError", [t.message])
-            t.printStackTrace(System.out)
-            ant.fail("Cannot instantiate plugin file")
-        }
-    }
-
+    if (pluginProps != null) {
+       if (pluginProps["grailsVersion"]) {
+          pluginGrailsVersion = pluginProps["grailsVersion"]
+       }
+    }	
+    def resourceList = pluginSettings.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
     // Work out what the name of the plugin is from the name of the descriptor file.
     pluginName = GrailsNameUtils.getPluginName(descriptor.name)
-    def pluginBaseDir = descriptor.parentFile
+
+
     // Remove the existing 'plugin.xml' if there is one.
     def pluginXml = new File(pluginBaseDir, "plugin.xml")
     pluginXml.delete()
 
     // Use MarkupBuilder with indenting to generate the file.
-    def writer = new IndentPrinter(new PrintWriter(new FileWriter(pluginXml)))
-    def xml = new MarkupBuilder(writer)
-
-    // Write the content!
-    def props = ['author','authorEmail','title','description','documentation']
-    def resourceList = pluginSettings.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
-
-    def rcComparator = [ compare: {a, b -> a.URI.compareTo(b.URI) } ] as Comparator
-    Arrays.sort(resourceList, rcComparator)
-
-    pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
-    def pluginProps = compilePlugin ? plugin.properties : pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
-    if(pluginProps != null) {
-        if (pluginProps["grailsVersion"]) {
-            pluginGrailsVersion = pluginProps["grailsVersion"]
-        }
-
-        xml.plugin(name:"${pluginName}",version:"${pluginProps.version}", grailsVersion:pluginGrailsVersion) {
-            for (p in props) {
-                if (pluginProps[p]) "${p}"(pluginProps[p])
-            }
-            xml.resources {
-                for (r in resourceList) {
-                    def matcher = r.URL.toString() =~ artefactPattern
-                    def name = matcher[0][1].replaceAll('/', /\./)
-                    xml.resource(name)
-                }
-            }
-            dependencies {
-                if (pluginProps["dependsOn"]) {
-                    for (d in pluginProps.dependsOn) {
-                        delegate.plugin(name:d.key, version:d.value)
-                    }
-                }
-            }
-
-            def docContext = DocumentationContext.instance
-            if (docContext) {
-                behavior {
-                    for (DocumentedMethod m in docContext.methods) {
-                        method(name:m.name, artefact:m.artefact, type:m.type?.name) {
-                            description m.text
-                            if (m.arguments) {
-                                for (arg in m.arguments) {
-                                    argument type:arg.name
-                                }
-                            }
-                        }
-                    }
-                    for (DocumentedMethod m in docContext.staticMethods) {
-                        'static-method'(name:m.name, artefact:m.artefact, type:m.type?.name) {
-                            description m.text
-                            if (m.arguments) {
-                                for (arg in m.arguments) {
-                                    argument type:arg.name
-                                }
-                            }
-                        }
-                    }
-                    for (DocumentedProperty p in docContext.properties) {
-                        property(name:p.name, type:p?.type?.name, artefact:p.artefact) {
-                            description p.text
-                        }
-                    }
-                }
-            }
-        }        
-    }
-
-    return plugin
+    def writer = new IndentPrinter(new PrintWriter(new FileWriter(pluginXml)))	
+	def generator = new org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator(pluginName, resourceList)
+	
+	pluginProps["type"] = descriptor.name - '.groovy'
+	generator.generatePluginXml(pluginProps, writer)
+	
+    return pluginProps
 }
 
 target(loadPluginsAsync:"Asynchronously loads plugins") {
@@ -192,7 +117,7 @@ target(loadPluginsAsync:"Asynchronously loads plugins") {
 target(loadPlugins:"Loads Grails' plugins") {
     if (!PluginManagerHolder.pluginManager) { // plugin manager already loaded?
 		PluginManagerHolder.inCreation = true
-		compConfig.setTargetDirectory(classesDir)
+		compConfig.setTargetDirectory(pluginClassesDir)
 		def unit = new CompilationUnit (compConfig , null , new GroovyClassLoader(classLoader))
 		def pluginFiles = pluginSettings.pluginDescriptors
 

@@ -1,12 +1,10 @@
 package org.codehaus.groovy.grails.validation;
 
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 
-/**
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+
+ /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class NullableConstraintTests extends GroovyTestCase {
@@ -15,8 +13,6 @@ class NullableConstraintTests extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
 
         gcl = new GroovyClassLoader()
         gcl.parseClass("""
@@ -59,10 +55,6 @@ class ProjectVersion {
         """)
     }
 
-    protected void tearDown() {
-        super.tearDown()
-        PluginManagerHolder.pluginManager = null
-    }
 
     void testNullableConstraint() {
 

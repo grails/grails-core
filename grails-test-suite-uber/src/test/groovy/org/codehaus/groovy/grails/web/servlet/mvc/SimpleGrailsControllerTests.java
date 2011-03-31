@@ -18,18 +18,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import grails.util.GrailsWebUtil;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.http.HttpServletResponse;
-
 import junit.framework.TestCase;
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -49,6 +38,9 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 /**
  * @author Steven Devijver
@@ -135,7 +127,6 @@ public class SimpleGrailsControllerTests extends TestCase {
         localContext.refresh();
 
         grailsApplication = (GrailsApplication)localContext.getBean("grailsApplication");
-        ApplicationHolder.setApplication(grailsApplication);
         GrailsRuntimeConfigurator rConfig = new GrailsRuntimeConfigurator(grailsApplication, localContext);
 
         MockServletContext servletContext = new MockServletContext();

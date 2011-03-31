@@ -5,10 +5,8 @@ import grails.spring.BeanBuilder
 import javax.sql.DataSource
 
 import org.apache.commons.dbcp.BasicDataSource
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
@@ -29,7 +27,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
             }
         """)
 
-        ConfigurationHolder.config = config
+        ga.config = config
         gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 
@@ -39,9 +37,8 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         DataSource dataSource = appCtx.getBean("dataSource")
         assert dataSource
 
-        def pluginManager = PluginManagerHolder.currentPluginManager()
+        configurator.pluginManager.shutdown()
 
-        pluginManager.shutdown()
     }
 
     void testShutdownH2DbDataSource() {
@@ -56,7 +53,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                 }
         ''')
 
-        ConfigurationHolder.config = config
+        ga.config = config
         gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
 
@@ -66,9 +63,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         DataSource dataSource = appCtx.getBean("dataSource")
         assert dataSource
 
-        def pluginManager = PluginManagerHolder.currentPluginManager()
-
-        pluginManager.shutdown()
+        configurator.pluginManager.shutdown()
     }
 
     void testDataSourcePluginOtherDriverWithUserAndPass() {

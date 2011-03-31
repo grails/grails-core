@@ -15,42 +15,25 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.PluginBuildSettings;
-
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * NOTE: Based on work done by the GSP standalone project
@@ -85,6 +68,7 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_CONTENT_TYPE = "CONTENT_TYPE";
     public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
     public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
+    public static final String DEFAULT_ENCODING = "UTF-8";
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -136,9 +120,9 @@ public class GroovyPageParser implements Tokens {
         "grails.util.GrailsUtil"
     };
     public static final String CONFIG_PROPERTY_DEFAULT_CODEC = "grails.views.default.codec";
-    private static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
-    private static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
-    private static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
+    public static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
+    public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
+    public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
 
     private static final String IMPORT_DIRECTIVE = "import";
     private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
@@ -147,7 +131,7 @@ public class GroovyPageParser implements Tokens {
     private static final String PAGE_DIRECTIVE = "page";
 
     private static final String TAGLIB_DIRECTIVE = "taglib";
-    private String gspEncoding;
+    private String gspEncoding = System.getProperty("file.encoding", "us-ascii");;
     private String pluginAnnotation;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
     private Map<String, String> jspTags = new HashMap<String, String>();
@@ -157,6 +141,8 @@ public class GroovyPageParser implements Tokens {
     private String defaultCodecDirectiveValue;
 
     private String filename;
+    private boolean enableSitemeshPreprocessing = true;
+    private File keepGeneratedDirectory;
 
     public String getContentType() {
         return contentType;
@@ -168,6 +154,14 @@ public class GroovyPageParser implements Tokens {
 
     public Map<String, String> getJspTags() {
         return jspTags;
+    }
+
+    public void setKeepGeneratedDirectory(File keepGeneratedDirectory) {
+        this.keepGeneratedDirectory = keepGeneratedDirectory;
+    }
+
+    public void setEnableSitemeshPreprocessing(boolean enableSitemeshPreprocessing) {
+        this.enableSitemeshPreprocessing = enableSitemeshPreprocessing;
     }
 
     class TagMeta {
@@ -190,29 +184,24 @@ public class GroovyPageParser implements Tokens {
     }
 
     @SuppressWarnings("rawtypes")
-    public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
-        Map config = ConfigurationHolder.getFlatConfig();
+    public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding) throws IOException {
         this.filename = filename;
+        this.gspEncoding = encoding;
 
-        // Get the GSP file encoding from Config, or fall back to system
-        // file.encoding if none set
-        Object gspEnc = config.get(CONFIG_PROPERTY_GSP_ENCODING);
-        if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-            gspEncoding = gspEnc.toString();
-        }
-        else {
-            gspEncoding = System.getProperty("file.encoding", "us-ascii");
-        }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("GSP file encoding set to: " + gspEncoding);
+        if (filename != null && BuildSettingsHolder.getSettings() != null) {
+            PluginBuildSettings pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
+            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+            if (info != null) {
+                pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
+                    info.getVersion() + "')";
+            }
         }
-
         String gspSource = readStream(in);
 
         Map<String, String> directives = parseDirectives(gspSource);
 
-        if (isSitemeshPreprocessingEnabled(config, directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
+        if (isSitemeshPreprocessingEnabled(directives.get(SITEMESH_PREPROCESS_DIRECTIVE))) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Preprocessing " + uri + " for sitemesh. Replacing head, title, meta and body elements with sitemesh:capture*.");
             }
@@ -227,17 +216,18 @@ public class GroovyPageParser implements Tokens {
         makeSourceName(filename);
     }
 
-    public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
-        // TODO: Deprecate PluginBuildSettingsHolder and inject via Spring
+    @SuppressWarnings("rawtypes")
+    public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
+        this(name, uri, filename, in, "UTF-8");
+    }
 
-        if (filename != null) {
-            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
-            if (info != null) {
-                pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
-                    info.getVersion() + "')";
-            }
+    public void setGspEncoding(String gspEncoding) {
+        this.gspEncoding = gspEncoding;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("GSP file encoding set to: " + gspEncoding);
         }
     }
+
 
     private Map<String, String> parseDirectives(String gspSource) {
         Map <String, String> result=new HashMap<String, String>();
@@ -257,24 +247,11 @@ public class GroovyPageParser implements Tokens {
     }
 
     @SuppressWarnings("rawtypes")
-    private boolean isSitemeshPreprocessingEnabled(Map config, String gspFilePreprocessDirective) {
-        Object sitemeshPreprocessEnabled = config.get(CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
+    private boolean isSitemeshPreprocessingEnabled(String gspFilePreprocessDirective) {
         if (gspFilePreprocessDirective != null) {
-            sitemeshPreprocessEnabled=gspFilePreprocessDirective;
+            return BooleanUtils.toBoolean(String.valueOf(gspFilePreprocessDirective).trim());
         }
-        if (sitemeshPreprocessEnabled == null || (sitemeshPreprocessEnabled instanceof Boolean && ((Boolean) sitemeshPreprocessEnabled).booleanValue())) {
-            return true;
-        }
-
-        if (sitemeshPreprocessEnabled instanceof Number && ((Number)sitemeshPreprocessEnabled).intValue() != 0) {
-            return true;
-        }
-
-        if (BooleanUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim())) {
-            return true;
-        }
-
-        return false;
+        return enableSitemeshPreprocessing;
     }
 
     public int[] getLineNumberMatrix() {
@@ -350,15 +327,8 @@ public class GroovyPageParser implements Tokens {
     }
 
     private File resolveKeepGeneratedDirectory() {
-        File keepGeneratedDirectory = null;
 
-        Object keepDirObj = ConfigurationHolder.getFlatConfig().get(CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR);
-        if (keepDirObj instanceof File) {
-            keepGeneratedDirectory = ((File) keepDirObj);
-        }
-        else if (keepDirObj != null) {
-            keepGeneratedDirectory = new File(String.valueOf(keepDirObj));
-        }
+
         if (keepGeneratedDirectory != null && !keepGeneratedDirectory.isDirectory()) {
             LOG.warn("The directory specified with " + CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR +
                     " config parameter doesn't exist or isn't a readable directory. Absolute path: '" +

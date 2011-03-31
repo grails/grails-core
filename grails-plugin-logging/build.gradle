@@ -1,6 +1,7 @@
 dependencies {
     compile 'log4j:log4j:1.2.16'
     compile project(":grails-core"),
-            project(':grails-bootstrap')
+            project(':grails-bootstrap'),
+            project(':grails-web')
 }
 jar.appendix = 'plugin-logging'

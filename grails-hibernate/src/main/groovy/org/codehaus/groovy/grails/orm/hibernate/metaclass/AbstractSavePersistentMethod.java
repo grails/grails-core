@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -196,7 +195,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
             shouldFlush = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FLUSH, ((Map) arguments[0]));
         }
         else {
-            final Map config = ConfigurationHolder.getFlatConfig();
+            final Map config = application.getFlatConfig();
             shouldFlush = Boolean.TRUE == config.get(AUTO_FLUSH_CONFIG_PROPERTY);
         }
         return shouldFlush;

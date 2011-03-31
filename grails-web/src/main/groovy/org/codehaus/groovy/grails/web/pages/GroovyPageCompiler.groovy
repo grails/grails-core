@@ -98,19 +98,19 @@ class GroovyPageCompiler {
         //def className = generateJavaName(gspfile.name)
 
         def classFile = new File(new File(targetDir, packageDir), "${className}.class")
+        def packageName = packageDir.replace('/','.')
+        def fullClassName
+        if (packageName) {
+            fullClassName = packageName + '.' + className
+        }
+        else {
+            fullClassName = className
+        }
 
         // compile check
         if (gspfile.exists() && (!classFile.exists() || gspfile.lastModified() > classFile.lastModified())) {
             LOG.debug("Compiling gsp ${gspfile}...")
 
-            def packageName = packageDir.replace('/','.')
-            def fullClassName
-            if (packageName) {
-                fullClassName = packageName + '.' + className
-            }
-            else {
-                fullClassName = className
-            }
 
             def gspgroovyfile = new File(new File(generatedGroovyPagesDirectory, packageDir), className + ".groovy")
             gspgroovyfile.getParentFile().mkdirs()
@@ -140,6 +140,10 @@ class GroovyPageCompiler {
                 unit.compile()
             }
         }
+        else {
+           compileGSPRegistry[viewuri] = fullClassName
+        }
+
 
         // write the view registry to a properties file (this is read by GroovyPagesTemplateEngine at runtime)
         File viewregistryFile = new File(targetDir, "gsp/views.properties")

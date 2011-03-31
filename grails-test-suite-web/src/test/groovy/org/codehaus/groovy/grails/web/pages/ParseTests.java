@@ -1,18 +1,23 @@
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.GrailsWebUtil;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
+import junit.framework.TestCase;
+import org.apache.commons.io.IOUtils;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
-import junit.framework.TestCase;
-
-import org.apache.commons.io.IOUtils;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import java.util.Map;
 
 /**
  * Tests the GSP parser.  This can detect issues caused by improper
@@ -51,14 +56,6 @@ public class ParseTests extends TestCase {
         return result.toString();
     }
 
-    @SuppressWarnings("unused")
-    private void configureKeepgen() {
-        File tempdir=new File(System.getProperty("java.io.tmpdir"),"gspgen");
-        tempdir.mkdir();
-        ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.keepgenerateddir = \"" +
-                tempdir.getAbsolutePath() + "\"");
-        ConfigurationHolder.setConfig( config);
-    }
 
     public void testParse() throws Exception {
         ParsedResult result = parseCode("myTest1", "<div>hi</div>");
@@ -112,7 +109,7 @@ public class ParseTests extends TestCase {
         fail("Expected parse exception not thrown");
     }
 
-    public void testParseWithUTF8() throws IOException {
+    public void testParseWithUTF8() throws Exception {
         // This is some unicode Chinese (who knows what it says!)
         String src = "Chinese text: \u3421\u3437\u343f\u3443\u3410\u3405\u38b3\u389a\u395e\u3947\u3adb\u3b5a\u3b67";
         // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
@@ -121,13 +118,13 @@ public class ParseTests extends TestCase {
 
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"UTF-8\"");
 
-        ConfigurationHolder.setConfig( config);
+        buildMockRequest(config);
         ParsedResult output = null;
         try {
             output = parseCode("myTest4", src);
         }
         finally {
-            ConfigurationHolder.setConfig(null);
+            RequestContextHolder.setRequestAttributes(null);
         }
         String expected = makeImports() +
             "\n" +
@@ -147,6 +144,19 @@ public class ParseTests extends TestCase {
         assertEquals(src, output.htmlParts[0]);
     }
 
+    private GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
+        MockApplicationContext appCtx = new MockApplicationContext();
+        appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService());
+
+        DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication();
+        grailsApplication.setConfig(config);
+        appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
+        appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
+        appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
+        return GrailsWebUtil.bindMockWebRequest(appCtx);
+    }
+
+
     public void testParseWithLocalEncoding() throws IOException {
         String src = "This is just plain ASCII to make sure test works on all platforms";
         // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
@@ -155,14 +165,8 @@ public class ParseTests extends TestCase {
 
         ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"\"");
 
-        ConfigurationHolder.setConfig( config);
         ParsedResult output = null;
-        try {
             output = parseCode("myTest5", src);
-        }
-        finally {
-            ConfigurationHolder.setConfig(null);
-        }
         String expected = makeImports() +
             "\n" +
             "class myTest5 extends GroovyPage {\n" +
@@ -199,13 +203,15 @@ public class ParseTests extends TestCase {
 
     public ParsedResult parseCode(String uri, String gsp) throws IOException {
         // Simulate what the parser does so we get it in the encoding expected
-        Object enc = ConfigurationHolder.getFlatConfig().get("grails.views.gsp.encoding");
+        final Map config = GrailsWebUtil.currentFlatConfiguration();
+        Object enc = config.get("grails.views.gsp.encoding");
         if ((enc == null) || (enc.toString().trim().length() == 0)) {
             enc = System.getProperty("file.encoding", "us-ascii");
         }
 
         InputStream gspIn = new ByteArrayInputStream(gsp.getBytes(enc.toString()));
-        GroovyPageParser parse = new GroovyPageParser(uri, uri, uri, gspIn);
+        GroovyPageParser parse = new GroovyPageParser(uri, uri, uri, gspIn, enc.toString());
+
         InputStream in = parse.parse();
         ParsedResult result = new ParsedResult();
         result.parser = parse;

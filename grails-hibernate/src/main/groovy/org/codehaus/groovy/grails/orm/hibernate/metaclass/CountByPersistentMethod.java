@@ -15,11 +15,6 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.Closure;
-
-import java.sql.SQLException;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -29,6 +24,10 @@ import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Dynamic method that allows counting the values of the specified property names
@@ -58,7 +57,7 @@ public class CountByPersistentMethod extends AbstractClausedStaticPersistentMeth
         return getHibernateTemplate().execute(new HibernateCallback<Object>() {
 
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                final Criteria crit = getCriteria(session, additionalCriteria, clazz);
+                final Criteria crit = getCriteria(application, session, additionalCriteria, clazz);
                 crit.setProjection(Projections.rowCount());
                 populateCriteriaWithExpressions(crit, operator, expressions);
                 return crit.uniqueResult();

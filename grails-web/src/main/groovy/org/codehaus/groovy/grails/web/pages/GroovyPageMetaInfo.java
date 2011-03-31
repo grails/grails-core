@@ -31,11 +31,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.springframework.core.io.FileSystemResource;
@@ -49,7 +48,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Lari Hotari
  * @since 0.5
  */
-class GroovyPageMetaInfo {
+class GroovyPageMetaInfo implements GrailsApplicationAware{
 
     private static final Log LOG=LogFactory.getLog(GroovyPageMetaInfo.class);
     private TagLibraryLookup tagLibraryLookup;
@@ -74,6 +73,7 @@ class GroovyPageMetaInfo {
     private long latestLastModifiedCheck=0L;
     public static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
     private static final long LASTMODIFIED_CHECK_GRANULARITY =  Long.getLong("grails.gsp.reload.granularity", 2000).longValue();
+    private GrailsApplication grailsApplication;
 
     public GroovyPageMetaInfo() {
         latestLastModifiedCheck=System.currentTimeMillis();
@@ -100,7 +100,7 @@ class GroovyPageMetaInfo {
     @SuppressWarnings("rawtypes")
     public void initCodec() {
         if (codecName == null) {
-            Map config = ConfigurationHolder.getFlatConfig();
+            Map config = grailsApplication != null ? grailsApplication.getFlatConfig() : null;
             if (config != null) {
                 Object o = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
                 if (o != null) {
@@ -110,13 +110,12 @@ class GroovyPageMetaInfo {
         }
 
         GrailsClass codecGrailsClass = null;
-        GrailsApplication app = ApplicationHolder.getApplication();
         if (codecName != null) {
-            if (app != null) {
-                codecGrailsClass = app.getArtefactByLogicalPropertyName(
+            if (grailsApplication != null) {
+                codecGrailsClass = grailsApplication.getArtefactByLogicalPropertyName(
                         CodecArtefactHandler.TYPE, codecName);
                 if (codecGrailsClass == null)
-                    codecGrailsClass = app.getArtefactByLogicalPropertyName(
+                    codecGrailsClass = grailsApplication.getArtefactByLogicalPropertyName(
                             CodecArtefactHandler.TYPE, codecName.toUpperCase());
             }
         }
@@ -386,5 +385,9 @@ class GroovyPageMetaInfo {
 
     public boolean isPrecompiledMode() {
         return precompiledMode;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 }

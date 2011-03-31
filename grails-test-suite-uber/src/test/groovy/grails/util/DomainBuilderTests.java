@@ -16,8 +16,6 @@ package grails.util;
 
 import groovy.util.GroovyTestCase;
 import groovy.util.ObjectGraphBuilder;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +28,6 @@ public class DomainBuilderTests extends GroovyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        ApplicationHolder.setApplication(new DefaultGrailsApplication());
-
         builder = new DomainBuilder();
         childPropertySetter = builder.getChildPropertySetter();
 

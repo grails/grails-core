@@ -161,7 +161,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     private List<GrailsDomainClass> resolveAllDomainClassesInHierarchy() {
         List<GrailsDomainClass> allClasses = new ArrayList<GrailsDomainClass>();
-        GrailsApplication application = ApplicationHolder.getApplication();
+        GrailsApplication application = domainClass.getGrailsApplication();
         GrailsDomainClass currentDomainClass = domainClass;
         while (currentDomainClass != null) {
             allClasses.add(currentDomainClass);

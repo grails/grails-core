@@ -15,13 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import groovy.lang.Closure;
-
-import java.sql.SQLException;
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
@@ -29,6 +23,12 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The "listOrderBy*" static persistent method. Allows ordered listing of instances based on their properties.
@@ -42,9 +42,11 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod {
 
     private static final String METHOD_PATTERN = "(listOrderBy)(\\w+)";
+    private GrailsApplication application;
 
-    public ListOrderByPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
+    public ListOrderByPersistentMethod(GrailsApplication grailsApplication, SessionFactory sessionFactory, ClassLoader classLoader) {
         super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));
+        this.application = grailsApplication;
     }
 
     /* (non-Javadoc)
@@ -62,13 +64,13 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                Criteria crit = getCriteria(session, additionalCriteria, clazz);
+                Criteria crit = getCriteria(application, session, additionalCriteria, clazz);
 
                 if (arguments != null && arguments.length > 0) {
                     if (arguments[0] instanceof Map) {
                         Map argMap = (Map)arguments[0];
                         argMap.put(GrailsHibernateUtil.ARGUMENT_SORT,propertyName);
-                        GrailsHibernateUtil.populateArgumentsForCriteria(clazz, crit,argMap);
+                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit,argMap);
                     }
                     else {
                         crit.addOrder(Order.asc(propertyName));

@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 buildscript {
     repositories {
         mavenCentral()
@@ -13,6 +15,10 @@ apply plugin: 'idea'
 grailsVersion = '1.4.0.BUILD-SNAPSHOT'
 antVersion = "1.7.1"
 springVersion = "3.0.3.RELEASE"
+ivyVersion = "2.2.0"
+gantVersion = "1.9.4-SNAPSHOT"
+groovyVersion = "1.8.0-rc-1"
+
 archivesBaseName = 'grails'
 version = grailsVersion
 
@@ -27,6 +33,7 @@ subprojects { project ->
     targetCompatibility = "1.5"
     archivesBaseName = 'grails'
     version = grailsVersion
+	group = "org.grails"
 
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
@@ -57,7 +64,7 @@ subprojects { project ->
         if(System.getProperty('groovy.jar')) {
             groovy files(System.getProperty('groovy.jar'))
         } else {
-            groovy "org.codehaus.groovy:groovy-all:1.8.0-rc-1"
+            groovy "org.codehaus.groovy:groovy-all:${groovyVersion}"
         }
 
         // Jars in lib
@@ -122,6 +129,9 @@ subprojects { project ->
 
         // Testing
         testCompile 'junit:junit:4.8.1'
+        testCompile('org.spockframework:spock-core:0.5-groovy-1.8') {
+            transitive = false
+        }
 
     }
 
@@ -170,5 +180,37 @@ task clean << {
 }
 
 task install(dependsOn:[populateDependencies])
+
+
+install.doLast {
+    copy {
+        from('src/resources/tests')
+        into('lib')
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+    }
+
+    copy {
+        from("src/resources/bash")
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        fileMode = 0755
+        into "bin"
+
+    }
+    // the fileMode property above should take care of the chmod work, but
+    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
+    ant.chmod(dir: 'bin', perm: '755', includes: '*')
+    
+    copy {
+        from("src/resources/conf")
+        into "conf"
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
+        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
+        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
+    }
+}
+
 
 task assemble(dependsOn:zipDist)

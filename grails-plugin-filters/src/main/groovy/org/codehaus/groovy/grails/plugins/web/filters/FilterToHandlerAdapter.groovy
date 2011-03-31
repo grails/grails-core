@@ -20,7 +20,6 @@ import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.NullView
@@ -31,13 +30,15 @@ import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * Adapter between a FilterConfig object and a Spring HandlerInterceptor.
  * @author mike
  * @author Graeme Rocher
  */
-class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
+class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, GrailsApplicationAware {
     def filterConfig
     def configClass
 
@@ -53,6 +54,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
     def invertRule // invert rule
     def useRegexFind // use find instead of match
     def dependsOn = [] // any filters that need to be processed before this one
+    GrailsApplication grailsApplication
 
     void afterPropertiesSet() {
         def scope = filterConfig.scope
@@ -216,7 +218,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
             }
             if (matched && filterConfig.scope.action) {
                 if (!actionName && controllerName) {
-                    def controllerClass = ApplicationHolder.application?.getArtefactByLogicalPropertyName(
+                    def controllerClass = grailsApplication?.getArtefactByLogicalPropertyName(
                        DefaultGrailsControllerClass.CONTROLLER, controllerName)
                     actionName = controllerClass?.getDefaultAction()
                 }
@@ -237,5 +239,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean {
 
     String toString() {
         return "FilterToHandlerAdapter[$filterConfig, $configClass]"
+    }
+
+    void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication
     }
 }

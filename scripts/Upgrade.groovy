@@ -97,6 +97,12 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         }
         delete(dir: "${basedir}/tmp", failonerror: false)
 
+		if(!new File("$grailsHome/src/war").exists()) {
+			if(new File("${grailsHome}/grails-resources").exists()) {
+				grailsHome = new File("${grailsHome}/grails-resources")
+			}
+		}
+
         copy(todir: "${basedir}/web-app") {
             fileset(dir: "${grailsHome}/src/war") {
                 include(name: "**/**")

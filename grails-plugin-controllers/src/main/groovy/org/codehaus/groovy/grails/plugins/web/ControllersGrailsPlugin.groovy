@@ -212,7 +212,7 @@ class ControllersGrailsPlugin {
             }
         }
 
-        def controllerApi = new ControllersApi(pluginManager, ctx)
+        def controllerApi = new ControllersApi(application, pluginManager, ctx)
 
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi controllerApi

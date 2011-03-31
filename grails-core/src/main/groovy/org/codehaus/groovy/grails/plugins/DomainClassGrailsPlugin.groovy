@@ -15,17 +15,18 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.ClosureToMapPopulator
 import grails.util.GrailsUtil
-
-import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
-
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -40,6 +41,14 @@ class DomainClassGrailsPlugin {
     def loadAfter = ['controllers']
 
     def doWithSpring = {
+
+        def config = application.config
+        def defaultConstraintsMap = getDefaultConstraints(config)
+
+        "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
+             defaultConstraints = defaultConstraintsMap
+        }
+
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
             "${dc.fullName}"(dc.clazz) { bean ->
@@ -66,14 +75,30 @@ class DomainClassGrailsPlugin {
         }
     }
 
+    private def getDefaultConstraints(ConfigObject config) {
+        def constraints = config?.grails?.gorm?.default?.constraints
+        def defaultConstraintsMap = null
+        if (constraints instanceof Closure) {
+            defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
+        }
+        return defaultConstraintsMap
+    }
+
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx->
         enhanceDomainClasses(application, ctx)
     }
 
-    def onConfigChange = {
-        application.domainClasses*.refreshConstraints()
+    def onConfigChange = { event ->
+        def beans = beans {
+            def defaultConstraintsMap = getDefaultConstraints(event.source)
+            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
+                 defaultConstraints = defaultConstraintsMap
+            }
+        }
+        beans.registerBeans(event.ctx)
+        event.application.refreshConstraints()
     }
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {

@@ -55,6 +55,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     private final String propertyName;
     private final String logicalPropertyName;
     private final ClassPropertyFetcher classPropertyFetcher;
+    protected GrailsApplication grailsApplication;
 
     /**
      * Used by all child classes to create a new instance and get the name right.
@@ -79,6 +80,14 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             logicalPropertyName = GrailsNameUtils.getPropertyNameRepresentation(name);
         }
         classPropertyFetcher = ClassPropertyFetcher.forClass(clazz);
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+    }
+
+    public GrailsApplication getGrailsApplication() {
+        return grailsApplication;
     }
 
     public String getShortName() {

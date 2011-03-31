@@ -17,27 +17,28 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 
-/**
+ /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
  *
  * @author Graeme Rocher
  */
-class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
+class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware {
 
     ApplicationContext applicationContext
     GrailsPluginManager pluginManager
+    GrailsApplication grailsApplication
 
     def grailsUrlMappingsHolder
 
@@ -107,7 +108,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
      * Get the declared URL of the server from config, or guess at localhost for non-production.
      */
     String makeServerURL() {
-        def u = ConfigurationHolder.config?.grails?.serverURL
+        def u = grailsApplication?.config?.grails?.serverURL
         if (!u) {
             // Leave it null if we're in production so we can throw
             if (Environment.current != Environment.PRODUCTION) {
@@ -392,4 +393,5 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean {
         }
         out << Metadata.current[attrs.name]
     }
+
 }

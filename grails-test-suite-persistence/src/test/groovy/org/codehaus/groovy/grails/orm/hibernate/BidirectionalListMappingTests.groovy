@@ -1,31 +1,15 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-
+import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.hibernate.FetchMode
 import org.hibernate.engine.CascadeStyle
-import org.hibernate.mapping.Backref
-import org.hibernate.mapping.Column
-import org.hibernate.mapping.DependantValue
-import org.hibernate.mapping.IndexBackref
-import org.hibernate.mapping.KeyValue
-import org.hibernate.mapping.List
-import org.hibernate.mapping.ManyToOne
-import org.hibernate.mapping.OneToMany
-import org.hibernate.mapping.PersistentClass
-import org.hibernate.mapping.Property
-import org.hibernate.mapping.PropertyGeneration
-import org.hibernate.mapping.SimpleValue
-import org.hibernate.mapping.Table
 import org.hibernate.type.IntegerType
 import org.hibernate.type.LongType
 import org.hibernate.type.ManyToOneType
+import org.hibernate.mapping.*
 
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.0
  *
@@ -38,8 +22,6 @@ class BidirectionalListMappingTests extends GroovyTestCase {
     protected void setUp() {
         ExpandoMetaClass.enableGlobally()
 
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
 
         def gcl = new GroovyClassLoader()
         gcl.parseClass '''
@@ -71,7 +53,6 @@ class TestFaqElement {
 
     protected void tearDown() {
         super.tearDown()
-        PluginManagerHolder.pluginManager = null
     }
 
     void testIndexBackrefMapping() {

@@ -16,12 +16,14 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Binding;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 
 import java.util.Map;
 
 public class GroovyPageBinding extends Binding {
 
     private String pluginContextPath;
+    private GrailsPlugin plugin;
 
     public GroovyPageBinding() {
         super();
@@ -59,5 +61,13 @@ public class GroovyPageBinding extends Binding {
     @Override
     public void setProperty(String property, Object newValue) {
         setVariable(property, newValue);
+    }
+
+    public void setPagePlugin(GrailsPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    public GrailsPlugin getPagePlugin() {
+        return this.plugin;
     }
 }

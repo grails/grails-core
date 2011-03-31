@@ -4,14 +4,10 @@ import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
-
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;

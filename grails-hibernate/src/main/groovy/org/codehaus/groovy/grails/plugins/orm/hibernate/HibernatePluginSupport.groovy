@@ -17,14 +17,10 @@ package org.codehaus.groovy.grails.plugins.orm.hibernate
 
 import grails.orm.HibernateCriteriaBuilder
 import grails.util.GrailsUtil
-
 import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -41,25 +37,15 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
-import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-
-import org.hibernate.Criteria
-import org.hibernate.EmptyInterceptor
-import org.hibernate.FlushMode
-import org.hibernate.LockMode
-import org.hibernate.Session
-import org.hibernate.SessionFactory
 import org.hibernate.cfg.Environment
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.proxy.HibernateProxy
-
 import org.springframework.beans.BeanWrapperImpl
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
@@ -69,11 +55,18 @@ import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
-import org.springframework.orm.hibernate3.*
+import org.springframework.orm.hibernate3.HibernateAccessor
+import org.springframework.orm.hibernate3.HibernateCallback
+import org.springframework.orm.hibernate3.HibernateTemplate
+import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionCallback
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.validation.Validator
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.hibernate.*
+import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -93,6 +86,10 @@ class HibernatePluginSupport {
     static doWithSpring = {
         def factory = new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(), UniqueConstraint)
         ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory)
+
+        if (getSpringConfig().containsBean("constraintsEvaluator")) {
+            constraintsEvaluator.constraintsEvaluatorClass = HibernateConstraintsEvaluator.class
+        }
 
         for (GrailsDomainClass dc in application.domainClasses) {
             "${dc.fullName}Validator"(HibernateDomainClassValidator) {
@@ -365,6 +362,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             def initDomainClassOnce = initializeDomainOnceClosure.curry(dc)
             // these need to be eagerly initialised here, otherwise Groovy's findAll from the DGM is called
             def findAllMethod = new FindAllPersistentMethod(sessionFactory, application.classLoader)
+            findAllMethod.grailsApplication = application
             mc.static.findAll = {->
                 findAllMethod.invoke(mc.javaClass, "findAll", [] as Object[])
             }
@@ -448,7 +446,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                               new FindByPersistentMethod(application, sessionFactory, classLoader),
                               new FindByBooleanPropertyPersistentMethod(application, sessionFactory, classLoader),
                               new CountByPersistentMethod(application, sessionFactory, classLoader),
-                              new ListOrderByPersistentMethod(sessionFactory, classLoader)]
+                              new ListOrderByPersistentMethod(application, sessionFactory, classLoader)]
 
         // This is the code that deals with dynamic finders. It looks up a static method, if it exists it invokes it
         // otherwise it trys to match the method invocation to one of the dynamic methods. If it matches it will
@@ -554,6 +552,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
 
         ClassLoader classLoader = application.classLoader
         def findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
+		findAllMethod.grailsApplication = application
         metaClass.static.findAll = {String query ->
             findAllMethod.invoke(domainClassType, "findAll", [query] as Object[])
         }
@@ -615,7 +614,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             executeUpdateMethod.invoke(domainClassType, "executeUpdate", [query, argMap] as Object[])
         }
 
-        def listMethod = new ListPersistentMethod(sessionFactory, classLoader)
+        def listMethod = new ListPersistentMethod(application, sessionFactory, classLoader)
         metaClass.static.list = {-> listMethod.invoke(domainClassType, "list", [] as Object[])}
         metaClass.static.list = {Map args -> listMethod.invoke(domainClassType, "list", [args] as Object[])}
         metaClass.static.findWhere = {Map query ->
@@ -681,12 +680,19 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             } as HibernateCallback) == 1
         }
 
-        metaClass.static.createCriteria = {-> new HibernateCriteriaBuilder(domainClassType, sessionFactory)}
+        metaClass.static.createCriteria = {->
+            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
+            builder.grailsApplication = application
+            return builder
+        }
         metaClass.static.withCriteria = {Closure callable ->
-            new HibernateCriteriaBuilder(domainClassType, sessionFactory).invokeMethod("doCall", callable)
+            def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
+            builder.grailsApplication = application
+            builder.invokeMethod("doCall", callable)
         }
         metaClass.static.withCriteria = {Map builderArgs, Closure callable ->
             def builder = new HibernateCriteriaBuilder(domainClassType, sessionFactory)
+            builder.grailsApplication = application
             def builderBean = new BeanWrapperImpl(builder)
             for (entry in builderArgs) {
                 if (builderBean.isWritableProperty(entry.key)) {
@@ -833,7 +839,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             try {
                 template.execute({Session session ->
                     session.delete obj
-                    if (this.shouldFlush()) {
+                    if (this.shouldFlush(application)) {
                         session.flush()
                     }
                 } as HibernateCallback)
@@ -845,7 +851,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         metaClass.delete = { Map args ->
             def obj = delegate
             template.delete obj
-            if (shouldFlush(args)) {
+            if (shouldFlush(application, args)) {
                 try {
                     template.flush()
                 }
@@ -1009,13 +1015,13 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         return value
     }
 
-    static shouldFlush(Map map = [:]) {
+    static shouldFlush(GrailsApplication application, Map map = [:]) {
         def shouldFlush
 
         if (map?.containsKey('flush')) {
             shouldFlush = Boolean.TRUE == map.flush
         } else {
-            def config = ConfigurationHolder.flatConfig
+            def config = application.flatConfig
             shouldFlush = Boolean.TRUE == config.get('grails.gorm.autoFlush')
         }
         return shouldFlush

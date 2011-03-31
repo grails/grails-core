@@ -14,9 +14,10 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+
+import java.util.Map;
 
 /**
  * Evaluates and returns constraints
@@ -28,6 +29,7 @@ public interface ConstraintsEvaluator {
 
     String PROPERTY_NAME = "constraints";
     String CONSTRAINTS_GROOVY_SCRIPT = "Constraints.groovy";
+    String BEAN_NAME = "org.grails.beans.constraintsEvaluator";
 
     /**
      * The default constraints to use
@@ -50,4 +52,22 @@ public interface ConstraintsEvaluator {
      * @return A map of constrained properties
      */
     Map<String, ConstrainedProperty> evaluate(GrailsDomainClass cls);
+
+    /**
+     * Evaluate constraints for the given object and properties
+     *
+     * @param object The object
+     * @param properties The domain class properties
+     * @return A map of constraints
+     */
+    Map<String, ConstrainedProperty> evaluate(Object object, GrailsDomainClassProperty[] properties);
+
+    /**
+     * Evaluate constraints for the given Class and properties
+     *
+     * @param cls The object
+     * @param properties The domain class properties
+     * @return A map of constraints
+     */
+    Map<String, ConstrainedProperty> evaluate(Class<?> cls, GrailsDomainClassProperty[] properties);
 }

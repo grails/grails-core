@@ -20,6 +20,7 @@ class BuildSettingsTests extends GroovyTestCase {
 
         userHome = System.getProperty("user.home")
         version = props.getProperty("grails.version")
+        MockBuildSettings.version = version
         defaultWorkPath = new File(System.getProperty("user.home") + "/.grails/" + version)
 
         savedSystemProps = new HashMap()
@@ -39,7 +40,7 @@ class BuildSettingsTests extends GroovyTestCase {
 
     void testDefaultConstructor() {
         def cwd = new File(".").canonicalFile
-        def settings = new BuildSettings()
+        def settings = new MockBuildSettings()
 
         // Core properties first.
         assertEquals userHome, settings.userHome.path
@@ -103,7 +104,7 @@ class BuildSettingsTests extends GroovyTestCase {
             new File(grailsHome, "lib").mkdir()
             new File(grailsHome, "dist").mkdir()
 
-            def settings = new BuildSettings(new File("my-grails"))
+            def settings = new MockBuildSettings(new File("my-grails"))
 
             // Core properties first.
             assertEquals userHome, settings.userHome.path
@@ -131,7 +132,7 @@ class BuildSettingsTests extends GroovyTestCase {
         setSystemProperty("grails.project.work.dir", "work")
         setSystemProperty("grails.project.plugins.dir", "$userHome/my-plugins")
 
-        def settings = new BuildSettings()
+        def settings = new MockBuildSettings()
 
         // Project paths.
         assertEquals defaultWorkPath, settings.grailsWorkDir
@@ -144,7 +145,7 @@ class BuildSettingsTests extends GroovyTestCase {
     }
 
     void testExplicitValues() {
-        def settings = new BuildSettings()
+        def settings = new MockBuildSettings()
         settings.grailsWorkDir = new File("workDir")
         settings.projectWorkDir = new File("projectDir")
         settings.projectPluginsDir = new File("target/pluginsDir")
@@ -206,7 +207,7 @@ class BuildSettingsTests extends GroovyTestCase {
     }
 
     void testSetBaseDir() {
-        def settings = new BuildSettings()
+        def settings = new MockBuildSettings()
         settings.baseDir = new File("base/dir")
 
         assertEquals new File("base/dir"), settings.baseDir
@@ -223,7 +224,7 @@ class BuildSettingsTests extends GroovyTestCase {
         setSystemProperty("grails.project.work.dir", "work")
         setSystemProperty("grails.project.plugins.dir", "$userHome/my-plugins")
 
-        def settings = new BuildSettings()
+        def settings = new MockBuildSettings()
         settings.rootLoader = new URLClassLoader(new URL[0], getClass().classLoader)
         settings.loadConfig(new File("test/resources/grails-app/conf/BuildConfig.groovy"))
 
@@ -241,7 +242,7 @@ class BuildSettingsTests extends GroovyTestCase {
         setSystemProperty("grails.project.work.dir", "work")
         setSystemProperty("grails.project.plugins.dir", "$userHome/my-plugins")
 
-        def settings = new BuildSettings()
+        def settings = new MockBuildSettings()
         settings.loadConfig(new File("test/BuildConfig.groovy"))
 
         // Project paths.
@@ -310,7 +311,23 @@ class BuildSettingsTests extends GroovyTestCase {
         }
     }
 }
+class MockBuildSettings extends BuildSettings {
 
+    MockBuildSettings() {
+    }
+
+    MockBuildSettings(File grailsHome) {
+        super(grailsHome)
+    }
+
+    static version
+
+    @Override protected loadBuildPropertiesFromClasspath(Properties buildProps) {
+        buildProps['grails.version'] = version
+    }
+
+
+}
 class BuildSettingsTestsGrailsBuildListener implements GrailsBuildListener {
     void receiveGrailsBuildEvent(String name, Object[] args) {}
 }

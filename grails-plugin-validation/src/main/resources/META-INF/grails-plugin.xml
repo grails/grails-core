@@ -1,0 +1,3 @@
+<plugin name='validation'>
+  <type>org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin</type>
+</plugin>

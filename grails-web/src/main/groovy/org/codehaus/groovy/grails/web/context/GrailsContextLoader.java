@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
-import java.security.AccessControlException;
-
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
@@ -24,16 +22,13 @@ import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ApplicationContext;
@@ -41,6 +36,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
+import java.security.AccessControlException;
 
 /**
  * @author graemerocher
@@ -111,7 +109,12 @@ public class GrailsContextLoader extends ContextLoader {
             }
         }
 
-        GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+        WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        GrailsPluginManager pluginManager = null;
+        if(ctx.containsBean(GrailsPluginManager.BEAN_NAME)) {
+            pluginManager = ctx.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+        }
+
         if (pluginManager != null) {
             try {
                 pluginManager.shutdown();
@@ -121,7 +124,7 @@ public class GrailsContextLoader extends ContextLoader {
                 LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
             }
         }
-        WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+
         ConfigurableApplicationContext parent = ctx != null ? (ConfigurableApplicationContext) ctx.getParent() : null;
 
         super.closeWebApplicationContext(servletContext);
@@ -138,11 +141,10 @@ public class GrailsContextLoader extends ContextLoader {
             // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
         }
 
-        ApplicationHolder.setApplication(null);
-        ServletContextHolder.setServletContext(null);
         PluginManagerHolder.setPluginManager(null);
         ConfigurationHolder.setConfig(null);
         ExpandoMetaClass.disableGlobally();
+        MimeType.reset();
         application = null;
     }
 }

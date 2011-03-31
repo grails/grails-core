@@ -15,15 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.util.BuildSettings;
-import grails.util.PluginBuildSettings;
-
-import java.io.File;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -32,6 +23,12 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.web.context.ServletContextAware;
+
+import java.io.File;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -276,6 +273,16 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      */
     String getPluginPath(String name);
 
+
+    /**
+     * Looks up the plugin that defined the given instance. If no plugin
+     * defined the instance then null is returned.
+     *
+     * @param instance The instance
+     * @return The plugin that defined the instance or null
+     */
+    GrailsPlugin getPluginForInstance(Object instance);
+
     /**
      * Returns the pluginContextPath for the given instance
      * @param instance The instance
@@ -305,17 +312,10 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
     String getPluginViewsPathForClass(Class<? extends Object> theClass);
 
     /**
-     * The BuildSettings instance for this plugin manager. Note this is only returned in the development
-     * environment and will return null in a WAR deployed environment
+     * Obtains the GrailsPlugin for the given class
      *
-     * @return The BuildSettings instance
+     * @param theClass The class
+     * @return The GrailsPlugin for the given class or null if not related to any plugin
      */
-    BuildSettings getBuildSettings();
-
-    /**
-     * The PluginBuildSettings instance for this plugin manager. Note will return null in a WAR deployed environment
-     *
-     * @return The PluginBuildSettings instance
-     */
-    PluginBuildSettings getPluginBuildSettings();
+    GrailsPlugin getPluginForClass(Class<?> theClass);
 }

@@ -1,12 +1,16 @@
 package org.codehaus.groovy.grails.web.util
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 
 /**
  * @author Graeme Rocher
@@ -14,8 +18,9 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
  */
 class WebUtilsTests extends GroovyTestCase {
 
+    def config
     protected void setUp() {
-        def config = new ConfigSlurper().parse( """
+        config = new ConfigSlurper().parse( """
 grails.mime.file.extensions=false
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
@@ -31,26 +36,46 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       multipartForm: 'multipart/form-data'
                     ]        """)
 
-        ConfigurationHolder.setConfig config
+
     }
 
     protected void tearDown() {
-        ConfigurationHolder.setConfig null
         RequestContextHolder.setRequestAttributes null
     }
 
     void testAreFileExtensionsEnabled() {
+        def ga = new DefaultGrailsApplication(config:config)
+        bindMockRequest(ga)
+
         assert !WebUtils.areFileExtensionsEnabled()
 
-        def config = new ConfigSlurper().parse( """
+        config = new ConfigSlurper().parse( """
 grails.mime.file.extensions=true
        """)
-        ConfigurationHolder.config = config
+
+        ga.config = config
 
         assert WebUtils.areFileExtensionsEnabled()
     }
 
+    private def bindMockRequest(DefaultGrailsApplication ga) {
+        def ctx = new MockApplicationContext()
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+        def factory = new MimeTypesFactoryBean(grailsApplication: ga)
+        factory.afterPropertiesSet()
+
+        ctx.registerMockBean(MimeType.BEAN_NAME, factory.getObject())
+
+        def servletContext = new MockServletContext()
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
+        def webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), servletContext)
+        RequestContextHolder.setRequestAttributes(webRequest)
+    }
+
     void testGetFormatFromURI() {
+        def ga = new DefaultGrailsApplication(config:config)
+        bindMockRequest(ga)
+
         assertNull WebUtils.getFormatFromURI("/foo/bar/")
         assertNull WebUtils.getFormatFromURI("/foo/bar")
         assertNull WebUtils.getFormatFromURI("/foo/bar.")

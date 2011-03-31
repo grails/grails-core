@@ -1,16 +1,17 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
-
-import javax.servlet.ServletContext;
-
 import junit.framework.TestCase;
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
@@ -21,16 +22,17 @@ import org.springframework.mock.web.MockServletConfig;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
+import javax.servlet.ServletContext;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
-    private GrailsWebRequest buildMockRequest() throws Exception {
+    private GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
         MockApplicationContext appCtx = new MockApplicationContext();
         appCtx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService());
+
+        DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication();
+        grailsApplication.setConfig(config);
+        appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
         return GrailsWebUtil.bindMockWebRequest(appCtx);
@@ -40,7 +42,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
      * Test method for 'org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper.getDecorator(HttpServletRequest, Page)'
      */
     public void testGetDecoratorHttpServletRequestPage() throws Exception {
-        GrailsWebRequest webRequest = buildMockRequest();
+        GrailsWebRequest webRequest = buildMockRequest(null);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
 
@@ -60,7 +62,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
     }
 
     public void testDecoratedByApplicationConventionForViewsNotRenderedByAController() throws Exception {
-        GrailsWebRequest webRequest = buildMockRequest();
+        GrailsWebRequest webRequest = buildMockRequest(null);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
 
@@ -81,7 +83,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
     }
 
     public void testDecoratedByApplicationConvention() throws Exception {
-        GrailsWebRequest webRequest = buildMockRequest();
+        GrailsWebRequest webRequest = buildMockRequest(null);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
 
@@ -110,10 +112,8 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
     }
 
     public void testOverridingDefaultTemplateViaConfig() throws Exception {
-        try {
             ConfigObject config = new ConfigSlurper().parse("grails.sitemesh.default.layout='otherApplication'");
-            ConfigurationHolder.setConfig(config);
-            GrailsWebRequest webRequest = buildMockRequest();
+            GrailsWebRequest webRequest = buildMockRequest(config);
             MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
             appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
             appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/otherApplication.gsp", "<html><body><h1>Other Default Layout</h1><g:layoutBody /></body></html>");
@@ -140,13 +140,10 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
             assertNotNull(d);
             assertEquals("/WEB-INF/grails-app/views/layouts/otherApplication.gsp", d.getPage());
             assertEquals("otherApplication", d.getName());
-        } finally {
-            ConfigurationHolder.setConfig(null);
-        }
     }
 
     public void testDecoratedByControllerConvention() throws Exception {
-        GrailsWebRequest webRequest = buildMockRequest();
+        GrailsWebRequest webRequest = buildMockRequest(null);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
 
@@ -175,7 +172,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
     }
 
     public void testDecoratedByActionConvention() throws Exception {
-        GrailsWebRequest webRequest = buildMockRequest();
+        GrailsWebRequest webRequest = buildMockRequest(null);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test2/testAction.gsp", "<html><body><g:layoutBody /></body></html>");
 
@@ -203,7 +200,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
     }
 
     public void testDecoratedByLayoutPropertyInController() throws Exception {
-        GrailsWebRequest webRequest = buildMockRequest();
+        GrailsWebRequest webRequest = buildMockRequest(null);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
         appCtx.registerMockResource("WEB-INF/grails-app/views/layouts/mylayout.gsp", "<html><body><g:layoutBody /></body></html>");

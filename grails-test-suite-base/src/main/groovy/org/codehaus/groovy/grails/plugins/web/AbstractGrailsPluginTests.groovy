@@ -1,17 +1,13 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.util.MockHttpServletResponse
-
 import javax.servlet.ServletContext
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.MockResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -52,7 +48,6 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
         mockManager.doArtefactConfiguration()
         ga.initialise()
-        ApplicationHolder.application = ga
         ga.setApplicationContext(ctx)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl)

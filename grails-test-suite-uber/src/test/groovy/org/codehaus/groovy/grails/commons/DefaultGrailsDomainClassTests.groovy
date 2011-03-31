@@ -1,27 +1,14 @@
 package org.codehaus.groovy.grails.commons
 
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
-/**
+ /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class DefaultGrailsDomainClassTests extends GroovyTestCase {
 
     def gcl = new GroovyClassLoader()
 
-    protected void setUp() {
-        super.setUp()
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
-    }
-
-    protected void tearDown() {
-        super.tearDown()
-        PluginManagerHolder.pluginManager = null
-    }
 
     void testFetchMode() {
         gcl.parseClass """
@@ -274,16 +261,11 @@ class OneToOneTest2 {
         "}")
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-        ApplicationHolder.setApplication(ga)
         ga.initialise()
 
         DefaultGrailsDomainClass topDomainClass = new DefaultGrailsDomainClass(topClass)
         DefaultGrailsDomainClass middleDomainClass = new DefaultGrailsDomainClass(middleClass)
         DefaultGrailsDomainClass bottomDomainClass = new DefaultGrailsDomainClass(bottomClass)
-
-        assertEquals("bottom class had wrong number of persistent properties", 3, bottomDomainClass.getPersistentProperties().length)
-        assertEquals("middle class had wrong number of persistent properties", 2, middleDomainClass.getPersistentProperties().length)
-        assertEquals("top class had wrong number of persistent properties", 1, topDomainClass.getPersistentProperties().length)
 
         GrailsDomainClassProperty topStringProperty = topDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in topDomainClass", topStringProperty)
@@ -300,6 +282,7 @@ class OneToOneTest2 {
         topStringProperty = bottomDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in bottomDomainClass", topStringProperty)
         assertTrue("topString property was not persistent in bottomDomainClass", topStringProperty.isPersistent())
+        assertTrue("topString property was not inherited in bottomDomainClass", topStringProperty.isInherited())
 
         middleStringProperty = bottomDomainClass.getPropertyByName("middleString")
         assertNotNull("middleString property not found in bottomDomainClass", middleStringProperty)

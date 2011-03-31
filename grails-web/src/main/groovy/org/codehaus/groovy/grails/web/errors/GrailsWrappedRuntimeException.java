@@ -29,7 +29,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
@@ -42,6 +41,7 @@ import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * Wraps a Grails RuntimeException and attempts to extract more relevent diagnostic messages
@@ -147,7 +147,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                     if (gspFile == null) {
                         fileName = className.replace('.', '/') + ".groovy";
 
-                        GrailsApplication application = ApplicationHolder.getApplication();
+                        GrailsApplication application = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext).getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
                         // @todo Refactor this to get the urlPrefix from the ArtefactHandler
                         if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, className)) {
                             urlPrefix += "/controllers/";

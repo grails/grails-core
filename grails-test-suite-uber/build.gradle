@@ -10,6 +10,7 @@ dependencies {
                 project(':grails-plugin-validation'),
                 project(":grails-plugin-datasource"),
                 project(":grails-plugin-servlets"),
+                project(":grails-plugin-services"),
                 project(":grails-plugin-i18n"),
                 project(":grails-plugin-logging")
 }

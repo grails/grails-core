@@ -1,18 +1,15 @@
 package org.codehaus.groovy.grails.web.servlet.filter
 
 import grails.util.GrailsWebUtil
-
 import javax.servlet.Filter
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
@@ -22,7 +19,7 @@ import org.springframework.mock.web.MockFilterConfig
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 
-/**
+ /**
  * Abstract test case to make testing servlet filters easier.
  */
 abstract class AbstractServletFilterTests extends GroovyTestCase {
@@ -56,7 +53,6 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
 
     void tearDown() {
         ServletContextHolder.setServletContext(null)
-        PluginManagerHolder.setPluginManager(null)
     }
 
     protected void onSetup() {}
@@ -88,7 +84,6 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
         // the mock application context.
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, application)
         appCtx.registerMockBean(GrailsPluginManager.BEAN_NAME, pluginManager)
-        PluginManagerHolder.setPluginManager(pluginManager)
 
         // Configure everything as if it's a running app.
         GrailsConfigUtils.configureWebApplicationContext(servletContext, appCtx)

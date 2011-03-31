@@ -17,15 +17,6 @@ package org.codehaus.groovy.grails.web.servlet.view;
 import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
@@ -35,6 +26,13 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Map;
 
 /**
  * A Spring View that renders Groovy Server Pages to the reponse. It requires an instance
@@ -60,6 +58,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     private GroovyPagesTemplateEngine templateEngine;
     private long createTimestamp = System.currentTimeMillis();
     private static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
+    private Class viewClass;
 
     /**
      * Delegates to renderMergedOutputModel(..)
@@ -129,7 +128,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     /**
      * Renders a page with the specified TemplateEngine, mode and response.
      *
-     * @param templateEngine The TemplateEngine to use
+     * @param engine The TemplateEngine to use
      * @param model The model to use
      * @param response The HttpServletResponse instance
      * @param request The HttpServletRequest
@@ -143,7 +142,15 @@ public class GroovyPageView extends AbstractUrlBasedView  {
         Writer out = null;
         try {
             out = createResponseWriter(response);
-            Template t = engine.createTemplate(getUrl());
+
+            Template t;
+
+            if(viewClass != null) {
+                t = engine.createTemplate(viewClass);
+            }
+            else {
+                t = engine.createTemplate(getUrl());
+            }
             Writable w = t.make(model);
             w.writeTo(out);
         }
@@ -201,5 +208,9 @@ public class GroovyPageView extends AbstractUrlBasedView  {
 
     public boolean isExpired() {
         return System.currentTimeMillis() - createTimestamp > LASTMODIFIED_CHECK_INTERVAL;
+    }
+
+    public void setViewClass(Class viewClass) {
+        this.viewClass = viewClass;
     }
 }

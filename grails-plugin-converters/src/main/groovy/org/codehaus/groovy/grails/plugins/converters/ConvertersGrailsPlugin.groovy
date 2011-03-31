@@ -15,31 +15,28 @@
  */
 package org.codehaus.groovy.grails.plugins.converters
 
+import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
+import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
+
 import grails.converters.JSON
 import grails.converters.XML
 import grails.util.GrailsUtil
-
 import javax.servlet.http.HttpServletRequest
-
 import org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec
 import org.codehaus.groovy.grails.plugins.converters.codecs.XMLCodec
 import org.codehaus.groovy.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
-import org.codehaus.groovy.grails.web.json.JSONArray
-import org.codehaus.groovy.grails.web.json.JSONObject
-import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
+import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
-import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
-import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-
+import org.codehaus.groovy.grails.web.json.JSONArray
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.springframework.core.JdkVersion
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
+ /**
  * A plug-in that allows the obj as XML syntax.
  *
  * @author Siegfried Puchbauer
@@ -117,7 +114,7 @@ class ConvertersGrailsPlugin {
     def doWithDynamicMethods = {applicationContext ->
         ConverterUtil.setGrailsApplication(application)
 
-        applicationContext.convertersConfigurationInitializer.initialize()
+        applicationContext.convertersConfigurationInitializer.initialize(application)
 
         log.debug "Applying new header and render methods to all Controllers..."
         def controllerClasses = application.controllerClasses

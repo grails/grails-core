@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.testing
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.mock.web.MockHttpServletRequest
 
-/**
+ /**
  * A custom mock HTTP servlet request that provides the extra properties
  * and methods normally injected by the "servlets" plugin.
  */
@@ -106,7 +106,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
     */
     def getXML() {
         if (!cachedXml) {
-            cachedXml = grails.converters.XML.parse(this)
+            cachedXml = GrailsMockHttpServletRequest.classLoader.loadClass("grails.converters.XML").parse(this)
         }
         return cachedXml
     }
@@ -118,7 +118,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
      */
     def getJSON() {
         if (!cachedJson) {
-            cachedJson = grails.converters.JSON.parse(this)
+            cachedJson = GrailsMockHttpServletRequest.classLoader.loadClass("grails.converters.JSON").parse(this)
         }
         return cachedJson
     }

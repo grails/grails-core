@@ -96,6 +96,17 @@ target(integrateIntellij:"Integrates Intellij with Grails") {
     println "Created IntelliJ project files."
 }
 
+target(integrateGit:"Integrates Git with Grails") {
+    depends unpackSupportFiles
+    ant.copy(todir:basedir) {
+        fileset(dir:"${integrationFiles}/git")
+    }
+    ant.move(file: "${basedir}/grailsProject.gitignore", tofile: "${basedir}/.gitignore", overwrite: true)
+
+    replaceTokens()
+    println "Created Git project files."
+}
+
 target(replaceTokens:"Replaces any tokens in the files") {
     def appKey = grailsAppName.replaceAll(/\s/, '.').toLowerCase()
     ant.replace(dir:"${basedir}", includes:"*.*") {

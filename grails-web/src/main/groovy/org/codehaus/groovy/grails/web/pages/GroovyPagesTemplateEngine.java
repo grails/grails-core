@@ -17,24 +17,13 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.PrivilegedAction;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
+import groovy.util.ConfigObject;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -47,15 +36,23 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.*;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.ServletContextResourceLoader;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.PrivilegedAction;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Based on (but not extending) the existing TemplateEngine implementations
@@ -95,6 +92,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     private boolean resourceLoaderDefined=false;
 
     private static File dumpLineNumbersTo;
+    private GrailsApplication grailsApplication;
 
     static {
         String dirPath = System.getProperty("grails.dump.gsp.line.numbers.to.dir");
@@ -176,6 +174,16 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             LOG.debug("Full stack trace of error", e);
         }
         return new int[0];
+    }
+
+    /**
+     * Creates a template from a pre-compiled view class
+     * @param viewClass The view class
+     * @return The Template instance
+     */
+    public Template createTemplate(Class viewClass) {
+        final GroovyPageMetaInfo metaInfo = createPreCompiledGroovyPageMetaInfo(viewClass);
+        return new GroovyPageTemplate(metaInfo);
     }
 
     /**
@@ -329,11 +337,18 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                 LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
             }
             if (gspClass != null) {
-                meta = new GroovyPageMetaInfo(gspClass);
-                meta.setJspTagLibraryResolver(jspTagLibraryResolver);
-                meta.setTagLibraryLookup(tagLibraryLookup);
+                meta = createPreCompiledGroovyPageMetaInfo(gspClass);
             }
         }
+        return meta;
+    }
+
+    private GroovyPageMetaInfo createPreCompiledGroovyPageMetaInfo(Class<GroovyPage> gspClass) {
+        GroovyPageMetaInfo meta;
+        meta = new GroovyPageMetaInfo(gspClass);
+        meta.setGrailsApplication(grailsApplication);
+        meta.setJspTagLibraryResolver(jspTagLibraryResolver);
+        meta.setTagLibraryLookup(tagLibraryLookup);
         return meta;
     }
 
@@ -567,7 +582,36 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-            parser = new GroovyPageParser(name, path, path, inputStream);
+            String encoding = GroovyPageParser.DEFAULT_ENCODING;
+            if(grailsApplication != null) {
+                ConfigObject config = grailsApplication.getConfig();
+                Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
+                if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                    encoding = gspEnc.toString();
+                }
+
+            }
+            parser = new GroovyPageParser(name, path, path, inputStream, encoding);
+
+            if(grailsApplication != null) {
+                ConfigObject config = grailsApplication.getConfig();
+
+                Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
+                if (sitemeshPreprocessEnabled != null) {
+                    final boolean enableSitemeshPreprocessing = BooleanUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
+                    parser.setEnableSitemeshPreprocessing(enableSitemeshPreprocessing);
+                }
+
+                Object keepDirObj = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR);
+                if (keepDirObj instanceof File) {
+                    parser.setKeepGeneratedDirectory((File) keepDirObj);
+                }
+                else if (keepDirObj != null) {
+                    parser.setKeepGeneratedDirectory( new File(String.valueOf(keepDirObj)) );
+                }
+
+
+            }
         }
         catch (IOException e) {
             throw new GroovyPagesException("I/O parsing Groovy page ["+(res != null ? res.getDescription() : name)+"]: " + e.getMessage(),e);
@@ -665,6 +709,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     private GroovyPageMetaInfo createPageMetaInfo(GroovyPageParser parse, InputStream in) {
         GroovyPageMetaInfo pageMeta = new GroovyPageMetaInfo();
+        pageMeta.setGrailsApplication(grailsApplication);
         pageMeta.setJspTagLibraryResolver(jspTagLibraryResolver);
         pageMeta.setTagLibraryLookup(tagLibraryLookup);
         pageMeta.setContentType(parse.getContentType());
@@ -744,6 +789,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         if (resourceLoader == null) {
             resourceLoader = applicationContext;
         }
+        if(applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
+            this.grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        }
     }
 
     /**
@@ -819,4 +867,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public void setCacheResources(boolean cacheResources) {
         this.cacheResources = cacheResources;
     }
+
+
+
 }

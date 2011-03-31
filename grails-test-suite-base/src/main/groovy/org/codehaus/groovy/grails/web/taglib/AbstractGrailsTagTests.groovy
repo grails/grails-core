@@ -1,47 +1,43 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import com.opensymphony.module.sitemesh.RequestConstants
 import grails.util.GrailsWebUtil
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
-import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.springframework.context.MessageSource
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
+import org.springframework.ui.context.Theme
+import org.springframework.ui.context.ThemeSource
+import org.springframework.ui.context.support.SimpleTheme
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.DispatcherServlet
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver
 import org.springframework.web.servlet.support.JstlUtils
-import org.w3c.dom.Document
 import org.springframework.web.servlet.theme.SessionThemeResolver
-import org.springframework.ui.context.ThemeSource
-import org.springframework.ui.context.Theme
-import org.springframework.ui.context.support.SimpleTheme
-import org.springframework.context.MessageSource
+import org.w3c.dom.Document
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.pages.*
-import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
-import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
-import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
-import com.opensymphony.module.sitemesh.RequestConstants
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -67,13 +63,24 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     def withConfig(String text, Closure callable) {
         def config = new ConfigSlurper().parse(text)
         try {
-            ConfigurationHolder.config = config
+            buildMockRequest(config)
             callable()
         }
         finally {
-            ConfigurationHolder.config = null
+            RequestContextHolder.setRequestAttributes(null)
+
         }
     }
+
+    GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
+        ga.config = config
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+        GrailsWebRequest request = GrailsWebUtil.bindMockWebRequest(appCtx)
+        initThemeSource(request.getCurrentRequest(), messageSource)
+        return request
+    }
+
 
     def profile(String name, Closure callable) {
         if (!enableProfile) return callable.call()
@@ -146,7 +153,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
         grailsApplication.initialise()
-        ApplicationHolder.application = ga
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)
 
@@ -210,10 +216,14 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
-        request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
-        request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver())
+        initThemeSource(request, messageSource)
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
+    }
+
+    private def initThemeSource(request, StaticMessageSource messageSource) {
+        request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
+        request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver())
     }
 
     protected void tearDown() {

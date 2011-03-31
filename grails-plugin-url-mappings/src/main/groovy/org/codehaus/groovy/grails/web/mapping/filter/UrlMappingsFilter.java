@@ -15,24 +15,12 @@
 package org.codehaus.groovy.grails.web.mapping.filter;
 
 import grails.util.GrailsUtil;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
@@ -44,6 +32,8 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -52,6 +42,17 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Uses the Grails UrlMappings to match and forward requests to a relevant controller and action.
@@ -67,16 +68,26 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private static final String JSP_SUFFIX = ".jsp";
     private HandlerInterceptor[] handlerInterceptors = new HandlerInterceptor[0];
     private GrailsApplication application;
+    private GrailsConfig grailsConfig;
     private ViewResolver viewResolver;
+    private MimeType[] mimeTypes;
 
     @Override
     protected void initFilterBean() throws ServletException {
         super.initFilterBean();
         urlHelper.setUrlDecode(false);
         final ServletContext servletContext = getServletContext();
+        final WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         this.handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
         this.application = WebUtils.lookupApplication(servletContext);
         this.viewResolver = WebUtils.lookupViewResolver(servletContext);
+        if(application != null) {
+           grailsConfig = new GrailsConfig(application);
+        }
+
+        if(applicationContext.containsBean(MimeType.BEAN_NAME)) {
+            this.mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
+        }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -110,10 +121,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             LOG.debug(holder);
         }
 
-        if (WebUtils.areFileExtensionsEnabled()) {
-            String format = WebUtils.getFormatFromURI(uri);
+        if (areFileExtensionsEnabled()) {
+            String format = WebUtils.getFormatFromURI(uri, mimeTypes);
             if (format != null) {
-                MimeType[] configuredMimes = MimeType.getConfiguredMimeTypes();
+                MimeType[] configuredMimes = mimeTypes != null ? mimeTypes : MimeType.getConfiguredMimeTypes();
                 // only remove the file extension if its one of the configured mimes in Config.groovy
                 for (MimeType configuredMime : configuredMimes) {
                     if (configuredMime.getExtension().equals(format)) {
@@ -204,6 +215,16 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             }
             processFilterChain(request, response, filterChain);
         }
+    }
+
+    private boolean areFileExtensionsEnabled() {
+        if(grailsConfig != null) {
+            final Boolean value = grailsConfig.get(WebUtils.ENABLE_FILE_EXTENSIONS, Boolean.class);
+            if(value != null) {
+                return value;
+            }
+        }
+        return true;
     }
 
     private boolean noRegexMappings(UrlMappingsHolder holder) {

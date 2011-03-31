@@ -35,7 +35,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -267,7 +266,7 @@ public final class GrailsDomainBinder {
             namingStrategyClass = (Class<?>)strategy;
         }
         else  {
-            namingStrategyClass = ApplicationHolder.getApplication().getClassLoader().loadClass(strategy.toString());
+            namingStrategyClass = Thread.currentThread().getContextClassLoader().loadClass(strategy.toString());
         }
 
         namingStrategy = (NamingStrategy)namingStrategyClass.newInstance();
