@@ -9,11 +9,9 @@ class FindOrCreateWherePersistenceMethodTests extends AbstractGrailsHibernateTes
     }
 
     void testFindOrCreateWhereForNonExistingRecord() {
-        if(notYetImplemented()) return
-
         def domainClass = ga.getDomainClass(Person.name).clazz
 
-        def person = domainClass.findWhere(firstName: 'Robert', lastName: 'Fripp')
+        def person = domainClass.findOrCreateWhere(firstName: 'Robert', lastName: 'Fripp')
 
         assertNotNull 'findOrCreateWhere should have returned a Person', person
         assertEquals 'Robert', person.firstName
