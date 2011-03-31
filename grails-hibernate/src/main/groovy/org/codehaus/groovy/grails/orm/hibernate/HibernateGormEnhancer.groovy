@@ -505,15 +505,6 @@ class HibernateGormStaticApi extends GormStaticApi {
 		} as HibernateCallback)
 	}
 	
-	def findOrCreateWhere(Map queryMap) {
-        def result = findWhere(queryMap) 
-        if(!result) {
-            result = persistentClass.newInstance()
-            result.properties = queryMap
-        }
-		result
-	}
-	
 	private Map filterQueryArgumentMap(Map query) {
 		def queryArgs = [:]
 		for (entry in query) {
