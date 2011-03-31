@@ -135,6 +135,7 @@ class DomainClassGrailsPlugin {
                 addValidationMethods(application, domainClass, ctx)
             }
         }
+    }
 
     private static addValidationMethods(GrailsApplication application, GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
