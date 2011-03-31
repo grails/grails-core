@@ -1369,6 +1369,15 @@ public final class GrailsDomainBinder {
 
         entity.setPolymorphic(true);
     }
+    
+    private static void configureDerivedProperties(GrailsDomainClass domainClass, Mapping m) {
+        for(GrailsDomainClassProperty prop : domainClass.getPersistentProperties()) {
+            PropertyConfig propertyConfig = m.getPropertyConfig(prop.getName());
+            if(propertyConfig != null && propertyConfig.getFormula() != null) {
+                prop.setDerived(true);
+            }
+        }
+    }
 
     /**
      * Binds a persistent classes to the table representation and binds the class properties
@@ -1386,7 +1395,7 @@ public final class GrailsDomainBinder {
         String catalog = mappings.getCatalogName();
 
         if (m != null) {
-
+            configureDerivedProperties(domainClass, m);
             CacheConfig cc = m.getCache();
             if (cc != null && cc.getEnabled()) {
                 root.setCacheConcurrencyStrategy(cc.getUsage());
@@ -2274,7 +2283,7 @@ public final class GrailsDomainBinder {
             GrailsDomainClassProperty parentProperty, SimpleValue simpleValue,
             String path, PropertyConfig propertyConfig) {
         setTypeForPropertyConfig(grailsProp, simpleValue, propertyConfig);
-        if (propertyConfig != null && propertyConfig.getFormula() != null) {
+        if (grailsProp.isDerived()) {
             Formula formula = new Formula();
             formula.setFormula(propertyConfig.getFormula());
             simpleValue.addFormula(formula);

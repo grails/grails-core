@@ -1,0 +1,123 @@
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Style de base.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+html {
+  font-size: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-size: .8em;
+  line-height: 1.2;
+  color: black;
+  background: white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 1em 0 .5em 0;
+  line-height: 1.1;
+  font-weight: bold;
+  font-style: normal;
+}
+h1 {
+  font-size: 1.75em;
+}
+h2 {
+  font-size: 1.5em;
+}
+h3 {
+  font-size: 1.4em;
+}
+h4 {
+  font-size: 1.3em;
+}
+
+ul, ol {
+  margin: .75em 0 .75em 32px;
+  padding: 0;
+}
+
+p {
+  margin: 1em 0;
+}
+
+address {
+  margin: .75em 0;
+  font-style: normal;
+}
+
+a {
+  text-decoration: underline;
+}
+
+a:active {
+  outline: none;
+}
+a img {
+  border: none;
+}
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: bold;
+}
+
+form, fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+input, button, select {
+  vertical-align: middle;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Clearfix.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.clearfix:after
+{
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    font-size: 0;
+    height: 0;
+}
+
+.clearfix
+{
+    display: inline-block;
+}
+
+html[xmlns] .clearfix
+{
+    display: block;
+}
+
+* html .clearfix
+{
+    height: 1%;
+}
+
+
+#toggle-col1{
+    display: none;
+    float: right;
+	padding-left: 50px;
+}

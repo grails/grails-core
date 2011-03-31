@@ -47,7 +47,7 @@ public class NotEqualConstraint extends AbstractConstraint {
 
         Class<?> propertyClass = GrailsClassUtils.getPropertyType(constraintOwningClass, constraintPropertyName);
         // TODO: Find an alternative way to do the UrlMapping check!
-        if (!GrailsClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(),propertyClass)  /*&&!UrlMapping.class.isAssignableFrom(constraintOwningClass)*/) {
+        if (!GrailsClassUtils.isAssignableOrConvertibleFrom(constraintParameter.getClass(),propertyClass)  && propertyClass != null) {
             throw new IllegalArgumentException("Parameter for constraint [" +
                     ConstrainedProperty.NOT_EQUAL_CONSTRAINT + "] of property [" +
                     constraintPropertyName + "] of class [" + constraintOwningClass +

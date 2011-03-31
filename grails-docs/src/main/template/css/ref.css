@@ -1,3 +1,18 @@
+@import "tools.css";
+@import "skin.css";
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Body & Html.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+body {
+    font-family: Arial;
+}
+
 .body {
 	margin-left: 30px;
 	font-family: Tahoma, Verdana, Arial;
@@ -40,48 +55,53 @@ blockquote {
 }
 
 /**
- * Wiki text stylesheet definitions.
- * @author Matthias L. Jugel
- * @version $Id: SnipSnap-Theme.snip,v 1.1.2.1 2004/01/26 14:07:31 leo Exp $
- */
+* Wiki text stylesheet definitions.
+* @author Matthias L. Jugel
+* @version $Id: SnipSnap-Theme.snip,v 1.1.2.1 2004/01/26 14:07:31 leo Exp $
+*/
 
-.bold { font-weight: bold; }
-.italic { font-style: italic; }
+.bold {
+    font-weight: bold;
+}
+
+.italic {
+    font-style: italic;
+}
 
 /************************************************/
 /* image positioning                            */
 img {
-  margin-top: 1px;
-  margin-bottom: 1px;
-  vertical-align: middle;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    vertical-align: middle;
 }
 
 img.left {
-  display: block;
-  left: 0px;
+    display: block;
+    left: 0px;
 }
 
 img.right {
-  display: block;
-  right: 0px;
+    display: block;
+    right: 0px;
 }
 
 img.center {
-  text-align: center;
+    text-align: center;
 }
 
 img.float-left {
-  float: left;
-  margin-top: 3px;
-  margin-right: 3px;
-  margin-bottom: 3px;
+    float: left;
+    margin-top: 3px;
+    margin-right: 3px;
+    margin-bottom: 3px;
 }
 
 img.float-right {
-  float: right;
-  margin-top: 3px;
-  margin-left: 3px;
-  margin-bottom: 3px;
+    float: right;
+    margin-top: 3px;
+    margin-left: 3px;
+    margin-bottom: 3px;
 }
 
 /*
@@ -92,26 +112,26 @@ img.float-right {
 */
 
 .heading-1 {
-  font-weight: bold;
-  font-size: 14px;
-  font-variant: small-caps;
+    font-weight: bold;
+    font-size: 14px;
+    font-variant: small-caps;
 }
 
 .heading-1-1 {
-  font-size: 12px;
-  font-variant: small-caps;
+    font-size: 12px;
+    font-variant: small-caps;
 }
 
 .heading-1-1-1 {
-  font-size: 12px;
+    font-size: 12px;
 }
 
 .quote {
-  font-style: italic;
-  color: inherit;
-  background-color: inherit;
-  font-family: inherit;
-  font-size: inherit;
+    font-style: italic;
+    color: inherit;
+    background-color: inherit;
+    font-family: inherit;
+    font-size: inherit;
 }
 
 .warning {
@@ -189,67 +209,64 @@ table .code {
 }
 
 .java-keyword {
-  font-weight: bold;
-  color: #0000aa;
-  background-color: inherit;
+    font-weight: bold;
+    background-color: inherit;
 }
 
 .java-object {
-  color: #000088;
-  background-color: inherit;
+    background-color: inherit;
 }
 
 .java-quote {
-  color: #00aa00;
-  background-color: inherit;
+    background-color: inherit;
 }
 
 .xml-keyword {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .xml-tag {
-  color: #0000aa;
-  background-color: inherit;
+    color: #0000aa;
+    background-color: inherit;
 }
 
 /* weblog formatting */
 .blog-date {
-  display: block;
-  background-color: #f8f8f8;
-  color: black;
-  font-family: verdana, sans-serif;
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  width: 100%;
+    display: block;
+    background-color: #f8f8f8;
+    color: black;
+    font-family: verdana, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    width: 100%;
 }
 
 /* special formatting of a wiki table */
 .wiki-table {
-  border-style: solid;
-  border-color: black;
-  border-width: 0px 1px 1px 1px;
-  empty-cells: show;
+    border-style: solid;
+    border-color: black;
+    border-width: 0px 1px 1px 1px;
+    empty-cells: show;
 }
 
 .wiki-table td {
-  border-top: 1px solid black;
-  padding: 4px 4px 4px 4px;
+    border-top: 1px solid black;
+    padding: 4px 4px 4px 4px;
 }
 
 .wiki-table th {
-  border-top: 1px solid black;
-  text-align: left;
-  color: inherit;
-  font-weight: bold;
-  /* background-color: #DDEEFF; */
-  background-color: #d9e4f9;
+    border-top: 1px solid black;
+    text-align: left;
+    color: inherit;
+    font-weight: bold; /* background-color: #DDEEFF; */
+    padding: 4px 4px 4px 4px;
+    font-size: 12px;
 }
 
 .wiki-table .table-odd {
-  color: inherit;
-  background-color: #F8F8F8;
+    color: inherit;
+    background-color: #F8F8F8;
 }
 
 .wiki-table .table-even {
@@ -262,33 +279,70 @@ table .code {
 }
 
 .list-title {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .list ul {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  margin-left: 0px;
-  padding-left: 0px;
-  list-style-type: none;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    padding-left: 0px;
+    list-style-type: none;
 }
 
 /* wiki lists */
 
-ul.minus { list-style-type: square; }
-ul.star { list-style-type: circle; }
-ol.roman { list-style-type: lower-roman; }
-ol.ROMAN { list-style-type: upper-roman; }
-ol.alpha { list-style-type: lower-alpha; }
-ol.ALPHA { list-style-type: upper-alpha; }
-ol.greek { list-style-type: lower-greek; }
-ol.GREEK { list-style-type: upper-greek; }
-ol.hiragana { list-style-type: hiragana; }
-ol.HIRAGANA { list-style-type: hiragana-iroha; }
-ol.katakana { list-style-type: katakana; }
-ol.KATAKANA { list-style-type: katakana-iroha; }
-ol.HEBREW { list-style-type: hebrew; }
+ul.minus {
+    list-style-type: square;
+}
 
+ul.star {
+    list-style-type: disc;
+}
+
+ol.roman {
+    list-style-type: lower-roman;
+}
+
+ol.ROMAN {
+    list-style-type: upper-roman;
+}
+
+ol.alpha {
+    list-style-type: lower-alpha;
+}
+
+ol.ALPHA {
+    list-style-type: upper-alpha;
+}
+
+ol.greek {
+    list-style-type: lower-greek;
+}
+
+ol.GREEK {
+    list-style-type: upper-greek;
+}
+
+ol.hiragana {
+    list-style-type: hiragana;
+}
+
+ol.HIRAGANA {
+    list-style-type: hiragana-iroha;
+}
+
+ol.katakana {
+    list-style-type: katakana;
+}
+
+ol.KATAKANA {
+    list-style-type: katakana-iroha;
+}
+
+ol.HEBREW {
+    list-style-type: hebrew;
+}
 
 /************************************************/
 /* index formatting                             */
@@ -296,46 +350,83 @@ ol.HEBREW { list-style-type: hebrew; }
 }
 
 .index-top th {
-  padding: 1px 1px 1px 1px;
-  text-align: left;
-  color: inherit;
-  font-weight: bold;
-  background-color: #d9e4f9;
+    padding: 1px 1px 1px 1px;
+    text-align: left;
+    color: inherit;
+    font-weight: bold;
+    background-color: #d9e4f9;
 }
 
 .index {
 }
 
 .index td {
-  padding: 1px 1px 1px 1px;
+    padding: 1px 1px 1px 1px;
 }
 
 .index th {
-  padding: 1px 1px 1px 1px;
-  text-align: left;
-  color: inherit;
-  font-weight: bold;
-  background-color: #d9e4f9;
+    padding: 1px 1px 1px 1px;
+    text-align: left;
+    color: inherit;
+    font-weight: bold;
+    background-color: #d9e4f9;
 }
 
 /************************************************/
 /* calendar display                             */
 .calendar {
-  border-spacing: 0px;
-  font-size: 0.7em;
+    border-spacing: 0px;
+    font-size: 0.7em;
 }
 
 .calendar td {
-  text-align: right;
-  padding: 0px;
+    text-align: right;
+    padding: 0px;
 }
 
 .calendar caption {
-  font-size: 1em;
-  text-align: left;
-  font-weight: bold;
+    font-size: 1em;
+    text-align: left;
+    font-weight: bold;
 }
 
 .calendar .today {
-  border: 3px solid #cccccc;
+    border: 3px solid #cccccc;
+}
+
+li {
+    margin-bottom: 2px;
+    margin-top: 2px;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  CSS 3.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.corner-all, #nav-summary #nav-summary-childs {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+#navigation a {
+    border-radius: 14px;
+    -moz-border-radius: 14px;
+    -webkit-border-radius: 14px;
+}
+
+#footer, #table-of-content a:hover, #navigation #nav-summary-childs a {
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.9);
+}
+
+.wiki-table th strong {
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
+}
+
+#navigation a, #nav-summary #nav-summary-childs a:hover {
+    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.8);
 }
