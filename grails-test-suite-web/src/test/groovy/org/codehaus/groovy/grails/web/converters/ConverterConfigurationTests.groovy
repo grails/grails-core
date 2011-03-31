@@ -149,6 +149,7 @@ def prettyJSON = """{
 
     protected void onSetUp() {
         gcl.parseClass """
+            @grails.persistence.Entity
             class Book {
                Long id
                Long version
