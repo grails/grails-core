@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
-import groovy.lang.GroovyObject;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
@@ -32,7 +31,7 @@ import java.util.*;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass {
+public class DefaultGrailsDomainClass extends AbstractGrailsClass implements GrailsDomainClass, ComponentCapableDomainClass {
 
     private GrailsDomainClassProperty identifier;
     private GrailsDomainClassProperty version;
@@ -51,6 +50,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private Set subClasses = new HashSet();
     private Collection<String> embedded;
     private Map<String, Object> defaultConstraints;
+    private List<GrailsDomainClass> components = new ArrayList<GrailsDomainClass>();
 
     /**
      * Constructor.
@@ -793,5 +793,13 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
     public void setMappingStrategy(String strategy) {
         mappingStrategy = strategy;
+    }
+
+    public void addComponent(GrailsDomainClass component) {
+        this.components.add(component);
+    }
+
+    public List<GrailsDomainClass> getComponents() {
+        return Collections.unmodifiableList(components);
     }
 }

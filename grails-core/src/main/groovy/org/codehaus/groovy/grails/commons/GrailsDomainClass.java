@@ -14,10 +14,10 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import org.springframework.validation.Validator;
+
 import java.util.Map;
 import java.util.Set;
-
-import org.springframework.validation.Validator;
 
 /**
  * Represents a persistable Grails domain class.
@@ -206,4 +206,6 @@ public interface GrailsDomainClass extends GrailsClass {
      * @param strategy The mapping strategy
      */
     void setMappingStrategy(String strategy);
+
+
 }

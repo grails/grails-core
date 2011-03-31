@@ -108,8 +108,15 @@ class DomainClassGrailsPlugin {
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
         for (GrailsDomainClass dc in application.domainClasses) {
             def domainClass = dc
-            MetaClass metaClass = domainClass.metaClass
             def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
+            if(dc instanceof ComponentCapableDomainClass) {
+                for(GrailsDomainClass component in dc.getComponents()) {
+                    if(!application.isDomainClass(component.clazz)) {
+                        registerConstraintsProperty(component.metaClass, component)
+                    }
+                }
+            }
+            MetaClass metaClass = domainClass.metaClass
 
             if(!dc.abstract) {
                 metaClass.constructor = { ->
@@ -128,7 +135,6 @@ class DomainClassGrailsPlugin {
                 addValidationMethods(application, domainClass, ctx)
             }
         }
-    }
 
     private static addValidationMethods(GrailsApplication application, GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass

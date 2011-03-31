@@ -486,6 +486,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         embedded = isEmbedded;
         if (isEmbedded) {
             component = new ComponentDomainClass(getType());
+
+            final GrailsDomainClass dc = getDomainClass();
+            if(dc instanceof ComponentCapableDomainClass) {
+                ((ComponentCapableDomainClass) dc).addComponent(component);
+            }
+
         }
     }
 
