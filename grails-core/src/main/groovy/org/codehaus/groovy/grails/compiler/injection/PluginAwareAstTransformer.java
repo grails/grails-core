@@ -64,6 +64,10 @@ public class PluginAwareAstTransformer implements ClassInjector {
                 return;
             }
 
+            if(classNode.isAnnotationDefinition()){
+                return;
+            }
+
             final AnnotationNode annotationNode = new AnnotationNode(annotation);
             annotationNode.addMember(org.codehaus.groovy.grails.plugins.GrailsPlugin.NAME,
                     new ConstantExpression(info.getName()));
