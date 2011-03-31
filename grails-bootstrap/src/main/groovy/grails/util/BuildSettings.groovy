@@ -23,6 +23,7 @@ import org.apache.ivy.util.ChecksumHelper
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.runtime.StackTraceUtils
 
  /**
@@ -277,11 +278,13 @@ class BuildSettings extends AbstractBuildSettings {
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
      */
     boolean verboseCompile = false
-
+    
     /**
      * Return whether the BuildConfig has been modified
      */
     boolean modified = false
+    
+    final GrailsCoreDependencies coreDependencies
 
     private List<File> compileDependencies = []
     private boolean defaultCompileDepsAdded = false
@@ -517,6 +520,8 @@ class BuildSettings extends AbstractBuildSettings {
                     "that sure the 'grails-core-*.jar' file is on the classpath.")
         }
 
+        coreDependencies = new GrailsCoreDependencies(grailsVersion)
+        
         // If 'grailsHome' is set, add the JAR file dependencies.
         defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion, jquery:"1.4.4.1"]
         defaultPluginSet = defaultPluginMap.keySet()
@@ -909,7 +914,7 @@ class BuildSettings extends AbstractBuildSettings {
         def grailsConfig = config.grails
 
         if (!dependenciesExternallyConfigured) {
-            grailsConfig.global.dependency.resolution = IvyDependencyManager.getDefaultDependencies(grailsVersion)
+            grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
             def credentials = grailsConfig.project.ivy.authentication
             if (credentials instanceof Closure) {
                 dependencyManager.parseDependencies credentials

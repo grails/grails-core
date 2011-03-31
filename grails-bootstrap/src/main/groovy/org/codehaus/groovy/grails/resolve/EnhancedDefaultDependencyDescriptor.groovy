@@ -131,4 +131,11 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
     boolean isSupportedInConfiguration(String conf) {
         scope == conf
     }
+
+    EnhancedDefaultDependencyDescriptor configure(Closure configurer) {
+        configurer.resolveStrategy = Closure.DELEGATE_ONLY
+        configurer.delegate = this
+        configurer.call()
+        this
+    } 
 }
