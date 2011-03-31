@@ -15,10 +15,6 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyResourceLoader;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
@@ -28,7 +24,17 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
+import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A Groovy compiler injection operation that uses a specified array of ClassInjector instances to
@@ -40,38 +46,82 @@ import org.springframework.util.Assert;
 public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation  {
 
     private static final Log LOG = LogFactory.getLog(GrailsAwareInjectionOperation.class);
+    private static final String INJECTOR_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
     private GroovyResourceLoader grailsResourceLoader;
-    private ClassInjector[] classInjectors = new ClassInjector[0];
+    private static ClassInjector[] classInjectors = null;
+    private ClassInjector[] localClassInjectors;
 
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] injectors) {
+    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
         Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
         this.grailsResourceLoader = resourceLoader;
-        if (injectors != null) {
-            this.classInjectors = injectors;
+        initializeState();
+    }
+
+    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
+        Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
+        this.grailsResourceLoader = resourceLoader;
+        this.localClassInjectors = classInjectors;
+    }
+
+    public static ClassInjector[] getClassInjectors() {
+        if(classInjectors == null) {
+            initializeState();
+        }
+        return classInjectors;
+    }
+
+    public ClassInjector[] getLocalClassInjectors() {
+        if(localClassInjectors == null) {
+            return getClassInjectors();
+        }
+        return localClassInjectors;
+    }
+
+    private static void initializeState() {
+        if (classInjectors == null) {
+            BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
+            ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
+            scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
+            scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
+            scanner.scan(INJECTOR_SCAN_PACKAGE);
+
+            List<ClassInjector> classInjectorList = new ArrayList<ClassInjector>();
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            for(String beanName : registry.getBeanDefinitionNames()) {
+                try {
+                    Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
+                    if(ClassInjector.class.isAssignableFrom(injectorClass))
+                        classInjectorList.add((ClassInjector) injectorClass.newInstance());
+                } catch (ClassNotFoundException e) {
+                    // ignore
+                } catch (InstantiationException e) {
+                    // ignore
+                } catch (IllegalAccessException e) {
+                    // ignore
+                }
+            }
+            classInjectors = classInjectorList.toArray(new ClassInjector[classInjectorList.size()]);
         }
     }
 
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
-        for (int i = 0; i < classInjectors.length; i++) {
-            ClassInjector classInjector = classInjectors[i];
+        for (ClassInjector classInjector : getLocalClassInjectors()) {
             try {
                 URL url;
                 if (GrailsResourceUtils.isGrailsPath(source.getName())) {
                     url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
-                }
-                else {
+                } else {
                     url = grailsResourceLoader.loadGroovySource(source.getName());
                 }
 
                 if (classInjector.shouldInject(url)) {
                     classInjector.performInjection(source, context, classNode);
                 }
-            }
-            catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(), e);
-                throw new CompilationFailedException(Phases.CONVERSION,source, e);
+                throw new CompilationFailedException(Phases.CONVERSION, source, e);
             }
         }
     }

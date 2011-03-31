@@ -475,7 +475,7 @@ target(modifyOrCreatePluginList:"Updates the remote plugin.xml descriptor or cre
             }
         }
 
-        def publisher = new DefaultPluginPublisher(remoteRevision, pluginDistURL)
+        def publisher = new DefaultPluginPublisher(baseFile, remoteRevision, pluginDistURL)
         def updatedList = publisher.publishRelease(pluginName, new FileSystemResource(pluginsListFile), !skipLatest)
         pluginsListFile.withWriter("UTF-8") { w ->
             publisher.writePluginList(updatedList, w)

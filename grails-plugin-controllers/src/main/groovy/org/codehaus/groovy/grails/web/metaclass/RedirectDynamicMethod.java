@@ -19,20 +19,9 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.mapping.UrlCreator;
@@ -44,6 +33,15 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectExcep
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Implements the "redirect" Controller method for action redirection.
@@ -70,27 +68,45 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String ARGUMENT_ERRORS = "errors";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
-    private UrlMappingsHolder urlMappingsHolder;
     private boolean useJessionId = false;
-    private ApplicationContext applicationContext;
+    private Collection<RedirectEventListener> redirectListeners;
+    private UrlMappingsHolder urlMappingsHolder;
 
     /**
-     * Constructor.
-     * @param applicationContext
+     */
+    public RedirectDynamicMethod(Collection<RedirectEventListener> redirectListeners) {
+        super(METHOD_PATTERN);
+
+        this.redirectListeners = redirectListeners;
+    }
+
+
+
+    /**
+     *
+     * @param applicationContext The ApplicationContext
+     * @deprecated Here fore compatibility, will be removed in a future version of Grails
      */
     public RedirectDynamicMethod(ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
 
-        if (applicationContext.containsBean(UrlMappingsHolder.BEAN_ID)) {
-            urlMappingsHolder = (UrlMappingsHolder)applicationContext.getBean(UrlMappingsHolder.BEAN_ID);
-        }
+        this.redirectListeners = redirectListeners;
+    }
 
-        GrailsApplication application = (GrailsApplication)applicationContext.getBean(GrailsApplication.APPLICATION_ID);
-        Object o = application.getFlatConfig().get(GRAILS_VIEWS_ENABLE_JSESSIONID);
-        if (o instanceof Boolean) {
-            useJessionId = (Boolean) o;
-        }
-        this.applicationContext = applicationContext;
+    public RedirectDynamicMethod() {
+        super(METHOD_PATTERN);
+    }
+
+    public void setUrlMappingsHolder(UrlMappingsHolder urlMappingsHolder) {
+        this.urlMappingsHolder = urlMappingsHolder;
+    }
+
+    public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
+        this.redirectListeners = redirectListeners;
+    }
+
+    public void setUseJessionId(boolean useJessionId) {
+        this.useJessionId = useJessionId;
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -106,6 +122,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        UrlMappingsHolder urlMappingsHolder = getUrlMappingsHolder(webRequest);
 
         HttpServletRequest request = webRequest.getCurrentRequest();
         if (request.getAttribute(GRAILS_REDIRECT_ISSUED) != null) {
@@ -182,6 +199,13 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         return redirectResponse(actualUri, request,response);
     }
 
+    private UrlMappingsHolder getUrlMappingsHolder(GrailsWebRequest webRequest) {
+        if(this.urlMappingsHolder == null) {
+            urlMappingsHolder = webRequest.getApplicationContext().getBean(UrlMappingsHolder.BEAN_ID, UrlMappingsHolder.class);
+        }
+        return urlMappingsHolder;
+    }
+
     @SuppressWarnings("rawtypes")
     private String getControllerName(Object target, Map argMap) {
         return argMap.containsKey(ARGUMENT_CONTROLLER) ?
@@ -205,9 +229,10 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
             String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
             response.sendRedirect(redirectUrl);
-            Map<String, RedirectEventListener> redirectListeners = applicationContext.getBeansOfType(RedirectEventListener.class);
-            for (RedirectEventListener redirectEventListener : redirectListeners.values()) {
-                redirectEventListener.responseRedirected(redirectUrl);
+            if(redirectListeners != null) {
+                for (RedirectEventListener redirectEventListener : redirectListeners) {
+                    redirectEventListener.responseRedirected(redirectUrl);
+                }
             }
 
             request.setAttribute(GRAILS_REDIRECT_ISSUED, true);

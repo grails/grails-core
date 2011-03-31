@@ -44,7 +44,7 @@ class TestTagLib {
     void testScaffoldingPlugin() {
 
         def mockManager = new MockGrailsPluginManager()
-        ctx.registerMockBean("manager", mockManager )
+        ctx.registerMockBean("pluginManager", mockManager )
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         def dependantPluginClasses = []

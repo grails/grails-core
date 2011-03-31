@@ -1,8 +1,6 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
-
     compile( 'org.codehaus.gpars:gpars:0.9' ) {
         exclude module:'netty'
     }

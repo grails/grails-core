@@ -194,7 +194,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public String getReferencedPropertyName() {
-        throw new UnsupportedOperationException("Method 'getReferencedPropertyName' is not supported by implementation");
+        return null;
     }
 
     public boolean isEmbedded() {

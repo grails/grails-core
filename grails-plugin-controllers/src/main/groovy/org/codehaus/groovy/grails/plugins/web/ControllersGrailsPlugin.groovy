@@ -15,43 +15,32 @@
  */
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.artefact.Enhanced
 import grails.util.Environment
 import grails.util.GrailsUtil
-
-import java.lang.reflect.Modifier
-
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
-import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
-import org.codehaus.groovy.grails.web.metaclass.ChainMethod
-import org.codehaus.groovy.grails.web.metaclass.ForwardMethod
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
-import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
-import org.codehaus.groovy.grails.web.metaclass.WithFormMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
 import org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.CommandObjectEnablingPostProcessor
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
+import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
-
 import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationContext
-import org.springframework.validation.Errors
-import org.springframework.web.context.request.RequestContextHolder as RCH
-import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
-import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
+import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -66,6 +55,7 @@ class ControllersGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version, urlMappings: version]
+    def nonEnhancedControllerClasses = []
 
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
@@ -97,12 +87,26 @@ class ControllersGrailsPlugin {
             stripLeadingSlash = false
         }
 
+        final pluginManager = manager
+
+        instanceControllersApi(ControllersApi, pluginManager) {
+            urlMappingsHolder = ref("grailsUrlMappingsHolder")
+        }
+
         for (controller in application.controllerClasses) {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
-                "${controller.fullName}"(controller.clazz) { bean ->
+                def cls = controller.clazz
+                "${controller.fullName}"(cls) { bean ->
                     bean.scope = "prototype"
                     bean.autowire = "byName"
+                    def enhancedAnn = cls.getAnnotation(Enhanced)
+                    if(enhancedAnn != null) {
+                        instanceControllersApi = ref("instanceControllersApi")
+                    }
+                    else {
+                        nonEnhancedControllerClasses << controller
+                    }
                 }
             }
         }
@@ -212,30 +216,32 @@ class ControllersGrailsPlugin {
             }
         }
 
-        def controllerApi = new ControllersApi(application, pluginManager, ctx)
+        ControllersApi controllerApi = ctx.getBean("instanceControllersApi",ControllersApi)
+        Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding");
+
+        if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+            controllerApi.setGspEncoding( gspEnc.toString() )
+        }
+
+        def redirectListeners = ctx.getBeansOfType(RedirectEventListener.class)
+        controllerApi.setRedirectListeners(redirectListeners.values())
+
+        Object o = application.getFlatConfig().get(RedirectDynamicMethod.GRAILS_VIEWS_ENABLE_JSESSIONID);
+        if (o instanceof Boolean) {
+            controllerApi.setUseJessionId(o)
+        }
 
         def enhancer = new MetaClassEnhancer()
-        enhancer.addApi controllerApi
+        enhancer.addApi(controllerApi)
 
-        // add commons objects and dynamic methods like render and redirect to controllers
-        for (GrailsClass controller in application.controllerClasses) {
-            MetaClass mc = controller.metaClass
-
-            Class controllerClass = controller.clazz
-            Class superClass = controller.clazz.superclass
-            enhancer.enhance mc
-            // deal with abstract super classes
-            while (superClass != Object) {
-                if (Modifier.isAbstract(superClass.getModifiers())) {
-                    enhancer.enhance superClass.metaClass
-                }
-                superClass = superClass.superclass
-            }
-
-            mc.constructor = { ->
-                ctx.getBean(controllerClass.name)
-            }
+        for(controller in application.controllerClasses) {
+            def controllerClass = controller
+            def mc = controllerClass.metaClass
+            mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
+            if(nonEnhancedControllerClasses.contains(controllerClass))
+                enhancer.enhance mc
         }
+
     }
 
     def onChange = {event ->
@@ -254,15 +260,13 @@ class ControllersGrailsPlugin {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     bean.scope = "prototype"
                     bean.autowire = true
+                    instanceControllersApi = ref("instanceControllersApi")
                 }
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
             // register the necessary beans with the given app ctx
             beanDefinitions.registerBeans(event.ctx)
 
-            // Add the dynamic methods back to the class (since it's
-            // effectively a completely new class).
-            event.manager?.getGrailsPlugin("controllers")?.doWithDynamicMethods(event.ctx)
         }
     }
 }

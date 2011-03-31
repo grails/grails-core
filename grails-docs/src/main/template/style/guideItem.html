@@ -2,7 +2,7 @@
                       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>${title} ${version}</title>
+    <title>${title.encodeAsHtml()} ${version}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="stylesheet" href="${path}/css/main.css" type="text/css" media="screen" title="Style" charset="utf-8"/>
     <link rel="stylesheet" href="${path}/css/pdf.css" type="text/css" media="print" title="PDF" charset="utf-8"/>
@@ -24,7 +24,7 @@ function addJsClass() {
 
                 <div id="nav-summary-childs" style="display:none;">
                     <% for (ch in toc) { %>
-                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title}.html">${ch.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
+                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title.encodeAsUrlPath()}.html">${ch.title.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
                     </div>
                     <% } %>
                 </div>
@@ -44,7 +44,7 @@ function addJsClass() {
         <span id="sponsor">${sponsorLogo}</span>
         <% } %>
     </div>
-    <p>${subtitle}</p>
+    <p>${subtitle.encodeAsHtml()}</p>
 </div>
 
 
@@ -54,18 +54,18 @@ function addJsClass() {
             <div id="main" class="corner-all">
 
                 <% if(prev){ %>
-                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title}.html">&lt;&lt; ${prev?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">&lt;&lt; ${prev?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
                 <% } %>
 
                 <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick Reference</a>)</span>
 
                 <% if(next){ %>
-                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title}.html">${next?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
+                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">${next?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
                 <% } %>
 
 
                 <div class="project">
-                    <h1>${title} - Reference Documentation</h1>
+                    <h1>${title.encodeAsHtml()} - Reference Documentation</h1>
 
                     <p><strong>Authors:</strong> ${authors}</p>
 
@@ -78,7 +78,7 @@ function addJsClass() {
                     <%
                     sectionWriter = { lvl, section ->
                     %>
-                    <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.title }">${section.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
+                    <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.title.encodeAsUrlFragment().encodeAsHtml() }">${section.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
                     </div>
                     <%
 
@@ -99,10 +99,10 @@ function addJsClass() {
 
                 <div style="clear:both;margin-top:15px;"></div>
                 <% if(prev){ %>
-                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title}.html">&lt;&lt; ${prev?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">&lt;&lt; ${prev?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
                 <% }
                    if(next){ %>
-                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title}.html">${next?.title?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
+                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">${next?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
                 <% } %>
                 <div style="clear:both"></div>
             </div>
@@ -115,12 +115,12 @@ function addJsClass() {
                 </div>
                 <div class="menu">
                     <% for (cat in refMenu) { %>
-                    <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">${cat.name}</h1><div class="menu-sub">
+                    <div class="menu-block"><h1 class="menu-title" onclick="toggleRef(this.parentNode.childNodes[1])">${cat.name.encodeAsHtml()}</h1><div class="menu-sub">
                         <% if (cat.usage.exists()) { %>
-                            <div class="menu-item"><a href="${path}/ref/${cat.name}/Usage.html">Usage</a></div>
+                            <div class="menu-item"><a href="${path}/ref/${cat.name.encodeAsUrlPath().encodeAsHtml()}/Usage.html">Usage</a></div>
                             <% } %>
                             <% for (txt in cat.sections) { %>
-                            <div class="menu-item"><a href="${path}/ref/${cat.name}/${txt.name[0..-6]}.html">${txt.name[0..-6]}</a>
+                            <div class="menu-item"><a href="${path}/ref/${cat.name.encodeAsUrlPath().encodeAsHtml()}/${txt.name[0..-6].encodeAsUrlPath().encodeAsHtml()}.html">${txt.name[0..-6].encodeAsHtml()}</a>
                             </div>
                             <% } %>
                             </div>

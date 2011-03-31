@@ -27,13 +27,15 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import grails.artefact.Artefact
 
- /**
+/**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
  *
  * @author Graeme Rocher
  */
+@Artefact("TagLibrary")
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware {
 
     ApplicationContext applicationContext

@@ -16,21 +16,15 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import grails.util.GrailsUtil
-
 import org.apache.commons.logging.LogFactory
-
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor
-import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler
-import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
-/**
+ /**
  * @author Mike
  * @author Graeme Rocher
  *
@@ -80,7 +74,7 @@ class FiltersGrailsPlugin {
 
         // Add redirect and render methods (copy and pasted from the
         // controllers plugin).
-        def redirect = new RedirectDynamicMethod(applicationContext)
+        def redirect = new RedirectDynamicMethod()
         def render = new RenderDynamicMethod()
 
         mc.redirect = {Map args ->

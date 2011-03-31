@@ -15,12 +15,11 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyClassLoader;
-
-import java.security.CodeSource;
-
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.Phases;
+
+import java.security.CodeSource;
 
 /**
  * A class loader that is aware of Groovy sources and injection operations.
@@ -50,7 +49,7 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
         super(loader, config);
     }
 
-    private ClassInjector[] classInjectors = new ClassInjector[0];
+    private ClassInjector[] classInjectors;
 
     public void setClassInjectors(ClassInjector[] classInjectors) {
         this.classInjectors = classInjectors;
@@ -62,7 +61,15 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
     @Override
     protected CompilationUnit createCompilationUnit(CompilerConfiguration config, CodeSource source) {
         CompilationUnit cu = super.createCompilationUnit(config, source);
-        cu.addPhaseOperation(new GrailsAwareInjectionOperation(getResourceLoader(), classInjectors), Phases.CANONICALIZATION);
+
+        GrailsAwareInjectionOperation operation;
+
+        if(classInjectors == null)
+            operation = new GrailsAwareInjectionOperation(getResourceLoader());
+        else
+            operation = new GrailsAwareInjectionOperation(getResourceLoader(), classInjectors);
+
+        cu.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return cu;
     }
 }

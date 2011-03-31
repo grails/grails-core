@@ -98,7 +98,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", "1.6.1"),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-log4j12", "1.6.1"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-test", "3.0.3.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-test", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5")
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
@@ -168,21 +168,21 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-servlets", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-url-mappings", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-validation", grailsVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-core", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-aop", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-aspects", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-asm", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-beans", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-context", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-expression", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-instrument", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-jdbc", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-jms", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-orm", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-oxm", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-tx", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-web", "3.0.3.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", "3.0.3.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-core", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-aop", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-aspects", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-asm", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-beans", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-context", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-expression", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-instrument", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-jdbc", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-jms", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-orm", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-oxm", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-tx", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-web", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", "1.6.1")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
@@ -193,7 +193,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("junit", "junit", "4.8.1"),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-testing", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-test", grailsVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-test", "3.0.3.RELEASE")
+                            ModuleRevisionId.newInstance("org.springframework", "spring-test", "3.0.5.RELEASE")
                         };
                         registerDependencies(dependencyManager, "test", testDependencies);
                         

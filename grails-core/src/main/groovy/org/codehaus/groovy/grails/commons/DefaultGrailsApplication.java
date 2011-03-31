@@ -278,7 +278,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             if (resourceLoader != null) {
                 gcl.setResourceLoader(resourceLoader);
             }
-            gcl.setClassInjectors(new ClassInjector[]{new DefaultGrailsDomainClassInjector()});
             cl = gcl;
         }
 

@@ -14,23 +14,24 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import grails.artefact.Artefact
 import java.text.DateFormat
 import java.text.DateFormatSymbols
-
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
-
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.http.HttpMethod
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * Tags for working with form controls.
  *
  * @author Graeme Rocher
  */
+@Artefact("TagLibrary")
 class FormTagLib {
 
     private static final DEFAULT_CURRENCY_CODES = ['EUR', 'XCD', 'USD', 'XOF', 'NOK', 'AUD',

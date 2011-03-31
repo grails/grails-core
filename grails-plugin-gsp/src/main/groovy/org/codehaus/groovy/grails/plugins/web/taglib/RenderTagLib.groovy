@@ -18,6 +18,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.Factory
 import com.opensymphony.module.sitemesh.RequestConstants
+import grails.artefact.Artefact
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.text.Template
@@ -45,6 +46,7 @@ import org.codehaus.groovy.grails.web.util.WebUtils
  *
  * @author Graeme Rocher
  */
+@Artefact("TagLibrary")
 class RenderTagLib implements RequestConstants {
 
     def out // to facilitate testing

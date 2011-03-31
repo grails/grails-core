@@ -152,7 +152,6 @@ hibernate {
     
     protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-        dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
      }
 
     GrailsWebRequest buildMockRequest(ConfigObject config = null) throws Exception {

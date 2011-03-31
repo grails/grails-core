@@ -14,28 +14,27 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import groovy.xml.MarkupBuilder
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
+import grails.artefact.Artefact
+import groovy.xml.MarkupBuilder
 import java.beans.PropertyEditor
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-
 import org.apache.commons.lang.StringEscapeUtils
-
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
-
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * Tags to handle validation and errors.
  *
  * @author Graeme Rocher
  */
+@Artefact("TagLibrary")
 class ValidationTagLib {
 
     static returnObjectForTags = ['message', 'fieldError', 'formatValue']

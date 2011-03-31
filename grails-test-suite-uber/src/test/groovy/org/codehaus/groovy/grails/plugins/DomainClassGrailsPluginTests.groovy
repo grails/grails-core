@@ -1,18 +1,16 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
-import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 
 class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
 
     void onSetUp() {
-        gcl = new GrailsAwareClassLoader()
-        def injector = new AlwaysInjector()
-        gcl.setClassInjectors([injector] as ClassInjector[])
+        gcl = initClassLoader()
 
         def fs = File.separator
         gcl.parseClass(
@@ -50,6 +48,19 @@ class Parent2 {
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
     }
 
+    private GrailsAwareClassLoader initClassLoader() {
+        GrailsAwareClassLoader gcl
+        gcl = new GrailsAwareClassLoader()
+        gcl.classInjectors = [new DefaultGrailsDomainClassInjector() {
+            @Override
+            boolean shouldInject(URL url) {
+                true
+            }
+
+        }] as ClassInjector[]
+        return gcl
+    }
+
     void testDomainClassesPlugin() {
         assert appCtx.containsBean("TestDomainClass")
         def instance = appCtx.getBean("TestDomainClass").newInstance()
@@ -81,9 +92,10 @@ class Parent2 {
     }
 
     void testInjectIds() {
+        def fs = File.separator
         def clz = gcl.parseClass('''
 class IdTest {}
-''')
+''', "myapp${fs}grails-app${fs}domain${fs}IdTest.groovy")
 
         def obj = clz.newInstance()
         obj.id = 10
@@ -94,12 +106,13 @@ class IdTest {}
     }
 
     void testInjectHasManyAssociation() {
+        def fs = File.separator
         def clz = gcl.parseClass('''
 class IdTest {
     static hasMany = [others:AssocTest]
 }
 class AssocTest {}
-''')
+''', "myapp${fs}grails-app${fs}domain${fs}IdTest.groovy")
 
         def obj = clz.newInstance()
         obj.id = 10
@@ -111,12 +124,13 @@ class AssocTest {}
     }
 
     void testInjectBelongsToAssociation()  {
+        def fs = File.separator
         gcl.parseClass('''
 class AssocTest {}
 class IdTest {
     static belongsTo = [other:AssocTest]
 }
-''')
+''', "myapp${fs}grails-app${fs}domain${fs}IdTest.groovy")
         def clz = gcl.loadClass("IdTest")
         def obj = clz.newInstance()
         obj.id = 10

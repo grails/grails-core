@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import grails.artefact.Artefact
+
 /**
  * Tags for rendering country selection / display of country names.
  *
@@ -21,6 +23,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
  *
  * @author Marc Palmer (marc@anyware.co.uk)
  */
+@Artefact("TagLibrary")
 class CountryTagLib {
     static final ISO3166_3 = [
         "afg":"Afghanistan",

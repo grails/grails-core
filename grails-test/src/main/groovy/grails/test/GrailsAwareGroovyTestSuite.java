@@ -16,22 +16,19 @@ package grails.test;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
-import groovy.util.GroovyTestSuite;
 import grails.util.PluginBuildSettings;
+import groovy.util.GroovyTestSuite;
+import junit.framework.Test;
+import junit.textui.TestRunner;
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import junit.framework.Test;
-import junit.textui.TestRunner;
-
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.springframework.core.io.Resource;
 
 /**
  *
@@ -71,20 +68,12 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 
     private void createClassLoader() {
         gcl = new GrailsAwareClassLoader(getClass().getClassLoader());
-        gcl.setClassInjectors(resolveClassInjectors());
         gcl.setResourceLoader(new GrailsResourceLoader(resolveGrailsResources()));
         customizeClassLoader(gcl);
     }
 
     protected void customizeClassLoader(@SuppressWarnings("unused") GrailsAwareClassLoader classLoader) {
         // do nothing by default
-    }
-
-    private ClassInjector[] resolveClassInjectors() {
-        List<ClassInjector> classInjectors = new ArrayList<ClassInjector>();
-        classInjectors.add(new DefaultGrailsDomainClassInjector());
-        customizeClassInjectors(classInjectors);
-        return classInjectors.toArray(new ClassInjector[classInjectors.size()]);
     }
 
     protected void customizeClassInjectors(@SuppressWarnings("unused") List<ClassInjector> classInjectors) {

@@ -15,6 +15,15 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -23,25 +32,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.GStringExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-
 /**
  * Default implementation of domain class injector interface that adds the 'id'
  * and 'version' properties and other previously boilerplate code.
@@ -49,6 +39,7 @@ import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
  * @author Graeme Rocher
  * @since 0.2
  */
+@AstTransformer
 public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInjector {
 
     private static final String DOMAIN_DIR = "domain";

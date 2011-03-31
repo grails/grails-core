@@ -19,6 +19,7 @@ class TestController  {
         "foo"
     }
     def test = {
+        println "FEED IS $feed"
         // should favour local action of feed tag
         assert feed instanceof Closure
         render feed()

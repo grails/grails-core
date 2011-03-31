@@ -19,17 +19,7 @@ import grails.validation.ValidationException;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
@@ -39,6 +29,11 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Abstract class for different implementations that perform saving to implement.
@@ -71,7 +66,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         return obj != null && obj == disableAutoValidationFor.get();
     }
 
-    private boolean shouldFail;
+
 
     @SuppressWarnings("rawtypes")
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
@@ -80,8 +75,12 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
 
         this.application = application;
-        this.shouldFail = false;
-        final Map config = application.getConfig().flatten();
+
+    }
+
+    private boolean shouldFail(GrailsApplication application, GrailsDomainClass domainClass) {
+        boolean shouldFail = false;
+        final Map config = application.getFlatConfig();
         if (config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
             Object configProperty = config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
             if (configProperty instanceof Boolean) {
@@ -95,6 +94,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                 }
             }
         }
+        return shouldFail;
     }
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
@@ -137,7 +137,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                 if (errors.hasErrors()) {
                     handleValidationError(target,errors);
                     @SuppressWarnings("hiding")
-                    boolean shouldFail = this.shouldFail;
+                    boolean shouldFail = shouldFail(application, domainClass);
                     if (argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
                     }
