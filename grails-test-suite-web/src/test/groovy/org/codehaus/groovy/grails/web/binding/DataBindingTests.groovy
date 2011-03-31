@@ -1,10 +1,8 @@
 package org.codehaus.groovy.grails.web.binding
 
-import java.text.SimpleDateFormat
-
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
-/**
+ /**
  * Tests Grails data binding capabilities.
  *
  * @author Graeme Rocher
@@ -46,6 +44,13 @@ class Author {
 
     static constraints = {
         name(nullable:true)
+    }
+
+    static get(Serializable id) {
+       def result = Author.newInstance()
+            result.id = id
+            result.name = "Mocked ${id}"
+            result
     }
 }
 @Entity
@@ -237,12 +242,6 @@ class Person {
         def c = ga.getControllerClass("TestController").newInstance()
 
         def authorClass = ga.getDomainClass("Author").getClazz()
-        authorClass.metaClass.'static'.get = { id ->
-            def result = authorClass.newInstance()
-            result.id = id
-            result.name = "Mocked ${id}"
-            result
-        }
 
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "5")

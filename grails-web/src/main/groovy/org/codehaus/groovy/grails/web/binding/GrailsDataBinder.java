@@ -759,6 +759,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             catch (MissingMethodException e) {
                 return null; // GORM not installed, continue to operate as normal
             }
+            catch (IllegalStateException e) {
+                return null; // GORM not installed, continue to operate as normal
+            }
         }
         finally {
             try {
