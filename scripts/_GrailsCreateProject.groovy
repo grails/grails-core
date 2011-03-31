@@ -81,14 +81,21 @@ target(createPlugin: "The implementation target")  {
         tofile: "${basedir}/${pluginName}GrailsPlugin.groovy",
         overwrite: true)
 
+    // The plugin's Grails version should be based on the current minor
+    // version, not the patch level. For example, 1.3.6 should be converted
+    // to 1.3.
+    def m = grailsVersion =~ /^(\d+\.\d+)(?:\.\d+)?(?:.*)/
+    def pluginGrailsVersion = m[0][1]
+
     // Insert the name of the plugin into whatever files need it.
     ant.replace(dir:"${basedir}") {
         include(name: "*GrailsPlugin.groovy")
         include(name: "scripts/*")
         replacefilter(token: "@plugin.name@", value: pluginName)
+        replacefilter(token: "@plugin.title@", value: GrailsNameUtils.getNaturalName(pluginName) + " Plugin")
         replacefilter(token: "@plugin.short.name@", value: GrailsNameUtils.getScriptName(pluginName))
         replacefilter(token: "@plugin.version@", value: grailsAppVersion ?: "0.1")
-        replacefilter(token: "@grails.version@", value: grailsVersion)
+        replacefilter(token: "@grails.version@", value: pluginGrailsVersion)
     }
 
     // install default plugins into plugin project
