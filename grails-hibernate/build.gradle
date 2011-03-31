@@ -10,13 +10,15 @@ dependencies {
     compile( 'org.springframework:spring-datastore-core:1.0.0.BUILD-SNAPSHOT' ) {
         transitive = false
     }
+    compile( 'org.springframework:spring-datastore-simple:1.0.0.BUILD-SNAPSHOT' ) {
+        transitive = false
+    }
     
     // Hibernate related
     compile 'org.hibernate:hibernate-core:3.6.1.Final'
     compile 'javassist:javassist:3.11.0.GA'
 
 
-    testCompile 'org.grails:grails-datastore-gorm-test:1.0.0.BUILD-SNAPSHOT'
 
 
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',

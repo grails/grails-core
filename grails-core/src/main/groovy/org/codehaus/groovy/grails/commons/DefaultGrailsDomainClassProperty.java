@@ -17,8 +17,9 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.GrailsNameUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -550,8 +551,9 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             List tmp = getPropertyValue(GrailsDomainClassProperty.TRANSIENT, List.class);
             if (tmp != null) transients = tmp;
             properties = createDomainClassProperties(descriptors);
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(getClazz(), properties);
-            DomainClassGrailsPlugin.registerConstraintsProperty(getMetaClass(), this);
+
+            ConstraintsEvaluator constraintsEvaluator = new DefaultConstraintEvaluator();
+            constraints = constraintsEvaluator.evaluate(type, properties);
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {
