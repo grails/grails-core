@@ -26,6 +26,17 @@ import grails.util.GrailsNameUtils
  */
 includeTargets << grailsScript("_GrailsInit")
 
+USAGE = """
+    integrate-with [--ant] [--eclipse] [--intellij] [--git] [--textmate]
+
+where
+    --ant = Generates an Ant build.xml with accompanying Ivy files.
+    --eclipse = Generates STS/Eclipse project files.
+    --intellij = Generates IntelliJ IDEA project files.
+    --git = Generates a '.gitignore' file.
+    --textmate = Generates a TextMate project file.
+"""
+
 integrationFiles = new File("${projectWorkDir}/integration-files")
 target(integrateWith:"Integrates ") {
     depends(parseArguments)
