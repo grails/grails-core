@@ -37,6 +37,7 @@ target
 /grails-plugin-controllers/bin/
 /grails-plugin-converters/bin/
 /grails-plugin-datasource/bin/
+/grails-plugin-domain-class/bin/
 /grails-plugin-filters/bin/
 /grails-plugin-gsp/bin/
 /grails-plugin-i18n/bin/
