@@ -17,11 +17,16 @@ dependencyCache = {
 				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure) 
 				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure) 
 			}
-													
 			includes = dependencyIncludes as List
-			exclude "org.grails/**"
+          exclude "org.grails/**"
 		}
 		into "$projectDir/lib"
+	}
+	copy {
+	    from ( cacheLocation ) {
+	        includes = ['org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-*.jar']
+	    }
+	    into "$projectDir/lib"
 	}
 
 }
