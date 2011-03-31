@@ -21,9 +21,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspRenderErrorsTag extends JspInvokeGrailsTagLibTag {
-	private static final long serialVersionUID = 6077206372374860458L;
+    private static final long serialVersionUID = 6077206372374860458L;
 
-	private static final String TAG_NAME = "renderErrors";
+    private static final String TAG_NAME = "renderErrors";
 
     private String bean;
     private String model;

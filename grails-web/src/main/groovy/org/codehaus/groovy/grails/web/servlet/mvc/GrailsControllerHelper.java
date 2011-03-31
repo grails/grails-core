@@ -80,7 +80,8 @@ public interface GrailsControllerHelper {
      *
      * @return The action response
      */
-    Object handleAction(GroovyObject controller,Closure action,HttpServletRequest request, HttpServletResponse response);
+    Object handleAction(GroovyObject controller, @SuppressWarnings("rawtypes") Closure action,
+                        HttpServletRequest request, HttpServletResponse response);
 
     /**
      * Handles a Controller action.

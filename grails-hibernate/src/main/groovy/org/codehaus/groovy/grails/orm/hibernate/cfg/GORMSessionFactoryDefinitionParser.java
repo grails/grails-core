@@ -126,7 +126,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         ConstructorArgumentValues constructorArgs = grailsApplicationBean.getConstructorArgumentValues();
 
         Set<Class<?>> classes = new HashSet<Class<?>>();
-        for(String beanName : simpleRegistry.getBeanDefinitionNames()) {
+        for (String beanName : simpleRegistry.getBeanDefinitionNames()) {
             BeanDefinition beanDef = simpleRegistry.getBeanDefinition(beanName);
             try {
                 Class<?> entityClass = Class.forName(beanDef.getBeanClassName(), true, beanClassLoader);
@@ -152,7 +152,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         beanDef.setScope("prototype");
 
         RootBeanDefinition domainDef = new RootBeanDefinition(MethodInvokingFactoryBean.class);
-        
+
         domainDef.getPropertyValues().addPropertyValue("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
         domainDef.getPropertyValues().addPropertyValue("targetMethod", "getArtefact");
         domainDef.getPropertyValues().addPropertyValue("arguments", new ArrayList<String>() {{
@@ -187,7 +187,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
 
         final String configLocation = element.getAttribute(CONFIG_LOCATION_ATTRIBUTE);
         if (StringUtils.hasText(configLocation)) {
-            propertyValues.addPropertyValue("configLocation", configLocation);    
+            propertyValues.addPropertyValue("configLocation", configLocation);
         }
 
         propertyValues.addPropertyValue(GrailsApplication.APPLICATION_ID,
@@ -219,7 +219,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
             targetRegistry.registerBeanDefinition("transactionManager", transactionManagerBean);
         }
 
-        parserContext.getDelegate().parsePropertyElements(element, sessionFactoryBean);       
+        parserContext.getDelegate().parsePropertyElements(element, sessionFactoryBean);
         return sessionFactoryBean;
     }
 
@@ -234,7 +234,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
             catch (ClassNotFoundException e) {
                 throw new BeanDefinitionParsingException(new Problem(
                         "Unable to load specified SessionFactory configClass implementation: " + e.getMessage(),
-                        new Location(parserContext.getReaderContext().getResource()),null, e)); 
+                        new Location(parserContext.getReaderContext().getResource()),null, e));
             }
         }
         return configClass;

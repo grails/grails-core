@@ -94,7 +94,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
         def beanDef = bb.getBeanDefinition('dataSource')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
-        
+
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 

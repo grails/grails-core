@@ -298,7 +298,7 @@ class CountryTagLib {
         }
 
         if (!attrs['valueMessagePrefix']) attrs.optionValue = { ISO3166_3[it] }
-        
+
         if (!attrs.value) {
             attrs.value = attrs.remove('default')
         }

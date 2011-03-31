@@ -85,7 +85,7 @@ public class SizeConstraint extends AbstractConstraint {
         else if (propertyValue instanceof Collection<?>) {
             size = Integer.valueOf(((Collection<?>)propertyValue).size());
         }
-        else if(propertyValue instanceof String) {
+        else if (propertyValue instanceof String) {
             size = Integer.valueOf(((String)propertyValue).length());
         }
 
@@ -93,17 +93,17 @@ public class SizeConstraint extends AbstractConstraint {
             if (range.getFrom().compareTo(size) == 1) {
                 rejectValueTooSmall(args, errors, target);
             }
-            else if(range.getTo().compareTo(size) == -1) {
+            else if (range.getTo().compareTo(size) == -1) {
                 rejectValueTooBig(args, errors, target);
             }
         }
     }
 
-    private void rejectValueTooSmall(Object[] args, Errors errors, Object target){
+    private void rejectValueTooSmall(Object[] args, Errors errors, Object target) {
         rejectValue(args, errors, target, false);
     }
 
-    private void rejectValueTooBig(Object[] args, Errors errors, Object target){
+    private void rejectValueTooBig(Object[] args, Errors errors, Object target) {
         rejectValue(args, errors, target, true);
     }
 

@@ -154,7 +154,7 @@ class FlowBuilderTests extends GroovyTestCase{
         def flow = new FlowBuilder("myFlow",getFlowBuilderServices(), new FlowDefinitionRegistryImpl()).flow {
             displaySearchForm {
                 on("submit").to "executeSearch"
-            }                   
+            }
             executeSearch {
                 action {
                     [results:searchService.executeSearch(params.q)]
@@ -206,7 +206,7 @@ class FlowBuilderTests extends GroovyTestCase{
                 on("success").to "displayResults"
                 on(Exception).to "displaySearchForm"
             }
-            
+
             displayResults {
                 on("showItem").to "showItem"
                 on("searchAgain").to "displaySearchForm"
@@ -224,7 +224,7 @@ class FlowBuilderTests extends GroovyTestCase{
             }
             addToCart {
                 action {
-                    if(!flowScope['cartItems']) flowScope['cartItem'] = []
+                    if (!flowScope['cartItems']) flowScope['cartItem'] = []
                     flowScope['cartItems'] << Book.get(params.id)
                 }
                 on('success').to "showCart"

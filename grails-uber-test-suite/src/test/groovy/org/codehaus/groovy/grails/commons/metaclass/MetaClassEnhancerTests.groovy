@@ -16,38 +16,36 @@ import groovy.util.GroovyTestCase;
 
 class MetaClassEnhancerTests extends GroovyTestCase {
 
-	void testEnhanceMetaClass() {
-		def ctx = new MockApplicationContext()
-		
-		ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication([TestController] as Class[], getClass().classLoader))
-		
-		ctx.registerMockBean "grailsUrlMappingsHolder", new DefaultUrlMappingsHolder([])
+    void testEnhanceMetaClass() {
+        def ctx = new MockApplicationContext()
 
-		def controllerApi = new ControllersApi(new MockGrailsPluginManager(), ctx)
-		
-		def enhancer = new MetaClassEnhancer()
-		enhancer.addApi controllerApi
-		
-		enhancer.enhance TestController.metaClass
-		
-		GrailsWebUtil.bindMockWebRequest()
-		
-		def controller = new TestController()
-		
-		controller.testRenderText()
-		assert "hello world" == controller.response.contentAsString
-				
-	}
-	
-	@Override
-	protected void tearDown() throws Exception {
-		RequestContextHolder.setRequestAttributes(null)
-	}
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication([TestController] as Class[], getClass().classLoader))
+
+        ctx.registerMockBean "grailsUrlMappingsHolder", new DefaultUrlMappingsHolder([])
+
+        def controllerApi = new ControllersApi(new MockGrailsPluginManager(), ctx)
+
+        def enhancer = new MetaClassEnhancer()
+        enhancer.addApi controllerApi
+
+        enhancer.enhance TestController.metaClass
+
+        GrailsWebUtil.bindMockWebRequest()
+
+        def controller = new TestController()
+
+        controller.testRenderText()
+        assert "hello world" == controller.response.contentAsString
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        RequestContextHolder.setRequestAttributes(null)
+    }
 }
 class TestController {
-	
-	def testRenderText = {
-		render "hello world"
-	}
-	
+
+    def testRenderText = {
+        render "hello world"
+    }
 }

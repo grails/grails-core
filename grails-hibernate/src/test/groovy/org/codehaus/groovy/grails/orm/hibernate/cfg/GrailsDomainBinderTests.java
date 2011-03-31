@@ -1,12 +1,12 @@
 /*
  * Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -173,7 +173,7 @@ public class GrailsDomainBinderTests extends TestCase {
         "        optionalProductStatus nullable: true \n" +
         "    } \n" +
         "}";
-    
+
     private static final String TABLE_PER_SUBCLASS =
         "class TablePerSubclassSuperclass {\n" +
         "    Long id \n" +
@@ -208,8 +208,8 @@ public class GrailsDomainBinderTests extends TestCase {
         "        optionalProductStatus nullable: true \n" +
         "    } \n" +
         "}";
-    
-    
+
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -230,7 +230,7 @@ public class GrailsDomainBinderTests extends TestCase {
      * Test for GRAILS-4200
      */
     public void testEmbeddedComponentMapping() {
-    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+        DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
         "    Long id \n" +
         "    Long version \n" +
         "    EmbeddedWidget ew \n" +
@@ -243,14 +243,14 @@ public class GrailsDomainBinderTests extends TestCase {
         "       }\n" +
         "    }");
 
-    	Table tableMapping = getTableMapping("widget", config);
+        Table tableMapping = getTableMapping("widget", config);
         Column embeddedComponentMappedColumn = tableMapping.getColumn(new Column("widget_name"));
         assertNotNull(embeddedComponentMappedColumn);
         assertEquals("widget_name", embeddedComponentMappedColumn.getName());
     }
 
     public void testLengthProperty() {
-    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+        DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
         "    Long id \n" +
         "    Long version \n" +
         "    String name \n" +
@@ -260,73 +260,73 @@ public class GrailsDomainBinderTests extends TestCase {
         "        description column: 's_description', sqlType: 'text'\n" +
         "    }\n" +
         "}");
-    	Table tableMapping = getTableMapping("widget", config);
-    	Column nameColumn = tableMapping.getColumn(new Column("s_name"));
-    	Column descriptionColumn = tableMapping.getColumn(new Column("s_description"));
-    	assertEquals(42, nameColumn.getLength());
-    	assertEquals(Column.DEFAULT_LENGTH, descriptionColumn.getLength());
+        Table tableMapping = getTableMapping("widget", config);
+        Column nameColumn = tableMapping.getColumn(new Column("s_name"));
+        Column descriptionColumn = tableMapping.getColumn(new Column("s_description"));
+        assertEquals(42, nameColumn.getLength());
+        assertEquals(Column.DEFAULT_LENGTH, descriptionColumn.getLength());
     }
 
     public void testUniqueProperty() {
-    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
-    			"    Long id \n" +
-    			"    Long version \n" +
-    			"    String name \n" +
-    			"    String description \n" +
-    			"    static mapping = {\n" +
-    			"        name unique: true\n" +
-    			"    }\n" +
-    	"}");
-    	Table tableMapping = getTableMapping("widget", config);
-    	Column nameColumn = tableMapping.getColumn(new Column("name"));
-    	Column descriptionColumn = tableMapping.getColumn(new Column("description"));
-    	assertEquals(true, nameColumn.isUnique());
-    	assertEquals(false, descriptionColumn.isUnique());
+        DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    String name \n" +
+                "    String description \n" +
+                "    static mapping = {\n" +
+                "        name unique: true\n" +
+                "    }\n" +
+        "}");
+        Table tableMapping = getTableMapping("widget", config);
+        Column nameColumn = tableMapping.getColumn(new Column("name"));
+        Column descriptionColumn = tableMapping.getColumn(new Column("description"));
+        assertEquals(true, nameColumn.isUnique());
+        assertEquals(false, descriptionColumn.isUnique());
     }
-    
+
     public void testPrecisionProperty() {
-    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
-    			"    Long id \n" +
-    			"    Long version \n" +
-    			"    Float width \n" +
-    			"    Float height \n" +
-    			"    static mapping = {\n" +
-    			"        width precision: 3\n" +
-    			"    }\n" +
-    	"}");
-    	Table tableMapping = getTableMapping("widget", config);
-    	Column heightColumn = tableMapping.getColumn(new Column("height"));
-    	Column widthColumn = tableMapping.getColumn(new Column("width"));
-    	assertEquals(3, widthColumn.getPrecision());
-    	assertEquals(Column.DEFAULT_PRECISION, heightColumn.getPrecision());
+        DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    Float width \n" +
+                "    Float height \n" +
+                "    static mapping = {\n" +
+                "        width precision: 3\n" +
+                "    }\n" +
+        "}");
+        Table tableMapping = getTableMapping("widget", config);
+        Column heightColumn = tableMapping.getColumn(new Column("height"));
+        Column widthColumn = tableMapping.getColumn(new Column("width"));
+        assertEquals(3, widthColumn.getPrecision());
+        assertEquals(Column.DEFAULT_PRECISION, heightColumn.getPrecision());
     }
-    
+
     public void testScaleProperty() {
-    	DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
-    			"    Long id \n" +
-    			"    Long version \n" +
-    			"    Float width \n" +
-    			"    Float height \n" +
-    			"    static mapping = {\n" +
-    			"        width scale: 7\n" +
-    			"    }\n" +
-    	"}");
-    	Table tableMapping = getTableMapping("widget", config);
-    	Column heightColumn = tableMapping.getColumn(new Column("height"));
-    	Column widthColumn = tableMapping.getColumn(new Column("width"));
-    	assertEquals(7, widthColumn.getScale());
-    	assertEquals(Column.DEFAULT_SCALE, heightColumn.getScale());
+        DefaultGrailsDomainConfiguration config = getDomainConfig("class Widget {\n" +
+                "    Long id \n" +
+                "    Long version \n" +
+                "    Float width \n" +
+                "    Float height \n" +
+                "    static mapping = {\n" +
+                "        width scale: 7\n" +
+                "    }\n" +
+        "}");
+        Table tableMapping = getTableMapping("widget", config);
+        Column heightColumn = tableMapping.getColumn(new Column("height"));
+        Column widthColumn = tableMapping.getColumn(new Column("width"));
+        assertEquals(7, widthColumn.getScale());
+        assertEquals(Column.DEFAULT_SCALE, heightColumn.getScale());
     }
-    
+
     public void testCachedMapProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(CACHED_MAP);
         Table table = getTableMapping("area_names", config);
         assertEquals(255, table.getColumn(new Column("names_elt")).getLength());
     }
-    
+
     public void testColumnNullabilityWithTablePerHierarchy() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_HIERARCHY);
-        
+
         // with tablePerHierarchy all columns related to properties defined in subclasses
         // must be nullable to allow instances of other classes in the hierarchy to be
         // persisted
@@ -340,27 +340,27 @@ public class GrailsDomainBinderTests extends TestCase {
         // columns related to required properties in the root class should not be nullable
         assertColumnNotNullable("table_per_hierarchy_superclass", "string_property", config);
         assertColumnNotNullable("table_per_hierarchy_superclass", "some_product_status", config);
-        
+
         // columns related to optional properties in the root class should be nullable
         assertColumnNullable("table_per_hierarchy_superclass", "optional_string_property", config);
         assertColumnNullable("table_per_hierarchy_superclass", "some_optional_product_status", config);
     }
-    
+
     public void testColumnNullabilityWithTablePerSubclass() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_SUBCLASS);
-        
+
         // with tablePerSubclass columns related to required properties defined in subclasses
         // should not be nullable
         assertColumnNotNullable("table_per_subclass_subclass", "product_status", config);
         assertColumnNotNullable("table_per_subclass_subclass", "product_name", config);
         assertColumnNotNullable("table_per_subclass_subclass", "product_count", config);
-        
+
         // with tablePerSubclass columns related to optional properties defined in subclasses
         // should be nullable
         assertColumnNullable("table_per_subclass_subclass", "optional_product_status", config);
         assertColumnNullable("table_per_subclass_subclass", "optional_product_name", config);
         assertColumnNullable("table_per_subclass_subclass", "optional_product_count", config);
-        
+
         // columns related to required properties in the root class should not be nullable
         assertColumnNotNullable("table_per_subclass_superclass", "string_property", config);
         assertColumnNotNullable("table_per_subclass_superclass", "some_product_status", config);
@@ -369,7 +369,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertColumnNullable("table_per_subclass_superclass", "optional_string_property", config);
         assertColumnNullable("table_per_subclass_superclass", "some_optional_product_status", config);
     }
-    
+
     @SuppressWarnings("rawtypes")
     public void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
@@ -382,10 +382,10 @@ public class GrailsDomainBinderTests extends TestCase {
         for (Iterator<?> i = mapping.getUniqueKeyIterator(); i.hasNext();) {
             UniqueKey key = (UniqueKey) i.next();
             List keyColumns = key.getColumns();
-            if(keyColumns.equals(expectedKeyColumns1)){
+            if (keyColumns.equals(expectedKeyColumns1)) {
                 found1 = true;
             }
-             if(keyColumns.equals(expectedKeyColumns2)){
+            if (keyColumns.equals(expectedKeyColumns2)) {
                 found2 = true;
             }
             cnt++;
@@ -744,7 +744,7 @@ public class GrailsDomainBinderTests extends TestCase {
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new BigDecimal("123.4567"));
         constrainedProperty.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new BigDecimal("0"));
         constrainedProperty.applyConstraint(ConstrainedProperty.SCALE_CONSTRAINT, 3);
-        assertColumnPrecisionAndScale(constrainedProperty, 7, 3); // precision (7) = number of digits in max constraint ("123.4567") 
+        assertColumnPrecisionAndScale(constrainedProperty, 7, 3); // precision (7) = number of digits in max constraint ("123.4567")
 
         // Verify that the correct precision is set when the only one of 'min' and 'max' constraint specified
         constrainedProperty = getConstrainedBigDecimalProperty();
@@ -822,7 +822,7 @@ public class GrailsDomainBinderTests extends TestCase {
     public void testCustomNamingStrategy() throws Exception {
 
         // somewhat artificial in that it doesn't test that setting the property
-        // in DataSource.groovy works, but that's handled in DataSourceConfigurationTests 
+        // in DataSource.groovy works, but that's handled in DataSourceConfigurationTests
         GrailsDomainBinder.configureNamingStrategy(CustomNamingStrategy.class);
 
         GroovyClassLoader cl = new GroovyClassLoader();
@@ -938,7 +938,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertTrue(table.getName() + "." + columnName +  " is not nullable",
                 table.getColumn(new Column(columnName)).isNullable());
     }
-    
+
     private void assertColumnLength(ConstrainedProperty constrainedProperty, int expectedLength) {
         Column column = new Column();
         GrailsDomainBinder.bindStringColumnConstraints(column, constrainedProperty);

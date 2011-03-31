@@ -22,7 +22,7 @@ import java.io.PrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
- * Utility methods for use on the command line, including method to accept user input etc. 
+ * Utility methods for use on the command line, including method to accept user input etc.
  *
  * @author Graeme Rocher
  * @since 1.2
@@ -106,5 +106,5 @@ public class CommandLineHelper {
         // No valid response given.
         out.println("No valid response entered - giving up asking.");
         return null;
-    }    
+    }
 }

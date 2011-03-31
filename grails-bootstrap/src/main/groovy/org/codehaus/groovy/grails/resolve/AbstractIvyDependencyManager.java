@@ -153,18 +153,17 @@ public abstract class AbstractIvyDependencyManager {
     }
     
     public DefaultModuleDescriptor getModuleDescriptor() {
-		return moduleDescriptor;
-	}
+        return moduleDescriptor;
+    }
 
-	public void setModuleDescriptor(DefaultModuleDescriptor moduleDescriptor) {
-		this.moduleDescriptor = moduleDescriptor;
-	}
+    public void setModuleDescriptor(DefaultModuleDescriptor moduleDescriptor) {
+        this.moduleDescriptor = moduleDescriptor;
+    }
 
-	/**
+    /**
      * Returns true if the application has any dependencies that are not inherited
      * from the framework or other plugins
      */
-    
     public boolean hasApplicationDependencies() {
 		return hasApplicationDependencies;
 	}
@@ -444,7 +443,7 @@ public abstract class AbstractIvyDependencyManager {
             }
         }
     }
-    
+
     protected ArtifactId createExcludeArtifactId(String excludeName) {
         return createExcludeArtifactId(excludeName, PatternMatcher.ANY_EXPRESSION);
     }

@@ -355,9 +355,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         }
         return null;
     }
-    
+
     public Class<?> getTargetClass() {
-    	return targetClass;
+        return targetClass;
     }
 
     /**
@@ -1343,7 +1343,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     name.equals(SCROLL_CALL) && args.length == 1 && args[0] instanceof Closure);
     }
 
-    public Criteria buildCriteria(Closure criteriaClosure) {
+    public Criteria buildCriteria(Closure<?> criteriaClosure) {
         createCriteriaInstance();
         criteriaClosure.setDelegate(this);
         criteriaClosure.call();
@@ -1365,7 +1365,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     }
 
     private void invokeClosureNode(Object args) {
-        Closure callable = (Closure)args;
+        Closure<?> callable = (Closure<?>)args;
         callable.setDelegate(this);
         callable.setResolveStrategy(Closure.DELEGATE_FIRST);
         callable.call();

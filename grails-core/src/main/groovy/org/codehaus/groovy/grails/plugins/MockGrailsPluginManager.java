@@ -130,11 +130,11 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
         Assert.assertFalse(this.checkForChangesExpected);
     }
 
-	public BuildSettings getBuildSettings() {
-		return null;
-	}
+    public BuildSettings getBuildSettings() {
+        return null;
+    }
 
-	public PluginBuildSettings getPluginBuildSettings() {
-		return null;
-	}
+    public PluginBuildSettings getPluginBuildSettings() {
+        return null;
+    }
 }

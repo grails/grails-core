@@ -145,9 +145,9 @@ class PluginBuildSettings {
      */
     Resource[] getInlinePluginDirectories() {
         def locations = cache['inlinePluginLocations']
-        if(locations == null) {
+        if (locations == null) {
 
-            if(buildSettings)
+            if (buildSettings)
                 locations = buildSettings.getInlinePluginDirectories().collect { new FileSystemResource(it) }
             else
                 locations = [] as Resource[]
@@ -338,7 +338,7 @@ class PluginBuildSettings {
     Resource[] getPluginDirectories() {
         def pluginDirectoryResources = cache['pluginDirectoryResources']
         if (!pluginDirectoryResources) {
-            if(buildSettings)
+            if (buildSettings)
                 pluginDirectoryResources = buildSettings.getPluginDirectories().collect { new FileSystemResource(it) } as Resource[]
             else
                 pluginDirectoryResources = [] as Resource[]
@@ -369,8 +369,8 @@ class PluginBuildSettings {
      */
     List<Resource> getImplicitPluginDirectories() {
         def implicitPluginDirectories = cache['implicitPluginDirectories']
-        if(implicitPluginDirectories == null) {
-            if(buildSettings)
+        if (implicitPluginDirectories == null) {
+            if (buildSettings)
                 implicitPluginDirectories = buildSettings.getImplicitPluginDirectories().collect { new FileSystemResource(it) }
             else
                 implicitPluginDirectories = [] as Resource[]
@@ -578,12 +578,12 @@ class PluginBuildSettings {
             if (newResources) {
                 if (processExcludes) {
                     def excludes = EXCLUDED_RESOURCES
-					AntPathMatcher pathMatcher=new AntPathMatcher()
+                    AntPathMatcher pathMatcher=new AntPathMatcher()
                     newResources = newResources.findAll { Resource r ->
-						def relPath = relativePath(dir.file, r.file)
+                        def relPath = relativePath(dir.file, r.file)
                         !excludes.any {
-							pathMatcher.match(it, relPath) 
-						}
+                            pathMatcher.match(it, relPath)
+                        }
                     }
                 }
                 originalResources = ArrayUtils.addAll(originalResources, newResources as Resource[])
@@ -591,15 +591,14 @@ class PluginBuildSettings {
         }
         return originalResources
     }
-	
-	private String relativePath(File relbase, File file) {
-		def pathParts = []
-		def currentFile = file
-		while (currentFile != null && currentFile != relbase) {
-			pathParts += currentFile.name
-			currentFile = currentFile.parentFile
-		}
-		pathParts.reverse().join('/')
-	}
 
+    private String relativePath(File relbase, File file) {
+        def pathParts = []
+        def currentFile = file
+        while (currentFile != null && currentFile != relbase) {
+            pathParts += currentFile.name
+            currentFile = currentFile.parentFile
+        }
+        pathParts.reverse().join('/')
+    }
 }

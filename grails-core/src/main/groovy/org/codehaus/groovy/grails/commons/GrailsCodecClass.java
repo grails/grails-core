@@ -29,10 +29,12 @@ public interface GrailsCodecClass extends InjectableGrailsClass {
     /**
      * @return The encode closure
      */
+    @SuppressWarnings("rawtypes")
     Closure getEncodeMethod();
 
     /**
      * @return The decode closure
      */
+    @SuppressWarnings("rawtypes")
     Closure getDecodeMethod();
 }

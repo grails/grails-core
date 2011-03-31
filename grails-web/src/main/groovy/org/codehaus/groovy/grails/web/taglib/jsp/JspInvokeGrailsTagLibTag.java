@@ -84,7 +84,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     private GrailsApplication application;
     private ApplicationContext appContext;
     private static final String TAG_LIBS_ATTRIBUTE = "org.codehaus.groovy.grails.TAG_LIBS";
-	private static final String OUT_PROPERTY = "out";
+    private static final String OUT_PROPERTY = "out";
     private String tagContent;
     private boolean bodyInvokation;
 
@@ -209,7 +209,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                 return call(args);
             }
             @Override
-            public Object call(Object[] args) {
+            public Object call(Object... args) {
                 invocationCount++;
                 if (args.length > 0) {
                     invocationArgs.add(args[0]);

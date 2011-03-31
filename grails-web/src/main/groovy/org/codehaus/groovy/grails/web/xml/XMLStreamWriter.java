@@ -37,14 +37,15 @@ public class XMLStreamWriter {
     protected Stack<String> tagStack = new Stack<String>();
 
     private char quoteChar = '"';
-    
+
     public XMLStreamWriter(StreamingMarkupWriter writer) {
         this.writer = writer;
     }
 
     public XMLStreamWriter startDocument(String encoding, String version) throws IOException {
-        if(mode != INIT)
+        if (mode != INIT) {
             throw new IllegalStateException();
+        }
         writer.unescaped().write(String.format("<?xml version=\"%s\" encoding=\"%s\"?>", version, encoding));
         return this;
     }
@@ -54,7 +55,7 @@ public class XMLStreamWriter {
     }
 
     public XMLStreamWriter startNode(String tag) throws IOException {
-        if(mode == TAG)
+        if (mode == TAG)
             endStartTag();
 
         startTag();
@@ -67,16 +68,16 @@ public class XMLStreamWriter {
 
     public XMLStreamWriter end() throws IOException {
         Writer ue = writer.unescaped();
-        if(mode == TAG) {
+        if (mode == TAG) {
             ue.write(" />");
-            if(tagStack.pop() == null) {
+            if (tagStack.pop() == null) {
                 throw new IllegalStateException();
             }
-        } else if(mode == CONTENT) {
+        } else if (mode == CONTENT) {
             ue.write('<');
             ue.write('/');
             String t = tagStack.pop();
-            if(t == null) {
+            if (t == null) {
                 throw new IllegalStateException();
             }
             ue.write(t);
@@ -87,7 +88,7 @@ public class XMLStreamWriter {
     }
 
     public XMLStreamWriter attribute(String name, String value) throws IOException {
-        if(mode != TAG) {
+        if (mode != TAG) {
             throw new IllegalStateException();
         }
         Writer ue = writer.unescaped();
@@ -108,7 +109,7 @@ public class XMLStreamWriter {
     }
 
     public XMLStreamWriter characters(String data) throws IOException {
-        if(mode == TAG) {
+        if (mode == TAG) {
             endStartTag();
         }
         mode = CONTENT;

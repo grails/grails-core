@@ -43,9 +43,9 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
     void testServletContextObject() {
         def context = new MockServletContext()
 
-		println context.metaClass.getMetaMethod("getProperty")
-		println ServletContext.metaClass.getMetaMethod("getProperty")
-		context["foo"] = "bar"
+        println context.metaClass.getMetaMethod("getProperty")
+        println ServletContext.metaClass.getMetaMethod("getProperty")
+        context["foo"] = "bar"
         assertEquals "bar", context["foo"]
 
         context.foo = "fred"
@@ -57,8 +57,8 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
     void testHttpSessionObject() {
         def session = new MockHttpSession()
-		def httpSessionMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(HttpSession)
-		def metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(session.getClass())
+        def httpSessionMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(HttpSession)
+        def metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(session.getClass())
         assert session.getProperty("creationTime")
 
         session["foo"] = "bar"

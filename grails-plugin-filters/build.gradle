@@ -1,14 +1,14 @@
 dependencies {
-	compile project(":grails-web"), project(":grails-plugin-controllers")
-	testCompile project(":grails-test"), project(":grails-test-suite-base"), project(":grails-plugin-testing")
-	
-	testCompile project(':grails-plugin-logging'),
-				project(':grails-plugin-mimetypes'),
-				project(':grails-plugin-url-mappings'),		
-				project(':grails-plugin-converters'),
-				project(':grails-plugin-gsp'),		
-				project(':grails-plugin-codecs'),		
-				project(':grails-plugin-i18n'),
-				project(':grails-plugin-servlets')			
+    compile project(":grails-web"), project(":grails-plugin-controllers")
+    testCompile project(":grails-test"), project(":grails-test-suite-base"), project(":grails-plugin-testing")
+
+    testCompile project(':grails-plugin-logging'),
+                project(':grails-plugin-mimetypes'),
+                project(':grails-plugin-url-mappings'),
+                project(':grails-plugin-converters'),
+                project(':grails-plugin-gsp'),
+                project(':grails-plugin-codecs'),
+                project(':grails-plugin-i18n'),
+                project(':grails-plugin-servlets')
 }
 jar.appendix = 'plugin-filters'

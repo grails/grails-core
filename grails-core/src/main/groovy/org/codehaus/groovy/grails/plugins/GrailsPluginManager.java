@@ -307,15 +307,15 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
     /**
      * The BuildSettings instance for this plugin manager. Note this is only returned in the development
      * environment and will return null in a WAR deployed environment
-     * 
+     *
      * @return The BuildSettings instance
      */
-	BuildSettings getBuildSettings();
+    BuildSettings getBuildSettings();
 
-	/**
-	 * The PluginBuildSettings instance for this plugin manager. Note will return null in a WAR deployed environment
-	 * 
-	 * @return The PluginBuildSettings instance
-	 */
-	PluginBuildSettings getPluginBuildSettings();
+    /**
+     * The PluginBuildSettings instance for this plugin manager. Note will return null in a WAR deployed environment
+     *
+     * @return The PluginBuildSettings instance
+     */
+    PluginBuildSettings getPluginBuildSettings();
 }

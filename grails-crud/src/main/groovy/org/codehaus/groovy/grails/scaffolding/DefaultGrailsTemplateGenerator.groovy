@@ -238,17 +238,20 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         }
 
         def templateFile = new FileSystemResource(new File("${basedir}/src/templates/scaffolding/${template}").absoluteFile)
-		
-		
+
         if (!templateFile.exists()) {
-			templateFile = new FileSystemResource(new File("${basedir}/src/grails/templates/scaffolding/${template}").absoluteFile)
+            templateFile = new FileSystemResource(new File("${basedir}/src/grails/templates/scaffolding/${template}").absoluteFile)
         }
-		if (!templateFile.exists()) {
+        if (!templateFile.exists()) {
             // template not found in application, use default template
             def grailsHome = BuildSettingsHolder.settings?.grailsHome
 
             if (grailsHome) {
                 templateFile = new FileSystemResource(new File("${grailsHome}/src/grails/templates/scaffolding/${template}").absoluteFile)
+                if (!templateFile.exists()) {
+                    templateFile = new FileSystemResource(new File("${grailsHome}/grails-resources/src/grails/templates/scaffolding/${template}").absoluteFile)
+                }
+
             }
             else {
                 templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")
@@ -286,6 +289,15 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         if (grailsHome) {
             try {
                 def grailsHomeTemplates = resolver.getResources("file:${grailsHome}/src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
+                resources.addAll(grailsHomeTemplates)
+            }
+            catch (e) {
+                // ignore
+                LOG.debug("Error locating templates from GRAILS_HOME: ${e.message}", e)
+            }
+
+            try {
+                def grailsHomeTemplates = resolver.getResources("file:${grailsHome}/grails-resources/src/grails/templates/scaffolding/*.gsp").filename.collect(filter)
                 resources.addAll(grailsHomeTemplates)
             }
             catch (e) {

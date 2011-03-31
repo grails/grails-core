@@ -48,7 +48,7 @@ class PropertyConfig {
     /**
      * The default sort order
      */
-    String order 
+    String order
 
     /**
      * The batch size used for lazy loading
@@ -61,7 +61,7 @@ class PropertyConfig {
      */
     String cascade
     /**
-     * The fetch strategy for this property. 
+     * The fetch strategy for this property.
      */
     FetchMode fetch = FetchMode.DEFAULT
 
@@ -70,13 +70,10 @@ class PropertyConfig {
      */
     boolean ignoreNotFound = false
 
-
-
     /**
     * Whether or not this is column is insertable by hibernate
      */
     boolean insertable = true
-
 
     /**
     * Whether or not this column is updateable by hibernate

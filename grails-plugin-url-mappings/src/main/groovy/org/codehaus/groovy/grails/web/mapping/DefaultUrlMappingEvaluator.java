@@ -168,12 +168,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     /**
      * A Closure that captures a call to a method that accepts a single closure
      */
+    @SuppressWarnings("rawtypes")
     class MappingCapturingClosure extends Closure {
 
         private static final long serialVersionUID = 2108155626252742722L;
-        private Closure mappings;
+        private Closure<?> mappings;
 
-        public Closure getMappings() {
+        public Closure<?> getMappings() {
             return mappings;
         }
 
@@ -182,9 +183,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         @Override
-        public Object call(Object[] args) {
+        public Object call(Object... args) {
             if (args.length > 0 && (args[0] instanceof Closure)) {
-                mappings = (Closure) args[0];
+                mappings = (Closure<?>) args[0];
             }
             return null;
         }

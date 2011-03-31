@@ -36,7 +36,7 @@ import org.springframework.context.ApplicationContextAware;
 public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter implements ApplicationContextAware {
 
     private GrailsApplication grailsApplication;
-    private Closure commandObjectBindingAction;
+    private Closure<?> commandObjectBindingAction;
     private Collection<String> processedControllerNames = new ConcurrentLinkedQueue<String>();
     private ApplicationContext applicationContext;
 
@@ -54,7 +54,7 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
                 for (String propName : props.keySet()) {
                     Object value = props.get(propName);
                     if (value instanceof Closure) {
-                        final Closure callable = (Closure) value;
+                        final Closure<?> callable = (Closure<?>) value;
                         if (WebMetaUtils.isCommandObjectAction(callable)) {
                             WebMetaUtils.prepareCommandObjectBindingAction(commandObjectBindingAction,callable, propName, controller, applicationContext);
                         }

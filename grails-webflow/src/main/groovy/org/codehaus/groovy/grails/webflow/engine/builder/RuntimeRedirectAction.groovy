@@ -60,7 +60,7 @@ class RuntimeRedirectAction extends AbstractAction {
         def delegate = new ExpressionDelegate(context)
         def controller = resolveExpression(delegate, controller)
         def action = resolveExpression(delegate, action)
-        Map params = this.params.clone() 
+        Map params = this.params.clone()
         resolveExpressionsInParams(delegate, params)
 
         UrlCreator creator = urlMapper.getReverseMapping(controller, action, params)

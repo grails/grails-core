@@ -127,14 +127,14 @@ public class HibernateProxyHandler implements EntityProxyHandler {
         }
     }
 
-	public Object getProxyIdentifier(Object o) {
-		if(o instanceof HibernateProxy) {
-			return ((HibernateProxy)o).getHibernateLazyInitializer().getIdentifier();
-		}
-		return null;
-	}
+    public Object getProxyIdentifier(Object o) {
+        if (o instanceof HibernateProxy) {
+            return ((HibernateProxy)o).getHibernateLazyInitializer().getIdentifier();
+        }
+        return null;
+    }
 
-	public Class<?> getProxiedClass(Object o) {
-		return HibernateProxyHelper.getClassWithoutInitializingProxy(o);
-	}
+    public Class<?> getProxiedClass(Object o) {
+        return HibernateProxyHelper.getClassWithoutInitializingProxy(o);
+    }
 }

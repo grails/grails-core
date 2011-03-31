@@ -5,17 +5,17 @@ import junit.framework.TestCase;
 /**
  * NOTE: This test covers the old plug-in system. The system has been heavily re-worked. Please see
  * PluginSystemTests in src/groovy
- * 
+ *
  * @author graemerocher
  *
  */
 public class PluginTests extends TestCase {
-	
-	public void testTempPluginTests() {
-		// does nothing. All of the below is commented out because it relates to
-		// the original plugin proposal which has now been removed. However there
-		// may still be a place for a test with this name
-	}
+
+    public void testTempPluginTests() {
+        // does nothing. All of the below is commented out because it relates to
+        // the original plugin proposal which has now been removed. However there
+        // may still be a place for a test with this name
+    }
  /*   GenericApplicationContext appCtx;
 
     protected void setUp() throws Exception {

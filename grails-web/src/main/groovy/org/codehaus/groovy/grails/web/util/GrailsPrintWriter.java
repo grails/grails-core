@@ -35,7 +35,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  */
 public class GrailsPrintWriter extends PrintWriter {
 
-	protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
+    protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
     protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble=false;
     protected Writer out;
@@ -433,13 +433,13 @@ public class GrailsPrintWriter extends PrintWriter {
         Writer target = getOut();
         while (target instanceof GrailsPrintWriter) {
             GrailsPrintWriter gpr=((GrailsPrintWriter)target);
-            if(gpr.isAllowUnwrappingOut()) {
-	            if (markUsed) {
-	                gpr.setUsed(true);
-	            }
-	            target = gpr.getOut();
+            if (gpr.isAllowUnwrappingOut()) {
+                if (markUsed) {
+                    gpr.setUsed(true);
+                }
+                target = gpr.getOut();
             } else {
-            	break;
+                break;
             }
         }
 

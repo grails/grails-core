@@ -34,15 +34,15 @@ import javax.xml.transform.OutputKeys
  * @author Graeme Rocher
  * @since 1.2
  */
-
-public class DefaultPluginPublisher {
+class DefaultPluginPublisher {
 
     String revision = "0"
     String repositoryURL
     DefaultPluginPublisher(String revNumber, String repositoryURL) {
-        if(revNumber)
+        if (revNumber) {
             this.revision = revNumber
-        if(!repositoryURL) throw new IllegalArgumentException("Argument [repositoryURL] must be specified!")
+        }
+        if (!repositoryURL) throw new IllegalArgumentException("Argument [repositoryURL] must be specified!")
         this.repositoryURL = repositoryURL
     }
 
@@ -76,7 +76,7 @@ public class DefaultPluginPublisher {
         def xml = parsePluginList(pluginsList)
 
         xml.@revision = revision
-        
+
         def releaseMetadata = getPluginMetadata(pluginName)
         def pluginVersion = releaseMetadata.@version.toString().trim()
         def releaseTag = "RELEASE_${pluginVersion.replaceAll('\\.','_')}"
@@ -84,7 +84,7 @@ public class DefaultPluginPublisher {
         def props = ['title', 'author', 'authorEmail', 'description', 'documentation']
         def releaseInfo = {
             release([tag:releaseTag,version:pluginVersion, type:'svn']) {
-                for(p in props) {
+                for (p in props) {
                     "$p"(releaseMetadata."$p".text())
                 }
                 file "$repositoryURL/grails-$pluginName/tags/$releaseTag/grails-$pluginName-${pluginVersion}.zip"
@@ -93,7 +93,7 @@ public class DefaultPluginPublisher {
 
         // build argument, if makeLatest is true make the plugin the latest release
         def pluginArgs = [name:pluginName]
-        if(makeLatest) {
+        if (makeLatest) {
             pluginArgs.'latest-release' = pluginVersion
         }
 
@@ -101,39 +101,37 @@ public class DefaultPluginPublisher {
             plugin(pluginArgs, releaseInfo)
         }
 
-
         // find plugin
         def allPlugins = xml.plugin
-        if(allPlugins.size()==0) {
+        if (allPlugins.size()==0) {
             // create new plugin list
             xml << pluginInfo
         }
         else {
             def existingEntry = xml.plugin.find { it.@name == pluginName }
 
-            if(existingEntry.size()==0) {
+            if (existingEntry.size()==0) {
                 // plugin doesn't exist, create new entry
                 def lastPlugin = allPlugins[allPlugins.size()-1]
                 lastPlugin + pluginInfo
             }
             else {
                 // plugin exists, add release info and make latest is appropriate
-                if(makeLatest) {
+                if (makeLatest) {
                     existingEntry.'@latest-release' = pluginVersion
                 }
                 def existingRelease = existingEntry.release.find { it.@version == pluginVersion }
-                if(existingRelease.size()==0) {                    
+                if (existingRelease.size()==0) {
                     existingEntry << releaseInfo
                 }
             }
         }
 
         return xml
-
     }
 
     protected GPathResult parsePluginList(Resource pluginsListFile) {
-        if(pluginsListFile.exists()) {
+        if (pluginsListFile.exists()) {
             InputStream stream = pluginsListFile.getInputStream()
             try {
                 return new XmlSlurper().parse(stream)

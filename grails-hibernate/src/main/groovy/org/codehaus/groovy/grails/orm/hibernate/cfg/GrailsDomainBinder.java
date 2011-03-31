@@ -441,7 +441,7 @@ public final class GrailsDomainBinder {
                     if (discriminatorColumn!=null) {
                         discriminatorColumnName = discriminatorColumn.getName();
                     }
-                    if (rootMapping.getDiscriminatorMap().get("formula")!=null){
+                    if (rootMapping.getDiscriminatorMap().get("formula")!=null) {
                         discriminatorColumnName = (String)m.getDiscriminatorMap().get("formula");
                     }
                 }
@@ -650,7 +650,7 @@ public final class GrailsDomainBinder {
         return s.startsWith("`") && s.endsWith("`") ? s.substring(1, s.length() - 1) : s;
     }
 
-	private static Column getColumnForSimpleValue(SimpleValue element) {
+    private static Column getColumnForSimpleValue(SimpleValue element) {
         return (Column)element.getColumnIterator().next();
     }
 
@@ -665,7 +665,7 @@ public final class GrailsDomainBinder {
                 typeName = typeObj.toString();
             }
         }
-        else if (mapping!=null){
+        else if (mapping!=null) {
             typeName = mapping.getTypeName(property.getType());
         }
         return typeName;
@@ -1085,7 +1085,7 @@ public final class GrailsDomainBinder {
         return evaluateMapping(domainClass,null);
     }
 
-    public static Mapping evaluateMapping(GrailsDomainClass domainClass, Closure defaultMapping) {
+    public static Mapping evaluateMapping(GrailsDomainClass domainClass, Closure<?> defaultMapping) {
        try {
             Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.MAPPING);
             if (o != null || defaultMapping != null) {
@@ -1096,7 +1096,7 @@ public final class GrailsDomainBinder {
                 }
 
                 if (o instanceof Closure) {
-                    m = builder.evaluate((Closure) o);
+                    m = builder.evaluate((Closure<?>) o);
                 }
 
                 MAPPING_CACHE.put(domainClass.getClazz(), m);
@@ -1342,14 +1342,14 @@ public final class GrailsDomainBinder {
         entity.setDiscriminator(d);
         entity.setDiscriminatorValue(m!=null && m.getDiscriminator() != null ? m.getDiscriminator() : entity.getClassName());
 
-        if (m!=null && m.getDiscriminatorMap().get("insert") != null){
+        if (m!=null && m.getDiscriminatorMap().get("insert") != null) {
             entity.setDiscriminatorInsertable((Boolean)m.getDiscriminatorMap().get("insert"));
         }
-        if (m!=null && m.getDiscriminatorMap().get("type") != null){
+        if (m!=null && m.getDiscriminatorMap().get("type") != null) {
             d.setTypeName((String)m.getDiscriminatorMap().get("type"));
         }
 
-        if (m!=null && m.getDiscriminatorMap().get("formula") != null){
+        if (m!=null && m.getDiscriminatorMap().get("formula") != null) {
             Formula formula = new Formula();
             formula.setFormula((String)m.getDiscriminatorMap().get("formula"));
             d.addFormula(formula);
@@ -2308,19 +2308,19 @@ public final class GrailsDomainBinder {
                 column.setValue(simpleValue);
                 bindColumn(grailsProp, parentProperty, column, cc, path, table);
 
-                if(cc != null) {
-                	if(cc.getLength() != -1) {
-                		column.setLength(cc.getLength());
-                	}
-                	if(cc.getPrecision() != -1) {
-                		column.setPrecision(cc.getPrecision());
-                	}
-                	if(cc.getScale() != -1) {
-                		column.setScale(cc.getScale());
-                	}
-                	column.setUnique(cc.isUnique());
+                if (cc != null) {
+                    if (cc.getLength() != -1) {
+                        column.setLength(cc.getLength());
+                    }
+                    if (cc.getPrecision() != -1) {
+                        column.setPrecision(cc.getPrecision());
+                    }
+                    if (cc.getScale() != -1) {
+                        column.setScale(cc.getScale());
+                    }
+                    column.setUnique(cc.isUnique());
                 }
-                
+
                 if (table != null)
                     table.addColumn(column);
 

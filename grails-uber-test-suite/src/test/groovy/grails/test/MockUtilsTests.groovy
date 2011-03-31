@@ -244,7 +244,7 @@ class MockUtilsTests extends GroovyTestCase {
 
         result = TestDomain.findAllByAgeBetween(18, 35, [sort: "name", order: "desc", max: 3, offset: 1])
         assertEquals 0, result.size()
-    }    
+    }
 
     /**
      * Tests the dynamically added <code>get()</code> method.

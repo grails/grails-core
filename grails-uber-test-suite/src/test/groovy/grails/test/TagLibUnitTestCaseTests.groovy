@@ -1,7 +1,7 @@
 package grails.test
 
-import junit.framework.TestFailure 
-import junit.framework.TestResult 
+import junit.framework.TestFailure
+import junit.framework.TestResult
 
 class TagLibUnitTestCaseTests extends GrailsUnitTestCase {
 
@@ -12,7 +12,7 @@ class TagLibUnitTestCaseTests extends GrailsUnitTestCase {
         testCase.run(result)
         checkFailures(result)
     }
-    
+
     void testTagThatAccessesPageScope() {
         def result = new TestResult()
         def testCase = new PagePropertyTagLibTestCase()
@@ -20,7 +20,7 @@ class TagLibUnitTestCaseTests extends GrailsUnitTestCase {
         testCase.run(result)
         checkFailures(result)
     }
-    
+
     private void checkFailures(TestResult result) {
         result.errors().each { TestFailure failure ->
             println ">> Error: ${failure.toString()}"
@@ -37,12 +37,12 @@ class TagLibUnitTestCaseTests extends GrailsUnitTestCase {
 }
 
 class PagePropertyTagLibTestCase extends TagLibUnitTestCase {
-    
+
     void testTagThatPopulatesPageScope() {
         tagLib.tagThatPopulatesPageScope([food: 'nachos'])
         assertEquals 'nachos', tagLib.pageScope.favoriteFood
     }
-    
+
     void testTagThatAccessesPageScope() {
         tagLib.pageScope.food = 'tacos'
         tagLib.tagThatAccessesPageScope([:])
@@ -51,11 +51,11 @@ class PagePropertyTagLibTestCase extends TagLibUnitTestCase {
 }
 
 class PagePropertyTagLib {
-    
+
     def tagThatPopulatesPageScope = { attrs ->
         pageScope.favoriteFood = attrs.food
     }
-    
+
     def tagThatAccessesPageScope = {
         out << "food is ${pageScope.food}"
     }

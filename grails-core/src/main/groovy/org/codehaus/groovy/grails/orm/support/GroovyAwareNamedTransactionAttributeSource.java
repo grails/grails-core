@@ -40,7 +40,7 @@ public class GroovyAwareNamedTransactionAttributeSource extends NameMatchTransac
     @Override
     public TransactionAttribute getTransactionAttribute(Method method, Class targetClass) {
         if (method.isSynthetic()) return null;
-        return super.getTransactionAttribute(method, targetClass);    
+        return super.getTransactionAttribute(method, targetClass);
     }
 
     @Override
@@ -50,6 +50,6 @@ public class GroovyAwareNamedTransactionAttributeSource extends NameMatchTransac
     }
 
     public void setTransactionalAttributes(Properties properties) {
-        super.setProperties(properties);    
+        super.setProperties(properties);
     }
 }

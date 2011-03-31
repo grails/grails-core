@@ -68,10 +68,10 @@ public class GrailsContextLoader extends ContextLoader {
         WebApplicationContext  ctx;
         try {
             ctx = super.createWebApplicationContext(servletContext, parent);
-            
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[GrailsContextLoader] Created parent application context");
-            }            
+            }
 
             application = ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);

@@ -24,16 +24,15 @@ import java.util.List;
 import org.codehaus.groovy.ant.Groovyc;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.core.io.Resource;
 
 public class Grailsc extends Groovyc {
 
-	private List<File> destList = new ArrayList<File>();
-	private PluginBuildSettings pluginBuildSettings;
-	
-	@Override
-	protected void scanDir(File srcDir, File destDir, String[] files) {
+    private List<File> destList = new ArrayList<File>();
+    private PluginBuildSettings pluginBuildSettings;
+
+    @Override
+    protected void scanDir(File srcDir, File destDir, String[] files) {
        List<File> srcList = new ArrayList<File>();
        String srcPath = srcDir.getAbsolutePath();
        String destPath = destDir.getAbsolutePath();
@@ -64,13 +63,13 @@ public class Grailsc extends Groovyc {
            }
        }
        addToCompileList(srcList.toArray(new File[srcList.size()]));
-	}
-	
-	@Override
-	protected void compile() {
+    }
+
+    @Override
+    protected void compile() {
         configureResourceLoader();
 
-        if (compileList.length>0) {
+        if (compileList.length > 0) {
             long now = System.currentTimeMillis();
             try {
                 super.compile();
@@ -78,18 +77,18 @@ public class Grailsc extends Groovyc {
             }
             finally {
                 // set the destination files as modified so recompile doesn't happen continuously
-                for(File f : destList) {
+                for (File f : destList) {
                     f.setLastModified(now);
                 }
             }
         }
-	}
-	
+    }
+
     private void configureResourceLoader() {
-    	if(pluginBuildSettings != null) {
+        if (pluginBuildSettings != null) {
             Resource[] resources = pluginBuildSettings.getArtefactResources();
             GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
-            GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);    		
-    	}
-    }	
+            GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
+        }
+    }
 }

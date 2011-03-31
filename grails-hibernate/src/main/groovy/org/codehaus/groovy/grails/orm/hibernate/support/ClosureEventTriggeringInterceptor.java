@@ -110,7 +110,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     private ClosureEventListener findEventListener(Object entity) {
         if (entity == null) return null;
         Class<?> clazz = entity.getClass();
-        
+
         SoftKey<Class<?>> key = new SoftKey<Class<?>>(clazz);
         ClosureEventListener eventListener = eventListeners.get(key);
         if (eventListener != null) {
@@ -163,7 +163,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         Object entity = event.getEntity();
         ClosureEventListener eventListener=findEventListener(entity);
         if (eventListener != null) {
-            if (applicationContext != null && applicationContext.getAutowireCapableBeanFactory() != null) {    
+            if (applicationContext != null && applicationContext.getAutowireCapableBeanFactory() != null) {
                 applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(
                      entity, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
             }
@@ -214,14 +214,14 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
-    
+
     // Support for Serialization, not sure if Hibernate really requires Serialization support for Interceptors
-    
+
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.writeBoolean(failOnError);
         out.writeObject(failOnErrorPackages);
     }
-    
+
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         failOnError = in.readBoolean();
         failOnErrorPackages = (List)in.readObject();

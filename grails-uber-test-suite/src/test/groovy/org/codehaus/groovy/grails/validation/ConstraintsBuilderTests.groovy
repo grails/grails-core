@@ -97,7 +97,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
     }
 
     protected void onSetUp() {
-		 
+
         PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
         PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
 

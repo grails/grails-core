@@ -167,13 +167,13 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         assertEquals '<option value=""></option>', sw.toString()
     }
 
-	void testCheckedOverridesValue() {
-		def template = '<g:checkBox name="foo" value="${value}" checked="${checked}" />'
-		assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="0" id="foo"  />', template, [value: 0, checked: true]
-		assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="1" id="foo"  />', template, [value: 1, checked: true]
-		assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="0" id="foo"  />', template, [value: 0, checked: false]
-		assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="1" id="foo"  />', template, [value: 1, checked: false]
-	}
+    void testCheckedOverridesValue() {
+        def template = '<g:checkBox name="foo" value="${value}" checked="${checked}" />'
+        assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="0" id="foo"  />', template, [value: 0, checked: true]
+        assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="1" id="foo"  />', template, [value: 1, checked: true]
+        assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="0" id="foo"  />', template, [value: 0, checked: false]
+        assertOutputEquals '<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="1" id="foo"  />', template, [value: 1, checked: false]
+    }
 
     void testNoHtmlEscapingTextAreaTag() {
         final StringWriter sw = new StringWriter()
@@ -203,41 +203,41 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         }
     }
 
-	void testSelectTagWithEmptyListFromAttribute() {
-		final StringWriter sw = new StringWriter()
-		final PrintWriter pw = new PrintWriter(sw)
+    void testSelectTagWithEmptyListFromAttribute() {
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
-		withTag("select", pw) { tag ->
-			assertNotNull tag
-			tag([name: 'mySelectTag', from: []])
-		}
+        withTag("select", pw) { tag ->
+            assertNotNull tag
+            tag([name: 'mySelectTag', from: []])
+        }
 
-		assertTrue sw.toString().startsWith('<select name="mySelectTag" id="mySelectTag" >')
-	}
+        assertTrue sw.toString().startsWith('<select name="mySelectTag" id="mySelectTag" >')
+    }
 
-	void testSelectTagWithNoFromAttribute() {
-		final StringWriter sw = new StringWriter()
-		final PrintWriter pw = new PrintWriter(sw)
+    void testSelectTagWithNoFromAttribute() {
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
-		withTag("select", pw) { tag ->
-			assertNotNull tag
-			def message = shouldFail(GrailsTagException) {
-				tag([name: 'mySelectTag'])
-			}
-			assertEquals 'Tag [select] is missing required attribute [from]', message
-		}
-	}
+        withTag("select", pw) { tag ->
+            assertNotNull tag
+            def message = shouldFail(GrailsTagException) {
+                tag([name: 'mySelectTag'])
+            }
+            assertEquals 'Tag [select] is missing required attribute [from]', message
+        }
+    }
 
-	void testSelectTagWithNoNameAttribute() {
-		final StringWriter sw = new StringWriter()
-		final PrintWriter pw = new PrintWriter(sw)
+    void testSelectTagWithNoNameAttribute() {
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
 
-		withTag("select", pw) { tag ->
-			assertNotNull tag
-			def message = shouldFail(GrailsTagException) {
-				tag([from: [1,2,3]])
-			}
-			assertEquals 'Tag [select] is missing required attribute [name]', message
-		}
-	}
+        withTag("select", pw) { tag ->
+            assertNotNull tag
+            def message = shouldFail(GrailsTagException) {
+                tag([from: [1,2,3]])
+            }
+            assertEquals 'Tag [select] is missing required attribute [name]', message
+        }
+    }
 }

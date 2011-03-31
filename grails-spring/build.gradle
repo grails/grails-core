@@ -1,4 +1,4 @@
 dependencies {
-	compile project(":grails-bootstrap")
+    compile project(":grails-bootstrap")
 }
 jar.appendix = 'spring'

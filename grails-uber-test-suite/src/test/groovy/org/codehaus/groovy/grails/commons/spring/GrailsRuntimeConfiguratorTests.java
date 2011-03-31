@@ -63,17 +63,17 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         parent.registerMockBean("classLoader", gcl);
 
         app.setApplicationContext(parent);
-        
+
         GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[0], app);
         manager.setParentApplicationContext(parent);
         parent.registerMockBean("manager",manager);
         conf.setPluginManager(manager);
         ApplicationContext ctx = conf.configure(new MockServletContext());
-        
+
         // test class editor setup
         assertNotNull(ctx);
-        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );        
+        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );
 
         // test exception resolver
         GrailsExceptionResolver er = getBean(ctx, GrailsRuntimeConfigurator.EXCEPTION_HANDLER_BEAN);
@@ -193,7 +193,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass("class Holder { def value }");
         /*Class<?> resourcesClass =*/ gcl.parseClass("beans = { b(Holder, value: application) }", "resources.groovy");
-        
+
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
         GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, app);
@@ -203,7 +203,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertTrue(beanConfig.hasProperty("value"));
         assertEquals(app, beanConfig.getPropertyValue("value"));
     }
-    
+
     @SuppressWarnings("unchecked")
     private <T> T getBean(ApplicationContext ctx, String name) {
         return (T)ctx.getBean(name);

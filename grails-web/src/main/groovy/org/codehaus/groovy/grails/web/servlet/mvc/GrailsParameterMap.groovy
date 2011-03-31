@@ -53,7 +53,7 @@ class GrailsParameterMap extends TypeConvertingMap {
         this.request = request
         this.@wrappedMap.putAll(values)
     }
-    
+
     /**
      * Creates a GrailsParameterMap populating from the given request object
      * @param request The request object
@@ -74,11 +74,11 @@ class GrailsParameterMap extends TypeConvertingMap {
             processNestedKeys(request, requestMap, key, key, this.@wrappedMap)
         }
     }
-    
+
     Object clone() {
         new GrailsParameterMap(new HashMap(this.@wrappedMap), request)
     }
-    
+
     private Object getParameterValue(Map requestMap, String key) {
         Object paramValue = requestMap.get(key)
         if (paramValue instanceof String[]) {
@@ -160,7 +160,7 @@ class GrailsParameterMap extends TypeConvertingMap {
         if (nestedDateMap.containsKey(key)) {
             returnValue = nestedDateMap.get(key)
         }
-        else if (this.@wrappedMap.get(key) instanceof String[]){
+        else if (this.@wrappedMap.get(key) instanceof String[]) {
             String[] valueArray = this.@wrappedMap.get(key)
             if (valueArray == null) {
                 return null

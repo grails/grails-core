@@ -34,7 +34,7 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
 
     private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
     private SessionFactory sessionFactory;
-    
+
     private ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -150,7 +150,7 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
     public void setSessionFactory(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
-    
+
     private int incNestingCount() {
         int value = nestingCount.get().intValue() + 1;
         nestingCount.set(Integer.valueOf(value));
@@ -165,11 +165,11 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
         nestingCount.set(Integer.valueOf(value));
         return value;
     }
-    
+
     private void setParticipate(boolean flag) {
         participate.set(Boolean.valueOf(flag));
     }
-    
+
     private boolean getParticipate() {
         return participate.get().booleanValue();
     }

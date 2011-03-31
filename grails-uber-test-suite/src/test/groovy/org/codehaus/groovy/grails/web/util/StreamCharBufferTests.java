@@ -85,10 +85,9 @@ public class StreamCharBufferTests extends TestCase {
 
         charBuffer = (StreamCharBuffer) in.readObject();
 
-
         assertEquals("ABCDE", charBuffer.toString());
         assertEquals(5, charBuffer.size());
-        
+
         charBuffer.getWriter().write("12345");
         assertEquals("ABCDE12345", charBuffer.toString());
         assertEquals(10, charBuffer.size());
@@ -118,7 +117,7 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals("ABCDE12345", sw.toString());
         writer.write("1234567");
         writer.flush();
-        if(StringCharArrayAccessor.isEnabled()) {
+        if (StringCharArrayAccessor.isEnabled()) {
             assertEquals("ABCDE12345A1234567", sw.toString());
         }
         writer.write("ABCDE");

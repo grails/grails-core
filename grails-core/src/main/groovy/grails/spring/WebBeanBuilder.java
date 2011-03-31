@@ -23,8 +23,6 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Nov 23, 2007
  */
 public class WebBeanBuilder extends BeanBuilder {
 
@@ -44,6 +42,7 @@ public class WebBeanBuilder extends BeanBuilder {
         super(parent, classLoader);
     }
 
+    @Override
     protected RuntimeSpringConfiguration createRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader classLoader) {
         return new WebRuntimeSpringConfiguration(parent, classLoader);
     }

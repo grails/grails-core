@@ -64,10 +64,10 @@ class GrailsUnitTestCase extends GroovyTestCase {
         def convertersInit = new ConvertersConfigurationInitializer()
         convertersInit.initialize()
         [ List, Set, Map, Errors ].each { addConverters(it) }
-		def xmlErrorMarshaller = new XmlErrorsMarshaller()
-		XML.registerObjectMarshaller(xmlErrorMarshaller)
-		def jsonErrorMarshaller = new JsonErrorsMarshaller()
-		JSON.registerObjectMarshaller(jsonErrorMarshaller)
+        def xmlErrorMarshaller = new XmlErrorsMarshaller()
+        XML.registerObjectMarshaller(xmlErrorMarshaller)
+        def jsonErrorMarshaller = new JsonErrorsMarshaller()
+        JSON.registerObjectMarshaller(jsonErrorMarshaller)
 
         previousConfig = ConfigurationHolder.config
 
@@ -79,7 +79,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
         // Restore all the saved meta classes.
         savedMetaClasses.each { clazz, metaClass ->
-            GroovySystem.metaClassRegistry.removeMetaClass(clazz) 
+            GroovySystem.metaClassRegistry.removeMetaClass(clazz)
             GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
         }
 

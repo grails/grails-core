@@ -10,8 +10,6 @@ import javax.servlet.jsp.JspEngineInfo
 /**
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: Jun 10, 2008
  */
 abstract class GroovyPagesJspFactory extends JspFactory{
 

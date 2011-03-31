@@ -19,9 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspTimeZoneSelectTag extends JspInvokeGrailsTagLibTag {
-	private static final long serialVersionUID = -8654168473570363286L;
+    private static final long serialVersionUID = -8654168473570363286L;
 
-	private static final String TAG_NAME = "timeZoneSelect";
+    private static final String TAG_NAME = "timeZoneSelect";
 
     private String name;
     private String value;

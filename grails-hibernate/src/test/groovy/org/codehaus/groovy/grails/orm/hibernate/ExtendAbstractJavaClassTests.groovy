@@ -1,11 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: Sep 23, 2010
- * Time: 5:32:06 PM
- * To change this template use File | Settings | File Templates.
+ * @author graemerocher
  */
 class ExtendAbstractJavaClassTests extends AbstractGrailsHibernateTests{
 

@@ -25,7 +25,7 @@ import com.opensymphony.module.sitemesh.factory.FactoryException;
 
 /**
  * TODO remove this once http://jira.opensymphony.com/browse/SIM-263 is fixed.
- * 
+ *
  * Replaces <code>DefaultFactory</code> to fix http://jira.codehaus.org/browse/GRAILS-5535. There
  * are two changes, both replacing toURL() with toURI().toURL().
  */
@@ -53,10 +53,10 @@ public class Grails5535Factory extends BaseFactory {
 
         // configFilePath is null if loaded from war file
         String initParamConfigFile = config.getConfigFile();
-        if(initParamConfigFile != null) {
-          configFileName = initParamConfigFile;
+        if (initParamConfigFile != null) {
+            configFileName = initParamConfigFile;
         }
-        
+
         String configFilePath = config.getServletContext().getRealPath(configFileName);
 
         if (configFilePath != null) { // disable config auto reloading for .war files
@@ -134,15 +134,15 @@ public class Grails5535Factory extends BaseFactory {
             is = configFile.toURI().toURL().openStream();
         }
 
-        if (is == null){ // load the default sitemesh configuration
+        if (is == null) { // load the default sitemesh configuration
             is = getClass().getClassLoader().getResourceAsStream("com/opensymphony/module/sitemesh/factory/sitemesh-default.xml");
         }
 
-        if (is == null){ // load the default sitemesh configuration using another classloader
+        if (is == null) { // load the default sitemesh configuration using another classloader
             is = Thread.currentThread().getContextClassLoader().getResourceAsStream("com/opensymphony/module/sitemesh/factory/sitemesh-default.xml");
         }
 
-        if (is == null){
+        if (is == null) {
             throw new IllegalStateException("Cannot load default configuration from jar");
         }
 
@@ -172,7 +172,7 @@ public class Grails5535Factory extends BaseFactory {
             is = excludesFile.toURI().toURL().openStream();
         }
 
-        if (is == null){
+        if (is == null) {
             throw new IllegalStateException("Cannot load excludes configuration file \"" + excludesFileName + "\" as specified in \"sitemesh.xml\" or \"sitemesh-default.xml\"");
         }
 

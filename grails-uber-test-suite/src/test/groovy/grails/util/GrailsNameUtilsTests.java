@@ -24,7 +24,7 @@ public class GrailsNameUtilsTests extends TestCase {
     public void testGetGetterNameForPropertyThatBeginsWithASingleLowerCaseLetter() {
         assertEquals("getaPaperback", GrailsNameUtils.getGetterName("aPaperback"));
     }
-    
+
     public void testGetClassNameRepresentation() {
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("my-class"));
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("MyClass"));
@@ -54,12 +54,12 @@ public class GrailsNameUtilsTests extends TestCase {
         assertEquals("a", GrailsNameUtils.getLogicalPropertyName("AController", "Controller"));
         assertEquals("b", GrailsNameUtils.getLogicalPropertyName("BService", "Service"));
     }
-    
+
     public void testGetLogicalPropertyNameForArtefactWithAllUpperCaseName() {
         assertEquals("ABC", GrailsNameUtils.getLogicalPropertyName("ABCController", "Controller"));
         assertEquals("BCD", GrailsNameUtils.getLogicalPropertyName("BCDService", "Service"));
     }
-    
+
     public void testGetScriptName() {
         assertEquals("grails-name-utils-tests", GrailsNameUtils.getScriptName(getClass()));
         assertEquals("", GrailsNameUtils.getScriptName(""));

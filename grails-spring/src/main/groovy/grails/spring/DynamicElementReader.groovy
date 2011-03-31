@@ -91,7 +91,7 @@ class DynamicElementReader extends GroovyObjectSupport {
             if (invokeAfterInterceptor) {
                 afterInvocation()
             }
-            return result            
+            return result
         }
 
         StreamingMarkupBuilder builder = new StreamingMarkupBuilder()
@@ -130,7 +130,7 @@ class DynamicElementReader extends GroovyObjectSupport {
             else {
                 def beanDefinition = namespaceHandler.parse(element, parserContext)
                 if (beanDefinition) {
-                    beanConfiguration?.setBeanDefinition(beanDefinition) 
+                    beanConfiguration?.setBeanDefinition(beanDefinition)
                 }
             }
         }

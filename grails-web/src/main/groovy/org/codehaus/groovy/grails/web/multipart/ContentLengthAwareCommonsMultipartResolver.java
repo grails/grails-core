@@ -29,11 +29,9 @@ import java.util.Map;
 /**
  * Safari includes the multipart packet inside an HTTP redirect without the Content-Length header. This causes
  * CommonsMultipartResolver to blow up. We extend it here to catch this exception, printing a warning.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
- *        <p/>
- *        Created: Dec 7, 2007
  */
 public class ContentLengthAwareCommonsMultipartResolver extends CommonsMultipartResolver {
 
@@ -47,7 +45,7 @@ public class ContentLengthAwareCommonsMultipartResolver extends CommonsMultipart
         try {
             return super.parseRequest(request);
         } catch (MultipartException e) {
-            if(e.getCause() != null && e.getCause().getClass().equals(FileUploadBase.UnknownSizeException.class)) {
+            if (e.getCause() != null && e.getCause().getClass().equals(FileUploadBase.UnknownSizeException.class)) {
                 LOG.warn(e.getMessage());
                 Map<String, String[]> empty = Collections.emptyMap();
                 return new MultipartParsingResult(EMPTY_MULTI_VALUE_MAP, empty);

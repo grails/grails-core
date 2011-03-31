@@ -47,19 +47,19 @@ class Person {
 enum Title implements org.springframework.context.MessageSourceResolvable {
     MR, MRS, MS, DR
 
-	String[] getCodes() {
-		["${getClass().name}.${name()}"] as String[]
-	}
+    String[] getCodes() {
+        ["${getClass().name}.${name()}"] as String[]
+    }
 
-	Object[] getArguments() {
-		[] as Object[]
-	}
+    Object[] getArguments() {
+        [] as Object[]
+    }
 
-	String getDefaultMessage() {
-		use(org.apache.commons.lang.WordUtils) {
-			name().toLowerCase().replaceAll(/_+/, " ").capitalizeFully()
-		}
-	}
+    String getDefaultMessage() {
+        use(org.apache.commons.lang.WordUtils) {
+            name().toLowerCase().replaceAll(/_+/, " ").capitalizeFully()
+        }
+    }
 }
 '''
 
@@ -286,7 +286,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue b.validate()
         assertFalse b.hasErrors()
 
-		// should render nothing, not an empty ul - GRAILS-2709
+        // should render nothing, not an empty ul - GRAILS-2709
         assertOutputEquals("", template, [book:b])
     }
 
@@ -380,11 +380,11 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         assertOutputEquals("The Default Message", template, [message: resolvable])
     }
-	
-	void testDefaultMessageAttributeWithAnEmptyStringValue() {
-		def template  = '<g:message code="my.message.code" default=""/>'
-		assertOutputEquals "", template
-	}
+
+    void testDefaultMessageAttributeWithAnEmptyStringValue() {
+        def template  = '<g:message code="my.message.code" default=""/>'
+        assertOutputEquals "", template
+    }
 
     void testFieldValueTagWithMessageSourceResolvablePropertyUsesDefaultMessage() {
         def Title = ga.getClassForName("Title")
@@ -510,7 +510,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
             class PhoneUsInternationalDomainEditor extends PropertyEditorSupport {
                 public String getAsText() {
                     def phoneUsInternationalNumber = getValue()
-                    return "${phoneUsInternationalNumber.country}(${phoneUsInternationalNumber.area})" + 
+                    return "${phoneUsInternationalNumber.country}(${phoneUsInternationalNumber.area})" +
                            "${phoneUsInternationalNumber.prefix}-${phoneUsInternationalNumber.number}"
                 }
             }''')
@@ -542,7 +542,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def personDomain = ga.getDomainClass("PersonDomain").newInstance()
         personDomain.properties = [firstName:"firstName1", lastName:"lastName1", phoneUsInternational:phoneUsInternationalDomain]
         assertFalse personDomain.hasErrors()
-        
+
         def template = '''<g:fieldValue bean="${person}" field="phoneUsInternational" />'''
         assertOutputEquals("+1(123)123-1234", template, [person:personDomain])
     }

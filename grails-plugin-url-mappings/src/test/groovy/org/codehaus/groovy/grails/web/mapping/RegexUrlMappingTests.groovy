@@ -317,20 +317,20 @@ mappings {
         assertNull info
     }
 
-	void testConstraintAsTiebreaker() {
-		// test that two similar rules that only differ by # of constraints are evaluated correctly
-		def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
+    void testConstraintAsTiebreaker() {
+        // test that two similar rules that only differ by # of constraints are evaluated correctly
+        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
 
-		def info = holder.match("/surveys/view/123")
-		assertNotNull info
-		assertEquals 'survey', info.controllerName
-		assertEquals 'viewById', info.actionName
+        def info = holder.match("/surveys/view/123")
+        assertNotNull info
+        assertEquals 'survey', info.controllerName
+        assertEquals 'viewById', info.actionName
 
-		info = holder.match("/surveys/view/foo")
-		assertNotNull info
-		assertEquals 'survey', info.controllerName
-		assertEquals 'viewByName', info.actionName
-	}
+        info = holder.match("/surveys/view/foo")
+        assertNotNull info
+        assertEquals 'survey', info.controllerName
+        assertEquals 'viewByName', info.actionName
+    }
 
     void testInit() {
         def parser = new DefaultUrlMappingParser()

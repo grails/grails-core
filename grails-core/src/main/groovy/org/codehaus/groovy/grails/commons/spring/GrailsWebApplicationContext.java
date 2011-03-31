@@ -18,17 +18,12 @@ package org.codehaus.groovy.grails.commons.spring;
 import grails.spring.BeanBuilder;
 import groovy.lang.GroovyObject;
 
-import java.io.IOException;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
-import org.springframework.beans.factory.parsing.Location;
-import org.springframework.beans.factory.parsing.Problem;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -157,13 +152,8 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
             for (String configLocation : configLocations) {
                 BeanBuilder beanBuilder = new BeanBuilder(getParent(),getClassLoader());
                 final ServletContextResource resource = new ServletContextResource(getServletContext(), configLocation);
-                try {
-                    beanBuilder.loadBeans(resource);
-                    beanBuilder.registerBeans(this);
-                }
-                catch (IOException e) {
-                    throw new BeanDefinitionParsingException(new Problem("Error loading beans from ["+resource+"]: " + e.getMessage(),new Location(resource),null, e));
-                }
+                beanBuilder.loadBeans(resource);
+                beanBuilder.registerBeans(this);
             }
         }
         super.prepareBeanFactory(beanFactory);

@@ -23,7 +23,7 @@ import grails.util.GrailsNameUtils
 
 /**
  * A builder that implements the ORM named queries DSL.
- * 
+ *
  * @author Jeff Brown
  */
 class HibernateNamedQueriesBuilder {
@@ -62,21 +62,21 @@ class HibernateNamedQueriesBuilder {
     }
 
     private handleMethodMissing = {String name, args ->
-		def classesToAugment = [domainClass]
+        def classesToAugment = [domainClass]
 
-		def subClasses = domainClass.subClasses
-		if(subClasses) {
-			classesToAugment += subClasses
-		}
+        def subClasses = domainClass.subClasses
+        if (subClasses) {
+            classesToAugment += subClasses
+        }
 
         def getterName = GrailsNameUtils.getGetterName(name)
-		classesToAugment.each { clz ->
-		    clz.metaClass.static."${getterName}" = {->
-				// creating a new proxy each time because the proxy class has
-				// some state that cannot be shared across requests (namedCriteriaParams)
-				new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: clz, dynamicMethods: dynamicMethods)
-			}
-		}
+        classesToAugment.each { clz ->
+            clz.metaClass.static."${getterName}" = {->
+                // creating a new proxy each time because the proxy class has
+                // some state that cannot be shared across requests (namedCriteriaParams)
+                new NamedCriteriaProxy(criteriaClosure: args[0], domainClass: clz, dynamicMethods: dynamicMethods)
+            }
+        }
     }
 
     def methodMissing(String name, args) {
@@ -113,9 +113,9 @@ class NamedCriteriaProxy {
             if (params && params[-1] instanceof Map) {
                 paramsMap = params[-1]
             }
-			if(paramsMap) {
-				GrailsHibernateUtil.populateArgumentsForCriteria domainClass.clazz, queryBuilder.instance, paramsMap
-			}
+            if (paramsMap) {
+                GrailsHibernateUtil.populateArgumentsForCriteria domainClass.clazz, queryBuilder.instance, paramsMap
+            }
             if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }
@@ -135,9 +135,9 @@ class NamedCriteriaProxy {
         if (params && params[-1] instanceof Closure) {
             def additionalCriteriaClosure = params[-1]
             params = params.length > 1 ? params[0..-2] : [:]
-            if(params) {
-                if(params[-1] instanceof Map) {
-                    if(params.length > 1) {
+            if (params) {
+                if (params[-1] instanceof Map) {
+                    if (params.length > 1) {
                         namedCriteriaParams = params[0..-2] as Object[]
                     }
                 } else {
@@ -222,38 +222,38 @@ class NamedCriteriaProxy {
             return nextInChain(args)
         }
 
-		def proxy = getNamedCriteriaProxy(domainClass, methodName)
+        def proxy = getNamedCriteriaProxy(domainClass, methodName)
         if (proxy) {
             def nestedCriteria = proxy.criteriaClosure.clone()
             nestedCriteria.delegate = this
             return nestedCriteria(*args)
         }
-		try {
-			def returnValue = queryBuilder."${methodName}"(*args)
-			return returnValue
-		} catch (MissingMethodException mme) {
-			def targetType = queryBuilder?.targetClass
-			proxy = getNamedCriteriaProxy(targetType, methodName)
-			if(proxy) {
-				def nestedCriteria = proxy.criteriaClosure.clone()
-				nestedCriteria.delegate = this
-				return nestedCriteria(*args)
-			}
-			throw mme
-		}
+        try {
+            def returnValue = queryBuilder."${methodName}"(*args)
+            return returnValue
+        } catch (MissingMethodException mme) {
+            def targetType = queryBuilder?.targetClass
+            proxy = getNamedCriteriaProxy(targetType, methodName)
+            if (proxy) {
+                def nestedCriteria = proxy.criteriaClosure.clone()
+                nestedCriteria.delegate = this
+                return nestedCriteria(*args)
+            }
+            throw mme
+        }
     }
 
-	private getNamedCriteriaProxy(targetClass, name) {
-		def proxy = null
-		def metaProperty = targetClass.metaClass.getMetaProperty(name)
-		if(metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
-			def prop = metaProperty.getProperty(targetClass)
-			if(prop instanceof NamedCriteriaProxy) {
-				proxy = prop
-			}
-		}
-		proxy
-	}
+    private getNamedCriteriaProxy(targetClass, name) {
+        def proxy = null
+        def metaProperty = targetClass.metaClass.getMetaProperty(name)
+        if (metaProperty && Modifier.isStatic(metaProperty.modifiers)) {
+            def prop = metaProperty.getProperty(targetClass)
+            if (prop instanceof NamedCriteriaProxy) {
+                proxy = prop
+            }
+        }
+        proxy
+    }
 
     private getPreparedCriteriaClosure(additionalCriteriaClosure = null) {
         def closureClone = criteriaClosure.clone()

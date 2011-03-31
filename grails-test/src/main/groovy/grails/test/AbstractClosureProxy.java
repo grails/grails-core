@@ -21,17 +21,17 @@ import groovy.lang.Closure;
  * you to intercept invocations of the closure. The wrapper can be used
  * anywhere that the target closure can be used.
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({ "serial", "rawtypes" })
 public abstract class AbstractClosureProxy extends Closure {
 
-    private Closure target;
+    private Closure<?> target;
 
     /**
      * Creates a new instance that wraps the target closure and sends
      * profiling events to the given profiler log.
      * @param closure The target closure to wrap.
      */
-    public AbstractClosureProxy(Closure closure) {
+    public AbstractClosureProxy(Closure<?> closure) {
         super(closure.getOwner(), closure.getThisObject());
         target = closure;
     }
@@ -64,13 +64,13 @@ public abstract class AbstractClosureProxy extends Closure {
      * </pre>
      * @param c The closure to wrap/proxy.
      */
-    protected abstract Closure createWrapper(Closure c);
+    protected abstract Closure<?> createWrapper(Closure<?> c);
 
     /**
      * This is the important one: logs entry and exit of the closure call.
      */
     @Override
-    public Object call(Object[] objects) {
+    public Object call(Object... objects) {
         doBeforeCall(objects);
 
         try {
@@ -97,7 +97,7 @@ public abstract class AbstractClosureProxy extends Closure {
     }
 
     @Override
-    public Closure curry(Object[] objects) {
+    public Closure<?> curry(Object... objects) {
         return createWrapper(target.curry(objects));
     }
 
@@ -107,7 +107,7 @@ public abstract class AbstractClosureProxy extends Closure {
     }
 
     @Override
-    public Closure asWritable() {
+    public Closure<?> asWritable() {
         return target.asWritable();
     }
 

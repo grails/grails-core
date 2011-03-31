@@ -208,7 +208,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         String name;
 
         //we will cache metaInfo only is Developer wants-to. Developer will make sure that he creates unique key for every unique pages s/he wants to put in cache
-        if(cacheable) {
+        if (cacheable) {
             name = establishPageName(resource, getPathForResource(resource));
 
         } else {
@@ -259,13 +259,13 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public Template createTemplate(String uri)  {
         return createTemplateForUri(uri);
     }
-    
+
     private boolean isPrecompiledAvailable() {
         return precompiledGspMap != null && precompiledGspMap.size() > 0 && !GrailsUtil.isDevelopmentEnv();
     }
 
     private GroovyPageTemplate createTemplateFromPrecompiled(String uri) {
-        if(isPrecompiledAvailable()) {
+        if (isPrecompiledAvailable()) {
             GroovyPageTemplate t=createTemplateFromPrecompiled(uri, uri);
             if (t == null) {
                 t = createTemplateFromPrecompiled(uri, "/WEB-INF" + uri);
@@ -280,9 +280,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
     private GroovyPageTemplate createTemplateFromPrecompiled(final String originalUri, final String uri) {
         GroovyPageMetaInfo meta = precompiledCache.get(uri);
-        if(meta==null) {
-            meta=loadPrecompiledGsp(uri);            
-            if(meta != null) {
+        if (meta==null) {
+            meta=loadPrecompiledGsp(uri);
+            if (meta != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Adding GSP class GroovyPageMetaInfo in cache for uri " + uri + " classname is " + meta.getPageClass().getName());
                 }
@@ -291,7 +291,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             }
         }
         if (meta != null) {
-            if(isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
+            if (isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
                 public Resource run() {
                     return getResourceForUri(originalUri);
                 }
@@ -301,21 +301,21 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                 }
 
                 // remove the precompiled version from caches & mapping
-                for(Iterator<Map.Entry<String, GroovyPageMetaInfo>> it=precompiledCache.entrySet().iterator(); it.hasNext();) {
+                for (Iterator<Map.Entry<String, GroovyPageMetaInfo>> it=precompiledCache.entrySet().iterator(); it.hasNext();) {
                     Map.Entry<String, GroovyPageMetaInfo> entry=it.next();
-                    if(entry.getValue()==meta) {
+                    if (entry.getValue()==meta) {
                         precompiledGspMap.remove(entry.getKey());
                         it.remove();
                     }
                 }
-                
+
                 return null;
             }
             return new GroovyPageTemplate(meta);
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
     private GroovyPageMetaInfo loadPrecompiledGsp(String uri) {
         GroovyPageMetaInfo meta=null;
@@ -336,14 +336,13 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         }
         return meta;
     }
-    
 
     public Template createTemplateForUri(String uri) {
         return createTemplateForUri(new String[]{uri});
     }
 
     public Template createTemplateForUri(String[] uri)  {
-        if(isPrecompiledAvailable()) {
+        if (isPrecompiledAvailable()) {
             Template t;
             for (String anUri : uri) {
                 t = createTemplateFromPrecompiled(anUri);
@@ -466,7 +465,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         try {
             // If "pageName" will be passed null, it will be determined by "establishPageName" method which will
             // make it such that it will not allow this template to get into the pageCache.
-            if(cacheable) {
+            if (cacheable) {
                 return createTemplate(in, resource, getPathForResource(resource));
             }
             return createTemplate(in, resource, null);

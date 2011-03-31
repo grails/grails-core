@@ -37,7 +37,7 @@ public class MockClosureProxy extends AbstractClosureProxy {
      * @param methodName
      * @param expectation
      */
-    public MockClosureProxy(Closure target, String methodName, Object expectation) {
+    public MockClosureProxy(Closure<?> target, String methodName, Object expectation) {
         super(target);
         this.methodName = methodName;
         this.expectation = expectation;
@@ -83,7 +83,7 @@ public class MockClosureProxy extends AbstractClosureProxy {
      * @return the new proxy.
      */
     @Override
-    protected Closure createWrapper(Closure c) {
+    protected Closure<?> createWrapper(Closure<?> c) {
         return new MockClosureProxy(c, methodName, expectation);
     }
 }

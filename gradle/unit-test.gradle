@@ -87,6 +87,7 @@ def createTestTask(name, includes, excludes) {
 
 def createTestTaskWithoutSuffix(String name, includes, excludes) {
     task = tasks.add(name: name, type: Test) {
+    	doFirst dependencyCache
         systemProperties = ['grails.cli.testing': "true"]
         jvmArgs = ["-server", "-Xmx1500m", "-Xms256m", "-XX:MaxPermSize=256m", "-Dgroovy.grails.joint=true"] // todo, "-Dgroovy.grails.joint=${groovy.grails.joint}"
         systemProperties['net.sourceforge.cobertura.datafile'] = instrumentForCoverage.cobSerFile

@@ -1,11 +1,11 @@
 /* Copyright 2004-2005 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,7 +54,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
     }
 
     public void testGenerateController() throws Exception {
-    	DefaultGrailsTemplateGenerator generator;
+        DefaultGrailsTemplateGenerator generator;
 
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
@@ -85,7 +85,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         assertTrue(bean.isReadableProperty("list"));
         assertTrue(bean.isReadableProperty("show"));
         assertTrue(bean.isReadableProperty("edit"));
-        assertTrue(bean.isReadableProperty("delete"));        
+        assertTrue(bean.isReadableProperty("delete"));
 
         Object propertyValue = GrailsClassUtils.getStaticPropertyValue(controllerClass, "allowedMethods");
         assertTrue("allowedMethods property was the wrong type", propertyValue instanceof Map);
@@ -100,7 +100,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
     }
 
     public void testGenerateViews() throws Exception {
-    	DefaultGrailsTemplateGenerator generator;
+        DefaultGrailsTemplateGenerator generator;
 
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 

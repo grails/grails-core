@@ -43,7 +43,7 @@ public class GrailsDispatcherServletTests extends TestCase {
         final MockApplicationContext appCtx = new MockApplicationContext();
 
         try {
-            System.setProperty("grails.env", "development");            
+            System.setProperty("grails.env", "development");
             appCtx.registerMockBean("localeInterceptor", new LocaleChangeInterceptor());
             appCtx.registerMockBean("openSessionInView", new OpenSessionInViewInterceptor());
 
@@ -59,8 +59,7 @@ public class GrailsDispatcherServletTests extends TestCase {
                     initStrategies(appCtx);
                     return appCtx;
                 }
-                
-            };            
+            };
 
             GroovyClassLoader cl = new GroovyClassLoader();
             cl.parseClass("class TestController {" +
@@ -71,7 +70,7 @@ public class GrailsDispatcherServletTests extends TestCase {
 
             handlerMapping.setGrailsApplication(grailsApplication);
             handlerMapping.setApplicationContext(appCtx);
-            
+
             dispatcherServlet.setApplication(grailsApplication);
             dispatcherServlet.init(new MockServletConfig(new MockServletContext()));
 
@@ -84,7 +83,6 @@ public class GrailsDispatcherServletTests extends TestCase {
                 HandlerInterceptor interceptor = executionChain.getInterceptors()[i];
                 assertNotNull(interceptor);
             }
-            
 
             request = new MockHttpServletRequest("GET", "/test/action/1");
             executionChain = dispatcherServlet.getHandler(request, true);
@@ -95,7 +93,6 @@ public class GrailsDispatcherServletTests extends TestCase {
             executionChain = dispatcherServlet.getHandler(request, true);
 
             assertNotNull(executionChain);
-
 
             request = new MockHttpServletRequest("GET", "/context/rubbish/action");
 

@@ -240,7 +240,7 @@ public class ClassPropertyFetcher {
 
     public <T> T getStaticPropertyValue(String name, Class<T> c) {
         PropertyFetcher fetcher = staticFetchers.get(name);
-        if(fetcher != null) {
+        if (fetcher != null) {
             Object v = getPropertyValueWithFetcher(name, fetcher);
             return returnOnlyIfInstanceOf(v, c);
         }

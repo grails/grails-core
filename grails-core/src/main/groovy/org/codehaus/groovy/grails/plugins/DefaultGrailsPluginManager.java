@@ -136,7 +136,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private PluginFilter pluginFilter;
     private static final String GRAILS_PLUGIN_SUFFIX = "GrailsPlugin";
     private List<GrailsPlugin> userPlugins = new ArrayList<GrailsPlugin>();
-    
+
     private BuildSettings buildSettings;
     private PluginBuildSettings pluginBuildSettings;
 
@@ -194,24 +194,23 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         setPluginFilter();
     }
 
-    
     public BuildSettings getBuildSettings() {
-		return buildSettings;
-	}
+        return buildSettings;
+    }
 
-	public void setBuildSettings(BuildSettings buildSettings) {
-		this.buildSettings = buildSettings;
-	}
+    public void setBuildSettings(BuildSettings buildSettings) {
+        this.buildSettings = buildSettings;
+    }
 
-	public PluginBuildSettings getPluginBuildSettings() {
-		return pluginBuildSettings;
-	}
+    public PluginBuildSettings getPluginBuildSettings() {
+        return pluginBuildSettings;
+    }
 
-	public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
-		this.pluginBuildSettings = pluginBuildSettings;
-	}
+    public void setPluginBuildSettings(PluginBuildSettings pluginBuildSettings) {
+        this.pluginBuildSettings = pluginBuildSettings;
+    }
 
-	public GrailsPlugin[] getUserPlugins() {
+    public GrailsPlugin[] getUserPlugins() {
         return userPlugins.toArray(new GrailsPlugin[userPlugins.size()]);
     }
 
@@ -393,15 +392,15 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         return grailsCorePlugins;
     }
 
-	protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass) {
-		return new DefaultGrailsPlugin(pluginClass, application);
-	}
+    protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass) {
+        return new DefaultGrailsPlugin(pluginClass, application);
+    }
 
-	protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass,
-			Resource resource) {
-		return new DefaultGrailsPlugin(pluginClass, resource, application);
-	}
-	
+    protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass,
+            Resource resource) {
+        return new DefaultGrailsPlugin(pluginClass, resource, application);
+    }
+
     private List<GrailsPlugin>  findUserPlugins(ClassLoader gcl) {
         List<GrailsPlugin>  grailsUserPlugins = new ArrayList<GrailsPlugin>();
 

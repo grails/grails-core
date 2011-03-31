@@ -32,7 +32,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
-  void testInheritRepositoryResolvers() {
+    void testInheritRepositoryResolvers() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
@@ -40,36 +40,34 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             repositories {
                 inherit true
                 ebr()
-            }   
+            }
         }
-        
+
         manager.parseDependencies "myplugin", {
             repositories {
                 mavenCentral()
-            }   
+            }
         }
-        
-        
+
         assert 3 == manager.chainResolver.resolvers.size()
-        
-        
+
         manager = new IvyDependencyManager("test", "0.1",settings)
-        
+
         manager.parseDependencies {
             repositories {
                 inherit false
                 ebr()
             }
         }
-        
+
         manager.parseDependencies "myplugin", {
             repositories {
                 mavenCentral()
             }
         }
-        
+
         assert 2 == manager.chainResolver.resolvers.size()
-    } 
+    }
     void testChanging() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
@@ -222,7 +220,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "jdk14",dep.branch
     }
 
-    void testModuleConf(){
+    void testModuleConf() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
@@ -242,7 +240,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "oscache-runtime", configs[0]
     }
 
-    void testWithoutModuleConf(){
+    void testWithoutModuleConf() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)
 
@@ -572,7 +570,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     }
 
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
-        
+
         def settings = new BuildSettings()
         def grailsVersion = getCurrentGrailsVersion()
 
@@ -583,13 +581,13 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure.delegate = delegate
             defaultDependencyClosure()
         }
-        
+
         assertEquals 0, manager.listDependencies('runtime').size()
         assertEquals 3, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
         assertEquals 58, manager.listDependencies('provided').size()
         assertEquals 22, manager.listDependencies('docs').size()
-        
+
         manager = new IvyDependencyManager("project", "0.1",settings)
         defaultDependencyClosure = settings.coreDependencies.createDeclaration()
         manager.parseDependencies {
@@ -597,7 +595,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure.delegate = delegate
             defaultDependencyClosure()
         }
-        
+
         assertEquals 56, manager.listDependencies('runtime').size()
         assertEquals 59, manager.listDependencies('test').size()
         assertEquals 19, manager.listDependencies('build').size()
@@ -763,7 +761,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "1.7.1", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
-        assertEquals 4, resolvers.size()
+        assertEquals 6, resolvers.size()
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
         assertEquals "mine", resolvers[0].name

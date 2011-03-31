@@ -33,8 +33,8 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-		
-		println response.contentAsString
+
+        println response.contentAsString
 
         def xml = new XmlSlurper().parseText(response.contentAsString)
 
@@ -63,27 +63,27 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         // of hash key ordering variations
         assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
     }
-	
-	void testMarshalProxiedAssociations() {
-		
-		def obj = ga.getDomainClass("XmlConverterTestPublisher").newInstance()
-		obj.name = "Apress"
-		obj.id = 1L
 
-		def hibernateInitializer = [getImplementation:{obj},getPersistentClass:{obj.getClass()}] as LazyInitializer
-		def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
+    void testMarshalProxiedAssociations() {
 
-		def book = ga.getDomainClass("XmlConverterTestBook").newInstance()
-		book.title = "The Stand"
-		book.author = "Stephen King"
-		book.publisher = obj
-		
-		def c = ga.getControllerClass("RestController").newInstance()
-		c.params.b = book
-		c.testProxyAssociations()
+        def obj = ga.getDomainClass("XmlConverterTestPublisher").newInstance()
+        obj.name = "Apress"
+        obj.id = 1L
 
-		assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher id="1" /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
-	}
+        def hibernateInitializer = [getImplementation:{obj},getPersistentClass:{obj.getClass()}] as LazyInitializer
+        def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
+
+        def book = ga.getDomainClass("XmlConverterTestBook").newInstance()
+        book.title = "The Stand"
+        book.author = "Stephen King"
+        book.publisher = obj
+
+        def c = ga.getControllerClass("RestController").newInstance()
+        c.params.b = book
+        c.testProxyAssociations()
+
+        assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher id="1" /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
+    }
 
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
@@ -101,9 +101,9 @@ class RestController {
   def testProxy = {
      render params.b as XML
   }
-  
+
   def testProxyAssociations = {
-		render params.b as XML
+        render params.b as XML
   }
 
   def testErrors = {
@@ -118,7 +118,7 @@ class XmlConverterTestBook {
  Long version
  String title
  String author
- 
+
  XmlConverterTestPublisher publisher
 
 }
@@ -126,8 +126,6 @@ class XmlConverterTestPublisher {
  Long id
  Long version
  String name
- 
-
 }
 '''
     }

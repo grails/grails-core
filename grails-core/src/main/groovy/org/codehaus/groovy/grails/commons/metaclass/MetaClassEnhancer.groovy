@@ -16,38 +16,35 @@
 
 package org.codehaus.groovy.grails.commons.metaclass
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Method
 
-import org.codehaus.groovy.runtime.MethodClosure 
-import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
-
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
+import org.codehaus.groovy.runtime.MethodClosure
+import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
 
 /**
-* Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider
-*
-* @author Graeme Rocher
-* @since 1.4
-*
-*/
+ * Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider
+ *
+ * @author Graeme Rocher
+ * @since 1.4
+ */
 class MetaClassEnhancer extends BaseApiProvider {
 
-	public void enhance(MetaClass metaClass) {
-		for (method in instanceMethods) {
-			if(method instanceof ReflectionMetaMethod)
-				metaClass.registerInstanceMethod(method)
-		}
+    void enhance(MetaClass metaClass) {
+        for (method in instanceMethods) {
+            if (method instanceof ReflectionMetaMethod) {
+                metaClass.registerInstanceMethod(method)
+            }
+        }
 
-		for (Method method : staticMethods) {
-			def methodName = method.name
-			metaClass."${methodName}" = method.declaringClass.&"${methodName}"
-		}
-	}
-	
-	public void enhanceAll(Iterable metaClasses) {
-		for(metaClass in metaClasses) {
-			enhance metaClass
-		}
-	}
+        for (Method method : staticMethods) {
+            def methodName = method.name
+            metaClass."${methodName}" = method.declaringClass.&"${methodName}"
+        }
+    }
+
+    void enhanceAll(Iterable metaClasses) {
+        for (metaClass in metaClasses) {
+            enhance metaClass
+        }
+    }
 }

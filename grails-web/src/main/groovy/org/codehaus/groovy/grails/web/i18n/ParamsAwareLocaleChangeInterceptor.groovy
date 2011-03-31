@@ -18,8 +18,6 @@ import org.springframework.web.servlet.support.RequestContextUtils
  *
  * @author Graeme Rocher
  * @since 1.0
- * 
- * Created: May 28, 2008
  */
 class ParamsAwareLocaleChangeInterceptor extends LocaleChangeInterceptor {
 
@@ -57,7 +55,7 @@ class ParamsAwareLocaleChangeInterceptor extends LocaleChangeInterceptor {
         }
         catch (Exception e) {
             GrailsUtil.deepSanitize(e)
-            LOG.error("Error intercepting locale change: ${e.message}", e) 
+            LOG.error("Error intercepting locale change: ${e.message}", e)
             return true
         }
     }

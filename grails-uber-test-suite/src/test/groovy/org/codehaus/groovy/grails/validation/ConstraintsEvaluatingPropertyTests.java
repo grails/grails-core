@@ -159,7 +159,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
         ConstrainedProperty p = (ConstrainedProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
-                       
+
         assertEquals( "Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());
     }
 

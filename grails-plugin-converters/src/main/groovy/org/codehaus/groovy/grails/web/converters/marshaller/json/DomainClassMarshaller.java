@@ -122,7 +122,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                         else if (referenceObject instanceof Map) {
                             referenceObject = new HashMap((Map) referenceObject);
                         }
-                        else if (referenceObject instanceof Collection){
+                        else if (referenceObject instanceof Collection) {
                             referenceObject = new ArrayList((Collection) referenceObject);
                         }
                         json.convertAnother(referenceObject);
@@ -136,7 +136,7 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
                         // Embedded are now always fully rendered
-                        if(referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
+                        if (referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
                             json.convertAnother(referenceObject);
                         }
                         else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {
@@ -174,19 +174,18 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
     }
 
     protected void asShortObject(Object refObj, JSON json, GrailsDomainClassProperty idProperty, GrailsDomainClass referencedDomainClass) throws ConverterException {
-    	
-    	Object idValue;
-    	
-    	if(proxyHandler instanceof EntityProxyHandler) {    		
-    		idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
-    		if(idValue == null) {
-    			idValue = extractValue(refObj, idProperty);
-    		}
-    		
-    	}
-    	else {
+
+        Object idValue;
+
+        if (proxyHandler instanceof EntityProxyHandler) {
+            idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
+            if (idValue == null) {
+                idValue = extractValue(refObj, idProperty);
+            }
+        }
+        else {
             idValue = extractValue(refObj, idProperty);
-    	}
+        }
         JSONWriter writer = json.getWriter();
         writer.object();
         writer.key("class").value(referencedDomainClass.getName());

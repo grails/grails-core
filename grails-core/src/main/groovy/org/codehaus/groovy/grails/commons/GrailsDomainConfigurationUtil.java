@@ -40,8 +40,6 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 
@@ -53,9 +51,7 @@ import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 public class GrailsDomainConfigurationUtil {
 
     public static final String PROPERTY_NAME = "constraints";
-    private static final String CONSTRAINTS_GROOVY = "Constraints.groovy";
 
-    private static Log LOG = LogFactory.getLog(GrailsDomainConfigurationUtil.class);
     private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
 
     public static Serializable getAssociationIdentifier(Object target, String propertyName,
@@ -318,9 +314,10 @@ public class GrailsDomainConfigurationUtil {
      * @param defaultConstraints A map that defines the default constraints
      *
      * @return A Map of constraints
-     * 
+     *
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
+    @Deprecated
     public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance,
             GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
         final Class<?> theClass = instance.getClass();
@@ -335,14 +332,14 @@ public class GrailsDomainConfigurationUtil {
      * @param defaultConstraints A map that defines the default constraints
      *
      * @return A Map of constraints
-     * 
+     *
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
+    @Deprecated
     public static Map<String, ConstrainedProperty> evaluateConstraints(final Class<?> theClass,
             GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
-    	return new DefaultConstraintEvaluator(defaultConstraints).evaluate(theClass, properties);
+        return new DefaultConstraintEvaluator(defaultConstraints).evaluate(theClass, properties);
     }
-
 
     /**
      * Evaluates the constraints closure to build the list of constraints.
@@ -351,9 +348,10 @@ public class GrailsDomainConfigurationUtil {
      * @param properties The properties of the instance
      * @return A Map of constraints
      *          When the bean cannot be introspected
-     *          
+     *
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
+    @Deprecated
     public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties)  {
         return evaluateConstraints(instance, properties,null);
     }
@@ -364,9 +362,10 @@ public class GrailsDomainConfigurationUtil {
      * @param instance   The instance to evaluate constraints for
      * @return A Map of constraints
      *          When the bean cannot be introspected
-     *          
+     *
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
+    @Deprecated
     public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance)  {
         return evaluateConstraints(instance, null, null);
     }
@@ -377,9 +376,10 @@ public class GrailsDomainConfigurationUtil {
      * @param theClass  The class to evaluate constraints for
      * @return A Map of constraints
      *          When the bean cannot be introspected
-     *          
+     *
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
+    @Deprecated
     public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass)  {
         return evaluateConstraints(theClass, null, null);
     }
@@ -390,14 +390,13 @@ public class GrailsDomainConfigurationUtil {
      * @param theClass  The class to evaluate constraints for
      * @return A Map of constraints
      *          When the bean cannot be introspected
-     *          
+     *
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
+    @Deprecated
     public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass, GrailsDomainClassProperty[] properties)  {
         return evaluateConstraints(theClass, properties, null);
     }
-
-
 
     public static LinkedList<?> getSuperClassChain(Class<?> theClass) {
         LinkedList<Class<?>> classChain = new LinkedList<Class<?>>();
@@ -408,6 +407,4 @@ public class GrailsDomainConfigurationUtil {
         }
         return classChain;
     }
-
-
 }

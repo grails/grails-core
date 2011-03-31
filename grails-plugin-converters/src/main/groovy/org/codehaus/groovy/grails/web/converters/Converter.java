@@ -56,7 +56,7 @@ public interface Converter<W> {
 
     void convertAnother(Object o) throws ConverterException;
 
-    void build(Closure c) throws ConverterException;
+    void build(@SuppressWarnings("rawtypes") Closure c) throws ConverterException;
 
     @SuppressWarnings("rawtypes")
     ObjectMarshaller<? extends Converter> lookupObjectMarshaller(Object target);

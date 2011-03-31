@@ -22,21 +22,21 @@ package org.codehaus.groovy.grails.test.event;
 class GrailsTestEventPublisher {
 
     protected Closure event
-    
+
     /**
      * @param event the "event" closure from the Grails build system
      */
     GrailsTestEventPublisher(Closure event) {
         this.event = event
     }
-    
+
     /**
      * Signifies the start of a "unit" of tests. (e.g. A JUnit TestCase).
-     * 
+     *
      * Must be called first, or after {@link #testCaseEnd(String,String,String)}.
-     * 
+     *
      * Publishes the event {@code TestCaseStart} with {@code name} as the parameter.
-     * 
+     *
      * @param name a logical name for the test "unit"
      */
     void testCaseStart(String name) {
@@ -45,11 +45,11 @@ class GrailsTestEventPublisher {
 
     /**
      * Signifies the start of an individual test, inside a parent "unit".
-     * 
+     *
      * Must be called after {@link testCaseStart(String)} or after {@link testEnd(String)}.
-     * 
+     *
      * Publishes the event {@code TestStart} with {@code name} as the parameter.
-     * 
+     *
      * @param name a logical name for the test
      */
     void testStart(String name) {
@@ -58,11 +58,11 @@ class GrailsTestEventPublisher {
 
     /**
      * Signifies that a test did not complete successfully.
-     * 
+     *
      * Must be called after {@link testStart(String)} with the <em>same</em> {@code name}.
-     * 
+     *
      * Publishes the event {@code TestFailure} with {@code name}, {@code failure} and {@code isError} as the parameters.
-     * 
+     *
      * @param name a logical name for the test
      * @param failure the throwable raised from the failure
      * @param isError true if this failure was due to an indirect error,
@@ -74,11 +74,11 @@ class GrailsTestEventPublisher {
 
     /**
      * Signifies that a test did not complete successfully.
-     * 
+     *
      * Must be called after {@link testStart(String)} with the <em>same</em> name.
-     * 
+     *
      * Publishes the event {@code TestFailure} with {@code name}, {@code failure} and {@code isError} as the parameters.
-     * 
+     *
      * @param name a logical name for the test
      * @param failure a description of the failure
      * @param isError true if this failure was due to an indirect error,
@@ -90,13 +90,13 @@ class GrailsTestEventPublisher {
 
     /**
      * Signifies that a test has ended.
-     * 
+     *
      * Must be called after {@link testStart(String)} with the <em>same</em> name,
      * or {@link testStart(String,String,boolean)} or {@link testStart(String,Throwable,boolean)}
      * with the same name.
-     * 
+     *
      * Publishes the event {@code TestEnd} with {@code name} as the parameter.
-     * 
+     *
      * @param name a logical name for the test
      * @param failure a description of the failure
      * @param isError true if this failure was due to an indirect error,
@@ -108,16 +108,15 @@ class GrailsTestEventPublisher {
 
     /**
      * Signifies the end of a "unit" of tests. (e.g. A JUnit TestCase).
-     * 
+     *
      * Must be called after {@link testEnd(String)} with the <em>same</em> name as
      * the most recent call to {@link testCaseStart(String)}.
-     * 
+     *
      * Publishes the event {@code TestCaseEnd} with {@code name} as the parameter.
-     * 
+     *
      * @param name a logical name for the test "unit"
      */
     void testCaseEnd(String name, String out = null, String err = null) {
         event("TestCaseEnd", [name, out, err])
     }
-    
 }

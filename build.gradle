@@ -32,7 +32,7 @@ antVersion = "1.7.1"
 springVersion = "3.0.3.RELEASE"
 
 
-subprojects {
+subprojects { project ->
     apply plugin: 'groovy'
     apply plugin: 'eclipse'
     apply plugin: 'maven'
@@ -44,22 +44,21 @@ subprojects {
 	        "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
 	        "Implementation-Title": "Grails",
 	        "Ant-Version": 'Apache Ant 1.7.1', // todo we just have this property to make it easy to compare manifests. Remove it when this build is life
-	        "Implementation-Version": version,
+	        "Implementation-Version": grailsVersion,
 	        "Implementation-Vendor": 'grails.org')
 	
-    group = "org.grails"
-	version = grailsVersion
-    archivesBaseName = "grails"
 
-	configurations {
-	    compile.transitive = true
-	    jsp21.extendsFrom compile
-	}
+
 	repositories {
 		mavenRepo urls:"http://maven.springframework.org/release"
 	}	
 	dependencies {
-       	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0-beta-4'
+		// Groovy
+	    if(System.getProperty('groovy.jar')) {
+	        groovy files(System.getProperty('groovy.jar'))
+	    } else {
+	        groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
+	    }		
 
 		// Jars in lib
 		compile files(fileTree(dir:"$projectDir/src/libs" as File))
@@ -159,15 +158,19 @@ subprojects {
 				"org.springframework:spring-webmvc:${springVersion}"
 
 
-		// Groovy
-	    groovy "org.codehaus.groovy:groovy-all:1.8.0-beta-4"
 		compile( 'org.codehaus.gpars:gpars:0.9' ) {
 			exclude module:'netty'
 		}
-
-	    jsp21 'javax.servlet.jsp:jsp-api:2.1'
 	}
 
+    install.doLast {
+        copy {
+            from(project.libsDir) {
+                include "*-${grailsVersion}.jar"
+            }
+            into "${rootProject.projectDir}/dist"
+        }
+    }
 	
 }
 

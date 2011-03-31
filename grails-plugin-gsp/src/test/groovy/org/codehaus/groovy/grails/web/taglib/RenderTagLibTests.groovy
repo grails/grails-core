@@ -126,7 +126,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testRenderTagCollectionAndModel() {
-		RenderTagLib.TEMPLATE_CACHE.clear()
+        RenderTagLib.TEMPLATE_CACHE.clear()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', '[book = ${string} it=${it} foo=${foo}]')
         appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader

@@ -19,9 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspSelectTag extends JspInvokeGrailsTagLibTag {
-	private static final long serialVersionUID = 294858160471737590L;
+    private static final long serialVersionUID = 294858160471737590L;
 
-	private static final String TAG_NAME = "select";
+    private static final String TAG_NAME = "select";
 
     private String name;
     private String from;

@@ -68,19 +68,19 @@ class CriteriaBuilderTestClass2 {
         assertEquals 1, results.size()
     }
 
-	void testSizeErrorMessages() {
-		// GRAILS-6691
-		def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
-		def crit = domainClass.createCriteria()
+    void testSizeErrorMessages() {
+        // GRAILS-6691
+        def domainClass = ga.getDomainClass("CriteriaBuilderTestClass").clazz
+        def crit = domainClass.createCriteria()
 
-		def methodNames = ['sizeGt', 'sizeGe', 'sizeLe', 'sizeLt', 'sizeNe']
-		methodNames.each { methodName ->
-			def errorMessage = shouldFail(IllegalArgumentException) {
-				crit."$methodName"('somePropertyName', 0)
-			}
-			assertEquals "Call to [${methodName}] with propertyName [somePropertyName] and size [0] not allowed here.", errorMessage
-		}
-	}
+        def methodNames = ['sizeGt', 'sizeGe', 'sizeLe', 'sizeLt', 'sizeNe']
+        methodNames.each { methodName ->
+            def errorMessage = shouldFail(IllegalArgumentException) {
+                crit."$methodName"('somePropertyName', 0)
+            }
+            assertEquals "Call to [${methodName}] with propertyName [somePropertyName] and size [0] not allowed here.", errorMessage
+        }
+    }
 
     void testSqlRestriction() {
         createDomainData()

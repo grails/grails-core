@@ -19,9 +19,9 @@ package org.codehaus.groovy.grails.web.taglib.jsp;
  * @since 28-Feb-2006
  */
 public class JspCheckboxTag extends JspInvokeGrailsTagLibTag {
-	private static final long serialVersionUID = 4389959980801178820L;
+    private static final long serialVersionUID = 4389959980801178820L;
 
-	private static final String TAG_NAME = "checkBox";
+    private static final String TAG_NAME = "checkBox";
 
     private String name;
     private String value;

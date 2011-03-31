@@ -132,14 +132,12 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             return ((NameAwareMarshaller) om).getElementName(o);
         }
         final ProxyHandler proxyHandler = config.getProxyHandler();
-        if(proxyHandler.isProxy(o) && (proxyHandler instanceof EntityProxyHandler)) {
-        	EntityProxyHandler entityProxyHandler = (EntityProxyHandler) proxyHandler;
-        	final Class<?> cls = entityProxyHandler.getProxiedClass(o);
-        	return GrailsNameUtils.getPropertyName(cls);
+        if (proxyHandler.isProxy(o) && (proxyHandler instanceof EntityProxyHandler)) {
+            EntityProxyHandler entityProxyHandler = (EntityProxyHandler) proxyHandler;
+            final Class<?> cls = entityProxyHandler.getProxiedClass(o);
+            return GrailsNameUtils.getPropertyName(cls);
         }
-        else {
-        	return GrailsNameUtils.getPropertyName(o.getClass());
-        }        
+        return GrailsNameUtils.getPropertyName(o.getClass());
     }
 
     public void convertAnother(Object o) throws ConverterException {
@@ -270,7 +268,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         return stream;
     }
 
-    public void build(Closure c) throws ConverterException {
+    public void build(@SuppressWarnings("rawtypes") Closure c) throws ConverterException {
 //        checkState();
 //        chars("");
 //        StreamingMarkupBuilder smb = new StreamingMarkupBuilder();
@@ -363,7 +361,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         return cfg;
     }
 
-    public static Object use(String configName, Closure callable) throws ConverterException {
+    public static Object use(String configName, Closure<?> callable) throws ConverterException {
         ConverterConfiguration<XML> old = ConvertersConfigurationHolder.getThreadLocalConverterConfiguration(XML.class);
         ConverterConfiguration<XML> cfg = getNamedConfig(configName);
         ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(XML.class, cfg);
@@ -384,11 +382,11 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         }
     }
 
-    public static void registerObjectMarshaller(Class<?> clazz, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, Closure<?> callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<XML>(clazz, callable));
     }
 
-    public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure callable) throws ConverterException {
+    public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure<?> callable) throws ConverterException {
         registerObjectMarshaller(new ClosureOjectMarshaller<XML>(clazz, callable), priority);
     }
 
@@ -416,7 +414,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         ((DefaultConverterConfiguration<XML>) cfg).registerObjectMarshaller(om, priority);
     }
 
-    public static void createNamedConfig(String name, Closure callable) throws ConverterException {
+    public static void createNamedConfig(String name, Closure<?> callable) throws ConverterException {
         DefaultConverterConfiguration<XML> cfg = new DefaultConverterConfiguration<XML>(ConvertersConfigurationHolder.getConverterConfiguration(XML.class));
         try {
             callable.call(cfg);
@@ -427,7 +425,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
         }
     }
 
-    public static void withDefaultConfiguration(Closure callable) throws ConverterException {
+    public static void withDefaultConfiguration(Closure<?> callable) throws ConverterException {
         ConverterConfiguration<XML> cfg = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
         if (!(cfg instanceof DefaultConverterConfiguration<?>)) {
             cfg = new DefaultConverterConfiguration<XML>(cfg);
@@ -449,7 +447,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements Converter
             this.xml = xml;
         }
 
-        public void execute(Closure callable) {
+        public void execute(Closure<?> callable) {
             callable.setDelegate(this);
             callable.call();
         }

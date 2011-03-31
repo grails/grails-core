@@ -32,7 +32,7 @@ public interface TokenResponseHandler {
      * @param callable The closure to invoke in the event of an invalid token
      * @return A Grails model or null
      */
-    Object invalidToken(Closure callable);
+    Object invalidToken(@SuppressWarnings("rawtypes") Closure callable);
 
     /**
      * Return whether the response handle was invoked.

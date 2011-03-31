@@ -1,5 +1,5 @@
 task createSharedFilesJar(type: Jar, description: 'Package up the files that are shared by both applications and plugins.') {
-	version = null
+    version = null
     appendix = "shared-files"
     appFileJar = true
     from("src/war/WEB-INF") {
@@ -13,7 +13,7 @@ task createSharedFilesJar(type: Jar, description: 'Package up the files that are
 }
 
 task createSharedApplicationFilesJar(type: Jar, description: 'Package up the files that are exclusive to applications.') {
-	version = null	
+    version = null
     appendix = "app-files"
     appFileJar = true
     from("src/war") {
@@ -27,7 +27,7 @@ task createSharedApplicationFilesJar(type: Jar, description: 'Package up the fil
 }
 
 task createSharedPluginFilesJar(type: Jar, description: 'Package up the files that are exclusive to plugins.') {
-	version = null	
+    version = null
     appendix = "plugin-files"
     appFileJar = true
     from("src/grails/templates/plugins")
@@ -38,7 +38,7 @@ task createSharedPluginFilesJar(type: Jar, description: 'Package up the files th
 }
 
 task createIntegrationFilesJar(type: Jar, description: 'Files to integrate Grails with IDEs and build systems.') {
-	version = null	
+    version = null
     appendix = "integration-files"
     appFileJar = true
     from("src/grails/templates/ide-support", "src/grails/ant")
@@ -50,8 +50,8 @@ task resourceJarFiles(dependsOn:allJarFileTasks)
 
 jar.dependsOn resourceJarFiles
 
-for(jarTask in allJarFileTasks) {
-	jar.from(jarTask.archivePath)
+for (jarTask in allJarFileTasks) {
+    jar.from(jarTask.archivePath)
 }
-	
+
 jar.appendix = 'resources'

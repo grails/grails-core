@@ -38,7 +38,6 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -226,7 +225,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private String searchPluginViewsInDevelopmentMode(String name) {
 
         String pluginViewLocation = null;
-        if(pluginBuildSettings != null) {
+        if (pluginBuildSettings != null) {
             for (Resource resource : pluginBuildSettings.getPluginDirectories()) {
                 try {
                     final String pathToLayoutInPlugin = "grails-app/views/layouts/"+name;
@@ -244,7 +243,6 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                     // ignore
                 }
             }
-        	
         }
         return pluginViewLocation;
     }

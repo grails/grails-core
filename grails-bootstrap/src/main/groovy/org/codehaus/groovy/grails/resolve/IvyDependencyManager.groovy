@@ -66,13 +66,12 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     Collection moduleExcludes = new ConcurrentLinkedQueue()
     TransferListener transferListener
 
-    
     boolean inheritsAll = false
     boolean resolveErrors = false
     boolean defaultDependenciesProvided = false
     boolean pluginsOnly = false
     boolean inheritRepositories = true
-    
+
     /**
      * Creates a new IvyDependencyManager instance
      */
@@ -361,12 +360,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         def groupedByModule = candidates.groupBy { it.dependencyRevisionId.moduleId }
 
         groupedByModule.collect {
-            it.value.max { lhs, rhs -> 
+            it.value.max { lhs, rhs ->
                 def versionComparison = versionComparator.compare(lhs.dependencyRevisionId.revision, rhs.dependencyRevisionId.revision)
                 versionComparison ?: (rhs.plugin <=> lhs.plugin)
             }
         }
     }
-    
-    
 }

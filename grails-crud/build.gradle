@@ -1,4 +1,4 @@
-dependencies { 
-	compile project(':grails-hibernate')
+dependencies {
+    compile project(':grails-hibernate')
 }
-jar.appendix = 'crud' 
+jar.appendix = 'crud'

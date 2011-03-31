@@ -19,7 +19,7 @@ class MockUtilsAndHasManyTests extends GroovyTestCase {
     protected void tearDown() {
         ApplicationHolder.application = null
     }
-    
+
     void testMockDomainWithHasMany() {
         def test = new MagazineTests()
         test.setUp()

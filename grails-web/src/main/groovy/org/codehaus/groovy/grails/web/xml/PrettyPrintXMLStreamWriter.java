@@ -41,7 +41,7 @@ public class PrettyPrintXMLStreamWriter extends XMLStreamWriter{
     private int level = 0;
 
     private boolean doIndent = false;
-    
+
     public PrettyPrintXMLStreamWriter(StreamingMarkupWriter writer) {
         this(writer, DEFAULT_INDENT_STR);
     }
@@ -57,8 +57,8 @@ public class PrettyPrintXMLStreamWriter extends XMLStreamWriter{
 
     private void indent() throws IOException {
         Writer ue = writer.unescaped();
-        for(int i=0; i<level; i++) {
-                ue.write(indent);
+        for (int i=0; i<level; i++) {
+            ue.write(indent);
         }
     }
 
@@ -66,7 +66,7 @@ public class PrettyPrintXMLStreamWriter extends XMLStreamWriter{
     protected void endStartTag() throws IOException {
         super.endStartTag();
         newline();
-        if(doIndent)
+        if (doIndent)
             indent();
     }
 
@@ -87,7 +87,7 @@ public class PrettyPrintXMLStreamWriter extends XMLStreamWriter{
     @Override
     public XMLStreamWriter end() throws IOException {
         level--;
-        if(mode != Mode.TAG) {
+        if (mode != Mode.TAG) {
             indent();
         }
         super.end();

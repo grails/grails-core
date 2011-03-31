@@ -72,7 +72,7 @@ class SuiteRunListener extends RunListener {
     void testIgnored(Description description) {
         // nothing to do
     }
-    
+
     private getPerTestRunListener(description = null) {
         if (description && perTestListener?.name != description.className) {
             perTestListener?.finish()
@@ -83,5 +83,4 @@ class SuiteRunListener extends RunListener {
         }
         perTestListener
     }
-    
 }

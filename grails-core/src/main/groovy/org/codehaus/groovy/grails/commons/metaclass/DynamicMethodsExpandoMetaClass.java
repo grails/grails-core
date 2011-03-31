@@ -162,10 +162,10 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
 
         private void registerDynamicMethodInvocation(String name, Object newValue) {
             if (isStatic) {
-                dynamicMethods.addStaticMethodInvocation( new ClosureInvokingDynamicMethod(name, (Closure)newValue) );
+                dynamicMethods.addStaticMethodInvocation( new ClosureInvokingDynamicMethod(name, (Closure<?>)newValue) );
             }
             else {
-                dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure)newValue));
+                dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure<?>)newValue));
             }
         }
 
@@ -176,10 +176,10 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
             }
             else if (newValue instanceof Closure) {
                 if (isStatic) {
-                    registerStaticMethod(property, (Closure)newValue);
+                    registerStaticMethod(property, (Closure<?>)newValue);
                 }
                 else {
-                    registerInstanceMethod(property, (Closure)newValue);
+                    registerInstanceMethod(property, (Closure<?>)newValue);
                 }
             }
         }
@@ -198,7 +198,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
     @Override
     public void setProperty(String name, Object value) {
         if (isRegexMethod(name, value)) {
-            dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure)value));
+            dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure<?>)value));
         }
         else {
             super.setProperty(name,value);

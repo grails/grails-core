@@ -27,33 +27,34 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
 
     private static final String INIT_CLOSURE = "init";
     private static final String DESTROY_CLOSURE = "destroy";
+    @SuppressWarnings("rawtypes")
     private static final Closure BLANK_CLOSURE = new Closure(DefaultGrailsBootstrapClass.class) {
         @Override
-        public Object call(Object[] args) { return null; }
+        public Object call(Object... args) { return null; }
     };
 
     public DefaultGrailsBootstrapClass(Class<?> clazz) {
         super(clazz, BOOT_STRAP);
     }
 
-    public Closure getInitClosure() {
+    public Closure<?> getInitClosure() {
         Object obj = getPropertyValueObject(INIT_CLOSURE);
         if (obj instanceof Closure) {
-            return (Closure)obj;
+            return (Closure<?>)obj;
         }
         return BLANK_CLOSURE;
     }
 
-    public Closure getDestroyClosure() {
+    public Closure<?> getDestroyClosure() {
         Object obj = getPropertyValueObject(DESTROY_CLOSURE);
         if (obj instanceof Closure) {
-            return (Closure)obj;
+            return (Closure<?>)obj;
         }
         return BLANK_CLOSURE;
     }
 
     public void callInit(ServletContext servletContext) {
-        Closure init = getInitClosure();
+        Closure<?> init = getInitClosure();
         if (init != null) {
             init = init.curry(new Object[]{servletContext});
             Environment.executeForCurrentEnvironment(init);
@@ -61,7 +62,7 @@ public class DefaultGrailsBootstrapClass extends AbstractGrailsClass implements 
     }
 
     public void callDestroy() {
-        Closure destroy = getDestroyClosure();
+        Closure<?> destroy = getDestroyClosure();
         if (destroy != null) {
             Environment.executeForCurrentEnvironment(destroy);
         }

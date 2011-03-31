@@ -199,7 +199,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
         this.templateEngine = templateEngine;
     }
 
-	public boolean isExpired() {
-		return System.currentTimeMillis() - createTimestamp > LASTMODIFIED_CHECK_INTERVAL;
-	}
+    public boolean isExpired() {
+        return System.currentTimeMillis() - createTimestamp > LASTMODIFIED_CHECK_INTERVAL;
+    }
 }

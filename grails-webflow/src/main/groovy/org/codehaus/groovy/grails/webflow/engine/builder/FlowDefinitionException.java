@@ -19,15 +19,11 @@ package org.codehaus.groovy.grails.webflow.engine.builder;
  *
  * @author Graeme Rocher
  * @since 0.6
- *
- *        <p/>
- *        Created: Jun 12, 2007
- *        Time: 11:40:48 AM
  */
 public class FlowDefinitionException extends RuntimeException {
     private static final long serialVersionUID = 2424103440934183216L;
 
-	public FlowDefinitionException(String message) {
+    public FlowDefinitionException(String message) {
         super(message);
     }
 }

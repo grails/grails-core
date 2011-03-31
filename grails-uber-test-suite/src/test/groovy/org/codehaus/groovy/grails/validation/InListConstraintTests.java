@@ -68,7 +68,7 @@ public class InListConstraintTests extends AbstractConstraintTests {
 
         constraint = (InListConstraint) getConstraint( "testString", getTestList() );
         assertEquals( constraint.getList(), getTestList() );
-        
+
         try {
             getConstraint( "testString", "wrong");
             fail("InListConstraint must throw an exception for non-list parameters.");

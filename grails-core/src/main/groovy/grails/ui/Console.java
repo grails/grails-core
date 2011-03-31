@@ -37,6 +37,7 @@ public class Console extends groovy.ui.Console {
         super(parent, binding);
     }
 
+    @SuppressWarnings("rawtypes")
     public static void main(String... args) {
         final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
         GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
@@ -75,7 +76,7 @@ public class Console extends groovy.ui.Console {
             }
 
             @Override
-            public Object call(Object[] arguments) {
+            public Object call(Object... arguments) {
                 return doCall();
             }
 

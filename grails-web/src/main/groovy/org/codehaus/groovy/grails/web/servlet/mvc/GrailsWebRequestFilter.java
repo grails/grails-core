@@ -37,8 +37,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * @since 0.4
  */
 public class GrailsWebRequestFilter extends OncePerRequestFilter {
-	Collection<ParameterCreationListener> paramListenerBeans;
-	
+    Collection<ParameterCreationListener> paramListenerBeans;
+
     /* (non-Javadoc)
      * @see org.springframework.web.filter.OncePerRequestFilter#doFilterInternal(
      *     javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.FilterChain)
@@ -79,27 +79,27 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
     }
 
     private void configureParameterCreationListeners(GrailsWebRequest webRequest) {
-    	if(paramListenerBeans != null) {
-	        for (ParameterCreationListener creationListenerBean : paramListenerBeans) {
-	            webRequest.addParameterListener(creationListenerBean);
-	        }
-    	} else {
-    		logger.warn("paramListenerBeans isn't initialized.");
-    	}
+        if (paramListenerBeans != null) {
+            for (ParameterCreationListener creationListenerBean : paramListenerBeans) {
+                webRequest.addParameterListener(creationListenerBean);
+            }
+        } else {
+            logger.warn("paramListenerBeans isn't initialized.");
+        }
     }
 
-	@Override
-	protected void initFilterBean() throws ServletException {
-		super.initFilterBean();
-		initialize();
-	}
+    @Override
+    protected void initFilterBean() throws ServletException {
+        super.initFilterBean();
+        initialize();
+    }
 
-	public void initialize() {
-		ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-		if(appCtx != null) {
-			paramListenerBeans=appCtx.getBeansOfType(ParameterCreationListener.class).values();
-		} else {
-			logger.warn("appCtx not found in servletContext");
-		}
-	}
+    public void initialize() {
+        ApplicationContext appCtx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        if (appCtx != null) {
+            paramListenerBeans=appCtx.getBeansOfType(ParameterCreationListener.class).values();
+        } else {
+            logger.warn("appCtx not found in servletContext");
+        }
+    }
 }

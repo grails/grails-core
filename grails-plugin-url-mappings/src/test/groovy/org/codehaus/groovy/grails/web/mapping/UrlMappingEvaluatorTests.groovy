@@ -6,7 +6,7 @@ class UrlMappingEvaluatorTests extends GroovyTestCase {
 
     def mappingScript = '''
 mappings {
-  "/$id/$year?/$month?/$day?" {  
+  "/$id/$year?/$month?/$day?" {
         controller = "blog"
         action = "show"
         constraints {
@@ -33,13 +33,13 @@ mappings {
   "/music/$band/$album" (controller:'music', action:'show')
 
   "/myFiles/something-$fname.$fext" {
-	  controller = "files"
+      controller = "files"
   }
 
   "/long/$path**"(controller: 'files')
 }
 '''
-    
+
     void testEvaluateMappings() {
         def res = new ByteArrayResource(mappingScript.bytes)
 
