@@ -29,9 +29,12 @@ import org.hibernate.type.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -117,7 +120,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private boolean scroll;
     private boolean count;
     private ProjectionList projectionList = Projections.projectionList();
-    private BeanWrapper targetBean;
     private List<String> aliasStack = new ArrayList<String>();
     private List<Criteria> aliasInstanceStack = new ArrayList<Criteria>();
     private Map<String, String> aliasMap = new HashMap<String, String>();
@@ -132,7 +134,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     @SuppressWarnings({"unchecked","rawtypes"})
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
         this.targetClass = targetClass;
-        targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
         this.sessionFactory = sessionFactory;
     }
 
@@ -1200,16 +1201,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 return name;
             }
 
-            if (targetBean.isReadableProperty(name)) {
-                ClassMetadata meta = sessionFactory.getClassMetadata(targetBean.getWrappedClass());
+            final PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(targetClass, name);
+            if (pd != null && pd.getReadMethod() != null) {
+                ClassMetadata meta = sessionFactory.getClassMetadata(targetClass);
                 Type type = meta.getPropertyType(name);
                 if (type.isAssociationType()) {
                     String otherSideEntityName =
                         ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
                     Class oldTargetClass = targetClass;
                     targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
-                    BeanWrapper oldTargetBean = targetBean;
-                    targetBean = new BeanWrapperImpl(BeanUtils.instantiateClass(targetClass));
                     associationStack.add(name);
                     final String associationPath = getAssociationPath();
                     createAliasIfNeccessary(name, associationPath);
@@ -1226,7 +1226,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     }
                     associationStack.remove(associationStack.size()-1);
                     targetClass = oldTargetClass;
-                    targetBean = oldTargetBean;
+
                     return name;
                 }
             }

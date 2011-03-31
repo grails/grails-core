@@ -324,10 +324,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         log.debug("Going to inspect artefact classes.");
         for (final Class<?> theClass : classes) {
             log.debug("Inspecting [" + theClass.getName() + "]");
-            if (Modifier.isAbstract(theClass.getModifiers())) {
-                log.debug("[" + theClass.getName() + "] is abstract.");
-                continue;
-            }
             if (allArtefactClasses.contains(theClass)) {
                 continue;
             }
@@ -887,11 +883,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     protected GrailsClass addArtefact(String artefactType, Class<?> artefactClass, boolean overrideable) {
-        // @todo should we filter abstracts here?
-        if (Modifier.isAbstract(artefactClass.getModifiers())) {
-            return null;
-        }
-
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler.isArtefact(artefactClass)) {
             GrailsClass artefactGrailsClass = handler.newArtefactClass(artefactClass);

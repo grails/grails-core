@@ -22,13 +22,6 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
 import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +29,12 @@ import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.Assert;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * Abstract base class for Grails types that provides common functionality for
@@ -59,6 +58,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     private final String logicalPropertyName;
     private final ClassPropertyFetcher classPropertyFetcher;
     protected GrailsApplication grailsApplication;
+    private boolean isAbstract;
 
     /**
      * Used by all child classes to create a new instance and get the name right.
@@ -83,6 +83,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
             logicalPropertyName = GrailsNameUtils.getPropertyNameRepresentation(name);
         }
         classPropertyFetcher = ClassPropertyFetcher.forClass(clazz);
+        isAbstract = Modifier.isAbstract(clazz.getModifiers());
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
@@ -284,9 +285,14 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         return getPropertyOrStaticPropertyOrFieldValue(propName, Object.class);
     }
 
+    public boolean isAbstract() {
+
+        return isAbstract;
+    }
+
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.commons.GrailsClass#hasProperty(java.lang.String)
-     */
+    * @see org.codehaus.groovy.grails.commons.GrailsClass#hasProperty(java.lang.String)
+    */
     public boolean hasProperty(String propName) {
         return classPropertyFetcher.isReadableProperty(propName);
     }
