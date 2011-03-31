@@ -148,6 +148,12 @@ class BuildSettings extends AbstractBuildSettings {
      */
     public static final String CORE_WORKING_DIR_NAME = '.core'
 
+    /**
+     *  A property name to enable/disable AST conversion of closures actions&tags to methods
+     */
+
+    public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
+
 
     /**
      * The base directory for the build, which is normally the root
@@ -265,6 +271,8 @@ class BuildSettings extends AbstractBuildSettings {
     List applicationJars = []
 
     List buildListeners = []
+
+    boolean convertClosuresArtefacts = false
 
     /**
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
@@ -483,6 +491,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
+    private boolean convertClosuresArtefactsSet
     private String resolveChecksum
     private Map resolveCache = new ConcurrentHashMap()
 
@@ -514,7 +523,7 @@ class BuildSettings extends AbstractBuildSettings {
         coreDependencies = new GrailsCoreDependencies(grailsVersion)
         
         // If 'grailsHome' is set, add the JAR file dependencies.
-        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion, jquery:null]
+        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion, jquery:"1.4.4.1"]
         defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.
@@ -637,6 +646,13 @@ class BuildSettings extends AbstractBuildSettings {
     void setProjectWarExplodedDir(File dir) {
         projectWarExplodedDir = dir
         projectWarExplodedDirSet = true
+    }
+
+    boolean getConvertClosuresArtefacts(){ convertClosuresArtefacts }
+
+    void setConvertClosuresArtefacts(boolean convert){
+        convertClosuresArtefacts = convert
+        convertClosuresArtefactsSet = true
     }
 
     boolean getProjectWarOsgiHeaders() { projectWarOsgiHeaders }
@@ -781,37 +797,42 @@ class BuildSettings extends AbstractBuildSettings {
 
             cachedResolve.withInputStream { input ->
                 def ois = new ObjectInputStream(input)
-                def dependencyMap = ois.readObject()
+                Map dependencyMap = ois.readObject()
 
-                def compileDeps = dependencyMap.compile
-                def runtimeDeps = dependencyMap.runtime
-                def testDeps = dependencyMap.test
-                def buildDeps = dependencyMap.build
-                def providedDeps = dependencyMap.provided
-
-                if (compileDeps) {
-                    this.@compileDependencies.addAll(compileDeps)
-                    defaultCompileDepsAdded = true
+                if(dependencyMap?.values()*.any { !it.exists() }) {
+                    modified = true
                 }
+                else {
+                    def compileDeps = dependencyMap.compile
+                    def runtimeDeps = dependencyMap.runtime
+                    def testDeps = dependencyMap.test
+                    def buildDeps = dependencyMap.build
+                    def providedDeps = dependencyMap.provided
 
-                if (runtimeDeps) {
-                    this.@runtimeDependencies.addAll(runtimeDeps)
-                    defaultRuntimeDepsAdded = true
-                }
+                    if (compileDeps) {
+                        this.@compileDependencies.addAll(compileDeps)
+                        defaultCompileDepsAdded = true
+                    }
 
-                if (testDeps) {
-                    this.@testDependencies.addAll(testDeps)
-                    defaultTestDepsAdded = true
-                }
+                    if (runtimeDeps) {
+                        this.@runtimeDependencies.addAll(runtimeDeps)
+                        defaultRuntimeDepsAdded = true
+                    }
 
-                if (buildDeps) {
-                    this.@buildDependencies.addAll(buildDeps)
-                    defaultBuildDepsAdded = true
-                }
+                    if (testDeps) {
+                        this.@testDependencies.addAll(testDeps)
+                        defaultTestDepsAdded = true
+                    }
 
-                if (providedDeps) {
-                    this.@providedDependencies.addAll(providedDeps)
-                    defaultProvidedDepsAdded = true
+                    if (buildDeps) {
+                        this.@buildDependencies.addAll(buildDeps)
+                        defaultBuildDepsAdded = true
+                    }
+
+                    if (providedDeps) {
+                        this.@providedDependencies.addAll(providedDeps)
+                        defaultProvidedDepsAdded = true
+                    }
                 }
             }
         }
@@ -1026,6 +1047,10 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectWarExplodedDirSet) {
             projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
+        }
+
+        if (!convertClosuresArtefactsSet) {
+            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  '').toBoolean()
         }
 
         if (!projectWarOsgiHeadersSet) {

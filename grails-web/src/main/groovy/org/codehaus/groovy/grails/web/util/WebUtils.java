@@ -176,7 +176,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws Exception Thrown if an error occurs
      */
     public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
-        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
 
         View v;
         if (viewName.startsWith(String.valueOf(SLASH))) {

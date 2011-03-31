@@ -41,6 +41,7 @@ public interface GrailsDomainClassProperty {
     String LAST_UPDATED = "lastUpdated";
     String SORT = "sort";
     String EMBEDDED = "embedded";
+    String ERRORS = "errors";
     int FETCH_EAGER = 1;
     int FETCH_LAZY = 0;
 
@@ -99,7 +100,7 @@ public interface GrailsDomainClassProperty {
     boolean isPersistent();
 
     /**
-     * Returns true if the property is required.
+     * Returns false if the property is required.
      * @return Whether the property is optional
      */
     boolean isOptional();

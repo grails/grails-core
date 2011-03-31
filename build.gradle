@@ -70,6 +70,7 @@ subprojects { project ->
         mavenCentral()
         mavenRepo urls:"http://maven.springframework.org/release"
         mavenRepo urls:'http://maven.springframework.org/snapshot'
+        mavenRepo name:'jboss-public', urls:'http://repository.jboss.org/nexus/content/groups/public-jboss/'
     }
     dependencies {
         // Groovy
@@ -115,7 +116,7 @@ subprojects { project ->
         // Specs
         compile 'javax.servlet:servlet-api:2.5'
         compile 'javax.transaction:jta:1.1'
-        compile 'javax.persistence:persistence-api:1.0'
+        compile 'org.hibernate.java-persistence:jpa-api:2.0-cr-1'
 
         // Spring
 

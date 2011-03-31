@@ -19,9 +19,8 @@ import grails.util.GrailsUtil
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
-import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
  /**
@@ -64,42 +63,10 @@ class FiltersGrailsPlugin {
 
     def doWithDynamicMethods = { applicationContext ->
         def mc = FilterConfig.metaClass
-
-        // Add the standard dynamic properties for web requests to all
-        // the filters, i.e. 'params', 'flash', 'request', etc.
-        WebMetaUtils.registerCommonWebProperties(mc, application)
-
-        // Also make the application context available.
-        mc.getApplicationContext = {-> applicationContext }
-
-        // Add redirect and render methods (copy and pasted from the
-        // controllers plugin).
-        def redirect = new RedirectDynamicMethod()
-        def render = new RenderDynamicMethod()
-
-        mc.redirect = {Map args ->
-            redirect.invoke(delegate, "redirect", args)
-        }
-
-        mc.render = {Object o ->
-            render.invoke(delegate, "render", [o?.inspect()] as Object[])
-        }
-
-        mc.render = {String txt ->
-            render.invoke(delegate, "render", [txt] as Object[])
-        }
-
-        mc.render = {Map args ->
-            render.invoke(delegate, "render", [args] as Object[])
-        }
-
-        mc.render = {Closure c ->
-            render.invoke(delegate, "render", [c] as Object[])
-        }
-
-        mc.render = {Map args, Closure c ->
-            render.invoke(delegate, "render", [args, c] as Object[])
-        }
+        ControllersApi controllerApi = applicationContext.getBean("instanceControllersApi",ControllersApi)
+        MetaClassEnhancer enhancer = new MetaClassEnhancer()
+        enhancer.addApi controllerApi
+        enhancer.enhance mc
     }
 
     def doWithApplicationContext = { applicationContext ->

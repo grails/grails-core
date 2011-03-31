@@ -1,9 +1,8 @@
 package org.codehaus.groovy.grails.plugins.web
 
-import org.codehaus.groovy.grails.plugins.*
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 
 class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -12,9 +11,15 @@ class LoggingGrailsPluginTests extends AbstractGrailsPluginTests {
     def taglibClass
 
     protected void onSetUp() {
-        controllerClass = gcl.parseClass("class TestController {}")
-        serviceClass = gcl.parseClass("class TestService {}")
-        taglibClass = gcl.parseClass("class TestTagLib {}")
+        controllerClass = gcl.parseClass("""
+        @grails.artefact.Artefact('Controller')
+        class TestController {}""")
+        serviceClass = gcl.parseClass("""
+        @grails.artefact.Artefact('Service')
+        class TestService {}""")
+        taglibClass = gcl.parseClass("""
+        @grails.artefact.Artefact('TagLib')
+        class TestTagLib {}""")
 
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin")

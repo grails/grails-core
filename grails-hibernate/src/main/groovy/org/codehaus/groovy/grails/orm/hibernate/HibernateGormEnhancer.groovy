@@ -74,7 +74,7 @@ class HibernateGormEnhancer extends GormEnhancer{
 		
 	}
 
-	protected GormValidationApi getValidationApi(Class cls) {
+    protected GormValidationApi getValidationApi(Class cls) {
 		def validateApi = new HibernateGormValidationApi(cls, datastore)
 		validateApi.classLoader = classLoader
 		return validateApi
@@ -93,57 +93,20 @@ class HibernateGormEnhancer extends GormEnhancer{
 		instanceApi.classLoader = classLoader
 		return instanceApi
 	}
-	
-	@Override
-	protected void registerNamedQueries( PersistentEntity entity, Closure namedQueries ) {
+
+    @Override
+	protected void registerNamedQueries( PersistentEntity entity, Object namedQueries ) {
 		if(grailsApplication != null) {
 			SessionFactory sessionFactory = datastore.sessionFactory
 			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.name)
 			if(domainClass != null) {
 				def builder = new HibernateNamedQueriesBuilder(domainClass, grailsApplication, sessionFactory)
-				builder.evaluate(namedQueries)
+				builder.evaluate((Closure)namedQueries)
 			}
 		}
 
 	}
-	
-	@Override
-	protected void registerMethodMissing(Class cls) {
-		
-		SessionFactory sessionFactory = datastore.sessionFactory
-		
-		if(grailsApplication != null) {
-			def dynamicMethods = [	new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-									new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ]
-			def mc = cls.metaClass
-			mc.static.methodMissing = {String methodName, args ->
-				def result = null
-				StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
-				if (method) {
-					// register the method invocation for next time
-					synchronized(this) {
-						mc.static."$methodName" = {List varArgs ->
-							method.invoke(cls, methodName, varArgs)
-						}
-					}
-					result = method.invoke(cls, methodName, args)
-				}
-				else {
-					throw new MissingMethodException(methodName, delegate, args)
-				}
-				result
-			}
-		}
-		else {
-			super.registerMethodMissing cls
-		}
-		
-	}
-	
+
 }
 
 /**
@@ -165,7 +128,8 @@ class HibernateGormStaticApi extends GormStaticApi {
 	private ExecuteQueryPersistentMethod executeQueryMethod
 	private ExecuteUpdatePersistentMethod executeUpdateMethod
 	private MergePersistentMethod mergeMethod
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader() 
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
+    private List<StaticMethodInvocation> dynamicMethods = []
 	
 	public HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore) {
 		super(persistentClass, datastore);
@@ -191,10 +155,57 @@ class HibernateGormStaticApi extends GormStaticApi {
 
 			this.mergeMethod = new MergePersistentMethod( sessionFactory, classLoader, grailsApplication, domainClass )
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
+
+            this.dynamicMethods = [	new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ]
+
 		}
 	}
 
-	@Override
+    @Override
+    def methodMissing(String methodName, Object args) {
+        def result = null
+        StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
+        def cls = persistentClass
+        def mc = cls.metaClass
+        if (method) {
+            // register the method invocation for next time
+            synchronized(this) {
+                mc.static."$methodName" = {List varArgs ->
+                    method.invoke(cls, methodName, varArgs)
+                }
+            }
+            result = method.invoke(cls, methodName, args)
+        }
+        else {
+            try {
+                if(respondsTo(methodName, args)) {
+                    result = this."$methodName"(*args)
+                    synchronized(this) {
+                        mc.static."$methodName" = {List varArgs ->
+                             this."$methodName"(*varArgs )
+                        }
+                    }
+                }
+                else {
+                    throw new MissingMethodException(methodName, cls, args)
+                }
+
+            }
+            catch(MissingMethodException e) {
+                throw new MissingMethodException(methodName, cls, args)
+            }
+        }
+        return result
+    }
+
+
+
+    @Override
 	public Object get(Serializable id) {
         if (id || (id instanceof Number)) {
         	id = convertIdentifier(id)
@@ -203,7 +214,7 @@ class HibernateGormStaticApi extends GormStaticApi {
         }
 	}
 
-    SimpleTypeConverter typeConverter = new SimpleTypeConverter()
+    private SimpleTypeConverter typeConverter = new SimpleTypeConverter()
 
     private convertIdentifier(Serializable id) {
         final idType = identityType
@@ -662,6 +673,11 @@ class HibernateGormStaticApi extends GormStaticApi {
 	public List findAll(String query, Collection params, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [query, params, args] as Object[])
 	}
+
+    @Override
+    Object create() {
+        return super.create()    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }
 
 class HibernateGormValidationApi extends GormValidationApi {
@@ -678,7 +694,6 @@ class HibernateGormValidationApi extends GormValidationApi {
 		if(mappingContext instanceof GrailsDomainClassMappingContext) {
 			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
-			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
 			def validator = mappingContext.getEntityValidator( mappingContext.getPersistentEntity(persistentClass.name) )
 			this.validateMethod = new ValidatePersistentMethod(sessionFactory, 
 																classLoader, 

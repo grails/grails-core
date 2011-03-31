@@ -34,7 +34,10 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
 
         gcl.parseClass '''
 import grails.converters.*
+import grails.artefact.*
+import grails.persistence.*
 
+@Artefact('Controller')
 class ContentController {
     def testFormat = {
         render request.format
@@ -84,6 +87,8 @@ class ContentController {
     }
 }
 
+
+@Entity
 class Gizmo {
     Long id
     Long version

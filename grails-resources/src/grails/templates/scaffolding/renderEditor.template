@@ -28,34 +28,55 @@
         out << renderOneToMany(domainClass, property)
 
     private renderEnumEditor(domainClass, property) {
-        return "<g:select name=\"${property.name}\" from=\"\${${property.type.name}?.values()}\" keys=\"\${${property.type.name}?.values()*.name()}\" value=\"\${${domainInstance}?.${property.name}?.name()}\" ${renderNoSelection(property)} />"
+		def sb = new StringBuilder("")
+        sb << '<g:select name="' << property.name << '"'
+ 		sb << ' from="${' << "${property.type.name}?.values()" << '}"'
+ 		sb << ' keys="${' << property.type.name << '.values()*.name()}"'
+		if (isRequired()) sb << ' required="required"'
+		sb << ' value="${' << "${domainInstance}?.${property.name}?.name()" << '}"'
+		sb << renderNoSelection(property)
+		sb << '/>'
+		sb as String
     }
 
     private renderStringEditor(domainClass, property) {
         if (!cp) {
             return "<g:textField name=\"${property.name}\" value=\"\${${domainInstance}?.${property.name}}\" />"
         } else {
+			def sb = new StringBuilder("")
             if ("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
-                return "<g:textArea name=\"${property.name}\" cols=\"40\" rows=\"5\" value=\"\${${domainInstance}?.${property.name}}\" />"
+                sb << '<g:textArea name="' << property.name << '"'
+ 				sb << ' cols="40" rows="5"'
+				if (isRequired()) sb << ' required="required"'
+ 				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
+				sb << '/>'
             } else if (cp.inList) {
-				return "<g:select name=\"${property.name}\" from=\"\${${domainInstance}.constraints.${property.name}.inList}\" value=\"\${${domainInstance}?.${property.name}}\" valueMessagePrefix=\"${domainClass.propertyName}.${property?.name}\" ${renderNoSelection(property)} />"
+				sb << '<g:select name="' << property.name << '"'
+				sb << ' from="${' << "${domainInstance}.constraints.${property.name}.inList" << '}"'
+				if (isRequired()) sb << ' required="required"'
+				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
+				sb << ' valueMessagePrefix="' << "${domainClass.propertyName}.${property.name}" << '"'
+				sb << renderNoSelection(property)
+				sb << '/>'
 			} else {
-				def sb = new StringBuilder("")
 				if (cp.password) {
-					sb << "<g:field type=\"password\" "
+					sb << '<g:field type="password"'
 				} else if (cp.url) {
-					sb << "<g:field type=\"url\" "
+					sb << '<g:field type="url"'
 				} else if (cp.email) {
-					sb << "<g:field type=\"email\" "
+					sb << '<g:field type="email"'
 				} else {
-					sb << "<g:textField "
+					sb << '<g:textField'
 				}
-				sb << "name=\"${property.name}\" "
-				if (cp.maxSize) sb << "maxlength=\"${cp.maxSize}\" "
-				if (!cp.editable) sb << "readonly=\"readonly\" "
-				sb << "value=\"\${${domainInstance}?.${property.name}}\" />"
-				return sb.toString()
+				sb << ' name="' << property.name << '"'
+				if (cp.maxSize) sb << ' maxlength="' << cp.maxSize << '"'
+				if (!cp.editable) sb << ' readonly="readonly"'
+				if (cp.matches) sb << ' pattern="${' << "${domainInstance}.constraints.${property.name}.matches" << '}"'
+				if (isRequired()) sb << ' required="required"'
+				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
+				sb << '/>'
 			}
+			sb as String
         }
     }
 
@@ -94,16 +115,32 @@
                 return "<g:field type=\"number\" name=\"${property.name}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
             }
         } else {
+	        def sb = new StringBuilder()
             if (cp.range) {
-                return "<g:select name=\"${property.name}\" from=\"\${${cp.range.from}..${cp.range.to}}\" class=\"range\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" ${renderNoSelection(property)} />"
+                sb << '<g:select name="' << property.name << '"'
+ 				sb << ' from="${' << "${cp.range.from}..${cp.range.to}" << '}"'
+ 				sb << ' class="range"'
+				if (isRequired()) sb << ' required="required"'
+				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
+				sb << renderNoSelection(property)
+				sb << '/>'
             } else if (cp.inList) {
-                return "<g:select name=\"${property.name}\" from=\"\${${domainInstance}.constraints.${property.name}.inList}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" valueMessagePrefix=\"${domainClass.propertyName}.${property?.name}\" ${renderNoSelection(property)} />"
+                sb << '<g:select name="' << property.name << '"'
+ 				sb << ' from="${' << "${domainInstance}.constraints.${property.name}.inList" << '}"'
+				if (isRequired()) sb << ' required="required"'
+				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
+				sb << ' valueMessagePrefix="' << "${domainClass.propertyName}.${property.name}" << '"'
+				sb << renderNoSelection(property)
+				sb << '/>'
             } else {
-				def sb = new StringBuilder("<g:field type=\"number\" name=\"${property.name}\" ")
-				if (cp.min != null) sb << "min=\"${cp.min}\" "
-				if (cp.max != null) sb << "max=\"${cp.max}\" "
-				sb << "value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
+				sb << '<g:field type="number" name="' << property.name << '"'
+				if (cp.min != null) sb << ' min="' << cp.min << '"'
+				if (cp.max != null) sb << ' max="' << cp.max << '"'
+				if (isRequired()) sb << ' required="required"'
+				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
+				sb << '/>'
             }
+			sb as String
         }
      }
 
@@ -156,15 +193,23 @@
     }
 
     private renderNoSelection(property) {
-        if (property.optional) {
+        if (isOptional()) {
             if (property.manyToOne || property.oneToOne) {
                 return "noSelection=\"['null': '']\""
             } else if (property.type == Date || property.type == java.sql.Date || property.type == java.sql.Time || property.type == Calendar) {
                 return "default=\"none\" noSelection=\"['': '']\""
             } else {
-                return "noSelection=\"['': '']\""
+                return " noSelection=\"['': '']\""
             }
         }
         return ""
     }
+
+	private boolean isRequired() {
+		!isOptional()
+	}
+	
+	private boolean isOptional() {
+		cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	}
 %>

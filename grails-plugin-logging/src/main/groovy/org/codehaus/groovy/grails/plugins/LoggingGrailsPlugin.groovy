@@ -45,31 +45,11 @@ class LoggingGrailsPlugin {
         }
     }
 
-    def doWithDynamicMethods = {applicationContext ->
-        for (handler in application.artefactHandlers) {
-            for (artefact in application."${handler.type}Classes") {
-                addLogMethod(artefact.clazz, handler)
-            }
-        }
-    }
-
     def onConfigChange = {event ->
         def log4jConfig = event.source.log4j
         if (log4jConfig instanceof Closure) {
             LogManager.resetConfiguration()
             new Log4jConfig().configure(log4jConfig)
-        }
-    }
-
-    def onChange = {event ->
-        if (!(event.source instanceof Class)) {
-            return
-        }
-
-        log.debug "Adding log method to modified artefact [${event.source}]"
-        def handler = application.artefactHandlers.find {it.isArtefact(event.source)}
-        if (handler) {
-            addLogMethod(event.source, handler)
         }
     }
 

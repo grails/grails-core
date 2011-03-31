@@ -1,0 +1,40 @@
+package org.codehaus.groovy.grails.compiler.logging
+
+import org.apache.commons.logging.Log
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import spock.lang.Specification
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: graemerocher
+ * Date: 25/03/2011
+ * Time: 14:31
+ * To change this template use File | Settings | File Templates.
+ */
+class LoggingTransformerSpec extends Specification{
+
+
+    def "Test added log field"() {
+        given:
+            def gcl = new GrailsAwareClassLoader()
+            def transformer = new LoggingTransformer()
+            gcl.classInjectors = [transformer] as ClassInjector[]
+
+        when:
+            def cls = gcl.parseClass('''
+class LoggingController {
+    def index() {
+        log.debug "message"
+        return log
+    }
+}
+''', "foo/grails-app/controllers/LoggingController.groovy")
+            def controller = cls.newInstance()
+            Log log = controller.index()
+
+        then:
+            log instanceof Log
+
+    }
+}

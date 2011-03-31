@@ -34,6 +34,8 @@ import org.springframework.util.Assert;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -101,6 +103,14 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                     // ignore
                 }
             }
+            Collections.sort(classInjectorList, new Comparator<ClassInjector>() {
+                public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
+                    if(classInjectorA instanceof Comparable) {
+                        return ((Comparable)classInjectorA).compareTo(classInjectorB);
+                    }
+                    return 0;
+                }
+            });
             classInjectors = classInjectorList.toArray(new ClassInjector[classInjectorList.size()]);
         }
     }
@@ -117,7 +127,13 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 }
 
                 if (classInjector.shouldInject(url)) {
-                    classInjector.performInjection(source, context, classNode);
+                    try {
+                        classInjector.performInjection(source, context, classNode);
+                    } catch (RuntimeException e) {
+                        e.printStackTrace();
+                        System.out.println("Error occurred calling AST injector [" + classInjector.getClass() + "]: " + e.getMessage());
+                        throw e;
+                    }
                 }
             } catch (MalformedURLException e) {
                 LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(), e);

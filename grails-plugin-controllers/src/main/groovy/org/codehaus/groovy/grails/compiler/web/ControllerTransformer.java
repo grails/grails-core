@@ -42,7 +42,6 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
         return null;  // No static api
     }
 
-    @Override
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
 

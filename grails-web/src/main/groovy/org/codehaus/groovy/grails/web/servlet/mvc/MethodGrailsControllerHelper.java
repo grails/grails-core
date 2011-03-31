@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.web.Action;
 import groovy.lang.GroovyObject;
 import org.apache.commons.beanutils.MethodUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -38,7 +39,7 @@ public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper
     protected Method retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
         Method action = MethodUtils.getAccessibleMethod(controller.getClass(), actionName, NOARGS);
 
-        if (action == null || action.isSynthetic()) {
+        if (action == null || action.getAnnotation(Action.class) == null) {
             try {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return null;

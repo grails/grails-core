@@ -16,12 +16,12 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 
 import java.beans.FeatureDescriptor;
-import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -96,22 +96,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
         controllerPath = uri + SLASH;
 
-
-        //Todo refactor using another way to detect resolve strategy
-        String resolveStrategy = (String)ConfigurationHolder.getConfig().get(RESOLVE_ACTION_KEY);
-
-        //Method Strategy only
-        if(resolveStrategy != null && resolveStrategy.equalsIgnoreCase(RESOLVE_METHOD)){
-            methodStrategy(actionNames);
-        }
-        //Closure Strategy only
-        else if(resolveStrategy != null && resolveStrategy.equalsIgnoreCase(RESOLVE_CLOSURE)){
-            closureStrategy(actionNames);
-        }
-        //Mixed Strategy : Method first, Closure then
-        else{
-            mixedStrategy(actionNames);
-        }
+        mixedStrategy(actionNames);
 
         configureDefaultActionIfSet();
         configureURIsForCurrentState();
@@ -150,21 +135,17 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private void methodStrategy(Collection<String> methodNames){
 
         for (Method method : getClazz().getMethods()) {
-            if (!Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers())
-                    && !method.isSynthetic()) {
+            if (Modifier.isPublic(method.getModifiers())
+                    && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
-                    /*if (methodName.endsWith(FLOW_SUFFIX)) {
-                        String flowId = methodName.substring(0, methodName.length()-FLOW_SUFFIX.length());
-                        flows.put(flowId, new MethodDescriptor(method));
-                        methodName = flowId;
-                    }*/
+                   
                     methodNames.add(methodName);
 
                     configureMappingForClosureProperty(methodName);
             }
         }
 
-        if (!isPublicAndNonStaticMethod(defaultActionName) && methodNames.size() == 1) {
+        if (!isActionMethod(defaultActionName) && methodNames.size() == 1) {
             defaultActionName = methodNames.iterator().next();
         }
     }

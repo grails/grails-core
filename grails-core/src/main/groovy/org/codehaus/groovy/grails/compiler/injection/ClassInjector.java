@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import java.lang.reflect.Modifier;
 import java.net.URL;
 
 import org.codehaus.groovy.ast.ClassNode;
@@ -30,6 +31,8 @@ import org.codehaus.groovy.control.SourceUnit;
  * @since 0.2
  */
 public interface ClassInjector {
+
+    int PRIVATE_STATIC_MODIFIER = Modifier.PRIVATE | Modifier.STATIC;
 
     /**
      * Handles injection of properties, methods etc. into a class.

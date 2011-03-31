@@ -199,7 +199,12 @@ target (war: "The implementation target") {
             def pluginName = info.name
             def descriptor = dm.getPluginDependencyDescriptor(pluginName)
             if(descriptor) {
-                def i = descriptor.isSupportedInConfiguration("runtime") || descriptor.isSupportedInConfiguration("compile")
+                def configs = ["runtime", "compile"]
+                if (grailsEnv == "test") {
+                    configs << "test" 
+                }
+                
+                def i = configs.any { descriptor.isSupportedInConfiguration(it) }
                 i != null ? i : true
             }else{
 		        true

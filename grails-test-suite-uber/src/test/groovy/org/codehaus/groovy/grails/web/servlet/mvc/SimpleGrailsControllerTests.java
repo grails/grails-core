@@ -135,7 +135,6 @@ public class SimpleGrailsControllerTests extends TestCase {
         controller = (SimpleGrailsController)appCtx.getBean("mainSimpleController");
 
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
-        controller.setServletContext(servletContext);
         assertNotNull(appCtx);
         super.setUp();
     }
