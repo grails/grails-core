@@ -1,16 +1,13 @@
 package org.codehaus.groovy.grails.web.converters
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import java.lang.reflect.Method
-import org.springframework.validation.Errors
-import org.springframework.validation.BeanPropertyBindingResult
-import grails.converters.XML
-import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
-import org.hibernate.proxy.LazyInitializer
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.hibernate.proxy.HibernateProxy
+import org.hibernate.proxy.LazyInitializer
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 
-/**
+ /**
  * Tests for the XML converter.
  *
  * @author Graeme Rocher
@@ -92,6 +89,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         gcl.parseClass '''
 import grails.converters.*
 
+@grails.artefact.Artefact("Controller")
 class RestController {
   def test = {
      def b = new XmlConverterTestBook(title:'The Stand', author:'Stephen King')
@@ -113,6 +111,8 @@ class RestController {
   }
 
 }
+
+@grails.persistence.Entity
 class XmlConverterTestBook {
  Long id
  Long version
@@ -122,6 +122,7 @@ class XmlConverterTestBook {
  XmlConverterTestPublisher publisher
 
 }
+@grails.persistence.Entity
 class XmlConverterTestPublisher {
  Long id
  Long version

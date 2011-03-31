@@ -92,7 +92,9 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
         gcl.parseClass '''
 import grails.converters.*
+import grails.artefact.*
 
+@Artefact("Controller")
 class RestController {
     def test = {
        def b = new Book(title:'The Stand', author:'Stephen King')
@@ -119,6 +121,8 @@ class RestController {
         render descriptors as JSON
     }
 }
+
+@grails.persistence.Entity
 class Book {
    Long id
    Long version

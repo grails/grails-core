@@ -1,6 +1,9 @@
 
 dependencies {
-    compile project(":grails-web"), project(":grails-plugin-codecs"), project(":grails-plugin-controllers")
+    compile project(":grails-web"),
+            project(":grails-plugin-codecs"),
+            project(":grails-plugin-logging"),
+            project(":grails-plugin-controllers")
 }
 sourceSets {
     main {

@@ -37,4 +37,25 @@ class LoggingController {
             log instanceof Log
 
     }
+
+    def "Test adding log field via Artefact annotation"() {
+        given:
+            def gcl = new GrailsAwareClassLoader()
+        when:
+            def cls = gcl.parseClass('''
+@grails.artefact.Artefact("Controller")
+class LoggingController {
+    def index() {
+        log.debug "message"
+        return log
+    }
+}
+''', "foo/grails-app/controllers/LoggingController.groovy")
+            def controller = cls.newInstance()
+            Log log = controller.index()
+
+        then:
+            log instanceof Log
+
+    }
 }
