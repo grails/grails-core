@@ -1,6 +1,10 @@
 dependencies {
 
-    compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring"),project(":grails-web")
+    compile project(":grails-bootstrap"),
+            project(":grails-core"),
+            project(":grails-spring"),
+            project(":grails-web"),
+            project(":grails-plugin-domain-class")
 
 
     // Srping Datastore APIs
@@ -13,7 +17,7 @@ dependencies {
     compile( 'org.springframework:spring-datastore-simple:1.0.0.BUILD-SNAPSHOT' ) {
         transitive = false
     }
-    
+
     // Hibernate related
     compile 'org.hibernate:hibernate-core:3.6.1.Final'
     compile 'javassist:javassist:3.11.0.GA'
