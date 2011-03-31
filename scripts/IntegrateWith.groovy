@@ -26,6 +26,17 @@ import grails.util.GrailsNameUtils
  */
 includeTargets << grailsScript("_GrailsInit")
 
+USAGE = """
+    integrate-with [--ant] [--eclipse] [--intellij] [--git] [--textmate]
+
+where
+    --ant = Generates an Ant build.xml with accompanying Ivy files.
+    --eclipse = Generates STS/Eclipse project files.
+    --intellij = Generates IntelliJ IDEA project files.
+    --git = Generates a '.gitignore' file.
+    --textmate = Generates a TextMate project file.
+"""
+
 integrationFiles = new File("${projectWorkDir}/integration-files")
 target(integrateWith:"Integrates ") {
     depends(parseArguments)
@@ -55,7 +66,7 @@ target(integrateAnt:"Integrates Ant with Grails") {
     ant.copy(todir:basedir) {
         fileset(dir:integrationFiles, includes:"*.xml")
    }
-    replaceTokens()
+    replaceTokens(["build.xml", "ivy.xml", "ivysettings.xml"])
     println "Created Ant and Ivy builds files."
 }
 
@@ -67,7 +78,7 @@ target(integrateTextmate:"Integrates Textmate with Grails") {
 
     ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
 
-    replaceTokens()
+    replaceTokens(["*.tmproj"])
     println "Created Textmate project files."
 }
 
@@ -78,7 +89,7 @@ target(integrateEclipse:"Integrates Eclipse STS with Grails") {
         fileset(dir:"${integrationFiles}/eclipse")
     }
 
-    replaceTokens()
+    replaceTokens([".classpath", ".project"])
     println "Created Eclipse project files."
 }
 
@@ -92,7 +103,7 @@ target(integrateIntellij:"Integrates Intellij with Grails") {
     ant.move(file: "${basedir}/ideaGrailsProject.ipr", tofile: "${basedir}/${grailsAppName}.ipr", overwrite: true)
     ant.move(file: "${basedir}/ideaGrailsProject.iws", tofile: "${basedir}/${grailsAppName}.iws", overwrite: true)
 
-    replaceTokens()
+    replaceTokens(["*.iml", "*.ipr"])
     println "Created IntelliJ project files."
 }
 
@@ -103,20 +114,8 @@ target(integrateGit:"Integrates Git with Grails") {
     }
     ant.move(file: "${basedir}/grailsProject.gitignore", tofile: "${basedir}/.gitignore", overwrite: true)
 
-    replaceTokens()
+    replaceTokens([".gitignore"])
     println "Created Git project files."
-}
-
-target(replaceTokens:"Replaces any tokens in the files") {
-    def appKey = grailsAppName.replaceAll(/\s/, '.').toLowerCase()
-    ant.replace(dir:"${basedir}", includes:"*.*") {
-        replacefilter(token:"@grails.intellij.libs@", value: intellijClasspathLibs())
-        replacefilter(token: "@grails.libs@", value: eclipseClasspathLibs())
-        replacefilter(token: "@grails.jar@", value: eclipseClasspathGrailsJars())
-        replacefilter(token: "@grails.version@", value: grailsVersion)
-        replacefilter(token: "@grails.project.name@", value: grailsAppName)
-        replacefilter(token: "@grails.project.key@", value: appKey)
-    }
 }
 
 target(unpackSupportFiles:"Unpacks the support files") {
@@ -154,3 +153,16 @@ eclipseClasspathGrailsJars = {args ->
     }
     result
 }
+
+private replaceTokens(Collection filePatterns) {
+    def appKey = grailsAppName.replaceAll(/\s/, '.').toLowerCase()
+    ant.replace(dir:"${basedir}", includes: filePatterns.join(",")) {
+        replacefilter(token:"@grails.intellij.libs@", value: intellijClasspathLibs())
+        replacefilter(token: "@grails.libs@", value: eclipseClasspathLibs())
+        replacefilter(token: "@grails.jar@", value: eclipseClasspathGrailsJars())
+        replacefilter(token: "@grails.version@", value: grailsVersion)
+        replacefilter(token: "@grails.project.name@", value: grailsAppName)
+        replacefilter(token: "@grails.project.key@", value: appKey)
+    }
+}
+
