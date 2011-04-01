@@ -14,16 +14,16 @@
  */
 package org.codehaus.groovy.grails.web.metaclass
 
-import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import grails.util.GrailsWebUtil
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.UrlCreator
-import grails.util.GrailsNameUtils
 
-/**
+import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.web.mapping.UrlCreator
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.request.RequestContextHolder
+
+ /**
  * Implementation of the chain() method for controllers.
  *
  * @author Graeme Rocher
@@ -56,10 +56,6 @@ class ChainMethod {
             def prop = GCU.getPropertyDescriptorForValue(target, action)
             if (prop) {
                 action = prop.name
-            }
-            else {
-                def scaffolder = GrailsWebUtil.getScaffolderForController(controller, webRequest)
-                action = scaffolder?.getActionName(action)
             }
         }
         else {
