@@ -27,14 +27,10 @@ import org.hibernate.transform.ResultTransformer;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.Type;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.CachedIntrospectionResults;
 import org.springframework.orm.hibernate3.SessionHolder;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -280,10 +276,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
 
         if (shouldLock) {
             if (lastAlias != null) {
-                criteria.setLockMode(lastAlias, LockMode.UPGRADE);
+                criteria.setLockMode(lastAlias, LockMode.PESSIMISTIC_WRITE);
             }
             else {
-                criteria.setLockMode(LockMode.UPGRADE);
+                criteria.setLockMode(LockMode.PESSIMISTIC_WRITE);
             }
         }
         else {
@@ -1171,14 +1167,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             return metaMethod.invoke(criteria, args);
         }
 
-        if (args.length == 1 && args[0] instanceof Closure) {
+        if (isAssociationQueryMethod(args) || isAssociationQueryWithJoinSpecificationMethod(args)) {
+            final boolean hasMoreThanOneArg = args.length > 1;
+            Object callable = hasMoreThanOneArg ? args[1] : args[0];
+            int joinType = hasMoreThanOneArg ? (Integer)args[0] : CriteriaSpecification.INNER_JOIN;
+
             if (name.equals(AND) || name.equals(OR) || name.equals(NOT)) {
                 if (criteria == null) {
                     throwRuntimeException(new IllegalArgumentException("call to [" + name + "] not supported here"));
                 }
 
                 logicalExpressionStack.add(new LogicalExpression(name));
-                invokeClosureNode(args[0]);
+                invokeClosureNode(callable);
 
                 LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
                 addToCriteria(logicalExpression.toCriterion());
@@ -1192,7 +1192,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 }
 
                 projectionList = Projections.projectionList();
-                invokeClosureNode(args[0]);
+                invokeClosureNode(callable);
 
                 if (projectionList != null && projectionList.getLength() > 0) {
                     criteria.setProjection(projectionList);
@@ -1212,10 +1212,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                     targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
                     associationStack.add(name);
                     final String associationPath = getAssociationPath();
-                    createAliasIfNeccessary(name, associationPath);
+                    createAliasIfNeccessary(name, associationPath,joinType);
                     // the criteria within an association node are grouped with an implicit AND
                     logicalExpressionStack.add(new LogicalExpression(AND));
-                    invokeClosureNode(args[0]);
+                    invokeClosureNode(callable);
                     aliasStack.remove(aliasStack.size() - 1);
                     if (!aliasInstanceStack.isEmpty()) {
                         aliasInstanceStack.remove(aliasInstanceStack.size() - 1);
@@ -1270,7 +1270,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             }
         }
 
+
         throw new MissingMethodException(name, getClass(), args) ;
+    }
+
+    private boolean isAssociationQueryMethod(Object[] args) {
+        return args.length == 1 && args[0] instanceof Closure;
+    }
+
+    private boolean isAssociationQueryWithJoinSpecificationMethod(Object[] args) {
+        return args.length == 2 && (args[0] instanceof Number) && (args[1] instanceof Closure);
     }
 
     @SuppressWarnings("unused")
@@ -1284,7 +1293,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
         }
     }
 
-    private void createAliasIfNeccessary(String associationName, String associationPath) {
+    private void createAliasIfNeccessary(String associationName, String associationPath, int joinType) {
         String newAlias;
         if (aliasMap.containsKey(associationPath)) {
             newAlias = aliasMap.get(associationPath);
@@ -1294,7 +1303,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             newAlias = associationName + ALIAS + aliasCount;
             aliasMap.put(associationPath, newAlias);
             aliasInstanceStack.add(criteria.createAlias(associationPath, newAlias,
-                    CriteriaSpecification.LEFT_JOIN));
+                    joinType));
         }
         aliasStack.add(newAlias);
     }
