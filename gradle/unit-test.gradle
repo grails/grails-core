@@ -1,10 +1,6 @@
 // todo Unify test tasks into one multithreaded execution unit with a custom fork frequency
 // todo Add test progress listener with dot notation.
 
-repositories {
-    mavenCentral()
-}
-
 configurations {
     coverage
 }

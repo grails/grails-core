@@ -1,7 +1,3 @@
-repositories {
-    mavenRepo urls:"http://snapshots.repository.codehaus.org/"
-}
-
 dependencies {
     // Testing
     compile 'junit:junit:4.8.1'

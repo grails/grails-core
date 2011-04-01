@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        mavenCentral()
+        mavenRepo urls: "http://repo.gradle.org/gradle/grails"
     }
     dependencies {
         classpath "commons-io:commons-io:1.4"
@@ -67,11 +67,9 @@ subprojects { project ->
 
 
     repositories {
-        mavenCentral()
-        mavenRepo urls:"http://maven.springframework.org/release"
-        mavenRepo urls:'http://maven.springframework.org/snapshot'
-        mavenRepo name:'jboss-public', urls:'http://repository.jboss.org/nexus/content/groups/public-jboss/'
+        mavenRepo urls: "http://repo.gradle.org/gradle/grails"
     }
+
     dependencies {
         // Groovy
         groovy groovyDependency
