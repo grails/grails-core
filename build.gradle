@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        mavenRepo urls: "http://repo.gradle.org/gradle/grails"
+        mavenRepo(urls: "http://repo.gradle.org/gradle/grails")
     }
     dependencies {
         classpath "commons-io:commons-io:1.4"
@@ -67,7 +67,12 @@ subprojects { project ->
 
 
     repositories {
-        mavenRepo urls: "http://repo.gradle.org/gradle/grails"
+        mavenRepo(urls: "http://repo.gradle.org/gradle/grails") {
+            if (project.hasProperty('snapshotTimeout')) {
+                setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
+
+            }
+        }
     }
 
     dependencies {
