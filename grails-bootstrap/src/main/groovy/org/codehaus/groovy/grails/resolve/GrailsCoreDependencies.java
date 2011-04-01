@@ -159,7 +159,7 @@ public class GrailsCoreDependencies {
                             // Plugins
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-codecs", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-controllers", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-domain-class", grailsVersion),
+                            ModuleRevisionId.newInstance("org.grails", "grails-plugin-domain-class", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-converters", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-datasource", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-filters", grailsVersion),
