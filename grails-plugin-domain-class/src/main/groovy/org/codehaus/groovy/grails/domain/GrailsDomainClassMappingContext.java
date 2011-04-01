@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.orm.hibernate.cfg;
+package org.codehaus.groovy.grails.domain;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;

@@ -28,6 +28,9 @@ import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import grails.artefact.Enhanced
+import org.codehaus.groovy.grails.domain.GormApiSupport
+import org.springframework.datastore.mapping.model.MappingContext
+import org.springframework.validation.Validator
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -49,6 +52,9 @@ class DomainClassGrailsPlugin {
         "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
              defaultConstraints = defaultConstraintsMap
         }
+
+        grailsDomainClassMappingContext(org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext,application)
+
 
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
@@ -133,6 +139,11 @@ class DomainClassGrailsPlugin {
                     getDomainInstance domainClass, ctx
                 }
                 addValidationMethods(application, domainClass, ctx)
+            }
+            else {
+                final mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
+                Validator validator = ctx.getBean("${domainClass.fullName}Validator", Validator)
+                metaClass.static.currentGormValidationApi = {-> GormApiSupport.getGormValidationApi(mappingContext, domainClass.clazz, validator)}
             }
         }
     }

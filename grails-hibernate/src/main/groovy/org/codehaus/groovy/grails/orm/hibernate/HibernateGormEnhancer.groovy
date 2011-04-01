@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainClassMappingContext
+import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.grails.datastore.gorm.GormEnhancer
@@ -64,7 +64,7 @@ class HibernateGormEnhancer extends GormEnhancer{
 		
 		def mappingContext = datastore.mappingContext
 		
-		if(mappingContext instanceof GrailsDomainClassMappingContext) {
+		if(mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
 			grailsApplication = mappingContext.grailsApplication
 			classLoader = grailsApplication.classLoader
 		}
@@ -145,8 +145,8 @@ class HibernateGormStaticApi extends GormStaticApi {
 		identityType = persistentEntity.identity.type
 		
 		def mappingContext = datastore.mappingContext
-		if(mappingContext instanceof GrailsDomainClassMappingContext) {
-			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
+		if(mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
+			org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
 
             findAllMethod.grailsApplication = grailsApplication
@@ -691,8 +691,8 @@ class HibernateGormValidationApi extends GormValidationApi {
 		def sessionFactory = datastore.getSessionFactory()
 				
 		def mappingContext = datastore.mappingContext
-		if(mappingContext instanceof GrailsDomainClassMappingContext) {
-			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
+		if(mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
+			org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
 			def validator = mappingContext.getEntityValidator( mappingContext.getPersistentEntity(persistentClass.name) )
 			this.validateMethod = new ValidatePersistentMethod(sessionFactory, 
@@ -772,8 +772,8 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 		hibernateTemplate = new HibernateTemplate(sessionFactory)
 		
 		def mappingContext = datastore.mappingContext
-		if(mappingContext instanceof GrailsDomainClassMappingContext) {
-			GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
+		if(mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
+			org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
 			def grailsApplication = domainClassMappingContext.getGrailsApplication()
 			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
 			this.config = grailsApplication.config?.grails?.gorm

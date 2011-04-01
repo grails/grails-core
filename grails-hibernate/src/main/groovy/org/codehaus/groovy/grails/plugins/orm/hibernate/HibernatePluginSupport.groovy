@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.orm.hibernate
 
+import grails.artefact.Enhanced
 import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
@@ -27,7 +28,6 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
@@ -57,9 +57,8 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.codehaus.groovy.grails.orm.hibernate.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
-import grails.artefact.Enhanced
 
-/**
+ /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
  *
  * @author Graeme Rocher
@@ -220,7 +219,6 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             persistenceInterceptor(HibernatePersistenceContextInterceptor) {
                 sessionFactory = sessionFactory
             }
-            hibernateMappingContext(GrailsDomainClassMappingContext,application)
 
             if (manager?.hasGrailsPlugin("controllers")) {
                 flushingRedirectEventListener(FlushOnRedirectEventListener, sessionFactory)
@@ -335,7 +333,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
     }
 
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
-        def mappingContext = ctx.getBean("hibernateMappingContext", MappingContext)
+        def mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
         def transactionManager = ctx.getBean(HibernateTransactionManager)
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(new HibernateDatastore(mappingContext, sessionFactory), transactionManager)
         for(entity in mappingContext.getPersistentEntities()) {
