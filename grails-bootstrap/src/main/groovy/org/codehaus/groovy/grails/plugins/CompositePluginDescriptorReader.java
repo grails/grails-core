@@ -32,8 +32,8 @@ public class CompositePluginDescriptorReader implements PluginDescriptorReader {
     private List<PluginDescriptorReader> pluginDescriptorReaders = new ArrayList<PluginDescriptorReader>();
 
     public CompositePluginDescriptorReader(PluginBuildSettings pluginSettings) {
-        pluginDescriptorReaders.add(new AstPluginDescriptorReader());
         pluginDescriptorReaders.add(new XmlPluginDescriptorReader(pluginSettings));
+        pluginDescriptorReaders.add(new AstPluginDescriptorReader());
     }
 
     public GrailsPluginInfo readPluginInfo(Resource r) {
