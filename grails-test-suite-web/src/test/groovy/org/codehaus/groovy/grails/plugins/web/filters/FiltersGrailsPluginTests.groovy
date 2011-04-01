@@ -2,6 +2,8 @@ package org.codehaus.groovy.grails.plugins.web.filters
 
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
+import org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
 
 /**
  * @author Graeme Rocher
@@ -26,7 +28,8 @@ class Filters {
         }
     }
 }"""
-
+        pluginsToLoad << gcl.loadClass(UrlMappingsGrailsPlugin.name)
+        pluginsToLoad << gcl.loadClass(ControllersGrailsPlugin.name)
         pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
     }
 

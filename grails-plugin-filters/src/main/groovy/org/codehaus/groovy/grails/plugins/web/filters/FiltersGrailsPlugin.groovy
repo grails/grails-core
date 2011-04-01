@@ -34,7 +34,7 @@ class FiltersGrailsPlugin {
     private static final TYPE = FiltersConfigArtefactHandler.TYPE
 
     def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [:]
+    def dependsOn = [controllers:version]
     def artefacts = [ FiltersConfigArtefactHandler ]
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
     def log = LogFactory.getLog(FiltersGrailsPlugin)
