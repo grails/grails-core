@@ -1210,6 +1210,9 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
                     Class oldTargetClass = targetClass;
                     targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
+                    if(targetClass.equals(oldTargetClass) && !hasMoreThanOneArg) {
+                        joinType = CriteriaSpecification.LEFT_JOIN; // default to left join if joining on the same table
+                    }
                     associationStack.add(name);
                     final String associationPath = getAssociationPath();
                     createAliasIfNeccessary(name, associationPath,joinType);
