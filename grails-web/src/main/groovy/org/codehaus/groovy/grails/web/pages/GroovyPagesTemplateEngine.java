@@ -74,7 +74,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
     public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
-    public static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
+    private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
     private ClassLoader classLoader;
