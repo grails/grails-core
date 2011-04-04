@@ -54,6 +54,10 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     private static ClassInjector[] classInjectors = null;
     private ClassInjector[] localClassInjectors;
 
+     public GrailsAwareInjectionOperation() {
+        initializeState();
+    }
+
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
         Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
         this.grailsResourceLoader = resourceLoader;

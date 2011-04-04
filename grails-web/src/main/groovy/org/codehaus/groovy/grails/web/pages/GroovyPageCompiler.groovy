@@ -19,6 +19,8 @@ import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.Phases
+import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageInjectionOperation
 
 /**
  * Used to compile GSP files into a specified target directory.
@@ -35,6 +37,7 @@ class GroovyPageCompiler {
     File generatedGroovyPagesDirectory
     File targetDir
     CompilerConfiguration compilerConfig = new CompilerConfiguration()
+    GroovyPageInjectionOperation operation = new GroovyPageInjectionOperation()
     GroovyClassLoader classLoader = new GroovyClassLoader(Thread.currentThread().contextClassLoader, compilerConfig)
 
     List<File> srcFiles = []
@@ -136,6 +139,7 @@ class GroovyPageCompiler {
                 compileGSPRegistry[viewuri] = fullClassName
 
                 def unit = new CompilationUnit(compilerConfig, null, classLoader)
+                unit.addPhaseOperation(operation, Phases.CANONICALIZATION)
                 unit.addSource(gspgroovyfile)
                 unit.compile()
             }

@@ -26,6 +26,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
+import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
@@ -73,7 +74,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
     public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
-    private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
+    public static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
     private ClassLoader classLoader;
@@ -117,13 +118,15 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public void afterPropertiesSet() {
         if (classLoader == null) {
             classLoader = initGroovyClassLoader(Thread.currentThread().getContextClassLoader());
+        }else if(!classLoader.getClass().equals(GroovyPageClassLoader.class)){
+            classLoader = new GroovyPageClassLoader(classLoader);
         }
     }
 
     private GroovyClassLoader initGroovyClassLoader(ClassLoader parent) {
         CompilerConfiguration compConfig = new CompilerConfiguration();
         compConfig.setSourceEncoding(GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
-        return new GroovyClassLoader(parent, compConfig);
+        return new GroovyPageClassLoader(parent, compConfig);
     }
 
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
