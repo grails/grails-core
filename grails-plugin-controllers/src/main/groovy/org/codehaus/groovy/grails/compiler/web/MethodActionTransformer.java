@@ -96,7 +96,6 @@ class TestController{
 public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
-    private static final AnnotationNode ARTEFACT_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Artefact.class));
     private static final Parameter[] EMPTY_PARAMS = new Parameter[0];
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
     private static final ClassNode[] EMPTY_EXCEPTIONS = new ClassNode[0];
