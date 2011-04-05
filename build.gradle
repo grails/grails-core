@@ -173,9 +173,13 @@ subprojects { project ->
         from javadoc.destinationDir
     }
 
+    configurations {
+        meta
+    }
+
     artifacts {
-        archives sourcesJar
-        archives javadocJar
+        meta sourcesJar
+        meta javadocJar
     }
 }
 
