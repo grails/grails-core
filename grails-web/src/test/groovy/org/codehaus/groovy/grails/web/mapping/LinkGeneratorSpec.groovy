@@ -18,8 +18,8 @@ class LinkGeneratorSpec extends Specification {
     
     def mainCssResource = [dir:'css', file:'main.css']
 
-    protected getGenerator() {
-        def generator = new DefaultLinkGenerator(baseUrl, context)
+    protected getGenerator(boolean cache=false) {
+        def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
         if (pluginManager) {
             generator.pluginManager = pluginManager
         }
@@ -27,14 +27,28 @@ class LinkGeneratorSpec extends Specification {
     }
     
     protected getLink() {
-        generator.resource(resource)
+        getGenerator().resource(resource)
+    }
+
+    protected getCachedLink() {
+        getGenerator(true).resource(resource)
     }
 
     protected setPlugins(List<Class> pluginClasses) {
         pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication())
         pluginManager.loadPlugins()
     }
-    
+
+    def "absolute links contains the base url and context when cached"() {
+        when:
+            resource = mainCssResource + [absolute:true]
+
+        then:
+            cachedLink == "$baseUrl/$resource.dir/$resource.file"
+            cachedLink == "$baseUrl/$resource.dir/$resource.file"
+    }
+
+
     def "absolute links contains the base url and context"() {
         when:
             resource = mainCssResource + [absolute:true]

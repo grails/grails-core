@@ -60,6 +60,12 @@ class GroovyPageAttributesTests extends GroovyTestCase {
         assert toGroovyPageAttributes(a: 1, b: 2).hashCode() != ["b": 2, a: 1].hashCode()
     }
 
+    void testToString() {
+        def attrs = toGroovyPageAttributes(one:"foo")
+
+        assert '[one:foo]' == attrs.toString()
+    }
+
     protected toGroovyPageAttributes(map) {
         new GroovyPageAttributes(map)
     }
