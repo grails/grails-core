@@ -37,12 +37,20 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
 
     public CachingLinkGenerator(String serverBaseURL, String contextPath) {
         super(serverBaseURL, contextPath);
-        this.linkCache = new ConcurrentLinkedHashMap.Builder<String, String>()
-                                .maximumWeightedCapacity(DEFAULT_MAX_WEIGHTED_CAPACITY)
-                                .build();
+        this.linkCache = createDefaultCache();
     }
 
-    public CachingLinkGenerator(String serverBaseURL, String contextPath, Map linkCache) {
+    public CachingLinkGenerator(String serverBaseURL) {
+        super(serverBaseURL);
+        this.linkCache = createDefaultCache();
+    }
+
+    public CachingLinkGenerator(String serverBaseURL, Map<String, String> linkCache) {
+        super(serverBaseURL);
+        this.linkCache = linkCache;
+    }
+
+    public CachingLinkGenerator(String serverBaseURL, String contextPath, Map<String, String> linkCache) {
         super(serverBaseURL, contextPath);
         this.linkCache = linkCache;
     }
@@ -68,4 +76,11 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         }
         return resourceLink;
     }
+
+    private ConcurrentLinkedHashMap<String, String> createDefaultCache() {
+        return new ConcurrentLinkedHashMap.Builder<String, String>()
+                                .maximumWeightedCapacity(DEFAULT_MAX_WEIGHTED_CAPACITY)
+                                .build();
+    }
+
 }

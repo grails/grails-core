@@ -16,21 +16,6 @@
 package org.codehaus.groovy.grails.support;
 
 import groovy.lang.GroovyObjectSupport;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -38,11 +23,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.MessageSource;
-import org.springframework.context.MessageSourceResolvable;
-import org.springframework.context.NoSuchMessageException;
+import org.springframework.context.*;
 import org.springframework.core.io.AbstractResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -50,6 +31,13 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.ServletContext;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
 public class MockApplicationContext extends GroovyObjectSupport implements WebApplicationContext {
 
@@ -245,8 +233,8 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     @SuppressWarnings("rawtypes")
-    public boolean isTypeMatch(String s, Class aClass) {
-        throw new UnsupportedOperationException("Method not supported by implementation");
+    public boolean isTypeMatch(String name, Class aClass) {
+        return aClass.isInstance(getBean(name));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -259,7 +247,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public String[] getAliases(String name) {
-        throw new UnsupportedOperationException("Method not supported by implementation");
+        return new String[]{};
     }
 
     public BeanFactory getParentBeanFactory() {

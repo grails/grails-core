@@ -47,6 +47,13 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         this.contextPath = contextPath
     }
 
+    DefaultLinkGenerator(String serverBaseURL) {
+        this.serverBaseURL = serverBaseURL
+    }
+
+    /**
+     * {@inheritDoc }
+     */
     String link(Map attrs, String encoding = 'UTF-8') {
         attrs = new LinkedHashMap(attrs)
         def writer = new StringBuilder()
@@ -108,25 +115,34 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
     }
 
+    /**
+     * {@inheritDoc }
+     */
     String resource(Map attrs) {
         attrs = new LinkedHashMap(attrs)
         def absolutePath = handleAbsolute(attrs)
-        if(absolutePath == null && !attrs.contextPath) {
-            if(contextPath == null) {
+
+        final contextPathAttribute = attrs.contextPath
+        if(absolutePath == null) {
+            final cp = getContextPath()
+            if(!cp) {
                 absolutePath = handleAbsolute(absolute:true)
             }
             else {
-                absolutePath = contextPath
+                absolutePath = cp
             }
         }
         StringBuilder url = new StringBuilder( absolutePath ?: '' )
         def dir = attrs.dir
         if (attrs.plugin) {
+            if (contextPathAttribute != null) {
+                url << contextPathAttribute.toString()
+            }
             url << pluginManager?.getPluginPath(attrs.plugin) ?: ''
         }
         else {
-            if (attrs.contextPath != null) {
-                url << attrs.contextPath.toString()
+            if (contextPathAttribute != null) {
+                url << contextPathAttribute.toString()
             }
             else {
                 def pluginContextPath = attrs.pluginContextPath
@@ -152,6 +168,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     }
 
     String getContextPath() {
+        if(contextPath == null) {
+            contextPath = requestStateLookupStrategy.getContextPath()
+        }
         return contextPath
     }
 

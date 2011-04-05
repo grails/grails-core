@@ -28,6 +28,9 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import grails.artefact.Artefact
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
@@ -42,7 +45,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     GrailsPluginManager pluginManager
     GrailsApplication grailsApplication
 
-    def grailsUrlMappingsHolder
+    UrlMappingsHolder grailsUrlMappingsHolder
+
+    @Autowired
+    LinkGenerator linkGenerator
 
     static final SCOPES = [page: 'pageScope',
                            application: 'servletContext',
@@ -165,36 +171,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr plugin The plugin to look for the resource in
      */
     def resource = { attrs ->
-        def writer = out
-        writer << handleAbsolute(attrs)
-        def dir = attrs.dir
-        if (attrs.plugin) {
-            writer << pluginManager.getPluginPath(attrs.plugin) ?: ''
+        if(pageScope.pluginContextPath) {
+            attrs.pluginContextPath = pageScope.pluginContextPath
         }
-        else {
-            if (attrs.contextPath != null) {
-                writer << attrs.contextPath.toString()
-            }
-            else {
-                def pluginContextPath = pageScope.pluginContextPath
-                if (dir != pluginContextPath) {
-                    writer << pluginContextPath ?: ''
-                }
-            }
-        }
-        if (dir) {
-            if (!dir.startsWith('/')) {
-                writer << '/'
-            }
-            writer << dir
-        }
-        def file = attrs.file
-        if (file) {
-            if (!(file.startsWith('/') || dir?.endsWith('/'))) {
-                writer << '/'
-            }
-            writer << file
-        }
+        out << linkGenerator.resource(attrs)
     }
 
     /**
