@@ -120,7 +120,7 @@ public abstract class AbstractBuildSettings {
     /**
      * Extracts the inline plugin dirs relative to the base dir of this project.
      *
-     * @see getInlinePluginsFromConfiguration(Map, File)
+     * @see #getInlinePluginsFromConfiguration(Map, File)
      */
     @SuppressWarnings({ "rawtypes" })
     protected Collection<File> getInlinePluginsFromConfiguration(@SuppressWarnings("hiding") Map config) {
@@ -130,7 +130,7 @@ public abstract class AbstractBuildSettings {
     /**
      * Extracts the inline plugin dirs from the given config, relative to the given baseDir.
      *
-     * @todo consider trowing an error here if an plugin does not exists at the location.
+     * TODO: consider trowing an error here if an plugin does not exists at the location.
      */
     @SuppressWarnings({ "rawtypes", "hiding" })
     protected Collection<File> getInlinePluginsFromConfiguration(Map config, File baseDir) {

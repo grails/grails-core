@@ -4,12 +4,21 @@ repositories {
     mavenRepo urls:'http://spring-roo-repository.springsource.org.s3.amazonaws.com/release'
 }
 dependencies {
+    compile( "org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE" ) {
+        transitive = false
+    }
+
+    // These 3 are required by UAA but not Grails
+    compile 'com.google.protobuf:protobuf-java:2.3.0',
+            'com.googlecode.json-simple:json-simple:1.1',
+            "org.bouncycastle:bcpg-jdk15:1.45"
+
+
     compile( 'org.codehaus.gpars:gpars:0.9' ) {
         exclude module:'netty'
     }
 
 
-    compile "org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE"
     // Ant
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
@@ -19,9 +28,11 @@ dependencies {
             "org.apache.ivy:ivy:${ivyVersion}",
             'org.codehaus.gant:gant_groovy1.7:1.9.3'
 
-    runtime 'org.coconut.forkjoin:jsr166y:070108',
+    runtime 'org.coconut.forkjoin:jsr166y:070108', // Dependency for parallel execution in Gpars
             'org.fusesource.jansi:jansi:1.2.1',
             'jline:jline:0.9.94'
+
+
 }
 
 processResources{

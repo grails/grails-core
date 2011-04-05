@@ -81,7 +81,13 @@ public class GrailsCoreDependencies {
                         String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime";
 
                         // dependencies needed by the Grails build system
+
                         ModuleRevisionId[] buildDependencies = {
+                            ModuleRevisionId.newInstance("org.springframework.uaa", "org.springframework.uaa.client", "1.0.1.RELEASE"),
+                            ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.3.0"),
+                            ModuleRevisionId.newInstance("com.googlecode.json-simple", "json-simple", "1.1"),
+                            ModuleRevisionId.newInstance("org.bouncycastle", "bcpg-jdk15", "1.45"),
+                            ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.4"),
                             ModuleRevisionId.newInstance("org.apache.ant", "ant", "1.8.1"),
                             ModuleRevisionId.newInstance("org.apache.ant", "ant-launcher", "1.8.1"),

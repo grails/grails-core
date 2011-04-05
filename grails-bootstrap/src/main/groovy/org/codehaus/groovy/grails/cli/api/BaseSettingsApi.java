@@ -22,19 +22,20 @@ import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 import groovy.util.ConfigSlurper;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Properties;
-
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.uaa.client.UaaService;
+import org.springframework.uaa.client.UaaServiceFactory;
+import org.springframework.uaa.client.VersionHelper;
+import org.springframework.uaa.client.protobuf.UaaClient;
 import org.springframework.util.FileCopyUtils;
+
+import java.io.*;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Utility methods used on the command line
@@ -42,6 +43,15 @@ import org.springframework.util.FileCopyUtils;
  * @author Graeme Rocher
  */
 public class BaseSettingsApi {
+
+    private static final String MESSAGE = "Grails wants to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.\n"
+           + "\n"
+           + "The Grails team gathers anonymous usage information to improve your Grails experience, not for marketing purposes. We also use this information to help guide our roadmap, prioritizing the features and Grails plugins most valued by the community and enabling us to optimize the compatibility of technologies frequently used together.\n"
+           + "\n"
+           + "Please see the Grails User Agent Analysis (UAA) Terms of Use at http://www.springsource.org/uaa/terms_of_use for more information on what information is collected and how such information is used. There is also an FAQ at http://www.springsource.org/uaa/faq for your convenience.\n"
+           + "\n"
+           + "To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.\n"
+           + "Enter Y or N:";
 
     private static final Resource[] NO_RESOURCES = new Resource[0];
     private BuildSettings buildSettings;
@@ -57,8 +67,9 @@ public class BaseSettingsApi {
     private String grailsAppName;
     private Object appClassName;
     private ConfigSlurper configSlurper;
+    private UaaService uaaService;
 
-    public BaseSettingsApi(BuildSettings buildSettings) {
+    public BaseSettingsApi(final BuildSettings buildSettings, boolean interactive) {
         this.buildSettings = buildSettings;
         this.buildProps = buildSettings.getConfig().toProperties();
         this.grailsHome = buildSettings.getGrailsHome();
@@ -72,6 +83,7 @@ public class BaseSettingsApi {
         this.pluginsHome = buildSettings.getProjectPluginsDir().getPath();
         this.pluginSettings = new PluginBuildSettings(buildSettings);
         this.grailsAppName = metadata.getApplicationName();
+        this.isInteractive = interactive;
 
         // If no app name property (upgraded/new/edited project) default to basedir.
         if (grailsAppName == null) {
@@ -86,6 +98,49 @@ public class BaseSettingsApi {
         }
         this.configSlurper = buildSettings.createConfigSlurper();
         this.configSlurper.setEnvironment(buildSettings.getGrailsEnv());
+
+        this.uaaService = UaaServiceFactory.getUaaService();
+
+        final UaaClient.Privacy.PrivacyLevel privacyLevel = uaaService.getPrivacyLevel();
+        if(!uaaService.isUaaTermsOfUseAccepted() && isInteractive()) {
+            // prompt for UAA choice
+            if(privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.UNDECIDED_TOU )) {
+                while (true) {
+                    System.out.print(MESSAGE);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                    try {
+                        String selection = br.readLine().trim();
+                        if("y".equalsIgnoreCase(selection)) {
+                            uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA);
+                        }
+                        else if("n".equalsIgnoreCase(selection)) {
+                            uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.DECLINE_TOU);
+                        }
+                    } catch (IOException e) {
+                        break;
+                    }
+
+                }
+            }
+        }
+        else if(isUaaAccepted(privacyLevel)) {
+            Thread uaaThread = new Thread(new Runnable() {
+                public void run() {
+                    final UaaClient.Product product = VersionHelper.getProduct("Grails", buildSettings.getGrailsVersion());
+                    uaaService.registerProductUsage(product);
+                    final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos();
+                    for (GrailsPluginInfo pluginInfo : pluginInfos) {
+                        uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                    }
+                }
+            });
+            uaaThread.setDaemon(true);
+            uaaThread.start();
+        }
+    }
+
+    private boolean isUaaAccepted(UaaClient.Privacy.PrivacyLevel privacyLevel) {
+        return privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA ) || privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA );
     }
 
     public ConfigSlurper getConfigSlurper() {

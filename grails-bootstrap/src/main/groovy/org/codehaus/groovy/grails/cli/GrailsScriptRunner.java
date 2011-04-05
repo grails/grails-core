@@ -663,7 +663,7 @@ public class GrailsScriptRunner {
 
             attempts++;
             if (attempts > 4) {
-                exitWithError("TODO");
+                exitWithError("Selection not found.");
             }
         }
     }
@@ -745,7 +745,7 @@ public class GrailsScriptRunner {
         binding.setVariable("pluginsDirPath", settings.getProjectPluginsDir().getPath());
         binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
 
-        final BaseSettingsApi cla = new BaseSettingsApi(settings);
+        final BaseSettingsApi cla = new BaseSettingsApi(settings, isInteractive);
         makeApiAvailableToScripts(binding, cla);
         makeApiAvailableToScripts(binding, cla.getPluginSettings());
 
