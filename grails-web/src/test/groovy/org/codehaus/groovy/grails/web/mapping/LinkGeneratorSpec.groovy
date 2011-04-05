@@ -41,7 +41,7 @@ class LinkGeneratorSpec extends Specification {
 
     def "relative links contain the context"() {
         when:
-            resource == mainCssResource
+            resource = mainCssResource
 
         then:
             link == "/$context/$resource.dir/$resource.file"
