@@ -8,55 +8,58 @@ import org.springframework.mock.web.MockServletContext
  */
 class LinkGeneratorWithUrlMappingsSpec extends Specification{
 
+    def baseUrl = "http://myserver.com/foo"
+    def context = null
+    def path = "welcome"
+    def action = [controller:'home', action:'index']
+
+    def mappings = {
+        "/${this.path}"(this.action)
+    }
+    
+    def link = null
+    
+    protected getGenerator() {
+        def generator = new DefaultLinkGenerator(baseUrl, context)
+        def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
+        generator.urlMappingsHolder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappings ?: {}))
+        generator
+    }
+    
+    protected getUri() {
+        generator.link(link)
+    }
 
     void "Check that the correct relative link is generated for a controller and action"() {
         given:
-            def generator = new DefaultLinkGenerator("http://myserver.com/foo", '/bar')
-            def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
-            def mappings = evaluator.evaluateMappings {
-                "/welcome"(controller:'home', action:'index')
-            }
-            generator.urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
+            context = "/bar"
 
         when: "A link is created with only the controller specified"
-            def uri = generator.link(controller:'home', action:'index')
+            link = action
 
         then:
-            uri == '/bar/welcome'
-
+            uri == "$context/$path"
     }
 
     void "Check that the correct absolute link is generated for a controller and action"() {
         given:
-         def generator = new DefaultLinkGenerator("http://myserver.com/foo", '/bar')
-            def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
-            def mappings = evaluator.evaluateMappings {
-                "/welcome"(controller:'home', action:'index')
-            }
-            generator.urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
+            context = "/bar"
 
         when: "An absolute link is created with the controller and action specified"
-            def uri = generator.link(controller:'home', action:'index', absolute:true)
+            link = action + [absolute: true]
 
         then:
-            uri == 'http://myserver.com/foo/welcome'
+            uri == "$baseUrl/$path"
     }
 
     void "Check that an absolute link is generated for a relative link with no context path"() {
         given:
-         def generator = new DefaultLinkGenerator("http://myserver.com/foo", null)
-         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
-         def mappings = evaluator.evaluateMappings {
-            "/welcome"(controller:'home', action:'index')
-         }
-         generator.urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
+            context = null
 
         when:"A relative link is created with a controller, an action and no known context path"
-            def uri = generator.link(controller:'home', action:'index')
+            link = action
 
         then: "Check that an absolute link is created"
-            uri == 'http://myserver.com/foo/welcome'
-
-
+            uri == "$baseUrl/$path"
     }
 }
