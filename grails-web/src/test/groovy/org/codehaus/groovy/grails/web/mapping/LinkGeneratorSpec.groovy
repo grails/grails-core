@@ -14,21 +14,25 @@ class LinkGeneratorSpec extends Specification {
     def context = "/bar"
     def resource = null
     
-    def plugins
+    def pluginManager
     
     def mainCssResource = [dir:'css', file:'main.css']
 
     protected getGenerator() {
         def generator = new DefaultLinkGenerator(baseUrl, context)
-        if (plugins) {
-            def pluginManager = new DefaultGrailsPluginManager([plugins] as Class[], new DefaultGrailsApplication())
-             pluginManager.loadPlugins()
-             generator.pluginManager = pluginManager
+        if (pluginManager) {
+            generator.pluginManager = pluginManager
         }
+        generator
     }
     
     protected getLink() {
         generator.resource(resource)
+    }
+
+    protected setPlugins(List<Class> pluginClasses) {
+        pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication())
+        pluginManager.loadPlugins()
     }
     
     def "absolute links contains the base url and context"() {
@@ -36,7 +40,7 @@ class LinkGeneratorSpec extends Specification {
             resource = mainCssResource + [absolute:true]
 
         then:
-            link == "$baseUrl/$context/$resource.dir/$resource.file"
+            link == "$baseUrl/$resource.dir/$resource.file"
     }
 
     def "relative links contain the context"() {
@@ -44,7 +48,7 @@ class LinkGeneratorSpec extends Specification {
             resource = mainCssResource
 
         then:
-            link == "/$context/$resource.dir/$resource.file"
+            link == "$context/$resource.dir/$resource.file"
     }
 
     def "default to absolute links when no context path is specified"() {
@@ -61,12 +65,16 @@ class LinkGeneratorSpec extends Specification {
     def "plugin paths are resolved with the plugin attribute"() {
         given:
             plugins = [CoreGrailsPlugin]
-
+        
+        and:
+            def pluginName = "core"
+            def pluginVersion = pluginManager.getGrailsPlugin(pluginName).version
+            
         when:
-            resource = mainCssResource + [plugin: 'core']
+            resource = mainCssResource + [plugin: pluginName]
 
         then:
-            link == "/$context/plugins/core-Unknown/$resource.dir/$resource.file"
+            link == "$context/plugins/$pluginName-$pluginVersion/$resource.dir/$resource.file"
     }
 
     def "link contains given explicit context path"() {
@@ -77,7 +85,7 @@ class LinkGeneratorSpec extends Specification {
             resource = mainCssResource + [contextPath: customContextPath]
 
         then:
-            link == "/$customContextPath/$resource.dir/$resource.file"
+            link == "$customContextPath/$resource.dir/$resource.file"
     }
 
 }
