@@ -8,66 +8,76 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 /**
  * Tests for the {@link DefaultLinkGenerator} class
  */
-class LinkGeneratorSpec extends Specification{
+class LinkGeneratorSpec extends Specification {
 
+    def baseUrl = "http://myserver.com/foo"
+    def context = "/bar"
+    def resource = null
+    
+    def plugins
+    
+    def mainCssResource = [dir:'css', file:'main.css']
 
-    def "Check that absolute links are generated correctly"() {
-        given:
-            def generator = new DefaultLinkGenerator("http://myserver.com/foo", "/bar")
+    protected getGenerator() {
+        def generator = new DefaultLinkGenerator(baseUrl, context)
+        if (plugins) {
+            def pluginManager = new DefaultGrailsPluginManager([plugins] as Class[], new DefaultGrailsApplication())
+             pluginManager.loadPlugins()
+             generator.pluginManager = pluginManager
+        }
+    }
+    
+    protected getLink() {
+        generator.resource(resource)
+    }
+    
+    def "absolute links contains the base url and context"() {
+        when:
+            resource = mainCssResource + [absolute:true]
 
-        when:"A link is generated with absolute:true"
-            def link = generator.resource(dir:'css', file:'main.css', absolute:true)
-
-        then:"The link contains the absolute path taken from the server absolute URL"
-            link == 'http://myserver.com/foo/css/main.css'
+        then:
+            link == "$baseUrl/$context/$resource.dir/$resource.file"
     }
 
-    def "Check that relative links contain the contextpath"() {
-        given:
-            def generator = new DefaultLinkGenerator("http://myserver.com/foo", "/bar")
+    def "relative links contain the context"() {
+        when:
+            resource == mainCssResource
 
-        when:"A link is generated without absolute:true"
-            def link = generator.resource(dir:'css', file:'main.css')
-
-        then:"A link is generated using the context path"
-            link == '/bar/css/main.css'
+        then:
+            link == "/$context/$resource.dir/$resource.file"
     }
 
-    def "Check that we default to absolute links when no context path is specified"() {
+    def "default to absolute links when no context path is specified"() {
         given:
-            def generator = new DefaultLinkGenerator("http://myserver.com/foo", null)
+            context = null
 
-        when:"A relative link is generated and the generator has no context path"
-            def link = generator.resource(dir:'css', file:'main.css')
+        when:
+            resource = mainCssResource
 
-        then:"The absolute server URL is used to calculate the path"
-            link == 'http://myserver.com/foo/css/main.css'
+        then:
+            link == "$baseUrl/$resource.dir/$resource.file"
     }
 
-    def "Check that plugin paths are resolve with the plugin attribute"() {
+    def "plugin paths are resolved with the plugin attribute"() {
         given:
-            def generator = new DefaultLinkGenerator("http://myserver.com/foo", "/bar")
-            def pluginManager = new DefaultGrailsPluginManager([CoreGrailsPlugin.class] as Class[], new DefaultGrailsApplication())
-            pluginManager.loadPlugins()
-            generator.pluginManager = pluginManager
+            plugins = [CoreGrailsPlugin]
 
-        when:"A relative link is created with the plugin attribute"
-            def link = generator.resource(dir:'css', file:'main.css', plugin:'core')
+        when:
+            resource = mainCssResource + [plugin: 'core']
 
-        then:"The correct relative path to the plugin resource is calculated"
-            link == '/bar/plugins/core-Unknown/css/main.css'
-
+        then:
+            link == "/$context/plugins/core-Unknown/$resource.dir/$resource.file"
     }
 
-    def "Check that the correct relative link is generated when using an explicit context path"() {
+    def "link contains given explicit context path"() {
         given:
-            def generator = new DefaultLinkGenerator("http://myserver.com/foo", '/bar')
+            def customContextPath = "/test"
+            
+        when:
+            resource = mainCssResource + [contextPath: customContextPath]
 
-        when:"A relative link is generated and the generator has no context path"
-            def link = generator.resource(dir:'css', file:'main.css', contextPath: '/test')
-
-        then:"The absolute server URL is used to calculate the path"
-            link == '/test/css/main.css'
+        then:
+            link == "/$customContextPath/$resource.dir/$resource.file"
     }
 
 }
