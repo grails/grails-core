@@ -46,7 +46,9 @@ public class BaseSettingsApi {
 
     private static final String MESSAGE = "Grails wants to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.\n"
            + "\n"
-           + "The Grails team gathers anonymous usage information to improve your Grails experience, not for marketing purposes. We also use this information to help guide our roadmap, prioritizing the features and Grails plugins most valued by the community and enabling us to optimize the compatibility of technologies frequently used together.\n"
+           + "The Grails team gathers anonymous usage information to improve your Grails experience, not for marketing purposes. The information is used to discover which Grails plugins are most popular and is published on the plugin portal.\n"
+           + "\n"
+           + "We also use this information to help guide our roadmap, prioritizing the features and Grails plugins most valued by the community and enabling us to optimize the compatibility of technologies frequently used together.\n"
            + "\n"
            + "Please see the Grails User Agent Analysis (UAA) Terms of Use at http://www.springsource.org/uaa/terms_of_use for more information on what information is collected and how such information is used. There is also an FAQ at http://www.springsource.org/uaa/faq for your convenience.\n"
            + "\n"
@@ -112,9 +114,11 @@ public class BaseSettingsApi {
                         String selection = br.readLine().trim();
                         if("y".equalsIgnoreCase(selection)) {
                             uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA);
+                            break;
                         }
                         else if("n".equalsIgnoreCase(selection)) {
                             uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.DECLINE_TOU);
+                            break;
                         }
                     } catch (IOException e) {
                         break;
