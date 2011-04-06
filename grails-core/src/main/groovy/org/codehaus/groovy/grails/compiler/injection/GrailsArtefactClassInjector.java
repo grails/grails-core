@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 
 /**
@@ -26,6 +28,10 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 public interface GrailsArtefactClassInjector extends ClassInjector{
 
     ArgumentListExpression ZERO_ARGS = new ArgumentListExpression();
+
+    ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
+
+    Parameter[] ZERO_PARAMETERS = new Parameter[0];
 
     String getArtefactType();
 }

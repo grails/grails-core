@@ -38,9 +38,8 @@ import java.util.List;
  */
 public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable{
 
-    protected static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
+
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
-    private static final ClassNode[] EMPTY_CLASS_ARRAY = new ClassNode[0];
     protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
@@ -120,26 +119,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                         }
                     }
                     else if(isCandidateInstanceMethod(declaredMethod)) {
-
-                        Parameter[] parameterTypes = getParameterTypes(declaredMethod.getParameters());
-                        if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
-                            BlockStatement methodBody = new BlockStatement();
-                            ArgumentListExpression arguments = new ArgumentListExpression();
-                            arguments.addExpression(THIS_EXPRESSION);
-                            for (Parameter parameterType : parameterTypes) {
-                                arguments.addExpression(new VariableExpression(parameterType.getName()));
-                            }
-                            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(apiInstance, declaredMethod.getName(), arguments)));
-                            MethodNode methodNode = new MethodNode(declaredMethod.getName(),
-                                                                   Modifier.PUBLIC,
-                                                                   declaredMethod.getReturnType(),
-                                                                   parameterTypes,
-                                                                   EMPTY_CLASS_ARRAY,
-                                                                   methodBody
-                                                                    );
-                            classNode.addMethod(methodNode);
-                        }
-
+                        GrailsASTUtils.addDelegateInstanceMethod(classNode, apiInstance, declaredMethod);
                     }
 
                 }
@@ -285,14 +265,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 declaredMethod.getName().equals("initialize") && declaredMethod.getParameters().length == 1 && declaredMethod.getParameters()[0].getType().equals(OBJECT_CLASS);
     }
 
-    private Parameter[] getParameterTypes(Parameter[] parameters) {
-        if(parameters.length>1) {
-            Parameter[] newParameters = new Parameter[parameters.length-1];
-            System.arraycopy(parameters, 1, newParameters, 0, parameters.length - 1);
-            return newParameters;
-        }
-        return ZERO_PARAMETERS;
-    }
 
 
     protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {

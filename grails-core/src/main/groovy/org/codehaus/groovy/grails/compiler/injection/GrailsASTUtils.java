@@ -16,15 +16,20 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.GrailsNameUtils;
-
-import java.lang.reflect.Modifier;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -130,4 +135,46 @@ public class GrailsASTUtils {
         }
         return classNode;
     }
+
+    /**
+     * Adds a delegate method to the target class node where the first argument is to the delegate method is 'this'.
+     * In other words a method such as foo(Object instance, String bar) would be added with a signature of foo(String)
+     * and 'this' is passed to the delegate instance
+     *
+     * @param classNode The class node
+     * @param delegate The expression that looks up the delegate
+     * @param declaredMethod The declared method
+     */
+    public static void addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod) {
+        Parameter[] parameterTypes = getRemainingParameterTypes(declaredMethod.getParameters());
+        if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
+            BlockStatement methodBody = new BlockStatement();
+            ArgumentListExpression arguments = new ArgumentListExpression();
+            arguments.addExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION);
+            for (Parameter parameterType : parameterTypes) {
+                arguments.addExpression(new VariableExpression(parameterType.getName()));
+            }
+            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(delegate, declaredMethod.getName(), arguments)));
+            MethodNode methodNode = new MethodNode(declaredMethod.getName(),
+                                                   Modifier.PUBLIC,
+                                                   declaredMethod.getReturnType(),
+                                                   parameterTypes,
+                                                   GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
+                                                   methodBody
+                                                    );
+            methodNode.addAnnotations(declaredMethod.getAnnotations());
+
+            classNode.addMethod(methodNode);
+        }
+    }
+
+    private static Parameter[] getRemainingParameterTypes(Parameter[] parameters) {
+        if(parameters.length>1) {
+            Parameter[] newParameters = new Parameter[parameters.length-1];
+            System.arraycopy(parameters, 1, newParameters, 0, parameters.length - 1);
+            return newParameters;
+        }
+        return GrailsArtefactClassInjector.ZERO_PARAMETERS;
+    }
+
 }
