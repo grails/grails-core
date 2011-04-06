@@ -18,18 +18,18 @@ package org.codehaus.groovy.grails.plugins.web.mapping;
 
 import grails.util.Environment
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
-import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
+import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.commons.GrailsApplication
 
-/**
+ /**
  * Handles the configuration of URL mappings for Grails.
  *
  * @author Graeme Rocher
@@ -51,7 +51,7 @@ class UrlMappingsGrailsPlugin {
         else if(Environment.current != Environment.PRODUCTION) {
             serverURL = "http://localhost:8080"
         }
-        grailsLinkGenerator(CachingLinkGenerator, serverURL)
+        grailsLinkGenerator(DefaultLinkGenerator, serverURL)
         urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, createUrlMappingsHolder(application)) { bean ->
             bean.lazyInit = true
         }

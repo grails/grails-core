@@ -30,8 +30,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrat
  * @since 1.4
  */
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
-    private String serverBaseURL
-    private String contextPath
+    String serverBaseURL
+    String contextPath
 
     GrailsRequestStateLookupStrategy requestStateLookupStrategy = new DefaultRequestStateLookupStrategy()
 
@@ -55,7 +55,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
      * {@inheritDoc }
      */
     String link(Map attrs, String encoding = 'UTF-8') {
-        attrs = new LinkedHashMap(attrs)
         def writer = new StringBuilder()
         // prefer URI attribute
         if (attrs.uri) {
@@ -66,25 +65,25 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             // prefer a URL attribute
             Map urlAttrs = attrs
             if (attrs.url instanceof Map) {
-                urlAttrs = attrs.remove('url')
+                urlAttrs = attrs.url
             }
             else if (attrs.url) {
-                urlAttrs = attrs.remove('url').toString()
+                urlAttrs = attrs.url.toString()
             }
 
             if (urlAttrs instanceof String) {
                 writer << urlAttrs
             }
             else {
-                def controller = urlAttrs.containsKey("controller") ? urlAttrs.remove("controller")?.toString() : requestStateLookupStrategy.getControllerName()
-                def action = urlAttrs.remove("action")?.toString()
+                def controller = urlAttrs.containsKey("controller") ? urlAttrs.controller?.toString() : requestStateLookupStrategy.getControllerName()
+                def action = urlAttrs.action?.toString()
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName()
                 }
-                def id = urlAttrs.remove("id")
-                def frag = urlAttrs.remove('fragment')?.toString()
-                def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.remove('params') : [:]
-                def mappingName = urlAttrs.remove('mapping')
+                def id = urlAttrs.id
+                def frag = urlAttrs.fragment?.toString()
+                def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
+                def mappingName = urlAttrs.mapping
                 if (mappingName != null) {
                     params.mappingName = mappingName
                 }
@@ -92,15 +91,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 if (id != null) params.id = id
                 UrlCreator mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
 
-                // cannot use jsessionid with absolute links
                 if (!attrs.absolute) {
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
-                    if(attrs.base || contextPath == null) {
+                    final cp = getContextPath()
+                    if(attrs.base || cp == null) {
                         attrs.absolute = true
                         writer << handleAbsolute(attrs)
                     }
                     else {
-                        writer << contextPath
+                        writer << cp
                     }
                     writer << url
                 }
@@ -119,13 +118,12 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
      * {@inheritDoc }
      */
     String resource(Map attrs) {
-        attrs = new LinkedHashMap(attrs)
         def absolutePath = handleAbsolute(attrs)
 
         final contextPathAttribute = attrs.contextPath
         if(absolutePath == null) {
             final cp = getContextPath()
-            if(!cp) {
+            if(cp == null) {
                 absolutePath = handleAbsolute(absolute:true)
             }
             else {
@@ -178,12 +176,12 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
      * Check for "absolute" attribute and render server URL if available from Config or deducible in non-production.
      */
     private handleAbsolute(attrs) {
-        def base = attrs.remove('base')
+        def base = attrs.base
         if (base) {
             return base
         }
 
-        def abs = attrs.remove("absolute")
+        def abs = attrs.absolute
         if (Boolean.valueOf(abs)) {
             def u = makeServerURL()
             if (u) {

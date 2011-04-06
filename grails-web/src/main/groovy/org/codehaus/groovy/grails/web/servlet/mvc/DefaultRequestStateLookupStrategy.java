@@ -52,7 +52,7 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
         if(webRequest != null) {
             return webRequest.getContextPath();
         }
-        return "";
+        return null;
     }
 
     public String getCharacterEncoding() {

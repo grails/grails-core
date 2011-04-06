@@ -189,6 +189,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testCreateLinkToWithDirAndLeadingSlash() {
+        request.contextPath = "/"
         def template = '<g:createLinkTo dir="/images" file="foo.jpg" />'
         assertOutputEquals "/images/foo.jpg", template
     }
@@ -267,9 +268,9 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
         assertOutputEquals 'http://localhost:8080/testController/testAction', template
 
-        ConfigurationHolder.config.grails.serverURL="http://www.mysite.com"
+        def linkGenerator = appCtx.getBean("grailsLinkGenerator")
+        linkGenerator.serverBaseURL="http://www.mysite.com"
         assertOutputEquals 'http://www.mysite.com/testController/testAction', template
-        ConfigurationHolder.config.grails.serverURL=null
     }
 
     void testAbsoluteWithContextPathAndNullConfig() {

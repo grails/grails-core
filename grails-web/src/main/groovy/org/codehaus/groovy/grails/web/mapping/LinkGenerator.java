@@ -72,6 +72,33 @@ public interface LinkGenerator {
     public String link(Map params);
 
 
+
+    /**
+     * Generates a link to a controller, action or URI for the given named parameters.
+     *
+     * Possible named parameters include:
+     *
+     * <ul>
+     *    <li>controller - The name of the controller to use in the link, if not specified the current controller will be linked</li>
+     *    <li>action -  The name of the action to use in the link, if not specified the default action will be linked</li>
+     *    <li>uri -  relative URI</li>
+     *    <li>url -  A map containing the action,controller,id etc.</li>
+     *    <li>base -  Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.</li>
+     *    <li>absolute -  If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:&lt;port&gt; if no value in Config and not running in production.</li>
+     *    <li>id -  The id to use in the link</li>
+     *    <li>fragment -  The link fragment (often called anchor tag) to use</li>
+     *    <li>params -  A map containing URL query parameters</li>
+     *    <li>mapping -  The named URL mapping to use to rewrite the link</li>
+     *    <li>event -  Webflow _eventId parameter</li>
+     * </ul>
+     * @param params The named parameters
+     * @param encoding The character encoding to use
+     * @return The generator link
+     */
+    public String link(Map params, String encoding);
+
+
+
     /**
      * Obtains the context path from which this link generator is operating
      *

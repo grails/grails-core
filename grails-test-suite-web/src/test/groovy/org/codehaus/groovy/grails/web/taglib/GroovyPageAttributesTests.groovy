@@ -2,6 +2,15 @@ package org.codehaus.groovy.grails.web.taglib
 
 class GroovyPageAttributesTests extends GroovyTestCase {
 
+    void testUsedKeys() {
+        def attrs = new GroovyPageAttributes(framework: 'Grails', company: 'SpringSource')
+
+        println attrs.framework
+
+        assertEquals 1, attrs.getUsedKeys().size()
+        assertTrue attrs.getUsedKeys().contains("framework")
+        assertTrue attrs.getUnusedKeys().contains("company")
+    }
     void testCloneAttributes() {
         def originalMap = [framework: 'Grails', company: 'SpringSource']
         def wrapper = new GroovyPageAttributes(originalMap)

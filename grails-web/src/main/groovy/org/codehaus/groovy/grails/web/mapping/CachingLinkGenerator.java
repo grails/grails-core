@@ -17,7 +17,9 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -31,8 +33,10 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
     public static final String LINK_PREFIX = "link";
     public static final String RESOURCE_PREFIX = "resource";
+    public static final String USED_ATTRIBUTES_SUFFIX = "-used-attributes";
 
-    private Map<String, String> linkCache;
+    private Map<String, Object> linkCache;
+
 
 
     public CachingLinkGenerator(String serverBaseURL, String contextPath) {
@@ -45,12 +49,12 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         this.linkCache = createDefaultCache();
     }
 
-    public CachingLinkGenerator(String serverBaseURL, Map<String, String> linkCache) {
+    public CachingLinkGenerator(String serverBaseURL, Map<String, Object> linkCache) {
         super(serverBaseURL);
         this.linkCache = linkCache;
     }
 
-    public CachingLinkGenerator(String serverBaseURL, String contextPath, Map<String, String> linkCache) {
+    public CachingLinkGenerator(String serverBaseURL, String contextPath, Map<String, Object> linkCache) {
         super(serverBaseURL, contextPath);
         this.linkCache = linkCache;
     }
@@ -58,27 +62,40 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     @Override
     public String link(Map attrs, String encoding) {
         final String key = LINK_PREFIX + attrs;
-        String resourceLink = linkCache.get(key);
+        final String usedAttributesKey = key + USED_ATTRIBUTES_SUFFIX;
+        Object resourceLink = linkCache.get(key);
         if(resourceLink == null) {
             resourceLink = super.link(attrs, encoding);
             linkCache.put(key, resourceLink);
+            if(attrs instanceof GroovyPageAttributes) {
+                linkCache.put(usedAttributesKey, ((GroovyPageAttributes) attrs).getUsedKeys());
+            }
         }
-        return resourceLink;
+        else {
+            if(attrs instanceof GroovyPageAttributes) {
+                GroovyPageAttributes gspAttrs = (GroovyPageAttributes) attrs;
+                final Object o = linkCache.get(usedAttributesKey);
+                if(o != null) {
+                    gspAttrs.getUsedKeys().addAll((Collection) o);
+                }
+            }
+        }
+        return resourceLink.toString();
     }
 
     @Override
     public String resource(Map attrs) {
         final String key = RESOURCE_PREFIX + attrs;
-        String resourceLink = linkCache.get(key);
+        Object resourceLink = linkCache.get(key);
         if(resourceLink == null) {
             resourceLink = super.resource(attrs);
             linkCache.put(key, resourceLink);
         }
-        return resourceLink;
+        return resourceLink.toString();
     }
 
-    private ConcurrentLinkedHashMap<String, String> createDefaultCache() {
-        return new ConcurrentLinkedHashMap.Builder<String, String>()
+    private ConcurrentLinkedHashMap<String, Object> createDefaultCache() {
+        return new ConcurrentLinkedHashMap.Builder<String, Object>()
                                 .maximumWeightedCapacity(DEFAULT_MAX_WEIGHTED_CAPACITY)
                                 .build();
     }
