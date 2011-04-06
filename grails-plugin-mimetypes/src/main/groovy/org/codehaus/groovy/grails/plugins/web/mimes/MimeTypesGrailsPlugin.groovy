@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.springframework.context.ApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.mime.DefaultMimeUtility
 
 /**
  * Provides content negotiation capabilities to Grails via a new withFormat method on controllers
@@ -40,6 +41,7 @@ class MimeTypesGrailsPlugin {
 
     def doWithSpring = {
         "${MimeType.BEAN_NAME}"(MimeTypesFactoryBean)
+        grailsMimeUtility(DefaultMimeUtility, ref(MimeType.BEAN_NAME))
     }
 
     def doWithDynamicMethods = { ApplicationContext ctx ->
