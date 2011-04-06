@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.http.HttpMethod
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 
 /**
  * Tags for working with form controls.
@@ -268,7 +269,18 @@ class FormTagLib {
         def useToken = attrs.remove('useToken')
         def writer = getOut()
 
-        writer << "<form action=\"${createLink(attrs)}\" "
+        def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
+
+        writer << "<form action=\"${createLink(linkAttrs)}\" "
+
+        // if URL is not nul remove attributes
+        if(attrs.url == null) {
+            attrs = attrs - linkAttrs
+        }
+        else {
+            attrs.remove('url')
+        }
+
         // default to post
         def method = attrs.remove('method')?.toUpperCase() ?: 'POST'
         def httpMethod = HttpMethod.valueOf(method)

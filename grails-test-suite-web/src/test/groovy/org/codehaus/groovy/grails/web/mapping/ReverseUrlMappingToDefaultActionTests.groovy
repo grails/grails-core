@@ -36,6 +36,7 @@ class TestController {
     }
 
     void testLinkTagRendering() {
+
         def template = '<g:link url="[controller:\'content\', params:[dir:\'about\'], id:\'index\']">click</g:link>'
         assertOutputEquals '<a href="/about/index">click</a>', template
     }

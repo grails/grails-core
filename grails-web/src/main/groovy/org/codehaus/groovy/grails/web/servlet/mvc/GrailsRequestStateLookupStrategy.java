@@ -45,6 +45,13 @@ public interface GrailsRequestStateLookupStrategy {
     public String getControllerName();
 
     /**
+     * The action name for the given controller name
+     *
+     * @param controllerName The controller name
+     * @return The action name or null if not known
+     */
+    public String getActionName(String controllerName);
+    /**
      * The action name
      *
      * @return The action name or null if not known

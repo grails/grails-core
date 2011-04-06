@@ -62,7 +62,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         }
         else {
             // prefer a URL attribute
-            Map urlAttrs = attrs
+            def urlAttrs = attrs
             if (attrs.url instanceof Map) {
                 urlAttrs = attrs.url
             }
@@ -77,7 +77,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 def controller = urlAttrs.containsKey("controller") ? urlAttrs.controller?.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.action?.toString()
                 if (controller && !action) {
-                    action = requestStateLookupStrategy.getActionName()
+                    action = requestStateLookupStrategy.getActionName(controller)
                 }
                 def id = urlAttrs.id
                 def frag = urlAttrs.fragment?.toString()

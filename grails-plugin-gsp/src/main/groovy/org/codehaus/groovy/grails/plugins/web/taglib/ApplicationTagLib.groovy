@@ -193,7 +193,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr event Webflow _eventId parameter
      * @attr elementId DOM element id
      */
-    static final LINK_ATTRIBUTES = ['controller', 'action', 'uri', 'url', 'base', 'absolute', 'id', 'fragment', 'params', 'mapping', 'event', 'elementId']
+
     def link = { attrs, body ->
 
         def writer = getOut()
@@ -212,7 +212,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             writer << " id=\"${elementId}\""
         }
 
-        def remainingKeys = attrs.keySet() - LINK_ATTRIBUTES
+        def remainingKeys = attrs.keySet() - LinkGenerator.LINK_ATTRIBUTES
         for(key in remainingKeys) {
             writer << " $key=\"${attrs[key]?.encodeAsHTML()}\""
         }
@@ -246,7 +246,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     def createLink = { attrs ->
         def urlAttrs = attrs
         if (attrs.url instanceof Map) {
-           urlAttrs = attrs.remove('url')
+           urlAttrs = attrs.url
         }
         def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
         if (request['flowExecutionKey']) {
@@ -257,7 +257,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             params."_eventId" = urlAttrs.remove('event')
             urlAttrs.params = params
         }
-        def generatedLink = linkGenerator.link(urlAttrs, request.characterEncoding)
+        def generatedLink = linkGenerator.link(attrs, request.characterEncoding)
         def writer = getOut()
 
         if (useJsessionId) {

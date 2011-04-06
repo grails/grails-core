@@ -16,7 +16,9 @@
 
 package org.codehaus.groovy.grails.web.mapping;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Generates links for a Grails application based on URL mapping rules and/or base context settings
@@ -26,6 +28,20 @@ import java.util.Map;
  */
 public interface LinkGenerator {
 
+    Set<String> LINK_ATTRIBUTES = new HashSet<String>() {{
+       add("controller");
+       add("action");
+       add("uri");
+       add("url");
+       add("base");
+       add("absolute");
+       add("id");
+       add("fragment");
+       add("params");
+       add("mapping");
+       add("event");
+       add("elementId");
+    }};
     /**
      * Generates a link to a static resource for the given named parameters.
      *
