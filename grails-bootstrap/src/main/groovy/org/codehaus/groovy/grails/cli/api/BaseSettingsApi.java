@@ -89,11 +89,14 @@ public class BaseSettingsApi {
         this.configSlurper = buildSettings.createConfigSlurper();
         this.configSlurper.setEnvironment(buildSettings.getGrailsEnv());
 
-        if(UaaIntegration.isAvailable()) {
-            UaaIntegration.enable(buildSettings, pluginSettings, interactive);
-        }
     }
 
+    public void enableUaa() {
+        if(UaaIntegration.isAvailable()) {
+            UaaIntegration.enable(buildSettings, pluginSettings, isInteractive);
+        }
+
+    }
 
     public ConfigSlurper getConfigSlurper() {
         return configSlurper;

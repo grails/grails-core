@@ -522,7 +522,7 @@ public class GrailsScriptRunner {
                 binding.setVariable("scriptName", scriptFileName);
 
                 // Setup the script to call.
-                Gant gant = new Gant(initBinding(binding), classLoader);
+                Gant gant = new Gant(initBinding(binding, scriptName), classLoader);
                 gant.setUseCache(true);
                 gant.setCacheDirectory(scriptCacheDir);
                 try {
@@ -563,7 +563,7 @@ public class GrailsScriptRunner {
             binding.setVariable("scriptName", scriptFileName);
 
             // Set up the script to call.
-            Gant gant = new Gant(initBinding(binding), classLoader);
+            Gant gant = new Gant(initBinding(binding, scriptName), classLoader);
 
             gant.loadScript(scriptFile.getURL());
 
@@ -577,7 +577,7 @@ public class GrailsScriptRunner {
         setRunningEnvironment(scriptName, env);
 
         // Get Gant to load the class by name using our class loader.
-        Gant gant = new Gant(initBinding(binding), classLoader);
+        Gant gant = new Gant(initBinding(binding, scriptName), classLoader);
 
         try {
             loadScriptClass(gant, scriptName);
@@ -706,7 +706,7 @@ public class GrailsScriptRunner {
      * will load the "Init" script from $GRAILS_HOME/scripts if it
      * exists there; otherwise it will load the Init class.
      */
-    private GantBinding initBinding(final GantBinding binding) {
+    private GantBinding initBinding(final GantBinding binding, String scriptName) {
         Closure<?> c = settings.getGrailsScriptClosure();
         c.setDelegate(binding);
         binding.setVariable("grailsScript", c);
@@ -746,6 +746,12 @@ public class GrailsScriptRunner {
         binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
 
         final BaseSettingsApi cla = new BaseSettingsApi(settings, isInteractive);
+
+        // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
+        if(scriptName.equals("RunApp")) {
+            cla.enableUaa();
+        }
+
         makeApiAvailableToScripts(binding, cla);
         makeApiAvailableToScripts(binding, cla.getPluginSettings());
 

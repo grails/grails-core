@@ -17,7 +17,11 @@ package org.codehaus.groovy.grails.cli.support;
 
 import grails.util.BuildSettings;
 import grails.util.PluginBuildSettings;
+import groovy.util.slurpersupport.GPathResult;
+import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.grails.resolve.GrailsRepoResolver;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.uaa.client.UaaService;
 import org.springframework.uaa.client.UaaServiceFactory;
 import org.springframework.uaa.client.VersionHelper;
@@ -25,8 +29,11 @@ import org.springframework.uaa.client.protobuf.UaaClient;
 import org.springframework.util.ClassUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Integrates UAA usage tracking with Grails
@@ -46,6 +53,7 @@ public class UaaIntegration {
            + "\n"
            + "To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.\n"
            + "Enter Y or N:";
+    public static final int ONE_MINUTE = 60000;
 
 
     public static boolean isAvailable() {
@@ -80,19 +88,57 @@ public class UaaIntegration {
             }
         }
         else if(isUaaAccepted(privacyLevel)) {
-            Thread uaaThread = new Thread(new Runnable() {
+            Runnable r = new Runnable() {
                 public void run() {
                     final UaaClient.Product product = VersionHelper.getProduct("Grails", settings.getGrailsVersion());
                     uaaService.registerProductUsage(product);
-                    final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos();
-                    for (GrailsPluginInfo pluginInfo : pluginInfos) {
-                        uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+
+                    final ChainResolver chainResolver = settings.getDependencyManager().getChainResolver();
+                    GrailsRepoResolver centralRepo = findCentralRepoResolver(chainResolver);
+                    if(centralRepo != null) {
+
+                        final GPathResult pluginList = centralRepo.getPluginList(new File(settings.getGrailsWorkDir() + "/plugin-list-" + centralRepo.getName() + ".xml"));
+
+                        final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos();
+                        for (GrailsPluginInfo pluginInfo : pluginInfos) {
+                            boolean registerUsage = false;
+
+                            if(settings.getDefaultPluginSet().contains(pluginInfo.getName())) {
+                                registerUsage = true;
+                            }
+                            else {
+                                final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName());
+                                if(plugin != null) {
+                                    registerUsage = true;
+                                }
+                            }
+                            if(registerUsage) {
+                                uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                            }
+                        }
                     }
                 }
-            });
-            uaaThread.setDaemon(true);
-            uaaThread.start();
+            };
+
+
+            ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
+
+            scheduler.schedule(r, new Date(System.currentTimeMillis()+ ONE_MINUTE));
         }
+    }
+
+    private static GrailsRepoResolver findCentralRepoResolver(ChainResolver chainResolver) {
+        final List resolvers = chainResolver.getResolvers();
+        for (Object resolver : resolvers) {
+            if(resolver instanceof GrailsRepoResolver) {
+                final GrailsRepoResolver grailsRepoResolver = (GrailsRepoResolver) resolver;
+                final String resolverName = grailsRepoResolver.getName();
+                if(resolverName != null && resolverName.equals("grailsCentral")) {
+                    return grailsRepoResolver;
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean isUaaAccepted(UaaClient.Privacy.PrivacyLevel privacyLevel) {

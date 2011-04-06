@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Overrides the default Ivy resolver to substitute the release tag in Grails'
@@ -43,6 +45,8 @@ import java.util.List;
 public class GrailsRepoResolver extends URLResolver{
 
     protected URL repositoryRoot;
+
+    private Map<File,GPathResult> parsedXmlCache = new ConcurrentHashMap<File,GPathResult>();
 
     public GrailsRepoResolver(String name, URL repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
@@ -77,6 +81,7 @@ public class GrailsRepoResolver extends URLResolver{
 
     }
 
+
     /**
      * Obtains the XML representation of the plugin-list.xml held in a Grails compatible repository
      * @param localFile The local file to save to XML too
@@ -84,36 +89,40 @@ public class GrailsRepoResolver extends URLResolver{
      */
     @SuppressWarnings("rawtypes")
     public GPathResult getPluginList(File localFile) {
-        installIvyAuth();
-        try {
-            final Repository repo = getRepository();
-            List list = repo.list(repositoryRoot.toString());
-            for (Object entry : list) {
-                String url = entry.toString();
-                if (url.contains(".plugin-meta")) {
-                    List metaList = repo.list(url);
-                    for (Object current : metaList) {
-                        url = current.toString();
-                        if (url.contains("plugins-list.xml")) {
-                            Resource remoteFile = repo.getResource(url);
-                            if (localFile.lastModified() < remoteFile.getLastModified()) {
-                                repo.get(url, localFile);
+        GPathResult parsedXml = parsedXmlCache.get(localFile);
+        if(parsedXml == null) {
+            installIvyAuth();
+            try {
+                final Repository repo = getRepository();
+                List list = repo.list(repositoryRoot.toString());
+                for (Object entry : list) {
+                    String url = entry.toString();
+                    if (url.contains(".plugin-meta")) {
+                        List metaList = repo.list(url);
+                        for (Object current : metaList) {
+                            url = current.toString();
+                            if (url.contains("plugins-list.xml")) {
+                                Resource remoteFile = repo.getResource(url);
+                                if (localFile.lastModified() < remoteFile.getLastModified()) {
+                                    repo.get(url, localFile);
+                                }
+                                parsedXml = new XmlSlurper().parse(localFile);
+                                parsedXmlCache.put(localFile, parsedXml);
                             }
-                            return new XmlSlurper().parse(localFile);
                         }
                     }
                 }
             }
+            catch (IOException e) {
+                return null;
+            }
+            catch (SAXException e) {
+                return null;
+            }
+            catch (ParserConfigurationException e) {
+                return null;
+            }
         }
-        catch (IOException e) {
-            return null;
-        }
-        catch (SAXException e) {
-            return null;
-        }
-        catch (ParserConfigurationException e) {
-            return null;
-        }
-        return null;
+        return parsedXml;
     }
 }
