@@ -35,7 +35,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
     GrailsRequestStateLookupStrategy requestStateLookupStrategy = new DefaultRequestStateLookupStrategy()
 
-    @Autowired
     GrailsPluginManager pluginManager
 
     @Autowired
