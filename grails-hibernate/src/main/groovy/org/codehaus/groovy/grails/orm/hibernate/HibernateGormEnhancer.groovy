@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
-import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.grails.datastore.gorm.GormEnhancer
@@ -44,7 +43,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.hibernate.*
 
-/**
+ /**
  * Extended GORM Enhancer that fills out the remaining
  * GORM for Hibernate methods and
  * implements string-based query support via HQL
@@ -927,9 +926,8 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 	}
 
 	@Override
-	public Object discard(Object instance) {
+	public void discard(Object instance) {
 		hibernateTemplate.evict instance
-		return instance
 	}
 
 	@Override
