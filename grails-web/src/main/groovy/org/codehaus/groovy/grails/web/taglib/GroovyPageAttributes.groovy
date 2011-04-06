@@ -28,8 +28,6 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
 class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
 
 
-    Set usedKeys = [] as Set
-
     GroovyPageAttributes() {
         this([:])
     }
@@ -41,17 +39,6 @@ class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
     protected Object clone() {
         return new GroovyPageAttributes(this.@wrappedMap.clone())
     }
-
-    Set getUnusedKeys() {
-        return keySet() - usedKeys
-    }
-
-    @Override
-    Object get(Object k) {
-        usedKeys << k
-        return super.get(k)
-    }
-
 
     int hashCode() {
         def builder = new HashCodeBuilder(23, 39)

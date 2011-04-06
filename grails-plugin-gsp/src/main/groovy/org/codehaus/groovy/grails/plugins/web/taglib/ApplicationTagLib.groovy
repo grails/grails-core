@@ -193,6 +193,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr event Webflow _eventId parameter
      * @attr elementId DOM element id
      */
+    static final LINK_ATTRIBUTES = ['controller', 'action', 'uri', 'url', 'base', 'absolute', 'id', 'fragment', 'params', 'mapping', 'event', 'elementId']
     def link = { attrs, body ->
 
         def writer = getOut()
@@ -210,9 +211,13 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (elementId) {
             writer << " id=\"${elementId}\""
         }
-        linkAttrs << attrs
-        for(key in attrs.getUnusedKeys()) {
-            writer << " $key=\"${linkAttrs[key]?.encodeAsHTML()}\""
+
+        def remainingKeys = attrs.keySet() - LINK_ATTRIBUTES
+        for(key in remainingKeys) {
+            writer << " $key=\"${attrs[key]?.encodeAsHTML()}\""
+        }
+        for(entry in linkAttrs) {
+            writer << " ${entry.key}=\"${entry.value?.encodeAsHTML()}\""
         }
         writer << '>'
         writer << body()

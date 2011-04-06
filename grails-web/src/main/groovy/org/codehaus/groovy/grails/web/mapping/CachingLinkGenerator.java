@@ -62,23 +62,10 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     @Override
     public String link(Map attrs, String encoding) {
         final String key = LINK_PREFIX + attrs;
-        final String usedAttributesKey = key + USED_ATTRIBUTES_SUFFIX;
         Object resourceLink = linkCache.get(key);
         if(resourceLink == null) {
             resourceLink = super.link(attrs, encoding);
             linkCache.put(key, resourceLink);
-            if(attrs instanceof GroovyPageAttributes) {
-                linkCache.put(usedAttributesKey, ((GroovyPageAttributes) attrs).getUsedKeys());
-            }
-        }
-        else {
-            if(attrs instanceof GroovyPageAttributes) {
-                GroovyPageAttributes gspAttrs = (GroovyPageAttributes) attrs;
-                final Object o = linkCache.get(usedAttributesKey);
-                if(o != null) {
-                    gspAttrs.getUsedKeys().addAll((Collection) o);
-                }
-            }
         }
         return resourceLink.toString();
     }

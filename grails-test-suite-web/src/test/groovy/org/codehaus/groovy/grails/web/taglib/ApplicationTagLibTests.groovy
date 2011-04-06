@@ -266,7 +266,6 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     void testAbsoluteWithContextPath() {
         request.contextPath = "/foo"
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
-        assertOutputEquals 'http://localhost:8080/testController/testAction', template
 
         def linkGenerator = appCtx.getBean("grailsLinkGenerator")
         linkGenerator.serverBaseURL="http://www.mysite.com"
