@@ -18,13 +18,8 @@ package org.codehaus.groovy.grails.plugins.converters
 import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
 
-import grails.converters.JSON
-import grails.converters.XML
 import grails.util.GrailsUtil
-import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi
+import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec
 import org.codehaus.groovy.grails.plugins.converters.codecs.XMLCodec
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
@@ -32,10 +27,8 @@ import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationLis
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
-import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 
-/**
+ /**
  * A plug-in that allows the obj as XML syntax.
  *
  * @author Siegfried Puchbauer
@@ -90,20 +83,8 @@ class ConvertersGrailsPlugin {
         ConverterUtil.setGrailsApplication(application)
 
         applicationContext.convertersConfigurationInitializer.initialize(application)
-        MetaClassEnhancer enhancer = new MetaClassEnhancer()
-        enhancer.addApi(new ConvertersApi(applicationContext:applicationContext))
 
-        // Override GDK asType for some common Interfaces and Classes
-        enhancer.enhanceAll( [Errors, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {
-            GrailsMetaClassUtils.getExpandoMetaClass(it)
-        } )
-
-        // Methods for Reading JSON/XML from Requests
-        def getXMLMethod = { -> XML.parse((HttpServletRequest) delegate) }
-        def getJSONMethod = { -> JSON.parse((HttpServletRequest) delegate) }
-        def requestMc = GroovySystem.metaClassRegistry.getMetaClass(HttpServletRequest)
-        requestMc.getXML = getXMLMethod
-        requestMc.getJSON = getJSONMethod
+        ConvertersPluginSupport.enhanceApplication(application,applicationContext)
 
         log.debug "Converters Plugin configured successfully"
     }

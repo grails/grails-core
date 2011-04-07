@@ -14,7 +14,10 @@
  */
 package org.codehaus.groovy.grails.plugins.testing
 
+import grails.converters.JSON
+import groovy.util.slurpersupport.GPathResult
 import org.springframework.mock.web.MockHttpServletResponse
+import org.codehaus.groovy.grails.web.json.JSONElement
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
@@ -26,5 +29,23 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
      */
     void leftShift(String content) {
         writer << content
+    }
+
+    /**
+     * Get the response XML
+     *
+     * @return The response XML
+     */
+    GPathResult getXml() {
+        new XmlSlurper().parseText(contentAsString)
+    }
+
+    /**
+     * Get the response JSON
+     *
+     * @return  The JSON response
+     */
+    JSONElement getJson() {
+        JSON.parse(contentAsString)
     }
 }

@@ -28,6 +28,34 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert response.redirectedUrl == '/bar'
     }
+
+    void testRenderView() {
+        def controller = mockController(TestController)
+
+        controller.renderView()
+
+        assert "/test/foo" == controller.modelAndView.viewName
+    }
+
+    void testRenderXml() {
+        def controller = mockController(TestController)
+
+        controller.renderXml()
+
+        assert "<book title='Great'/>" == controller.response.contentAsString
+        assert "Great" == controller.response.xml.@title.text()
+    }
+
+    void testRenderJson() {
+
+        def controller = mockController(TestController)
+
+        controller.renderJson()
+
+        assert '{"book":"Great"}' == controller.response.contentAsString
+        assert "Great" == controller.response.json.book
+
+    }
 }
 
 class TestController {
@@ -37,5 +65,21 @@ class TestController {
 
     def redirectToController = {
         redirect(controller:"bar")
+    }
+
+    def renderView = {
+        render(view:"foo")
+    }
+
+    def renderXml = {
+        render(contentType:"text/xml") {
+            book(title:"Great")
+        }
+    }
+
+    def renderJson = {
+        render(contentType:"text/json") {
+            book = "Great"
+        }
     }
 }

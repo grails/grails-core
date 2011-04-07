@@ -1,6 +1,7 @@
 dependencies {
 
     compile project(':grails-plugin-url-mappings'),
+            project(':grails-plugin-servlets'),
             project(':grails-plugin-controllers'),
             project(':grails-plugin-domain-class'),
             project(':grails-plugin-gsp'),

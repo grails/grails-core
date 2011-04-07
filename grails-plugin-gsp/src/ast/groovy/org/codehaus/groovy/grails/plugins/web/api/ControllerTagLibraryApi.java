@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -61,15 +62,17 @@ public class ControllerTagLibraryApi extends CommonWebApi {
     public Object methodMissing(Object instance, String methodName, Object argsObject) {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
         TagLibraryLookup lookup = getTagLibraryLookup();
-        GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
-        if (tagLibrary != null) {
-            MetaClass controllerMc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
-            WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
-            if (controllerMc.respondsTo(instance,methodName, args).size()>0) {
-                return controllerMc.invokeMethod(instance, methodName, args);
-            }
+        if(lookup != null) {
+            GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
+            if (tagLibrary != null) {
+                MetaClass controllerMc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
+                WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
+                if (controllerMc.respondsTo(instance,methodName, args).size()>0) {
+                    return controllerMc.invokeMethod(instance, methodName, args);
+                }
 
-            throw new MissingMethodException(methodName, instance.getClass(), args);
+                throw new MissingMethodException(methodName, instance.getClass(), args);
+            }
         }
 
         throw new MissingMethodException(methodName, instance.getClass(), args);
@@ -90,7 +93,12 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         if(this.tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);
             if(applicationContext != null) {
-                tagLibraryLookup = applicationContext.getBean(TagLibraryLookup.class);
+
+                try {
+                    tagLibraryLookup = applicationContext.getBean(TagLibraryLookup.class);
+                } catch (BeansException e) {
+                    return null;
+                }
             }
         }
         return tagLibraryLookup;

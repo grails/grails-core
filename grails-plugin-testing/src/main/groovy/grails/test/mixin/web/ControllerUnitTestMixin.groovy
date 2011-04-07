@@ -19,12 +19,17 @@ package grails.test.mixin.web
 import grails.spring.BeanBuilder
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.GrailsWebUtil
+import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -69,11 +74,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = GrailsUnitTestMixin.grailsApplication
             }
+            convertersConfigurationInitializer(ConvertersConfigurationInitializer)
         }
 
 
-
         beans.registerBeans(applicationContext)
+        applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
 
     @Before
@@ -81,12 +87,22 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         if(applicationContext.isActive()) {
             applicationContext.refresh()
         }
+
         servletContext = new MockServletContext()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
 
         applicationContext.servletContext = servletContext
-        webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext)
+
+        def enhancer = new MetaClassEnhancer()
+        enhancer.addApi(new ServletRequestApi())
+        enhancer.enhance HttpServletRequest.metaClass
+
+        ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
+
+        request = new MockHttpServletRequest()
+        response = new GrailsMockHttpServletResponse()
+        webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = webRequest.getCurrentRequest()
         response = webRequest.getCurrentResponse()
         servletContext = webRequest.getServletContext()
