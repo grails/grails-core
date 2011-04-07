@@ -5,6 +5,7 @@ import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeUtility
+import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
@@ -124,6 +125,25 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert model?.foo == 'bar'
     }
+
+    void testWithFormTokenSynchronization() {
+
+        def controller = mockController(TestController)
+
+        controller.renderWithForm()
+
+        assert "Bad" == response.contentAsString
+
+        def token = SynchronizerToken.store(session)
+        params[SynchronizerToken.KEY] = token.currentToken.toString()
+
+        response.reset()
+
+        controller.renderWithForm()
+
+        assert "Good" == response.contentAsString
+
+    }
 }
 
 class TestController {
@@ -190,5 +210,13 @@ class TestController {
         assert mimeUtility !=null
         assert linkGenerator != null
         render messageSource.getMessage("foo.bar", null, request.locale)
+    }
+
+    def renderWithForm() {
+        withForm {
+            render "Good"
+        }.invalidToken {
+            render "Bad"
+        }
     }
 }

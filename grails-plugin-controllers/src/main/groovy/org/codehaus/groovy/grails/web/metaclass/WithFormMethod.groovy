@@ -15,8 +15,8 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import javax.servlet.http.HttpServletRequest
-
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractTokenResponseHandler
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseHandler
 
@@ -44,9 +44,10 @@ class WithFormMethod {
      * }
      * </code></pre>
      */
-    TokenResponseHandler withForm(HttpServletRequest request, Closure callable) {
+    TokenResponseHandler withForm(GrailsWebRequest webRequest, Closure callable) {
         TokenResponseHandler handler
-        if (isTokenValid(request)) {
+        def request = webRequest.getCurrentRequest()
+        if (isTokenValid(webRequest)) {
             resetToken(request)
             handler = new ValidResponseHandler(callable?.call())
         }
@@ -63,11 +64,12 @@ class WithFormMethod {
      *
      * @param request The servlet request
      */
-    protected synchronized boolean isTokenValid(HttpServletRequest request) {
+    protected synchronized boolean isTokenValid(GrailsWebRequest webRequest) {
+        final request = webRequest.getCurrentRequest()
         SynchronizerToken tokenInSession = request.getSession(false)?.getAttribute(SynchronizerToken.KEY)
         if (!tokenInSession) return false
 
-        def tokenInRequest = request.getParameter(SynchronizerToken.KEY)
+        String tokenInRequest = webRequest.params[SynchronizerToken.KEY]
         if (!tokenInRequest) return false
 
         try {

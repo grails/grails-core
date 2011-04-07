@@ -48,4 +48,12 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
     JSONElement getJson() {
         JSON.parse(contentAsString)
     }
+
+    @Override
+    void reset() {
+        setCommitted(false)
+        super.reset()
+    }
+
+
 }

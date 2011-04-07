@@ -300,7 +300,7 @@ public class ControllersApi extends CommonWebApi {
      * @return The result of the closure execution
      */
     public Object withForm(Object instance, Closure callable) {
-        return withFormMethod.withForm(getRequest(instance), callable);
+        return withFormMethod.withForm(getWebRequest(instance), callable);
     }
 
     /**
