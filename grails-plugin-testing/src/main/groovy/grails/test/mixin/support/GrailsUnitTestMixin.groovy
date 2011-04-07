@@ -15,13 +15,16 @@
  */
 package grails.test.mixin.support
 
+import grails.spring.BeanBuilder
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+import org.springframework.context.support.StaticMessageSource
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -34,13 +37,30 @@ class GrailsUnitTestMixin {
     static GrailsWebApplicationContext applicationContext
     static GrailsApplication grailsApplication
     static ConfigObject config
+    static StaticMessageSource messageSource
 
     static emcEvents = []
+
+    static void defineBeans(Closure callable) {
+        def bb = new BeanBuilder()
+        def beans = bb.beans(callable)
+        beans.registerBeans(applicationContext)
+    }
 
     @BeforeClass
     static void initGrailsApplication() {
         applicationContext = new GrailsWebApplicationContext()
-        grailsApplication = new DefaultGrailsApplication()
+        final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
+        autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory
+        applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
+
+        defineBeans {
+
+            grailsApplication(DefaultGrailsApplication)
+            messageSource(StaticMessageSource)
+        }
+        grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+        messageSource = applicationContext.getBean("messageSource")
         grailsApplication.initialise()
 
         grailsApplication.applicationContext = applicationContext

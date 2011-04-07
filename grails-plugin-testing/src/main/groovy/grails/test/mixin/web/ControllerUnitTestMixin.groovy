@@ -28,10 +28,12 @@ import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.junit.After
 import org.junit.Before
@@ -42,7 +44,6 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -69,8 +70,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         }
         BeanBuilder bb = new BeanBuilder()
 
-        def beans = bb.beans {
+        defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
+        defineBeans {
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
+
             final classLoader = ControllerUnitTestMixin.class.getClassLoader()
             if(ClassUtils.isPresent("UrlMappings", classLoader )) {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass("UrlMappings"))
@@ -82,7 +85,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         }
 
 
-        beans.registerBeans(applicationContext)
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
 
@@ -117,7 +119,15 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         enhancer.addApi(new ControllerTagLibraryApi()) // TODO: Add lazy mocking lookup for tag invocation
         enhancer.addApi(new ControllersMimeTypesApi())
         enhancer.enhance(controllerClass.metaClass)
-        return controllerClass.newInstance()
+
+        defineBeans {
+            "${controllerClass.name}"(controllerClass) { bean ->
+                bean.scope = 'prototype'
+                bean.autowire = true
+
+            }
+        }
+        return applicationContext.getBean(controllerClass.name)
     }
 
     @After

@@ -1,8 +1,14 @@
 package grails.test.mixin
 
+import grails.converters.JSON
+import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.codehaus.groovy.grails.web.mime.MimeUtility
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
- /**
+/**
  * Specification for the behavior of the ControllerUnitTestMixin
  *
  * @author Graeme Rocher
@@ -57,6 +63,17 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
     }
 
+    void testRenderAsJson() {
+
+        def controller = mockController(TestController)
+
+        controller.renderAsJson()
+
+        assert '{"foo":"bar"}' == controller.response.contentAsString
+        assert "bar" == controller.response.json.foo
+
+    }
+
     void testRenderState() {
         params.foo = "bar"
         request.bar = "foo"
@@ -78,6 +95,34 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert grailsApplication != null
         assert applicationContext != null
         assert webRequest != null
+    }
+
+    void testControllerAutowiring() {
+        messageSource.addMessage("foo.bar", request.locale, "Hello World")
+
+        def controller = mockController(TestController)
+
+        controller.renderMessage()
+
+        assert 'Hello World' == controller.response.contentAsString
+    }
+
+    void testRenderWithFormatXml() {
+        def controller = mockController(TestController)
+
+        request.format = 'xml'
+        controller.renderWithFormat()
+
+        assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
+    }
+
+    void testRenderWithFormatHtml() {
+        def controller = mockController(TestController)
+
+        request.format = 'html'
+        def model = controller.renderWithFormat()
+
+        assert model?.foo == 'bar'
     }
 }
 
@@ -106,6 +151,18 @@ class TestController {
         }
     }
 
+    def renderAsJson = {
+        render( [foo:"bar"] as JSON )
+    }
+
+    def renderWithFormat = {
+        def data = [foo:"bar"]
+        withFormat {
+            xml { render data as XML }
+            html data
+        }
+    }
+
     def renderState = {
         render(contentType:"text/xml") {
             println params.foo
@@ -120,5 +177,18 @@ class TestController {
             }
 
         }
+    }
+
+    MessageSource messageSource
+    @Autowired
+    MimeUtility mimeUtility
+
+    @Autowired
+    LinkGenerator linkGenerator
+
+    def renderMessage() {
+        assert mimeUtility !=null
+        assert linkGenerator != null
+        render messageSource.getMessage("foo.bar", null, request.locale)
     }
 }
