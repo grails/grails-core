@@ -23,13 +23,13 @@ class TestMixinSpec extends Specification {
         setup:
            MyMixin.doFirstCalled = false
            MyMixin.doLastCalled = false
-        when:
+        when: "A Junit 3 test is run"
             def test = junit3Test
             test.setUp()
             test.testSomething()
             test.tearDown()
 
-        then:
+        then: "Check that @Before and @After hooks are called"
             MyMixin.doFirstCalled == true
             MyMixin.doLastCalled == true
     }
@@ -38,13 +38,13 @@ class TestMixinSpec extends Specification {
         setup:
            MyMixin.doFirstCalled = false
            MyMixin.doLastCalled = false
-        when:
+        when: "A Junit 4 test is run"
             def test = junit4Test
             def adapter = new JUnit4TestAdapter(test.getClass())
             final result = new TestResult()
             adapter.run(result)
 
-        then:
+        then: "Check that @Before and @After hooks are called and the test was run"
             result.runCount() == 1
             result.failureCount() == 0
             MyMixin.doFirstCalled == true
@@ -55,7 +55,7 @@ class TestMixinSpec extends Specification {
         setup:
            MyMixin.doFirstCalled = false
            MyMixin.doLastCalled = false
-        when:
+        when: "A Spock test is run"
             def test = spockTest
             def adapter = new Sputnik(test.getClass())
             final notifier = new RunNotifier()
@@ -64,7 +64,7 @@ class TestMixinSpec extends Specification {
             adapter.run(notifier)
 
 
-        then:
+        then: "Check that the test is run and @Before and @After hooks are called"
             result.runCount == 1
             result.failureCount == 0
 

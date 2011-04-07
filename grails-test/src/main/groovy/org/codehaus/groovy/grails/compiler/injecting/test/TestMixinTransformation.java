@@ -56,6 +56,7 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final String SET_UP_METHOD = "setUp";
     public static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     public static final String TEAR_DOWN_METHOD = "tearDown";
+    public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
 
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -180,7 +181,7 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {
-        ClassNode groovyMethods = new ClassNode(GroovyObjectSupport.class);
+        ClassNode groovyMethods = GROOVY_OBJECT_CLASS_NODE;
         String methodName = declaredMethod.getName();
         return !declaredMethod.isSynthetic() &&
                 !methodName.contains("$") &&
