@@ -58,8 +58,8 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testRenderState() {
-        request.addParameter("foo", "bar")
-        request.setAttribute("bar", "foo")
+        params.foo = "bar"
+        request.bar = "foo"
         def controller = mockController(TestController)
 
         controller.renderState()
