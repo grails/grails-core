@@ -146,11 +146,29 @@ public class GrailsASTUtils {
      * @param declaredMethod The declared method
      */
     public static void addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod) {
+        addDelegateInstanceMethod(classNode, delegate, declaredMethod, true);
+    }
+
+    /**
+     * Adds a delegate method to the target class node where the first argument is to the delegate method is 'this'.
+     * In other words a method such as foo(Object instance, String bar) would be added with a signature of foo(String)
+     * and 'this' is passed to the delegate instance
+     *
+     * @param classNode The class node
+     * @param delegate The expression that looks up the delegate
+     * @param declaredMethod The declared method
+     * @param thisAsFirstArgument Whether 'this' should be passed as the first argument to the method
+     */
+    public static void addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
         Parameter[] parameterTypes = getRemainingParameterTypes(declaredMethod.getParameters());
         if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
             BlockStatement methodBody = new BlockStatement();
             ArgumentListExpression arguments = new ArgumentListExpression();
-            arguments.addExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION);
+
+            if(thisAsFirstArgument) {
+                arguments.addExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION);
+            }
+
             for (Parameter parameterType : parameterTypes) {
                 arguments.addExpression(new VariableExpression(parameterType.getName()));
             }

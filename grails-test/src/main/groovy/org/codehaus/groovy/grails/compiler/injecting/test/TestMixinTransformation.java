@@ -18,10 +18,13 @@ package org.codehaus.groovy.grails.compiler.injecting.test;
 
 import grails.test.mixin.TestMixin;
 import grails.util.GrailsNameUtils;
+import groovy.lang.GroovyObjectSupport;
+import junit.framework.TestCase;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -91,15 +94,15 @@ public class TestMixinTransformation implements ASTTransformation{
 
             List<MethodNode> beforeMethods = null;
             List<MethodNode> afterMethods = null;
-            if (!isJunit3) {
+            if (isJunit3) {
                 beforeMethods = new ArrayList<MethodNode>();
                 afterMethods = new ArrayList<MethodNode>();
             }
 
             for (MethodNode mixinMethod : mixinMethods) {
                 if(isCandidateMethod(mixinMethod) && !classNode.hasDeclaredMethod(mixinMethod.getName(), mixinMethod.getParameters())) {
-                    GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod);
-                    if(!isJunit3) {
+                    GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
+                    if(isJunit3) {
 
                         if(!mixinMethod.getAnnotations(new ClassNode(Before.class)).isEmpty()) {
                              beforeMethods.add(mixinMethod);
@@ -111,7 +114,7 @@ public class TestMixinTransformation implements ASTTransformation{
                 }
             }
 
-            if(!isJunit3) {
+            if(isJunit3) {
                 addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
                 addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
             }
@@ -119,18 +122,20 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     private void addMethodCallsToMethod(ClassNode classNode, String name, List<MethodNode> methods) {
-        MethodNode setupMethod = classNode.getMethod(name, GrailsArtefactClassInjector.ZERO_PARAMETERS);
-        BlockStatement setupMethodBody = getOrCreateMethodBody(classNode, setupMethod, name);
-        for (MethodNode beforeMethod : methods) {
-            setupMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
+        if(methods != null && !methods.isEmpty()) {
+            MethodNode setupMethod = classNode.getMethod(name, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+            BlockStatement setupMethodBody = getOrCreateMethodBody(classNode, setupMethod, name);
+            for (MethodNode beforeMethod : methods) {
+                setupMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
+            }
         }
     }
 
     private BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
         BlockStatement methodBody;
-        if(setupMethod == null) {
+        if(setupMethod.getDeclaringClass().getName().equals(TestCase.class.getName())) {
             methodBody = new BlockStatement();
-            setupMethod = new MethodNode(name, Modifier.PUBLIC,null, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
+            setupMethod = new MethodNode(name, Modifier.PUBLIC,setupMethod.getReturnType(), GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
             classNode.addMethod(setupMethod);
         }
         else {
@@ -138,7 +143,9 @@ public class TestMixinTransformation implements ASTTransformation{
             if(!(setupMethodBody instanceof BlockStatement)) {
                 methodBody = new BlockStatement();
                 if(setupMethodBody != null) {
-                    methodBody.addStatement(setupMethodBody);
+                    if(!(setupMethodBody instanceof ReturnStatement)) {
+                        methodBody.addStatement(setupMethodBody);
+                    }
                 }
                 setupMethod.setCode(methodBody);
             }
@@ -163,6 +170,7 @@ public class TestMixinTransformation implements ASTTransformation{
         ClassNode currentSuper = classNode.getSuperClass();
         while(currentSuper != null && !currentSuper.getName().equals(OBJECT_CLASS)) {
             if(currentSuper.getName().equals(testType)) return true;
+            currentSuper = currentSuper.getSuperClass();
         }
         return false;
     }
@@ -172,9 +180,13 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {
+        ClassNode groovyMethods = new ClassNode(GroovyObjectSupport.class);
+        String methodName = declaredMethod.getName();
         return !declaredMethod.isSynthetic() &&
-                !declaredMethod.getName().contains("$")
-                && Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isAbstract(declaredMethod.getModifiers());
+                !methodName.contains("$") &&
+                Modifier.isPublic(declaredMethod.getModifiers()) &&
+                !Modifier.isAbstract(declaredMethod.getModifiers()) &&
+                !groovyMethods.hasMethod(declaredMethod.getName(), declaredMethod.getParameters());
     }
 
 }
