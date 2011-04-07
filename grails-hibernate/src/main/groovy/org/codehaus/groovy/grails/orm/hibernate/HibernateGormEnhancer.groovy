@@ -599,22 +599,22 @@ class HibernateGormStaticApi extends GormStaticApi {
 	}
 
 	@Override
-	public Object executeUpdate(String query, Map args) {
+	public Integer executeUpdate(String query, Map args) {
 		executeUpdateMethod.invoke(persistentClass, "executeUpdate", [query, args] as Object[])
 	}
 
 	@Override
-	public Object executeUpdate(String query, Map params, Map args) {
+	public Integer executeUpdate(String query, Map params, Map args) {
 		executeUpdateMethod.invoke(persistentClass, "executeUpdate", [query, params, args] as Object[])
 	}
 
 	@Override
-	public Object executeUpdate(String query, Collection params) {
+	public Integer executeUpdate(String query, Collection params) {
 		executeUpdateMethod.invoke(persistentClass, "executeUpdate", [query, params] as Object[])
 	}
 
 	@Override
-	public Object executeUpdate(String query, Collection params, Map args) {
+	public Integer executeUpdate(String query, Collection params, Map args) {
 		executeUpdateMethod.invoke(persistentClass, "executeUpdate", [query, params, args] as Object[])
 	}
 
@@ -931,7 +931,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 	}
 
 	@Override
-	public Object delete(Object instance) {
+	public void delete(Object instance) {
         def obj = instance
         try {
             hibernateTemplate.execute({Session session ->
@@ -947,7 +947,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 	}
 
 	@Override
-	public Object delete(Object instance, Map params) {
+	public void delete(Object instance, Map params) {
 		def obj = instance
         hibernateTemplate.delete obj
         if (shouldFlush(params)) {
