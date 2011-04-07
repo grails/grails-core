@@ -2,7 +2,7 @@ package grails.test.mixin
 
 import grails.test.mixin.web.ControllerUnitTestMixin
 
-/**
+ /**
  * Specification for the behavior of the ControllerUnitTestMixin
  *
  * @author Graeme Rocher
@@ -56,6 +56,19 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert "Great" == controller.response.json.book
 
     }
+
+    void testRenderState() {
+        request.addParameter("foo", "bar")
+        request.setAttribute("bar", "foo")
+        def controller = mockController(TestController)
+
+        controller.renderState()
+
+        def xml = response.xml
+
+        assert xml.parameter.find { it.@name == 'foo' }.@value.text() == 'bar'
+        assert xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
+    }
 }
 
 class TestController {
@@ -80,6 +93,22 @@ class TestController {
     def renderJson = {
         render(contentType:"text/json") {
             book = "Great"
+        }
+    }
+
+    def renderState = {
+        render(contentType:"text/xml") {
+            println params.foo
+            println request.bar
+            requestInfo {
+                for(p in params) {
+                    parameter(name:p.key, value:p.value)
+                }
+                request.each {
+                    attribute(name:it.key, value:it.value)
+                }
+            }
+
         }
     }
 }

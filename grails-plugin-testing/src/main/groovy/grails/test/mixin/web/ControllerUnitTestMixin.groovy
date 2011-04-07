@@ -19,16 +19,15 @@ package grails.test.mixin.web
 import grails.spring.BeanBuilder
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.GrailsWebUtil
-import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
@@ -94,10 +93,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
         applicationContext.servletContext = servletContext
 
-        def enhancer = new MetaClassEnhancer()
-        enhancer.addApi(new ServletRequestApi())
-        enhancer.enhance HttpServletRequest.metaClass
-
+        ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
         request = new MockHttpServletRequest()
