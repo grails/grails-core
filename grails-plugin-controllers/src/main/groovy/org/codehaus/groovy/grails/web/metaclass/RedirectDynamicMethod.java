@@ -201,7 +201,10 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
     private UrlMappingsHolder getUrlMappingsHolder(GrailsWebRequest webRequest) {
         if(this.urlMappingsHolder == null) {
-            urlMappingsHolder = webRequest.getApplicationContext().getBean(UrlMappingsHolder.BEAN_ID, UrlMappingsHolder.class);
+            ApplicationContext applicationContext = webRequest.getApplicationContext();
+            if(applicationContext != null) {
+                urlMappingsHolder = applicationContext.getBean(UrlMappingsHolder.BEAN_ID, UrlMappingsHolder.class);
+            }
         }
         return urlMappingsHolder;
     }

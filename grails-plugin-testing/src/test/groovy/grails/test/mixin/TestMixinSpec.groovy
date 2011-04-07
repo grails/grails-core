@@ -1,15 +1,15 @@
 package grails.test.mixin
 
-import junit.framework.JUnit4TestAdapter
-import junit.framework.TestResult
+import grails.test.mixin.support.GrailsUnitTestMixin
 import org.junit.After
 import org.junit.Before
 import org.junit.runner.Result
 import org.junit.runner.notification.RunNotifier
+import org.junit.runners.BlockJUnit4ClassRunner
 import org.spockframework.runtime.Sputnik
 import spock.lang.Specification
 
-/**
+ /**
  * Tests for the mixin that adds functionality to a test case
  *
  * @author Graeme Rocher
@@ -26,12 +26,20 @@ class TestMixinSpec extends Specification {
         when: "A Junit 3 test is run"
             def test = junit3Test
             test.setUp()
+
+        then:
+            GrailsUnitTestMixin.grailsApplication != null
+            GrailsUnitTestMixin.applicationContext != null
+        when:
             test.testSomething()
             test.tearDown()
 
         then: "Check that @Before and @After hooks are called"
             MyMixin.doFirstCalled == true
             MyMixin.doLastCalled == true
+            GrailsUnitTestMixin.grailsApplication == null
+            GrailsUnitTestMixin.applicationContext == null
+
     }
 
     void "Test that appropriate test hooks are called for a JUnit 4 test"() {
@@ -40,13 +48,16 @@ class TestMixinSpec extends Specification {
            MyMixin.doLastCalled = false
         when: "A Junit 4 test is run"
             def test = junit4Test
-            def adapter = new JUnit4TestAdapter(test.getClass())
-            final result = new TestResult()
-            adapter.run(result)
+            def runner = new BlockJUnit4ClassRunner(test.getClass())
+            final notifier = new RunNotifier()
+            def result = new Result()
+            notifier.addListener(result.createListener())
+            runner.run(notifier)
+
 
         then: "Check that @Before and @After hooks are called and the test was run"
-            result.runCount() == 1
-            result.failureCount() == 0
+            result.runCount == 1
+            result.failureCount == 0
             MyMixin.doFirstCalled == true
             MyMixin.doLastCalled == true
     }
@@ -88,12 +99,14 @@ class MyJunit3Test extends GroovyTestCase {
 
     def getJunit4Test() {
         new GroovyClassLoader().parseClass('''
-@grails.test.mixin.TestMixin(grails.test.mixin.MyMixin)
 
+@grails.test.mixin.TestMixin(grails.test.mixin.MyMixin)
 class MyJunit4Test {
 
     @org.junit.Test
     void testSomething() {
+        grailsApplication != null
+        applicationContext != null
         callMe()
     }
 }
@@ -117,11 +130,12 @@ class MyJunitSpockTest extends spock.lang.Specification {
 }
 
 
-class MyMixin {
+class MyMixin extends GrailsUnitTestMixin{
     static doFirstCalled = false
     static doLastCalled = false
     @Before
     void doFirst() {
+         assert grailsApplication != null
          doFirstCalled = true
     }
 

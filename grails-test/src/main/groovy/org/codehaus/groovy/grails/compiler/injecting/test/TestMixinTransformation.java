@@ -32,9 +32,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -82,17 +80,13 @@ public class TestMixinTransformation implements ASTTransformation{
         if(value instanceof ClassExpression) {
             ClassExpression ce = (ClassExpression) value;
 
-            final ClassNode mixinClassNode = ce.getType();
+            ClassNode mixinClassNode = ce.getType();
 
             final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
             classNode.addField(fieldName, Modifier.PRIVATE, mixinClassNode, new ConstructorCallExpression(mixinClassNode, new ArgumentListExpression()));
             VariableExpression fieldReference = new VariableExpression(fieldName);
 
-
-            final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
-
             boolean isJunit3 = isJunit3Test(classNode);
-
             List<MethodNode> beforeMethods = null;
             List<MethodNode> afterMethods = null;
             if (isJunit3) {
@@ -100,26 +94,55 @@ public class TestMixinTransformation implements ASTTransformation{
                 afterMethods = new ArrayList<MethodNode>();
             }
 
-            for (MethodNode mixinMethod : mixinMethods) {
-                if(isCandidateMethod(mixinMethod) && !classNode.hasDeclaredMethod(mixinMethod.getName(), mixinMethod.getParameters())) {
-                    GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
-                    if(isJunit3) {
+            while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
+                final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
 
-                        if(!mixinMethod.getAnnotations(new ClassNode(Before.class)).isEmpty()) {
-                             beforeMethods.add(mixinMethod);
+                int beforeClassMethodCount = 0;
+                int afterClassMethodCount = 0;
+                for (MethodNode mixinMethod : mixinMethods) {
+                    if(isCandidateMethod(mixinMethod) && !hasDeclaredMethod(classNode, mixinMethod)) {
+                        if(mixinMethod.isStatic()) {
+                            GrailsASTUtils.addDelegateStaticMethod(classNode,mixinMethod);
                         }
-                        if(!mixinMethod.getAnnotations(new ClassNode(After.class)).isEmpty()) {
-                             afterMethods.add(mixinMethod);
+                        else {
+                            GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
+                        }
+                        if(isJunit3) {
+
+                            if(hasAnnotation(mixinMethod, Before.class)) {
+                                beforeMethods.add(mixinMethod);
+                            }
+                            if(hasAnnotation(mixinMethod, BeforeClass.class)) {
+                                beforeMethods.add(beforeClassMethodCount++, mixinMethod);
+                            }
+                            if(hasAnnotation(mixinMethod, After.class)) {
+                                afterMethods.add(mixinMethod);
+                            }
+                            if(hasAnnotation(mixinMethod, AfterClass.class)) {
+                                afterMethods.add(afterClassMethodCount++, mixinMethod);
+                            }
                         }
                     }
                 }
+
+                mixinClassNode = mixinClassNode.getSuperClass();
             }
 
             if(isJunit3) {
                 addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
                 addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
             }
+
+
         }
+    }
+
+    private boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
+        return classNode.hasDeclaredMethod(mixinMethod.getName(), mixinMethod.getParameters());
+    }
+
+    private boolean hasAnnotation(MethodNode mixinMethod, Class beforeClass) {
+        return !mixinMethod.getAnnotations(new ClassNode(beforeClass)).isEmpty();
     }
 
     private void addMethodCallsToMethod(ClassNode classNode, String name, List<MethodNode> methods) {

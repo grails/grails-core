@@ -50,7 +50,7 @@ public interface Converter<W> {
      * @param response The response to write to
      * @throws ConverterException
      */
-    void render(HttpServletResponse response) throws ConverterException;
+    public void render(HttpServletResponse response) throws ConverterException;
 
     W getWriter() throws ConverterException;
 

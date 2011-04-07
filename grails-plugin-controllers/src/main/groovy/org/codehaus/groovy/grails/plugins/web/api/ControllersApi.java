@@ -54,7 +54,7 @@ public class ControllersApi extends CommonWebApi {
     private ForwardMethod forwardMethod;
 
     public ControllersApi() {
-        super(null);
+        this(null);
     }
 
     public ControllersApi(GrailsPluginManager pluginManager) {
