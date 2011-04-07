@@ -13,16 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package grails.test.mixin
+package org.codehaus.groovy.grails.web.mapping
 
 /**
- * A mixin that can be applied to a unit test in order to test controllers
+ * The Default URL mappings that are used if none are configured
  *
  * @author Graeme Rocher
  * @since 1.4
+ *
+ *
  */
-class ControllerUnitTestMixin {
+class DefaultUrlMappings {
+    static Closure mappings = {
+        "/$controller/$action?/$id?"{
+            constraints {
+                // apply constraints here
+            }
+        }
 
+        "/"(view:"/index")
+        "500"(view:'/error')
+    }
 
 }

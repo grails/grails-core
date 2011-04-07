@@ -21,10 +21,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 
@@ -160,7 +157,7 @@ public class GrailsASTUtils {
      * @param thisAsFirstArgument Whether 'this' should be passed as the first argument to the method
      */
     public static void addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
-        Parameter[] parameterTypes = getRemainingParameterTypes(declaredMethod.getParameters());
+        Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
         if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
             BlockStatement methodBody = new BlockStatement();
             ArgumentListExpression arguments = new ArgumentListExpression();
@@ -195,4 +192,29 @@ public class GrailsASTUtils {
         return GrailsArtefactClassInjector.ZERO_PARAMETERS;
     }
 
+    public static void addDelegateStaticMethod(ClassNode classNode, MethodNode declaredMethod) {
+
+        ClassExpression classExpression = new ClassExpression(declaredMethod.getDeclaringClass());
+        Parameter[] parameterTypes = declaredMethod.getParameters();
+        if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
+            BlockStatement methodBody = new BlockStatement();
+            ArgumentListExpression arguments = new ArgumentListExpression();
+
+            for (Parameter parameterType : parameterTypes) {
+               arguments.addExpression(new VariableExpression(parameterType.getName()));
+           }
+            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(classExpression, declaredMethod.getName(), arguments)));
+            MethodNode methodNode = new MethodNode(declaredMethod.getName(),
+                                                   Modifier.PUBLIC | Modifier.STATIC,
+                                                   declaredMethod.getReturnType(),
+                                                   parameterTypes,
+                                                   GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
+                                                   methodBody
+                                                    );
+            methodNode.addAnnotations(declaredMethod.getAnnotations());
+
+
+            classNode.addMethod(methodNode);
+        }
+    }
 }
