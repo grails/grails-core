@@ -69,6 +69,16 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert xml.parameter.find { it.@name == 'foo' }.@value.text() == 'bar'
         assert xml.attribute.find { it.@name == 'bar' }.@value.text() == 'foo'
     }
+
+    void testInjectedProperties() {
+        assert request != null
+        assert response != null
+        assert servletContext != null
+        assert params != null
+        assert grailsApplication != null
+        assert applicationContext != null
+        assert webRequest != null
+    }
 }
 
 class TestController {

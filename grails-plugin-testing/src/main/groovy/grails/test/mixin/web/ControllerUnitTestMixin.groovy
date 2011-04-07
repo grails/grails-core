@@ -42,6 +42,7 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -55,6 +56,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     MockHttpServletRequest request
     MockHttpServletResponse response
     MockServletContext servletContext
+
+    GrailsParameterMap getParams() {
+        webRequest.getParams()
+    }
 
 
     @BeforeClass
