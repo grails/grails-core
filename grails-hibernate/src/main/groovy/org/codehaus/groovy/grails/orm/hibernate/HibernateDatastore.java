@@ -15,6 +15,9 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.hibernate.SessionFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.datastore.mapping.core.AbstractDatastore;
 import org.springframework.datastore.mapping.core.Session;
 import org.springframework.datastore.mapping.model.MappingContext;
@@ -28,16 +31,17 @@ import java.util.Map;
  * @since 1.0
  * 
  */
-public class HibernateDatastore extends AbstractDatastore {
+public class HibernateDatastore extends AbstractDatastore  {
 
 	private SessionFactory sessionFactory;
 	
 	
 	public HibernateDatastore(MappingContext mappingContext,
-			SessionFactory sessionFactory) {
+			SessionFactory sessionFactory, ApplicationContext applicationContext) {
 		super(mappingContext);
 		this.sessionFactory = sessionFactory;
 		super.initializeConverters(mappingContext);
+        setApplicationContext(applicationContext);
 	}
 	
 	
@@ -57,4 +61,10 @@ public class HibernateDatastore extends AbstractDatastore {
 		return new HibernateSession(this, this.sessionFactory);
 	}
 
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if(!(applicationContext instanceof ConfigurableApplicationContext)) {
+            throw new IllegalArgumentException("ApplicationContext must be an instanceof ConfigurableApplicationContext");
+        }
+        super.setApplicationContext((ConfigurableApplicationContext) applicationContext);
+    }
 }
