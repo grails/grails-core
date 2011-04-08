@@ -45,6 +45,7 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.mock.web.MockHttpSession
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -118,6 +119,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     }
 
     def mockController(Class controllerClass) {
+        grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         MetaClassEnhancer enhancer = new MetaClassEnhancer()
 
         enhancer.addApi(new ControllersApi())
