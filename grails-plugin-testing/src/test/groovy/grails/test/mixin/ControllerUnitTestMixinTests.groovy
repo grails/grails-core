@@ -157,7 +157,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert file.targetFileLocation.path == "/local/disk/myFile"
     }
 
-    void testRenderBaseTemplateNoTags() {
+    void testRenderBasicTemplateNoTags() {
         def controller = mockController(TestController)
 
         groovyPages['/test/_bar.gsp'] = 'Hello <%= 10 %>'
@@ -167,7 +167,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
     }
 
-    void testRenderBaseTemplateWithTags() {
+    void testRenderBasicTemplateWithTags() {
         def controller = mockController(TestController)
         messageSource.addMessage("foo.bar", request.locale, "World")
 
@@ -175,7 +175,15 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         controller.renderTemplate()
 
         assert response.contentAsString == "Hello World"
+    }
 
+    void testRenderBasicTemplateWithLinkTag() {
+        def controller = mockController(TestController)
+
+        groovyPages['/test/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
+        controller.renderTemplate()
+
+        assert response.contentAsString == "Hello /bar"
     }
 }
 
