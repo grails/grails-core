@@ -15,20 +15,25 @@
 
 package org.codehaus.groovy.grails.web.metaclass
 
-import org.springframework.mock.web.MockHttpServletRequest
+import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
+import org.springframework.web.context.request.RequestContextHolder
 
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class WithFormMethodTests extends GroovyTestCase {
+    @Override protected void tearDown() {
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
 
     void testMissingToken() {
         def withForm = new WithFormMethod()
 
-        def request = new MockHttpServletRequest()
+        def request = GrailsWebUtil.bindMockWebRequest()
 
         shouldFail(GrailsRuntimeException) {
             withForm.withForm(request) {
@@ -43,7 +48,7 @@ class WithFormMethodTests extends GroovyTestCase {
     void testTokenNotProvided() {
         def withForm = new WithFormMethod()
 
-        def request = new MockHttpServletRequest()
+        def request = GrailsWebUtil.bindMockWebRequest()
 
         request.session.setAttribute(SynchronizerToken.KEY,new SynchronizerToken())
 
@@ -59,11 +64,11 @@ class WithFormMethodTests extends GroovyTestCase {
     void testTokenInvalid() {
         def withForm = new WithFormMethod()
 
-        def request = new MockHttpServletRequest()
+        def request = GrailsWebUtil.bindMockWebRequest()
 
         request.session.setAttribute(SynchronizerToken.KEY,new SynchronizerToken())
 
-        request.addParameter(SynchronizerToken.KEY,UUID.randomUUID().toString())
+        request.currentRequest.addParameter(SynchronizerToken.KEY,UUID.randomUUID().toString())
 
         shouldFail(GrailsRuntimeException) {
             withForm.withForm(request) {
@@ -77,12 +82,12 @@ class WithFormMethodTests extends GroovyTestCase {
     void testTokenValid() {
        def withForm = new WithFormMethod()
 
-        def request = new MockHttpServletRequest()
+        def request = GrailsWebUtil.bindMockWebRequest()
 
         SynchronizerToken token = new SynchronizerToken()
         request.session.setAttribute(SynchronizerToken.KEY,token)
 
-        request.addParameter(SynchronizerToken.KEY,token.currentToken.toString())
+        request.currentRequest.addParameter(SynchronizerToken.KEY,token.currentToken.toString())
 
 
         def result = withForm.withForm(request) {
@@ -97,12 +102,12 @@ class WithFormMethodTests extends GroovyTestCase {
     void testHandleDoubleSubmit() {
         def withForm = new WithFormMethod()
 
-        def request = new MockHttpServletRequest()
+        def request = GrailsWebUtil.bindMockWebRequest()
 
         SynchronizerToken token = new SynchronizerToken()
         request.session.setAttribute(SynchronizerToken.KEY,token)
 
-        request.addParameter(SynchronizerToken.KEY,token.currentToken.toString())
+        request.currentRequest.addParameter(SynchronizerToken.KEY,token.currentToken.toString())
 
         def result = withForm.withForm(request) {
            return [foo:"bar"]
