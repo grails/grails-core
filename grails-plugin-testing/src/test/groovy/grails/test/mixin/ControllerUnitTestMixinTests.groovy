@@ -3,11 +3,13 @@ package grails.test.mixin
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeUtility
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+import org.springframework.web.multipart.MultipartFile
 
 /**
  * Specification for the behavior of the ControllerUnitTestMixin
@@ -128,8 +130,8 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
     void testWithFormTokenSynchronization() {
 
-        def controller = mockController(TestController)
 
+        def controller = mockController(TestController)
         controller.renderWithForm()
 
         assert "Bad" == response.contentAsString
@@ -144,9 +146,25 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert "Good" == response.contentAsString
 
     }
+
+    void testFileUpload() {
+        def controller = mockController(TestController)
+
+        final file = new GrailsMockMultipartFile("myFile", "foo".bytes)
+        request.addFile(file)
+        controller.uploadFile()
+
+        assert file.targetFileLocation.path == "/local/disk/myFile"
+    }
 }
 
 class TestController {
+    def uploadFile = {
+        assert request.method == 'POST'
+        assert request.contentType == "multipart/form-data"
+        MultipartFile file = request.getFile("myFile")
+        file.transferTo(new File("/local/disk/myFile"))
+    }
     def renderText = {
         render "good"
     }

@@ -16,13 +16,16 @@
 
 package grails.test.mixin.web
 
+import grails.artefact.Enhanced
 import grails.spring.BeanBuilder
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.util.GrailsWebUtil
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
@@ -40,12 +43,11 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.mock.web.MockHttpSession
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -110,7 +112,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-        request = new MockHttpServletRequest()
+        request = new GrailsMockHttpServletRequest()
         response = new GrailsMockHttpServletResponse()
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = webRequest.getCurrentRequest()
@@ -120,13 +122,22 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
     def mockController(Class controllerClass) {
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
-        MetaClassEnhancer enhancer = new MetaClassEnhancer()
+        if(controllerClass.getAnnotation(Enhanced)) {
+            defineBeans {
+                instanceControllersApi(ControllersApi)
+                instanceControllerTagLibraryApi(ControllerTagLibraryApi)
+            }
+        }
+        else {
+            MetaClassEnhancer enhancer = new MetaClassEnhancer()
 
-        enhancer.addApi(new ControllersApi())
-        enhancer.addApi(new ConvertersControllersApi())
-        enhancer.addApi(new ControllerTagLibraryApi()) // TODO: Add lazy mocking lookup for tag invocation
-        enhancer.addApi(new ControllersMimeTypesApi())
-        enhancer.enhance(controllerClass.metaClass)
+            enhancer.addApi(new ControllersApi())
+            enhancer.addApi(new ConvertersControllersApi())
+            enhancer.addApi(new ControllerTagLibraryApi()) // TODO: Add lazy mocking lookup for tag invocation
+            enhancer.addApi(new ControllersMimeTypesApi())
+            enhancer.enhance(controllerClass.metaClass)
+
+        }
 
         defineBeans {
             "${controllerClass.name}"(controllerClass) { bean ->

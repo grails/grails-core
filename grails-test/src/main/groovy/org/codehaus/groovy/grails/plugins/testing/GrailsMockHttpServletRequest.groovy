@@ -16,16 +16,25 @@ package org.codehaus.groovy.grails.plugins.testing
 
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.util.Assert
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.multipart.MultipartHttpServletRequest
 
  /**
  * A custom mock HTTP servlet request that provides the extra properties
  * and methods normally injected by the "servlets" plugin.
  */
-class GrailsMockHttpServletRequest extends MockHttpServletRequest {
+class GrailsMockHttpServletRequest extends MockHttpServletRequest implements MultipartHttpServletRequest{
 
     boolean invalidToken
+    MultiValueMap<String, MultipartFile> multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
+
     private cachedJson
     private cachedXml
+
+
 
     /**
      * Implementation of the dynamic "forwardURI" property.
@@ -198,4 +207,75 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest {
             }
         }
     }
+
+    /**
+     * {@inheritDoc }
+     */
+    Iterator<String> getFileNames() {
+        return multipartFiles.keySet().iterator()
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    MultipartFile getFile(String name) {
+        return multipartFiles.getFirst(name)
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    List<MultipartFile> getFiles(String name) {
+        return multipartFiles.get(name)
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    Map<String, MultipartFile> getFileMap() {
+        return multipartFiles
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    MultiValueMap<String, MultipartFile> getMultiFileMap() {
+        return multipartFiles
+    }
+
+    /**
+     * Add a file to this request. The parameter name from the multipart
+     * form is taken from the {@link MultipartFile#getName()}.
+     * @param file multipart file to be added
+     */
+    public void addFile(MultipartFile file) {
+        setMethod("POST");
+        setContentType("multipart/form-data");
+
+        Assert.notNull(file, "MultipartFile must not be null");
+        this.multipartFiles.add(file.getName(), file);
+    }
+
+    /**
+     * Add a file for the given location and bytes
+     *
+     * @param location The location
+     * @param contents The bytes
+     */
+    public void addFile(String location, byte[] contents) {
+        setMethod("POST");
+        setContentType("multipart/form-data");
+
+
+        this.multipartFiles.add(location, new GrailsMockMultipartFile(location, contents));
+
+    }
+
+    @Override
+    void clearAttributes() {
+        super.clearAttributes()
+        multipartFiles.clear();
+    }
+
+
 }
