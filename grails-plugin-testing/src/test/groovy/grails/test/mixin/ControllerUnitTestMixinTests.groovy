@@ -185,6 +185,17 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert response.contentAsString == "Hello /bar"
     }
+
+    void testInvokeTagLibraryMethod() {
+
+        def controller = mockController(TestController)
+
+        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+
+        controller.renderTemplateContents()
+
+        assert response.contentAsString == "/foo"
+    }
 }
 
 class TestController {
@@ -193,6 +204,16 @@ class TestController {
         assert request.contentType == "multipart/form-data"
         MultipartFile file = request.getFile("myFile")
         file.transferTo(new File("/local/disk/myFile"))
+    }
+
+    def renderTemplateContents = {
+        def contents = createLink(controller:"foo")
+        render contents
+    }
+    def renderTemplateContentsViaNamespace = {
+        def contents = g.render(template:"bar")
+
+        render contents
     }
     def renderText = {
         render "good"

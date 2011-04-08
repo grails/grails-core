@@ -17,7 +17,6 @@
 package grails.test.mixin.web
 
 import grails.artefact.Enhanced
-import grails.spring.BeanBuilder
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
 import grails.test.mixin.support.LazyTagLibraryLookup
@@ -61,18 +60,36 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
+    /**
+     * The {@link GrailsWebRequest} object
+     */
     GrailsWebRequest webRequest
-    MockHttpServletRequest request
-    MockHttpServletResponse response
+    /**
+     * The {@link MockHttpServletRequest} object
+     */
+    GrailsMockHttpServletRequest request
+    /**
+     * The {@link MockHttpServletResponse} object
+     */
+    GrailsMockHttpServletResponse response
     MockServletContext servletContext
 
+    /**
+     * Used to define additional GSP pages or templates where the key is the path to the template and
+     * the value is the contents of the template. Allows loading of templates without using the file system
+     */
     static Map<String, String> groovyPages = [:]
 
-
+    /**
+     * The {@link MockHttpSession} instance
+     */
     MockHttpSession getSession() {
         request.session
     }
 
+    /**
+     * The Grails 'params' object which is an instance of {@link GrailsParameterMap}
+     */
     GrailsParameterMap getParams() {
         webRequest.getParams()
     }
@@ -83,8 +100,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         if(applicationContext == null) {
             initGrailsApplication()
         }
-        BeanBuilder bb = new BeanBuilder()
-
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans {
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
@@ -138,6 +153,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         servletContext = webRequest.getServletContext()
     }
 
+    /**
+     * Mocks a Grails controller class, providing the needed behavior and defining it in the ApplicationContext
+     *
+     * @param controllerClass The controller class
+     * @return An instance of the controller
+     */
     def mockController(Class controllerClass) {
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         if(controllerClass.getAnnotation(Enhanced)) {
@@ -151,11 +172,13 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
             enhancer.addApi(new ControllersApi())
             enhancer.addApi(new ConvertersControllersApi())
-            enhancer.addApi(new ControllerTagLibraryApi()) // TODO: Add lazy mocking lookup for tag invocation
+            enhancer.addApi(new ControllerTagLibraryApi())
             enhancer.addApi(new ControllersMimeTypesApi())
             enhancer.enhance(controllerClass.metaClass)
 
         }
+
+
 
         defineBeans {
             "${controllerClass.name}"(controllerClass) { bean ->
@@ -164,6 +187,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
             }
         }
+
+        controllerClass.metaClass.constructor = {-> applicationContext.getBean(controllerClass.name) }
         return applicationContext.getBean(controllerClass.name)
     }
 
