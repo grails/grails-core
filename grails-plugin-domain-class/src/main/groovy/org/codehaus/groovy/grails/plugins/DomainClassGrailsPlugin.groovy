@@ -144,7 +144,7 @@ class DomainClassGrailsPlugin {
                 if(!domainClass.abstract) {
                     Validator validator = ctx.getBean("${domainClass.fullName}Validator", Validator)
                     final mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-                    metaClass.static.currentGormValidationApi = {-> GormApiSupport.getGormValidationApi(mappingContext, domainClass.clazz, validator)}
+                    metaClass.static.currentGormValidationApi = {-> GormApiSupport.getGormValidationApi(ctx, mappingContext, domainClass.clazz, validator)}
                 }
             }
         }
