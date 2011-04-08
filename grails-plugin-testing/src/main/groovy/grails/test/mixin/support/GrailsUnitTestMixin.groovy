@@ -19,12 +19,14 @@ import grails.spring.BeanBuilder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -54,12 +56,15 @@ class GrailsUnitTestMixin {
         autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory
         applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
 
-        defineBeans {
 
+        defineBeans {
+            grailsProxyHandler(DefaultProxyHandler)
             grailsApplication(DefaultGrailsApplication)
             messageSource(StaticMessageSource)
         }
+        applicationContext.refresh()
         grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+        applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
         messageSource = applicationContext.getBean("messageSource")
         grailsApplication.initialise()
 

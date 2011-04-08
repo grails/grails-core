@@ -156,6 +156,16 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert file.targetFileLocation.path == "/local/disk/myFile"
     }
+
+    void testRenderBaseTemplateNoTags() {
+        def controller = mockController(TestController)
+
+        groovyPages['/test/_bar.gsp'] = 'Hello <%= 10 %>'
+        controller.renderTemplate()
+
+        assert response.contentAsString == "Hello 10"
+
+    }
 }
 
 class TestController {
@@ -175,6 +185,10 @@ class TestController {
 
     def renderView = {
         render(view:"foo")
+    }
+
+    def renderTemplate = {
+        render(template:"bar")
     }
 
     def renderXml = {

@@ -19,6 +19,8 @@ package grails.test.mixin.web
 import grails.artefact.Enhanced
 import grails.spring.BeanBuilder
 import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
+import grails.test.mixin.support.LazyTagLibraryLookup
 import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
@@ -35,6 +37,8 @@ import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -49,7 +53,7 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
+ /**
  * A mixin that can be applied to a unit test in order to test controllers
  *
  * @author Graeme Rocher
@@ -61,6 +65,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     MockHttpServletRequest request
     MockHttpServletResponse response
     MockServletContext servletContext
+
+    static Map<String, String> groovyPages = [:]
 
 
     MockHttpSession getSession() {
@@ -91,6 +97,18 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
                 grailsApplication = GrailsUnitTestMixin.grailsApplication
             }
             convertersConfigurationInitializer(ConvertersConfigurationInitializer)
+
+            def lazyBean = { bean ->
+                bean.lazyInit = true
+            }
+            jspTagLibraryResolver(TagLibraryResolver,lazyBean)
+            gspTagLibraryLookup(LazyTagLibraryLookup,lazyBean)
+            groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
+                bean.lazyInit = true
+                tagLibraryLookup = ref("gspTagLibraryLookup")
+                jspTagLibraryResolver = ref("jspTagLibraryResolver")
+                resourceLoader = new GroovyPageUnitTestResourceLoader(groovyPages)
+            }
         }
 
 
@@ -99,7 +117,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
     @Before
     void bindGrailsWebRequest() {
-        if(applicationContext.isActive()) {
+        if(!applicationContext.isActive()) {
             applicationContext.refresh()
         }
 

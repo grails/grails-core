@@ -15,12 +15,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.GroovyObject;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
@@ -32,6 +26,11 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Looks up tag library instances.
  *
@@ -40,11 +39,11 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicationAware, InitializingBean{
 
-    private ApplicationContext applicationContext;
-    private GrailsApplication grailsApplication;
-    private Map<String, String> tagLibraries = new HashMap<String, String>();
-    private Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
-    private Set<String> tagsThatReturnObject = new HashSet<String>();
+    protected ApplicationContext applicationContext;
+    protected GrailsApplication grailsApplication;
+    protected Map<String, String> tagLibraries = new HashMap<String, String>();
+    protected Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
+    protected Set<String> tagsThatReturnObject = new HashSet<String>();
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -59,11 +58,18 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             return;
         }
 
+        registerTagLibraries();
+        registerTemplateNamespace();
+    }
+
+    protected void registerTagLibraries() {
         GrailsClass[] taglibs =  grailsApplication.getArtefacts(TagLibArtefactHandler.TYPE);
         for (GrailsClass grailsClass : taglibs) {
             registerTagLib((GrailsTagLibClass)grailsClass);
         }
+    }
 
+    protected void registerTemplateNamespace() {
         namespaceDispatchers.put(GroovyPage.TEMPLATE_NAMESPACE, new NamespacedTagDispatcher(GroovyPage.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this) {
             @SuppressWarnings("serial")
             @Override
