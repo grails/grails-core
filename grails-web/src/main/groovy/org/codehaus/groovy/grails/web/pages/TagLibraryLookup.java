@@ -128,7 +128,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         return null;
     }
 
-    private String tagNameKey(String namespace, String tagName) {
+    protected String tagNameKey(String namespace, String tagName) {
         return namespace + ':' + tagName;
     }
 

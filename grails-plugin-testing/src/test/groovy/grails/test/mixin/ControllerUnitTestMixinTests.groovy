@@ -166,6 +166,17 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.contentAsString == "Hello 10"
 
     }
+
+    void testRenderBaseTemplateWithTags() {
+        def controller = mockController(TestController)
+        messageSource.addMessage("foo.bar", request.locale, "World")
+
+        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+        controller.renderTemplate()
+
+        assert response.contentAsString == "Hello World"
+
+    }
 }
 
 class TestController {
