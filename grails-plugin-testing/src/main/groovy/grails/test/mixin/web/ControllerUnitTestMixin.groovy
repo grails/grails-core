@@ -160,7 +160,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
      * @return An instance of the controller
      */
     def mockController(Class controllerClass) {
-        grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
+        final controllerArtefact = grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
+        webRequest.controllerName = controllerArtefact.logicalPropertyName
         if(controllerClass.getAnnotation(Enhanced)) {
             defineBeans {
                 instanceControllersApi(ControllersApi)

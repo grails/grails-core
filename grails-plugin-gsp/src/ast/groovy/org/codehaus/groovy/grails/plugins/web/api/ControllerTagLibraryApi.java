@@ -15,18 +15,15 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import groovy.lang.*;
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -47,6 +44,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         super(null);
     }
 
+    @Autowired
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
         this.tagLibraryLookup = tagLibraryLookup;
     }
@@ -78,15 +76,23 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         throw new MissingMethodException(methodName, instance.getClass(), args);
     }
 
-    private String getNamespace(Object instance) {
-        GrailsApplication grailsApplication = getGrailsApplication(null);
-        if(grailsApplication != null) {
-            GrailsTagLibClass taglibrary = (GrailsTagLibClass) grailsApplication.getArtefact(TagLibArtefactHandler.TYPE, instance.getClass().getName());
-            if(taglibrary != null) {
-                return taglibrary.getNamespace();
-            }
+    /**
+     * Looks up namespaces on missing property
+     *
+     * @param instance The instance
+     * @param propertyName The property name
+     * @return The namespace or a MissingPropertyException
+     */
+    public Object propertyMissing(Object instance, String propertyName) {
+        TagLibraryLookup tagLibraryLookup = getTagLibraryLookup();
+        NamespacedTagDispatcher namespacedTagDispatcher = tagLibraryLookup.lookupNamespaceDispatcher(propertyName);
+        if(namespacedTagDispatcher != null) {
+            WebMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
+            return namespacedTagDispatcher;
         }
-        return GroovyPage.DEFAULT_NAMESPACE;
+        else {
+            throw new MissingPropertyException(propertyName, instance.getClass());
+        }
     }
 
     public TagLibraryLookup getTagLibraryLookup() {

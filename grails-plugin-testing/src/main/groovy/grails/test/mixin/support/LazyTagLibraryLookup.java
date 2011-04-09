@@ -20,7 +20,10 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
+import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
 
@@ -46,6 +49,7 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
         List<Class> providedArtefacts = (List<Class>) new GroovyPagesGrailsPlugin().getProvidedArtefacts();
 
         tagClassesByNamespace.put(GrailsTagLibClass.DEFAULT_NAMESPACE, new ArrayList<Class>());
+        namespaceDispatchers.put(GrailsTagLibClass.DEFAULT_NAMESPACE, new NamespacedTagDispatcher(GrailsTagLibClass.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this));
         for (Class providedArtefact : providedArtefacts) {
             if(!grailsApplication.isArtefactOfType(TagLibArtefactHandler.TYPE, providedArtefact)) continue;
             Object value = GrailsClassUtils.getStaticPropertyValue(providedArtefact, GrailsTagLibClass.NAMESPACE_FIELD_NAME);
@@ -58,6 +62,8 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
                     tagClassesByNamespace.put(namespace, classes);
                 }
                 classes.add(providedArtefact);
+
+                namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
             }
             else {
                 tagClassesByNamespace.get(GrailsTagLibClass.DEFAULT_NAMESPACE).add(providedArtefact);
@@ -95,6 +101,7 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
                             GenericBeanDefinition bd = new GenericBeanDefinition();
                             bd.setBeanClass(tagLibraryClass);
                             bd.setAutowireCandidate(true);
+                            bd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
                             ((GenericApplicationContext)applicationContext).getDefaultListableBeanFactory().registerBeanDefinition(tagLibraryClassName, bd);
                             resolveTagLibraries.put(tagKey, tagLib.getFullName());
                             return (GroovyObject) applicationContext.getBean(tagLibraryClassName);

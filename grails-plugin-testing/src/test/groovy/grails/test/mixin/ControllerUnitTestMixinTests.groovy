@@ -189,12 +189,20 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     void testInvokeTagLibraryMethod() {
 
         def controller = mockController(TestController)
-
-        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
-
         controller.renderTemplateContents()
 
         assert response.contentAsString == "/foo"
+    }
+
+    void testInvokeTagLibraryMethodViaNamespace() {
+
+        def controller = mockController(TestController)
+
+        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+
+        controller.renderTemplateContentsViaNamespace()
+
+        assert response.contentAsString == "Hello foo.bar"
     }
 }
 

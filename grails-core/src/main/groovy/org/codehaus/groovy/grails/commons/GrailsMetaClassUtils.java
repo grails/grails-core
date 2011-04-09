@@ -142,4 +142,20 @@ public class GrailsMetaClassUtils {
         registry.setMetaClass(aClass, emc);
         return emc;
     }
+
+    public static MetaClass getMetaClass(Object instance) {
+        if(instance instanceof GroovyObject) {
+            GroovyObject groovyObject = (GroovyObject) instance;
+            MetaClass metaClass = groovyObject.getMetaClass();
+            if(metaClass instanceof ExpandoMetaClass) {
+                metaClass = getExpandoMetaClass(instance.getClass());
+                groovyObject.setMetaClass(metaClass);
+            }
+
+            return metaClass;
+        }
+        else {
+            return getExpandoMetaClass(instance.getClass());
+        }
+    }
 }
