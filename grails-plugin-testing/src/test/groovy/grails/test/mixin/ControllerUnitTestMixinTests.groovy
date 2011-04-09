@@ -204,9 +204,40 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert response.contentAsString == "Hello foo.bar"
     }
+
+    void testInvokeWithCommandObject() {
+        def controller = mockController(TestController)
+        def cmd = mockCommandObject(TestCommand)
+        cmd.name = ''
+
+        cmd.validate()
+        controller.handleCommand(cmd)
+
+        assert response.contentAsString == 'Bad'
+
+        response.reset()
+
+        cmd.name = "Bob"
+        cmd.clearErrors()
+        cmd.validate()
+        controller.handleCommand(cmd)
+
+        assert response.contentAsString == 'Good'
+
+    }
 }
 
 class TestController {
+
+    def handleCommand = { TestCommand test ->
+
+         if(test.hasErrors()) {
+             render "Bad"
+         }
+         else {
+             render "Good"
+         }
+    }
     def uploadFile = {
         assert request.method == 'POST'
         assert request.contentType == "multipart/form-data"
@@ -298,5 +329,12 @@ class TestController {
         }.invalidToken {
             render "Bad"
         }
+    }
+}
+class TestCommand {
+    String name
+
+    static constraints = {
+        name blank:false
     }
 }
