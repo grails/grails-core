@@ -32,7 +32,7 @@
         sb << '<g:select name="' << property.name << '"'
  		sb << ' from="${' << "${property.type.name}?.values()" << '}"'
  		sb << ' keys="${' << property.type.name << '.values()*.name()}"'
-		if (isRequired()) sb << ' required="required"'
+		if (isRequired()) sb << ' required=""'
 		sb << ' value="${' << "${domainInstance}?.${property.name}?.name()" << '}"'
 		sb << renderNoSelection(property)
 		sb << '/>'
@@ -47,13 +47,14 @@
             if ("textarea" == cp.widget || (cp.maxSize > 250 && !cp.password && !cp.inList)) {
                 sb << '<g:textArea name="' << property.name << '"'
  				sb << ' cols="40" rows="5"'
-				if (isRequired()) sb << ' required="required"'
+				if (cp.maxSize) sb << ' maxlength="' << cp.maxSize << '"'
+				if (isRequired()) sb << ' required=""'
  				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
 				sb << '/>'
             } else if (cp.inList) {
 				sb << '<g:select name="' << property.name << '"'
 				sb << ' from="${' << "${domainInstance}.constraints.${property.name}.inList" << '}"'
-				if (isRequired()) sb << ' required="required"'
+				if (isRequired()) sb << ' required=""'
 				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
 				sb << ' valueMessagePrefix="' << "${domainClass.propertyName}.${property.name}" << '"'
 				sb << renderNoSelection(property)
@@ -72,7 +73,7 @@
 				if (cp.maxSize) sb << ' maxlength="' << cp.maxSize << '"'
 				if (!cp.editable) sb << ' readonly="readonly"'
 				if (cp.matches) sb << ' pattern="${' << "${domainInstance}.constraints.${property.name}.matches" << '}"'
-				if (isRequired()) sb << ' required="required"'
+				if (isRequired()) sb << ' required=""'
 				sb << ' value="${' << "${domainInstance}?.${property.name}" << '}"'
 				sb << '/>'
 			}
@@ -86,24 +87,48 @@
 
     private renderManyToOne(domainClass,property) {
         if (property.association) {
-            return "<g:select name=\"${property.name}.id\" from=\"\${${property.type.name}.list()}\" optionKey=\"id\" value=\"\${${domainInstance}?.${property.name}?.id}\" class=\"many-to-one\" ${renderNoSelection(property)} />"
+			def sb = new StringBuilder()
+            sb << '<g:select'
+			// id is "x" and name is "x.id" as the label will have for="x" and "." in an id will confuse CSS
+ 			sb << ' id="' << property.name << '"'
+ 			sb << ' name="' << property.name << '.id"'
+ 			sb << ' from="${' << property.type.name << '.list()}"'
+ 			sb << ' optionKey="id"'
+			if (isRequired()) sb << ' required=""'
+ 			sb << ' value="${' << "${domainInstance}?.${property.name}" << '?.id}"'
+ 			sb << ' class="many-to-one"'
+ 			sb << renderNoSelection(property)
+ 			sb << '/>'
+			sb as String
         }
     }
 
     private renderManyToMany(domainClass, property) {
-        return "<g:select name=\"${property.name}\" from=\"\${${property.referencedDomainClass.fullName}.list()}\" multiple=\"multiple\" optionKey=\"id\" size=\"5\" value=\"\${${domainInstance}?.${property.name}*.id}\" class=\"many-to-many\" />"
+		def sb = new StringBuilder()
+        sb << '<g:select name="' << property.name << '"'
+ 		sb << ' from="${' << property.referencedDomainClass.fullName << '.list()}"'
+ 		sb << ' multiple="multiple"'
+ 		sb << ' optionKey="id"'
+ 		sb << ' size="5"'
+		if (isRequired()) sb << ' required=""'
+ 		sb << ' value="${' << "${domainInstance}?.${property.name}" << '*.id}"'
+ 		sb << ' class="many-to-many"'
+ 		sb << '/>'
+		sb as String
     }
 
     private renderOneToMany(domainClass, property) {
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
         pw.println()
-        pw.println "<ul>"
+        pw.println '<ul class="one-to-many">'
         pw.println "<g:each in=\"\${${domainInstance}?.${property.name}?}\" var=\"${property.name[0]}\">"
         pw.println "    <li><g:link controller=\"${property.referencedDomainClass.propertyName}\" action=\"show\" id=\"\${${property.name[0]}.id}\">\${${property.name[0]}?.encodeAsHTML()}</g:link></li>"
-        pw.println "</g:each>"
-        pw.println "</ul>"
+        pw.println '</g:each>'
+		pw.println '<li class="add">'
         pw.println "<g:link controller=\"${property.referencedDomainClass.propertyName}\" action=\"create\" params=\"['${domainClass.propertyName}.id': ${domainInstance}?.id]\">\${message(code: 'default.add.label', args: [message(code: '${property.referencedDomainClass.propertyName}.label', default: '${property.referencedDomainClass.shortName}')])}</g:link>"
+		pw.println '</li>'
+        pw.println '</ul>'
         return sw.toString()
     }
 
@@ -120,14 +145,14 @@
                 sb << '<g:select name="' << property.name << '"'
  				sb << ' from="${' << "${cp.range.from}..${cp.range.to}" << '}"'
  				sb << ' class="range"'
-				if (isRequired()) sb << ' required="required"'
+				if (isRequired()) sb << ' required=""'
 				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
 				sb << renderNoSelection(property)
 				sb << '/>'
             } else if (cp.inList) {
                 sb << '<g:select name="' << property.name << '"'
  				sb << ' from="${' << "${domainInstance}.constraints.${property.name}.inList" << '}"'
-				if (isRequired()) sb << ' required="required"'
+				if (isRequired()) sb << ' required=""'
 				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
 				sb << ' valueMessagePrefix="' << "${domainClass.propertyName}.${property.name}" << '"'
 				sb << renderNoSelection(property)
@@ -136,7 +161,7 @@
 				sb << '<g:field type="number" name="' << property.name << '"'
 				if (cp.min != null) sb << ' min="' << cp.min << '"'
 				if (cp.max != null) sb << ' max="' << cp.max << '"'
-				if (isRequired()) sb << ' required="required"'
+				if (isRequired()) sb << ' required=""'
 				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
 				sb << '/>'
             }
@@ -195,7 +220,7 @@
     private renderNoSelection(property) {
         if (isOptional()) {
             if (property.manyToOne || property.oneToOne) {
-                return "noSelection=\"['null': '']\""
+                return " noSelection=\"['null': '']\""
             } else if (property.type == Date || property.type == java.sql.Date || property.type == java.sql.Time || property.type == Calendar) {
                 return "default=\"none\" noSelection=\"['': '']\""
             } else {
