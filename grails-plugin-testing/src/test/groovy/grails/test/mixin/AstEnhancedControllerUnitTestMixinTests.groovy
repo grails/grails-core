@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
@@ -12,14 +13,10 @@ import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
 
 /**
- * Specification for the behavior of the ControllerUnitTestMixin
- *
  * @author Graeme Rocher
- *
  */
 @TestMixin(ControllerUnitTestMixin)
-class ControllerUnitTestMixinTests extends GroovyTestCase {
-
+class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
 
     void testRenderText() {
         def controller = getMockController()
@@ -29,7 +26,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     protected getMockController() {
-        mockController(TestController)
+        mockController(AnotherController)
     }
 
 
@@ -47,7 +44,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         controller.renderView()
 
-        assert "/test/foo" == controller.modelAndView.viewName
+        assert "/another/foo" == controller.modelAndView.viewName
     }
 
     void testRenderXml() {
@@ -164,7 +161,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     void testRenderBasicTemplateNoTags() {
         def controller = getMockController()
 
-        groovyPages['/test/_bar.gsp'] = 'Hello <%= 10 %>'
+        groovyPages['/another/_bar.gsp'] = 'Hello <%= 10 %>'
         controller.renderTemplate()
 
         assert response.contentAsString == "Hello 10"
@@ -175,7 +172,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         def controller = getMockController()
         messageSource.addMessage("foo.bar", request.locale, "World")
 
-        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+        groovyPages['/another/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
         controller.renderTemplate()
 
         assert response.contentAsString == "Hello World"
@@ -184,7 +181,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     void testRenderBasicTemplateWithLinkTag() {
         def controller = getMockController()
 
-        groovyPages['/test/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
+        groovyPages['/another/_bar.gsp'] = 'Hello <g:createLink controller="bar" />'
         controller.renderTemplate()
 
         assert response.contentAsString == "Hello /bar"
@@ -202,7 +199,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         def controller = getMockController()
 
-        groovyPages['/test/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
+        groovyPages['/another/_bar.gsp'] = 'Hello <g:message code="foo.bar" />'
 
         controller.renderTemplateContentsViaNamespace()
 
@@ -229,9 +226,11 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert response.contentAsString == 'Good'
 
     }
-}
 
-class TestController {
+
+}
+@Artefact("Controller")
+class AnotherController {
 
     def handleCommand = { TestCommand test ->
 
@@ -333,12 +332,5 @@ class TestController {
         }.invalidToken {
             render "Bad"
         }
-    }
-}
-class TestCommand {
-    String name
-
-    static constraints = {
-        name blank:false
     }
 }

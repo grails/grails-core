@@ -57,8 +57,9 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.codehaus.groovy.grails.orm.hibernate.*
 import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 
- /**
+/**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
  *
  * @author Graeme Rocher
@@ -77,8 +78,8 @@ class HibernatePluginSupport {
         def factory = new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(), UniqueConstraint)
         ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT, factory)
 
-        if (getSpringConfig().containsBean("constraintsEvaluator")) {
-            constraintsEvaluator.constraintsEvaluatorClass = HibernateConstraintsEvaluator.class
+        if (getSpringConfig().containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+            delegate."${ConstraintsEvaluator.BEAN_NAME}".constraintsEvaluatorClass = HibernateConstraintsEvaluator.class
         }
 
         for (GrailsDomainClass dc in application.domainClasses) {

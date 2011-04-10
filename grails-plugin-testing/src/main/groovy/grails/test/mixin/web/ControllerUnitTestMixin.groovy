@@ -51,8 +51,9 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 
- /**
+/**
  * A mixin that can be applied to a unit test in order to test controllers
  *
  * @author Graeme Rocher
@@ -191,6 +192,20 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
         controllerClass.metaClass.constructor = {-> applicationContext.getBean(controllerClass.name) }
         return applicationContext.getBean(controllerClass.name)
+    }
+
+    /**
+     * Mocks a Grails command object providing the necessary validation behavior and returning the instance
+     *
+     * @param commandClass The command class
+     * @return The instance
+     */
+    def mockCommandObject(Class commandClass) {
+        WebMetaUtils.enhanceCommandObject(applicationContext, commandClass)
+
+        final instance = commandClass.newInstance()
+        applicationContext.autowireCapableBeanFactory.autowireBean(instance)
+        return instance
     }
 
     @After

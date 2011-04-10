@@ -20,10 +20,9 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 import java.lang.reflect.Method
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
-import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
@@ -33,6 +32,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -195,16 +195,15 @@ class WebMetaUtils {
             commandObjectMetaClass.validate = {->
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
-            def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(commandObjectClass)
-            def classes = GrailsDomainConfigurationUtil.getSuperClassChain(commandObjectClass)
-            classes.each { clz ->
-                def validationClosure = GrailsClassUtils.getStaticPropertyValue(clz, 'constraints')
-                if (validationClosure) {
-                    validationClosure.setDelegate(constrainedPropertyBuilder)
-                    validationClosure()
-                }
+            def constraintsEvaluator
+            if(ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+                constraintsEvaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME)
             }
-            commandObjectMetaClass.getConstraints = {-> constrainedPropertyBuilder.constrainedProperties }
+            else {
+                constraintsEvaluator = new DefaultConstraintEvaluator()
+            }
+            def constrainedProperties = constraintsEvaluator.evaluate(commandObjectClass)
+            commandObjectMetaClass.getConstraints = {-> constrainedProperties }
 
             commandObjectMetaClass.clearErrors = {->
                 delegate.setErrors(new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))

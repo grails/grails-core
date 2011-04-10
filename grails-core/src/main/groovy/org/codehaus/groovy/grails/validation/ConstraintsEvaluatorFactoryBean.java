@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  *
- *
+ * Constructs the default constraints evaluator instance
  *
  * @author Graeme Rocher
  * @since 1.4

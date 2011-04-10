@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
@@ -29,5 +30,11 @@ public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTrans
 
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+    @Override
+    public String getArtefactType() {
+        return ControllerArtefactHandler.TYPE;
+
     }
 }
