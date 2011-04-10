@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
 
+    public static final String WEB_INF_PREFIX = "/WEB-INF/grails-app/views";
     private Map<String,String> groovyPages = new ConcurrentHashMap<String, String>();
 
     public GroovyPageUnitTestResourceLoader(Map<String, String> groovyPages) {
@@ -32,6 +33,9 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
     @Override
     public Resource getResource(String location) {
 
+        if(location.startsWith(WEB_INF_PREFIX)) {
+            location = location.substring(WEB_INF_PREFIX.length());
+        }
         if(groovyPages.containsKey(location)) {
             try {
                 return new ByteArrayResource(groovyPages.get(location).getBytes("UTF-8"));
