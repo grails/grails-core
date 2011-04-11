@@ -167,7 +167,7 @@ public class GrailsASTUtils {
                 arguments.addExpression(new VariableExpression(parameterType.getName()));
             }
 
-            ClassNode returnType = declaredMethod.getReturnType().isGenericsPlaceHolder() ? classNode  :  declaredMethod.getReturnType();
+            ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
 
             methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(delegate, declaredMethod.getName(), arguments)));
             MethodNode methodNode = new MethodNode(declaredMethod.getName(),
@@ -178,6 +178,7 @@ public class GrailsASTUtils {
                                                    methodBody
                                                     );
             methodNode.addAnnotations(declaredMethod.getAnnotations());
+
             methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             classNode.addMethod(methodNode);
         }
@@ -204,7 +205,7 @@ public class GrailsASTUtils {
                arguments.addExpression(new VariableExpression(parameterType.getName()));
            }
             methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(classExpression, declaredMethod.getName(), arguments)));
-            ClassNode returnType = declaredMethod.getReturnType().isGenericsPlaceHolder() ? classNode :  declaredMethod.getReturnType();
+            ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
             returnType.setRedirect(declaredMethod.getReturnType());
             MethodNode methodNode = new MethodNode(declaredMethod.getName(),
                                                    Modifier.PUBLIC | Modifier.STATIC,
@@ -213,10 +214,9 @@ public class GrailsASTUtils {
                                                    GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                                                    methodBody
                                                     );
-            methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             methodNode.addAnnotations(declaredMethod.getAnnotations());
 
-
+            methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             classNode.addMethod(methodNode);
         }
     }
@@ -225,10 +225,23 @@ public class GrailsASTUtils {
         Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameterType = parameterTypes[i];
-            Parameter newParameter = new Parameter(parameterType.getType(), parameterType.getName(), parameterType.getInitialExpression());
+            Parameter newParameter = new Parameter(nonGeneric(parameterType.getType()), parameterType.getName(), parameterType.getInitialExpression());
             newParameter.addAnnotations(parameterType.getAnnotations());
             newParameterTypes[i] = newParameter;
         }
         return newParameterTypes;
     }
+
+    private static ClassNode nonGeneric(ClassNode type) {
+        if (type.isUsingGenerics()) {
+            final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
+            nonGen.setRedirect(type);
+            nonGen.setGenericsTypes(null);
+            nonGen.setUsingGenerics(false);
+            return nonGen;
+        } else {
+            return type;
+        }
+    }
+
 }
