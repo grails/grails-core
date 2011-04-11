@@ -1,5 +1,8 @@
 package org.codehaus.groovy.grails.scaffolding
 
+import static org.junit.Assert.assertThat
+import static org.junit.matchers.JUnitMatchers.containsString
+
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 
@@ -59,10 +62,12 @@ class ScaffoldingTest {
         StringWriter sw = new StringWriter()
         templateGenerator.generateView domainClass, "create", sw
 
-        assertTrue "Should have rendered a datePicker for regularDate",
-            sw.toString().contains('g:datePicker name="regularDate" precision="day" value="${scaffoldingTestInstance?.regularDate}"')
-        assertTrue "Should have rendered a datePicker for sqlDate",
-            sw.toString().contains('datePicker name="sqlDate" precision="day" value="${scaffoldingTestInstance?.sqlDate}"')
+        assertThat "Should have rendered a datePicker for regularDate",
+            sw.toString(),
+			containsString('g:datePicker name="regularDate" precision="day" value="${scaffoldingTestInstance?.regularDate}"')
+        assertThat "Should have rendered a datePicker for sqlDate",
+            sw.toString(),
+			containsString('datePicker name="sqlDate" precision="day" value="${scaffoldingTestInstance?.sqlDate}"')
     }
 
     void testGenerateNumberSelect() {
@@ -78,7 +83,8 @@ class ScaffoldingTest {
         StringWriter sw = new StringWriter()
         templateGenerator.generateView domainClass, "create", sw
 
-        assertTrue "Should have rendered a select box for the number editor",
-            sw.toString().contains('g:select name="status" from="${scaffoldingTestInstance.constraints.status.inList}" required="required" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
+        assertThat "Should have rendered a select box for the number editor",
+            sw.toString(),
+			containsString('g:select name="status" from="${scaffoldingTestInstance.constraints.status.inList}" required="" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
     }
 }
