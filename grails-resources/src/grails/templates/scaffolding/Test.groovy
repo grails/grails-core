@@ -10,7 +10,7 @@ import grails.test.mixin.TestMixin
 @TestMixin([ControllerUnitTestMixin, DomainClassUnitTestMixin])
 class ${className}ControllerTests {
 
-    ${className} controller
+    ${className}Controller controller
 
     @Before
     void setUp() {

@@ -32,6 +32,9 @@ import java.util.List;
  * @since 0.3
  */
 public class GrailsASTUtils {
+    public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
+    public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
+
 
     /**
      * Returns whether a classNode has the specified property or not
@@ -196,18 +199,26 @@ public class GrailsASTUtils {
     public static void addDelegateStaticMethod(ClassNode classNode, MethodNode declaredMethod) {
 
         ClassExpression classExpression = new ClassExpression(declaredMethod.getDeclaringClass());
+        addDelegateStaticMethod(classExpression, classNode, declaredMethod);
+    }
+
+    public static void addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode declaredMethod) {
         Parameter[] parameterTypes = declaredMethod.getParameters();
-        if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
+        String declaredMethodName = declaredMethod.getName();
+        if(!classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
             BlockStatement methodBody = new BlockStatement();
             ArgumentListExpression arguments = new ArgumentListExpression();
 
             for (Parameter parameterType : parameterTypes) {
                arguments.addExpression(new VariableExpression(parameterType.getName()));
            }
-            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(classExpression, declaredMethod.getName(), arguments)));
+            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(expression, declaredMethodName, arguments)));
             ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
             returnType.setRedirect(declaredMethod.getReturnType());
-            MethodNode methodNode = new MethodNode(declaredMethod.getName(),
+            if(METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
+                     declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
+            }
+            MethodNode methodNode = new MethodNode(declaredMethodName,
                                                    Modifier.PUBLIC | Modifier.STATIC,
                                                    returnType,
                                                    copyParameters(parameterTypes),
@@ -221,7 +232,7 @@ public class GrailsASTUtils {
         }
     }
 
-    private static Parameter[] copyParameters(Parameter[] parameterTypes) {
+    public static Parameter[] copyParameters(Parameter[] parameterTypes) {
         Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameterType = parameterTypes[i];
@@ -232,14 +243,20 @@ public class GrailsASTUtils {
         return newParameterTypes;
     }
 
-    private static ClassNode nonGeneric(ClassNode type) {
+    public static ClassNode nonGeneric(ClassNode type) {
         if (type.isUsingGenerics()) {
-            final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
+            final ClassNode nonGen = ClassHelper.make(type.getName());
             nonGen.setRedirect(type);
             nonGen.setGenericsTypes(null);
             nonGen.setUsingGenerics(false);
             return nonGen;
-        } else {
+        }
+        else if(type.isArray()) {
+            final ClassNode nonGen = ClassHelper.makeWithoutCaching(Object.class);
+            nonGen.setUsingGenerics(false);
+            return nonGen.makeArray();
+        }
+        else {
             return type;
         }
     }
