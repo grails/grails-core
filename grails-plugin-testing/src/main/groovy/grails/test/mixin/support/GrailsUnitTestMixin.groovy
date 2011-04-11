@@ -18,6 +18,7 @@ package grails.test.mixin.support
 import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
+import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
@@ -45,6 +46,7 @@ class GrailsUnitTestMixin {
 
     static emcEvents = []
     Map validationErrorsMap
+    Set loadedCodecs = []
 
     static void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
@@ -96,6 +98,28 @@ class GrailsUnitTestMixin {
      */
     GrailsMock mockFor(Class clazz, boolean loose = false) {
         return new GrailsMock(clazz, loose)
+    }
+
+
+    /**
+     * Loads the given codec, adding the "encodeAs...()" and "decode...()"
+     * methods to objects.
+     * @param codecClass The codec to load, e.g. HTMLCodec.
+     */
+    void mockCodec(Class codecClass) {
+        if (loadedCodecs.contains(codecClass)) {
+            return
+        }
+
+        loadedCodecs << codecClass
+
+        // Instantiate the codec so we can use it.
+        final codec = codecClass.newInstance()
+
+        // Add the encode and decode methods.
+        def codecName = GrailsNameUtils.getLogicalName(codecClass, "Codec")
+        Object.metaClass."encodeAs$codecName" = { -> codec.encode(delegate) }
+        Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
 
 
