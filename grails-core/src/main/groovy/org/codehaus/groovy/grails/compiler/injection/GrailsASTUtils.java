@@ -17,10 +17,7 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.GrailsNameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -169,16 +166,19 @@ public class GrailsASTUtils {
             for (Parameter parameterType : parameterTypes) {
                 arguments.addExpression(new VariableExpression(parameterType.getName()));
             }
+
+            ClassNode returnType = declaredMethod.getReturnType().isGenericsPlaceHolder() ? classNode  :  declaredMethod.getReturnType();
+
             methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(delegate, declaredMethod.getName(), arguments)));
             MethodNode methodNode = new MethodNode(declaredMethod.getName(),
                                                    Modifier.PUBLIC,
-                                                   declaredMethod.getReturnType(),
-                                                   parameterTypes,
+                                                   returnType,
+                                                   copyParameters(parameterTypes),
                                                    GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                                                    methodBody
                                                     );
             methodNode.addAnnotations(declaredMethod.getAnnotations());
-
+            methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             classNode.addMethod(methodNode);
         }
     }
@@ -204,17 +204,31 @@ public class GrailsASTUtils {
                arguments.addExpression(new VariableExpression(parameterType.getName()));
            }
             methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(classExpression, declaredMethod.getName(), arguments)));
+            ClassNode returnType = declaredMethod.getReturnType().isGenericsPlaceHolder() ? classNode :  declaredMethod.getReturnType();
+            returnType.setRedirect(declaredMethod.getReturnType());
             MethodNode methodNode = new MethodNode(declaredMethod.getName(),
                                                    Modifier.PUBLIC | Modifier.STATIC,
-                                                   declaredMethod.getReturnType(),
-                                                   parameterTypes,
+                                                   returnType,
+                                                   copyParameters(parameterTypes),
                                                    GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                                                    methodBody
                                                     );
+            methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             methodNode.addAnnotations(declaredMethod.getAnnotations());
 
 
             classNode.addMethod(methodNode);
         }
+    }
+
+    private static Parameter[] copyParameters(Parameter[] parameterTypes) {
+        Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Parameter parameterType = parameterTypes[i];
+            Parameter newParameter = new Parameter(parameterType.getType(), parameterType.getName(), parameterType.getInitialExpression());
+            newParameter.addAnnotations(parameterType.getAnnotations());
+            newParameterTypes[i] = newParameter;
+        }
+        return newParameterTypes;
     }
 }

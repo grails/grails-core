@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.compiler;
 
 import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ant.Groovyc;
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
@@ -83,7 +85,16 @@ public class Grailsc extends Groovyc {
         if (compileList.length > 0) {
             long now = System.currentTimeMillis();
             try {
-                super.compile();
+                try {
+                    super.compile();
+                } catch (RuntimeException e) {
+                    if(!(e instanceof MultipleCompilationErrorsException) && !(e instanceof CompilationFailedException)) {
+                        e.printStackTrace();
+                        System.out.println("Groovy Compiler error: " + e.getMessage());
+                        throw e;
+                    }
+
+                }
                 getDestdir().setLastModified(now);
             }
             finally {
