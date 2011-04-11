@@ -25,9 +25,15 @@ import grails.util.GrailsNameUtils
 
 includeTargets << grailsScript("_GrailsPackage")
 
+lastType = null
 createArtifact = { Map args = [:] ->
     def suffix = args["suffix"]
+
     def type = args["type"]
+	if(type) {
+		lastType = type		
+	}
+
     def artifactPath = args["path"]
 
     ant.mkdir(dir: "${basedir}/${artifactPath}")
@@ -68,22 +74,22 @@ createArtifact = { Map args = [:] ->
         }
     }
 
+	def templatePath = args["templatePath"] ?: 'templates/artifacts'
     // first check for presence of template in application
-    templateFile = new FileSystemResource("${basedir}/src/templates/artifacts/${type}.groovy")
+    templateFile = new FileSystemResource("${basedir}/src/${templatePath}/${type ?: lastType}.groovy")
     if (!templateFile.exists()) {
         // now check for template provided by plugins
-        def pluginTemplateFiles = resolveResources("file:${pluginsHome}/*/src/templates/artifacts/${type}.groovy")
+        def pluginTemplateFiles = resolveResources("file:${pluginsHome}/*/src/${templatePath}/${type ?: lastType}.groovy")
         if (pluginTemplateFiles) {
             templateFile = pluginTemplateFiles[0]
         }
         else {
             // template not found in application, use default template
-            templateFile = grailsResource("src/grails/templates/artifacts/${type}.groovy")
+            templateFile = grailsResource("src/grails/${templatePath}/${type ?: lastType}.groovy")
         }
     }
 
     copyGrailsResource(artifactFile, templateFile)
-//    ant.copy(file: templateFile, tofile: artifactFile, overwrite: true)
     ant.replace(file: artifactFile,
         token: "@artifact.name@", value: "${className}${suffix}")
     if (pkg) {
@@ -96,9 +102,12 @@ createArtifact = { Map args = [:] ->
     if (args["superClass"]) {
         ant.replace(file: artifactFile, token: "@artifact.superclass@", value: args["superClass"])
     }
+    ant.replace(file: artifactFile, token: "@artifact.testclass@", value: "${className}${type}")
 
     event("CreatedFile", [artifactFile])
-    event("CreatedArtefact", [ type, className])
+    event("CreatedArtefact", [ artifactFile, className])
+
+
 }
 
 private createRootPackage() {
@@ -109,14 +118,14 @@ private createRootPackage() {
 
 createIntegrationTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GroovyTestCase"
-    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests",
-                   path: "test/integration", superClass: superClass)
+    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: args.testType ?: args['suffix'],
+                   path: "test/integration", superClass: superClass, templatePath:"templates/testing")
 }
 
 createUnitTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GrailsUnitTestCase"
-    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: "Tests",
-                   path: "test/unit", superClass: superClass)
+    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: args.testType ?: args['suffix'],
+                   path: "test/unit", superClass: superClass, templatePath:"templates/testing")
 }
 
 promptForName = { Map args = [:] ->
