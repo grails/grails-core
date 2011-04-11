@@ -86,11 +86,12 @@ class TestMixinSpec extends Specification {
 
     def getJunit3Test() {
         new GroovyClassLoader().parseClass('''
-@grails.test.mixin.TestMixin(grails.test.mixin.MyMixin)
+@grails.test.mixin.TestMixin([grails.test.mixin.MyMixin,grails.test.mixin.SecondMixin])
 class MyJunit3Test extends GroovyTestCase {
 
     void testSomething() {
         callMe()
+        secondCall()
     }
 }
 ''').newInstance()
@@ -148,3 +149,11 @@ class MyMixin extends GrailsUnitTestMixin{
         doLastCalled = true
     }
 }
+class SecondMixin extends GrailsUnitTestMixin{
+
+    void secondCall() {
+        // do nothing
+    }
+
+}
+

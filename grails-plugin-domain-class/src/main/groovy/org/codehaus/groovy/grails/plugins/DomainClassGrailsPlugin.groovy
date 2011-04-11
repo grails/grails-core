@@ -85,7 +85,7 @@ class DomainClassGrailsPlugin {
         }
     }
 
-    private def getDefaultConstraints(ConfigObject config) {
+    public static getDefaultConstraints(ConfigObject config) {
         def constraints = config?.grails?.gorm?.default?.constraints
         def defaultConstraintsMap = null
         if (constraints instanceof Closure) {

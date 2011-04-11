@@ -76,16 +76,16 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         Expression value = node.getMember("value");
+        ListExpression values = null;
+        if(value instanceof ListExpression) {
+            values = (ListExpression) value;
+        }
+        else if(value instanceof ClassExpression) {
+            values = new ListExpression();
+            values.addExpression(value);
+        }
 
-        if(value instanceof ClassExpression) {
-            ClassExpression ce = (ClassExpression) value;
-
-            ClassNode mixinClassNode = ce.getType();
-
-            final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
-            classNode.addField(fieldName, Modifier.PRIVATE, mixinClassNode, new ConstructorCallExpression(mixinClassNode, new ArgumentListExpression()));
-            VariableExpression fieldReference = new VariableExpression(fieldName);
-
+        if(values != null) {
             boolean isJunit3 = isJunit3Test(classNode);
             List<MethodNode> beforeMethods = null;
             List<MethodNode> afterMethods = null;
@@ -93,48 +93,62 @@ public class TestMixinTransformation implements ASTTransformation{
                 beforeMethods = new ArrayList<MethodNode>();
                 afterMethods = new ArrayList<MethodNode>();
             }
+            for (Expression current : values.getExpressions()) {
+                if(current instanceof ClassExpression) {
+                    ClassExpression ce = (ClassExpression) current;
 
-            while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
-                final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
+                    ClassNode mixinClassNode = ce.getType();
 
-                int beforeClassMethodCount = 0;
-                int afterClassMethodCount = 0;
-                for (MethodNode mixinMethod : mixinMethods) {
-                    if(isCandidateMethod(mixinMethod) && !hasDeclaredMethod(classNode, mixinMethod)) {
-                        if(mixinMethod.isStatic()) {
-                            GrailsASTUtils.addDelegateStaticMethod(classNode,mixinMethod);
-                        }
-                        else {
-                            GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
-                        }
-                        if(isJunit3) {
+                    final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
+                    classNode.addField(fieldName, Modifier.PRIVATE, mixinClassNode, new ConstructorCallExpression(mixinClassNode, new ArgumentListExpression()));
+                    VariableExpression fieldReference = new VariableExpression(fieldName);
 
-                            if(hasAnnotation(mixinMethod, Before.class)) {
-                                beforeMethods.add(mixinMethod);
-                            }
-                            if(hasAnnotation(mixinMethod, BeforeClass.class)) {
-                                beforeMethods.add(beforeClassMethodCount++, mixinMethod);
-                            }
-                            if(hasAnnotation(mixinMethod, After.class)) {
-                                afterMethods.add(mixinMethod);
-                            }
-                            if(hasAnnotation(mixinMethod, AfterClass.class)) {
-                                afterMethods.add(afterClassMethodCount++, mixinMethod);
+
+
+                    while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
+                        final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
+
+                        int beforeClassMethodCount = 0;
+                        int afterClassMethodCount = 0;
+                        for (MethodNode mixinMethod : mixinMethods) {
+                            if(isCandidateMethod(mixinMethod) && !hasDeclaredMethod(classNode, mixinMethod)) {
+                                if(mixinMethod.isStatic()) {
+                                    GrailsASTUtils.addDelegateStaticMethod(classNode,mixinMethod);
+                                }
+                                else {
+                                    GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
+                                }
+                                if(isJunit3) {
+
+                                    if(hasAnnotation(mixinMethod, Before.class)) {
+                                        beforeMethods.add(mixinMethod);
+                                    }
+                                    if(hasAnnotation(mixinMethod, BeforeClass.class)) {
+                                        beforeMethods.add(beforeClassMethodCount++, mixinMethod);
+                                    }
+                                    if(hasAnnotation(mixinMethod, After.class)) {
+                                        afterMethods.add(mixinMethod);
+                                    }
+                                    if(hasAnnotation(mixinMethod, AfterClass.class)) {
+                                        afterMethods.add(afterClassMethodCount++, mixinMethod);
+                                    }
+                                }
                             }
                         }
+
+                        mixinClassNode = mixinClassNode.getSuperClass();
                     }
+
+
                 }
-
-                mixinClassNode = mixinClassNode.getSuperClass();
             }
-
             if(isJunit3) {
                 addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
                 addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
             }
-
-
         }
+
+
     }
 
     private boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {

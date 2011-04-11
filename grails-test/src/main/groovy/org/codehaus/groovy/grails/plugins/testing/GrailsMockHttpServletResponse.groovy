@@ -18,6 +18,7 @@ import grails.converters.JSON
 import groovy.util.slurpersupport.GPathResult
 import org.springframework.mock.web.MockHttpServletResponse
 import org.codehaus.groovy.grails.web.json.JSONElement
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
@@ -51,6 +52,8 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
 
     @Override
     void reset() {
+        final webRequest = GrailsWebRequest.lookup()
+        webRequest?.currentRequest?.removeAttribute("org.codehaus.groovy.grails.REDIRECT_ISSUED")
         setCommitted(false)
         super.reset()
     }

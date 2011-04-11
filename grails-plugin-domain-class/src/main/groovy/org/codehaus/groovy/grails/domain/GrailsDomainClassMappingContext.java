@@ -15,14 +15,12 @@
 
 package org.codehaus.groovy.grails.domain;
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.springframework.datastore.mapping.model.AbstractMappingContext;
-import org.springframework.datastore.mapping.model.MappingConfigurationStrategy;
-import org.springframework.datastore.mapping.model.MappingFactory;
-import org.springframework.datastore.mapping.model.PersistentEntity;
+import org.codehaus.groovy.grails.commons.*;
+import org.springframework.datastore.mapping.model.*;
+import org.springframework.datastore.mapping.model.types.Identity;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * A MappingContext that adapts the Grails domain model to the Mapping API
@@ -50,7 +48,7 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
 	}
 
 	public MappingConfigurationStrategy getMappingSyntaxStrategy() {
-		throw new UnsupportedOperationException("MappingConfigurationStrategy not supported by implementation. Defined by Grails itself.");
+		return new GrailsGrailsDomainMappingConfigurationStrategy();
 	}
 
 	public MappingFactory getMappingFactory() {
@@ -64,4 +62,38 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
 		return new GrailsDomainClassPersistentEntity(domainClass, this);
 	}
 
+    private class GrailsGrailsDomainMappingConfigurationStrategy implements MappingConfigurationStrategy {
+        public boolean isPersistentEntity(Class javaClass) {
+            return grailsApplication.isArtefactOfType(DomainClassArtefactHandler.TYPE, javaClass);
+        }
+
+        public List<PersistentProperty> getPersistentProperties(Class javaClass, MappingContext context) {
+            return null;
+        }
+
+        public List<PersistentProperty> getPersistentProperties(Class javaClass, MappingContext context, ClassMapping mapping) {
+            return null;
+        }
+
+        public PersistentProperty getIdentity(Class javaClass, MappingContext context) {
+            GrailsDomainClass domain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, javaClass.getName());
+
+            PersistentEntity persistentEntity = context.getPersistentEntity(javaClass.getName());
+            GrailsDomainClassProperty identifier = domain.getIdentifier();
+
+            return new Identity<GrailsDomainClassProperty>(persistentEntity,context, identifier.getName(),identifier.getType()) {
+                public PropertyMapping getMapping() {
+                    return null;
+                }
+            };
+        }
+
+        public IdentityMapping getDefaultIdentityMapping(ClassMapping classMapping) {
+            return null;
+        }
+
+        public Set getOwningEntities(Class javaClass, MappingContext context) {
+            return null;
+        }
+    }
 }

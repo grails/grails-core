@@ -38,6 +38,8 @@ import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.web.servlet.FlashScope
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -51,7 +53,6 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -93,6 +94,14 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
      */
     GrailsParameterMap getParams() {
         webRequest.getParams()
+    }
+
+    /**
+     * The Grails 'flash' object
+     * @return
+     */
+    FlashScope getFlash() {
+        webRequest.getFlashScope()
     }
 
 

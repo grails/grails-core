@@ -8,6 +8,18 @@ dependencies {
             project(':grails-plugin-filters'),
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-converters'),
-            project(':grails-test')
+            project(':grails-test'),
+            project(':grails-hibernate')
+
+    // Spring/Grails Datastore APIs
+    compile( 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT' ) {
+        transitive = false
+    }
+    compile( 'org.springframework:spring-datastore-core:1.0.0.BUILD-SNAPSHOT' ) {
+        transitive = false
+    }
+    compile( 'org.springframework:spring-datastore-simple:1.0.0.BUILD-SNAPSHOT' ) {
+        transitive = false
+    }
 }
 jar.appendix = 'plugin-testing'

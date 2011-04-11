@@ -223,21 +223,7 @@ class ControllersGrailsPlugin {
             GrailsDomainClass dc = domainClass
             def mc = domainClass.metaClass
 
-            if(!dc.abstract) {
-                mc.constructor = { Map map ->
-                    def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
-                    DataBindingUtils.bindObjectToDomainInstance(dc, instance, map)
-                    DataBindingUtils.assignBidirectionalAssociations(instance, map, dc)
-                    return instance
-                }
-            }
-
-            mc.setProperties = {Object o ->
-                DataBindingUtils.bindObjectToDomainInstance(dc, delegate, o)
-            }
-            mc.getProperties = {->
-                new DataBindingLazyMetaPropertyMap(delegate)
-            }
+            enhanceDomainWithBinding(ctx, dc, mc)
         }
 
         ControllersApi controllerApi = ctx.getBean("instanceControllersApi",ControllersApi)
@@ -267,6 +253,24 @@ class ControllersGrailsPlugin {
             }
         }
 
+    }
+
+    static void enhanceDomainWithBinding(ApplicationContext ctx, GrailsDomainClass dc, MetaClass mc) {
+        if (!dc.abstract) {
+            mc.constructor = { Map map ->
+                def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
+                DataBindingUtils.bindObjectToDomainInstance(dc, instance, map)
+                DataBindingUtils.assignBidirectionalAssociations(instance, map, dc)
+                return instance
+            }
+        }
+
+        mc.setProperties = {Object o ->
+            DataBindingUtils.bindObjectToDomainInstance(dc, delegate, o)
+        }
+        mc.getProperties = {->
+            new DataBindingLazyMetaPropertyMap(delegate)
+        }
     }
 
     def onChange = {event ->

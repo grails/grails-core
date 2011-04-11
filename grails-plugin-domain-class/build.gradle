@@ -2,7 +2,7 @@ dependencies {
 
     compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
 
-    // Srping Datastore APIs
+    // Spring/Grails Datastore APIs
     compile( 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT' ) {
         transitive = false
     }

@@ -33,5 +33,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injecting.test.TestMixinTransformation")
 public @interface TestMixin {
-    Class value();
+    Class[] value();
 }

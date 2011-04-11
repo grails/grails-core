@@ -51,6 +51,7 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
+        ExpandoMetaClass.enableGlobally()
         applicationContext = new GrailsWebApplicationContext()
         final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
         autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory

@@ -124,7 +124,29 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity, Init
 	}
 
 	public ClassMapping getMapping() {
-		return null;
+		return new AbstractClassMapping(this, getMappingContext()) {
+            @Override
+            public Object getMappedForm() {
+                return null;
+            }
+
+            @Override
+            public IdentityMapping getIdentifier() {
+                return new IdentityMapping() {
+                    public String[] getIdentifierName() {
+                        return new String[]{ getIdentity().getName() };
+                    }
+
+                    public ClassMapping getClassMapping() {
+                        return entity.getMapping();
+                    }
+
+                    public Object getMappedForm() {
+                        return null;
+                    }
+                };
+            }
+        };
 	}
 
 	public Object newInstance() {
