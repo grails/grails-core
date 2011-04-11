@@ -90,6 +90,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin{
      */
     def mockDomain(Class domainClassToMock, List domains = []) {
         GrailsDomainClass domain = grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
+        grailsApplication.refresh()
         PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(domainClassToMock)
 
         final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)

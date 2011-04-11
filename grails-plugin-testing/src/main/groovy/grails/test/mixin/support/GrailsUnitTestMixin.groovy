@@ -16,17 +16,19 @@
 package grails.test.mixin.support
 
 import grails.spring.BeanBuilder
+import grails.test.GrailsMock
+import grails.test.MockUtils
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
+import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -42,6 +44,7 @@ class GrailsUnitTestMixin {
     static StaticMessageSource messageSource
 
     static emcEvents = []
+    Map validationErrorsMap
 
     static void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
@@ -72,6 +75,29 @@ class GrailsUnitTestMixin {
         grailsApplication.applicationContext = applicationContext
         config = grailsApplication.config
     }
+
+    /**
+     * Mocks the given class (either a domain class or a command object)
+     * so that a "validate()" method is added. This can then be used
+     * to test the constraints on the class.
+     */
+    void mockForConstraintsTests(Class clazz, List instances = []) {
+        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances)
+    }
+
+
+    /**
+     * Creates a new Grails mock for the given class. Use it as you
+     * would use MockFor and StubFor.
+     * @param clazz The class to mock.
+     * @param loose If <code>true</code>, the method returns a loose-
+     * expectation mock, otherwise it returns a strict one. The default
+     * is a strict mock.
+     */
+    GrailsMock mockFor(Class clazz, boolean loose = false) {
+        return new GrailsMock(clazz, loose)
+    }
+
 
     @Before
     void registerMetaClassRegistryWatcher() {
