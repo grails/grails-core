@@ -38,7 +38,7 @@ class ${className}ControllerTests {
     void testCreate() {
        def model = controller.create()
 
-       assert model.${propertyname}Instance != null
+       assert model.${propertyName}Instance != null
 
 
     }
@@ -48,7 +48,7 @@ class ${className}ControllerTests {
         controller.save()
 
         assert controller.modelAndView != null
-        assert controller.modelAndView.model.${propertyname}Instance != null
+        assert controller.modelAndView.model.${propertyName}Instance != null
         assert controller.modelAndView.viewName == '/${propertyName}/create'
 
         // TODO: Populate valid properties
@@ -69,17 +69,17 @@ class ${className}ControllerTests {
         assert response.redirectedUrl == '/${propertyName}/list'
 
 
-        def ${propertyname} = new ${className}()
+        def ${propertyName} = new ${className}()
 
         // TODO: populate domain properties
 
-        assert ${propertyname}.save() != null
+        assert ${propertyName}.save() != null
 
-        params.id = ${propertyname}.id
+        params.id = ${propertyName}.id
 
         def model = controller.show()
 
-        assert model.${propertyname}Instance == ${propertyname}
+        assert model.${propertyName}Instance == ${propertyName}
     }
 
     @Test
@@ -87,20 +87,20 @@ class ${className}ControllerTests {
         controller.edit()
 
         assert flash.message != null
-        assert response.redirectedUrl == '/${propertyname}/list'
+        assert response.redirectedUrl == '/${propertyName}/list'
 
 
-        def ${propertyname} = new ${className}()
+        def ${propertyName} = new ${className}()
 
         // TODO: populate valid domain properties
 
-        assert ${propertyname}.save() != null
+        assert ${propertyName}.save() != null
 
-        params.id = ${propertyname}.id
+        params.id = ${propertyName}.id
 
         def model = controller.edit()
 
-        assert model.${propertyname}Instance == ${propertyname}
+        assert model.${propertyName}Instance == ${propertyName}
     }
 
     @Test
@@ -109,32 +109,32 @@ class ${className}ControllerTests {
         controller.update()
 
         assert flash.message != null
-        assert response.redirectedUrl == '/${propertyname}/list'
+        assert response.redirectedUrl == '/${propertyName}/list'
 
         response.reset()
 
 
-        def ${propertyname} = new ${className}()
+        def ${propertyName} = new ${className}()
 
         // TODO: populate valid domain properties
 
-        assert ${propertyname}.save() != null
+        assert ${propertyName}.save() != null
 
         // test invalid parameters in update
-        params.id = ${propertyname}.id
+        params.id = ${propertyName}.id
 
         controller.update()
 
         assert controller.modelAndView != null
-        assert controller.modelAndView.viewName == "/${propertyname}/edit"
-        assert controller.modelAndView.model.${propertyname}Instance != null
+        assert controller.modelAndView.viewName == "/${propertyName}/edit"
+        assert controller.modelAndView.model.${propertyName}Instance != null
 
-        ${propertyname}.clearErrors()
+        ${propertyName}.clearErrors()
 
         // TODO: populate valid domain form parameter
         controller.update()
 
-        assert response.redirectedUrl == "/${propertyname}/show/\$${propertyname}.id"
+        assert response.redirectedUrl == "/${propertyName}/show/\$${propertyName}.id"
         assert flash.message != null
     }
 
@@ -143,23 +143,23 @@ class ${className}ControllerTests {
         controller.delete()
 
         assert flash.message != null
-        assert response.redirectedUrl == '/${propertyname}/list'
+        assert response.redirectedUrl == '/${propertyName}/list'
 
         response.reset()
 
-        def ${propertyname} = new ${className}()
+        def ${propertyName} = new ${className}()
 
         // TODO: populate valid domain properties
-        assert ${propertyname}.save() != null
+        assert ${propertyName}.save() != null
         assert ${className}.count() == 1
 
-        params.id = ${propertyname}.id
+        params.id = ${propertyName}.id
 
         controller.delete()
 
         assert ${className}.count() == 0
-        assert ${className}.get(${propertyname}.id) == null
-        assert response.redirectedUrl == '/${propertyname}/list'
+        assert ${className}.get(${propertyName}.id) == null
+        assert response.redirectedUrl == '/${propertyName}/list'
 
 
     }

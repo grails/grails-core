@@ -186,6 +186,24 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         }
     }
 
+    void generateTest(GrailsDomainClass domainClass, String destDir) {
+        File destFile = new File("$destDir/${domainClass.packageName.replace('.','/')}/${domainClass.shortName}ControllerTests.groovy")
+        def templateText = getTemplateText("Test.groovy")
+        def t = engine.createTemplate(templateText)
+
+        def binding = [packageName: domainClass.packageName,
+                       domainClass: domainClass,
+                       className: domainClass.shortName,
+                       propertyName: domainClass.logicalPropertyName]
+
+        if(canWrite(destFile)) {
+            destFile.withWriter {
+                t.make(binding).writeTo(it)
+            }
+        }
+
+    }
+
     void generateView(GrailsDomainClass domainClass, String viewName, Writer out) {
         def templateText = getTemplateText("${viewName}.gsp")
 
