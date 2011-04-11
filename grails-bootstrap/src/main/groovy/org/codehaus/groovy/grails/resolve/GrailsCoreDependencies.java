@@ -141,6 +141,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis");
 
+                        String springDatastoreMappingVersion = "1.0.0.BUILD-SNAPSHOT";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("org.coconut.forkjoin", "jsr166y", "070108"),
                             ModuleRevisionId.newInstance("org.codehaus.gpars", "gpars", "0.9"),
@@ -160,7 +161,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-resources", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-spring", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", "1.0.0.BUILD-SNAPSHOT"),
+                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", springDatastoreMappingVersion),
                             
                             // Plugins
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-codecs", grailsVersion),
@@ -175,6 +176,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-scaffolding", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-services", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-servlets", grailsVersion),
+                            ModuleRevisionId.newInstance("org.grails", "grails-plugin-mimetypes", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-url-mappings", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-validation", grailsVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-core", "3.0.5.RELEASE"),
@@ -192,7 +194,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-tx", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-web", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", "3.0.5.RELEASE"),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-core", "1.0.0.BUILD-SNAPSHOT"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-core", springDatastoreMappingVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", "1.6.1")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
@@ -203,7 +205,9 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("junit", "junit", "4.8.1"),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-testing", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-test", grailsVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-test", "3.0.5.RELEASE")
+                            ModuleRevisionId.newInstance("org.springframework", "spring-test", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-simple", springDatastoreMappingVersion)
+
                         };
                         registerDependencies(dependencyManager, "test", testDependencies);
                         
