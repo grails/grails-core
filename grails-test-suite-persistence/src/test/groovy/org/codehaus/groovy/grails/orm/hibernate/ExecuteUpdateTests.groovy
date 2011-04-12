@@ -8,7 +8,7 @@ package org.codehaus.groovy.grails.orm.hibernate
  */
 class ExecuteUpdateTests extends AbstractGrailsHibernateTests {
 
-    private static final List<String> names = ['Fred', 'Bob', 'Ginger']
+    private static final names = ['Fred', 'Bob', 'Ginger']
 
     private ids = []
     private custClass

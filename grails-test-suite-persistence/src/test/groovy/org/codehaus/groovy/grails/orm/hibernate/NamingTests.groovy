@@ -69,7 +69,7 @@ class NamingTests6 {
         assertTrue tableNames.contains('NamingTest5_foos')
     }
 
-    private List<String> findTableNames(sql) {
+    private List findTableNames(sql) {
         def names = []
         sql.each { String ddl ->
             if (ddl.startsWith('create table ')) {
