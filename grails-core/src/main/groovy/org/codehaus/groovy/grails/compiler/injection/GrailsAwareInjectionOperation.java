@@ -130,7 +130,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                     url = grailsResourceLoader.loadGroovySource(source.getName());
                 }
 
-                if (url != null && classInjector.shouldInject(url)) {
+                if (classInjector.shouldInject(url)) {
                     try {
                         classInjector.performInjection(source, context, classNode);
                     } catch (RuntimeException e) {
