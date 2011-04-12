@@ -182,7 +182,6 @@ public class GrailsASTUtils {
                                                     );
             methodNode.addAnnotations(declaredMethod.getAnnotations());
 
-            methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             classNode.addMethod(methodNode);
         }
     }
@@ -214,7 +213,6 @@ public class GrailsASTUtils {
            }
             methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(expression, declaredMethodName, arguments)));
             ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
-            returnType.setRedirect(declaredMethod.getReturnType());
             if(METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
                      declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
             }
@@ -227,7 +225,6 @@ public class GrailsASTUtils {
                                                     );
             methodNode.addAnnotations(declaredMethod.getAnnotations());
 
-            methodNode.setGenericsTypes(declaredMethod.getGenericsTypes());
             classNode.addMethod(methodNode);
         }
     }
