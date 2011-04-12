@@ -14,7 +14,7 @@ import org.junit.Before
 @TestMixin(ControllerUnitTestMixin)
 class @artifact.name@ {
 
-    def controller
+    @artifact.testclass@ controller
     @Before
     void setUp() {
         controller = mockController(@artifact.testclass@)

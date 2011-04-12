@@ -157,32 +157,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
             for (MethodNode declaredMethod : declaredMethods) {
                 if(isStaticCandidateMethod(declaredMethod)) {
-                    Parameter[] parameterTypes = declaredMethod.getParameters();
-                    String declaredMethodName = declaredMethod.getName();
-                    if(!classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
-                        BlockStatement methodBody = new BlockStatement();
-                        ArgumentListExpression arguments = new ArgumentListExpression();
-
-                        for (Parameter parameterType : parameterTypes) {
-                            arguments.addExpression(new VariableExpression(parameterType.getName()));
-                        }
-                        methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(apiLookupMethod, declaredMethodName, arguments)));
-
-                        if(METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
-                            declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
-                        }
-
-                        MethodNode methodNode = new MethodNode(declaredMethodName,
-                                                               PUBLIC_STATIC_MODIFIER,
-                                                               declaredMethod.getReturnType(),
-                                                               parameterTypes,
-                                                               EMPTY_CLASS_ARRAY,
-                                                               methodBody
-                                                                );
-
-
-                        classNode.addMethod(methodNode);
-                    }
+                    GrailsASTUtils.addDelegateStaticMethod(apiLookupMethod, classNode, declaredMethod);
                 }
             }
 
