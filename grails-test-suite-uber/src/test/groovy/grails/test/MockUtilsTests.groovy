@@ -34,7 +34,7 @@ class MockUtilsTests extends GroovyTestCase {
 
     private @Lazy MetaTestHelper metaTestHelper = {
         MetaTestHelper result = new MetaTestHelper()
-        result.classesUnderTest = [TestDomain, TestController, TestCommand, A, B]
+        result.classesUnderTest = [TestDomain, TestController, TestCommand, A, B, ClassWithListArgBeforeValidate, ClassWithNoArgBeforeValidate, ClassWithOverloadedBeforeValidate]
         result.classesToReset = [MockHttpServletRequest, MockHttpServletResponse, BeanPropertyBindingResult, Errors]
         return result
     }()
@@ -112,7 +112,60 @@ class MockUtilsTests extends GroovyTestCase {
         }
         assertEquals 'No signature of method: grails.test.TestDomain.noSuchMethod() is applicable for argument types: () values: []', msg
     }
+    
+    void testBeforeValidateOnSave() {
+        MockUtils.mockDomain ClassWithListArgBeforeValidate
+        MockUtils.mockDomain ClassWithNoArgBeforeValidate
+        MockUtils.mockDomain ClassWithOverloadedBeforeValidate
+        
+        def obj = new ClassWithListArgBeforeValidate()
+        assertEquals 0, obj.listArgCounter
+        obj.save()
+        assertEquals 1, obj.listArgCounter
+        
+        obj = new ClassWithNoArgBeforeValidate()
+        assertEquals 0, obj.noArgCounter
+        obj.save()
+        assertEquals 1, obj.noArgCounter
+        
+        obj = new ClassWithOverloadedBeforeValidate()
+        assertEquals 0, obj.noArgCounter
+        assertEquals 0, obj.listArgCounter
+        obj.save()
+        assertEquals 1, obj.noArgCounter
+        assertEquals 0, obj.listArgCounter
+    }
 
+    void testBeforeValidateOnValidate() {
+        MockUtils.mockDomain ClassWithListArgBeforeValidate
+        MockUtils.mockDomain ClassWithNoArgBeforeValidate
+        MockUtils.mockDomain ClassWithOverloadedBeforeValidate
+        
+        def obj = new ClassWithListArgBeforeValidate()
+        assertEquals 0, obj.listArgCounter
+        obj.validate()
+        assertEquals 1, obj.listArgCounter
+        obj.validate(['name'])
+        assertEquals 2, obj.listArgCounter
+        
+        obj = new ClassWithNoArgBeforeValidate()
+        assertEquals 0, obj.noArgCounter
+        obj.validate()
+        assertEquals 1, obj.noArgCounter
+        obj.validate(['name'])
+        assertEquals 2, obj.noArgCounter
+
+        obj = new ClassWithOverloadedBeforeValidate()
+        assertEquals 0, obj.noArgCounter
+        assertEquals 0, obj.listArgCounter
+        obj.validate()
+        assertEquals 1, obj.noArgCounter
+        assertEquals 0, obj.listArgCounter
+        obj.validate(['name'])
+        assertEquals 1, obj.noArgCounter
+        assertEquals 1, obj.listArgCounter
+    }
+    
     /**
      * Tests the  {@link MockUtils#mockDomain(Class, Map, List)}  method.
      */
@@ -1789,4 +1842,38 @@ class TestDomainWithClosureEventHandlers {
 
     def beforeDelete = { beforeDeleted++ }
     def afterDelete = { afterDeleted++ }
+}
+
+class ClassWithNoArgBeforeValidate {
+    Long id
+    Long version
+    def noArgCounter = 0
+    String name
+    def beforeValidate() {
+        ++noArgCounter
+    }
+}
+
+class ClassWithListArgBeforeValidate {
+    Long id
+    Long version
+    def listArgCounter = 0
+    String name
+    def beforeValidate(List properties) {
+        ++listArgCounter
+    }
+}
+
+class ClassWithOverloadedBeforeValidate {
+    Long id
+    Long version
+    def noArgCounter = 0
+    def listArgCounter = 0
+    String name
+    def beforeValidate() {
+        ++noArgCounter
+    }
+    def beforeValidate(List properties) {
+        ++listArgCounter
+    }
 }
