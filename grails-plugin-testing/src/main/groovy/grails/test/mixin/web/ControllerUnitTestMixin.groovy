@@ -112,6 +112,9 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         }
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans {
+            instanceControllersApi(ControllersApi)
+            instanceControllerTagLibraryApi(ControllerTagLibraryApi)
+
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
 
             final classLoader = ControllerUnitTestMixin.class.getClassLoader()
@@ -169,17 +172,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
      * @param controllerClass The controller class
      * @return An instance of the controller
      */
-    def mockController(Class controllerClass) {
+    def <T> T  mockController(Class<T> controllerClass) {
         final controllerArtefact = grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         grailsApplication.refresh()
         webRequest.controllerName = controllerArtefact.logicalPropertyName
-        if(controllerClass.getAnnotation(Enhanced)) {
-            defineBeans {
-                instanceControllersApi(ControllersApi)
-                instanceControllerTagLibraryApi(ControllerTagLibraryApi)
-            }
-        }
-        else {
+        if(!controllerClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
 
             enhancer.addApi(new ControllersApi())
@@ -200,8 +197,15 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             }
         }
 
-        controllerClass.metaClass.constructor = {-> applicationContext.getBean(controllerClass.name) }
-        return applicationContext.getBean(controllerClass.name)
+        def callable = {->
+            final controller = applicationContext.getBean(controllerClass.name)
+            request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
+            controller
+        }
+        controllerClass.metaClass.constructor = callable
+
+
+        return callable.call()
     }
 
     /**

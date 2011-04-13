@@ -16,14 +16,16 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import grails.util.GrailsUtil
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.context.ApplicationContext
 
- /**
+/**
+ * Plugins that handles the configuration of Filters in a Grails application
+ *
  * @author Mike
  * @author Graeme Rocher
  *
@@ -32,6 +34,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 class FiltersGrailsPlugin {
 
     private static final TYPE = FiltersConfigArtefactHandler.TYPE
+    private static final Log log = LogFactory.getLog(FiltersGrailsPlugin)
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [controllers:version]
@@ -61,13 +64,6 @@ class FiltersGrailsPlugin {
         }
     }
 
-    def doWithDynamicMethods = { applicationContext ->
-        def mc = FilterConfig.metaClass
-        ControllersApi controllerApi = applicationContext.getBean("instanceControllersApi",ControllersApi)
-        MetaClassEnhancer enhancer = new MetaClassEnhancer()
-        enhancer.addApi controllerApi
-        enhancer.enhance mc
-    }
 
     def doWithApplicationContext = { applicationContext ->
         reloadFilters(application, applicationContext)
@@ -83,7 +79,7 @@ class FiltersGrailsPlugin {
         reloadFilters(event.application, event.ctx)
     }
 
-    private reloadFilters(GrailsApplication application, applicationContext) {
+    public static void reloadFilters(GrailsApplication application, ApplicationContext applicationContext) {
 
         log.info "reloadFilters"
         def filterConfigs = application.getArtefacts(TYPE)
@@ -182,6 +178,7 @@ class FiltersGrailsPlugin {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
             def bean = applicationContext.getBean(c.fullName)
             for (filterConfig in filterClass.getConfigs(bean)) {
+                applicationContext.autowireCapableBeanFactory.autowireBean(filterConfig)
                 def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
                 handlerAdapter.afterPropertiesSet()
                 handlers <<  handlerAdapter
