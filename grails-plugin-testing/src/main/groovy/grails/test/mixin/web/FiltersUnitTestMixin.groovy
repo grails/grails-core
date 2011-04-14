@@ -25,7 +25,22 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 
 /**
- * <p>A unit testing mixin to support the testing of Grails filter classes</p>
+ * <p>A unit testing mixin to support the testing of Grails filter classes.
+ * This mixin provides a {@link FiltersUnitTestMixin#mockFilters(Class) } method to mock a filters class.</p>
+ *
+ * <p>A typical usage pattern involves wrapping a call to controller in a call to the {@link FiltersUnitTestMixin#withFilters(Map, Closure) }
+ * method:</p>
+ *
+ * <pre>
+ *    <code>
+ * def controller = mockController(MyController)
+ *        mockFilters(MyFilters)
+ *        withFilters(action:"list") {
+ *            controller.list()
+ *        }
+ *    </code>
+ *
+ * </pre>
  *
  *
  * @since 1.4

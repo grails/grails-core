@@ -48,6 +48,35 @@ class FiltersUnitTestMixinTests {
         assert request.filterAfter == 'two [authors:[bob, fred]]'
         assert request.filterView == 'done'
     }
+
+    @Test
+    void testCancellingFilterInvocation() {
+        mockFilters(CancellingFilters)
+
+        withFilters(action:"list") {
+            controller.list()
+        }
+
+        assert request.filterBefore == "one"
+        assert request.filterAfter == null
+        assert request.filterView == null
+        assert response.redirectedUrl == '/book/list'
+
+    }
+
+    @Test
+    void testExceptionThrowingFilter() {
+        mockFilters(ExceptionThrowingFilters)
+
+        withFilters(action:"list") {
+            controller.list()
+        }
+
+        assert request.filterBefore == null
+        assert request.filterAfter == null
+        assert request.filterView == null
+        assert request.exception != null
+    }
 }
 
 class AuthorController {
@@ -74,6 +103,7 @@ class CancellingFilters {
         all(controller:"author", action:"list") {
             before = {
                 request.filterBefore = "one"
+                redirect(controller:"book", action:"list")
                 return false
             }
             after = {
@@ -94,8 +124,8 @@ class ExceptionThrowingFilters {
             after = {
                 request.filterAfter = "two ${modelAndView.model}"
             }
-            afterView = {
-                request.filterView = "done"
+            afterView = { e ->
+                request.exception = e
             }
         }
     }

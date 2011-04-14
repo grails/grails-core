@@ -175,7 +175,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     def <T> T  mockController(Class<T> controllerClass) {
         final controllerArtefact = grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         grailsApplication.refresh()
-        webRequest.controllerName = controllerArtefact.logicalPropertyName
+
         if(!controllerClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
 
@@ -199,6 +199,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
         def callable = {->
             final controller = applicationContext.getBean(controllerClass.name)
+            webRequest.controllerName = controllerArtefact.logicalPropertyName
             request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller)
             controller
         }
