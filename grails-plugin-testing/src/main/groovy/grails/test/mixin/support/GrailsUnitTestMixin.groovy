@@ -58,26 +58,29 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
-        ExpandoMetaClass.enableGlobally()
-        applicationContext = new GrailsWebApplicationContext()
-        final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
-        autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory
-        applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
+        if(applicationContext == null) {
+            ExpandoMetaClass.enableGlobally()
+            applicationContext = new GrailsWebApplicationContext()
+            final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
+            autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory
+            applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
 
 
-        defineBeans {
-            grailsProxyHandler(DefaultProxyHandler)
-            grailsApplication(DefaultGrailsApplication)
-            messageSource(StaticMessageSource)
+            defineBeans {
+                grailsProxyHandler(DefaultProxyHandler)
+                grailsApplication(DefaultGrailsApplication)
+                messageSource(StaticMessageSource)
+            }
+            applicationContext.refresh()
+            grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+            applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
+            messageSource = applicationContext.getBean("messageSource")
+            grailsApplication.initialise()
+
+            grailsApplication.applicationContext = applicationContext
+            config = grailsApplication.config
         }
-        applicationContext.refresh()
-        grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
-        applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
-        messageSource = applicationContext.getBean("messageSource")
-        grailsApplication.initialise()
 
-        grailsApplication.applicationContext = applicationContext
-        config = grailsApplication.config
     }
 
 
