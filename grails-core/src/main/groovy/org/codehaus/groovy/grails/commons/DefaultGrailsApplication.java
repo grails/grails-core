@@ -247,6 +247,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             registerArtefactHandler(urlMappingsArtefactHandler);
         }
 
+        updateArtefactHandlers();
+    }
+
+    private void updateArtefactHandlers() {
         // Cache the list as an array
         artefactHandlers = artefactHandlersByName.values().toArray(
                 new ArtefactHandler[artefactHandlersByName.size()]);
@@ -660,6 +664,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public void registerArtefactHandler(ArtefactHandler handler) {
         GrailsApplicationAwareBeanPostProcessor.processAwareInterfaces(this, handler);
         artefactHandlersByName.put(handler.getType(), handler);
+        updateArtefactHandlers();
     }
 
     public boolean hasArtefactHandler(String type) {
@@ -681,6 +686,16 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      */
     protected void initializeArtefacts(String artefactType) {
         initializeArtefacts(artefactHandlersByName.get(artefactType));
+    }
+
+    /**
+     * Clears the application returning it to an empty state. Very dangerous method, use with caution.
+     */
+    public void clear() {
+        artefactHandlersByName.clear();
+        updateArtefactHandlers();
+        artefactInfo.clear();
+        initialise();
     }
 
     /**

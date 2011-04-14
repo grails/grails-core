@@ -24,12 +24,14 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
+import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
+import junit.framework.AssertionFailedError
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -78,6 +80,12 @@ class GrailsUnitTestMixin {
         config = grailsApplication.config
     }
 
+
+    @After
+    void resetGrailsApplication() {
+        grailsApplication?.clear()
+    }
+
     /**
      * Mocks the given class (either a domain class or a command object)
      * so that a "validate()" method is added. This can then be used
@@ -101,6 +109,58 @@ class GrailsUnitTestMixin {
     }
 
 
+    /**
+     * Asserts that the given code closure fails when it is evaluated
+     *
+     * @param code
+     * @return the message of the thrown Throwable
+     */
+    String shouldFail(Closure code) {
+        boolean failed = false;
+        String result = null;
+        try {
+            code.call();
+        }
+        catch (GroovyRuntimeException gre) {
+            failed = true;
+            result = ScriptBytecodeAdapter.unwrap(gre).getMessage();
+        }
+        catch (Throwable e) {
+            failed = true;
+            result = e.getMessage();
+        }
+        if(!failed) {
+            throw new AssertionFailedError("Closure " + code + " should have failed")
+        }
+
+        return result;
+    }
+
+    /**
+     * Asserts that the given code closure fails when it is evaluated
+     * and that a particular exception is thrown.
+     *
+     * @param clazz the class of the expected exception
+     * @param code  the closure that should fail
+     * @return the message of the expected Throwable
+     */
+    String shouldFail(Class clazz, Closure code) {
+        Throwable th = null;
+        try {
+            code.call();
+        } catch (GroovyRuntimeException gre) {
+            th = ScriptBytecodeAdapter.unwrap(gre);
+        } catch (Throwable e) {
+            th = e;
+        }
+
+        if (th == null) {
+            throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName());
+        } else if (!clazz.isInstance(th)) {
+            throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName() + ", instead got Exception " + th);
+        }
+        return th.getMessage();
+    }
     /**
      * Loads the given codec, adding the "encodeAs...()" and "decode...()"
      * methods to objects.

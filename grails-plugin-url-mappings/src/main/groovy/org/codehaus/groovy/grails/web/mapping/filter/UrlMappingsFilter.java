@@ -104,16 +104,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
         checkForCompilationErrors();
 
-        List<String> excludePatterns = holder.getExcludePatterns();
-        if (excludePatterns != null && excludePatterns.size() > 0) {
-            for (String excludePattern : excludePatterns) {
-                if (uri.equals(excludePattern) ||
-                        (excludePattern.endsWith("*") &&
-                                excludePattern.substring(0,excludePattern.length() -1 ).regionMatches(0, uri, 0, excludePattern.length() - 1))) {
-                    processFilterChain(request, response, filterChain);
-                    return;
-                }
-            }
+        if(isUriExcluded(holder, uri)) {
+            processFilterChain(request, response, filterChain);
+            return;
         }
 
         if (LOG.isDebugEnabled()) {
@@ -215,6 +208,22 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             }
             processFilterChain(request, response, filterChain);
         }
+    }
+
+    public static boolean isUriExcluded(UrlMappingsHolder holder, String uri) {
+        boolean isExcluded = false;
+        List<String> excludePatterns = holder.getExcludePatterns();
+        if (excludePatterns != null && excludePatterns.size() > 0) {
+            for (String excludePattern : excludePatterns) {
+                if (uri.equals(excludePattern) ||
+                        (excludePattern.endsWith("*") &&
+                                excludePattern.substring(0,excludePattern.length() -1 ).regionMatches(0, uri, 0, excludePattern.length() - 1))) {
+                    isExcluded = true;
+                    break;
+                }
+            }
+        }
+        return isExcluded;
     }
 
     private boolean areFileExtensionsEnabled() {

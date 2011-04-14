@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.junit.After
+import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.mock.web.MockHttpServletRequest
@@ -53,6 +54,7 @@ import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -74,7 +76,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
      * The {@link MockHttpServletResponse} object
      */
     GrailsMockHttpServletResponse response
-    MockServletContext servletContext
+
+    /**
+     * The ServletContext
+     */
+    static MockServletContext servletContext
 
     /**
      * Used to define additional GSP pages or templates where the key is the path to the template and
@@ -110,6 +116,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         if(applicationContext == null) {
             initGrailsApplication()
         }
+        servletContext = new MockServletContext()
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
+
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans {
             instanceControllersApi(ControllersApi)
@@ -121,8 +131,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             if(ClassUtils.isPresent("UrlMappings", classLoader )) {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass("UrlMappings"))
             }
+            multipartResolver(CommonsMultipartResolver)
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = GrailsUnitTestMixin.grailsApplication
+                servletContext = ControllerUnitTestMixin.servletContext
             }
             convertersConfigurationInitializer(ConvertersConfigurationInitializer)
 
@@ -143,27 +155,31 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
 
+    @AfterClass
+    static void cleanupGrailsWeb() {
+        servletContext = null
+    }
+
     @Before
     void bindGrailsWebRequest() {
-        if(!applicationContext.isActive()) {
-            applicationContext.refresh()
+        if(webRequest == null) {
+            if(!applicationContext.isActive()) {
+                applicationContext.refresh()
+            }
+
+
+            applicationContext.servletContext = servletContext
+
+            ServletsGrailsPluginSupport.enhanceServletApi()
+            ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
+
+            request = new GrailsMockHttpServletRequest()
+            response = new GrailsMockHttpServletResponse()
+            webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
+            request = webRequest.getCurrentRequest()
+            response = webRequest.getCurrentResponse()
+            servletContext = webRequest.getServletContext()
         }
-
-        servletContext = new MockServletContext()
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
-        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
-
-        applicationContext.servletContext = servletContext
-
-        ServletsGrailsPluginSupport.enhanceServletApi()
-        ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
-
-        request = new GrailsMockHttpServletRequest()
-        response = new GrailsMockHttpServletResponse()
-        webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
-        request = webRequest.getCurrentRequest()
-        response = webRequest.getCurrentResponse()
-        servletContext = webRequest.getServletContext()
     }
 
     /**
@@ -173,8 +189,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
      * @return An instance of the controller
      */
     def <T> T  mockController(Class<T> controllerClass) {
+        if(webRequest == null) {
+            bindGrailsWebRequest()
+        }
         final controllerArtefact = grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
-        grailsApplication.refresh()
 
         if(!controllerClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
@@ -228,7 +246,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         webRequest = null
         request = null
         response = null
-        servletContext = null
         RequestContextHolder.setRequestAttributes(null)
     }
 }
