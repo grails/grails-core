@@ -25,7 +25,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         def controller = getMockController()
 
         controller.renderText()
-        assert response.contentAsString == "good"
+        assert response.text == "good"
     }
 
     protected getMockController() {

@@ -50,6 +50,15 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
         JSON.parse(contentAsString)
     }
 
+    /**
+     * The response body as text
+     *
+     * @return The text within the response body
+     */
+    String getText() {
+        contentAsString
+    }
+
     @Override
     void reset() {
         final webRequest = GrailsWebRequest.lookup()
