@@ -58,9 +58,8 @@ class DomainClassControllerUnitTestMixinTests {
     void testSave() {
         controller.save()
 
-        assert controller.modelAndView != null
-        assert controller.modelAndView.model.bookInstance != null
-        assert controller.modelAndView.viewName == '/book/create'
+        assert model.bookInstance != null
+        assert view == '/book/create'
 
         params.title = "The Stand"
         params.pages = "500"
@@ -68,7 +67,7 @@ class DomainClassControllerUnitTestMixinTests {
         controller.save()
 
         assert response.redirectedUrl == '/book/show/1'
-        assert controller.flash.message != null
+        assert flash.message != null
         assert Book.count() == 1
     }
 
@@ -135,9 +134,8 @@ class DomainClassControllerUnitTestMixinTests {
 
         controller.update()
 
-        assert controller.modelAndView != null
-        assert controller.modelAndView.viewName == "/book/edit"
-        assert controller.modelAndView.model.bookInstance != null
+        assert view == "/book/edit"
+        assert model.bookInstance != null
 
         book.clearErrors()
         params.title = "The Shining"

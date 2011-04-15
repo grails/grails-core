@@ -55,6 +55,7 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -89,6 +90,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     static Map<String, String> groovyPages = [:]
 
     /**
+     * Used to define additional GSP pages or templates where the key is the path to the template and
+     * the value is the contents of the template. Allows loading of templates without using the file system
+     */
+    static Map<String, String> views = groovyPages
+
+    /**
      * The {@link MockHttpSession} instance
      */
     MockHttpSession getSession() {
@@ -101,6 +108,24 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     GrailsParameterMap getParams() {
         webRequest.getParams()
     }
+
+    /**
+     * @return The model of the current controller
+     */
+    Map getModel() {
+        final controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+        return controller?.modelAndView?.model ?: [:]
+    }
+
+    /**
+     * @return The view of the current controller
+     */
+    String getView() {
+        final controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+
+        return controller?.modelAndView?.viewName ?: GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
+    }
+
 
     /**
      * The Grails 'flash' object
