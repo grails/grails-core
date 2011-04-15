@@ -51,14 +51,18 @@ public class LoggingTransformer implements AllArtefactClassInjector{
             String artefactType = path != null ? GrailsResourceUtils.getArtefactDirectory(path) : null;
 
             String logName = artefactType == null ? classNode.getName() : "grails.app." + artefactType + "." + classNode.getName();
-            FieldNode logVariable = new FieldNode(  LOG_PROPERTY,
-                                                    Modifier.STATIC | Modifier.PRIVATE,
-                                                    new ClassNode(Log.class),
-                                                    classNode,
-                                                    new MethodCallExpression(new ClassExpression(new ClassNode(LogFactory.class)), "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
-
-            classNode.addField(logVariable);
+            addLogField(classNode, logName);
         }
+    }
+
+    public static void addLogField(ClassNode classNode, String logName) {
+        FieldNode logVariable = new FieldNode(  LOG_PROPERTY,
+                                                Modifier.STATIC | Modifier.PRIVATE,
+                                                new ClassNode(Log.class),
+                                                classNode,
+                                                new MethodCallExpression(new ClassExpression(new ClassNode(LogFactory.class)), "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
+
+        classNode.addField(logVariable);
     }
 
     public void performInjection(SourceUnit source, ClassNode classNode) {

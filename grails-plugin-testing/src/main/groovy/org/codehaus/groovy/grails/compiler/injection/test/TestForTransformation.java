@@ -24,6 +24,7 @@ import grails.test.mixin.web.FiltersUnitTestMixin;
 import grails.test.mixin.web.GroovyPageUnitTestMixin;
 import grails.test.mixin.web.UrlMappingsUnitTestMixin;
 import grails.util.GrailsNameUtils;
+import groovy.util.GroovyTestCase;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
@@ -35,6 +36,7 @@ import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.codehaus.groovy.grails.compiler.logging.LoggingTransformer;
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
@@ -72,6 +74,7 @@ public class TestForTransformation extends TestMixinTransformation {
     public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
     public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
+    public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
 
     @Override
     public void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -96,6 +99,12 @@ public class TestForTransformation extends TestMixinTransformation {
         Expression value = node.getMember("value");
 
         boolean junit3Test = isJunit3Test(classNode);
+
+        // make sure the 'log' property is not the one from GroovyTestCase
+        FieldNode log = classNode.getField("log");
+        if(log == null || log.getDeclaringClass().equals(GROOVY_TEST_CASE_CLASS)) {
+            LoggingTransformer.addLogField(classNode, classNode.getName());
+        }
         boolean isSpockTest = isSpockTest(classNode);
 
         if(!isSpockTest && !junit3Test) {

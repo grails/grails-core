@@ -8,6 +8,7 @@ dependencies {
             project(':grails-plugin-filters'),
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-converters'),
+            project(':grails-plugin-logging'),
             project(':grails-test'),
             project(':grails-hibernate')
 
