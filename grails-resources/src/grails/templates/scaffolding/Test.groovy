@@ -38,9 +38,8 @@ class ${className}ControllerTests {
     void testSave() {
         controller.save()
 
-        assert controller.modelAndView != null
-        assert controller.modelAndView.model.${propertyName}Instance != null
-        assert controller.modelAndView.viewName == '/${propertyName}/create'
+        assert model.${propertyName}Instance != null
+        assert view == '/${propertyName}/create'
 
         // TODO: Populate valid properties
 
@@ -116,9 +115,8 @@ class ${className}ControllerTests {
 
         controller.update()
 
-        assert controller.modelAndView != null
-        assert controller.modelAndView.viewName == "/${propertyName}/edit"
-        assert controller.modelAndView.model.${propertyName}Instance != null
+        assert view == "/${propertyName}/edit"
+        assert model.${propertyName}Instance != null
 
         ${propertyName}.clearErrors()
 
