@@ -1,22 +1,13 @@
 <%=packageName ? "package ${packageName}\n\n" : ''%>
 
-import org.junit.Test
-import org.junit.Before
-import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
-import grails.test.mixin.TestMixin
+import org.junit.*
+import grails.test.mixin.*
 
 
-@TestMixin([ControllerUnitTestMixin, DomainClassUnitTestMixin])
+@TestFor(${className}Controller)
+@Mock(${className})
 class ${className}ControllerTests {
 
-    ${className}Controller controller
-
-    @Before
-    void setUp() {
-        controller = mockController(${className}Controller)
-        mockDomain(${className})
-    }
 
     @Test
     void testIndex() {

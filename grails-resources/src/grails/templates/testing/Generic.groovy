@@ -1,12 +1,7 @@
 @artifact.package@
-import grails.test.*
 import grails.test.mixin.*
-import grails.test.mixin.domain.*
-import grails.test.mixin.web.*
 import grails.test.mixin.support.*
-import org.junit.Test
-import org.junit.After
-import org.junit.Before
+import org.junit.*
 
 /**
  * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
