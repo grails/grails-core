@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.context.support.StaticMessageSource
 import junit.framework.AssertionFailedError
 
+
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
  *
@@ -47,7 +48,7 @@ class GrailsUnitTestMixin {
     static StaticMessageSource messageSource
 
     static emcEvents = []
-    Map validationErrorsMap
+    Map validationErrorsMap = new java.util.IdentityHashMap()
     Set loadedCodecs = []
 
     static void defineBeans(Closure callable) {
