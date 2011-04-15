@@ -10,7 +10,7 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase{
 
 
     void testRenderTemplate() {
-        groovyPages['/bar/_foo.gsp'] = 'Hello <g:createLink controller="foo" />'
+        views['/bar/_foo.gsp'] = 'Hello <g:createLink controller="foo" />'
 
 
         def result = render( template:"/bar/foo" )
@@ -20,7 +20,7 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase{
     }
 
     void testRenderView() {
-       groovyPages['/foo/bar.gsp'] = 'Hello <g:createLink controller="bar" />'
+       views['/foo/bar.gsp'] = 'Hello <g:createLink controller="bar" />'
 
 
         def result = render( view:"/foo/bar" )

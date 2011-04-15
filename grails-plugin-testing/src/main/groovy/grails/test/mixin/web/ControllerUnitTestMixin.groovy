@@ -90,6 +90,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     static Map<String, String> groovyPages = [:]
 
     /**
+     * Used to define additional GSP pages or templates where the key is the path to the template and
+     * the value is the contents of the template. Allows loading of templates without using the file system
+     */
+    static Map<String, String> views = groovyPages
+
+    /**
      * The {@link MockHttpSession} instance
      */
     MockHttpSession getSession() {
