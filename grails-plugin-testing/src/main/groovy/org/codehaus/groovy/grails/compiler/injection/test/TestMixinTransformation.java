@@ -213,7 +213,7 @@ public class TestMixinTransformation implements ASTTransformation{
         return isSubclassOf(classNode, JUNIT3_CLASS);
     }
 
-    private boolean isSpockTest(ClassNode classNode) {
+    protected boolean isSpockTest(ClassNode classNode) {
         return isSubclassOf(classNode, SPEC_CLASS);
     }
 
@@ -224,10 +224,6 @@ public class TestMixinTransformation implements ASTTransformation{
             currentSuper = currentSuper.getSuperClass();
         }
         return false;
-    }
-
-    private boolean isJunit4Test(ClassNode classNode) {
-        return !classNode.getAnnotations(new ClassNode(Test.class)).isEmpty();
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {

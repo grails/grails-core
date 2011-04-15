@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandl
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -70,6 +71,7 @@ public class TestForTransformation extends TestMixinTransformation {
     public static final String DOMAIN_TYPE = "Domain";
     public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
     public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
+    public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
 
     @Override
     public void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -94,6 +96,20 @@ public class TestForTransformation extends TestMixinTransformation {
         Expression value = node.getMember("value");
 
         boolean junit3Test = isJunit3Test(classNode);
+        boolean isSpockTest = isSpockTest(classNode);
+
+        if(!isSpockTest && !junit3Test) {
+            // assume JUnit 4
+            Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+            for (String methodName : declaredMethodsMap.keySet()) {
+                MethodNode methodNode = declaredMethodsMap.get(methodName);
+                if(isCandidateMethod(methodNode) && methodNode.getName().startsWith("test")) {
+                    if(methodNode.getAnnotations().size()==0) {
+                        methodNode.addAnnotation(TEST_ANNOTATION);
+                    }
+                }
+            }
+        }
 
 
         if(value instanceof ClassExpression) {

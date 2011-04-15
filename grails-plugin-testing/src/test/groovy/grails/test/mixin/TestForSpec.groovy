@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import org.junit.Test
 import spock.lang.Specification
 
 /**
@@ -12,12 +13,12 @@ import spock.lang.Specification
 class TestForSpec extends Specification{
 
     void "Test that imports aren't needed for junit"() {
-        // this currently is not working, can't add imports via local transforms
         when:
             def test = junit4Test
 
         then:
             test != null
+            test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test.class) != null
     }
 
     def getJunit4Test() {
@@ -31,12 +32,10 @@ class SimpleController {
 ''')
         gcl.parseClass('''
 import grails.test.mixin.*
-import org.junit.*
 
 @TestFor(SimpleController)
 class ControllerTestForTests {
 
-    @Test
     void testIndex() {
         controller.index()
         assert response.text == 'Hello'
