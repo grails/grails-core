@@ -47,7 +47,7 @@ class GrailsUnitTestMixin {
     static ConfigObject config
     static StaticMessageSource messageSource
 
-    static emcEvents = []
+    private static List emcEvents = []
     Map validationErrorsMap = new java.util.IdentityHashMap()
     Set loadedCodecs = []
 
@@ -187,18 +187,21 @@ class GrailsUnitTestMixin {
     }
 
 
+    private metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
+        GrailsUnitTestMixin.emcEvents << event
+    } as MetaClassRegistryChangeEventListener
+
     @Before
     void registerMetaClassRegistryWatcher() {
-        def listener = { MetaClassRegistryChangeEvent event ->
-            GrailsUnitTestMixin.emcEvents << event
-        } as MetaClassRegistryChangeEventListener
 
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener listener
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
     }
 
     @After
     void cleanupModifiedMetaClasses() {
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener( metaClassRegistryListener )
         emcEvents*.clazz.each { GroovySystem.metaClassRegistry.removeMetaClass(it)}
+        emcEvents.clear()
     }
 
     @AfterClass
