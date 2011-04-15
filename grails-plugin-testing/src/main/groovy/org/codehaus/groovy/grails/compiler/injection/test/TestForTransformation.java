@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
+import grails.test.mixin.services.ServiceUnitTestMixin;
 import grails.test.mixin.web.ControllerUnitTestMixin;
 import grails.test.mixin.web.FiltersUnitTestMixin;
 import grails.test.mixin.web.GroovyPageUnitTestMixin;
@@ -30,6 +31,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
@@ -63,6 +65,7 @@ public class TestForTransformation extends TestMixinTransformation {
         put(TagLibArtefactHandler.TYPE, GroovyPageUnitTestMixin.class);
         put(FiltersConfigArtefactHandler.getTYPE().toString(), FiltersUnitTestMixin.class);
         put(UrlMappingsArtefactHandler.TYPE, UrlMappingsUnitTestMixin.class);
+        put(ServiceArtefactHandler.TYPE, ServiceUnitTestMixin.class);
     }};
     public static final String DOMAIN_TYPE = "Domain";
     public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
