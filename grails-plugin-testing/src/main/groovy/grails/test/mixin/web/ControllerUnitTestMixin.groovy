@@ -55,6 +55,7 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -101,6 +102,24 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     GrailsParameterMap getParams() {
         webRequest.getParams()
     }
+
+    /**
+     * @return The model of the current controller
+     */
+    Map getModel() {
+        final controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+        return controller?.modelAndView?.model ?: [:]
+    }
+
+    /**
+     * @return The view of the current controller
+     */
+    String getView() {
+        final controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+
+        return controller?.modelAndView?.viewName ?: GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
+    }
+
 
     /**
      * The Grails 'flash' object

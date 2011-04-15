@@ -47,7 +47,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         controller.renderView()
 
-        assert "/test/foo" == controller.modelAndView.viewName
+        assert "/test/foo" == view
     }
 
     void testRenderXml() {
