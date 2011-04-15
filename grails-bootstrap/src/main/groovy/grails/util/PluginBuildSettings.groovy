@@ -68,7 +68,7 @@ class PluginBuildSettings {
 
     BuildSettings buildSettings
     def pluginManager
-    private String pluginDirPath
+    String pluginDirPath
     private Map cache = new ConcurrentHashMap()
     private Map pluginToDirNameMap = new ConcurrentHashMap()
     private Map pluginMetaDataMap = new ConcurrentHashMap()

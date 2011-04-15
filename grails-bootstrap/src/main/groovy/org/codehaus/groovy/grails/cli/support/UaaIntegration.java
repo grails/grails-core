@@ -99,7 +99,7 @@ public class UaaIntegration {
 
                         final GPathResult pluginList = centralRepo.getPluginList(new File(settings.getGrailsWorkDir() + "/plugin-list-" + centralRepo.getName() + ".xml"));
 
-                        final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos();
+                        final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos(pluginSettings.getPluginDirPath());
                         for (GrailsPluginInfo pluginInfo : pluginInfos) {
                             boolean registerUsage = false;
 

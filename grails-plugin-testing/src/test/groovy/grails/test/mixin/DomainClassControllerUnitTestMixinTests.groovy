@@ -1,20 +1,17 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
-import grails.test.mixin.domain.DomainClassUnitTestMixin
-import grails.test.mixin.web.ControllerUnitTestMixin
 import org.junit.Test
 
  /**
  * A Junit 4 test that tests a scaffolded controllers logic using the new mixins
  */
-@TestMixin([ControllerUnitTestMixin, DomainClassUnitTestMixin])
+@TestFor(BookController)
+@Mock(Book)
 class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testIndex() {
-        def controller = mockController(BookController)
-
         controller.index()
 
         assert "/book/list" == response.redirectedUrl
@@ -22,9 +19,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testList() {
-        def controller = mockController(BookController)
-        mockDomain(Book)
-
         def model = controller.list()
 
         assert model.bookInstanceList.size() == 0
@@ -50,9 +44,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testCreate() {
-       def controller = mockController(BookController)
-       mockDomain(Book)
-
        params.title = "The Stand"
        params.pages = "500"
 
@@ -65,9 +56,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testSave() {
-        def controller = mockController(BookController)
-        mockDomain(Book)
-
         controller.save()
 
         assert controller.modelAndView != null
@@ -87,9 +75,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testShow() {
-        def controller = mockController(BookController)
-        mockDomain(Book)
-
         controller.show()
 
         assert flash.message != null
@@ -111,9 +96,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testEdit() {
-        def controller = mockController(BookController)
-        mockDomain(Book)
-
         controller.edit()
 
         assert flash.message != null
@@ -135,9 +117,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testUpdate() {
-        def controller = mockController(BookController)
-        def book = mockDomain(Book)
-
         controller.update()
 
         assert flash.message != null
@@ -145,6 +124,7 @@ class DomainClassControllerUnitTestMixinTests {
 
         response.reset()
 
+        def book = new Book()
         book.title = "The Stand"
         book.pages = 1000
         assert book.save() != null
@@ -173,9 +153,6 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testDelete() {
-        def controller = mockController(BookController)
-        def book = mockDomain(Book)
-
         controller.delete()
 
         assert flash.message != null
@@ -183,6 +160,7 @@ class DomainClassControllerUnitTestMixinTests {
 
         response.reset()
 
+        def book = new Book()
         book.title = "The Stand"
         book.pages = 1000
         assert book.save() != null

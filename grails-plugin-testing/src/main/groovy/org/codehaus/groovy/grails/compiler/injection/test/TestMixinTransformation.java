@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.compiler.injecting.test;
+package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.TestMixin;
 import grails.util.GrailsNameUtils;
@@ -75,6 +75,14 @@ public class TestMixinTransformation implements ASTTransformation{
                     MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
+        ListExpression values = getListOfClasses(node);
+
+        weaveMixinsIntoClass(classNode, values);
+
+
+    }
+
+    protected ListExpression getListOfClasses(AnnotationNode node) {
         Expression value = node.getMember("value");
         ListExpression values = null;
         if(value instanceof ListExpression) {
@@ -84,7 +92,10 @@ public class TestMixinTransformation implements ASTTransformation{
             values = new ListExpression();
             values.addExpression(value);
         }
+        return values;
+    }
 
+    public void weaveMixinsIntoClass(ClassNode classNode, ListExpression values) {
         if(values != null) {
             boolean isJunit3 = isJunit3Test(classNode);
             List<MethodNode> beforeMethods = null;
@@ -113,7 +124,7 @@ public class TestMixinTransformation implements ASTTransformation{
                         for (MethodNode mixinMethod : mixinMethods) {
                             if(isCandidateMethod(mixinMethod) && !hasDeclaredMethod(classNode, mixinMethod)) {
                                 if(mixinMethod.isStatic()) {
-                                    GrailsASTUtils.addDelegateStaticMethod(classNode,mixinMethod);
+                                    GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
                                 }
                                 else {
                                     GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
@@ -147,8 +158,6 @@ public class TestMixinTransformation implements ASTTransformation{
                 addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
             }
         }
-
-
     }
 
     private boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
@@ -159,17 +168,21 @@ public class TestMixinTransformation implements ASTTransformation{
         return !mixinMethod.getAnnotations(new ClassNode(beforeClass)).isEmpty();
     }
 
-    private void addMethodCallsToMethod(ClassNode classNode, String name, List<MethodNode> methods) {
+    protected void addMethodCallsToMethod(ClassNode classNode, String name, List<MethodNode> methods) {
         if(methods != null && !methods.isEmpty()) {
-            MethodNode setupMethod = classNode.getMethod(name, GrailsArtefactClassInjector.ZERO_PARAMETERS);
-            BlockStatement setupMethodBody = getOrCreateMethodBody(classNode, setupMethod, name);
+            BlockStatement setupMethodBody = getOrCreateNoArgsMethodBody(classNode, name);
             for (MethodNode beforeMethod : methods) {
                 setupMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
             }
         }
     }
 
-    private BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
+    protected BlockStatement getOrCreateNoArgsMethodBody(ClassNode classNode, String name) {
+        MethodNode setupMethod = classNode.getMethod(name, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        return getOrCreateMethodBody(classNode, setupMethod, name);
+    }
+
+    protected BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
         BlockStatement methodBody;
         if(setupMethod.getDeclaringClass().getName().equals(TestCase.class.getName())) {
             methodBody = new BlockStatement();
@@ -196,7 +209,7 @@ public class TestMixinTransformation implements ASTTransformation{
         return methodBody;
     }
 
-    private boolean isJunit3Test(ClassNode classNode) {
+    protected boolean isJunit3Test(ClassNode classNode) {
         return isSubclassOf(classNode, JUNIT3_CLASS);
     }
 

@@ -36,7 +36,7 @@ import static junit.framework.Assert.assertNotNull
  *
  * @since 1.4
  */
-class UrlMappingsTestMixin extends ControllerUnitTestMixin{
+class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
 
     private assertionKeys = ["controller", "action", "view"]
 

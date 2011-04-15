@@ -183,6 +183,16 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     }
 
     /**
+     * Signifies that the given controller class is the class under test
+     *
+     * @param controllerClass The controller class
+     * @return an instance of the controller
+     */
+    def <T> T  testFor(Class<T> controllerClass) {
+        return mockController(controllerClass)
+    }
+
+    /**
      * Mocks a Grails controller class, providing the needed behavior and defining it in the ApplicationContext
      *
      * @param controllerClass The controller class

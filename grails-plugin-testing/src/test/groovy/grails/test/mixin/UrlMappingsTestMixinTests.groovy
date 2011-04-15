@@ -1,6 +1,6 @@
 package grails.test.mixin
 
-import grails.test.mixin.web.UrlMappingsTestMixin
+import grails.test.mixin.web.UrlMappingsUnitTestMixin
 import junit.framework.AssertionFailedError
 
 import org.junit.Test
@@ -9,7 +9,7 @@ import junit.framework.ComparisonFailure
 /**
  * Tests for the UrlMappingsTestMixin class
  */
-@TestMixin(UrlMappingsTestMixin)
+@TestMixin(UrlMappingsUnitTestMixin)
 class UrlMappingsTestMixinTests {
 
 

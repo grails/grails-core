@@ -29,12 +29,13 @@ import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.grails.datastore.gorm.GormEnhancer
 import org.junit.After
 import org.junit.Before
+import org.junit.BeforeClass
 import org.springframework.datastore.mapping.core.Datastore
 import org.springframework.datastore.mapping.model.PersistentEntity
 import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
 
- /**
+/**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support
  * to a users test classes. Can be used in combination with {@link grails.test.mixin.web.ControllerUnitTestMixin}
  * to fully test controller interaction with domains without needing a database</p>
@@ -61,24 +62,31 @@ import org.springframework.validation.Validator
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin{
 
-    Datastore simpleDatastore
+    static Datastore simpleDatastore
 
-    @Before
-    void initializeDatastoreImplementation() {
+    @BeforeClass
+    static void initializeDatastoreImplementation() {
+        if(applicationContext == null) {
+            super.initGrailsApplication()
+        }
         simpleDatastore = new SimpleMapDatastore(applicationContext)
         defineBeans {
            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
                  defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
             }
         }
-        simpleDatastore.connect()
+
     }
 
+    @Before
+    void connectDatastore() {
+        simpleDatastore.connect()
+    }
 
     @After
     void shutdownDatastoreImplementation() {
         simpleDatastore?.currentSession?.disconnect()
-        simpleDatastore = null
+        simpleDatastore = new SimpleMapDatastore(applicationContext)
     }
 
     /**
