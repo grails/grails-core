@@ -265,6 +265,25 @@ class GrailsMockTests extends GroovyTestCase {
 
         assertEquals "brussels-5", testClass.testInterfaceCollaborator()
     }
+
+    /**
+     * Tests that passing a mocked object to a mocked method works.
+     */
+    void testMockToMock() {
+        def mockControl1 = new GrailsMock(GrailsMockCollaborator)
+        mockControl1.demand.collabMethod(1) {GrailsMockCollaborator2 x ->}
+
+        def mockControl2 = new GrailsMock(GrailsMockCollaborator2)
+        mockControl2.demand.theMethod(1) {-> 'mocked' }
+
+        def testClass = new GrailsMockTestClass()
+        testClass.collaborator = mockControl1.createMock()
+
+        testClass.testMockPassedToMock(mockControl2.createMock())
+
+        mockControl1.verify()
+        mockControl2.verify()
+    }
 }
 
 class GrailsMockTestClass {
@@ -312,6 +331,11 @@ class GrailsMockTestClass {
          collaborator.multiMethod("Test string"),
          collaborator.multiMethod("Test string", [arg1: 1, arg2: 2])]
     }
+
+    void testMockPassedToMock(GrailsMockCollaborator2 collaborator2) {
+        collaborator2.theMethod()
+        collaborator.collabMethod(collaborator2)
+    }
 }
 
 class GrailsMockCollaborator {
@@ -324,7 +348,14 @@ class GrailsMockCollaborator {
     String multiMethod(String str, Map map) { "static" }
 
     String someMethod(String str1, Object[] args, String str2) { 'static' }
+
+    void collabMethod(GrailsMockCollaborator2 collab) { }
 }
+
+class GrailsMockCollaborator2 {
+    String theMethod() { 'static' }
+}
+
 
 interface GrailsMockInterface {
     String testMethod(String name, int quantity)
