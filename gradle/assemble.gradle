@@ -16,6 +16,7 @@ dependencyCache = {
 				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
 				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
 				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
+				project.configurations.findByName("agent")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)				
 			}
 			includes = dependencyIncludes as List
           exclude "org.grails/**"
