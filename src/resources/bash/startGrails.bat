@@ -93,9 +93,23 @@ if "%CURR_ARG:~0,2%" == "-D" (
 			shift	
 			goto win9xME_args_slurp
 		) else (
-			set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
-			shift
-			goto win9xME_args_slurp
+			if "x%~1" == "x-agent" (
+				set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+				shift
+				shift
+				goto win9xME_args_slurp
+			) else (
+				if "x%~1" == "x-run-app" (
+					set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+					shift
+					shift
+					goto win9xME_args_slurp
+				) else (
+					set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
+					shift
+					goto win9xME_args_slurp
+				)
+			)
 		)
 	)
 )
@@ -125,7 +139,7 @@ set JAVA_EXE=%JAVA_HOME%\bin\java.exe
 set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 
 if "%JAVA_OPTS%" == "" set JAVA_OPTS=-Xmx512m -XX:MaxPermSize=96m
-set JAVA_OPTS=%JAVA_OPTS%  -javaagent:%GRAILS_HOME%\bin\springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+set JAVA_OPTS=%JAVA_OPTS%  %AGENT%"
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name="%PROGNAME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.home="%GRAILS_HOME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version="@grails.version@"

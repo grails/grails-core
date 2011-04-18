@@ -55,6 +55,10 @@ if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
   shift 2
 fi
 
+if [ "$1" = "-agent" ] || [ "$1" = "run-app" ]; then
+  AGENT="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+fi
+
 ARGUMENTS=$@
 
 # Attempt to set JAVA_HOME if it's not already set
@@ -234,7 +238,7 @@ startGrails() {
      else
 	GRAILS_OPTS="-server -Xmx512M -XX:MaxPermSize=192m -Dfile.encoding=UTF-8"
   fi
-  JAVA_OPTS="$GRAILS_OPTS $JAVA_OPTS -javaagent:$GRAILS_HOME/bin/springloaded-core-0.7.2.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+  JAVA_OPTS="$GRAILS_OPTS $JAVA_OPTS $AGENT"
   # Start the Profiler or the JVM
   if $useprofiler; then
       runProfiler
