@@ -166,12 +166,6 @@ class ControllersGrailsPlugin {
                 'filter-name'('grailsWebRequest')
                 'filter-class'(GrailsWebRequestFilter.name)
             }
-            if (grailsEnv == "development") {
-                filter {
-                    'filter-name'('reloadFilter')
-                    'filter-class'(GrailsReloadServletFilter.name)
-                }
-            }
         }
 
         def grailsWebRequestFilter = {
@@ -186,20 +180,6 @@ class ControllersGrailsPlugin {
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
                 'dispatcher'("REQUEST")
-            }
-            if (grailsEnv == "development") {
-                // Install the reload filter, which allows you to make
-                // changes to artefacts and views while the app is running.
-                //
-                // All URLs are filtered, including any images, JS, CSS,
-                // etc. Fortunately the reload filter now has much less
-                // of an impact on response times.
-                'filter-mapping' {
-                    'filter-name'('reloadFilter')
-                    'url-pattern'("/*")
-                    'dispatcher'("FORWARD")
-                    'dispatcher'("REQUEST")
-                }
             }
         }
 
