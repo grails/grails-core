@@ -16,12 +16,15 @@
 
 package org.codehaus.groovy.grails.compiler
 
+import grails.util.BuildSettings
+import grails.util.GrailsNameUtils
+import grails.util.PluginBuildSettings
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.Resource
 
- /**
- *
+/**
  * Encapsulates the compilation logic required for a Grails application
  *
  * @author Graeme Rocher
@@ -46,12 +49,32 @@ class GrailsProjectCompiler {
     String srcdir
     String encoding = "UTF-8"
     Resource[] pluginSourceDirectories
+    File targetClassesDir
+    File targetPluginClassesDir
 
+    def commonClasspath
+    def compileClasspath
+    def testClasspath
+    def runtimeClasspath
 
-    GrailsProjectCompiler(String basedir, String srcdir, Resource[] pluginSrcDirectories, CompilerConfiguration config, ClassLoader rootLoader = Thread.currentThread().getContextClassLoader()) {
-        this.basedir = basedir
-        this.srcdir = srcdir
-        this.pluginSourceDirectories = pluginSrcDirectories
+    BuildSettings buildSettings
+    PluginBuildSettings pluginSettings
+
+    /**
+     * Constructs a new GrailsProjectCompiler instance for the given PluginBuildSettings and optional classloader
+     *
+     * @param pluginBuildSettings The PluginBuildSettings
+     * @param rootLoader The ClassLoader
+
+     */
+    GrailsProjectCompiler(PluginBuildSettings pluginBuildSettings, ClassLoader rootLoader = Thread.currentThread().getContextClassLoader()) {
+        pluginSettings = pluginBuildSettings
+        buildSettings = pluginBuildSettings.buildSettings
+        this.targetClassesDir = buildSettings.classesDir
+        this.targetPluginClassesDir = buildSettings.pluginClassesDir
+        this.basedir = buildSettings.baseDir.absolutePath
+        this.srcdir = buildSettings.sourceDir.absolutePath
+        this.pluginSourceDirectories = pluginBuildSettings.pluginSourceFiles
         this.classLoader = rootLoader
         this.pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
         this.config = config
@@ -68,10 +91,18 @@ class GrailsProjectCompiler {
                 srcDirectories << "${dir}"
             }
         }
+
+        initializeAntClasspaths()
     }
 
+
+
     AntBuilder getAnt() {
-        if(this.ant == null) ant = new AntBuilder()
+        if(this.ant == null) {
+           ant = new AntBuilder()
+           ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
+           ant.path(id: "grails.compile.classpath", compileClasspath)
+        }
         return ant
     }
 
@@ -80,11 +111,103 @@ class GrailsProjectCompiler {
     }
 
     /**
+     * Configures the Grails classpath, should be called prior to any call to {@link #compile(Object) }
+     */
+    void configureClasspath() {
+
+        ant.path(id: "grails.compile.classpath", compileClasspath)
+        ant.path(id: "grails.test.classpath", testClasspath)
+        ant.path(id: "grails.runtime.classpath", runtimeClasspath)
+
+        def grailsDir = new File("${basedir}/grails-app").listFiles()
+        StringBuffer cpath = new StringBuffer("")
+
+        def jarFiles = getJarFiles()
+
+        for (dir in grailsDir) {
+            cpath << dir.absolutePath << File.pathSeparator
+            // Adding the grails-app folders to the root loader causes re-load issues as
+            // root loader returns old class before the grails GCL attempts to recompile it
+            // rootLoader?.addURL(dir.URL)
+        }
+        cpath << targetClassesDir.absolutePath<< File.pathSeparator
+        cpath << targetPluginClassesDir.absolutePath << File.pathSeparator
+
+        cpath << "${basedir}/web-app/WEB-INF" << File.pathSeparator
+        for (File jar in jarFiles) {
+            cpath << jar.absolutePath << File.pathSeparator
+        }
+
+        // We need to set up this configuration so that we can compile the
+        // plugin descriptors, which lurk in the root of the plugin's project directory.
+        config = new CompilerConfiguration()
+        config.setClasspath(cpath.toString())
+        config.sourceEncoding = "UTF-8"
+
+        // The resources directory must be created before it is added to
+        // the root loader, otherwise it is quietly ignored. In other words,
+        // if the directory is created after its path has been added to the
+        // root loader, it will not be included in the classpath.
+        def resourcesDir = new File(buildSettings.resourcesDir.path)
+        if (!resourcesDir.exists()) {
+            resourcesDir.mkdirs()
+        }
+        classLoader?.addURL(resourcesDir.toURI().toURL())
+    }
+
+    /**
+     * Obtains all JAR files for the project that aren't declared via BuildConfig
+     *
+     * @return A list of JAR files
+     */
+    List<File> getJarFiles() {
+        final libDirPath = "${basedir}/lib"
+        def jarFiles = listJarFiles(libDirPath)
+        def pluginJars = pluginSettings.pluginJarFiles
+
+        for (pluginJar in pluginJars) {
+            boolean matches = jarFiles.any {it.name == pluginJar.file.name}
+            if (!matches) jarFiles.add(pluginJar.file)
+        }
+
+        def userJars = listJarFiles("${buildSettings.userHome}/.grails/lib")
+        for (userJar in userJars) {
+            jarFiles.add(userJar)
+        }
+
+        jarFiles.addAll(getExtraDependencies())
+
+        jarFiles
+    }
+
+    private List<File> listJarFiles(String libDirPath) {
+        return new File(libDirPath).listFiles({ File f -> f.name.endsWith(".jar")} as FileFilter)?.toList() ?: []
+    }
+
+    /**
+     * Extra dependencies defined by the 'grails.compiler.dependencies' config option in BuildConfig
+     *
+     * @return
+     */
+    List<File> getExtraDependencies() {
+        def jarFiles =[]
+        final buildConfig = buildSettings.config
+        if (buildConfig?.grails?.compiler?.dependencies) {
+            def extraDeps = ant.fileScanner(buildConfig.grails.compiler.dependencies)
+            for (jar in extraDeps) {
+                jarFiles << jar
+            }
+        }
+        jarFiles
+    }
+
+
+    /**
      * Compiles project sources to the given target directory
      *
      * @param targetDir The target directory to compile to
      */
-    void compile(targetDir) {
+    void compile(targetDir = targetClassesDir ) {
 
         def compilerPaths = { String classpathId ->
             for(srcPath in srcDirectories) {
@@ -115,7 +238,7 @@ class GrailsProjectCompiler {
      *
      * @param targetDir The target directory to compile to
      */
-    void compilePlugins(targetDir) {
+    void compilePlugins(targetDir = targetPluginClassesDir) {
         def classesDirPath = targetDir
         ant.mkdir(dir:classesDirPath)
 
@@ -151,6 +274,49 @@ class GrailsProjectCompiler {
     }
 
     /**
+     * Compiles GSP pages for the given application name to the (optional) target directory
+     *
+     * @param grailsAppName The app name
+     * @param classesDir The optional classes dir, defaults to one provided by PluginBuildSettings in constructor
+     */
+    void compileGroovyPages(String grailsAppName, classesDir = targetClassesDir) {
+        ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
+        // compile gsps in grails-app/views directory
+        File gspTmpDir = new File(buildSettings.projectWorkDir, "gspcompile")
+        ant.gspc(destdir:classesDir,
+                 srcdir:"${basedir}/grails-app/views",
+                 packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName),
+                 serverpath:"/WEB-INF/grails-app/views/",
+                 classpathref:"grails.compile.classpath",
+                 tmpdir:gspTmpDir)
+
+        // compile gsps in web-app directory
+        ant.gspc(destdir:classesDir,
+                 srcdir:"${basedir}/web-app",
+                 packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
+                 serverpath:"/",
+                 classpathref:"grails.compile.classpath",
+                 tmpdir:gspTmpDir)
+
+        // compile views in plugins
+        def pluginInfos = pluginSettings.supportedPluginInfos
+        if (pluginInfos) {
+            for (GrailsPluginInfo info in pluginInfos) {
+                File pluginViews = new File(info.pluginDir.file, "grails-app/views")
+                if (pluginViews.exists()) {
+                    def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"
+                    ant.gspc(destdir:classesDir,
+                             srcdir:pluginViews,
+                             packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(info.name),
+                             serverpath:viewPrefix,
+                             classpathref:"grails.compile.classpath",
+                             tmpdir:gspTmpDir)
+                }
+            }
+        }
+    }
+
+    /**
      * Compiles a given plugin descriptor file - *GrailsPlugin.groovy.
      */
     protected compilePluginDescriptor(File descriptor, File classesDir) {
@@ -181,7 +347,7 @@ class GrailsProjectCompiler {
             }
 
             void onNew(File file) {
-                sleep(5000) // sleep for a little while to wait for the final to become valid
+                sleep(5000) // sleep for a little while to wait for the file to become valid
                 compilePlugins(pluginClassesDir)
                 compile(classesDir)
             }
@@ -189,5 +355,70 @@ class GrailsProjectCompiler {
         })
         watcher.start()
         return watcher
+    }
+
+    private initializeAntClasspaths() {
+
+        commonClasspath = {
+            def grailsDir = new File("${basedir}/grails-app").listFiles()
+            for (File file in grailsDir) {
+                pathelement(location: "${file.absolutePath}")
+            }
+
+            def pluginLibDirs = pluginSettings.pluginLibDirectories.findAll { it.exists() }
+            for (pluginLib in pluginLibDirs) {
+                fileset(dir: pluginLib.file.absolutePath)
+            }
+        }
+
+        compileClasspath = {
+            commonClasspath.delegate = delegate
+            commonClasspath.call()
+
+            def dependencies = buildSettings.compileDependencies
+            if (dependencies) {
+                for (File f in dependencies) {
+                    if (f) {
+                        pathelement(location: f.absolutePath)
+                    }
+                }
+            }
+            pathelement(location: "${targetPluginClassesDir.absolutePath}")
+        }
+
+        testClasspath = {
+            commonClasspath.delegate = delegate
+            commonClasspath.call()
+
+            def dependencies = buildSettings.testDependencies
+            if (dependencies) {
+
+                for (File f in dependencies) {
+                    if (f) {
+                        pathelement(location: f.absolutePath)
+                    }
+                }
+            }
+
+            pathelement(location: "${targetClassesDir.absolutePath}")
+            pathelement(location: "${targetPluginClassesDir.absolutePath}")
+        }
+
+        runtimeClasspath = {
+            commonClasspath.delegate = delegate
+            commonClasspath.call()
+
+            def dependencies = buildSettings.runtimeDependencies
+            if (dependencies) {
+                for (File f in dependencies) {
+                    if (f) {
+                        pathelement(location: f.absolutePath)
+                    }
+                }
+            }
+
+            pathelement(location: "${targetPluginClassesDir.absolutePath}")
+            pathelement(location: "${targetClassesDir.absolutePath}")
+        }
     }
 }

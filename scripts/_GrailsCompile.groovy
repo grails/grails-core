@@ -33,17 +33,8 @@ includeTargets << grailsScript("_GrailsArgParsing")
 ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
 ant.path(id: "grails.compile.classpath", compileClasspath)
 
-projectCompiler = null
-
 target(setCompilerSettings: "Updates the compile build settings based on args") {
     depends(parseArguments)
-
-	projectCompiler = new GrailsProjectCompiler(basedir,
-												grailsSettings.sourceDir.absolutePath,
-												pluginSettings.pluginSourceFiles,
-												compConfig,
-												classLoader)
-	projectCompiler.ant = ant
     if (argsMap.containsKey('verboseCompile')) {
         grailsSettings.verboseCompile = argsMap.verboseCompile as boolean
 		projectCompiler.verbose = grailsSettings.verboseCompile
@@ -82,42 +73,6 @@ target(compilepackage : "Compile & Compile GSP files") {
     depends(compile, compilegsp)
 }
 
-
-
 target(compilegsp : "Compile GSP files") {
-	ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
-    // compile gsps in grails-app/views directory
-    File gspTmpDir = new File(grailsSettings.projectWorkDir, "gspcompile")
-    ant.gspc(destdir:classesDir,
-             srcdir:"${basedir}/grails-app/views",
-             packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName),
-             serverpath:"/WEB-INF/grails-app/views/",
-             classpathref:"grails.compile.classpath",
-             tmpdir:gspTmpDir)
-
-    // compile gsps in web-app directory
-    ant.gspc(destdir:classesDir,
-             srcdir:"${basedir}/web-app",
-             packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
-             serverpath:"/",
-             classpathref:"grails.compile.classpath",
-             tmpdir:gspTmpDir)
-
-    // compile views in plugins
-    loadPlugins()
-    def pluginInfos = pluginSettings.supportedPluginInfos
-    if (pluginInfos) {
-        for (GrailsPluginInfo info in pluginInfos) {
-            File pluginViews = new File(info.pluginDir.file, "grails-app/views")
-            if (pluginViews.exists()) {
-                def viewPrefix="/WEB-INF/plugins/${info.name}-${info.version}/grails-app/views/"
-                ant.gspc(destdir:classesDir,
-                         srcdir:pluginViews,
-                         packagename:GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(info.name),
-                         serverpath:viewPrefix,
-                         classpathref:"grails.compile.classpath",
-                         tmpdir:gspTmpDir)
-            }
-        }
-    }
+	projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
 }
