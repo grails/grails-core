@@ -59,6 +59,7 @@ class GrailsProjectCompiler {
 
     BuildSettings buildSettings
     PluginBuildSettings pluginSettings
+    List<List> compilerExtensions = ['groovy', 'java']
 
     /**
      * Constructs a new GrailsProjectCompiler instance for the given PluginBuildSettings and optional classloader
@@ -342,23 +343,18 @@ class GrailsProjectCompiler {
         DirectoryWatcher watcher = new DirectoryWatcher(allDirectories as File[], ['.groovy', '.java'] as String[] )
         watcher.addListener(new DirectoryWatcher.FileChangeListener() {
             void onChange(File file) {
-                try {
-                    compilePlugins(pluginClassesDir)
-                    compile(classesDir)
-                }
-                catch(e) {
-                    println e.message
-                }
+                triggerRecompile(file)
             }
 
             void onNew(File file) {
-                try {
-                    sleep(5000) // sleep for a little while to wait for the final to become valid
+                sleep(5000) // sleep for a little while to wait for the file to become valid
+                triggerRecompile(file)
+            }
+
+            def triggerRecompile(File file) {
+                if(compilerExtensions.any { file.name.endsWith(it)}) {
                     compilePlugins(pluginClassesDir)
                     compile(classesDir)
-                }
-                catch(e) {
-                    println e.message
                 }
             }
 

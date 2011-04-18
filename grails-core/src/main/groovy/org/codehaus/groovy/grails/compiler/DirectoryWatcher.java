@@ -48,50 +48,70 @@ public class DirectoryWatcher extends Thread {
         setDaemon(true);
     }
 
+    /**
+     * Sets whether to stop the directory watcher
+     *
+     * @param active False if you want to stop watching
+     */
     public void setActive(boolean active) {
         this.active = active;
     }
 
+    /**
+     * Sets the amount of time to sleep between checks
+     *
+     * @param sleepTime The sleep time
+     */
     public void setSleepTime(long sleepTime) {
         this.sleepTime = sleepTime;
     }
 
-    private void initializeLastModifiedCache(File[] directories, final String[] extensions) {
-
-        for (File directory : directories) {
-            cacheFilesForDirectory(directory, extensions, false);
-        }
-
+    /**
+     * Adds a file listener that can react to change events
+     *
+     * @param listener The file listener
+     */
+    public void addListener(FileChangeListener listener ) {
+        this.listeners.add(listener);
     }
 
-    private void cacheFilesForDirectory(File directory, String[] extensions, boolean fireEvent) {
-        directoryWatch.put(directory, directory.lastModified());
-        File[] files = directory.listFiles();
-        for (File file : files) {
-            if(isValidFileToMonitor(file.getName(), extensions)) {
-                if(!lastModifiedMap.containsKey(file) && fireEvent) {
-                    fireOnNew(file);
-                }
-                lastModifiedMap.put(file, file.lastModified());
-            }
-            else if(file.isDirectory()) {
-               cacheFilesForDirectory(file, extensions, fireEvent);
-            }
-        }
+    /**
+     * Adds a file to the watch list
+     *
+     * @param fileToWatch The file to watch
+     */
+    public void addWatchFile(File fileToWatch) {
+        lastModifiedMap.put(fileToWatch, fileToWatch.lastModified());
     }
 
-    private void fireOnNew(File file) {
-        for (FileChangeListener listener : listeners) {
-            listener.onNew(file);
-        }
+    /**
+     * Adds a directory to watch for the given file and extensions
+     *
+     * @param dir The directory
+     * @param extensions The extensions
+     */
+    public void addWatchDirectory(File dir, List<String> extensions) {
+        cacheFilesForDirectory(dir, extensions.toArray(new String[extensions.size()]), false);
+    }
+    /**
+     * Interface for FileChangeListeners
+     */
+    public static interface FileChangeListener {
+        /**
+         * Fired when a file changes
+         *
+         * @param file The file that changed
+         */
+        public abstract void onChange(File file);
+
+        /**
+         * Fired when a new file is created
+         *
+         * @param file The file that was created
+         */
+        public abstract void onNew(File file);
     }
 
-    private boolean isValidFileToMonitor(String name, String[] extensions) {
-        for (String extension : extensions) {
-            if (name.endsWith(extension)) return true;
-        }
-        return false;
-    }
 
     @Override
     public void run() {
@@ -137,13 +157,39 @@ public class DirectoryWatcher extends Thread {
         }
     }
 
+    private void initializeLastModifiedCache(File[] directories, final String[] extensions) {
 
-    public void addListener(FileChangeListener listener ) {
-        this.listeners.add(listener);
+        for (File directory : directories) {
+            cacheFilesForDirectory(directory, extensions, false);
+        }
+
     }
 
-    public static interface FileChangeListener {
-        public abstract void onChange(File file);
-        public abstract void onNew(File file);
+    private void cacheFilesForDirectory(File directory, String[] extensions, boolean fireEvent) {
+        directoryWatch.put(directory, directory.lastModified());
+        File[] files = directory.listFiles();
+        for (File file : files) {
+            if(isValidFileToMonitor(file.getName(), extensions)) {
+                if(!lastModifiedMap.containsKey(file) && fireEvent) {
+                    for (FileChangeListener listener : listeners) {
+                        listener.onNew(file);
+                    }
+                }
+                lastModifiedMap.put(file, file.lastModified());
+            }
+            else if(file.isDirectory()) {
+               cacheFilesForDirectory(file, extensions, fireEvent);
+            }
+        }
     }
+
+    private boolean isValidFileToMonitor(String name, String[] extensions) {
+        for (String extension : extensions) {
+            if (name.endsWith(extension)) return true;
+        }
+        return false;
+    }
+
+
+
 }
