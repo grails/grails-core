@@ -47,6 +47,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         this.pluginManager = pluginManager;
         this.compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
+        this.extensions.addAll(compilerExtensions);
     }
 
     @Override

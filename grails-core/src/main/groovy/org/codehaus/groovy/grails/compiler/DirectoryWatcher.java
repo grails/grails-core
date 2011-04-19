@@ -16,12 +16,12 @@
 
 package org.codehaus.groovy.grails.compiler;
 
+import org.springframework.util.StringUtils;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Utility class to watch directories for changes
@@ -31,8 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DirectoryWatcher extends Thread {
 
-    protected File[] directories = new File[0];
-    protected String[] extensions = new String[0];
+    protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
     private List<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
 
     private Map<File, Long> lastModifiedMap = new ConcurrentHashMap<File, Long>();
@@ -40,11 +39,6 @@ public class DirectoryWatcher extends Thread {
     private boolean active = true;
     private long sleepTime = 3000;
 
-    public DirectoryWatcher(File[] directories, String[] extensions) {
-        this.directories = directories;
-        this.extensions = extensions;
-        setDaemon(true);
-    }
 
     public DirectoryWatcher() {
     }
@@ -92,7 +86,7 @@ public class DirectoryWatcher extends Thread {
      * @param extensions The extensions
      */
     public void addWatchDirectory(File dir, List<String> extensions) {
-        cacheFilesForDirectory(dir, extensions.toArray(new String[extensions.size()]), false);
+        cacheFilesForDirectory(dir, extensions, false);
     }
 
     /**
@@ -102,7 +96,9 @@ public class DirectoryWatcher extends Thread {
      * @param extension The extension
      */
     public void addWatchDirectory(File dir, String extension) {
-        cacheFilesForDirectory(dir, new String[]{extension}, false);
+        List<String> extensions = new ArrayList<String>();
+        extensions.add(extension);
+        cacheFilesForDirectory(dir, extensions, false);
     }
     /**
      * Interface for FileChangeListeners
@@ -125,7 +121,6 @@ public class DirectoryWatcher extends Thread {
 
     @Override
     public void run() {
-        initializeLastModifiedCache(directories, extensions);
         int count = 0;
         while(active) {
             Set<File> files = lastModifiedMap.keySet();
@@ -167,21 +162,14 @@ public class DirectoryWatcher extends Thread {
         }
     }
 
-    private void initializeLastModifiedCache(File[] directories, final String[] extensions) {
-        if(directories != null) {
-            for (File directory : directories) {
-                cacheFilesForDirectory(directory, extensions, false);
-            }
+    private void cacheFilesForDirectory(File directory, Collection<String> extensions, boolean fireEvent) {
+        addExtension(extensions);
 
-        }
-    }
-
-    private void cacheFilesForDirectory(File directory, String[] extensions, boolean fireEvent) {
         directoryWatch.put(directory, directory.lastModified());
         File[] files = directory.listFiles();
         if(files != null) {
             for (File file : files) {
-                if(isValidFileToMonitor(file.getName(), extensions)) {
+                if(isValidFileToMonitor(file.getName(), this.extensions)) {
                     if(!lastModifiedMap.containsKey(file) && fireEvent) {
                         for (FileChangeListener listener : listeners) {
                             listener.onNew(file);
@@ -190,17 +178,23 @@ public class DirectoryWatcher extends Thread {
                     lastModifiedMap.put(file, file.lastModified());
                 }
                 else if(file.isDirectory()) {
-                   cacheFilesForDirectory(file, extensions, fireEvent);
+                   cacheFilesForDirectory(file, this.extensions, fireEvent);
                 }
             }
         }
     }
 
-    private boolean isValidFileToMonitor(String name, String[] extensions) {
+    private void addExtension(Collection<String> extensions) {
         for (String extension : extensions) {
-            if (name.endsWith(extension)) return true;
+            if(!this.extensions.contains(extension)) {
+                this.extensions.add(extension);
+            }
         }
-        return false;
+    }
+
+    private boolean isValidFileToMonitor(String name, Collection<String> extensions) {
+        String ext = StringUtils.getFilenameExtension(name);
+        return extensions.contains(ext);
     }
 
 
