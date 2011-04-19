@@ -23,8 +23,13 @@ import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.control.CompilationUnit
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.springframework.core.io.Resource
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
 /**
+ *
  * Encapsulates the compilation logic required for a Grails application
  *
  * @author Graeme Rocher
@@ -356,7 +361,6 @@ class GrailsProjectCompiler {
             unit.compile()
         }
     }
-
 
     private initializeAntClasspaths() {
 

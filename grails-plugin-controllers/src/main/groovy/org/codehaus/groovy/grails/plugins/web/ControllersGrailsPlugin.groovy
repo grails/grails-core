@@ -271,7 +271,13 @@ class ControllersGrailsPlugin {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
                     bean.autowire = true
-                    instanceControllersApi = ref("instanceControllersApi")
+                    def enhancedAnn = controllerClass.clazz.getAnnotation(Enhanced)
+                    if(enhancedAnn != null) {
+                        instanceControllersApi = ref("instanceControllersApi")
+                    }
+                    else {
+                        nonEnhancedControllerClasses << controllerClass
+                    }
                 }
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
@@ -279,5 +285,7 @@ class ControllersGrailsPlugin {
             beanDefinitions.registerBeans(event.ctx)
 
         }
+
+        event.manager?.getGrailsPlugin("controllers")?.doWithDynamicMethods(event.ctx)
     }
 }

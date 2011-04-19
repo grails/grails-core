@@ -123,7 +123,6 @@ public class DirectoryWatcher extends Thread {
         public abstract void onNew(File file);
     }
 
-
     @Override
     public void run() {
         initializeLastModifiedCache(directories, extensions);
@@ -135,9 +134,7 @@ public class DirectoryWatcher extends Thread {
                 Long cachedTime = lastModifiedMap.get(file);
                 if(currentLastModified > cachedTime) {
                     lastModifiedMap.put(file, currentLastModified);
-                    for (FileChangeListener listener : listeners) {
-                        listener.onChange(file);
-                    }
+                    fireOnChange(file);
                 }
             }
             try {
@@ -150,6 +147,12 @@ public class DirectoryWatcher extends Thread {
             } catch (InterruptedException e) {
                 // ignore
             }
+        }
+    }
+
+    private void fireOnChange(File file) {
+        for (FileChangeListener listener : listeners) {
+            listener.onChange(file);
         }
     }
 

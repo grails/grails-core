@@ -36,7 +36,6 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/groovy/mycompany/Test.groovy"));
         assertEquals("mycompany.Test",  GrailsResourceUtils.getClassName("file:///test/grails/app/src/java/mycompany/Test.groovy"));
     }
-
     public void testIsDomainClass() throws Exception {
         URL testUrl = new URL(TEST_URL);
         assertTrue(GrailsResourceUtils.isDomainClass(testUrl));
