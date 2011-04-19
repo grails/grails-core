@@ -16,34 +16,12 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
-import grails.util.BuildScope;
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
-import grails.util.Environment;
-import grails.util.GrailsUtil;
-import grails.util.Metadata;
-import grails.util.PluginBuildSettings;
+import grails.util.*;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
@@ -51,14 +29,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
 import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
+import org.codehaus.groovy.grails.plugins.support.WatchPattern;
+import org.codehaus.groovy.grails.plugins.support.WatchPatternParser;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
@@ -70,6 +46,13 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
@@ -100,8 +83,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     private long[] modifiedTimes = new long[0];
     private PathMatchingResourcePatternResolver resolver;
-    private String[] resourcesReferences;
-    private int[] resourceCount;
+    private String[] watchedResourcePatternReferences;
     private String[] loadAfterNames = new String[0];
     private String[] loadBeforeNames = new String[0];
     private String[] influencedPluginNames = new String[0];
@@ -117,6 +99,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private List<String> pluginExcludes = new ArrayList<String>();
     private Collection<? extends TypeFilter> typeFilters = new ArrayList<TypeFilter>();
     private Resource pluginDescriptor;
+    private List<WatchPattern> watchedResourcePatterns;
 
     public DefaultGrailsPlugin(Class<?> pluginClass, Resource resource, GrailsApplication application) {
         super(pluginClass, application);
@@ -144,6 +127,24 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
 
         initialisePlugin(pluginClass);
+    }
+
+
+    public List<WatchPattern> getWatchedResourcePatterns() {
+        return watchedResourcePatterns;
+    }
+
+    @Override
+    public boolean hasInterestInChange(String path) {
+        if(watchedResourcePatterns != null) {
+            for (WatchPattern watchedResourcePattern : watchedResourcePatterns) {
+                if(watchedResourcePattern.matchesPath(path)) {
+                    return true;
+                }
+            }
+
+        }
+        return false;
     }
 
     private void initialisePlugin(Class<?> clazz) {
@@ -364,67 +365,29 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                         }
                     }
 
-                    resourcesReferences = new String[resourceListTmp.size()];
-                    resourceCount = new int[resourceListTmp.size()];
-                    for (int i = 0; i < resourcesReferences.length; i++) {
+                    watchedResourcePatternReferences = new String[resourceListTmp.size()];
+                    for (int i = 0; i < watchedResourcePatternReferences.length; i++) {
                         String resRef = resourceListTmp.get(i);
-                        resourcesReferences[i]=resRef;
+                        watchedResourcePatternReferences[i]=resRef;
                     }
-                    for (int i = 0; i < resourcesReferences.length; i++) {
-                        String res = resourcesReferences[i];
 
-                        // Try to load the resources that match the "res" pattern.
-                        Resource[] tmp = new Resource[0];
-                        try {
-                            try {
-                                tmp = (Resource[]) ArrayUtils.addAll(tmp,resolver.getResources(res));
-                            }
-                            catch (IOException e) {
-                                // ignore, no resources at default location
-                            }
-                        }
-                        catch (Exception ex) {
-                            // The pattern is invalid so we continue as if there are no matching files.
-                            LOG.debug("Resource pattern [" + res + "] is not valid - maybe base directory does not exist?");
-                        }
-                        resourceCount[i] = tmp.length;
-
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Watching resource set ["+(i+1)+"]: " + ArrayUtils.toString(tmp));
-                        }
-                        if (tmp.length == 0) {
-                            tmp = resolver.getResources("classpath*:" + res);
-                        }
-
-                        if (tmp.length > 0) {
-                            watchedResources = (Resource[])ArrayUtils.addAll(watchedResources, tmp);
-                        }
-                    }
+                    watchedResourcePatterns = new WatchPatternParser().getWatchPatterns(Arrays.asList(watchedResourcePatternReferences));
                 }
             }
         }
         catch (IllegalArgumentException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + ArrayUtils.toString(resourcesReferences) +
+                LOG.debug("Cannot load plug-in resource watch list from [" + ArrayUtils.toString(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
                         ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
         }
         catch (IOException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + ArrayUtils.toString(resourcesReferences) +
+                LOG.debug("Cannot load plug-in resource watch list from [" + ArrayUtils.toString(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
                         ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
-        }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Plugin "+this+" found ["+watchedResources.length+"] to watch");
-        }
-        try {
-            initializeModifiedTimes();
-        }
-        catch (IOException e) {
-            LOG.warn("I/O exception initializing modified times for watched resources: " + e.getMessage(), e);
         }
     }
 
@@ -535,32 +498,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return bb;
     }
 
-    private void initializeModifiedTimes() throws IOException {
-        modifiedTimes = new long[watchedResources.length];
-        for (int i = 0; i < watchedResources.length; i++) {
-            Resource r = watchedResources[i];
-            URLConnection c = null;
-            try {
-                c = r.getURL().openConnection();
-                c.setDoInput(false);
-                c.setDoOutput(false);
-                modifiedTimes[i] = c.getLastModified();
-            }
-            finally {
-                if (c != null) {
-                    try {
-                        InputStream is = c.getInputStream();
-                        if (is != null) {
-                            is.close();
-                        }
-                    }
-                    catch (IOException e) {
-                        // ignore
-                    }
-                }
-            }
-        }
-    }
 
     public void doWithApplicationContext(ApplicationContext ctx) {
         try {
@@ -674,6 +611,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
      * @return the watchedResources
      */
     public Resource[] getWatchedResources() {
+        if(watchedResources.length == 0) {
+            if(watchedResourcePatternReferences != null) {
+                for (String resourcesReference : watchedResourcePatternReferences) {
+                    try {
+                        Resource[] tmp = resolver.getResources(resourcesReference);
+                        if(tmp.length>0) {
+                            watchedResources = (Resource[])ArrayUtils.addAll(watchedResources, tmp);
+                        }
+                    }
+                    catch (Exception e) {
+                        // ignore
+                    }
+                }
+
+            }
+        }
         return watchedResources;
     }
 
@@ -704,247 +657,26 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     /**
      * Monitors the plugin resources defined in the watchResources property for changes and
      * fires onChange events by calling an onChange closure defined in the plugin (if it exists)
+     *
+     * @deprecated
      */
     @Override
     public boolean checkForChanges() {
-        if (pluginUrl != null) {
-            long currentModified = -1;
-            URLConnection conn = null;
-            try {
-                conn = pluginUrl.openConnection();
-
-                currentModified = conn.getLastModified();
-                if (currentModified > pluginLastModified) {
-
-                    if (LOG.isInfoEnabled()) {
-                        LOG.info("Grails plug-in " + this + " changed, reloading changes..");
-                    }
-
-                    GroovyClassLoader gcl = new GroovyClassLoader(application.getClassLoader());
-                    initialisePlugin(gcl.parseClass(DefaultGroovyMethods.getText(conn.getInputStream())));
-                    pluginLastModified = currentModified;
-                    return true;
-                }
-            }
-            catch (IOException e) {
-                LOG.warn("Error reading plugin [" + pluginClass + "] last modified date, cannot reload following change: " + e.getMessage());
-            }
-            finally {
-                if (conn!=null) {
-                    try {
-                        conn.getInputStream().close();
-                    }
-                    catch (IOException e) {
-                        LOG.warn("Error closing URL connection to plugin resource [" + pluginUrl + "]: " + e.getMessage(), e);
-                    }
-                }
-            }
-        }
-
-        if (onChangeListener != null) {
-            checkForNewResources(this);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Plugin " + this + " checking [" + watchedResources.length + "] resources for changes..");
-            }
-            for (int i = 0; i < watchedResources.length; i++) {
-                final Resource r = watchedResources[i];
-                long modifiedFlag = checkModified(r, modifiedTimes[i]) ;
-                if ( modifiedFlag > -1) {
-                    if (LOG.isInfoEnabled()) LOG.info("Grails plug-in resource [" + r + "] changed, reloading changes..");
-
-                    modifiedTimes[i] = modifiedFlag;
-                    fireModifiedEvent(r, this);
-                    refreshInfluencedPlugins();
-                }
-            }
-        }
-        return false;
+        return false; // do nothing
     }
 
-    /**
-     * This method will retrieve all the influenced plugins from the manager and
-     * call refresh() on each one.
-     */
-    private void refreshInfluencedPlugins() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Plugin " + this + " starting refresh of influenced plugins " + ArrayUtils.toString(influencedPluginNames));
-        }
-        if (manager != null) {
-            for (String name : influencedPluginNames) {
-                GrailsPlugin grailsPlugin = manager.getGrailsPlugin(name);
-
-                if (grailsPlugin != null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug(this + " plugin is refreshing influenced plugin " + grailsPlugin + " following change to resource");
-                    }
-
-                    grailsPlugin.refresh();
-                }
-            }
-        }
-        else if (LOG.isDebugEnabled()) {
-            LOG.debug("Plugin "+this+" cannot refresh influenced plugins, manager is not found");
-        }
-    }
 
     /**
-     * Takes a Resource and checks it against the previous modified time passed
-     * in the arguments. If the resource was modified it will return the new modified time, otherwise
-     * it will return -1.
+     * Restarts the container
      *
-     * @param r the Resource instance
-     * @param previousModifiedTime the last time the Resource was modified
-     * @return the new modified time or -1
+     * @deprecated Not needed any more due to the reload agent
      */
-    private long checkModified(Resource r, long previousModifiedTime) {
-        // If the resource doesn't exist, skip the check.
-        if (!r.exists()) {
-            return -1;
-        }
-
-        try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Checking modified for resource " + r);
-            }
-
-            long lastModified = r.lastModified();
-
-            if ( previousModifiedTime < lastModified ) {
-                return lastModified;
-            }
-        }
-        catch (IOException e) {
-            LOG.debug("Unable to read last modified date of plugin resource" +e.getMessage(),e);
-        }
-        return -1;
-    }
-
-    private void checkForNewResources(final GrailsPlugin grailsPlugin) {
-
-        if (resourcesReferences == null) {
-            return;
-        }
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Plugin " + grailsPlugin + " checking [" + ArrayUtils.toString(resourcesReferences) +
-                    "] resource references new resources that have been added..");
-        }
-
-        for (int i = 0; i < resourcesReferences.length; i++) {
-            String resourcesReference = resourcesReferences[i];
-            try {
-                Resource[] tmp = resolver.getResources(resourcesReference);
-                if (resourceCount[i] < tmp.length) {
-                    Resource newResource = null;
-                    resourceCount[i] = tmp.length;
-
-                    for (Resource resource : tmp) {
-                        if (!ArrayUtils.contains(watchedResources, resource)) {
-                            newResource = resource;
-                            break;
-                        }
-                    }
-
-                    if (newResource != null) {
-                        watchedResources = (Resource[])ArrayUtils.add(watchedResources, newResource);
-
-                        if (LOG.isInfoEnabled()) {
-                            LOG.info("Found new Grails plug-in resource [" + newResource + "], adding to application..");
-                        }
-
-                        if (newResource.getFilename().endsWith(".groovy")) {
-                            if (LOG.isDebugEnabled()) {
-                                LOG.debug("[GrailsPlugin] plugin resource ["+newResource+"] added, registering resource with class loader...");
-                            }
-
-                            ClassLoader classLoader = application.getClassLoader();
-
-                            GrailsResourceLoader resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
-
-                            Resource[] classLoaderResources = resourceLoader.getResources();
-                            classLoaderResources = (Resource[])ArrayUtils.add(classLoaderResources, newResource);
-                            resourceLoader.setResources(classLoaderResources);
-
-                            if (classLoader instanceof GrailsClassLoader) {
-                                ((GrailsClassLoader)classLoader).setGrailsResourceLoader(resourceLoader);
-                            }
-                        }
-
-                        initializeModifiedTimes();
-
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("[GrailsPlugin] plugin resource [" + newResource + "] added, firing event if possible..");
-                        }
-                        fireModifiedEvent(newResource, grailsPlugin);
-                    }
-                }
-            }
-            catch (Exception e) {
-                LOG.debug("Plugin " + this + "  was unable to check for new plugin resources: " + e.getMessage());
-            }
-        }
-    }
-
-    protected void fireModifiedEvent(final Resource resource,
-            @SuppressWarnings("unused") final GrailsPlugin grailsPlugin) {
-
-        Class<?> loadedClass = null;
-        String className = GrailsResourceUtils.getClassName(resource);
-
-        Object source;
-        if (className != null) {
-            Class<?> oldClass = application.getClassForName(className);
-            loadedClass = attemptClassReload(className);
-            source = loadedClass != null ? loadedClass : oldClass;
-        }
-        else {
-            source = resource;
-        }
-
-        if (loadedClass != null && Modifier.isAbstract(loadedClass.getModifiers())) {
-            restartContainer();
-        }
-        else if (source != null) {
-            Map event = notifyOfEvent(EVENT_ON_CHANGE, source);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Firing onChange event listener with event object ["+event+"]");
-            }
-        }
-    }
-
     public void restartContainer() {
-        // here we touch the classes directory if the file is abstract to force the Grails server
-        // to restart the web application
-        try {
-            BuildSettings settings = BuildSettingsHolder.getSettings();
-            File classesDir = settings != null ? settings.getClassesDir() : null;
-            if (classesDir == null) {
-                Resource r = applicationContext.getResource("/WEB-INF/classes");
-                classesDir = r.getFile();
-            }
-            classesDir.setLastModified(System.currentTimeMillis());
-        }
-        catch (IOException e) {
-            LOG.error("Error retrieving /WEB-INF/classes directory: " + e.getMessage(),e);
-        }
-    }
-
-    private Class<?> attemptClassReload(String className) {
-        final ClassLoader loader = application.getClassLoader();
-        if (loader instanceof GrailsClassLoader) {
-            GrailsClassLoader grailsLoader = (GrailsClassLoader)loader;
-            return grailsLoader.reloadClass(className);
-        }
-        // Added this to see whether it helps track down an intermittent
-        // bug with dynamic loading of new artifacts.
-        LOG.warn("Expected GrailsClassLoader - got " + loader.getClass());
-        return null;
+        // do nothing
     }
 
     public void setWatchedResources(Resource[] watchedResources) throws IOException {
         this.watchedResources = watchedResources;
-        initializeModifiedTimes();
     }
 
     /*
@@ -966,22 +698,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
      */
     @Override
     public void refresh() {
-        refresh(true);
+        // do nothing
     }
 
-    public void refresh(boolean fireEvent) {
-        for (Resource r : watchedResources) {
-            try {
-                r.getFile().setLastModified(System.currentTimeMillis());
-            }
-            catch (IOException e) {
-                // ignore
-            }
-            if (fireEvent) {
-                fireModifiedEvent(r, this);
-            }
-        }
-    }
 
     public GroovyObject getInstance() {
         return plugin;
@@ -1045,6 +764,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             default:
                 notifyOfEvent(event);
         }
+
         return event;
     }
 

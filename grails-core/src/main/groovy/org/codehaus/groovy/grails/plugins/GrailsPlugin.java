@@ -19,16 +19,16 @@ import grails.util.BuildScope;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.plugins.support.WatchPattern;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.type.filter.TypeFilter;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.type.filter.TypeFilter;
 
 /**
  * <p>Plugin interface that adds Spring {@link org.springframework.beans.factory.config.BeanDefinition}s
@@ -44,7 +44,7 @@ import org.springframework.core.type.filter.TypeFilter;
  * @author Graeme Rocher
  *
  * @since 0.2
- * @see BeanDefinitionRegistry
+ * @see org.springframework.beans.factory.support.BeanDefinitionRegistry
  */
 @SuppressWarnings("rawtypes")
 public interface GrailsPlugin extends ApplicationContextAware, Comparable, GrailsPluginInfo {
@@ -280,6 +280,8 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * and reloads appropriately
      *
      * @return Returns true when the plug-in itself changes in some way, as oppose to plug-in resources
+     *
+     * @deprecated Plugins themselves no longer check for changes
      */
     boolean checkForChanges();
 
@@ -406,4 +408,19 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * @return A collection of TypeFilter instance
      */
     Collection<? extends TypeFilter> getTypeFilters();
+
+    /**
+     * Resources that this plugin watches
+     *
+     * @return The watch resource patterns
+     */
+    List<WatchPattern> getWatchedResourcePatterns();
+
+    /**
+     * Whether the plugin is interested in a particular change
+     *
+     * @param path The path to the resource that changed
+     * @return True if it is
+     */
+    boolean hasInterestInChange(String path);
 }

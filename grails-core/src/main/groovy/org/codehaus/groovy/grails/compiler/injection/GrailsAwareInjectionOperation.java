@@ -31,7 +31,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
+<<<<<<< HEAD
 import java.io.IOException;
+=======
+import java.io.File;
+import java.net.MalformedURLException;
+>>>>>>> Improvements to agent-based reloading with the introduction of a GrailsProjectWatcher class that encapsulates the file watching logic for plugins and triggers events when files change. This handles both static resources (message bundles, css etc.) and groovy/java source files leaving the agent with the job of handling class reloads
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -122,7 +127,6 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
       URL url = null;
-
         final String filename = source.getName();
         Resource resource = new FileSystemResource(filename);
         if(resource.exists()) {
