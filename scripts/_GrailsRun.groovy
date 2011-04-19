@@ -175,7 +175,8 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-	projectCompiler.startCompilerDaemon(grailsSettings.classesDir, grailsSettings.pluginClassesDir)
+	def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+	watcher.start()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
