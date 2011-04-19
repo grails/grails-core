@@ -14,9 +14,6 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import groovy.lang.GroovyResourceLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -29,14 +26,10 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
 
-<<<<<<< HEAD
 import java.io.IOException;
-=======
 import java.io.File;
 import java.net.MalformedURLException;
->>>>>>> Improvements to agent-based reloading with the introduction of a GrailsProjectWatcher class that encapsulates the file watching logic for plugins and triggers events when files change. This handles both static resources (message bundles, css etc.) and groovy/java source files leaving the agent with the job of handling class reloads
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
