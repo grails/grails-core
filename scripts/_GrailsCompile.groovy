@@ -36,12 +36,6 @@ ant.path(id: "grails.compile.classpath", compileClasspath)
 target(setCompilerSettings: "Updates the compile build settings based on args") {
     depends(parseArguments)
 
-	projectCompiler = new GrailsProjectCompiler(basedir,
-												grailsSettings.sourceDir.absolutePath,
-												pluginSettings.pluginSourceFiles,
-												compConfig,
-												classLoader)
-	projectCompiler.ant = ant
     if (argsMap.containsKey('verboseCompile')) {
         grailsSettings.verboseCompile = argsMap.verboseCompile as boolean
 		projectCompiler.verbose = grailsSettings.verboseCompile
