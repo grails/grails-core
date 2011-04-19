@@ -74,7 +74,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 writer << urlAttrs
             }
             else {
-                def controller = urlAttrs.containsKey("controller") ? urlAttrs.controller?.toString() : requestStateLookupStrategy.getControllerName()
+                def controller = urlAttrs.controller ? urlAttrs.controller?.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.action?.toString()
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName(controller)
