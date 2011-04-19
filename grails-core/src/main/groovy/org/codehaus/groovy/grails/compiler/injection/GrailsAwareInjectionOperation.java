@@ -14,9 +14,6 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import groovy.lang.GroovyResourceLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -29,14 +26,8 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
 
-<<<<<<< HEAD
-import java.io.File;
-import java.net.MalformedURLException;
-=======
 import java.io.IOException;
->>>>>>> f6c011bdf1d42e534a7a0ff08286079c7676488a
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;

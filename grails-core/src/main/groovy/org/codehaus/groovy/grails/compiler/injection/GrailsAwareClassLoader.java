@@ -65,9 +65,9 @@ public class GrailsAwareClassLoader extends GroovyClassLoader {
         GrailsAwareInjectionOperation operation;
 
         if(classInjectors == null)
-            operation = new GrailsAwareInjectionOperation(getResourceLoader());
+            operation = new GrailsAwareInjectionOperation();
         else
-            operation = new GrailsAwareInjectionOperation(getResourceLoader(), classInjectors);
+            operation = new GrailsAwareInjectionOperation(classInjectors);
 
         cu.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return cu;
