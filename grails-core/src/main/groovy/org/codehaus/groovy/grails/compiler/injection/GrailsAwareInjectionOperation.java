@@ -31,6 +31,7 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -124,10 +125,18 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
         for (ClassInjector classInjector : getLocalClassInjectors()) {
             try {
                 URL url;
-                if (GrailsResourceUtils.isGrailsPath(source.getName())) {
-                    url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
-                } else {
-                    url = grailsResourceLoader.loadGroovySource(source.getName());
+                String fileName = source.getName();
+                File file = fileName != null ? new File(fileName) : null;
+                if(file != null && file.exists()) {
+                    url = file.toURI().toURL();
+                }
+                else {
+                    if (GrailsResourceUtils.isGrailsPath(fileName)) {
+                        url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(fileName));
+                    } else {
+                        url = grailsResourceLoader.loadGroovySource(fileName);
+                    }
+
                 }
 
                 if (classInjector.shouldInject(url)) {

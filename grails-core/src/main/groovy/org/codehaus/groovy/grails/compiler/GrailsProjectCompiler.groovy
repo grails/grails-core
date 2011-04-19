@@ -37,13 +37,13 @@ class GrailsProjectCompiler {
     private static final List<String> PLUGIN_EXCLUDE_PATHS = ["views", "i18n"] // conf gets special handling
 
     private AntBuilder ant
-    private List<String> srcDirectories
     private File pluginDescriptor
     private CompilerConfiguration config
     private ClassLoader classLoader
-
     boolean verbose = false
+
     boolean isPluginProject = false
+    List<String> srcDirectories
     Map javaOptions = [classpathref:CLASSPATH_REF, encoding:"UTF-8", debug:"yes"]
     String basedir
     String srcdir
@@ -59,7 +59,7 @@ class GrailsProjectCompiler {
 
     BuildSettings buildSettings
     PluginBuildSettings pluginSettings
-    List<List> compilerExtensions = ['groovy', 'java']
+    List<String> compilerExtensions = ['groovy', 'java']
 
     /**
      * Constructs a new GrailsProjectCompiler instance for the given PluginBuildSettings and optional classloader
@@ -80,18 +80,25 @@ class GrailsProjectCompiler {
         this.pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
         this.config = config
         isPluginProject = pluginDescriptor != null
-        srcDirectories = [ "${basedir}/grails-app/conf",
-                           "${basedir}/grails-app/conf/spring",
-                           "${srcdir}/groovy",
-                           "${srcdir}/java"]
+        srcDirectories = [ "${basedir}/grails-app/conf".toString(),
+                           "${basedir}/grails-app/conf/spring".toString(),
+                           "${srcdir}/groovy".toString(),
+                           "${srcdir}/java".toString()]
 
         def excludedPaths =  EXCLUDED_PATHS
 
-        for (dir in new File("${basedir}/grails-app").listFiles()) {
-            if (!excludedPaths.contains(dir.name) && dir.isDirectory()) {
-                srcDirectories << "${dir}"
+        final grailsAppDirs = new File("${basedir}/grails-app").listFiles()
+        if(grailsAppDirs != null) {
+            for (dir in grailsAppDirs) {
+                if(dir != null) {
+                    if (!excludedPaths?.contains(dir.name) && dir.isDirectory()) {
+                        srcDirectories << "${dir}".toString()
+                    }
+                }
             }
+
         }
+
 
         initializeAntClasspaths()
     }
@@ -202,13 +209,26 @@ class GrailsProjectCompiler {
         jarFiles
     }
 
-
+    /**
+     * Compiles plugin and normal sources
+     */
+    void compileAll() {
+        compilePlugins()
+        compile()
+    }
+    /**
+     * Compiles project sources using the target directory passed by PluginBuildSettings
+     *
+     */
+    void compile() {
+        compile(targetClassesDir)
+    }
     /**
      * Compiles project sources to the given target directory
      *
      * @param targetDir The target directory to compile to
      */
-    void compile(targetDir = targetClassesDir ) {
+    void compile(targetDir) {
 
         def compilerPaths = { String classpathId ->
             for(srcPath in srcDirectories) {
@@ -234,12 +254,16 @@ class GrailsProjectCompiler {
         if (isPluginProject) compilePluginDescriptor(pluginDescriptor, classesDirPath)
     }
 
+
+    void compilePlugins() {
+        compilePlugins(targetPluginClassesDir)
+    }
     /**
      * Compiles plugin sources files to the given target directory
      *
      * @param targetDir The target directory to compile to
      */
-    void compilePlugins(targetDir = targetPluginClassesDir) {
+    void compilePlugins(targetDir) {
         def classesDirPath = targetDir
         ant.mkdir(dir:classesDirPath)
 
@@ -333,35 +357,6 @@ class GrailsProjectCompiler {
         }
     }
 
-    /**
-     * Starts a daemon thread that recompiles sources when they change
-     */
-    DirectoryWatcher startCompilerDaemon(classesDir, pluginClassesDir) {
-        def allDirectories = []
-        allDirectories.addAll(srcDirectories.collect { new File(it) })
-        allDirectories.addAll( pluginSourceDirectories.findAll { Resource r -> r.file.isDirectory() }.collect { it.file } )
-        DirectoryWatcher watcher = new DirectoryWatcher(allDirectories as File[], ['.groovy', '.java'] as String[] )
-        watcher.addListener(new DirectoryWatcher.FileChangeListener() {
-            void onChange(File file) {
-                triggerRecompile(file)
-            }
-
-            void onNew(File file) {
-                sleep(5000) // sleep for a little while to wait for the file to become valid
-                triggerRecompile(file)
-            }
-
-            def triggerRecompile(File file) {
-                if(compilerExtensions.any { file.name.endsWith(it)}) {
-                    compilePlugins(pluginClassesDir)
-                    compile(classesDir)
-                }
-            }
-
-        })
-        watcher.start()
-        return watcher
-    }
 
     private initializeAntClasspaths() {
 

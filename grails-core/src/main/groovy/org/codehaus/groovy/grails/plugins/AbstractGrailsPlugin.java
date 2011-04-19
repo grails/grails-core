@@ -18,15 +18,16 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -90,6 +91,14 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
 
     public void setBasePlugin(boolean isBase) {
         this.isBase = isBase;
+    }
+
+    public java.util.List<WatchPattern> getWatchedResourcePatterns() {
+        return Collections.emptyList();
+    }
+
+    public boolean hasInterestInChange(String path) {
+        return false;
     }
 
     public boolean checkForChanges() {
