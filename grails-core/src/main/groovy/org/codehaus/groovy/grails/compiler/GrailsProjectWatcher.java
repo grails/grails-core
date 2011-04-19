@@ -17,8 +17,10 @@ package org.codehaus.groovy.grails.compiler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
@@ -111,12 +113,17 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         try {
             if(isSourceFile(file)) {
                 compiler.compileAll();
+                ClassPropertyFetcher.clearClassPropertyFetcherCache();
             }
-        } catch (MultipleCompilationErrorsException e) {
+        }
+        catch (MultipleCompilationErrorsException e) {
             LOG.error("Compilation Error: " + e.getMessage());
         }
         catch(CompilationFailedException e) {
             LOG.error("Compilation Error: " + e.getMessage());
+        }
+        catch(BuildException e) {
+            LOG.error("Compilation Error: " + e.getCause().getMessage());
         }
     }
 
