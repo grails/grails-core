@@ -51,10 +51,12 @@ compileClasspath = projectCompiler.compileClasspath
 testClasspath = projectCompiler.testClasspath
 runtimeClasspath = projectCompiler.runtimeClasspath
 
+
 void setClasspath() {
     // Make sure the following code is only executed once.
     if (classpathSet) return
 
     projectCompiler.configureClasspath()
+	compConfig = projectCompiler.config
     classpathSet = true
 }
