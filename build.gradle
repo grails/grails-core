@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        mavenRepo(urls: "http://repo.gradle.org/gradle/grails")
+        mavenRepo(urls: "http://repo.grails.org/grails/core")
     }
     dependencies {
         classpath "commons-io:commons-io:1.4"
@@ -18,7 +18,7 @@ antTraxVersion = "1.7.1"
 springVersion = "3.0.5.RELEASE"
 ivyVersion = "2.2.0"
 gantVersion = "1.9.4-SNAPSHOT"
-groovyVersion = "1.8.0-rc-3"
+groovyVersion = "1.8.0-rc-4"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -67,7 +67,8 @@ subprojects { project ->
 
 
     repositories {
-        mavenRepo(urls: "http://repo.gradle.org/gradle/grails") {
+        
+        mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
 
