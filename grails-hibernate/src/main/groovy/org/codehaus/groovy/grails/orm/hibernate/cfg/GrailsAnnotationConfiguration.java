@@ -172,7 +172,7 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
      */
     private void configureNamingStrategy() {
         NamingStrategy strategy = null;
-        Object customStrategy = grailsApplication.getConfig().get("naming_strategy");
+        Object customStrategy = grailsApplication.getFlatConfig().get("hibernate.naming_strategy");
         if (customStrategy != null) {
             Class<?> namingStrategyClass = null;
             if (customStrategy instanceof Class<?>) {
