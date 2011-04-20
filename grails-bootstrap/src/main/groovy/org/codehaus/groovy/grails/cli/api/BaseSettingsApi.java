@@ -109,11 +109,15 @@ public class BaseSettingsApi {
     // server port options
     // these are legacy settings
     public int getServerPort() {
-        return Integer.valueOf(getPropertyValue("grails.server.port.http", 8080).toString());
+        int serverPort = Integer.valueOf(getPropertyValue("server.port", 8080).toString());
+        serverPort = Integer.valueOf(getPropertyValue("grails.server.port.http", serverPort).toString());
+        return serverPort;
     }
 
     public int getServerPortHttps() {
-        return Integer.valueOf(getPropertyValue("grails.server.port.https", 8443).toString());
+        int serverPortHttps = Integer.valueOf(getPropertyValue("server.port.https", 8443).toString());
+        serverPortHttps = Integer.valueOf(getPropertyValue("grails.server.port.https", serverPortHttps).toString());
+        return serverPortHttps;
     }
 
     public String getServerHost() {
