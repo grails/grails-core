@@ -15,18 +15,21 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
@@ -333,5 +336,48 @@ public class GrailsResourceUtils {
             }
         }
         return null;
+    }
+    
+    /**
+     * Takes any number of Strings and appends them into a uri, making
+     * sure that a forward slash is inserted between each piece and
+     * making sure that no duplicate slashes are in the uri
+     * 
+     * <pre>
+     * Input: ""
+     * Output: ""
+     * 
+     * Input: "/alpha", "/beta", "/gamma"
+     * Output: "/alpha/beta/gamma
+     * 
+     * Input: "/alpha/, "/beta/", "/gamma"
+     * Output: "/alpha/beta/gamma
+     * 
+     * Input: "/alpha/", "/beta/", "/gamma/"
+     * Output "/alpha/beta/gamma/
+     * 
+     * Input: "alpha", "beta", "gamma"
+     * Output: "alpha/beta/gamma
+     * </pre>
+     *  
+     * @param pieces Strings to concatenate together into a uri
+     * @return a uri 
+     */
+    public static String appendPiecesForUri(String... pieces) {
+        StringBuilder builder = new StringBuilder();
+        List<String> piecesList = Arrays.asList(pieces);
+        Iterator<String> iter = piecesList.iterator();
+        while (iter.hasNext()) {
+            String piece = iter.next();
+            builder.append(piece);
+            if (iter.hasNext() && !piece.endsWith("/")) {
+                builder.append("/");
+            }
+        }
+        String result = builder.toString();
+        while(result.contains("//")) {
+            result = result.replaceAll("//", "/");
+        }
+        return result;        
     }
 }

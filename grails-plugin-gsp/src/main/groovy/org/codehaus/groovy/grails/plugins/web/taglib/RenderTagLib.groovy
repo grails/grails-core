@@ -25,6 +25,7 @@ import groovy.text.Template
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
@@ -563,7 +564,7 @@ class RenderTagLib implements RequestConstants {
             }
             else {
                 def templateResolveOrder
-                def templateInContextPath = "${contextPath}/grails-app/views${uri}"
+                def templateInContextPath = GrailsResourceUtils.appendPiecesForUri(contextPath, '/grails-app/views', uri)
                 if (pluginName) {
                     templateResolveOrder = [templatePath, templateInContextPath]
                 }
@@ -575,7 +576,7 @@ class RenderTagLib implements RequestConstants {
                 if(t == null) {
                     GrailsPlugin pagePlugin = pageScope.getPagePlugin()
                     if(pagePlugin instanceof BinaryGrailsPlugin) {
-                        def binaryView = "/WEB-INF/grails-app/views${uri}"
+                        def binaryView = GrailsResourceUtils.appendPiecesForUri('/WEB-INF/grails-app/views', uri)
                         def viewClass = pagePlugin.resolveView(binaryView)
                         if(viewClass != null) {
                             t = engine.createTemplate(viewClass)
@@ -584,7 +585,7 @@ class RenderTagLib implements RequestConstants {
                     else if(pagePlugin != null) {
                         def pluginPath = pm?.getPluginPath(pagePlugin.getName())
                         if(pluginPath != null) {
-                            t = engine.createTemplateForUri("${pluginPath}/grails-app/views${uri}")
+                            t = engine.createTemplateForUri(GrailsResourceUtils.appendPiecesForUri(pluginPath, '/grails-app/views', uri))
                         }
                     }
                 }

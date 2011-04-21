@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -212,8 +213,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         // retrieve gsp engine
         GroovyPagesTemplateEngine engine = webRequest.getAttributes().getPagesTemplateEngine();
         try {
-            Template t = engine.createTemplateForUri(new String[]{contextPath + templateUri,
-                    contextPath + "/grails-app/views/"  + templateUri});
+            Template t = engine.createTemplateForUri(new String[]{
+                    GrailsResourceUtils.appendPiecesForUri(contextPath, templateUri),
+                    GrailsResourceUtils.appendPiecesForUri(contextPath, "/grails-app/views/", templateUri)});
 
             if (t == null) {
                 throw new ControllerExecutionException("Unable to load template for uri [" +
