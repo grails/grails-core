@@ -6,6 +6,11 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
 
     void onSetUp() {
         gcl.parseClass '''
+grails.gorm.default.constraints = {
+        isProg inList: ['Emerson', 'Lake', 'Palmer']
+}
+        ''', 'Config'
+        gcl.parseClass '''
         class TestController {
            def someProperty
 
@@ -24,6 +29,9 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
            def action5 = { ConstrainedCommandSubclass co ->
               [command: co]
            }
+           def action6 = { Artist artistCommandObject ->
+               [artist: artistCommandObject]
+           }
         }
         class Command {
             String name
@@ -41,6 +49,12 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
             Integer age
             static constraints = {
                 age range: 10..50
+            }
+        }
+        class Artist {
+            String name
+            static constraints = {
+                name shared: 'isProg'
             }
         }
         '''
@@ -135,5 +149,22 @@ class CommandObjectsTests extends AbstractGrailsControllerTests {
         assert result.command.hasErrors()
         def codes = result.command.errors.getFieldError('data').codes.toList()
         assertTrue codes.contains("constrainedCommandSubclass.data.size.error")
+    }
+    
+    void testValidationWithSharedConstraints() {
+        request.setParameter('name', 'Emerson')
+        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def result = testCtrl.action6()
+        assertNotNull result.artist
+        assertFalse 'the artist should not have had a validation error', result.artist.hasErrors()
+        
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        request.setParameter('name', 'Hendrix')
+        result = testCtrl.action6()
+        assertNotNull result.artist
+        assertTrue 'the artist should have had a validation error', result.artist.hasErrors()
+        def codes = result.artist.errors.getFieldError('name').codes.toList()
+        assertTrue codes.contains("artist.name.inList.error")
     }
 }

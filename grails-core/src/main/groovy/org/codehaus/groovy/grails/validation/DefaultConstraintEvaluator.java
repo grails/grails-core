@@ -121,13 +121,36 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                         // specified otherwise by the constraints
                         // If the field is a Java entity annotated with @Entity skip this
                         applyDefaultConstraints(propertyName, p, cp,
-                                defaultConstraints, delegate.getSharedConstraint(propertyName));
+                                defaultConstraints);
                         }
                 }
             }
         }
+        
+        applySharedConstraints(delegate, constrainedProperties);
 
         return constrainedProperties;
+    }
+
+    protected void applySharedConstraints(
+            ConstrainedPropertyBuilder constrainedPropertyBuilder,
+            Map<String, ConstrainedProperty> constrainedProperties) {
+        for (Map.Entry<String, ConstrainedProperty> entry : constrainedProperties.entrySet()) {
+            String propertyName = entry.getKey();
+            ConstrainedProperty constrainedProperty = entry.getValue();
+            String sharedConstraintReference = constrainedPropertyBuilder.getSharedConstraint(propertyName);
+            if(sharedConstraintReference != null) {
+                Object o = defaultConstraints.get(sharedConstraintReference);
+                if(o instanceof Map) {
+                    Map<String, Object> constraintsWithinSharedConstraint = (Map) o;
+                    for (Map.Entry<String, Object> e : constraintsWithinSharedConstraint.entrySet()) {
+                        constrainedProperty.applyConstraint(e.getKey(), e.getValue());
+                    }
+                } else {
+                    throw new GrailsConfigurationException("Property [" + constrainedProperty.owningClass.getName()+'.'+propertyName+ "] references shared constraint [" +sharedConstraintReference+ ":" +o+ "], which doesn't exist!");
+                }
+            }
+        }
     }
 
     protected boolean canPropertyBeConstrained(@SuppressWarnings("unused") GrailsDomainClassProperty property) {
@@ -184,8 +207,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
-            ConstrainedProperty cp, @SuppressWarnings("hiding") Map<String, Object> defaultConstraints,
-            String sharedConstraintReference) {
+            ConstrainedProperty cp, @SuppressWarnings("hiding") Map<String, Object> defaultConstraints) {
 
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
             if (defaultConstraints.containsKey("*")) {
@@ -193,15 +215,6 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                 if (o instanceof Map) {
                     Map<String, Object> globalConstraints = (Map<String, Object>)o;
                     applyMapOfConstraints(globalConstraints, propertyName, p, cp);
-                }
-            }
-            if (sharedConstraintReference!=null) {
-                final Object o = defaultConstraints.get(sharedConstraintReference);
-                if (o instanceof Map) {
-                    applyMapOfConstraints((Map) o,propertyName, p, cp);
-                }
-                else {
-                    throw new GrailsConfigurationException("Domain class property [" +p.getDomainClass().getFullName()+'.'+p.getName()+ "] references shared constraint [" +sharedConstraintReference+ ":" +o+ "], which doesn't exist!");
                 }
             }
         }
