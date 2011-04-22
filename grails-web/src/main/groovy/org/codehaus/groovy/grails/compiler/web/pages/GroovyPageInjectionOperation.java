@@ -6,6 +6,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
+import org.codehaus.groovy.grails.compiler.injection.GroovyPageInjector;
 
 import java.util.ArrayList;
 import java.util.List;

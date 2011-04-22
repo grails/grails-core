@@ -203,7 +203,7 @@ public abstract class GroovyPage extends Script {
         outputStack.pop(true);
     }
 
-    protected Closure<?> createClosureForHtmlPart(int partNumber) {
+    public Closure<?> createClosureForHtmlPart(int partNumber) {
         final String htmlPart = htmlParts[partNumber];
         return new ConstantClosure(htmlPart);
     }

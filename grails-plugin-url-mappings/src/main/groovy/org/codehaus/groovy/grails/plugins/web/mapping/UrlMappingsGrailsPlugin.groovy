@@ -141,7 +141,7 @@ class UrlMappingsGrailsPlugin {
 
             UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, event.ctx, event.manager)
 
-            HotSwappableTargetSource ts = appCtx.getBean("urlMappingsTargetSource")
+            HotSwappableTargetSource ts = event.ctx.getBean("urlMappingsTargetSource")
             ts.swap urlMappingsHolder
         }
     }
