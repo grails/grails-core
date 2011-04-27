@@ -21,6 +21,11 @@ class PluginInfoTests extends GroovyTestCase {
 
         assertEquals "plug1", pluginInfo.name
         assertEquals "0.1", pluginInfo.version
+        assert !pluginInfo.type
+
+        pluginInfo.type = "binary"
+
+        assertEquals "binary", pluginInfo.type
     }
 }
 

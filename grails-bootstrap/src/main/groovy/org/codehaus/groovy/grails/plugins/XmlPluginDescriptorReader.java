@@ -16,9 +16,6 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.PluginBuildSettings;
-
-import java.io.IOException;
-
 import org.springframework.core.io.Resource;
 
 /**
@@ -42,7 +39,7 @@ public class XmlPluginDescriptorReader implements PluginDescriptorReader {
                 return new PluginInfo(pluginXml, pluginSettings);
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             // ignore
         }
         return null;

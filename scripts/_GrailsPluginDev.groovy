@@ -56,6 +56,7 @@ target(packagePlugin: "Implementation target") {
 
     def pluginBaseDir = pluginFile.parentFile.absolutePath
     plugin = pluginSettings.getPluginInfo(pluginBaseDir)
+
     def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
 
     def packager = new PluginPackager(plugin, resourceList, new File(projectWorkDir))

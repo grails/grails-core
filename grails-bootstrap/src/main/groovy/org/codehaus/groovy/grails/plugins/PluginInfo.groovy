@@ -32,6 +32,7 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
     Resource pluginDir
     PluginBuildSettings pluginBuildSettings
     def metadata
+    def additionalMetadata = [:]
     String name
     String version
 
@@ -100,12 +101,26 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
         [name:getName(), version:getVersion()]
     }
 
-    def getProperty(String name) {
-        try {
-            return super.getProperty(name)
-        }
-        catch (MissingPropertyException mpe) {
-            return metadata[name].text()
-        }
+    def putAt(String name, val) {
+        additionalMetadata[name] = val
+    }
+
+
+    void propertyMissing(String property, Object newValue) {
+        putAt(property, newValue)
+    }
+
+
+
+    def getAt(String name) {
+        return  lookupFromMetadata(name)
+    }
+
+    private def lookupFromMetadata(String name) {
+        additionalMetadata.containsKey(name) ? additionalMetadata[name] : metadata[name].text()
+    }
+
+    def propertyMissing(String name) {
+        return lookupFromMetadata(name)
     }
 }
