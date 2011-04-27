@@ -96,9 +96,7 @@ class TestController{
 public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
-    private static final Parameter[] EMPTY_PARAMS = new Parameter[0];
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
-    private static final ClassNode[] EMPTY_EXCEPTIONS = new ClassNode[0];
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
@@ -106,7 +104,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     private Boolean converterEnabled;
 
     public MethodActionTransformer() {
-        converterEnabled = Boolean.parseBoolean(System.getProperties().getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
+        converterEnabled = Boolean.parseBoolean(System.getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
     }
 
     public String getArtefactType() {
@@ -122,7 +120,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     private void annotateCandidateActionMethods(ClassNode classNode) {
         for (MethodNode method : classNode.getMethods()) {
-            if (!method.isStatic() &&
+            if (!method.isStatic() && method.isPublic() &&
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0
                     ) {
@@ -150,7 +148,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         } else {
             method.addAnnotation(ACTION_ANNOTATION_NODE);
         }
-        method.setParameters(EMPTY_PARAMS);
+        method.setParameters(ZERO_PARAMETERS);
     }
 
     //See WebMetaUtils#isCommandObjectAction
@@ -177,7 +175,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                         property.getName(),
                         Modifier.PUBLIC, property.getType(),
                         closureAction.getParameters(),
-                        EMPTY_EXCEPTIONS,
+                        EMPTY_CLASS_ARRAY,
                         bodyCode(closureAction.getParameters(), closureAction.getCode())
                 );
 
