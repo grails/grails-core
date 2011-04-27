@@ -566,6 +566,8 @@ public abstract class AbstractIvyDependencyManager {
                 String scope = "runtime";
                 ModuleRevisionId mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version);
                 EnhancedDefaultDependencyDescriptor enhancedDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope);
+                // since the plugin dependency isn't declared but instead installed via install-plugin it should be not be exported by another plugin
+                enhancedDescriptor.setExport(false);
 
                 registerPluginDependency(scope, enhancedDescriptor);
             }
