@@ -24,8 +24,7 @@ class PdfBuilder {
 
     private static final String LIVE_DOC_SITE = 'http://grails.org'
 
-    static void build(String baseDir, String grailsHome = null) {
-        baseDir = new File(baseDir).canonicalPath
+    static void build(String baseDir, String styleDir = null) {
         build basedir: baseDir
     }
 
@@ -42,33 +41,30 @@ class PdfBuilder {
      * </ul>
      */
     static void build(Map options) {
-        String baseDir = new File(options.basedir).canonicalPath
-        String home = options.home
+        File baseDir = new File(options.basedir).canonicalFile
  
-        File htmlFile = new File("${baseDir}/guide/single.html")
-        File outputFile = new File("${baseDir}/guide/single.pdf")
+        File guideDir = new File(baseDir, "guide")
+        File htmlFile = new File(guideDir, "single.html")
+        File outputFile = new File(guideDir, "single.pdf")
 
-        String xml = createXml(htmlFile, baseDir)
-        createPdf xml, outputFile, "${baseDir}/guide"
+        String xml = createXml(htmlFile, baseDir.absolutePath)
+        createPdf xml, outputFile, guideDir
     }
 
-    private static String createXml(File htmlFile, String base) {
+    public static String createXml(File htmlFile, String base) {
         String xml = htmlFile.text
 
-        // tweak main css so it doesn't get ignored
-        xml = xml.replace('media="screen"', 'media="print"')
-
         // fix inner anchors
-        xml = xml.replaceAll('<a href="../guide/single.html', '<a href="')
+        xml = xml.replaceAll('<a href="\\.\\./guide/single\\.html', '<a href="')
         // fix image refs to absolute paths
-        xml = xml.replaceAll('src="../img/', "src=\"file://${base}/img/")
+        xml = xml.replaceAll('src="\\.\\./img/', "src=\"file://${base}/img/")
 
         // convert tabs to spaces otherwise they only take up one space
         xml = xml.replaceAll('\t', '    ')
         xml
     }
 
-    private static void createPdf(String xml, File outputFile, String urlBase) {
+    public static void createPdf(String xml, File outputFile, File urlBase) {
         def dbf = DocumentBuilderFactory.newInstance()
         dbf.validating = false
         dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
@@ -77,7 +73,7 @@ class PdfBuilder {
         Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes()))
 
         ITextRenderer renderer = new ITextRenderer()
-        renderer.setDocument(doc, new File(urlBase).toURI().toString())
+        renderer.setDocument(doc, urlBase.toURI().toString())
 
         OutputStream outputStream
         try {

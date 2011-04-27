@@ -23,10 +23,14 @@
 }
 
 .body {
-    margin:0px;
-    padding:0px;
+    margin: 0px;
+    padding: 0px;
+    font-size: 12pt;
 }
 
+#main {
+    margin: 0;
+}
 
 #header {
     margin:0px;
@@ -52,27 +56,36 @@
 
 .paragraph {
     text-align:center;
-    margin:10px auto;
+    margin: 0.2em 0;
+    padding: 0.2em 0;
 }
 
 h1 {
-    font-size: 20px;
+    font-family: helvetica,arial,sans-serif;
+    font-size: 1.5em;
     string-set: header content();
     page-break-before: always
 }
 
 h1>a {
-    font-size: 20px;
+    font-size: 1em;
     string-set: header content();
     page-break-before: always
 }
 
 h2 {
-    font-size: 16px;
+    font-family: helvetica,arial,sans-serif;
+    font-size: 1.3em;
 }
 
 h3 {
-    font-size: 14px;
+    font-family: helvetica,arial,sans-serif;
+    font-size: 1.2em;
+}
+
+h4 {
+    font-family: helvetica,arial,sans-serif;
+    font-size: 1.1em;
 }
 
 h1, h2, h3, h1>a, h2>a, h3>a {
@@ -90,25 +103,39 @@ h1, h2, h3, h1>a, h2>a, h3>a {
     font-style: normal;
 }
 
+#col1 {
+    width: 100%;
+}
+
+#col2 {
+    width: 0px;
+}
+
+#col2 .local {
+    display: none;
+}
+
 div.title {
     font-size: 20px;
 }
 
-.body {
-    font-size: 14px;
+.code pre {
+    text-align: left;
+    padding-left:5px;
+    font-size: 0.85em;
+    line-height: 100%;
+    white-space: pre-wrap;
+    page-break-inside: avoid;
 }
 
-pre .code {
-    padding-left:5px;
-    font-size: 12px;
-    line-height: 100%;
-    white-space: normal;
+.bq {
+    white-space: pre-wrap;
     page-break-inside: avoid;
 }
 
 .code, .bq {
-    margin-bottom: 2em;
-    page-break-inside: avoid;
+    text-align: left;
+    margin-bottom: 1em;
 }
 
 .warning, .note{
@@ -116,7 +143,7 @@ pre .code {
 }
 
 .warning, .note, table {
-    margin-top: 2em;
-    margin-bottom: 2em;
+    margin-top: 1em;
+    margin-bottom: 1em;
     page-break-inside: avoid;
 }
