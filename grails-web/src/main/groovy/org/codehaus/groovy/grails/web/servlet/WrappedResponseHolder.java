@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 public class WrappedResponseHolder {
 
     private static final ThreadLocal<HttpServletResponse> wrappedResponseHolder =
-        new InheritableThreadLocal<HttpServletResponse>();
+        new ThreadLocal<HttpServletResponse>();
 
     /**
      * Bind the given HttpServletResponse to the current thread.
