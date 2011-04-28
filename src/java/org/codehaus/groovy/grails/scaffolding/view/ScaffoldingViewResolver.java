@@ -81,7 +81,7 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
                 if (v == null) {
                     String viewCode = null;
                     try {
-                        viewCode = generateViewSource(webRequest, domainClass);
+                        viewCode = generateViewSource(viewFileName, domainClass);
                     }
                     catch (Exception e) {
                         GrailsUtil.deepSanitize(e);
@@ -107,9 +107,9 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         return view;
     }
 
-    protected String generateViewSource(GrailsWebRequest webRequest, GrailsDomainClass domainClass) {
+    protected String generateViewSource(String viewName, GrailsDomainClass domainClass) {
         StringWriter sw = new StringWriter();
-        templateGenerator.generateView(domainClass,webRequest.getActionName(),sw);
+        templateGenerator.generateView(domainClass, viewName, sw);
         return sw.toString();
     }
 
