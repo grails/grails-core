@@ -750,7 +750,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         ModuleRevisionId entry = orgDeps.find { ModuleRevisionId rev -> rev.name == 'ant-junit'}
         assertEquals "org.apache.ant", entry.organisation
         assertEquals "ant-junit", entry.name
-        assertEquals "1.8.1", entry.revision
+        assertEquals "1.8.2", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
         assertEquals 6, resolvers.size()
@@ -820,8 +820,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         dependencies {
 
             build "org.tmatesoft.svnkit:svnkit:1.2.0",
-                  "org.apache.ant:ant-junit:1.8.1",
-                  "org.apache.ant:ant-nodeps:1.8.1",
+                  "org.apache.ant:ant-junit:1.8.2",
                   "org.apache.ant:ant-trax:1.7.1",
                   "org.grails:grails-radeox:1.0-b4",
                   "com.h2database:h2:1.2.144",
