@@ -560,7 +560,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 55, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 5, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 24, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
@@ -581,7 +581,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 5, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 24, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 74, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
 
@@ -596,7 +596,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 55, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 17, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 5, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 24, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
@@ -745,7 +745,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertFalse "should have resolved some dependencies",manager.dependencies.isEmpty()
 
         def orgDeps = manager.getModuleRevisionIds("org.apache.ant")
-        assertEquals "should have found 3 dependencies for the given organization", 3, orgDeps.size()
+        assertEquals "should have found 2 dependencies for the given organization", 2, orgDeps.size()
 
         ModuleRevisionId entry = orgDeps.find { ModuleRevisionId rev -> rev.name == 'ant-junit'}
         assertEquals "org.apache.ant", entry.organisation
