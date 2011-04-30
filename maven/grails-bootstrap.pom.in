@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.codehaus.gant</groupId>
             <artifactId>gant_groovy1.8</artifactId>
-            <version>1.9.4-SNAPSHOT</version>
+            <version>1.9.5-SNAPSHOT</version>
             <exclusions>
                 <!-- The Maven ant tasks break any maven build that includes a Grails project. -->
                 <!-- Ivy is simply unnecessary because we don't use the IvyTool.               -->
@@ -91,14 +91,14 @@
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant</artifactId>
-            <version>1.8.1</version>
+            <version>1.8.2</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.ant</groupId>
             <artifactId>ant-launcher</artifactId>
-            <version>1.8.1</version>
+            <version>1.8.2</version>
             <scope>compile</scope>
         </dependency>
 

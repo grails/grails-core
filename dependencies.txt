@@ -1,7 +1,7 @@
 The following libraries are included in Grails because they are required either for building the framework or for running the command line tools or for running Grails applications themselves.
 
-* ant.jar, ant-nodeps.jar, ant-junit.jar, ant-launcher.jar, ant-trax.jar
-- Ant 1.8.1 (http://ant.apache.org) Apache 2.0 License
+* ant.jar, ant-junit.jar, ant-launcher.jar, ant-trax.jar
+- Ant 1.8.2 (http://ant.apache.org) Apache 2.0 License
 - used to build the framework and for the command line tools (Gant)
 - required for running Grails applications when using AntBuilder
 
@@ -84,12 +84,12 @@ The following libraries are included in Grails because they are required either 
 - required if you want to use EHCache as your second-level cache
 - optional otherwise
 
-* gant_groovy1.8-1.9.4-SNAPSHOT.jar
-- Gant 1.9.4-SNAPSHOT (http://gant.codehaus.org) Apache 2.0 License
+* gant_groovy1.8-1.9.5-SNAPSHOT.jar
+- Gant 1.9.5-SNAPSHOT (http://gant.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 
-* groovy-all-1.8.0-beta-4.jar
-- Groovy 1.8.0-beta-4 (http://groovy.codehaus.org) Apache 2.0 License
+* groovy-all-1.8.0.jar
+- Groovy 1.8.0 (http://groovy.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 - required for building Grails core
 - required for running Grails applications
