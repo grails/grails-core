@@ -32,6 +32,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.FlushMode;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
@@ -62,24 +63,39 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         checkMethodSignature(clazz, arguments);
 
         final String query = arguments[0].toString();
-        final Map paginateParams = extractPaginateParams(arguments);
+        final Map queryMetaParams = extractQueryMetaParams(arguments);
         final List positionalParams = extractPositionalParams(arguments);
         final Map namedParams = extractNamedParams(arguments);
 
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Query q = session.createQuery(query);
+
                 // process paginate params
-                if (paginateParams.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
-                    Integer maxParam = converter.convertIfNecessary(paginateParams.get(GrailsHibernateUtil.ARGUMENT_MAX),Integer.class);
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
+                    Integer maxParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_MAX), Integer.class);
                     q.setMaxResults(maxParam.intValue());
                 }
-                if (paginateParams.containsKey(GrailsHibernateUtil.ARGUMENT_OFFSET)) {
-                    Integer offsetParam = converter.convertIfNecessary(paginateParams.remove(GrailsHibernateUtil.ARGUMENT_OFFSET), Integer.class);
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_OFFSET)) {
+                    Integer offsetParam = converter.convertIfNecessary(queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_OFFSET), Integer.class);
                     q.setFirstResult(offsetParam.intValue());
                 }
-                if (paginateParams.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) {
-                    q.setCacheable(((Boolean)paginateParams.remove(GrailsHibernateUtil.ARGUMENT_CACHE)).booleanValue());
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) {
+                    q.setCacheable(((Boolean)queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_CACHE)).booleanValue());
+                }
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE)) {
+                    Integer fetchSizeParam = converter.convertIfNecessary(queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE), Integer.class);
+                    q.setFetchSize(fetchSizeParam.intValue());
+                }
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_TIMEOUT)) {
+                    Integer timeoutParam = converter.convertIfNecessary(queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_TIMEOUT), Integer.class);
+                    q.setFetchSize(timeoutParam.intValue());
+                }
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) {
+                    q.setReadOnly(((Boolean) queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_READ_ONLY)).booleanValue());
+                }
+                if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE)) {
+                    q.setFlushMode((FlushMode) queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
                 }
                 // process positional HQL params
                 int index = 0;
@@ -123,16 +139,20 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Map extractPaginateParams(Object[] arguments) {
+    private Map extractQueryMetaParams(Object[] arguments) {
         Map result = new HashMap();
-        int paginateParamsIndex = 0;
-        if (arguments.length == 2 && arguments[1] instanceof Map) paginateParamsIndex = 1;
-        else if (arguments.length == 3) paginateParamsIndex = 2;
-        if (paginateParamsIndex > 0) {
-            Map sourceMap = (Map) arguments[paginateParamsIndex];
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) result.put(GrailsHibernateUtil.ARGUMENT_MAX, sourceMap.get(GrailsHibernateUtil.ARGUMENT_MAX));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_OFFSET)) result.put(GrailsHibernateUtil.ARGUMENT_OFFSET, sourceMap.get(GrailsHibernateUtil.ARGUMENT_OFFSET));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) result.put(GrailsHibernateUtil.ARGUMENT_CACHE, sourceMap.get(GrailsHibernateUtil.ARGUMENT_CACHE));
+        int metaParamsIndex = 0;
+        if (arguments.length == 2 && arguments[1] instanceof Map) metaParamsIndex = 1;
+        else if (arguments.length == 3) metaParamsIndex = 2;
+        if (metaParamsIndex > 0) {
+            Map sourceMap = (Map) arguments[metaParamsIndex];
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) result.put(GrailsHibernateUtil.ARGUMENT_MAX, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_MAX));
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_OFFSET)) result.put(GrailsHibernateUtil.ARGUMENT_OFFSET, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_OFFSET));
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) result.put(GrailsHibernateUtil.ARGUMENT_CACHE, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_CACHE));
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE)) result.put(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_TIMEOUT)) result.put(GrailsHibernateUtil.ARGUMENT_TIMEOUT, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_TIMEOUT));
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE)) result.put(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE));
+            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) result.put(GrailsHibernateUtil.ARGUMENT_READ_ONLY, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_READ_ONLY));
         }
         return result;
     }
@@ -158,10 +178,6 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         Map result = new HashMap();
         if (arguments.length < 2 || !(arguments[1] instanceof Map)) return result;
         result.putAll((Map) arguments[1]);
-        // max, offset and cache are processed by paginate params
-        result.remove(GrailsHibernateUtil.ARGUMENT_MAX);
-        result.remove(GrailsHibernateUtil.ARGUMENT_OFFSET);
-        result.remove(GrailsHibernateUtil.ARGUMENT_CACHE);
         return result;
     }
 }
