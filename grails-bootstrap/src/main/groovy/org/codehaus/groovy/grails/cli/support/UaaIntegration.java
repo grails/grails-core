@@ -142,7 +142,7 @@ public class UaaIntegration {
     }
 
     private static boolean isUaaAccepted(UaaClient.Privacy.PrivacyLevel privacyLevel) {
-        return privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA ) || privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA );
+        return privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA ) || privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.LIMITED_DATA );
     }
 
 }
