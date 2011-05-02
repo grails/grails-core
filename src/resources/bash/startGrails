@@ -56,7 +56,7 @@ if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
 fi
 
 if [ "$1" = "-agent" ] || [ "$1" = "run-app" ]; then
-  AGENT="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-0.7.3.BUILD-SNAPSHOT.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
+  AGENT="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-0.7.3.BUILD-SNAPSHOT.jar -noverify -Dspringloaded=profile=grails"
 fi
 
 ARGUMENTS=$@

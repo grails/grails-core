@@ -29,6 +29,8 @@ import org.springframework.core.io.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Watches a Grails projects and re-compiles sources when they change or fires events to the pluginManager
@@ -38,6 +40,9 @@ import java.util.List;
  */
 public class GrailsProjectWatcher extends DirectoryWatcher{
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
+    private static final Queue<Runnable> classChangeEventQueue = new ConcurrentLinkedQueue<Runnable>();
+
+
     private List<String> compilerExtensions;
     private GrailsPluginManager pluginManager;
     private GrailsProjectCompiler compiler;
@@ -50,6 +55,17 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         this.compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
         this.extensions.addAll(compilerExtensions);
+    }
+
+
+    /**
+     * Fire any pending class change events
+     */
+    public static void firePendingClassChangeEvents() {
+        for (Runnable runnable : classChangeEventQueue) {
+            runnable.run();
+        }
+        classChangeEventQueue.clear();
     }
 
     @Override
@@ -102,11 +118,21 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         super.run();
     }
 
-    private void informPluginManager(File file) {
-        try {
-            pluginManager.informOfFileChange(file);
-        } catch (Exception e) {
-            LOG.error("Failed to reload file ["+file+"] with error: " + e.getMessage());
+    private void informPluginManager(final File file) {
+        if(!isSourceFile(file)) {
+            try {
+                pluginManager.informOfFileChange(file);
+            } catch (Exception e) {
+                LOG.error("Failed to reload file ["+file+"] with error: " + e.getMessage());
+            }
+        }
+        else {
+            // add to class change event queue
+            classChangeEventQueue.add(new Runnable() {
+                public void run() {
+                    pluginManager.informOfFileChange(file);
+                }
+            });
         }
     }
 
