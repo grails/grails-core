@@ -283,11 +283,17 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         }
         ApplicationContext ctx = event.ctx
         beans.registerBeans(ctx)
+        enhanceSessionFactories(ctx, event.application)
     }
     static final doWithDynamicMethods = {ApplicationContext ctx ->
+        def grailsApplication = application
+        enhanceSessionFactories(ctx, grailsApplication)
+    }
+
+    static void enhanceSessionFactories(ApplicationContext ctx, grailsApplication) {
         for (entry in ctx.getBeansOfType(SessionFactory)) {
             SessionFactory sessionFactory = entry.value
-            enhanceSessionFactory(sessionFactory, application, ctx)
+            enhanceSessionFactory(sessionFactory, grailsApplication, ctx)
         }
     }
 

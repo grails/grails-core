@@ -325,14 +325,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void informOfFileChange(File file) {
         String absolutePath = file.getAbsolutePath();
         for (GrailsPlugin grailsPlugin : pluginList) {
+            String className = GrailsResourceUtils.getClassName(absolutePath);
             if(grailsPlugin.hasInterestInChange(absolutePath)) {
-                String className = GrailsResourceUtils.getClassName(absolutePath);
                 if(className != null) {
-                    try {
-                        Class<?> aClass = application.getClassLoader().loadClass(className);
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, aClass);
-                    } catch (ClassNotFoundException e) {
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
+                    Class cls = loadApplicationClass(className);
+                    if(cls != null) {
+                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
                     }
                 }
                 else {
@@ -341,6 +339,17 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             }
         }
     }
+
+    private Class loadApplicationClass(String className) {
+        Class cls = null;
+        try {
+            cls = application.getClassLoader().loadClass(className);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        return cls;
+    }
+
 
     public String getPluginPathForClass(Class<?> theClass) {
         if (theClass != null) {

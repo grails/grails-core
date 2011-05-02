@@ -40,6 +40,9 @@ import org.springframework.validation.Validator
  */
 class DomainClassGrailsPlugin {
 
+    def watchedResources = ["file:./grails-app/domain/**/*.groovy",
+                            "file:./plugins/*/grails-app/domain/**/*.groovy"]
+
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [i18n:version]
     def loadAfter = ['controllers']
@@ -130,6 +133,7 @@ class DomainClassGrailsPlugin {
                     }
                 }
                 beans.registerBeans(event.ctx)
+                enhanceDomainClasses(event.application, event.ctx)
             }
         }
     }
