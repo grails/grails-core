@@ -178,7 +178,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             eventTriggeringInterceptor(ClosureEventTriggeringInterceptor)
             hibernateEventListeners(HibernateEventListeners)
             entityInterceptor(EmptyInterceptor)
-            sessionFactory(ConfigurableLocalSessionFactoryBean) {
+            abstractSessionFactoryBeanConfig {
                 dataSource = dataSource
                 List hibConfigLocations = []
                 if (application.classLoader.getResource("hibernate.cfg.xml")) {
@@ -212,6 +212,22 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                                   'pre-delete':eventTriggeringInterceptor,
                                   'post-delete':eventTriggeringInterceptor]
                 hibernateEventListeners = hibernateEventListeners
+            }
+
+            if(grails.util.Environment.current.isReloadEnabled()) {
+                sessionFactoryHolder(SessionFactoryHolder) {
+                   sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
+                        bean.parent = abstractSessionFactoryBeanConfig
+                   }
+                }
+                sessionFactory(SessionFactoryProxy) {
+                    targetBean = "sessionFactoryHolder"
+                }
+            }
+            else {
+                sessionFactory(ConfigurableLocalSessionFactoryBean) { bean ->
+                    bean.parent = abstractSessionFactoryBeanConfig
+                }
             }
 
             transactionManager(GrailsHibernateTransactionManager) {
@@ -257,6 +273,17 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         }
     }
 
+    static final onChange = { event ->
+        def beans = beans {
+            sessionFactoryHolder(SessionFactoryHolder) {
+               sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
+                    bean.parent = ref("abstractSessionFactoryBeanConfig")
+               }
+            }
+        }
+        ApplicationContext ctx = event.ctx
+        beans.registerBeans(ctx)
+    }
     static final doWithDynamicMethods = {ApplicationContext ctx ->
         for (entry in ctx.getBeansOfType(SessionFactory)) {
             SessionFactory sessionFactory = entry.value

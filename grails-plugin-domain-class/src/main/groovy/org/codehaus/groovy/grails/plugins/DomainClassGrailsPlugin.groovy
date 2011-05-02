@@ -100,6 +100,40 @@ class DomainClassGrailsPlugin {
         enhanceDomainClasses(application, ctx)
     }
 
+    def onChange = { event ->
+        def cls = event.source
+
+        if(cls instanceof Class) {
+            final domainClass = application.addArtefact(DomainClassArtefactHandler.TYPE, cls)
+            if(!domainClass.abstract) {
+                def beans = beans {
+                    "${domainClass.fullName}"(domainClass.clazz) { bean ->
+                        bean.singleton = false
+                        bean.autowire = "byName"
+                    }
+                    "${domainClass.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
+                        targetObject = ref("grailsApplication", true)
+                        targetMethod = "getArtefact"
+                        bean.lazyInit = true
+                        arguments = [DomainClassArtefactHandler.TYPE, domainClass.fullName]
+                    }
+                    "${domainClass.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
+                        targetObject = ref("${domainClass.fullName}DomainClass")
+                        bean.lazyInit = true
+                        targetMethod = "getClazz"
+                    }
+                    "${domainClass.fullName}Validator"(GrailsDomainClassValidator) { bean ->
+                        messageSource = ref("messageSource")
+                        bean.lazyInit = true
+                        domainClass = ref("${domainClass.fullName}DomainClass")
+                        grailsApplication = ref("grailsApplication", true)
+                    }
+                }
+                beans.registerBeans(event.ctx)
+            }
+        }
+    }
+
     def onConfigChange = { event ->
         def beans = beans {
             def defaultConstraintsMap = getDefaultConstraints(event.source)
