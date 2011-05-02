@@ -57,7 +57,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         this.pluginManager = pluginManager;
         this.compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
-        this.extensions.addAll(compilerExtensions);
         if(ClassUtils.isPresent(SPRING_LOADED_PLUGIN_CLASS, getClass().getClassLoader())) {
             GrailsPluginManagerReloadPlugin.register();
         }

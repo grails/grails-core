@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import groovy.lang.GroovyResourceLoader;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -26,10 +29,9 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,8 +54,13 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     private static ClassInjector[] classInjectors = null;
     private ClassInjector[] localClassInjectors;
 
-     public GrailsAwareInjectionOperation() {
+    public GrailsAwareInjectionOperation() {
         initializeState();
+    }
+
+    public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
+        initializeState();
+        this.localClassInjectors = classInjectors;
     }
 
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
@@ -129,8 +136,8 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 // ignore
             }
         }
-        for (ClassInjector classInjector : getLocalClassInjectors() && !(classInjector instanceof GroovyPageInjector)) {
-            if (classInjector.shouldInject(url)) {
+        for (ClassInjector classInjector : getLocalClassInjectors() ) {
+            if (classInjector.shouldInject(url)&& !(classInjector instanceof GroovyPageInjector)) {
                 classInjector.performInjection(source, context, classNode);
             }
 

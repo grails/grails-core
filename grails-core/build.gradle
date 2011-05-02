@@ -1,5 +1,5 @@
 repositories {
-      mavenRepo name: "spring-release", urls: 'http://maven.springframework.org/release'
+      mavenRepo name: "spring-snapshot", urls: 'http://maven.springframework.org/snapshot'
 }
 configurations {
     agent.extendsFrom compile
