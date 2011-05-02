@@ -20,11 +20,13 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.core.io.Resource;
+import org.springframework.util.ClassUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class GrailsProjectWatcher extends DirectoryWatcher{
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
     private static final Queue<Runnable> classChangeEventQueue = new ConcurrentLinkedQueue<Runnable>();
+    public static final String SPRING_LOADED_PLUGIN_CLASS = "com.springsource.loaded.Plugins";
 
 
     private List<String> compilerExtensions;
@@ -54,6 +57,10 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         this.pluginManager = pluginManager;
         this.compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
+        this.extensions.addAll(compilerExtensions);
+        if(ClassUtils.isPresent(SPRING_LOADED_PLUGIN_CLASS, getClass().getClassLoader())) {
+            GrailsPluginManagerReloadPlugin.register();
+        }
     }
 
 
