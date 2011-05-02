@@ -63,6 +63,12 @@ target(packagePlugin: "Implementation target") {
     packager.ant = ant
     packager.resourcesDir = new File(resourcesDirPath)
     packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
+	if(argsMap.binary) {
+		plugin.packaging = "binary"
+	}
+	else if(argsMap.source) {
+		plugin.packaging = "source"
+	}
 
     def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
@@ -95,12 +101,7 @@ target(packagePlugin: "Implementation target") {
      generatePluginXml(descriptor.file, false)
 
     // Package plugin's zip distribution
-    if (argsMap.binary) {
-        pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)
-    }
-    else {
-        pluginZip = packager.packagePlugin(plugin.name, classesDir, grailsSettings.projectTargetDir)
-    }
+    pluginZip = packager.packagePlugin(plugin.name, classesDir, grailsSettings.projectTargetDir)
 
 
     event("PackagePluginEnd", [plugin.name])

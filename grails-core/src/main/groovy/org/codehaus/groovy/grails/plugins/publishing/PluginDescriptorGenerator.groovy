@@ -73,7 +73,7 @@ class PluginDescriptorGenerator {
 
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
         // Write the content!
-        def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type']
+        def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type', 'packaging']
 
         def rcComparator = [compare: {a, b -> a.URI.compareTo(b.URI) }] as Comparator
         Arrays.sort(resourceList, rcComparator)
