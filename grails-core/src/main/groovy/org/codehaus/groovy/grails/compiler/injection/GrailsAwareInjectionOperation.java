@@ -15,8 +15,6 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyResourceLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -47,10 +45,8 @@ import java.util.List;
  */
 public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation  {
 
-    private static final Log LOG = LogFactory.getLog(GrailsAwareInjectionOperation.class);
     private static final String INJECTOR_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
-    private GroovyResourceLoader grailsResourceLoader;
     private static ClassInjector[] classInjectors = null;
     private ClassInjector[] localClassInjectors;
 
@@ -60,18 +56,6 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
         initializeState();
-        this.localClassInjectors = classInjectors;
-    }
-
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
-        Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
-        this.grailsResourceLoader = resourceLoader;
-        initializeState();
-    }
-
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
-        Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
-        this.grailsResourceLoader = resourceLoader;
         this.localClassInjectors = classInjectors;
     }
 
@@ -126,7 +110,9 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
+
       URL url = null;
+
         final String filename = source.getName();
         Resource resource = new FileSystemResource(filename);
         if(resource.exists()) {
@@ -134,10 +120,11 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 url = resource.getURL();
             } catch (IOException e) {
                 // ignore
+
             }
         }
-        for (ClassInjector classInjector : getLocalClassInjectors() ) {
-            if (classInjector.shouldInject(url)&& !(classInjector instanceof GroovyPageInjector)) {
+        for (ClassInjector classInjector : getLocalClassInjectors()) {
+            if (classInjector.shouldInject(url)) {
                 classInjector.performInjection(source, context, classNode);
             }
 

@@ -35,6 +35,7 @@ ant.path(id: "grails.compile.classpath", compileClasspath)
 
 target(setCompilerSettings: "Updates the compile build settings based on args") {
     depends(parseArguments)
+
     if (argsMap.containsKey('verboseCompile')) {
         grailsSettings.verboseCompile = argsMap.verboseCompile as boolean
 		projectCompiler.verbose = grailsSettings.verboseCompile

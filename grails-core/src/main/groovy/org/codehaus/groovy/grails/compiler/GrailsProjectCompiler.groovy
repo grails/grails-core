@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.Resource
 
 /**
+ *
  * Encapsulates the compilation logic required for a Grails application
  *
  * @author Graeme Rocher
@@ -356,7 +357,6 @@ class GrailsProjectCompiler {
             unit.compile()
         }
     }
-
 
     private initializeAntClasspaths() {
 
