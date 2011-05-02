@@ -94,15 +94,15 @@ if "%CURR_ARG:~0,2%" == "-D" (
 			goto win9xME_args_slurp
 		) else (
 			if "x%~1" == "x-agent" (
-				set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-0.7.3.BUILD-SNAPSHOT.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
-				shift
-				shift
+				set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-0.7.3.BUILD-SNAPSHOT.jar -noverify -Dspringloaded=profile=grails"
+				shift	
+				shift	
 				goto win9xME_args_slurp
 			) else (
 				if "x%~1" == "x-run-app" (
-					set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-0.7.3.BUILD-SNAPSHOT.jar -noverify -Dspringloaded=limit=false;plugins=com.springsource.loaded.SystemPropertyConfiguredIsReloadableTypePlugin"
-					shift
-					shift
+					set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-0.7.3.BUILD-SNAPSHOT.jar -noverify -Dspringloaded=profile=grails"
+					shift	
+					shift	
 					goto win9xME_args_slurp
 				) else (
 					set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
