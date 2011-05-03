@@ -80,10 +80,35 @@ target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plu
  * Generates the 'plugin.xml' file for a plugin. Returns an instance
  * of the plugin descriptor.
  */
+/**
+ * Generates the 'plugin.xml' file for a plugin. Returns an instance
+ * of the plugin descriptor.
+ */
 generatePluginXml = { File descriptor, boolean compilePlugin = true ->
     def pluginBaseDir = descriptor.parentFile
     def pluginProps = pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
+	def plugin
     pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+
+    if (compilePlugin) {
+        try {
+            // Rather than compiling the descriptor via Ant, we just load
+            // the Groovy file into a GroovyClassLoader. We add the classes
+            // directory to the class loader in case it didn't exist before
+            // the associated plugin's sources were compiled.
+            def gcl = new GroovyClassLoader(classLoader)
+            gcl.addURL(grailsSettings.classesDir.toURI().toURL())
+
+            pluginClass = gcl.parseClass(descriptor)
+            plugin = pluginClass.newInstance()
+			pluginProps = plugin.properties
+        }
+        catch (Throwable t) {
+            event("StatusError", [t.message])
+            t.printStackTrace(System.out)
+            ant.fail("Cannot instantiate plugin file")
+        }
+    }
 
     if (pluginProps != null) {
        if (pluginProps["grailsVersion"]) {
@@ -100,13 +125,14 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
     pluginXml.delete()
 
     // Use MarkupBuilder with indenting to generate the file.
-    def writer = new IndentPrinter(new PrintWriter(new FileWriter(pluginXml)))	
-	def generator = new org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator(pluginName, resourceList)
-	
-	pluginProps["type"] = descriptor.name - '.groovy'
-	generator.generatePluginXml(pluginProps, writer)
-	
-    return pluginProps
+	pluginXml.withWriter { writer ->
+		def generator = new org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator(pluginName, resourceList)
+
+		pluginProps["type"] = descriptor.name - '.groovy'
+		generator.generatePluginXml(pluginProps, writer)
+
+	    return compilePlugin ? plugin : pluginProps		
+	}
 }
 
 target(loadPluginsAsync:"Asynchronously loads plugins") {

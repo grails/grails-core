@@ -55,7 +55,8 @@ class PluginDescriptorGenerator {
      */
     void generatePluginXml(pluginProps, Writer target) {
        // Use MarkupBuilder with indenting to generate the file.
-        def xml = new MarkupBuilder(target)
+        def targetWriter = new IndentPrinter(new PrintWriter(target))
+        def xml = new MarkupBuilder(targetWriter)
         generatePluginXml(pluginProps, xml)
     }
 
