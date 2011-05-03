@@ -113,7 +113,7 @@ public class GrailsCoreDependencies {
                         // depenencies needed when creating docs
                         ModuleRevisionId[] docDependencies = {
                             ModuleRevisionId.newInstance("org.xhtmlrenderer", "core-renderer","R8"),
-                            ModuleRevisionId.newInstance("com.lowagie","itext", "2.0.8"),
+                            ModuleRevisionId.newInstance("com.lowagie","itext", "2.1.7"),
                             ModuleRevisionId.newInstance("org.grails", "grails-radeox", "1.0-b4")
                         };
                         registerDependencies(dependencyManager, "docs", docDependencies);
