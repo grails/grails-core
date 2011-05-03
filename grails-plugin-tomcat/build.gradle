@@ -1,8 +1,10 @@
 def tomcatVersion = "7.0.8"
 dependencies {
+    compile "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion"
 	compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 	compile "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"	
-	compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"	
+	compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
+//    compile "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion"
     compile project(":grails-core"),
             project(":grails-web"),
             project(':grails-bootstrap')
