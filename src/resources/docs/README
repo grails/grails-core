@@ -81,9 +81,9 @@ The 'assemble' target will create a new distribution in build/distributions:
 
 ./gradlew assemble
 
-The 'libs' target will rebuild the JAR files located in the 'dist' directory:
+The 'install' target will rebuild the JAR files located in the 'dist' directory:
 
-./gradlew libs
+./gradlew install
 
 The 'test' target will run Grails' test cases:
 
