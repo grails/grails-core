@@ -17,7 +17,7 @@ antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 springVersion = "3.0.5.RELEASE"
 ivyVersion = "2.2.0"
-gantVersion = "1.9.5-SNAPSHOT"
+gantVersion = "1.9.5"
 groovyVersion = "1.8.0"
 
 archivesBaseName = 'grails'
