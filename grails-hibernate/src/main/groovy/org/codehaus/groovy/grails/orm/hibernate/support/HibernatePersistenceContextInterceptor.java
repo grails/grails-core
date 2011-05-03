@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryProxy;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.FlushMode;
@@ -58,7 +59,7 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
         }
 
         // single session mode
-        SessionHolder holder = (SessionHolder)TransactionSynchronizationManager.unbindResource(sessionFactory);
+        SessionHolder holder = (SessionHolder)TransactionSynchronizationManager.unbindResource(getSessionFactory());
         LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
         try {
             Session session = holder.getSession();
@@ -115,7 +116,8 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
         if (incNestingCount() > 1) {
             return;
         }
-        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
+        SessionFactory sf = getSessionFactory();
+        if (TransactionSynchronizationManager.hasResource(sf)) {
             // Do not modify the Session: just set the participate flag.
             setParticipate(true);
         }
@@ -123,9 +125,9 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
             setParticipate(false);
             LOG.debug("Opening single Hibernate session in HibernatePersistenceContextInterceptor");
             Session session = getSession();
-            GrailsHibernateUtil.enableDynamicFilterEnablerIfPresent(sessionFactory, session);
+            GrailsHibernateUtil.enableDynamicFilterEnablerIfPresent(sf, session);
             session.setFlushMode(FlushMode.AUTO);
-            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session));
+            TransactionSynchronizationManager.bindResource(sf, new SessionHolder(session));
         }
     }
 
@@ -134,13 +136,16 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
     }
 
     private Session getSession(boolean allowCreate) {
-        return SessionFactoryUtils.getSession(sessionFactory, allowCreate);
+        return SessionFactoryUtils.getSession(getSessionFactory(), allowCreate);
     }
 
     /**
      * @return the sessionFactory
      */
     public SessionFactory getSessionFactory() {
+        if(sessionFactory instanceof SessionFactoryProxy) {
+            return ((SessionFactoryProxy)sessionFactory).getCurrentSessionFactory();
+        }
         return sessionFactory;
     }
 

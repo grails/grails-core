@@ -48,7 +48,7 @@ public class SessionFactoryProxy implements SessionFactory, ApplicationContextAw
         this.targetBean = targetBean;
     }
 
-    private SessionFactory getCurrentSessionFactory() {
+    public SessionFactory getCurrentSessionFactory() {
          return applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
     }
 
