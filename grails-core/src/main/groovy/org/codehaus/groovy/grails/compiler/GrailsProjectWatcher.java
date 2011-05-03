@@ -93,14 +93,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
             public void onChange(File file) {
                 LOG.info("File ["+file+"] changed. Applying changes to application.");
                 compileIfSource(file);
-                informPluginManager(file);
+                informPluginManager(file, false);
             }
 
             public void onNew(File file) {
                 LOG.info("File ["+file+"] added. Applying changes to application.");
                 sleep(5000);
                 compileIfSource(file);
-                informPluginManager(file);
+                informPluginManager(file, true);
             }
         });
 
@@ -123,8 +123,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         super.run();
     }
 
-    private void informPluginManager(final File file) {
-        if(!isSourceFile(file)) {
+    private void informPluginManager(final File file, boolean isNew) {
+        if(!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);
             } catch (Exception e) {
