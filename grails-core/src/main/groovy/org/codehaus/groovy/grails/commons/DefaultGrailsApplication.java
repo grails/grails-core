@@ -38,8 +38,6 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.documentation.DocumentationContext;

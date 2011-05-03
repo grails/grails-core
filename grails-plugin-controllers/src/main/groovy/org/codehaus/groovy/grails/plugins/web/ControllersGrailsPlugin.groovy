@@ -19,7 +19,9 @@ import grails.artefact.Enhanced
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
@@ -29,22 +31,14 @@ import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
-import org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter
-import org.codehaus.groovy.grails.web.servlet.mvc.CommandObjectEnablingPostProcessor
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
-import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
-import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
 import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
-import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
-import org.codehaus.groovy.grails.web.servlet.mvc.ClosureGrailsControllerHelper
-import org.codehaus.groovy.grails.web.servlet.mvc.MethodGrailsControllerHelper
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.codehaus.groovy.grails.web.servlet.mvc.*
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -58,6 +52,7 @@ class ControllersGrailsPlugin {
             "file:./plugins/*/grails-app/controllers/**/*Controller.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
+    def observe= ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
     def nonEnhancedControllerClasses = []
 
@@ -166,12 +161,6 @@ class ControllersGrailsPlugin {
                 'filter-name'('grailsWebRequest')
                 'filter-class'(GrailsWebRequestFilter.name)
             }
-            if (grailsEnv == "development") {
-                filter {
-                    'filter-name'('reloadFilter')
-                    'filter-class'(GrailsReloadServletFilter.name)
-                }
-            }
         }
 
         def grailsWebRequestFilter = {
@@ -186,20 +175,6 @@ class ControllersGrailsPlugin {
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
                 'dispatcher'("REQUEST")
-            }
-            if (grailsEnv == "development") {
-                // Install the reload filter, which allows you to make
-                // changes to artefacts and views while the app is running.
-                //
-                // All URLs are filtered, including any images, JS, CSS,
-                // etc. Fortunately the reload filter now has much less
-                // of an impact on response times.
-                'filter-mapping' {
-                    'filter-name'('reloadFilter')
-                    'url-pattern'("/*")
-                    'dispatcher'("FORWARD")
-                    'dispatcher'("REQUEST")
-                }
             }
         }
 
@@ -274,7 +249,11 @@ class ControllersGrailsPlugin {
     }
 
     def onChange = {event ->
-        if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
+        if (application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) {
+            def dc = application.getDomainClass(event.source.name)
+            enhanceDomainWithBinding(event.ctx, dc, dc.metaClass)
+        }
+        else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
             def context = event.ctx
             if (!context) {
                 if (log.isDebugEnabled()) {
@@ -291,7 +270,13 @@ class ControllersGrailsPlugin {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                     bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
                     bean.autowire = true
-                    instanceControllersApi = ref("instanceControllersApi")
+                    def enhancedAnn = controllerClass.clazz.getAnnotation(Enhanced)
+                    if(enhancedAnn != null) {
+                        instanceControllersApi = ref("instanceControllersApi")
+                    }
+                    else {
+                        nonEnhancedControllerClasses << controllerClass
+                    }
                 }
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
@@ -299,5 +284,7 @@ class ControllersGrailsPlugin {
             beanDefinitions.registerBeans(event.ctx)
 
         }
+
+        event.manager?.getGrailsPlugin("controllers")?.doWithDynamicMethods(event.ctx)
     }
 }

@@ -25,11 +25,13 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -320,7 +322,36 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     }
 
-    public String getPluginPathForClass(Class<? extends Object> theClass) {
+    public void informOfFileChange(File file) {
+        String absolutePath = file.getAbsolutePath();
+        for (GrailsPlugin grailsPlugin : pluginList) {
+            String className = GrailsResourceUtils.getClassName(absolutePath);
+            if(grailsPlugin.hasInterestInChange(absolutePath)) {
+                if(className != null) {
+                    Class cls = loadApplicationClass(className);
+                    if(cls != null) {
+                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
+                    }
+                }
+                else {
+                    grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
+                }
+            }
+        }
+    }
+
+    private Class loadApplicationClass(String className) {
+        Class cls = null;
+        try {
+            cls = application.getClassLoader().loadClass(className);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+        return cls;
+    }
+
+
+    public String getPluginPathForClass(Class<?> theClass) {
         if (theClass != null) {
             org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin ann =
                 theClass.getAnnotation(org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin.class);
@@ -338,7 +369,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         return null;
     }
 
-    public String getPluginViewsPathForClass(Class<? extends Object> theClass) {
+    public String getPluginViewsPathForClass(Class<?> theClass) {
         if (theClass != null) {
             final String path = getPluginPathForClass(theClass);
             if (StringUtils.hasText(path)) {

@@ -15,23 +15,7 @@
  */
 package grails.spring;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GString;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.GroovyShell;
-import groovy.lang.MetaClass;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.spring.BeanConfiguration;
@@ -42,23 +26,9 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
-import org.springframework.beans.factory.parsing.BeanDefinitionParsingException;
-import org.springframework.beans.factory.parsing.EmptyReaderEventListener;
-import org.springframework.beans.factory.parsing.FailFastProblemReporter;
-import org.springframework.beans.factory.parsing.Location;
-import org.springframework.beans.factory.parsing.NullSourceExtractor;
-import org.springframework.beans.factory.parsing.Problem;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.ManagedList;
-import org.springframework.beans.factory.support.ManagedMap;
-import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
-import org.springframework.beans.factory.xml.BeanDefinitionParserDelegate;
-import org.springframework.beans.factory.xml.DefaultNamespaceHandlerResolver;
-import org.springframework.beans.factory.xml.NamespaceHandler;
-import org.springframework.beans.factory.xml.NamespaceHandlerResolver;
-import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
-import org.springframework.beans.factory.xml.XmlReaderContext;
+import org.springframework.beans.factory.parsing.*;
+import org.springframework.beans.factory.support.*;
+import org.springframework.beans.factory.xml.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
@@ -66,6 +36,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
 
 /**
  * <p>Runtime bean configuration wrapper. Like a Groovy builder, but more of a DSL for
@@ -777,6 +751,53 @@ public class BeanBuilder extends GroovyObjectSupport {
     public void setProperty(String name, Object value) {
         if (currentBeanConfig != null) {
             setPropertyOnBeanConfig(name, value);
+        }
+    }
+
+    /**
+     * Defines an inner bean definition
+     *
+     * @param type The bean type
+     * @return The bean definition
+     */
+    public AbstractBeanDefinition bean(Class type) {
+        return springConfig.createSingletonBean(type).getBeanDefinition();
+    }
+
+    /**
+     * Defines an inner bean definition
+     *
+     * @param type The bean type
+     * @param args The constructors arguments and closure configurer
+     * @return The bean definition
+     */
+    public AbstractBeanDefinition bean(Class type, Object...args) {
+        BeanConfiguration current = currentBeanConfig;
+        try {
+
+            Closure callable = null;
+            Collection constructorArgs = null;
+            if(args != null && args.length > 0) {
+                int index = args.length;
+                Object lastArg = args[index-1];
+
+                if(lastArg instanceof Closure) {
+                    callable = (Closure) lastArg;
+                    index--;
+                }
+                if(index > -1) {
+                    constructorArgs = resolveConstructorArguments(args, 0, index);
+                }
+            }
+            currentBeanConfig =  constructorArgs != null ? springConfig.createSingletonBean(type,constructorArgs) : springConfig.createSingletonBean(type);
+            if(callable != null) {
+                callable.call(new Object[]{currentBeanConfig});
+            }
+            return currentBeanConfig.getBeanDefinition();
+
+        }
+        finally {
+            currentBeanConfig = current;
         }
     }
 

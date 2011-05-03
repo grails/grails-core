@@ -175,12 +175,12 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-    // Start the plugin change scanner.
-    PluginManagerHolder.pluginManager?.startPluginChangeScanner()
+	def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+	watcher.start()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
-    PluginManagerHolder.pluginManager?.stopPluginChangeScanner()
+	// do nothing, here for compatibility
 }
 
 /**
@@ -239,48 +239,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
         daemonThread.run()
     }
 
-    def killFile = new File("${basedir}/.kill-run-app")
-    while (keepRunning) {
-        if (autoRecompile) {
-            lastModified = recompileCheck(lastModified) {
-                try {
-                    grailsServer.stop()
-                    compile()
-                    Thread currentThread = Thread.currentThread()
-                    def classesDirs = [classesDir,
-                                       pluginClassesDir].collect { it.toURI().toURL() }
-
-                    classLoader = new URLClassLoader(classesDirs as URL[], rootLoader)
-                    currentThread.setContextClassLoader classLoader
-                    PluginManagerHolder.pluginManager = null
-                    // reload plugins
-                    loadPlugins()
-
-                    if (usingSecureServer) {
-                        runAppHttps()
-                    }
-                    else {
-                        runApp()
-                    }
-                }
-                catch (Throwable e) {
-                    logError("Error restarting container",e)
-                    exit(1)
-                }
-            }
-        }
-        sleep(recompileFrequency * 1000)
-
-        // Check whether the kill file exists. This is a hack for the
-        // functional tests so that we can stop the servers that are
-        // started.
-        if (killFile.exists()) {
-            println "Stopping server..."
-            grailsServer.stop()
-            killFile.delete()
-            keepRunning = false
-        }
-    }
+	keepServerAlive()
 }
 
 target(keepServerAlive: "Idles the script, ensuring that the server stays running.") {

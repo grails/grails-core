@@ -18,21 +18,19 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
-import org.codehaus.groovy.grails.compiler.injection.GrailsInjectionOperation;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Creates a Grails application object based on Groovy files.
@@ -46,18 +44,10 @@ import org.springframework.util.Assert;
 public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplication>, InitializingBean {
 
     private static Log LOG = LogFactory.getLog(GrailsApplicationFactoryBean.class);
-    private GrailsInjectionOperation injectionOperation = null;
     private GrailsApplication grailsApplication = null;
     private GrailsResourceLoader resourceLoader;
     private Resource descriptor;
 
-    public GrailsInjectionOperation getInjectionOperation() {
-        return injectionOperation;
-    }
-
-    public void setInjectionOperation(GrailsInjectionOperation injectionOperation) {
-        this.injectionOperation = injectionOperation;
-    }
 
     public void afterPropertiesSet() throws Exception {
         if (descriptor != null && descriptor.exists()) {

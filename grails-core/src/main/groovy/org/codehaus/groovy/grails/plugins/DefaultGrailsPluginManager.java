@@ -20,17 +20,14 @@ import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.lang.*;
 import groovy.util.ConfigObject;
-import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
@@ -54,7 +51,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -85,7 +81,7 @@ import java.util.*;
  * </pre>
  * <p/>
  * <p>A plugin can also define "dependsOn" and "evict" properties that specify what plugins the plugin
- * depends on and which ones it is incompatable with and should evict
+ * depends on and which ones it is incompatible with and should evict
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -97,9 +93,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         Boolean.class, Byte.class, Character.class, Class.class, Double.class, Float.class,
         Integer.class, Long.class, Number.class, Short.class, String.class, BigInteger.class,
         BigDecimal.class, URL.class, URI.class };
-
-    private GrailsPluginChangeChecker pluginChangeScanner;
-    private static final int SCAN_INTERVAL = Integer.getInteger("grails.scan.interval", 5000).intValue(); //in ms
 
     private List<GrailsPlugin> delayedLoadPlugins = new LinkedList<GrailsPlugin>();
     private ApplicationContext parentCtx;
@@ -137,9 +130,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         List<Resource> resourceList = new ArrayList<Resource>();
         for (String resourcePath : pluginResources) {
             try {
-                for (Resource resource : resolver.getResources(resourcePath)) {
-                    resourceList.add(resource);
-                }
+                resourceList.addAll(Arrays.asList(resolver.getResources(resourcePath)));
             }
             catch (IOException ioe) {
                 LOG.debug("Unable to load plugins for resource path " + resourcePath, ioe);
@@ -178,34 +169,18 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         pluginFilter = new PluginFilterRetriever().getPluginFilter(application.getConfig());
     }
 
+    /**
+     * @deprecated Will be removed in a future version of Grails
+     */
     public void startPluginChangeScanner() {
-        if (pluginChangeScanner == null) {
-            pluginChangeScanner = new GrailsPluginChangeChecker(this);
-        }
-        if (pluginChangeScanner.isAlive()) {
-            throw new IllegalStateException("Plugin change scanner is already running!");
-        }
-
-        pluginChangeScanner.start();
-        LOG.info("Started to scan for plugin changes in every " + SCAN_INTERVAL + "ms.");
+        // do nothing
     }
 
+    /**
+     * @deprecated Will be removed in a future version of Grails
+     */
     public void stopPluginChangeScanner() {
-        if (pluginChangeScanner != null) {
-            pluginChangeScanner.enabled = false;
-            try {
-                try {
-                    // wait for thread to die
-                    pluginChangeScanner.join(5000);
-                }
-                catch (InterruptedException e) {
-                    // ignore
-                }
-            }
-            finally {
-                pluginChangeScanner = new GrailsPluginChangeChecker(this);
-            }
-        }
+        // do nothing
     }
 
     public void refreshPlugin(String name) {
@@ -307,13 +282,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         // retrieve load core plugins first
 
 
-        List<GrailsPlugin>  grailsCorePlugins = null;
-        try {
-            grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
-        } catch (Throwable e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        List<GrailsPlugin>  grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
 
         List<GrailsPlugin>  grailsUserPlugins = findUserPlugins(gcl);
         userPlugins = grailsUserPlugins;
@@ -329,11 +298,13 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         List<GrailsPlugin>  orderedUserPlugins = new ArrayList<GrailsPlugin> ();
 
         for (GrailsPlugin plugin : filteredPlugins) {
-            if (grailsCorePlugins.contains(plugin)) {
-                orderedCorePlugins.add(plugin);
-            }
-            else {
-                orderedUserPlugins.add(plugin);
+            if (grailsCorePlugins != null) {
+                if (grailsCorePlugins.contains(plugin)) {
+                    orderedCorePlugins.add(plugin);
+                }
+                else {
+                    orderedUserPlugins.add(plugin);
+                }
             }
         }
 
@@ -388,29 +359,24 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         List<GrailsPlugin>  grailsUserPlugins = new ArrayList<GrailsPlugin>();
 
         LOG.info("Attempting to load [" + pluginResources.length + "] user defined plugins");
-        for (int i = 0; i < pluginResources.length; i++) {
-            Resource r = pluginResources[i];
-
+        for (Resource r : pluginResources) {
             Class<?> pluginClass = loadPluginClass(gcl, r);
 
             if (isGrailsPlugin(pluginClass)) {
                 GrailsPlugin plugin = createGrailsPlugin(pluginClass, r);
                 //attemptPluginLoad(plugin);
                 grailsUserPlugins.add(plugin);
-            }
-            else {
+            } else {
                 LOG.warn("Class [" + pluginClass + "] not loaded as plug-in. Grails plug-ins must end with the convention 'GrailsPlugin'!");
             }
         }
 
-        for (int i = 0; i < pluginClasses.length; i++) {
-            Class<?> pluginClass = pluginClasses[i];
+        for (Class<?> pluginClass : pluginClasses) {
             if (isGrailsPlugin(pluginClass)) {
                 GrailsPlugin plugin = createGrailsPlugin(pluginClass);
                 //attemptPluginLoad(plugin);
                 grailsUserPlugins.add(plugin);
-            }
-            else {
+            } else {
                 LOG.warn("Class [" + pluginClass + "] not loaded as plug-in. Grails plug-ins must end with the convention 'GrailsPlugin'!");
             }
         }
@@ -491,8 +457,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
     private boolean hasDelayedDependencies(GrailsPlugin other) {
         String[] dependencyNames = other.getDependencyNames();
-        for (int i = 0; i < dependencyNames.length; i++) {
-            String dependencyName = dependencyNames[i];
+        for (String dependencyName : dependencyNames) {
             for (GrailsPlugin grailsPlugin : delayedLoadPlugins) {
                 if (grailsPlugin.getName().equals(dependencyName)) return true;
             }
@@ -504,15 +469,15 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
      * Checks whether the first plugin is dependant on the second plugin.
      *
      * @param plugin     The plugin to check
-     * @param dependancy The plugin which the first argument may be dependant on
+     * @param dependency The plugin which the first argument may be dependant on
      * @return True if it is
      */
-    private boolean isDependentOn(GrailsPlugin plugin, GrailsPlugin dependancy) {
+    private boolean isDependentOn(GrailsPlugin plugin, GrailsPlugin dependency) {
         for (String name : plugin.getDependencyNames()) {
             String requiredVersion = plugin.getDependentVersion(name);
 
-            if (name.equals(dependancy.getName()) &&
-                    GrailsPluginUtils.isValidVersion(dependancy.getVersion(), requiredVersion))
+            if (name.equals(dependency.getName()) &&
+                    GrailsPluginUtils.isValidVersion(dependency.getVersion(), requiredVersion))
                 return true;
         }
         return false;
@@ -601,8 +566,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             }
 
             String[] observedPlugins = plugin.getObservedPluginNames();
-            for (int i = 0; i < observedPlugins.length; i++) {
-                String observedPlugin = observedPlugins[i];
+            for (String observedPlugin : observedPlugins) {
                 Set<GrailsPlugin> observers = pluginToObserverMap.get(observedPlugin);
                 if (observers == null) {
                     observers = new HashSet<GrailsPlugin>();
@@ -654,65 +618,11 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         parentCtx = parent;
     }
 
+    /**
+     * @deprecated Replaced by agent-based reloading, will be removed in a future version of Grails
+     */
     public void checkForChanges() {
-        checkForConfigChanges();
-        for (GrailsPlugin plugin : pluginList) {
-            if (plugin.checkForChanges()) {
-                LOG.info("Plugin " + plugin + " changed, re-registering beans...");
-                reloadPlugin(plugin);
-            }
-        }
-    }
-
-    private void checkForConfigChanges() {
-        ConfigObject config = application.getConfig();
-        URL configURL = config.getConfigFile();
-        if (configURL != null) {
-            URLConnection connection;
-            try {
-                connection = configURL.openConnection();
-            }
-            catch (IOException e) {
-                LOG.error("I/O error obtaining URL connection for configuration [" + configURL + "]: " + e.getMessage(), e);
-                return;
-            }
-
-            try {
-                long lastModified = connection.getLastModified();
-                if (configLastModified == 0) {
-                    configLastModified = lastModified;
-                }
-                else {
-                    if (configLastModified < lastModified) {
-                        LOG.info("Configuration [" + configURL + "] changed, reloading changes..");
-                        ConfigSlurper slurper = new ConfigSlurper(Environment.getCurrent().getName());
-
-                        try {
-                            config = slurper.parse(configURL);
-                            ConfigurationHelper.initConfig(config, null, application.getClassLoader());
-                            ConfigurationHolder.setConfig(config);
-                            configLastModified = lastModified;
-                            application.configChanged();
-                            informPluginsOfConfigChange();
-                        }
-                        catch (GroovyRuntimeException gre) {
-                            LOG.error("Unable to reload configuration. Please correct problem and try again: " + gre.getMessage(), gre);
-                        }
-                    }
-                }
-            }
-            finally {
-                if (connection != null) {
-                    try {
-                        InputStream is = connection.getInputStream();
-                        if (is != null) is.close();
-                    }
-                    catch (IOException e) {
-                        // ignore
-                    }
-                }
-            }
-        }
+        // do nothing
     }
 
     public void informPluginsOfConfigChange() {
@@ -722,7 +632,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
     }
 
-    private void reloadPlugin(GrailsPlugin plugin) {
+    public void reloadPlugin(GrailsPlugin plugin) {
         plugin.doArtefactConfiguration();
 
         WebRuntimeSpringConfiguration springConfig = new WebRuntimeSpringConfiguration(parentCtx);
@@ -821,8 +731,8 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         checkInitialised();
         // remove common meta classes just to be sure
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-        for (int i = 0; i < COMMON_CLASSES.length; i++) {
-            registry.removeMetaClass(COMMON_CLASSES[i]);
+        for (Class<?> COMMON_CLASS : COMMON_CLASSES) {
+            registry.removeMetaClass(COMMON_CLASS);
         }
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
@@ -1885,52 +1795,4 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
             "<!ATTLIST welcome-file-list id ID #IMPLIED>";
     }
 
-    private class GrailsPluginChangeChecker extends Thread {
-        final DefaultGrailsPluginManager pluginManager;
-        Thread scanner;
-        boolean enabled = true;
-
-        GrailsPluginChangeChecker(DefaultGrailsPluginManager pluginManager) {
-            this.pluginManager = pluginManager;
-            setDaemon(true);
-        }
-
-        @Override
-        public void run() {
-            while (enabled) {
-                int sleepTime = DefaultGrailsPluginManager.SCAN_INTERVAL;
-                if (scanner != null && scanner.isAlive()) {
-                    LOG.warn("plugin change scanner is still running after the scanning interval. You should set " +
-                            "the grails.scan.interval system property to a higher value. The current value is " +
-                            DefaultGrailsPluginManager.SCAN_INTERVAL + " ms");
-                    scanner.interrupt();
-                }
-                else {
-                    try {
-                        scanner = new Thread() {
-                            @Override
-                            public void run() {
-                                pluginManager.checkForChanges();
-                            }
-                        };
-                        scanner.start();
-                    }
-                    catch(Throwable e) {
-                        GrailsUtil.deepSanitize(e);
-                        LOG.error("Error occured scanning for changes: " + e.getMessage(), e);
-
-                        // sleep for a bit longer if an error occurs
-                        sleepTime = DefaultGrailsPluginManager.SCAN_INTERVAL*5;
-                    }
-                }
-
-                try {
-                    sleep(sleepTime);
-                }
-                catch (InterruptedException ie) {
-                    // We just want to continue looping, so ignore this exception.
-                }
-            }
-        }
-    }
 }

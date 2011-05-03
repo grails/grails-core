@@ -41,7 +41,7 @@ class ScaffoldingGrailsPlugin {
 
     def version = grails.util.GrailsUtil.getGrailsVersion()
     def dependsOn = [controllers:version, groovyPages:version]
-    def observe = ['controllers']
+    def observe = ['controllers', 'domainClass']
     def loadAfter = ['controllers']
 
     def doWithSpring = {
@@ -69,6 +69,10 @@ class ScaffoldingGrailsPlugin {
 
     def doWithApplicationContext = { ApplicationContext appCtx ->
         def app = application
+        configureScaffolding(appCtx, app)
+    }
+
+    def configureScaffolding(ApplicationContext appCtx, app) {
         Parallelizer.doParallel {
             app.controllerClasses.eachParallel { GrailsControllerClass controllerClass ->
                 configureScaffoldingController(appCtx, app, controllerClass)
@@ -132,6 +136,9 @@ class ScaffoldingGrailsPlugin {
         if (event.source && application.isControllerClass(event.source)) {
             GrailsControllerClass controllerClass = application.getControllerClass(event.source.name)
             configureScaffoldingController(event.ctx, event.application, controllerClass)
+        }
+        else {
+            configureScaffolding(event.ctx, event.application)
         }
     }
 

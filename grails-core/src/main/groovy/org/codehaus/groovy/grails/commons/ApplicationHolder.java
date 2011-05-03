@@ -21,6 +21,8 @@ import grails.util.GrailsUtil;
  * Static singleton holder for the GrailsApplication instance.
  *
  * @author Marc Palmer (marc@anyware.co.uk)
+ *
+ * @deprecated Use dependency injection or implement GrailsApplicationAware instead
  */
 public abstract class ApplicationHolder {
 

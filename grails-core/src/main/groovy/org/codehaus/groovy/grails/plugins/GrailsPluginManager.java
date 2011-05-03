@@ -318,4 +318,12 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @return The GrailsPlugin for the given class or null if not related to any plugin
      */
     GrailsPlugin getPluginForClass(Class<?> theClass);
+
+    /**
+     * Fire to inform the PluginManager that a particular file changes
+     *
+     * @param file The file that changed
+     * @since 1.4
+     */
+    void informOfFileChange(File file);
 }

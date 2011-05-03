@@ -1,6 +1,20 @@
+repositories {
+      mavenRepo name: "spring-snapshot", urls: 'http://maven.springframework.org/snapshot'
+/*      mavenRepo name: "spring-release", urls: 'http://maven.springframework.org/release'*/
+}
+configurations {
+    agent.extendsFrom compile
+}
 dependencies {
     runtime 'oro:oro:2.0.8'
+    agent 'com.springsource.springloaded:springloaded-core:0.7.3.BUILD-SNAPSHOT'
     compile project(":grails-bootstrap"), project(":grails-spring")
+}
+
+sourceSets {
+    main {
+        compileClasspath = files(configurations.agent)
+    }
 }
 
 compileGroovy.doFirst {
@@ -9,5 +23,14 @@ compileGroovy.doFirst {
     ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
          entry key:"grails.version", value:version
     }
+}
+
+install.doLast {
+	copy {
+		def agentJar = project.configurations.agent.resolvedConfiguration.resolvedArtifacts.find { it.name == 'springloaded-core'}.file
+		from agentJar
+		into "${rootProject.projectDir}/bin"
+	}
+
 }
 jar.appendix = 'core'
