@@ -37,29 +37,8 @@ target(console:"The console implementation target") {
     try {
         def console = createConsole()
         console.run()
-
-        // On each monitor check, determine whether the console window
-        // is still open. If not, we set the monitor flag so that its
-        // thread ends and the script completes.
-        monitorCheckCallback = {
-            if (!console.frame.visible) keepMonitoring = false
-        }
-
-        // If the app is recompiled, we close the console and start it
-        // up again with the new classes.
-        monitorRecompileCallback = {
-            println "Exiting console"
-            console.exit()
-            String scriptText = console.inputArea.text
-            console = createConsole()
-            println "Restarting console"
-            console.run()
-            console.inputArea.addFocusListener(new ConsoleFocusListener(text:scriptText))
-        }
-
-        // Start the monitor thread.
-        monitorApp()
-        //while(true) { sleep(Long.MAX_VALUE) }
+		def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+		watcher.start()
     } catch (Exception e) {
         event("StatusFinal", ["Error starting console: ${e.message}"])
     }

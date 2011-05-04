@@ -72,6 +72,7 @@ public class GrailsScriptRunner {
 
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
     private static final Pattern pluginDescriptorPattern = Pattern.compile("^(\\S+)GrailsPlugin.groovy$");
+    public static final String AGENT_FLAG = "-agent";
 
     /**
      * Evaluate the arguments to get the name of the script to execute, which environment
@@ -167,6 +168,7 @@ public class GrailsScriptRunner {
 
         // use current argument as script name and step further
         String paramName = splitArgs[currentParamIndex++];
+
         if (paramName.charAt(0) == '-') {
             paramName = paramName.substring(1);
         }
@@ -186,6 +188,7 @@ public class GrailsScriptRunner {
     private static String processSystemArguments(String allArgs) {
         String lastMatch = null;
         Pattern sysPropPattern = Pattern.compile("-D(.+?)=(.+?)\\s+?");
+
         Matcher m = sysPropPattern.matcher(allArgs);
         while (m.find()) {
             System.setProperty(m.group(1).trim(), m.group(2).trim());
@@ -195,6 +198,9 @@ public class GrailsScriptRunner {
         if (lastMatch != null) {
             int i = allArgs.lastIndexOf(lastMatch) + lastMatch.length();
             allArgs = allArgs.substring(i);
+        }
+        if(allArgs.contains(AGENT_FLAG)) {
+            allArgs = allArgs.replace(AGENT_FLAG, "");
         }
         return allArgs;
     }
