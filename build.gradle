@@ -200,13 +200,13 @@ task clean << {
 
 task installResources << {
     copy {
-        from('src/resources/tests')
+        from('grails-resources/src/grails/home/tests')
         into('lib')
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
 
     copy {
-        from("src/resources/bash")
+        from("grails-resources/src/grails/home/bash")
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
@@ -219,7 +219,7 @@ task installResources << {
     ant.chmod(dir: 'bin', perm: '755', includes: '*')
 
     copy {
-        from("src/resources/conf")
+        from("grails-resources/src/grails/home/conf")
         into "conf"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
