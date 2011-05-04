@@ -57,6 +57,10 @@ public class GrailsHibernateUtil {
     private static final String DYNAMIC_FILTER_ENABLER = "dynamicFilterEnabler";
 
     public static SimpleTypeConverter converter = new SimpleTypeConverter();
+    public static final String ARGUMENT_FETCH_SIZE = "fetchSize";
+    public static final String ARGUMENT_TIMEOUT = "timeout";
+    public static final String ARGUMENT_READ_ONLY = "readOnly";
+    public static final String ARGUMENT_FLUSH_MODE = "flushMode";
     public static final String ARGUMENT_MAX = "max";
     public static final String ARGUMENT_OFFSET = "offset";
     public static final String ARGUMENT_ORDER = "order";
@@ -140,6 +144,7 @@ public class GrailsHibernateUtil {
     /**
      * Populates criteria arguments for the given target class and arguments map
      *
+     * @param grailsApplication the GrailsApplication instance
      * @param targetClass The target class
      * @param c The criteria instance
      * @param argMap The arguments map
@@ -155,6 +160,18 @@ public class GrailsHibernateUtil {
         }
         if (argMap.containsKey(ARGUMENT_OFFSET)) {
             offsetParam = converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
+        }
+        if (argMap.containsKey(ARGUMENT_FETCH_SIZE)) {
+            c.setFetchSize(converter.convertIfNecessary(argMap.get(ARGUMENT_FETCH_SIZE),Integer.class));
+        }
+        if (argMap.containsKey(ARGUMENT_TIMEOUT)) {
+            c.setTimeout(converter.convertIfNecessary(argMap.get(ARGUMENT_TIMEOUT),Integer.class));
+        }
+        if (argMap.containsKey(ARGUMENT_FLUSH_MODE)) {
+            c.setFlushMode(converter.convertIfNecessary(argMap.get(ARGUMENT_FLUSH_MODE),FlushMode.class));
+        }
+        if (argMap.containsKey(ARGUMENT_READ_ONLY)) {
+            c.setReadOnly(GrailsClassUtils.getBooleanFromMap(ARGUMENT_READ_ONLY, argMap));
         }
         String orderParam = (String)argMap.get(ARGUMENT_ORDER);
         Object fetchObj = argMap.get(ARGUMENT_FETCH);
@@ -213,59 +230,7 @@ public class GrailsHibernateUtil {
      */
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Class<?> targetClass, Criteria c, Map argMap) {
-        Integer maxParam = null;
-        Integer offsetParam = null;
-        if (argMap.containsKey(ARGUMENT_MAX)) {
-            maxParam = converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
-        }
-        if (argMap.containsKey(ARGUMENT_OFFSET)) {
-            offsetParam = converter.convertIfNecessary(argMap.get(ARGUMENT_OFFSET),Integer.class);
-        }
-        String orderParam = (String)argMap.get(ARGUMENT_ORDER);
-        Object fetchObj = argMap.get(ARGUMENT_FETCH);
-        if (fetchObj instanceof Map) {
-            Map fetch = (Map)fetchObj;
-            for (Object o : fetch.keySet()) {
-                String associationName = (String) o;
-                c.setFetchMode(associationName, getFetchMode(fetch.get(associationName)));
-            }
-        }
-
-        final String sort = (String)argMap.get(ARGUMENT_SORT);
-        final String order = ORDER_DESC.equalsIgnoreCase(orderParam) ? ORDER_DESC : ORDER_ASC;
-        final int max = maxParam == null ? -1 : maxParam;
-        final int offset = offsetParam == null ? -1 : offsetParam;
-        if (max > -1) {
-            c.setMaxResults(max);
-        }
-        if (offset > -1) {
-            c.setFirstResult(offset);
-        }
-        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_CACHE, argMap)) {
-            c.setCacheable(true);
-        }
-        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_LOCK, argMap)) {
-            c.setLockMode(LockMode.UPGRADE);
-        }
-        else {
-            if (argMap.get(ARGUMENT_CACHE) == null) {
-                cacheCriteriaByMapping(targetClass, c);
-            }
-        }
-        if (sort != null) {
-            boolean ignoreCase = true;
-            Object caseArg = argMap.get(ARGUMENT_IGNORE_CASE);
-            if (caseArg instanceof Boolean) {
-                ignoreCase = (Boolean) caseArg;
-            }
-            addOrderPossiblyNested(null, c, targetClass, sort, order, ignoreCase);
-        }
-        else {
-            Mapping m = GrailsDomainBinder.getMapping(targetClass);
-            if (m != null && !StringUtils.isBlank(m.getSort())) {
-                addOrderPossiblyNested(null, c, targetClass, m.getSort(), m.getOrder(), true);
-            }
-        }
+        populateArgumentsForCriteria(null, targetClass, c, argMap);
     }
 
     /**
