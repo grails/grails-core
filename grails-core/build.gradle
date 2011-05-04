@@ -3,7 +3,7 @@ configurations {
 }
 dependencies {
     runtime 'oro:oro:2.0.8'
-    agent 'com.springsource.springloaded:springloaded-core:0.8.0.BUILD-SNAPSHOT'
+    agent "com.springsource.springloaded:springloaded-core:$springLoadedVersion"
     compile project(":grails-bootstrap"), project(":grails-spring")
 }
 
