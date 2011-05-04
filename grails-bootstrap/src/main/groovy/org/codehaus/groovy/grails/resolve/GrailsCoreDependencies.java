@@ -113,16 +113,18 @@ public class GrailsCoreDependencies {
                         // depenencies needed when creating docs
                         ModuleRevisionId[] docDependencies = {
                             ModuleRevisionId.newInstance("org.xhtmlrenderer", "core-renderer","R8"),
-                            ModuleRevisionId.newInstance("com.lowagie","itext", "2.0.8"),
+                            ModuleRevisionId.newInstance("com.lowagie","itext", "2.1.7"),
                             ModuleRevisionId.newInstance("org.grails", "grails-radeox", "1.0-b4")
                         };
                         registerDependencies(dependencyManager, "docs", docDependencies);
                         
                         
                         // dependencies needed during development, but not for deployment
+                        String tomcatVersion = "7.0.8";
                         ModuleRevisionId[] providedDependencies = {
-                            ModuleRevisionId.newInstance("javax.servlet", "servlet-api", "2.5"),
-                            ModuleRevisionId.newInstance("javax.servlet.jsp", "jsp-api","2.1")
+                            ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-core", tomcatVersion),
+                            ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-jasper",tomcatVersion),
+                            ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-logging-log4j",tomcatVersion)
                         };
                         registerDependencies(dependencyManager, "provided", providedDependencies);
                         
@@ -151,7 +153,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("commons-io", "commons-io", "1.4"),
                             ModuleRevisionId.newInstance("commons-lang", "commons-lang", "2.4"),
                             ModuleRevisionId.newInstance("javax.transaction", "jta", "1.1"),
-                            ModuleRevisionId.newInstance("javax.persistence", "persistence-api", "1.0"),
+                            ModuleRevisionId.newInstance("org.hibernate.java-persistence", "jpa-api", "2.0-cr-1"),
                             ModuleRevisionId.newInstance("opensymphony", "sitemesh", "2.4"),
                             ModuleRevisionId.newInstance("org.grails", "grails-bootstrap", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-core", grailsVersion),

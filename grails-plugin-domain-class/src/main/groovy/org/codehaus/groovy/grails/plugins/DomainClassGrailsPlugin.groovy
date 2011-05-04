@@ -40,6 +40,9 @@ import org.springframework.validation.Validator
  */
 class DomainClassGrailsPlugin {
 
+    def watchedResources = ["file:./grails-app/domain/**/*.groovy",
+                            "file:./plugins/*/grails-app/domain/**/*.groovy"]
+
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [i18n:version]
     def loadAfter = ['controllers']
@@ -98,6 +101,41 @@ class DomainClassGrailsPlugin {
 
     def doWithDynamicMethods = { ApplicationContext ctx->
         enhanceDomainClasses(application, ctx)
+    }
+
+    def onChange = { event ->
+        def cls = event.source
+
+        if(cls instanceof Class) {
+            final domainClass = application.addArtefact(DomainClassArtefactHandler.TYPE, cls)
+            if(!domainClass.abstract) {
+                def beans = beans {
+                    "${domainClass.fullName}"(domainClass.clazz) { bean ->
+                        bean.singleton = false
+                        bean.autowire = "byName"
+                    }
+                    "${domainClass.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
+                        targetObject = ref("grailsApplication", true)
+                        targetMethod = "getArtefact"
+                        bean.lazyInit = true
+                        arguments = [DomainClassArtefactHandler.TYPE, domainClass.fullName]
+                    }
+                    "${domainClass.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
+                        targetObject = ref("${domainClass.fullName}DomainClass")
+                        bean.lazyInit = true
+                        targetMethod = "getClazz"
+                    }
+                    "${domainClass.fullName}Validator"(GrailsDomainClassValidator) { bean ->
+                        messageSource = ref("messageSource")
+                        bean.lazyInit = true
+                        domainClass = ref("${domainClass.fullName}DomainClass")
+                        grailsApplication = ref("grailsApplication", true)
+                    }
+                }
+                beans.registerBeans(event.ctx)
+                enhanceDomainClasses(event.application, event.ctx)
+            }
+        }
     }
 
     def onConfigChange = { event ->

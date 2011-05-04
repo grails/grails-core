@@ -15,23 +15,21 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import groovy.lang.GroovyResourceLoader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,26 +45,17 @@ import java.util.List;
  */
 public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation  {
 
-    private static final Log LOG = LogFactory.getLog(GrailsAwareInjectionOperation.class);
     private static final String INJECTOR_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
-    private GroovyResourceLoader grailsResourceLoader;
     private static ClassInjector[] classInjectors = null;
     private ClassInjector[] localClassInjectors;
 
-     public GrailsAwareInjectionOperation() {
+    public GrailsAwareInjectionOperation() {
         initializeState();
     }
 
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader) {
-        Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
-        this.grailsResourceLoader = resourceLoader;
+    public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
         initializeState();
-    }
-
-    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
-        Assert.notNull(resourceLoader, "The argument [resourceLoader] is required!");
-        this.grailsResourceLoader = resourceLoader;
         this.localClassInjectors = classInjectors;
     }
 
@@ -121,28 +110,24 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
-        for (ClassInjector classInjector : getLocalClassInjectors()) {
-            try {
-                URL url;
-                if (GrailsResourceUtils.isGrailsPath(source.getName())) {
-                    url = grailsResourceLoader.loadGroovySource(GrailsResourceUtils.getClassName(source.getName()));
-                } else {
-                    url = grailsResourceLoader.loadGroovySource(source.getName());
-                }
 
-                if (classInjector.shouldInject(url) && !(classInjector instanceof GroovyPageInjector)) {
-                    try {
-                        classInjector.performInjection(source, context, classNode);
-                    } catch (RuntimeException e) {
-                        e.printStackTrace();
-                        System.out.println("Error occurred calling AST injector [" + classInjector.getClass() + "]: " + e.getMessage());
-                        throw e;
-                    }
-                }
-            } catch (MalformedURLException e) {
-                LOG.error("Error loading URL during addition of compile time properties: " + e.getMessage(), e);
-                throw new CompilationFailedException(Phases.CONVERSION, source, e);
+      URL url = null;
+
+        final String filename = source.getName();
+        Resource resource = new FileSystemResource(filename);
+        if(resource.exists()) {
+            try {
+                url = resource.getURL();
+            } catch (IOException e) {
+                // ignore
+
             }
+        }
+        for (ClassInjector classInjector : getLocalClassInjectors()) {
+            if (classInjector.shouldInject(url)) {
+                classInjector.performInjection(source, context, classNode);
+            }
+
         }
     }
 }

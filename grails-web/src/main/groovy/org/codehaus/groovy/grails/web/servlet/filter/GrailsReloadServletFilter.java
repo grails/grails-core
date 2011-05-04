@@ -18,18 +18,6 @@ package org.codehaus.groovy.grails.web.servlet.filter;
 import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -45,10 +33,23 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Copies resources from the source on content change and manages reloading if necessary.
  *
  * @author Graeme Rocher
+ *
+ * @deprecated This filter is no longer used and is here for binary compatibility. Replaced by agent-based reloading in 1.4
+ *
  */
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
 

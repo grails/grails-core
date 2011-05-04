@@ -14,8 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
-import javax.servlet.http.HttpServletResponse;
-
+import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryProxy;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -32,6 +31,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.WebRequest;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Extends the default spring OSIVI and doesn't flush the session if it has been set

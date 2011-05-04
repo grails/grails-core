@@ -16,6 +16,7 @@ dependencyCache = {
 				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
 				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
 				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
+				project.configurations.findByName("agent")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
 			}
 			includes = dependencyIncludes as List
           exclude "org.grails/**"
@@ -109,17 +110,17 @@ distSpec = copySpec {
     from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
         into "grails-$grailsVersion/plugins"
     }
-    from('src/resources/docs/README') {
+    from('grails-resources/src/grails/home/docs/README') {
         into "grails-$grailsVersion"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
-    from("src/resources/bash") {
+    from("grails-resources/src/grails/home/bash") {
         into "grails-$grailsVersion/bin"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
 		filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         fileMode = 0755
     }
-    from("src/resources/conf") {
+    from("grails-resources/src/grails/home/conf") {
         into "grails-$grailsVersion/conf"
       	filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])

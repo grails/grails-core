@@ -177,13 +177,16 @@ class FiltersGrailsPlugin {
         for (c in sortedFilterConfigs) {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
             def bean = applicationContext.getBean(c.fullName)
-            for (filterConfig in filterClass.getConfigs(bean)) {
-                applicationContext.autowireCapableBeanFactory.autowireBean(filterConfig)
-                def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
-                handlerAdapter.afterPropertiesSet()
-                handlers <<  handlerAdapter
-                LOG.debug("  $handlerAdapter")
+            if(filterClass != null) {
+                for (filterConfig in filterClass.getConfigs(bean)) {
+                    applicationContext.autowireCapableBeanFactory.autowireBean(filterConfig)
+                    def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
+                    handlerAdapter.afterPropertiesSet()
+                    handlers <<  handlerAdapter
+                    LOG.debug("  $handlerAdapter")
+                }
             }
+
         }
 
         applicationContext.getBean('filterInterceptor').handlers = handlers

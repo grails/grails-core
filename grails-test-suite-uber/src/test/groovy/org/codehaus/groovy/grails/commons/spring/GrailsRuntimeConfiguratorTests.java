@@ -142,49 +142,6 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         assertEquals("hello",testInstance.getProperty("updatedProp"));
     }
 
-    public void testAutowireServiceClasses() {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-        Class<?> s1 =  gcl.parseClass("class TestService { def serviceMethod() { 'hello' } }");
-
-        Class<?> s2 =  gcl.parseClass("class AnotherService { TestService testService; def anotherMethod() { testService.serviceMethod() } }");
-
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
-        MockApplicationContext parent = new MockApplicationContext();
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-
-        GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        conf.setLoadExternalPersistenceConfig(false);
-        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext(), false);
-        assertNotNull(ctx);
-
-        GroovyObject anotherService = getBean(ctx, "anotherService");
-
-        assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
-    }
-
-    public void testAutowireNonTransactionalServiceClasses() throws Exception {
-        GroovyClassLoader gcl = new GroovyClassLoader();
-        Class<?> s1 =  gcl.parseClass("class TestService { boolean transactional = false;def serviceMethod() { 'hello' } }");
-        Thread.sleep(1000);
-        Class<?> s2 =  gcl.parseClass("class AnotherService { boolean transactional = false;TestService testService; def anotherMethod() { testService.serviceMethod() } }");
-
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{s1,s2}, gcl );
-        MockApplicationContext parent = new MockApplicationContext();
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
-
-        GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app,parent);
-        conf.setLoadExternalPersistenceConfig(false);
-        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
-        assertNotNull(ctx);
-
-        assertEquals( s1, ctx.getBean("testService").getClass());
-        assertEquals( s2, ctx.getBean("anotherService").getClass());
-
-        GroovyObject anotherService = getBean(ctx, "anotherService");
-        assertNotNull(anotherService.getProperty("testService"));
-        assertEquals("hello",anotherService.invokeMethod("anotherMethod", null));
-    }
-
     public void testApplicationIsAvailableInResources() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass("class Holder { def value }");

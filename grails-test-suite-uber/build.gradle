@@ -5,6 +5,10 @@ dependencies {
             project(':grails-plugin-testing')
 
 
+    testRuntime 'javax.servlet.jsp:jsp-api:2.1'
+    testRuntime 'jstl:jstl:1.1.2'
+    testRuntime 'javax.el:el-api:1.0'
+
     testCompile project(':grails-plugin-codecs'),
                 project(':grails-plugin-domain-class') ,
                 project(':grails-plugin-url-mappings') ,

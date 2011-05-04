@@ -3,8 +3,6 @@ grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
 
-grails.compile.artefacts.closures.convert = false
-
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
@@ -30,5 +28,12 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
         // runtime 'mysql:mysql-connector-java:5.1.5'
+    }
+
+    plugins {
+        compile ":hibernate:$grailsVersion"
+        compile ":jquery:1.5.2"
+
+        build ":tomcat:$grailsVersion"
     }
 }

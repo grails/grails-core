@@ -43,7 +43,8 @@ import java.util.List;
  */
 public class UaaIntegration {
 
-    private static final String MESSAGE = "Grails wants to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.\n"
+    private static final String MESSAGE = "##########################################################.\n"
+           + "Grails would like to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.\n"
            + "\n"
            + "The Grails team gathers anonymous usage information to improve your Grails experience, not for marketing purposes. The information is used to discover which Grails plugins are most popular and is published on the plugin portal.\n"
            + "\n"
@@ -52,6 +53,7 @@ public class UaaIntegration {
            + "Please see the Grails User Agent Analysis (UAA) Terms of Use at http://www.springsource.org/uaa/terms_of_use for more information on what information is collected and how such information is used. There is also an FAQ at http://www.springsource.org/uaa/faq for your convenience.\n"
            + "\n"
            + "To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.\n"
+           + "##########################################################.\n"
            + "Enter Y or N:";
     public static final int ONE_MINUTE = 60000;
 
@@ -142,7 +144,7 @@ public class UaaIntegration {
     }
 
     private static boolean isUaaAccepted(UaaClient.Privacy.PrivacyLevel privacyLevel) {
-        return privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA ) || privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA );
+        return privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.ENABLE_UAA ) || privacyLevel.equals( UaaClient.Privacy.PrivacyLevel.LIMITED_DATA );
     }
 
 }

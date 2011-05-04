@@ -16,8 +16,9 @@ grailsVersion = '1.4.0.BUILD-SNAPSHOT'
 antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 springVersion = "3.0.5.RELEASE"
+springLoadedVersion = "0.8.0.BUILD-SNAPSHOT"
 ivyVersion = "2.2.0"
-gantVersion = "1.9.4"
+gantVersion = "1.9.5"
 groovyVersion = "1.8.0"
 
 archivesBaseName = 'grails'
@@ -197,20 +198,18 @@ task clean << {
     delete(buildDir)
 }
 
-task install(dependsOn:[populateDependencies])
-
-
-install.doLast {
+task installResources << {
     copy {
-        from('src/resources/tests')
+        from('grails-resources/src/grails/home/tests')
         into('lib')
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
 
     copy {
-        from("src/resources/bash")
+        from("grails-resources/src/grails/home/bash")
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
         fileMode = 0755
         into "bin"
 
@@ -218,9 +217,9 @@ install.doLast {
     // the fileMode property above should take care of the chmod work, but
     // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
     ant.chmod(dir: 'bin', perm: '755', includes: '*')
-    
+
     copy {
-        from("src/resources/conf")
+        from("grails-resources/src/grails/home/conf")
         into "conf"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
@@ -231,4 +230,5 @@ install.doLast {
 }
 
 
+task install(dependsOn:[populateDependencies, installResources])
 task assemble(dependsOn:zipDist)

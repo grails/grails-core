@@ -44,7 +44,6 @@ target(createApp: "Creates a Grails application for the given name")  {
         "app.version": grailsAppVersion ?: "0.1",
         "app.servlet.version": servletVersion)
 
-    installDefaultPluginSet()
 
     event("StatusFinal", ["Created Grails Application at $basedir"])
 }
@@ -98,8 +97,6 @@ target(createPlugin: "The implementation target")  {
         replacefilter(token: "@grails.version@", value: pluginGrailsVersion)
     }
 
-    // install default plugins into plugin project
-    installDefaultPluginSet()
 
     event("StatusFinal", [ "Created plugin ${pluginName}" ])
 }

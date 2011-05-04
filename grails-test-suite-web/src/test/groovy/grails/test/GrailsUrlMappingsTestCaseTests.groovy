@@ -265,6 +265,13 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         test.testSuperClassMapping()
     }
 
+    void testGrails5222() {
+        def test = new Grails5222TestCase()
+        test.grailsApplication = mockApplication
+        test.setUp()
+        test.testShouldFailOnInvalidParameterValueForAlias()
+    }
+
     private void checkFailures(TestResult result) {
         result.errors().each { TestFailure failure ->
             println ">> Error: ${failure.toString()}"
@@ -341,6 +348,21 @@ class MultipleMappingsTestCase extends GrailsUrlMappingsTestCase {
 
     def assertView(controller, view, url) {
         return true
+    }
+}
+
+class Grails5222TestCase extends GrailsUrlMappingsTestCase {
+    static mappings = {
+        "/$controller/$action?/$id?" {}
+        "/alias/$param1/"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+    }
+
+    void testShouldFailOnInvalidParameterValueForAlias() {
+        shouldFail(ComparisonFailure) {
+            assertForwardUrlMapping("/alias/param1value", controller: "grailsUrlMappingsTestCaseFake", action: "action1") {
+                param1 = "invalidparam1value"
+            }
+        }
     }
 }
 

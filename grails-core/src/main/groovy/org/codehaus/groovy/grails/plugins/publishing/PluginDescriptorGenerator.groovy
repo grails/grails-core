@@ -55,7 +55,8 @@ class PluginDescriptorGenerator {
      */
     void generatePluginXml(pluginProps, Writer target) {
        // Use MarkupBuilder with indenting to generate the file.
-        def xml = new MarkupBuilder(target)
+        def targetWriter = new IndentPrinter(new PrintWriter(target))
+        def xml = new MarkupBuilder(targetWriter)
         generatePluginXml(pluginProps, xml)
     }
 
@@ -73,7 +74,7 @@ class PluginDescriptorGenerator {
 
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
         // Write the content!
-        def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type']
+        def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type', 'packaging']
 
         def rcComparator = [compare: {a, b -> a.URI.compareTo(b.URI) }] as Comparator
         Arrays.sort(resourceList, rcComparator)

@@ -1,6 +1,16 @@
+configurations {
+    agent.extendsFrom compile
+}
 dependencies {
     runtime 'oro:oro:2.0.8'
+    agent "com.springsource.springloaded:springloaded-core:$springLoadedVersion"
     compile project(":grails-bootstrap"), project(":grails-spring")
+}
+
+sourceSets {
+    main {
+        compileClasspath = files(configurations.agent)
+    }
 }
 
 compileGroovy.doFirst {
@@ -10,4 +20,5 @@ compileGroovy.doFirst {
          entry key:"grails.version", value:version
     }
 }
+
 jar.appendix = 'core'

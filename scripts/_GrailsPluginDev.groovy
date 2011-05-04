@@ -54,15 +54,27 @@ target(packagePlugin: "Implementation target") {
 
     if (!pluginFile) ant.fail("Plugin file not found for plugin project")
 
+    def descriptor = pluginSettings.getBasePluginDescriptor()
+    plugin = generatePluginXml(descriptor.file, true)
+
     def pluginBaseDir = pluginFile.parentFile.absolutePath
-    plugin = pluginSettings.getPluginInfo(pluginBaseDir)
+    pluginInfo = pluginSettings.getPluginInfo(pluginBaseDir)
 
     def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
 
-    def packager = new PluginPackager(plugin, resourceList, new File(projectWorkDir))
+    def packager = new PluginPackager(pluginInfo, resourceList, new File(projectWorkDir))
     packager.ant = ant
     packager.resourcesDir = new File(resourcesDirPath)
     packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
+	if(argsMap.binary) {
+		pluginInfo.packaging = "binary"
+	}
+	else if(argsMap.source) {
+		pluginInfo.packaging = "source"
+	}
+	else if(plugin?.hasProperty('packaging')) {
+		pluginInfo.packaging = plugin.packaging
+	}
 
     def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
@@ -89,21 +101,14 @@ target(packagePlugin: "Implementation target") {
         }
     }
 
-    event("PackagePluginStart", [plugin.name])
+    event("PackagePluginStart", [pluginInfo.name])
 
-    def descriptor = pluginSettings.getBasePluginDescriptor()
-     generatePluginXml(descriptor.file, false)
 
     // Package plugin's zip distribution
-    if (argsMap.binary) {
-        pluginZip = packager.packageBinary(plugin.name, classesDir, grailsSettings.projectTargetDir)
-    }
-    else {
-        pluginZip = packager.packagePlugin(plugin.name, classesDir, grailsSettings.projectTargetDir)
-    }
+    pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
 
 
-    event("PackagePluginEnd", [plugin.name])
+    event("PackagePluginEnd", [pluginInfo.name])
 }
 
 

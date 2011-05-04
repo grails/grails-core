@@ -38,7 +38,7 @@ public class Grailsc extends Groovyc {
 
     @Override protected CompilationUnit makeCompileUnit() {
         CompilationUnit unit = super.makeCompileUnit();
-        GrailsAwareInjectionOperation operation = new GrailsAwareInjectionOperation(configureResourceLoader());
+        GrailsAwareInjectionOperation operation = new GrailsAwareInjectionOperation();
         unit.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return unit;
     }
@@ -106,10 +106,4 @@ public class Grailsc extends Groovyc {
         }
     }
 
-    private GroovyResourceLoader configureResourceLoader() {
-        Resource[] resources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResources();
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
-        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
-        return resourceLoader;
-    }
 }
