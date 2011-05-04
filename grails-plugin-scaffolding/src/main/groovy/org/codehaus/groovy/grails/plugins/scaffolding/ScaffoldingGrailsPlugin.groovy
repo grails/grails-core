@@ -83,7 +83,7 @@ class ScaffoldingGrailsPlugin {
     private configureScaffoldingController(ApplicationContext appCtx, application, GrailsControllerClass controllerClass) {
 
         def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
-        if (!scaffoldProperty) {
+        if (!scaffoldProperty || !appCtx) {
             return
         }
 
