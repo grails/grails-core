@@ -318,7 +318,7 @@ public class GrailsResourceUtils {
         for (Pattern COMPILER_ROOT_PATTERN : COMPILER_ROOT_PATTERNS) {
             Matcher m = COMPILER_ROOT_PATTERN.matcher(path);
             if (m.find()) {
-                return m.group(m.groupCount());
+                return m.group(m.groupCount()-1);
             }
         }
         return null;

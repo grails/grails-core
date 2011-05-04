@@ -45,8 +45,8 @@ public class GrailsResourceUtilsTests extends TestCase {
     }
 
     public void testGetPathFromRoot() throws Exception {
-        assertEquals("Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_URL));
         assertEquals("mycompany/Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_PACKAGE_URL));
+        assertEquals("Test.groovy", GrailsResourceUtils.getPathFromRoot(TEST_URL));
     }
 
     public void testGetClassNameResource() throws Exception {
