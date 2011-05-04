@@ -62,15 +62,6 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
     }
 
     @Override
-    public SessionFactory getSessionFactory() {
-        SessionFactory sf = super.getSessionFactory();
-        if(sf instanceof SessionFactoryProxy) {
-            sf = ((SessionFactoryProxy)sf).getCurrentSessionFactory();
-        }
-        return sf;
-    }
-
-    @Override
     public void postHandle(WebRequest request, ModelMap model) throws DataAccessException {
         final boolean isFlowRequest = request.getAttribute(IS_FLOW_REQUEST_ATTRIBUTE, WebRequest.SCOPE_REQUEST) != null;
         if (isFlowRequest) {

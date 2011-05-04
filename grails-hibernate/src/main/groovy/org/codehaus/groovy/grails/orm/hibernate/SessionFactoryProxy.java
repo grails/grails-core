@@ -16,20 +16,44 @@
 package org.codehaus.groovy.grails.orm.hibernate;
 
 import org.hibernate.*;
+import org.hibernate.cache.QueryCache;
+import org.hibernate.cache.Region;
+import org.hibernate.cache.UpdateTimestampsCache;
+import org.hibernate.cfg.Settings;
 import org.hibernate.classic.Session;
-import org.hibernate.engine.FilterDefinition;
+import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.function.SQLFunctionRegistry;
+import org.hibernate.engine.*;
+import org.hibernate.engine.profile.FetchProfile;
+import org.hibernate.engine.query.QueryPlanCache;
+import org.hibernate.exception.SQLExceptionConverter;
+import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.id.factory.IdentifierGeneratorFactory;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.proxy.EntityNotFoundDelegate;
 import org.hibernate.stat.Statistics;
+import org.hibernate.stat.StatisticsImplementor;
+import org.hibernate.type.Type;
+import org.hibernate.type.TypeResolver;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.orm.hibernate3.SpringSessionContext;
+import org.springframework.util.ReflectionUtils;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.transaction.TransactionManager;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -39,7 +63,7 @@ import java.util.Set;
  * @since 1.4
  * @author Graeme Rocher
  */
-public class SessionFactoryProxy implements SessionFactory, ApplicationContextAware{
+public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean{
 
     private String targetBean;
     private ApplicationContext applicationContext;
@@ -50,6 +74,9 @@ public class SessionFactoryProxy implements SessionFactory, ApplicationContextAw
 
     public SessionFactory getCurrentSessionFactory() {
          return applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
+    }
+    public SessionFactoryImplementor getCurrentSessionFactoryImplementor() {
+         return (SessionFactoryImplementor) applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
     }
 
     public Session openSession() throws HibernateException {
@@ -187,5 +214,213 @@ public class SessionFactoryProxy implements SessionFactory, ApplicationContextAw
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public TypeResolver getTypeResolver() {
+        return getCurrentSessionFactoryImplementor().getTypeResolver();
+    }
+
+    @Override
+    public Properties getProperties() {
+        return getCurrentSessionFactoryImplementor().getProperties();
+    }
+
+    @Override
+    public EntityPersister getEntityPersister(String entityName) throws MappingException {
+        return getCurrentSessionFactoryImplementor().getEntityPersister(entityName);
+    }
+
+    @Override
+    public CollectionPersister getCollectionPersister(String role) throws MappingException {
+        return getCurrentSessionFactoryImplementor().getCollectionPersister(role);
+    }
+
+    @Override
+    public Dialect getDialect() {
+        return getCurrentSessionFactoryImplementor().getDialect();
+    }
+
+    @Override
+    public Interceptor getInterceptor() {
+        return getCurrentSessionFactoryImplementor().getInterceptor();
+    }
+
+    @Override
+    public QueryPlanCache getQueryPlanCache() {
+        return getCurrentSessionFactoryImplementor().getQueryPlanCache();
+    }
+
+    @Override
+    public Type[] getReturnTypes(String queryString) throws HibernateException {
+        return getCurrentSessionFactoryImplementor().getReturnTypes(queryString);
+    }
+
+    @Override
+    public String[] getReturnAliases(String queryString) throws HibernateException {
+        return getCurrentSessionFactoryImplementor().getReturnAliases(queryString);
+    }
+
+    @Override
+    public ConnectionProvider getConnectionProvider() {
+        return getCurrentSessionFactoryImplementor().getConnectionProvider();
+    }
+
+    @Override
+    public String[] getImplementors(String className) throws MappingException {
+        return getCurrentSessionFactoryImplementor().getImplementors(className);
+    }
+
+    @Override
+    public String getImportedClassName(String name) {
+        return getCurrentSessionFactoryImplementor().getImportedClassName(name);
+    }
+
+    @Override
+    public TransactionManager getTransactionManager() {
+        return getCurrentSessionFactoryImplementor().getTransactionManager();
+    }
+
+    @Override
+    public QueryCache getQueryCache() {
+        return getCurrentSessionFactoryImplementor().getQueryCache();
+    }
+
+    @Override
+    public QueryCache getQueryCache(String regionName) throws HibernateException {
+        return getCurrentSessionFactoryImplementor().getQueryCache(regionName);
+    }
+
+    @Override
+    public UpdateTimestampsCache getUpdateTimestampsCache() {
+        return getCurrentSessionFactoryImplementor().getUpdateTimestampsCache();
+    }
+
+    @Override
+    public StatisticsImplementor getStatisticsImplementor() {
+        return getCurrentSessionFactoryImplementor().getStatisticsImplementor();
+    }
+
+    @Override
+    public NamedQueryDefinition getNamedQuery(String queryName) {
+        return getCurrentSessionFactoryImplementor().getNamedQuery(queryName);
+    }
+
+    @Override
+    public NamedSQLQueryDefinition getNamedSQLQuery(String queryName) {
+        return getCurrentSessionFactoryImplementor().getNamedSQLQuery(queryName);
+    }
+
+    @Override
+    public ResultSetMappingDefinition getResultSetMapping(String name) {
+        return getCurrentSessionFactoryImplementor().getResultSetMapping(name);
+    }
+
+    @Override
+    public IdentifierGenerator getIdentifierGenerator(String rootEntityName) {
+        return getCurrentSessionFactoryImplementor().getIdentifierGenerator(rootEntityName);
+    }
+
+    @Override
+    public Region getSecondLevelCacheRegion(String regionName) {
+        return getCurrentSessionFactoryImplementor().getSecondLevelCacheRegion(regionName);
+    }
+
+    @Override
+    public Map getAllSecondLevelCacheRegions() {
+        return getCurrentSessionFactoryImplementor().getAllSecondLevelCacheRegions();
+    }
+
+    @Override
+    public SQLExceptionConverter getSQLExceptionConverter() {
+        return getCurrentSessionFactoryImplementor().getSQLExceptionConverter();
+    }
+
+    @Override
+    public Settings getSettings() {
+        return getCurrentSessionFactoryImplementor().getSettings();
+    }
+
+    @Override
+    public Session openTemporarySession() throws HibernateException {
+        return getCurrentSessionFactoryImplementor().openTemporarySession();
+    }
+
+    @Override
+    public Session openSession(Connection connection, boolean flushBeforeCompletionEnabled, boolean autoCloseSessionEnabled, ConnectionReleaseMode connectionReleaseMode) throws HibernateException {
+        return getCurrentSessionFactoryImplementor().openSession(connection,flushBeforeCompletionEnabled,autoCloseSessionEnabled, connectionReleaseMode);
+    }
+
+    @Override
+    public Set<String> getCollectionRolesByEntityParticipant(String entityName) {
+        return getCurrentSessionFactoryImplementor().getCollectionRolesByEntityParticipant(entityName);
+    }
+
+    @Override
+    public EntityNotFoundDelegate getEntityNotFoundDelegate() {
+        return getCurrentSessionFactoryImplementor().getEntityNotFoundDelegate();
+    }
+
+    @Override
+    public SQLFunctionRegistry getSqlFunctionRegistry() {
+        return getCurrentSessionFactoryImplementor().getSqlFunctionRegistry();
+    }
+
+    @Override
+    public FetchProfile getFetchProfile(String name) {
+        return getCurrentSessionFactoryImplementor().getFetchProfile(name);
+    }
+
+    @Override
+    public SessionFactoryObserver getFactoryObserver() {
+        return getCurrentSessionFactoryImplementor().getFactoryObserver();
+    }
+
+    @SuppressWarnings({"deprecation"})
+    @Override
+    @Deprecated
+    public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
+        return getCurrentSessionFactoryImplementor().getIdentifierGeneratorFactory();
+    }
+
+    @Override
+    public Type getIdentifierType(String className) throws MappingException {
+        return getCurrentSessionFactoryImplementor().getIdentifierType(className);
+    }
+
+    @Override
+    public String getIdentifierPropertyName(String className) throws MappingException {
+        return getCurrentSessionFactoryImplementor().getIdentifierPropertyName(className);
+    }
+
+    @Override
+    public Type getReferencedPropertyType(String className, String propertyName) throws MappingException {
+        return getCurrentSessionFactoryImplementor().getReferencedPropertyType(className,propertyName);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        SessionFactoryImplementor sessionFactory = getCurrentSessionFactoryImplementor();
+
+        // patch the currentSessionContext variable of SessionFactoryImpl to use this proxy as the key
+        SpringSessionContext ssc = new SpringSessionContext(this);
+
+        try {
+            Class<? extends SessionFactoryImplementor> sessionFactoryClass = sessionFactory.getClass();
+            Field currentSessionContextField = sessionFactoryClass.getDeclaredField("currentSessionContext");
+            if(currentSessionContextField != null) {
+
+                ReflectionUtils.makeAccessible(currentSessionContextField);
+                currentSessionContextField.set(sessionFactory, ssc);
+            }
+        } catch (NoSuchFieldException e) {
+            // ignore
+        } catch (SecurityException e) {
+            // ignore
+        } catch (IllegalArgumentException e) {
+            // ignore
+        } catch (IllegalAccessException e) {
+            // ignore
+        }
     }
 }

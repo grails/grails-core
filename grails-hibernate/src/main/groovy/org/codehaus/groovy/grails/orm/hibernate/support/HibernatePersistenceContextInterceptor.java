@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryProxy;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.FlushMode;
@@ -143,9 +142,6 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
      * @return the sessionFactory
      */
     public SessionFactory getSessionFactory() {
-        if(sessionFactory instanceof SessionFactoryProxy) {
-            return ((SessionFactoryProxy)sessionFactory).getCurrentSessionFactory();
-        }
         return sessionFactory;
     }
 
