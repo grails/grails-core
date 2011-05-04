@@ -34,9 +34,6 @@ class GrailsPluginManagerDescriptorTests extends AbstractGrailsMockTests {
 
             def text = sw.toString()
             def xml = new XmlSlurper().parseText(text)
-            def filters = xml.'**'.findAll { it.name() == 'filter' }
-            def reloadClass = filters.find{ it.'filter-name' == 'reloadFilter'}.'filter-class'.text()
-            assertEquals "org.codehaus.groovy.grails.web.servlet.filter.GrailsReloadServletFilter", reloadClass
         }
         finally {
             System.setProperty("grails.env", "")
