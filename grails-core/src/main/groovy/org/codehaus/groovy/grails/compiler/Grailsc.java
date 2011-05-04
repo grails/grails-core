@@ -106,10 +106,4 @@ public class Grailsc extends Groovyc {
         }
     }
 
-    private GroovyResourceLoader configureResourceLoader() {
-        Resource[] resources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResources();
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources);
-        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
-        return resourceLoader;
-    }
 }

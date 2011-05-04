@@ -23,6 +23,8 @@ import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 
 /**
  *
@@ -102,6 +104,11 @@ class GrailsProjectCompiler {
 
 
         initializeAntClasspaths()
+
+        Resource[] resources = pluginBuildSettings.getArtefactResources()
+        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources)
+        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
+
     }
 
 
