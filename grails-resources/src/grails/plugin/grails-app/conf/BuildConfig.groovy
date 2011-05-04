@@ -11,10 +11,6 @@ grails.project.dependency.resolution = {
     }
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     repositories {
-        grailsPlugins()
-        grailsHome()
-        grailsCentral()
-
         // uncomment the below to enable remote dependency resolution
         // from public Maven repositories
         //mavenCentral()
@@ -31,9 +27,8 @@ grails.project.dependency.resolution = {
     }
 
     plugins {
-        compile ":hibernate:$grailsVersion"
-        compile ":jquery:1.5.2"
-
-        build ":tomcat:$grailsVersion"
+        build( ":tomcat:$grailsVersion" ) {
+            export = false
+        }
     }
 }
