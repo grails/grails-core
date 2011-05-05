@@ -164,7 +164,9 @@ public class GrailsASTUtils {
 
             ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
 
-            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(delegate, declaredMethod.getName(), arguments)));
+            MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, declaredMethod.getName(), arguments);
+            methodCallExpression.setMethodTarget(declaredMethod);
+            methodBody.addStatement(new ExpressionStatement(methodCallExpression));
             MethodNode methodNode = new MethodNode(declaredMethod.getName(),
                                                    Modifier.PUBLIC,
                                                    returnType,
@@ -216,7 +218,9 @@ public class GrailsASTUtils {
             for (Parameter parameterType : parameterTypes) {
                arguments.addExpression(new VariableExpression(parameterType.getName()));
            }
-            methodBody.addStatement(new ExpressionStatement( new MethodCallExpression(expression, declaredMethodName, arguments)));
+            MethodCallExpression methodCallExpression = new MethodCallExpression(expression, declaredMethodName, arguments);
+            methodCallExpression.setMethodTarget(declaredMethod);
+            methodBody.addStatement(new ExpressionStatement(methodCallExpression));
             ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
             if(METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
                      declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
