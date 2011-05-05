@@ -424,7 +424,7 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         SessionFactoryImplementor sessionFactory = getCurrentSessionFactoryImplementor();
 
         // patch the currentSessionContext variable of SessionFactoryImpl to use this proxy as the key
@@ -450,8 +450,12 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
     }
 
     protected CurrentSessionContext createCurrentSessionContext() {
+        Class sessionContextClass = currentSessionContextClass;
+        if(sessionContextClass == null) {
+            sessionContextClass = SpringSessionContext.class;
+        }
         try {
-            Constructor<CurrentSessionContext> constructor = currentSessionContextClass.getConstructor(SessionFactoryImplementor.class);
+            Constructor<CurrentSessionContext> constructor = sessionContextClass.getConstructor(SessionFactoryImplementor.class);
             return BeanUtils.instantiateClass(constructor, this);
         } catch (NoSuchMethodException e) {
             return new SpringSessionContext(this);

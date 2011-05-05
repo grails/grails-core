@@ -26,6 +26,7 @@ import org.hibernate.SessionFactory;
 public class SessionFactoryHolder {
 
     private SessionFactory sessionFactory;
+    public static final String BEAN_ID = "org.grails.internal.SESSION_FACTORY_HOLDER";
 
     public SessionFactory getSessionFactory() {
         return sessionFactory;
