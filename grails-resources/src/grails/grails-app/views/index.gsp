@@ -7,7 +7,7 @@
 			#status {
 				background-color: #eee;
 				border: .2em solid #fff;
-				margin: 0 1em 1em;
+				margin: 2em 1em 1em;
 				padding: 1em;
 				width: 12em;
 				float: left;
@@ -27,6 +27,7 @@
 			}
 
 			#status ul {
+				font-size: 0.9em;
 				list-style-type: none;
 				margin-bottom: 0.6em;
 				padding: 0;
@@ -39,7 +40,7 @@
 			}
 
 			#page-body {
-				margin: 0 1em 1.25em 16em;
+				margin: 2em 1em 1.25em 16em;
 			}
 
 			.boxshadow #page-body {
