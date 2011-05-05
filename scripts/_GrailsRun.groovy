@@ -231,7 +231,6 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
 
             println "Stopping Grails server..."
             grailsServer.stop()
-            PluginManagerHolder.pluginManager.stopPluginChangeScanner()
             keepRunning = false
 
         })

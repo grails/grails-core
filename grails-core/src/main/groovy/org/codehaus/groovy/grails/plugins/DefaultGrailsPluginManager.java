@@ -625,12 +625,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         // do nothing
     }
 
-    public void informPluginsOfConfigChange() {
-        LOG.info("Informing plug-ins of configuration change..");
-        for (GrailsPlugin plugin : pluginList) {
-            plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CONFIG_CHANGE, application.getConfig());
-        }
-    }
 
     public void reloadPlugin(GrailsPlugin plugin) {
         plugin.doArtefactConfiguration();

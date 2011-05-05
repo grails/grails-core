@@ -135,7 +135,11 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
             // add to class change event queue
             classChangeEventQueue.add(new Runnable() {
                 public void run() {
-                    pluginManager.informOfFileChange(file);
+                    try {
+                        pluginManager.informOfFileChange(file);
+                    } catch (Exception e) {
+                        LOG.error("Failed to reload file ["+file+"] with error: " + e.getMessage());
+                    }
                 }
             });
         }
