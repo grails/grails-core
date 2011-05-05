@@ -51,7 +51,6 @@ class GrailsProjectCompiler {
     String basedir
     String srcdir
     String encoding = "UTF-8"
-    Resource[] pluginSourceDirectories
     File targetClassesDir
     File targetPluginClassesDir
 
@@ -78,7 +77,6 @@ class GrailsProjectCompiler {
         this.targetPluginClassesDir = buildSettings.pluginClassesDir
         this.basedir = buildSettings.baseDir.absolutePath
         this.srcdir = buildSettings.sourceDir.absolutePath
-        this.pluginSourceDirectories = pluginBuildSettings.pluginSourceFiles
         this.classLoader = rootLoader
         this.pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
         this.config = config
@@ -280,7 +278,7 @@ class GrailsProjectCompiler {
         def classpathId = CLASSPATH_REF
 
         def excludedPaths = PLUGIN_EXCLUDE_PATHS // conf gets special handling
-        def pluginResources = pluginSourceDirectories?.findAll {
+        def pluginResources = pluginSettings.pluginSourceFiles?.findAll {
             !excludedPaths.contains(it.file.name) && it.file.isDirectory()
         }
 
