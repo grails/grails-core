@@ -47,7 +47,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     @Autowired
     LinkGenerator linkGenerator
 
-    @Autowired
     def resourceService
 
     static final SCOPES = [page: 'pageScope',
