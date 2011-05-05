@@ -86,8 +86,13 @@ public class GrailsNameUtils {
             String[] tokens = name.split("[^\\w\\d]");
             for (String token1 : tokens) {
                 String token = token1.trim();
-                buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH))
-                   .append(token.substring(1));
+                int length = token.length();
+                if(length > 0) {
+                    buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH));
+                    if(length > 1) {
+                        buf.append(token.substring(1));
+                    }
+                }
             }
         }
 
