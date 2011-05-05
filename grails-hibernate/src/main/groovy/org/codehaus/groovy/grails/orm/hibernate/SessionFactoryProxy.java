@@ -22,6 +22,7 @@ import org.hibernate.cache.UpdateTimestampsCache;
 import org.hibernate.cfg.Settings;
 import org.hibernate.classic.Session;
 import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.context.CurrentSessionContext;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionRegistry;
 import org.hibernate.engine.*;
@@ -39,6 +40,7 @@ import org.hibernate.stat.Statistics;
 import org.hibernate.stat.StatisticsImplementor;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeResolver;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -50,6 +52,7 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.transaction.TransactionManager;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Map;
@@ -67,14 +70,36 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
 
     private String targetBean;
     private ApplicationContext applicationContext;
+    private Class currentSessionContextClass = SpringSessionContext.class;
 
+    /**
+     * The target bean to proxy
+     *
+     * @param targetBean The name of the target bean
+     */
     public void setTargetBean(String targetBean) {
         this.targetBean = targetBean;
     }
 
+    /**
+     * The class to use for the current session context
+     *
+     * @param currentSessionContextClass The current session context class
+     */
+    public void setCurrentSessionContextClass(Class currentSessionContextClass) {
+        this.currentSessionContextClass = currentSessionContextClass;
+    }
+
+    /**
+     * @return The current SessionFactory being proxied
+     */
     public SessionFactory getCurrentSessionFactory() {
          return applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
     }
+
+    /**
+     * @return The current SessionFactoryImplementor being proxied
+     */
     public SessionFactoryImplementor getCurrentSessionFactoryImplementor() {
          return (SessionFactoryImplementor) applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
     }
@@ -399,11 +424,11 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         SessionFactoryImplementor sessionFactory = getCurrentSessionFactoryImplementor();
 
         // patch the currentSessionContext variable of SessionFactoryImpl to use this proxy as the key
-        SpringSessionContext ssc = new SpringSessionContext(this);
+        CurrentSessionContext ssc = createCurrentSessionContext();
 
         try {
             Class<? extends SessionFactoryImplementor> sessionFactoryClass = sessionFactory.getClass();
@@ -421,6 +446,19 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
             // ignore
         } catch (IllegalAccessException e) {
             // ignore
+        }
+    }
+
+    protected CurrentSessionContext createCurrentSessionContext() {
+        Class sessionContextClass = currentSessionContextClass;
+        if(sessionContextClass == null) {
+            sessionContextClass = SpringSessionContext.class;
+        }
+        try {
+            Constructor<CurrentSessionContext> constructor = sessionContextClass.getConstructor(SessionFactoryImplementor.class);
+            return BeanUtils.instantiateClass(constructor, this);
+        } catch (NoSuchMethodException e) {
+            return new SpringSessionContext(this);
         }
     }
 }

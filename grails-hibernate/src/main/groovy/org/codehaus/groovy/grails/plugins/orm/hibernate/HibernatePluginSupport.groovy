@@ -215,19 +215,10 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
             }
 
             if(grails.util.Environment.current.isReloadEnabled()) {
-                sessionFactoryHolder(SessionFactoryHolder) {
-                   sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
-                        bean.parent = abstractSessionFactoryBeanConfig
-                   }
-                }
-                sessionFactory(SessionFactoryProxy) {
-                    targetBean = "sessionFactoryHolder"
-                }
+                "${SessionFactoryHolder.BEAN_ID}"(SessionFactoryHolder)
             }
-            else {
-                sessionFactory(ConfigurableLocalSessionFactoryBean) { bean ->
-                    bean.parent = abstractSessionFactoryBeanConfig
-                }
+            sessionFactory(ConfigurableLocalSessionFactoryBean) { bean ->
+                bean.parent = abstractSessionFactoryBeanConfig
             }
 
             transactionManager(GrailsHibernateTransactionManager) {
@@ -275,9 +266,10 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
 
     static final onChange = { event ->
         def beans = beans {
-            sessionFactoryHolder(SessionFactoryHolder) {
+            "${SessionFactoryHolder.BEAN_ID}"(SessionFactoryHolder) {
                sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
-                    bean.parent = ref("abstractSessionFactoryBeanConfig")
+                   bean.parent = ref("abstractSessionFactoryBeanConfig")
+                   proxyIfReloadEnabled = false
                }
             }
         }

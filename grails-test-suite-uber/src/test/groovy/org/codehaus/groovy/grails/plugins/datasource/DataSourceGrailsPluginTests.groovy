@@ -10,8 +10,15 @@ import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
+
+
+
+    @Override protected void onSetUp() {
+        PluginManagerHolder.setPluginManager(null)
+    }
 
     void testDataSourceWithEncryptedPassword() {
         def encryptedPassword = MockCodec.encode("")

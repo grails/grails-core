@@ -45,19 +45,7 @@ class ConfigurationHelper {
 
     static ConfigObject loadConfigFromClasspath(GrailsApplication application = null, String environment = Environment.current.name) {
 
-        ConfigSlurper configSlurper = new ConfigSlurper(environment)
-        Map binding = new HashMap()
-
-        // configure config slurper binding
-        binding.put(CONFIG_BINDING_USER_HOME, System.getProperty("user.home"))
-        binding.put(CONFIG_BINDING_GRAILS_HOME, System.getProperty("grails.home"))
-
-        if (application) {
-            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME))
-            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION))
-        }
-
-        configSlurper.setBinding(binding)
+        ConfigSlurper configSlurper = getConfigSlurper(environment, application)
         ConfigObject co
         ClassLoader classLoader = application != null ? application.getClassLoader() : ConfigurationHelper.getClassLoader()
         try {
@@ -92,6 +80,23 @@ class ConfigurationHelper {
         initConfig(co, null, classLoader)
         ConfigurationHolder.config = co
         return co
+    }
+
+    static ConfigSlurper getConfigSlurper(String environment, GrailsApplication application) {
+        ConfigSlurper configSlurper = new ConfigSlurper(environment)
+        Map binding = new HashMap()
+
+        // configure config slurper binding
+        binding.put(CONFIG_BINDING_USER_HOME, System.getProperty("user.home"))
+        binding.put(CONFIG_BINDING_GRAILS_HOME, System.getProperty("grails.home"))
+
+        if (application) {
+            binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME))
+            binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION))
+        }
+
+        configSlurper.setBinding(binding)
+        return configSlurper
     }
 
     /**

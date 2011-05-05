@@ -16,11 +16,15 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.BuildScope;
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
+import groovy.util.ConfigObject;
+import groovy.util.ConfigSlurper;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.beans.BeansException;
@@ -32,6 +36,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -43,6 +48,7 @@ import java.util.*;
 public abstract class AbstractGrailsPluginManager implements GrailsPluginManager {
 
     private static final String BLANK = "";
+    public static final String CONFIG_FILE = "Config";
     protected List<GrailsPlugin> pluginList = new ArrayList<GrailsPlugin>();
     protected GrailsApplication application;
     protected Resource[] pluginResources = new Resource[0];
@@ -322,22 +328,43 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     }
 
+    public void informPluginsOfConfigChange() {
+        for (GrailsPlugin plugin : pluginList) {
+            plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CONFIG_CHANGE, application.getConfig());
+        }
+    }
+
     public void informOfFileChange(File file) {
         String absolutePath = file.getAbsolutePath();
-        for (GrailsPlugin grailsPlugin : pluginList) {
-            String className = GrailsResourceUtils.getClassName(absolutePath);
-            if(grailsPlugin.hasInterestInChange(absolutePath)) {
-                if(className != null) {
-                    Class cls = loadApplicationClass(className);
-                    if(cls != null) {
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
+        String className = GrailsResourceUtils.getClassName(absolutePath);
+        if(className.equals(CONFIG_FILE)) {
+            ConfigSlurper configSlurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application);
+            ConfigObject c;
+            try {
+                c = configSlurper.parse(file.toURI().toURL());
+                application.getConfig().merge(c);
+                informPluginsOfConfigChange();
+
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        else {
+            for (GrailsPlugin grailsPlugin : pluginList) {
+                if(grailsPlugin.hasInterestInChange(absolutePath)) {
+                    if(className != null) {
+                        Class cls = loadApplicationClass(className);
+                        if(cls != null) {
+                            grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
+                        }
                     }
-                }
-                else {
-                    grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
+                    else {
+                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
+                    }
                 }
             }
         }
+
     }
 
     private Class loadApplicationClass(String className) {
