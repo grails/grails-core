@@ -106,7 +106,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                         BlockStatement constructorBody = new BlockStatement();
                         Parameter[] constructorParams = GrailsASTUtils.getRemainingParameterTypes(declaredMethod.getParameters());
                         ArgumentListExpression arguments = GrailsASTUtils.createArgumentListFromParameters(constructorParams, true);
-                        constructorBody.addStatement(new ExpressionStatement( new MethodCallExpression(new ClassExpression(implementationNode), "initialize",arguments)));
+                        MethodCallExpression constructCallExpression = new MethodCallExpression(new ClassExpression(implementationNode), "initialize", arguments);
+                        constructCallExpression.setMethodTarget(declaredMethod);
+                        constructorBody.addStatement(new ExpressionStatement(constructCallExpression));
 
                         if(constructorParams.length == 0) {
                             // handle default constructor
@@ -120,7 +122,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                             }
                         }
                         else {
-                            // create new constructor
+                            // create new constructor, restoring default constructor if there is none
                             ConstructorNode cn = findConstructor(classNode, constructorParams);
                             if(cn != null) {
                                 Statement code = cn.getCode();
@@ -130,6 +132,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                             else {
                                 cn = new ConstructorNode(Modifier.PUBLIC,constructorParams,null, constructorBody);
                                 classNode.addConstructor(cn);
+                            }
+
+                            ConstructorNode defaultConstructor = getDefaultConstructor(classNode);
+                            if(defaultConstructor == null) {
+                                // add empty
+                                classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, new BlockStatement()));
                             }
                         }
 
