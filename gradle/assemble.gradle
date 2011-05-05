@@ -114,6 +114,10 @@ distSpec = copySpec {
         into "grails-$grailsVersion"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
+    from('grails-resources/src/grails/home/tests') {
+        into "grails-$grailsVersion/src/resources/tests"
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+    }
     from("grails-resources/src/grails/home/bash") {
         into "grails-$grailsVersion/bin"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])

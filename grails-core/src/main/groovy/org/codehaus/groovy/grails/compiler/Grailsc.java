@@ -15,26 +15,17 @@
  */
 package org.codehaus.groovy.grails.compiler;
 
-import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ant.Groovyc;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.springframework.core.io.Resource;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * Extends Groovyc and adds Grails' compiler extensions
+ *
+ * @author Graeme Rocher
+ */
 public class Grailsc extends Groovyc {
-
-    private List<File> destList = new ArrayList<File>();
-
 
     @Override protected CompilationUnit makeCompileUnit() {
         CompilationUnit unit = super.makeCompileUnit();
@@ -42,68 +33,4 @@ public class Grailsc extends Groovyc {
         unit.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return unit;
     }
-
-
-    @Override
-    protected void scanDir(File srcDir, File destDir, String[] files) {
-       List<File> srcList = new ArrayList<File>();
-       String srcPath = srcDir.getAbsolutePath();
-       String destPath = destDir.getAbsolutePath();
-       for (String f : files) {
-           File sf = new File(srcPath, f);
-           File df = null;
-           if (f.endsWith(".groovy") ) {
-               df = new File(destPath, f.substring(0, f.length()-7) + ".class");
-               int i = f.lastIndexOf('/');
-               if (!df.exists() && i > -1) {
-                   // check root package
-                   File tmp = new File(destPath, f.substring(i, f.length()-7) + ".class");
-                   if (tmp.exists()) {
-                       df = tmp;
-                   }
-               }
-           }
-           else if (f.endsWith(".java")) {
-               df = new File(destPath, f.substring(0, f.length()-5) + ".class");
-           }
-           else {
-               continue;
-           }
-
-           if (sf.lastModified() > df.lastModified()) {
-               srcList.add(sf);
-               destList.add(df);
-           }
-       }
-       addToCompileList(srcList.toArray(new File[srcList.size()]));
-    }
-
-    @Override
-    protected void compile() {
-
-
-        if (compileList.length > 0) {
-            long now = System.currentTimeMillis();
-            try {
-                try {
-                    super.compile();
-                } catch (RuntimeException e) {
-                    if(!(e instanceof MultipleCompilationErrorsException) && !(e instanceof CompilationFailedException)) {
-                        e.printStackTrace();
-                        System.out.println("Groovy Compiler error: " + e.getMessage());
-                        throw e;
-                    }
-
-                }
-                getDestdir().setLastModified(now);
-            }
-            finally {
-                // set the destination files as modified so recompile doesn't happen continuously
-                for (File f : destList) {
-                    f.setLastModified(now);
-                }
-            }
-        }
-    }
-
 }

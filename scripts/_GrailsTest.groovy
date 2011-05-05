@@ -97,6 +97,9 @@ testSourceDir = grailsSettings.testSourceDir
 // The 'styledir' argument to the 'junitreport' ant task (null == default provided by Ant)
 if(grailsSettings.grailsHome) {
     junitReportStyleDir = new File(grailsSettings.grailsHome, "src/resources/tests")
+	if(!junitReportStyleDir.exists()) {
+		junitReportStyleDir = new File(grailsSettings.grailsHome, "grails-resources/src/grails/home/tests")
+	}
 }
 
 // Set up an Ant path for the tests.
