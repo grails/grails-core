@@ -47,6 +47,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     @Autowired
     LinkGenerator linkGenerator
 
+    @Autowired
+    def resourceService
+
     static final SCOPES = [page: 'pageScope',
                            application: 'servletContext',
                            request:'request',
@@ -110,42 +113,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     }
 
     /**
-     * Get the declared URL of the server from config, or guess at localhost for non-production.
-     */
-    String makeServerURL() {
-        def u = grailsApplication?.config?.grails?.serverURL
-        if (!u) {
-            // Leave it null if we're in production so we can throw
-            if (Environment.current != Environment.PRODUCTION) {
-                u = "http://localhost:" + (System.getProperty('server.port') ?: "8080")
-            }
-        }
-        return u
-    }
-
-    /**
-     * Check for "absolute" attribute and render server URL if available from Config or deducible in non-production.
-     */
-    private handleAbsolute(attrs) {
-        def base = attrs.remove('base')
-        if (base) {
-            return base
-        }
-
-        def abs = attrs.remove("absolute")
-        if (Boolean.valueOf(abs)) {
-            def u = makeServerURL()
-            if (u) {
-                return u
-            }
-
-            throwTagError("Attribute absolute='true' specified but no grails.serverURL set in Config")
-        }
-
-        return GrailsWebRequest.lookup(request).contextPath
-    }
-
-    /**
      * Creates a link to a resource, generally used as a method rather than a tag.<br/>
      *
      * eg. &lt;link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" /&gt;
@@ -171,7 +138,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if(pageScope.pluginContextPath) {
             attrs.pluginContextPath = pageScope.pluginContextPath
         }
-        out << linkGenerator.resource(attrs)
+        out << (resourceService ? r.resource(attrs) : linkGenerator.resource(attrs))
     }
 
     /**
