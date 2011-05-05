@@ -438,35 +438,12 @@ public class GrailsScriptRunner {
             CachedScript cachedScript = scriptCache.get(scriptName);
             potentialScripts = cachedScript.potentialScripts;
             binding = cachedScript.binding;
+            setDefaultInputStream(binding);
         }
         else {
             binding = new GantBinding();
+            setDefaultInputStream(binding);
 
-            // Gant does not initialise the default input stream for
-            // the Ant project, so we manually do it here.
-            AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
-            Project p = antBuilder.getAntProject();
-            try {
-                p.setInputHandler(new CommandLineInputHandler());
-                p.setDefaultInputStream(System.in);
-            }
-            catch (NoSuchMethodError nsme) {
-                // will only happen due to a bug in JRockit
-                // note - the only approach that works is to loop through the public methods
-                for (Method m : p.getClass().getMethods()) {
-                    if ("setDefaultInputStream".equals(m.getName()) && m.getParameterTypes().length == 1 &&
-                            InputStream.class.equals(m.getParameterTypes()[0])) {
-                        try {
-                            m.invoke(p, System.in);
-                            break;
-                        }
-                        catch (Exception e) {
-                            // shouldn't happen, but let it bubble up to the catch(Throwable)
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            }
 
             // Now find what scripts match the one requested by the user.
             boolean exactMatchFound = false;
@@ -605,6 +582,34 @@ public class GrailsScriptRunner {
         }
 
         return executeWithGantInstance(gant, doNothingClosure);
+    }
+
+    private void setDefaultInputStream(GantBinding binding) {
+        // Gant does not initialise the default input stream for
+        // the Ant project, so we manually do it here.
+        AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
+        Project p = antBuilder.getAntProject();
+        try {
+            p.setInputHandler(new CommandLineInputHandler());
+            p.setDefaultInputStream(System.in);
+        }
+        catch (NoSuchMethodError nsme) {
+            // will only happen due to a bug in JRockit
+            // note - the only approach that works is to loop through the public methods
+            for (Method m : p.getClass().getMethods()) {
+                if ("setDefaultInputStream".equals(m.getName()) && m.getParameterTypes().length == 1 &&
+                        InputStream.class.equals(m.getParameterTypes()[0])) {
+                    try {
+                        m.invoke(p, System.in);
+                        break;
+                    }
+                    catch (Exception e) {
+                        // shouldn't happen, but let it bubble up to the catch(Throwable)
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
     }
 
     private void loadScriptClass(Gant gant, String scriptName) {
