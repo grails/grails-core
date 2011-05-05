@@ -447,6 +447,7 @@ public class GrailsScriptRunner {
             AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
             Project p = antBuilder.getAntProject();
             try {
+                p.setInputHandler(new CommandLineInputHandler());
                 p.setDefaultInputStream(System.in);
             }
             catch (NoSuchMethodError nsme) {
