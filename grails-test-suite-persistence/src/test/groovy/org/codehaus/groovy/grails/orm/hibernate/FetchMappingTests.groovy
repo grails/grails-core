@@ -12,27 +12,22 @@ class FetchMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class FetchMappingBook {
-    Long id
-    Long version
     String title
 }
 
+@Entity
 class FetchMappingAuthor {
-    Long id
-    Long version
-
     String name
-    Set books
     static hasMany = [books:FetchMappingBook]
 }
 
+@Entity
 class FetchMappingPublisher {
-    Long id
-    Long version
-
     String name
-    Set books
     static hasMany = [books:FetchMappingBook]
 
     static mapping = {

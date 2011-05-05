@@ -13,20 +13,18 @@ class ConverterUtilPersistenceTests extends AbstractGrailsHibernateTests {
         gcl.parseClass('''
 package com.foo.bar
 
+import grails.persistence.*
+
+@Entity
 class Flurg {
-    Long id
-    Long version
 
     String title
     static belongsTo = [bargle: Bargle]
 }
 
+@Entity
 class Bargle {
-    Long id
-    Long version
-
     String name
-    Set flurgs
     static hasMany = [flurgs: Flurg]
 }
 ''')

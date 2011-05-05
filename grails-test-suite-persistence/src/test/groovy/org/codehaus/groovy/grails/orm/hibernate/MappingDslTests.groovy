@@ -1,10 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import java.sql.Types
 import javax.sql.DataSource
 import org.hibernate.type.TextType
 
-/**
+ /**
  * @author Graeme Rocher
  * @since 1.0
  */
@@ -318,9 +317,10 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class MappedPerson {
-    Long id
-    Long version
     String name
     MappedAddress address
     MappedGroup group
@@ -343,24 +343,20 @@ class MappedPerson {
     }
 }
 
+
+@Entity
 class MappedChild {
-    Long id
-    Long version
 }
 
+@Entity
 class MappedAddress {
-    Long id
-    Long version
 
     static belongsTo = MappedPerson
 }
 
+@Entity
 class MappedGroup {
-    Long id
-    Long version
 
-    Set people
-    Set partners
     static hasMany = [people:MappedPerson, partners:MappedPartner]
     static mapping = {
         columns {
@@ -369,11 +365,8 @@ class MappedGroup {
     }
 }
 
+@Entity
 class MappedPartner {
-    Long id
-    Long version
-
-    Set groups
     static belongsTo = MappedGroup
     static hasMany = [groups:MappedGroup]
     static mapping = {
@@ -383,9 +376,8 @@ class MappedPartner {
     }
 }
 
+@Entity
 class Payment {
-    Long id
-    Long version
     Integer amount
 
     static mapping = {
@@ -393,13 +385,13 @@ class Payment {
     }
 }
 
+@Entity
 class CreditCardPayment extends Payment  {
     String cardNumber
 }
 
+@Entity
 class CompositePerson implements Serializable {
-    Long id
-    Long version
     String firstName
     String lastName
 
@@ -408,12 +400,9 @@ class CompositePerson implements Serializable {
     }
 }
 
+@Entity
 class PersonDSL {
-    Long id
-    Long version
     String firstName
-    Set children
-    Set cousins
 
     static hasMany = [children:Relative, cousins:Relative]
     static mapping = {
@@ -429,9 +418,8 @@ class PersonDSL {
     }
 }
 
+@Entity
 class Relative {
-    Long id
-    Long version
 
     String firstName
     String lastName
@@ -449,9 +437,8 @@ enum Truth {
     FALSE
 }
 
+@Entity
 class EnumIndexed {
-    Long id
-    Long version
 
     String name
     Truth truth
@@ -462,9 +449,8 @@ class EnumIndexed {
     }
 }
 
+@Entity
 class PersonDSL2 {
-    Long id
-    Long version
     String firstName
 
     static mapping = {

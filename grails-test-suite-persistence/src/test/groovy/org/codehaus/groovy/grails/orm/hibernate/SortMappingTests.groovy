@@ -11,11 +11,11 @@ class SortMappingTests extends AbstractGrailsHibernateTests {
     protected void onSetUp() {
         gcl.parseClass '''
 
+import grails.persistence.*
+
+@Entity
 class SortMappingBook {
-    Long id
-    Long version
     String title
-    SortMappingAuthor author
     static belongsTo = [author:SortMappingAuthor]
 
     static mapping = {
@@ -23,12 +23,10 @@ class SortMappingBook {
     }
 }
 
+@Entity
 class SortMappingAuthor {
-    Long id
-    Long version
 
     String name
-    Set books
     Set unibooks
 
     static hasMany = [books:SortMappingBook]
@@ -39,11 +37,9 @@ class SortMappingAuthor {
     }
 }
 
+@Entity
 class SortMappingBook2 {
-    Long id
-    Long version
     String title
-    SortMappingAuthor2 author
     static belongsTo = [author:SortMappingAuthor2]
 
     static mapping = {
@@ -51,12 +47,10 @@ class SortMappingBook2 {
     }
 }
 
+@Entity
 class SortMappingAuthor2 {
-    Long id
-    Long version
 
     String name
-    Set books
     Set unibooks
 
     static hasMany = [books:SortMappingBook2]

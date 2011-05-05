@@ -12,9 +12,10 @@ class DirtyCheckWithValidationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class DirtyCheckWithValidation {
-    Long id
-    Long version
     String name
 
     static constraints = {

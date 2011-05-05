@@ -14,17 +14,16 @@ class MergeDetachedObjectTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class DetachedQuestion {
-    Long id
-    Long version
     String name
-    Set answers
     static hasMany = [answers:DetachedAnswer]
 }
 
+@Entity
 class DetachedAnswer {
-    Long id
-    Long version
     String name
 }
 '''

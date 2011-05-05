@@ -12,10 +12,10 @@ class CriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class CriteriaBuilderBook {
-    Long id
-    Long version
-    CriteriaBuilderAuthor author
     String title
     static belongsTo = [author:CriteriaBuilderAuthor]
 
@@ -24,12 +24,10 @@ class CriteriaBuilderBook {
     }
 }
 
+@Entity
 class CriteriaBuilderAuthor {
-    Long id
-    Long version
 
     String name
-    Set books
     static hasMany = [books:CriteriaBuilderBook]
 
     static mapping = {

@@ -10,9 +10,10 @@ class DataBindingDynamicConstructorTests extends AbstractGrailsHibernateTests {
 
     void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class DataBindingDynamicConstructorTest {
-    Long id
-    Long version
     String name
     Integer number
     static constraints = {

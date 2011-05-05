@@ -11,6 +11,7 @@ dependencies {
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services'),
                 project(':grails-plugin-scaffolding'),
+                project(':grails-plugin-controllers'),
                 project(':grails-hibernate'),
                 project(':grails-bootstrap'),
                 project(':grails-crud')

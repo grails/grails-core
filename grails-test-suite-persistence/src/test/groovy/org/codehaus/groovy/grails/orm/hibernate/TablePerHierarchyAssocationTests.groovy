@@ -10,20 +10,20 @@ class TablePerHierarchyAssocationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class  TablePerHierarchyRoot {
-     Long id
-     Long version
      String name
      TablePerHierarchOneToMany one
 }
+@Entity
 class TablePerHierarchSub1 extends TablePerHierarchyRoot {}
+@Entity
 class TablePerHierarchSub2 extends TablePerHierarchyRoot {}
 
+@Entity
 class TablePerHierarchOneToMany {
-   Long id
-   Long version
-   Set subs
-   Set all
    static hasMany = [subs:TablePerHierarchSub1, all:TablePerHierarchyRoot]
 }
 '''

@@ -10,18 +10,17 @@ class ListReorderingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class Bar {
+import grails.persistence.*
 
-    Long id
-    Long version
+@Entity
+class Bar {
     String name
     Foo foo
     static belongsTo = Foo
 }
 
+@Entity
 class Foo {
-    Long id
-    Long version
     String name
 
     List bars

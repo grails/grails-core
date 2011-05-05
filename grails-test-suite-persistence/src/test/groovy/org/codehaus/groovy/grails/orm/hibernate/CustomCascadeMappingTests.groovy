@@ -10,12 +10,10 @@ class CustomCascadeMappingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class CustomCascadeMappingOne {
-    Long id
-    Long version
+import grails.persistence.*
 
-    Set foos = []
-    Set bars = []
+@Entity
+class CustomCascadeMappingOne {
     static hasMany = [foos:CustomCascadeMappingTwo, bars:CustomCascadeMappingTwo]
 
     static mapping = {
@@ -24,9 +22,9 @@ class CustomCascadeMappingOne {
     }
 }
 
+
+@Entity
 class CustomCascadeMappingTwo {
-    Long id
-    Long version
 
     String name
 }
