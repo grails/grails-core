@@ -428,7 +428,7 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         SessionFactoryImplementor sessionFactory = getCurrentSessionFactoryImplementor();
 
         // patch the currentSessionContext variable of SessionFactoryImpl to use this proxy as the key
-        CurrentSessionContext ssc = createSessionFactoryContext();
+        CurrentSessionContext ssc = createCurrentSessionContext();
 
         try {
             Class<? extends SessionFactoryImplementor> sessionFactoryClass = sessionFactory.getClass();
@@ -449,7 +449,7 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         }
     }
 
-    protected CurrentSessionContext createSessionFactoryContext() {
+    protected CurrentSessionContext createCurrentSessionContext() {
         try {
             Constructor<CurrentSessionContext> constructor = currentSessionContextClass.getConstructor(SessionFactoryImplementor.class);
             return BeanUtils.instantiateClass(constructor, this);
