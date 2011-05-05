@@ -10,6 +10,9 @@ class DeleteFromCollectionTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class DeleteBook {
     Long id
     Long version
@@ -18,6 +21,7 @@ class DeleteBook {
     static belongsTo = DeleteAuthor
 }
 
+@Entity
 class DeleteAuthor {
     Long id
     Long version

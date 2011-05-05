@@ -12,9 +12,10 @@ class CascadingValidationWithInheritanceTests extends AbstractGrailsHibernateTes
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class CascadingValidationWithInheritanceTestsBook {
-    Long id
-    Long version
     String name
     List authors
     static hasMany = [authors: CascadingValidationWithInheritanceTestsAuthor]
@@ -31,22 +32,19 @@ class CascadingValidationWithInheritanceTestsBook {
 
     String toString() {"Book[$name]"}
 }
-class CascadingValidationWithInheritanceTestsTechBook extends CascadingValidationWithInheritanceTestsBook {
-    Long id
-    Long version
 
-    Set subjects
+@Entity
+class CascadingValidationWithInheritanceTestsTechBook extends CascadingValidationWithInheritanceTestsBook {
+
     static hasMany = [subjects: CascadingValidationWithInheritanceTestsTechSubject]
 }
+@Entity
 class CascadingValidationWithInheritanceTestsAuthor {
-    Long id
-    Long version
 
     String name
 }
+@Entity
 class CascadingValidationWithInheritanceTestsTechSubject {
-    Long id
-    Long version
 
     String name
 }

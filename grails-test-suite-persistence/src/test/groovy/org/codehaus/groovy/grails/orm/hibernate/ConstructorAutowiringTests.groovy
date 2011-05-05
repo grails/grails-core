@@ -31,9 +31,10 @@ class ConstructorAutowiringTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class Book {
-    Long id
-    Long version
     String title
 
     def bookService
@@ -42,6 +43,7 @@ class Book {
     }
 }
 
+@Entity
 class BookService {
     def testMethod() { "foo" }
 }

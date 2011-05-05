@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -157,6 +159,7 @@ class FindByMethodTests extends AbstractGrailsHibernateTests {
     }
 }
 
+@Entity
 class FindByMethodBook {
     Long id
     Long version
@@ -168,6 +171,7 @@ class FindByMethodBook {
         writtenBy(nullable: true)
     }
 }
+@Entity
 class FindByMethodUser {
     Long id
     Long version
@@ -176,6 +180,7 @@ class FindByMethodUser {
     Set books
     static hasMany = [books:FindByMethodBook]
 }
+@Entity
 class FindByBooleanPropertyBook {
     Long id
     Long version
@@ -183,6 +188,7 @@ class FindByBooleanPropertyBook {
     String title
     Boolean published
 }
+@Entity
 class Highway {
     Long id
     Long version
