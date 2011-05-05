@@ -64,7 +64,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
             assertFalse("There should be no .svn directory", it.file.name == '.svn')
             assertFalse("There should be no CVS directory", it.file.name == 'CVS')
         }
-        assertEquals 7, sourceFiles.size()
+        assertEquals "found $sourceFiles", 7, sourceFiles.size()
     }
 
     void testGetMetadataForPlugin() {
@@ -262,7 +262,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         def pluginSettings = createPluginBuildSettings(INLINE_PLUGINS_TEST_PROJ_DIR)
         def pluginInfos = pluginSettings.getPluginInfos()
 
-        assertEquals "plugins found", 2, pluginInfos.size()
+        assertEquals "plugins found $pluginInfos.fullName", 2, pluginInfos.size()
 
         assertNotNull "should contain foo", pluginInfos.find { it.name == 'foo' }
         assertNotNull "should contain foobar", pluginInfos.find { it.name == 'foobar' }
