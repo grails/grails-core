@@ -101,8 +101,8 @@ class GrailsMock {
                 // Find an expando method with the same signature as the one being invoked.
                 def paramTypes = []
                 args.each {
-                    if (it) {
-                        paramTypes << it.getClass()
+                    if (it != null) {
+                        paramTypes << it.class
                     }
                     else {
                         paramTypes << null
