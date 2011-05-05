@@ -22,15 +22,16 @@
 	.pagination .nextLink {
 		float: right;
 	}
-
-	/* slightly smaller margin around content body */
-	.content {
-		margin: 0 0.5em 0.5em;
+	
+	/* pagination needs to wrap around floated buttons */
+	.pagination {
+		overflow: hidden;
 	}
 
+	/* slightly smaller margin around content body */
 	fieldset,
 	.property-list {
-		padding: 0.5em 1em 1em;
+		padding: 0.3em 1em 1em;
 	}
 	
 	input, textarea {
