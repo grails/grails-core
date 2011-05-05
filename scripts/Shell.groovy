@@ -34,8 +34,6 @@ target ('default': "Load the Grails interactive shell") {
 
 target(shell:"The shell implementation target") {
 
-//    classLoader = new URLClassLoader([classesDir.toURI().toURL()] as URL[], rootLoader)
-//    Thread.currentThread().setContextClassLoader(classLoader)
     loadApp()
     configureApp()
     def b = new Binding()
@@ -47,6 +45,10 @@ target(shell:"The shell implementation target") {
         listener.init()
     }
     def shell = new Groovysh(classLoader,b, new IO(System.in, System.out, System.err))
+
+	def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+	watcher.start()
+
     shell.run([] as String[])
     listeners?.each { key, listener ->
         listener.flush()

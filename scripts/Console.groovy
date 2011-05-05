@@ -39,6 +39,10 @@ target(console:"The console implementation target") {
         console.run()
 		def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
 		watcher.start()
+		// keep the console running
+		while(true) {
+			sleep(Integer.MAX_VALUE)
+		}
     } catch (Exception e) {
         event("StatusFinal", ["Error starting console: ${e.message}"])
     }
