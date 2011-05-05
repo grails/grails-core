@@ -28,6 +28,9 @@ public class GrailsNameUtilsTests extends TestCase {
     public void testGetClassNameRepresentation() {
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("my-class"));
         assertEquals("MyClass", GrailsNameUtils.getClassNameRepresentation("MyClass"));
+        assertEquals("F", GrailsNameUtils.getClassNameRepresentation(".f"));
+        assertEquals("AB", GrailsNameUtils.getClassNameRepresentation(".a.b"));
+        assertEquals("AlphaBakerCharlie", GrailsNameUtils.getClassNameRepresentation(".alpha.baker.charlie"));
     }
 
     public void testGetNaturalName() {
