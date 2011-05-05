@@ -45,6 +45,9 @@ public class ControllersDomainBindingApi {
             DataBindingUtils.bindObjectToDomainInstance(dc, instance, namedArgs);
             DataBindingUtils.assignBidirectionalAssociations(instance, namedArgs, dc);
         }
+        else {
+            DataBindingUtils.bindObjectToInstance(instance, namedArgs);
+        }
     }
 
     /**
@@ -59,7 +62,9 @@ public class ControllersDomainBindingApi {
         if(dc != null) {
             return DataBindingUtils.bindObjectToDomainInstance(dc, instance, bindingSource);
         }
-        return null;
+        else {
+            return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
+        }
     }
 
     /**
