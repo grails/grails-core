@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
 
     void testClearErrorsBetweenValidations() {
@@ -135,6 +137,7 @@ class ValidatePersistentMethodTests extends AbstractGrailsHibernateTests {
     }
 }
 
+@Entity
 class ValidateTeam {
     Long id
     Long version
@@ -142,6 +145,7 @@ class ValidateTeam {
     URL homePage
 }
 
+@Entity
 class ValidatePerson {
     Long id
     Long version
@@ -150,6 +154,7 @@ class ValidatePerson {
       age(max:99)
     }
 }
+@Entity
 class ValidateProfile {
     Long id
     Long version
@@ -165,6 +170,7 @@ class ValidateProfile {
         dateOfBirth(nullable: true)
     }
 }
+@Entity
 class ValidateBook {
     Long id
     Long version
@@ -176,6 +182,7 @@ class ValidateBook {
        author(nullable:false)
     }
 }
+@Entity
 class ValidateAuthor {
    Long id
    Long version
@@ -188,6 +195,7 @@ class ValidateAuthor {
         name(size:1..255, blank:false)
    }
 }
+@Entity
 class ValidateAddress {
     Long id
     Long version

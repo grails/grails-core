@@ -10,9 +10,10 @@ class NonDomainCollectionBindingTests extends AbstractGrailsHibernateTests {
 
     void onSetUp() {
         gcl.parseClass """
+import grails.persistence.*
+
+@Entity
 class DataBindingBook {
-    Long id
-    Long version
     String title
     List topics
     static hasMany = [topics: String]

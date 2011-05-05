@@ -35,9 +35,10 @@ class DefaultGrailsTemplateGeneratorTests extends GroovyTestCase {
 
     GroovyClassLoader gcl = new GroovyClassLoader()
         String testDomain = '''
+import grails.persistence.*
+
+@Entity
 class ScaffoldingTest {
-   Long id
-   Long version
 
    Integer status
    Date regularDate

@@ -10,13 +10,11 @@ class SelfReferencingOneToManyTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class SelfReferencingOneToManyCategory {
-    Long id
-    Long version
-    String name
+import grails.persistence.*
 
-    SelfReferencingOneToManyCategory parent
-    Set children
+@Entity
+class SelfReferencingOneToManyCategory {
+    String name
 
     static hasMany = [children: SelfReferencingOneToManyCategory]
     static belongsTo = [parent: SelfReferencingOneToManyCategory]

@@ -12,15 +12,16 @@ class CascadingValidationOnUpdateTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class Pirate {
-    Long id
-    Long version
     String name
     Parrot parrot
 }
+
+@Entity
 class Parrot {
-    Long id
-    Long version
     String name
     static belongsTo = Pirate
     static constraints = {

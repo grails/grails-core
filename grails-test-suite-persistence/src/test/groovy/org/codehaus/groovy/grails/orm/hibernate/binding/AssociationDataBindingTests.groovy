@@ -14,45 +14,37 @@ class AssociationDataBindingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class AssociationBindingReviewer {
-    Long id
-    Long version
 
     String name
     Integer age = 25
 }
+@Entity
 class AssociationBindingPage {
-    Long id
-    Long version
-
     Integer number
 }
+@Entity
 class AssociationBindingBook {
-    Long id
-    Long version
 
     String title
-    AssociationBindingAuthor author
     List pages
     Map  reviewers
     static belongsTo = [author: AssociationBindingAuthor]
     static hasMany = [pages:AssociationBindingPage, reviewers:AssociationBindingReviewer]
 }
-
+@Entity
 class AssociationBindingBook2 {
-    Long id
-    Long version
 
     String title
 }
 
+@Entity
 class AssociationBindingAuthor {
-    Long id
-    Long version
 
     String name
-    Set books
-    Set moreBooks
     static hasMany = [books: AssociationBindingBook, moreBooks:AssociationBindingBook2]
 }
 '''

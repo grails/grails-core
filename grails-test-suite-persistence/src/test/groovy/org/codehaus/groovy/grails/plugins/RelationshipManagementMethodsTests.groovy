@@ -142,41 +142,41 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
     void onSetUp() {
 
         gcl.parseClass('''
+import grails.persistence.*
+
 @grails.persistence.Entity
 class DemoUser {
   String name
   static hasMany = [nicknames: String]
 }
+
+@Entity
 class Person {
-    Long id
-    Long version
     String name
-    Set addresses
     static hasMany = [addresses:Address]
 }
+
+@Entity
 class Address {
-    Long id
-    Long version
     String number
     Person person
 }
+
+@Entity
 class Bookmark {
-    Long id
-    Long version
 
     String url
-    Set tags = new HashSet()
     static hasMany = [tags:Tag]
     static belongsTo = [Tag]
 }
+
+@Entity
 class BookmarkSubclass extends Bookmark {
 }
-class Tag {
-    Long id
-    Long version
 
+@Entity
+class Tag {
     String name
-    Set bookmarks = new HashSet()
     static hasMany = [bookmarks:Bookmark]
 }
 @grails.persistence.Entity
