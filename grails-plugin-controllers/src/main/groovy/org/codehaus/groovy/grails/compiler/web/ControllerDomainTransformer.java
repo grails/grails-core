@@ -37,7 +37,6 @@ public class ControllerDomainTransformer extends AbstractGrailsArtefactTransform
         return false;
     }
 
-    @Override
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);
     }

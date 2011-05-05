@@ -241,189 +241,152 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         this.applicationContext = applicationContext;
     }
 
-    @Override
     public TypeResolver getTypeResolver() {
         return getCurrentSessionFactoryImplementor().getTypeResolver();
     }
 
-    @Override
     public Properties getProperties() {
         return getCurrentSessionFactoryImplementor().getProperties();
     }
 
-    @Override
     public EntityPersister getEntityPersister(String entityName) throws MappingException {
         return getCurrentSessionFactoryImplementor().getEntityPersister(entityName);
     }
 
-    @Override
     public CollectionPersister getCollectionPersister(String role) throws MappingException {
         return getCurrentSessionFactoryImplementor().getCollectionPersister(role);
     }
 
-    @Override
     public Dialect getDialect() {
         return getCurrentSessionFactoryImplementor().getDialect();
     }
 
-    @Override
     public Interceptor getInterceptor() {
         return getCurrentSessionFactoryImplementor().getInterceptor();
     }
 
-    @Override
     public QueryPlanCache getQueryPlanCache() {
         return getCurrentSessionFactoryImplementor().getQueryPlanCache();
     }
 
-    @Override
     public Type[] getReturnTypes(String queryString) throws HibernateException {
         return getCurrentSessionFactoryImplementor().getReturnTypes(queryString);
     }
 
-    @Override
     public String[] getReturnAliases(String queryString) throws HibernateException {
         return getCurrentSessionFactoryImplementor().getReturnAliases(queryString);
     }
 
-    @Override
     public ConnectionProvider getConnectionProvider() {
         return getCurrentSessionFactoryImplementor().getConnectionProvider();
     }
 
-    @Override
     public String[] getImplementors(String className) throws MappingException {
         return getCurrentSessionFactoryImplementor().getImplementors(className);
     }
 
-    @Override
     public String getImportedClassName(String name) {
         return getCurrentSessionFactoryImplementor().getImportedClassName(name);
     }
 
-    @Override
     public TransactionManager getTransactionManager() {
         return getCurrentSessionFactoryImplementor().getTransactionManager();
     }
 
-    @Override
     public QueryCache getQueryCache() {
         return getCurrentSessionFactoryImplementor().getQueryCache();
     }
 
-    @Override
     public QueryCache getQueryCache(String regionName) throws HibernateException {
         return getCurrentSessionFactoryImplementor().getQueryCache(regionName);
     }
 
-    @Override
     public UpdateTimestampsCache getUpdateTimestampsCache() {
         return getCurrentSessionFactoryImplementor().getUpdateTimestampsCache();
     }
 
-    @Override
     public StatisticsImplementor getStatisticsImplementor() {
         return getCurrentSessionFactoryImplementor().getStatisticsImplementor();
     }
 
-    @Override
     public NamedQueryDefinition getNamedQuery(String queryName) {
         return getCurrentSessionFactoryImplementor().getNamedQuery(queryName);
     }
 
-    @Override
     public NamedSQLQueryDefinition getNamedSQLQuery(String queryName) {
         return getCurrentSessionFactoryImplementor().getNamedSQLQuery(queryName);
     }
 
-    @Override
     public ResultSetMappingDefinition getResultSetMapping(String name) {
         return getCurrentSessionFactoryImplementor().getResultSetMapping(name);
     }
 
-    @Override
     public IdentifierGenerator getIdentifierGenerator(String rootEntityName) {
         return getCurrentSessionFactoryImplementor().getIdentifierGenerator(rootEntityName);
     }
 
-    @Override
     public Region getSecondLevelCacheRegion(String regionName) {
         return getCurrentSessionFactoryImplementor().getSecondLevelCacheRegion(regionName);
     }
 
-    @Override
     public Map getAllSecondLevelCacheRegions() {
         return getCurrentSessionFactoryImplementor().getAllSecondLevelCacheRegions();
     }
 
-    @Override
     public SQLExceptionConverter getSQLExceptionConverter() {
         return getCurrentSessionFactoryImplementor().getSQLExceptionConverter();
     }
 
-    @Override
     public Settings getSettings() {
         return getCurrentSessionFactoryImplementor().getSettings();
     }
 
-    @Override
     public Session openTemporarySession() throws HibernateException {
         return getCurrentSessionFactoryImplementor().openTemporarySession();
     }
 
-    @Override
     public Session openSession(Connection connection, boolean flushBeforeCompletionEnabled, boolean autoCloseSessionEnabled, ConnectionReleaseMode connectionReleaseMode) throws HibernateException {
         return getCurrentSessionFactoryImplementor().openSession(connection,flushBeforeCompletionEnabled,autoCloseSessionEnabled, connectionReleaseMode);
     }
 
-    @Override
     public Set<String> getCollectionRolesByEntityParticipant(String entityName) {
         return getCurrentSessionFactoryImplementor().getCollectionRolesByEntityParticipant(entityName);
     }
 
-    @Override
     public EntityNotFoundDelegate getEntityNotFoundDelegate() {
         return getCurrentSessionFactoryImplementor().getEntityNotFoundDelegate();
     }
 
-    @Override
     public SQLFunctionRegistry getSqlFunctionRegistry() {
         return getCurrentSessionFactoryImplementor().getSqlFunctionRegistry();
     }
 
-    @Override
     public FetchProfile getFetchProfile(String name) {
         return getCurrentSessionFactoryImplementor().getFetchProfile(name);
     }
 
-    @Override
     public SessionFactoryObserver getFactoryObserver() {
         return getCurrentSessionFactoryImplementor().getFactoryObserver();
     }
 
     @SuppressWarnings({"deprecation"})
-    @Override
     @Deprecated
     public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
         return getCurrentSessionFactoryImplementor().getIdentifierGeneratorFactory();
     }
 
-    @Override
     public Type getIdentifierType(String className) throws MappingException {
         return getCurrentSessionFactoryImplementor().getIdentifierType(className);
     }
 
-    @Override
     public String getIdentifierPropertyName(String className) throws MappingException {
         return getCurrentSessionFactoryImplementor().getIdentifierPropertyName(className);
     }
 
-    @Override
     public Type getReferencedPropertyType(String className, String propertyName) throws MappingException {
         return getCurrentSessionFactoryImplementor().getReferencedPropertyType(className,propertyName);
     }
 
-    @Override
     public void afterPropertiesSet() {
         SessionFactoryImplementor sessionFactory = getCurrentSessionFactoryImplementor();
 
