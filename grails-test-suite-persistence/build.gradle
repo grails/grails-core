@@ -18,6 +18,6 @@ dependencies {
 }
 test {
     maxParallelForks = 2
-    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=256m']
+    jvmArgs = ['-Xmx2048M','-XX:MaxPermSize=256m']
 }
 
