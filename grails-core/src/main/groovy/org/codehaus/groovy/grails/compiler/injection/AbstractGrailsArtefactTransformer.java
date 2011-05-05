@@ -18,10 +18,7 @@ package org.codehaus.groovy.grails.compiler.injection;
 import grails.artefact.Enhanced;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.ThrowStatement;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,16 +104,35 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
                     if(isConstructor(declaredMethod)) {
                         BlockStatement constructorBody = new BlockStatement();
-                        ArgumentListExpression arguments = new ArgumentListExpression();
-                        arguments.addExpression(THIS_EXPRESSION);
+                        Parameter[] constructorParams = GrailsASTUtils.getRemainingParameterTypes(declaredMethod.getParameters());
+                        ArgumentListExpression arguments = GrailsASTUtils.createArgumentListFromParameters(constructorParams, true);
                         constructorBody.addStatement(new ExpressionStatement( new MethodCallExpression(new ClassExpression(implementationNode), "initialize",arguments)));
-                        ConstructorNode constructorNode = getDefaultConstructor(classNode);
-                        if(constructorNode != null){
-                            constructorBody.addStatement(constructorNode.getCode());
-                            constructorNode.setCode(constructorBody);
-                        }else{
-                            classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+
+                        if(constructorParams.length == 0) {
+                            // handle default constructor
+
+                            ConstructorNode constructorNode = getDefaultConstructor(classNode);
+                            if(constructorNode != null){
+                                constructorBody.addStatement(constructorNode.getCode());
+                                constructorNode.setCode(constructorBody);
+                            }else{
+                                classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+                            }
                         }
+                        else {
+                            // create new constructor
+                            ConstructorNode cn = findConstructor(classNode, constructorParams);
+                            if(cn != null) {
+                                Statement code = cn.getCode();
+                                constructorBody.addStatement(code);
+                                cn.setCode(constructorBody);
+                            }
+                            else {
+                                cn = new ConstructorNode(Modifier.PUBLIC,constructorParams,null, constructorBody);
+                                classNode.addConstructor(cn);
+                            }
+                        }
+
                     }
                     else if(isCandidateInstanceMethod(declaredMethod)) {
                         GrailsASTUtils.addDelegateInstanceMethod(classNode, apiInstance, declaredMethod);
@@ -167,6 +183,34 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
 
     }
+
+    private ConstructorNode findConstructor(ClassNode classNode,Parameter[] constructorParams) {
+        List<ConstructorNode> declaredConstructors = classNode.getDeclaredConstructors();
+        for (ConstructorNode declaredConstructor : declaredConstructors) {
+            if(parametersEqual(constructorParams, declaredConstructor.getParameters())) {
+                return declaredConstructor;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return true if the two arrays are of the same size and have the same contents
+     */
+    protected boolean parametersEqual(Parameter[] a, Parameter[] b) {
+        if (a.length == b.length) {
+            boolean answer = true;
+            for (int i = 0; i < a.length; i++) {
+                if (!a[i].getType().equals(b[i].getType())) {
+                    answer = false;
+                    break;
+                }
+            }
+            return answer;
+        }
+        return false;
+    }
+
 
     protected boolean isStaticCandidateMethod(MethodNode declaredMethod) {
         return isCandidateMethod(declaredMethod);
@@ -237,7 +281,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     private boolean isConstructor(MethodNode declaredMethod) {
         return declaredMethod.isStatic() && declaredMethod.isPublic() &&
-                declaredMethod.getName().equals("initialize") && declaredMethod.getParameters().length == 1 && declaredMethod.getParameters()[0].getType().equals(OBJECT_CLASS);
+                declaredMethod.getName().equals("initialize") && declaredMethod.getParameters().length >= 1 && declaredMethod.getParameters()[0].getType().equals(OBJECT_CLASS);
     }
 
 

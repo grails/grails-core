@@ -41,6 +41,8 @@ public abstract class BaseApiProvider {
         put("methodMissing", 2);
         put("propertyMissing", 1);
     }};
+    public static final String CONSTRUCTOR_METHOD = "initialize";
+    public static final String CTOR_GROOVY_METHOD = "<ctor>";
 
     @SuppressWarnings("rawtypes")
     protected List instanceMethods = new ArrayList();
@@ -67,6 +69,16 @@ public abstract class BaseApiProvider {
                 }
                 else {
                     instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(method)) {
+                        @Override
+                        public String getName() {
+
+                            String methodName = super.getName();
+                            if(methodName.equals(CONSTRUCTOR_METHOD)) {
+                                return CTOR_GROOVY_METHOD;
+                            }
+                            return methodName;
+                        }
+
                         @Override
                         public Object invoke(Object object, Object[] arguments) {
                             if(arguments.length == 0) {

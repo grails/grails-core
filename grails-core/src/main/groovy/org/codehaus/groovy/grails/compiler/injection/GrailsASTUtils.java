@@ -160,15 +160,7 @@ public class GrailsASTUtils {
         Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
         if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
             BlockStatement methodBody = new BlockStatement();
-            ArgumentListExpression arguments = new ArgumentListExpression();
-
-            if(thisAsFirstArgument) {
-                arguments.addExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION);
-            }
-
-            for (Parameter parameterType : parameterTypes) {
-                arguments.addExpression(new VariableExpression(parameterType.getName()));
-            }
+            ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, thisAsFirstArgument);
 
             ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
 
@@ -186,7 +178,20 @@ public class GrailsASTUtils {
         }
     }
 
-    private static Parameter[] getRemainingParameterTypes(Parameter[] parameters) {
+    public static ArgumentListExpression createArgumentListFromParameters(Parameter[] parameterTypes, boolean thisAsFirstArgument) {
+        ArgumentListExpression arguments = new ArgumentListExpression();
+
+        if(thisAsFirstArgument) {
+            arguments.addExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION);
+        }
+
+        for (Parameter parameterType : parameterTypes) {
+            arguments.addExpression(new VariableExpression(parameterType.getName()));
+        }
+        return arguments;
+    }
+
+    public static Parameter[] getRemainingParameterTypes(Parameter[] parameters) {
         if(parameters.length>1) {
             Parameter[] newParameters = new Parameter[parameters.length-1];
             System.arraycopy(parameters, 1, newParameters, 0, parameters.length - 1);

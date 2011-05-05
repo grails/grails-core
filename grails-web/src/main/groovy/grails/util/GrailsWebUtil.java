@@ -136,7 +136,8 @@ public class GrailsWebUtil {
         GrailsWebRequest webRequest = new GrailsWebRequest(
                 request,
                 response,
-                ctx.getServletContext()
+                ctx.getServletContext(),
+                ctx
         );
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         String[] paramListenerBeans = ctx.getBeanNamesForType(ParameterCreationListener.class);

@@ -20,27 +20,24 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
-import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 
-/**
+ /**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
@@ -190,17 +187,6 @@ class ControllersGrailsPlugin {
 
         ctx.getAutowireCapableBeanFactory().addBeanPostProcessor(new CommandObjectEnablingPostProcessor(ctx))
 
-        // add common objects and out variable for tag libraries
-        def registry = GroovySystem.getMetaClassRegistry()
-        GrailsPluginManager pluginManager = getManager()
-
-        for (domainClass in application.domainClasses) {
-            GrailsDomainClass dc = domainClass
-            def mc = domainClass.metaClass
-
-            enhanceDomainWithBinding(ctx, dc, mc)
-        }
-
         ControllersApi controllerApi = ctx.getBean("instanceControllersApi",ControllersApi)
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding");
 
@@ -232,19 +218,9 @@ class ControllersGrailsPlugin {
 
     static void enhanceDomainWithBinding(ApplicationContext ctx, GrailsDomainClass dc, MetaClass mc) {
         if (!dc.abstract) {
-            mc.constructor = { Map map ->
-                def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
-                DataBindingUtils.bindObjectToDomainInstance(dc, instance, map)
-                DataBindingUtils.assignBidirectionalAssociations(instance, map, dc)
-                return instance
-            }
-        }
-
-        mc.setProperties = {Object o ->
-            DataBindingUtils.bindObjectToDomainInstance(dc, delegate, o)
-        }
-        mc.getProperties = {->
-            new DataBindingLazyMetaPropertyMap(delegate)
+            def enhancer = new MetaClassEnhancer()
+            enhancer.addApi(new ControllersDomainBindingApi())
+            enhancer.enhance mc
         }
     }
 

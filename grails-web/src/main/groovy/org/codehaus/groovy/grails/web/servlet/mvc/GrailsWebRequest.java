@@ -60,6 +60,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     public static final String ID_PARAMETER = "id";
     private List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
     private UrlPathHelper urlHelper = new UrlPathHelper();
+    private ApplicationContext applicationContext;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request);
@@ -67,6 +68,12 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         this.response = response;
     }
 
+    public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext, ApplicationContext applicationContext) {
+        super(request);
+        this.applicationContext = applicationContext;
+        attributes = new DefaultGrailsApplicationAttributes(servletContext);
+        this.response = response;
+    }
     /**
      * Overriden to return the GrailsParameterMap instance,
      *
@@ -256,7 +263,10 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @return The ApplicationContext
      */
     public ApplicationContext getApplicationContext() {
-        return getAttributes().getApplicationContext();
+        if(applicationContext == null) {
+            return getAttributes().getApplicationContext();
+        }
+        return applicationContext;
     }
 
     /**
