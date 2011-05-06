@@ -10,18 +10,17 @@ class CriteriaListDistinctTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class PlantCategory {
-    Long id
-    Long version
-    Set plants
     String name
 
     static hasMany = [plants:Plant]
 }
 
+@Entity
 class Plant {
-    Long id
-    Long version
     boolean goesInPatch
     String name
 }

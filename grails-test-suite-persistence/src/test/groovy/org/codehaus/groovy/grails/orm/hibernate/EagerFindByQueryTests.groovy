@@ -12,17 +12,16 @@ class EagerFindByQueryTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class EagerFindByQueryBookmark {
-    Long id
-    Long version
     String url
-    Set tags
     static hasMany = [tags:EagerFindByQueryTag]
 }
 
+@Entity
 class EagerFindByQueryTag {
-    Long id
-    Long version
     String name
 }
 '''

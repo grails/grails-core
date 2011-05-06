@@ -10,17 +10,16 @@ class CriteriaNegatedAssociationCriterionTests extends AbstractGrailsHibernateTe
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class CNACPerson {
-    Long id
-    Long version
     String name
-    Set roles
     static hasMany = [roles:CNACRole]
 }
 
+@Entity
 class CNACRole {
-    Long id
-    Long version
     String name
 }
 '''

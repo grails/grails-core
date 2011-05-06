@@ -25,23 +25,27 @@ class InheritanceQueryingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class InheritanceQueryingCity extends InheritanceQueryingLocation {
     BigDecimal latitude
     BigDecimal longitude
 }
 
+@Entity
 class InheritanceQueryingCountry extends InheritanceQueryingLocation {
     int population
 }
 
+@Entity
 class InheritanceQueryingLocation extends InheritanceQueryingVersioned {
     String name
     String code
 }
 
+@Entity
 abstract class InheritanceQueryingVersioned {
-    Long id
-    Long version
 }
 '''
     }

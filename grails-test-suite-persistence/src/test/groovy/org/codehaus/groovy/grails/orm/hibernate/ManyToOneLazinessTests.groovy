@@ -1,9 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.Hibernate
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
-/**
+ /**
 * @author Graeme Rocher
 * @since 1.0
 *
@@ -13,9 +12,10 @@ class ManyToOneLazinessTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class ManyToOneLazinessTestsBook {
-    Long id
-    Long version
     String title
     ManyToOneLazinessTestsAuthor author
     static belongsTo =  ManyToOneLazinessTestsAuthor
@@ -25,12 +25,9 @@ class ManyToOneLazinessTestsBook {
     }
 }
 
+@Entity
 class ManyToOneLazinessTestsAuthor {
-    Long id
-    Long version
-
     String name
-    Set books
     static hasMany = [books:ManyToOneLazinessTestsBook]
 }
 '''
