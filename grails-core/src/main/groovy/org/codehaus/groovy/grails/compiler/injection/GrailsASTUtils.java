@@ -268,40 +268,18 @@ public class GrailsASTUtils {
         }
     }
 
-    public static Parameter[] copyParameters(Parameter[] parameterTypes) {
-        Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            Parameter parameterType = parameterTypes[i];
-            Parameter newParameter = new Parameter(nonGeneric(parameterType.getType()), parameterType.getName(), parameterType.getInitialExpression());
-            newParameter.addAnnotations(parameterType.getAnnotations());
-            newParameterTypes[i] = newParameter;
-        }
-        return newParameterTypes;
-    }
 
-    public static ClassNode nonGeneric(ClassNode type) {
-        if (type.isUsingGenerics()) {
-            final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
-            nonGen.setRedirect(type);
-            nonGen.setGenericsTypes(null);
-            nonGen.setUsingGenerics(false);
-            return nonGen;
-        }
-        else if(type.isArray()) {
-            final ClassNode nonGen = ClassHelper.makeWithoutCaching(Object.class);
-            nonGen.setUsingGenerics(false);
-            return nonGen.makeArray();
-        }
-        else {
-            return type;
-        }
-    }
-
-    public static void addDelegateConstructor(ClassNode classNode, ClassNode implementationNode, MethodNode constructorMethod) {
+    /**
+     * Adds or modifies an existing constructor to delegate to the given static constructor method for initialization logic
+     *
+     * @param classNode The class node
+     * @param constructorMethod The constructor static method
+     */
+    public static void addDelegateConstructor(ClassNode classNode, MethodNode constructorMethod) {
         BlockStatement constructorBody = new BlockStatement();
         Parameter[] constructorParams = getRemainingParameterTypes(constructorMethod.getParameters());
         ArgumentListExpression arguments = createArgumentListFromParameters(constructorParams, true);
-        MethodCallExpression constructCallExpression = new MethodCallExpression(new ClassExpression(implementationNode), "initialize", arguments);
+        MethodCallExpression constructCallExpression = new MethodCallExpression(new ClassExpression(constructorMethod.getDeclaringClass()), "initialize", arguments);
         constructCallExpression.setMethodTarget(constructorMethod);
         constructorBody.addStatement(new ExpressionStatement(constructCallExpression));
 
@@ -337,6 +315,13 @@ public class GrailsASTUtils {
         }
     }
 
+    /**
+     * Finds a constructor for the given class node and parameter types
+     *
+     * @param classNode The class node
+     * @param constructorParams The parameter types
+     * @return The located constructor or null
+     */
     public static ConstructorNode findConstructor(ClassNode classNode,Parameter[] constructorParams) {
         List<ConstructorNode> declaredConstructors = classNode.getDeclaredConstructors();
         for (ConstructorNode declaredConstructor : declaredConstructors) {
@@ -364,7 +349,13 @@ public class GrailsASTUtils {
         return false;
     }
 
-    static ConstructorNode getDefaultConstructor(ClassNode classNode) {
+    /**
+     * Obtains the default constructor for the given class node
+     *
+     * @param classNode The class node
+     * @return The default constructor or null if there isn't one
+     */
+    public static ConstructorNode getDefaultConstructor(ClassNode classNode) {
         ConstructorNode constructorNode = null;
         for(ConstructorNode cons : classNode.getDeclaredConstructors()){
             if(cons.getParameters().length == 0){
@@ -374,4 +365,34 @@ public class GrailsASTUtils {
         }
         return constructorNode;
     }
+
+    private static Parameter[] copyParameters(Parameter[] parameterTypes) {
+        Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            Parameter parameterType = parameterTypes[i];
+            Parameter newParameter = new Parameter(nonGeneric(parameterType.getType()), parameterType.getName(), parameterType.getInitialExpression());
+            newParameter.addAnnotations(parameterType.getAnnotations());
+            newParameterTypes[i] = newParameter;
+        }
+        return newParameterTypes;
+    }
+
+    private static ClassNode nonGeneric(ClassNode type) {
+        if (type.isUsingGenerics()) {
+            final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
+            nonGen.setRedirect(type);
+            nonGen.setGenericsTypes(null);
+            nonGen.setUsingGenerics(false);
+            return nonGen;
+        }
+        else if(type.isArray()) {
+            final ClassNode nonGen = ClassHelper.makeWithoutCaching(Object.class);
+            nonGen.setUsingGenerics(false);
+            return nonGen.makeArray();
+        }
+        else {
+            return type;
+        }
+    }
+
 }

@@ -103,7 +103,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 for (MethodNode declaredMethod : declaredMethods) {
 
                     if(isConstructor(declaredMethod)) {
-                        GrailsASTUtils.addDelegateConstructor(classNode, implementationNode, declaredMethod);
+                        GrailsASTUtils.addDelegateConstructor(classNode, declaredMethod);
 
                     }
                     else if(isCandidateInstanceMethod(declaredMethod)) {
