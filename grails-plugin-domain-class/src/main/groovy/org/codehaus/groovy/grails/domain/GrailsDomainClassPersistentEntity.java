@@ -297,5 +297,14 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity, Init
 	public void setExternal(boolean external) {
 		// do nothing
 	}
+	
+	public PersistentProperty getVersion() {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 
+    public boolean isVersioned() {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 }
