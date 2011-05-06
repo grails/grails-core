@@ -1,9 +1,9 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import spock.lang.Specification
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import spock.lang.Specification
 
 /**
  * Tests for the {@link DefaultLinkGenerator} class
@@ -13,30 +13,18 @@ class LinkGeneratorSpec extends Specification {
     def baseUrl = "http://myserver.com/foo"
     def context = "/bar"
     def resource = null
-    
+    def linkParams = [:]
     def pluginManager
     
     def mainCssResource = [dir:'css', file:'main.css']
 
-    protected getGenerator(boolean cache=false) {
-        def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
-        if (pluginManager) {
-            generator.pluginManager = pluginManager
-        }
-        generator
-    }
-    
-    protected getLink() {
-        getGenerator().resource(resource)
-    }
 
-    protected getCachedLink() {
-        getGenerator(true).resource(resource)
-    }
+    def "Test create link with root URI"() {
+        when:
+            linkParams.uri = '/'
 
-    protected setPlugins(List<Class> pluginClasses) {
-        pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication())
-        pluginManager.loadPlugins()
+        then:
+            link == '/'
     }
 
     def "absolute links contains the base url and context when cached"() {
@@ -102,4 +90,36 @@ class LinkGeneratorSpec extends Specification {
             link == "$context$customContextPath/$resource.dir/$resource.file"
     }
 
+
+    protected getGenerator(boolean cache=false) {
+        def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
+        if (pluginManager) {
+            generator.pluginManager = pluginManager
+        }
+        generator
+    }
+
+    protected getLink() {
+        if(resource != null) {
+            getGenerator().resource(resource)
+        }
+        else {
+            getGenerator().link(linkParams)
+        }
+    }
+
+    protected getCachedLink() {
+        if(resource != null) {
+            getGenerator(true).resource(resource)
+        }
+        else {
+            getGenerator(true).link(linkParams)
+        }
+
+    }
+
+    protected setPlugins(List<Class> pluginClasses) {
+        pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication())
+        pluginManager.loadPlugins()
+    }
 }

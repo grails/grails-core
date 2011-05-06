@@ -57,7 +57,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         def writer = new StringBuilder()
         // prefer URI attribute
         if (attrs.uri) {
-            writer << handleAbsolute(attrs)
+            final base = handleAbsolute(attrs)
+            if(base != null) {
+                writer << base
+            }
             writer << attrs.uri.toString()
         }
         else {
@@ -121,7 +124,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
         final contextPathAttribute = attrs.contextPath
         if(absolutePath == null) {
-            final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()
+            final cp = getContextPath()
             if(cp == null) {
                 absolutePath = handleAbsolute(absolute:true)
             }
