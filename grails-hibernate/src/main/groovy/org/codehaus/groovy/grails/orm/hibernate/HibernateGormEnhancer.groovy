@@ -594,7 +594,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 	}
 
 	@Override
-	public Object executeUpdate(String query) {
+	public Integer executeUpdate(String query) {
         executeUpdateMethod.invoke(persistentClass, "executeUpdate", [query] as Object[])
 	}
 
