@@ -15,9 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -33,6 +31,17 @@ import java.util.Map;
  */
 public class ControllersDomainBindingApi {
 
+    public static final String AUTOWIRE_DOMAIN_METHOD = "autowireDomain";
+
+    /**
+     * Autowires the instance
+     *
+     * @param instance The target instance
+     */
+    public static void initialize(Object instance) {
+        autowire(instance);
+    }
+
     /**
      * A map based constructor that binds the named arguments to the target instance
      *
@@ -40,6 +49,7 @@ public class ControllersDomainBindingApi {
      * @param namedArgs The named arguments
      */
     public static void initialize(Object instance, Map namedArgs) {
+        initialize(instance);
         GrailsDomainClass dc = getDomainClass(instance);
         if(dc != null) {
             DataBindingUtils.bindObjectToDomainInstance(dc, instance, namedArgs);
@@ -77,15 +87,23 @@ public class ControllersDomainBindingApi {
         return new DataBindingLazyMetaPropertyMap(instance);
     }
 
-
     private static GrailsDomainClass getDomainClass(Object instance) {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if(webRequest != null) {
-            GrailsApplication grailsApplication = webRequest.getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-            if(grailsApplication != null) {
-                return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
+        GrailsDomainClass domainClass = GrailsMetaClassUtils.getPropertyIfExists(instance, GrailsDomainClassProperty.DOMAIN_CLASS, GrailsDomainClass.class);
+        if(domainClass == null) {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if(webRequest != null) {
+                GrailsApplication grailsApplication = webRequest.getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+                if(grailsApplication != null) {
+                    domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
+                }
             }
+
         }
-        return null;
+        return domainClass;
+    }
+
+
+    private static void autowire(Object instance) {
+        GrailsMetaClassUtils.invokeMethodIfExists(instance, AUTOWIRE_DOMAIN_METHOD, new Object[]{instance});
     }
 }

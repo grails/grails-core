@@ -24,7 +24,8 @@ class TablePerHierarchSub2 extends TablePerHierarchyRoot {}
 
 @Entity
 class TablePerHierarchOneToMany {
-   static hasMany = [subs:TablePerHierarchSub1, all:TablePerHierarchyRoot]
+
+   static hasMany = [subs:TablePerHierarchSub1, roots:TablePerHierarchyRoot]
 }
 '''
     }
@@ -38,10 +39,10 @@ class TablePerHierarchOneToMany {
         def test =  testClass.newInstance()
                              .addToSubs(name:"one")
                              .addToSubs(name:"two")
-                             .addToAll(name:"three")
+                             .addToRoots(name:"three")
 
-        test.addToAll(sub2Class.newInstance(name:"four"))
-        test.addToAll(rootClass.newInstance(name:"five"))
+        test.addToRoots(sub2Class.newInstance(name:"four"))
+        test.addToRoots(rootClass.newInstance(name:"five"))
 
         assertNotNull test.save(flush:true)
 
@@ -49,6 +50,6 @@ class TablePerHierarchOneToMany {
 
         test = testClass.get(1)
         assertEquals 2, test.subs.size()
-        assertEquals 5, test.all.size()
+        assertEquals 5, test.roots.size()
     }
 }

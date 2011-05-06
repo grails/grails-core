@@ -43,7 +43,6 @@ class Book {
     }
 }
 
-@Entity
 class BookService {
     def testMethod() { "foo" }
 }

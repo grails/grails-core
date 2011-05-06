@@ -163,10 +163,6 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         Object entity = event.getEntity();
         ClosureEventListener eventListener=findEventListener(entity);
         if (eventListener != null) {
-            if (applicationContext != null && applicationContext.getAutowireCapableBeanFactory() != null) {
-                applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(
-                     entity, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-            }
             eventListener.onPostLoad(event);
         }
     }

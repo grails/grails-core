@@ -21,6 +21,7 @@ import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
 import org.springframework.beans.BeanUtils;
 
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 /**
  * Provides utility methods for working with the Groovy MetaClass API.
@@ -31,6 +32,7 @@ import java.lang.reflect.Constructor;
 public class GrailsMetaClassUtils {
 
     private static final Log LOG = LogFactory.getLog(GrailsMetaClassUtils.class);
+    private static final Object[] NO_ARGS = new Object[0];
 
     /**
      * Retrieves the MetaClassRegistry instance.
@@ -147,7 +149,7 @@ public class GrailsMetaClassUtils {
         if(instance instanceof GroovyObject) {
             GroovyObject groovyObject = (GroovyObject) instance;
             MetaClass metaClass = groovyObject.getMetaClass();
-            if(metaClass instanceof ExpandoMetaClass) {
+            if(!(metaClass instanceof ExpandoMetaClass)) {
                 metaClass = getExpandoMetaClass(instance.getClass());
                 groovyObject.setMetaClass(metaClass);
             }
@@ -157,5 +159,67 @@ public class GrailsMetaClassUtils {
         else {
             return getExpandoMetaClass(instance.getClass());
         }
+    }
+
+    /**
+     * Obtains a property of an instance if it exists
+     *
+     * @param instance The instance
+     * @param property The property
+     * @return The value of null if non-exists
+     */
+    public static Object getPropertyIfExists(Object instance, String property) {
+        return getPropertyIfExists(instance, property, Object.class);
+    }
+
+    /**
+     * Obtains a property of an instance if it exists
+     *
+     * @param instance The instance
+     * @param property The property
+     * @param requiredType The required type of the property
+     * @return The property value
+     */
+    public static <T> T getPropertyIfExists(Object instance, String property, Class<T> requiredType) {
+        MetaClass metaClass = getMetaClass(instance);
+
+        MetaProperty metaProperty = metaClass.getMetaProperty(property);
+        if(metaProperty != null) {
+            Object value = metaProperty.getProperty(instance);
+            if(value != null && requiredType.isInstance(value)) {
+                return (T) value;
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * Invokes a method if it exists otherwise returns null
+     *
+     * @param instance The instance
+     * @param methodName The method name
+     * @return The result of the method call or null
+     */
+    public static Object invokeMethodIfExists(Object instance, String methodName) {
+        return invokeMethodIfExists(instance, methodName, NO_ARGS);
+    }
+
+    /**
+     * Invokes a method if it exists otherwise returns null
+     *
+     * @param instance The instance
+     * @param methodName The method name
+     * @param args The arguments
+     *
+     * @return The result of the method call or null
+     */
+    public static Object invokeMethodIfExists(Object instance, String methodName, Object[] args) {
+        MetaClass metaClass = getMetaClass(instance);
+        List<MetaMethod> methodList = metaClass.respondsTo(instance, methodName, args);
+        if(methodList != null && !methodList.isEmpty()) {
+            return metaClass.invokeMethod(instance, methodName, args);
+        }
+        return null;
     }
 }

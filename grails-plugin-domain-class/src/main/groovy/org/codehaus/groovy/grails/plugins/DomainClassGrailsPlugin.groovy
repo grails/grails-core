@@ -31,6 +31,7 @@ import grails.artefact.Enhanced
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.springframework.datastore.mapping.model.MappingContext
 import org.springframework.validation.Validator
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -162,16 +163,16 @@ class DomainClassGrailsPlugin {
             }
             MetaClass metaClass = domainClass.metaClass
 
-            if(!dc.abstract) {
-                metaClass.constructor = { ->
-                    getDomainInstance domainClass, ctx
-                }
-            }
-
             registerConstraintsProperty(metaClass, domainClass)
             addRelationshipManagementMethods(domainClass, ctx)
 
+            metaClass.getDomainClass = {-> domainClass }
             if(!isEnhanced) {
+                if(!dc.abstract) {
+                    metaClass.constructor = { ->
+                        getDomainInstance domainClass, ctx
+                    }
+                }
                 metaClass.ident = {-> delegate[domainClass.identifier.name] }
                 metaClass.static.create = { ->
                     getDomainInstance domainClass, ctx
@@ -183,6 +184,9 @@ class DomainClassGrailsPlugin {
                     Validator validator = ctx.getBean("${domainClass.fullName}Validator", Validator)
                     final mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
                     metaClass.static.currentGormValidationApi = {-> GormApiSupport.getGormValidationApi(ctx, mappingContext, domainClass.clazz, validator)}
+                }
+                metaClass.static.autowireDomain = { instance ->
+                    ctx.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                 }
             }
         }

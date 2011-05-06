@@ -39,6 +39,7 @@ public interface GrailsDomainClassProperty {
     String MAPPING = "mapping";
     String NAMED_QUERIES = "namedQueries";
     String LAST_UPDATED = "lastUpdated";
+    String DOMAIN_CLASS = "domainClass";
     String SORT = "sort";
     String EMBEDDED = "embedded";
     String ERRORS = "errors";
