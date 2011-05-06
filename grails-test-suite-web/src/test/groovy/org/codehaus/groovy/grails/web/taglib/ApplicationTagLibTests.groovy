@@ -30,10 +30,10 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     void testResourceTagWithContextPathAttribute() {
         request.contextPath = '/test'
         def template = '${resource(file:"images/foo.jpg", contextPath:"/foo")}'
-        assertOutputEquals "/test/foo/images/foo.jpg", template
+        assertOutputEquals "/foo/images/foo.jpg", template
 
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
-        assertOutputEquals "/test/foo/images/foo.jpg", template
+        assertOutputEquals "/foo/images/foo.jpg", template
     }
 
     void testResourceTagWithPluginAttributeAndNone() {

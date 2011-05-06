@@ -87,7 +87,7 @@ class LinkGeneratorSpec extends Specification {
             resource = mainCssResource + [contextPath: customContextPath]
 
         then:
-            link == "$context$customContextPath/$resource.dir/$resource.file"
+            link == "$customContextPath/$resource.dir/$resource.file"
     }
 
 

@@ -124,7 +124,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
         final contextPathAttribute = attrs.contextPath
         if(absolutePath == null) {
-            final cp = getContextPath()
+            final cp = contextPathAttribute ?: getContextPath()
             if(cp == null) {
                 absolutePath = handleAbsolute(absolute:true)
             }
@@ -135,16 +135,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         StringBuilder url = new StringBuilder( absolutePath ?: '' )
         def dir = attrs.dir
         if (attrs.plugin) {
-            if (contextPathAttribute != null) {
-                url << contextPathAttribute.toString()
-            }
             url << pluginManager?.getPluginPath(attrs.plugin) ?: ''
         }
         else {
-            if (contextPathAttribute != null) {
-                url << contextPathAttribute.toString()
-            }
-            else {
+            if (contextPathAttribute == null) {
                 def pluginContextPath = attrs.pluginContextPath
                 if (pluginContextPath != null && dir != pluginContextPath) {
                     url << pluginContextPath
