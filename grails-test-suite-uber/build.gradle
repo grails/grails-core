@@ -24,7 +24,7 @@ test {
      maxParallelForks = 4
      forkEvery = 100
      maxHeapSize = '1024m'
-     excludes = ["**/DataSourceGrailsPluginTests"]
+     excludes = ["**/*TestCase.class","**/DataSourceGrailsPluginTests"]
 }
 task isolatedTestsOne(type:Test) {
     includes = [
