@@ -312,12 +312,14 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         def result = applyTemplate(template,[book:b])
 
+        println result
+
         def xml = new XmlSlurper().parseText(result)
 
         assertEquals 4, xml.error.size()
         assertEquals "Book", xml.error[0].@object.text()
-        assertEquals "title", xml.error[0].@field.text()
-        assertEquals "Property [title] of class [class Book] cannot be null", xml.error[0].@message.text()
+        assertEquals "publisherURL", xml.error[0].@field.text()
+        assertEquals "Property [publisherURL] of class [class Book] cannot be null", xml.error[0].@message.text()
     }
 
     void testHasErrorsWithRequestAttributes() {
@@ -409,9 +411,9 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def template = '''<g:fieldValue bean="${book}" field="myUrl" />'''
 
         def myBook = gcl.parseClass('''
+            import grails.persistence.*
+            @Entity
             class MyBook {
-                Long id
-                Long version
                 String title
                 URL myUrl
                 Date releaseDate
@@ -432,9 +434,9 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
             }''').newInstance()
 
         def myBook = gcl.parseClass('''
+            import grails.persistence.*
+            @Entity
             class MyBook {
-                Long id
-                Long version
                 String title
                 MyUrl myUrl
                 Date releaseDate
@@ -448,18 +450,18 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
     private void parsePhoneDomainTestClasses() {
         gcl.parseClass('''
+            import grails.persistence.*
+            @Entity
             class PhoneUsDomain {
-                Long id
-                Long version
                 String area
                 String prefix
                 String number
             }''')
 
         gcl.parseClass('''
+            import grails.persistence.*
+            @Entity
             class PhoneUsInternationalDomain {
-                Long id
-                Long version
                 String country
                 String area
                 String prefix
@@ -467,9 +469,10 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
             }''')
 
         gcl.parseClass('''
+            import grails.persistence.*
+            @Entity
+
             class PersonDomain {
-                Long id
-                Long version
                 String firstName
                 String lastName
                 PhoneUsInternationalDomain phoneUsInternational
