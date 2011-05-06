@@ -22,10 +22,13 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.grails.datastore.gorm.finders.FinderMethod
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormInstanceApi
 import org.grails.datastore.gorm.GormStaticApi
 import org.grails.datastore.gorm.GormValidationApi
+import org.hibernate.*
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.engine.EntityEntry
@@ -40,8 +43,6 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
-import org.hibernate.*
 
  /**
  * Extended GORM Enhancer that fills out the remaining
@@ -81,7 +82,7 @@ class HibernateGormEnhancer extends GormEnhancer{
 	
 	@Override
 	protected GormStaticApi getStaticApi(Class cls) {
-		def staticApi = new HibernateGormStaticApi(cls, datastore)
+		def staticApi = new HibernateGormStaticApi(cls, datastore, finders)
 		staticApi.classLoader = classLoader
 		return staticApi
 	}
@@ -130,8 +131,8 @@ class HibernateGormStaticApi extends GormStaticApi {
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
     private List<StaticMethodInvocation> dynamicMethods = []
 	
-	public HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore) {
-		super(persistentClass, datastore);
+	public HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders) {
+		super(persistentClass, datastore, finders);
 		this.sessionFactory = datastore.getSessionFactory()
 		this.hibernateTemplate = new HibernateTemplate(sessionFactory)
 		this.conversionService = datastore.mappingContext.conversionService
