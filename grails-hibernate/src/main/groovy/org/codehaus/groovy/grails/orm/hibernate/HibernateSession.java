@@ -25,7 +25,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.datastore.mapping.core.AbstractAttributeStoringSession;
 import org.springframework.datastore.mapping.core.Datastore;
 import org.springframework.datastore.mapping.core.Session;
-import org.springframework.datastore.mapping.engine.EntityInterceptor;
 import org.springframework.datastore.mapping.engine.Persister;
 import org.springframework.datastore.mapping.model.MappingContext;
 import org.springframework.datastore.mapping.model.PersistentEntity;
@@ -59,15 +58,6 @@ public class HibernateSession extends AbstractAttributeStoringSession implements
 		this.hibernateTemplate = new HibernateTemplate(sessionFactory);
 		this.datastore = hibernateDatastore;
 	}
-
-	public void setEntityInterceptors(List<EntityInterceptor> interceptors) {
-		// do nothing
-	}
-
-	public void addEntityInterceptor(EntityInterceptor interceptor) {
-		// do nothing
-	}
-
 
 	public boolean isConnected() {
 		return this.connected ;
