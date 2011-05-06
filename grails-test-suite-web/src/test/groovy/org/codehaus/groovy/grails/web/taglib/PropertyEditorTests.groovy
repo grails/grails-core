@@ -17,30 +17,27 @@ class PropertyEditorTests extends AbstractGrailsTagTests {
 
         gcl = new GroovyClassLoader(getClass().classLoader)
         gcl.parseClass '''
-import grails.persistence.*
 import org.codehaus.groovy.grails.web.taglib.*
+import grails.persistence.*
 
 @Entity
 class PropertyEditorDomain {
     CustomProperty custom
 }
 
+@Entity
 class CollectionPropertyEditorDomain {
-    Long id
-    Long version
     List tags
     static hasMany = [tags: String]
 }
 
+@Entity
 class Tag {
-    Long id
-    Long version
     String name
 }
 
+@Entity
 class OneToManyPropertyEditorDomain {
-    Long id
-    Long version
     List tags
     static hasMany = [tags: Tag]
 }
