@@ -186,6 +186,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-asm", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-beans", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-context", "3.0.5.RELEASE"),
+                            ModuleRevisionId.newInstance("org.springframework", "spring-context-support", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-expression", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-instrument", "3.0.5.RELEASE"),
                             ModuleRevisionId.newInstance("org.springframework", "spring-jdbc", "3.0.5.RELEASE"),

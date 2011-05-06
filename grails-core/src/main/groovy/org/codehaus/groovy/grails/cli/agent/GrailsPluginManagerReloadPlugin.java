@@ -31,7 +31,7 @@ import org.springframework.beans.CachedIntrospectionResults;
 public class GrailsPluginManagerReloadPlugin implements ReloadEventProcessorPlugin {
 
     public boolean shouldRerunStaticInitializer(String typename, Class<?> aClass, String encodedTimestamp) {
-        return true;
+        return GrailsProjectWatcher.isActive();
     }
 
     public void reloadEvent(String typename, Class<?> aClass, String encodedTimestamp) {

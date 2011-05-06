@@ -12,9 +12,10 @@ class ValidationTagLibTests extends AbstractGrailsTagTests {
     protected void onSetUp() {
 
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class Book {
-    Long id
-    Long version
     String title
     URL publisherURL
     Date releaseDate
@@ -23,17 +24,19 @@ class Book {
 '''
 
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class Article {
-    Long id
-    Long version
     String title
 }
 '''
 
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class Person {
-    Long id
-    Long version
     Title title
     String name
 }

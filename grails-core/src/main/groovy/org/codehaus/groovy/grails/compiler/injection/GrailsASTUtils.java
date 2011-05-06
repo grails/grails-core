@@ -21,6 +21,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -180,6 +181,15 @@ public class GrailsASTUtils {
         }
     }
 
+    /**
+     * Creates an argument list from the given parameter types
+     *
+     * @param parameterTypes The parameter types
+     * @param thisAsFirstArgument Whether to include a reference to 'this' as the first argument
+     *
+     * @return An argument list
+     *
+     */
     public static ArgumentListExpression createArgumentListFromParameters(Parameter[] parameterTypes, boolean thisAsFirstArgument) {
         ArgumentListExpression arguments = new ArgumentListExpression();
 
@@ -193,6 +203,12 @@ public class GrailsASTUtils {
         return arguments;
     }
 
+    /**
+     * Gets the remaining parameters excluding the first parameter in the given list
+     *
+     * @param parameters The parameters
+     * @return A new array with the first parameter removed
+     */
     public static Parameter[] getRemainingParameterTypes(Parameter[] parameters) {
         if(parameters.length>1) {
             Parameter[] newParameters = new Parameter[parameters.length-1];
@@ -202,15 +218,29 @@ public class GrailsASTUtils {
         return GrailsArtefactClassInjector.ZERO_PARAMETERS;
     }
 
-    public static void addDelegateStaticMethod(ClassNode classNode, MethodNode declaredMethod) {
+    /**
+     * Adds a static method call to given class node that delegates to the given method
+     *
+     * @param classNode The class node
+     * @param delegateMethod The delegate method
+     */
+    public static void addDelegateStaticMethod(ClassNode classNode, MethodNode delegateMethod) {
 
-        ClassExpression classExpression = new ClassExpression(declaredMethod.getDeclaringClass());
-        addDelegateStaticMethod(classExpression, classNode, declaredMethod);
+        ClassExpression classExpression = new ClassExpression(delegateMethod.getDeclaringClass());
+        addDelegateStaticMethod(classExpression, classNode, delegateMethod);
     }
 
-    public static void addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode declaredMethod) {
-        Parameter[] parameterTypes = declaredMethod.getParameters();
-        String declaredMethodName = declaredMethod.getName();
+    /**
+     * Adds a static method to the given class node that delegates to the given method and resolves the object to invoke the method
+     * on from the given expression
+     *
+     * @param expression The expression
+     * @param classNode The class node
+     * @param delegateMethod The delegate method
+     */
+    public static void addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod) {
+        Parameter[] parameterTypes = delegateMethod.getParameters();
+        String declaredMethodName = delegateMethod.getName();
         if(!classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
             BlockStatement methodBody = new BlockStatement();
             ArgumentListExpression arguments = new ArgumentListExpression();
@@ -219,9 +249,9 @@ public class GrailsASTUtils {
                arguments.addExpression(new VariableExpression(parameterType.getName()));
            }
             MethodCallExpression methodCallExpression = new MethodCallExpression(expression, declaredMethodName, arguments);
-            methodCallExpression.setMethodTarget(declaredMethod);
+            methodCallExpression.setMethodTarget(delegateMethod);
             methodBody.addStatement(new ExpressionStatement(methodCallExpression));
-            ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
+            ClassNode returnType = nonGeneric(delegateMethod.getReturnType());
             if(METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
                      declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
             }
@@ -232,13 +262,111 @@ public class GrailsASTUtils {
                                                    GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                                                    methodBody
                                                     );
-            methodNode.addAnnotations(declaredMethod.getAnnotations());
+            methodNode.addAnnotations(delegateMethod.getAnnotations());
 
             classNode.addMethod(methodNode);
         }
     }
 
-    public static Parameter[] copyParameters(Parameter[] parameterTypes) {
+
+    /**
+     * Adds or modifies an existing constructor to delegate to the given static constructor method for initialization logic
+     *
+     * @param classNode The class node
+     * @param constructorMethod The constructor static method
+     */
+    public static void addDelegateConstructor(ClassNode classNode, MethodNode constructorMethod) {
+        BlockStatement constructorBody = new BlockStatement();
+        Parameter[] constructorParams = getRemainingParameterTypes(constructorMethod.getParameters());
+        ArgumentListExpression arguments = createArgumentListFromParameters(constructorParams, true);
+        MethodCallExpression constructCallExpression = new MethodCallExpression(new ClassExpression(constructorMethod.getDeclaringClass()), "initialize", arguments);
+        constructCallExpression.setMethodTarget(constructorMethod);
+        constructorBody.addStatement(new ExpressionStatement(constructCallExpression));
+
+        if(constructorParams.length == 0) {
+            // handle default constructor
+
+            ConstructorNode constructorNode = getDefaultConstructor(classNode);
+            if(constructorNode != null){
+                constructorBody.addStatement(constructorNode.getCode());
+                constructorNode.setCode(constructorBody);
+            }else{
+                classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+            }
+        }
+        else {
+            // create new constructor, restoring default constructor if there is none
+            ConstructorNode cn = findConstructor(classNode, constructorParams);
+            if(cn != null) {
+                Statement code = cn.getCode();
+                constructorBody.addStatement(code);
+                cn.setCode(constructorBody);
+            }
+            else {
+                cn = new ConstructorNode(Modifier.PUBLIC,copyParameters(constructorParams),null, constructorBody);
+                classNode.addConstructor(cn);
+            }
+
+            ConstructorNode defaultConstructor = getDefaultConstructor(classNode);
+            if(defaultConstructor == null) {
+                // add empty
+                classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, new BlockStatement()));
+            }
+        }
+    }
+
+    /**
+     * Finds a constructor for the given class node and parameter types
+     *
+     * @param classNode The class node
+     * @param constructorParams The parameter types
+     * @return The located constructor or null
+     */
+    public static ConstructorNode findConstructor(ClassNode classNode,Parameter[] constructorParams) {
+        List<ConstructorNode> declaredConstructors = classNode.getDeclaredConstructors();
+        for (ConstructorNode declaredConstructor : declaredConstructors) {
+            if(parametersEqual(constructorParams, declaredConstructor.getParameters())) {
+                return declaredConstructor;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return true if the two arrays are of the same size and have the same contents
+     */
+    public static boolean parametersEqual(Parameter[] a, Parameter[] b) {
+        if (a.length == b.length) {
+            boolean answer = true;
+            for (int i = 0; i < a.length; i++) {
+                if (!a[i].getType().equals(b[i].getType())) {
+                    answer = false;
+                    break;
+                }
+            }
+            return answer;
+        }
+        return false;
+    }
+
+    /**
+     * Obtains the default constructor for the given class node
+     *
+     * @param classNode The class node
+     * @return The default constructor or null if there isn't one
+     */
+    public static ConstructorNode getDefaultConstructor(ClassNode classNode) {
+        ConstructorNode constructorNode = null;
+        for(ConstructorNode cons : classNode.getDeclaredConstructors()){
+            if(cons.getParameters().length == 0){
+                constructorNode = cons;
+                break;
+            }
+        }
+        return constructorNode;
+    }
+
+    private static Parameter[] copyParameters(Parameter[] parameterTypes) {
         Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameterType = parameterTypes[i];
@@ -249,7 +377,7 @@ public class GrailsASTUtils {
         return newParameterTypes;
     }
 
-    public static ClassNode nonGeneric(ClassNode type) {
+    private static ClassNode nonGeneric(ClassNode type) {
         if (type.isUsingGenerics()) {
             final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
             nonGen.setRedirect(type);
