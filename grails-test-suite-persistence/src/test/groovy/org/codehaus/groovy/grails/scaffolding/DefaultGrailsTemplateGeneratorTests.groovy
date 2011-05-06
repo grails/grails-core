@@ -61,7 +61,7 @@ class ScaffoldingTest {
         def domainClass = new DefaultGrailsDomainClass(testClass)
 
         StringWriter sw = new StringWriter()
-        templateGenerator.generateView domainClass, "create", sw
+        templateGenerator.generateView domainClass, "_form", sw
 
         assertThat "Should have rendered a datePicker for regularDate",
             sw.toString(),
@@ -82,7 +82,7 @@ class ScaffoldingTest {
         def domainClass = new DefaultGrailsDomainClass(testClass)
 
         StringWriter sw = new StringWriter()
-        templateGenerator.generateView domainClass, "create", sw
+        templateGenerator.generateView domainClass, "_form", sw
 
         assertThat "Should have rendered a select box for the number editor",
             sw.toString(),
