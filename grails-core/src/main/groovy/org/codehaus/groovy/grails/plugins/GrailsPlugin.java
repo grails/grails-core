@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 
 import java.util.Collection;
@@ -423,4 +424,11 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * @return True if it is
      */
     boolean hasInterestInChange(String path);
+
+    /**
+     * Sets the plugin descriptor for this plugin
+     *
+     * @param descriptor The descriptor
+     */
+    void setDescriptor(Resource descriptor);
 }

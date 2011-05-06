@@ -22,7 +22,9 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.core.io.Resource;
@@ -31,7 +33,9 @@ import org.springframework.util.ClassUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -49,6 +53,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
     private List<String> compilerExtensions;
     private GrailsPluginManager pluginManager;
     private GrailsProjectCompiler compiler;
+    private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         super();
@@ -92,8 +97,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         addListener(new FileChangeListener() {
             public void onChange(File file) {
                 LOG.info("File ["+file+"] changed. Applying changes to application.");
-                compileIfSource(file);
-                informPluginManager(file, false);
+                if(descriptorToPluginMap.containsKey(file)) {
+                    reloadPlugin(file);
+                }
+                else {
+                    compileIfSource(file);
+                    informPluginManager(file, false);
+                }
+
             }
 
             public void onNew(File file) {
@@ -107,6 +118,20 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
 
         for (GrailsPlugin plugin : allPlugins) {
+            // watch the plugin descriptor for changes
+            GrailsPluginInfo info = compiler.getPluginSettings().getPluginInfoForName(plugin.getFileSystemShortName());
+
+            if(info != null && info.getDescriptor() != null) {
+                try {
+                    Resource descriptor = info.getDescriptor();
+                    plugin.setDescriptor(descriptor);
+                    File pluginFile = descriptor.getFile();
+                    descriptorToPluginMap.put(pluginFile, plugin);
+                    addWatchFile(pluginFile);
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
             List<WatchPattern> watchPatterns = plugin.getWatchedResourcePatterns();
             if(watchPatterns != null) {
                 for (WatchPattern watchPattern : watchPatterns) {
@@ -121,6 +146,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
 
         }
         super.run();
+    }
+
+    private void reloadPlugin(File file) {
+        GrailsPlugin grailsPlugin = descriptorToPluginMap.get(file);
+        grailsPlugin.refresh();
+        if(pluginManager instanceof DefaultGrailsPluginManager) {
+            ((DefaultGrailsPluginManager)pluginManager).reloadPlugin(grailsPlugin);
+        }
     }
 
     private void informPluginManager(final File file, boolean isNew) {

@@ -22,7 +22,6 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,9 +48,7 @@ import org.springframework.core.type.filter.TypeFilter;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -81,7 +78,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private Closure onChangeListener;
     private Resource[] watchedResources = new Resource[0];
 
-    private long[] modifiedTimes = new long[0];
     private PathMatchingResourcePatternResolver resolver;
     private String[] watchedResourcePatternReferences;
     private String[] loadAfterNames = new String[0];
@@ -89,7 +85,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private String[] influencedPluginNames = new String[0];
     private String status = STATUS_ENABLED;
     private String[] observedPlugins;
-    private long pluginLastModified = Long.MAX_VALUE;
     private URL pluginUrl;
     private Closure onConfigChangeListener;
     private Closure onShutdownListener;
@@ -107,24 +102,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         dependencies = Collections.emptyMap();
         pluginDescriptor = resource;
         resolver = new PathMatchingResourcePatternResolver();
-        if (resource != null) {
-            try {
-                pluginUrl = resource.getURL();
-                URLConnection urlConnection = null;
-                try {
-                    urlConnection = pluginUrl.openConnection();
-                    pluginLastModified = urlConnection.getLastModified();
-                }
-                finally {
-                    InputStream is = urlConnection != null ? urlConnection.getInputStream() : null;
-                    IOUtils.closeQuietly(is);
-                }
-            }
-            catch (IOException e) {
-                LOG.warn("I/O error reading last modified date of plug-in [" + pluginClass +
-                        "], you won't be able to reload changes: " + e.getMessage(),e);
-            }
-        }
 
         initialisePlugin(pluginClass);
     }
@@ -699,6 +676,18 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     @Override
     public void refresh() {
         // do nothing
+        Resource descriptor = getDescriptor();
+        if(application != null && descriptor != null) {
+            ClassLoader parent = application.getClassLoader();
+            GroovyClassLoader gcl = new GroovyClassLoader(parent);
+            try {
+                Class pluginClass = gcl.parseClass(descriptor.getFile());
+                initialisePlugin(pluginClass);
+            } catch (Exception e) {
+                GrailsUtil.deepSanitize(e);
+                LOG.error("Error refreshing plugin: " + e.getMessage(), e);
+            }
+        }
     }
 
 
@@ -851,6 +840,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     public Resource getDescriptor() {
         return pluginDescriptor;
+    }
+
+    public void setDescriptor(Resource descriptor) {
+        this.pluginDescriptor = descriptor;
     }
 
     public Resource getPluginDir() {
