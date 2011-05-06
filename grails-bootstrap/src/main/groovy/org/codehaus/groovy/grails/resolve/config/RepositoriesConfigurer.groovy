@@ -14,16 +14,15 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
-import org.codehaus.groovy.grails.resolve.GrailsPluginsDirectoryResolver
-import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
-
+import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.plugins.resolver.DependencyResolver
-import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
-
-import org.apache.ivy.plugins.latest.LatestTimeStrategy
+import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.apache.ivy.util.Message
+import org.codehaus.groovy.grails.resolve.GrailsPluginsDirectoryResolver
+import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.codehaus.groovy.grails.resolve.SnapshotAwareM2Resolver
 
 class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     
@@ -98,7 +97,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     void mavenRepo(String url) {
         if (isResolverNotAlreadyDefined(url)) {
             dependencyManager.repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
-            def resolver = new IBiblioResolver(name: url, root: url, m2compatible: true, settings: dependencyManager.ivySettings, changingPattern: ".*SNAPSHOT")
+            def resolver = new SnapshotAwareM2Resolver(name: url, root: url, m2compatible: true, settings: dependencyManager.ivySettings, changingPattern: ".*SNAPSHOT")
             addToChainResolver(resolver)
         }
     }
@@ -108,7 +107,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
             if (isResolverNotAlreadyDefined(args.name)) {
                 dependencyManager.repositoryData << ( ['type':'mavenRepo'] + args )
                 args.settings = dependencyManager.ivySettings
-                def resolver = new IBiblioResolver(args)
+                def resolver = new SnapshotAwareM2Resolver(args)
                 addToChainResolver(resolver)
             }
         }
@@ -127,13 +126,13 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     void ebr() {
         if (isResolverNotAlreadyDefined('ebr')) {
             dependencyManager.repositoryData << ['type':'ebr']
-            IBiblioResolver ebrReleaseResolver = new IBiblioResolver(name:"ebrRelease",
+            IBiblioResolver ebrReleaseResolver = new SnapshotAwareM2Resolver(name:"ebrRelease",
                                                                      root:"http://repository.springsource.com/maven/bundles/release",
                                                                      m2compatible:true,
                                                                      settings:dependencyManager.ivySettings)
             addToChainResolver(ebrReleaseResolver)
 
-            IBiblioResolver ebrExternalResolver = new IBiblioResolver(name:"ebrExternal",
+            IBiblioResolver ebrExternalResolver = new SnapshotAwareM2Resolver(name:"ebrExternal",
                                                                       root:"http://repository.springsource.com/maven/bundles/external",
                                                                       m2compatible:true,
                                                                       settings:dependencyManager.ivySettings)
@@ -165,6 +164,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     void grailsCentral() {
         if (isResolverNotAlreadyDefined('grailsCentral')) {
+            mavenRepo("http://repo.grails.org/grails/plugins")
             grailsRepo("http://svn.codehaus.org/grails-plugins", "grailsCentral")
             grailsRepo("http://svn.codehaus.org/grails/trunk/grails-plugins", "grailsCore")
         }
@@ -173,7 +173,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     void mavenCentral() {
         if (isResolverNotAlreadyDefined('mavenCentral')) {
             dependencyManager.repositoryData << ['type':'mavenCentral']
-            IBiblioResolver mavenResolver = new IBiblioResolver(name:"mavenCentral")
+            IBiblioResolver mavenResolver = new SnapshotAwareM2Resolver(name:"mavenCentral")
             mavenResolver.m2compatible = true
             mavenResolver.settings = dependencyManager.ivySettings
             mavenResolver.changingPattern = ".*SNAPSHOT"
