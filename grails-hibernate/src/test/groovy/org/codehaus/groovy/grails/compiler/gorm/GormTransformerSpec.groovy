@@ -54,7 +54,7 @@ class TestEntity {
             def ds = new SimpleMapDatastore()
             ds.mappingContext.addPersistentEntity(cls)
 
-            cls.metaClass.static.currentGormStaticApi = {-> new GormStaticApi(cls, ds)}
+            cls.metaClass.static.currentGormStaticApi = {-> new GormStaticApi(cls, ds, [])}
 
           then:
             cls.count() == 0
