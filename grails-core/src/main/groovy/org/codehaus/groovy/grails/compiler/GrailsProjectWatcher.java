@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class GrailsProjectWatcher extends DirectoryWatcher{
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
     private static final Queue<Runnable> classChangeEventQueue = new ConcurrentLinkedQueue<Runnable>();
+    private static boolean active = false;
     public static final String SPRING_LOADED_PLUGIN_CLASS = "com.springsource.loaded.Plugins";
 
 
@@ -67,6 +68,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         }
     }
 
+    /**
+     * Whether the watcher is active
+     * @return True if it is
+     */
+    public static boolean isActive() {
+        return active;
+    }
 
     /**
      * Fire any pending class change events
@@ -80,6 +88,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
 
     @Override
     public void run() {
+        active = true;
         for (String directory : compiler.getSrcDirectories()) {
             addWatchDirectory(new File(directory), compilerExtensions);
         }
