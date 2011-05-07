@@ -156,7 +156,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
             urlResolver.addIvyPattern("${url}/grails-[artifact]/tags/RELEASE_*/[artifact]-[revision].pom")
             urlResolver.settings = dependencyManager.ivySettings
             urlResolver.latestStrategy = new LatestTimeStrategy()
-            urlResolver.changingPattern = ".*"
+            urlResolver.changingPattern = ".*SNAPSHOT"
             urlResolver.setCheckmodified(true)
             addToChainResolver(urlResolver)
         }
