@@ -120,7 +120,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             properties.put("version", matcher.group(3));
             return properties;
         } else {
-            System.out.println("WARNING: Specified dependency definition ${scope}(${dependency}) is invalid! Skipping..");
+            System.out.println("WARNING: Specified dependency definition " + scope + "(" + dependency + ") is invalid! Skipping..");
             return null;
         }
     }
