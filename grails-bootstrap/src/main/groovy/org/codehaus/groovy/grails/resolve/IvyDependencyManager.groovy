@@ -64,9 +64,16 @@ import org.apache.ivy.core.report.*
  */
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
+    static final SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT"
+    
     ResolveEngine resolveEngine
     MessageLogger logger
-    ChainResolver chainResolver = new ChainResolver(name:"default",returnFirst:true)
+    ChainResolver chainResolver = new ChainResolver(
+        name: "default",
+        returnFirst: true,
+        changingPattern: SNAPSHOT_CHANGING_PATTERN
+    )
+    
     Collection repositoryData = new ConcurrentLinkedQueue()
     
     Collection moduleExcludes = new ConcurrentLinkedQueue()
