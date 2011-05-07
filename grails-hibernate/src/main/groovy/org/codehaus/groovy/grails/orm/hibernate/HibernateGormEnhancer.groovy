@@ -159,6 +159,7 @@ class HibernateGormStaticApi extends GormStaticApi {
             this.dynamicMethods = [	new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
                                     new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
                                     new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+                                    new FindOrSaveByPersistentMethod(grailsApplication, sessionFactory, classLoader),
                                     new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
                                     new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
                                     new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),

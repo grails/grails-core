@@ -17,21 +17,19 @@ public class FindOrCreateByPersistentMethod extends AbstractFindByPersistentMeth
 
     private static final String METHOD_PATTERN = "(findOrCreateBy)([A-Z]\\w*)";
 
-    /**
-     * Constructor.
-     * @param application
-     * @param sessionFactory
-     * @param classLoader
-     */
     public FindOrCreateByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
+        this(application,sessionFactory, classLoader, METHOD_PATTERN);
     }
 
+    public FindOrCreateByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader, String pattern) {
+    	super(application,sessionFactory, classLoader, Pattern.compile( pattern ), OPERATORS);
+    }
+    
     @Override
     protected Object doInvokeInternalWithExpressions(Class clazz,
     		String methodName, Object[] arguments, List expressions,
     		String operatorInUse, Closure additionalCriteria) {
-    	if(OPERATOR_OR.equals(operatorInUse)) {
+		if(OPERATOR_OR.equals(operatorInUse)) {
             throw new UnsupportedOperationException(
             "'Or' expressions are not allowed in findOrCreateBy queries.");
     	}
@@ -46,8 +44,15 @@ public class FindOrCreateByPersistentMethod extends AbstractFindByPersistentMeth
     		}
             MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
             result = metaClass.invokeConstructor(new Object[]{m});
+            if(shouldSaveOnCreate()) {
+            	metaClass.invokeMethod(result, "save", null);
+            }
     	}
     	
     	return result;
     }
+
+	protected boolean shouldSaveOnCreate() {
+		return false;
+	}
 }
