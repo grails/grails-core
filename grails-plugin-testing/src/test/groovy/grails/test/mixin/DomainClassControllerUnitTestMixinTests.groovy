@@ -34,8 +34,6 @@ class DomainClassControllerUnitTestMixinTests {
         book.pages = 1000
         assert book.save() != null
 
-
-
         model = controller.list()
 
         assert model.bookInstanceList.size() == 1
@@ -51,7 +49,6 @@ class DomainClassControllerUnitTestMixinTests {
 
        assert model.bookInstance?.title == "The Stand"
        assert model.bookInstance?.pages == 500
-
     }
 
     @Test
@@ -71,14 +68,12 @@ class DomainClassControllerUnitTestMixinTests {
         assert Book.count() == 1
     }
 
-
     @Test
     void testShow() {
         controller.show()
 
         assert flash.message != null
         assert response.redirectedUrl == '/book/list'
-
 
         def book = new Book(title:"")
 
@@ -184,9 +179,9 @@ class DomainClassControllerUnitTestMixinTests {
         }
 
         assert results.size() == 2
-
     }
 }
+
 @Entity
 class Book {
     String title
@@ -199,6 +194,7 @@ class Book {
         title index:true
     }
 }
+
 class BookController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
