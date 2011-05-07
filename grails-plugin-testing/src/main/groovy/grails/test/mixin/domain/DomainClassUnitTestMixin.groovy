@@ -28,12 +28,14 @@ import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.grails.datastore.gorm.GormEnhancer
+import org.grails.datastore.gorm.events.AutoTimestampEventListener
+import org.grails.datastore.gorm.events.DomainEventListener
 import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.datastore.mapping.core.Datastore
 import org.springframework.datastore.mapping.core.DatastoreUtils
-import org.springframework.datastore.mapping.core.Session;
+import org.springframework.datastore.mapping.core.Session
 import org.springframework.datastore.mapping.model.PersistentEntity
 import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
@@ -74,7 +76,11 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         if (applicationContext == null) {
             super.initGrailsApplication()
         }
+
         simpleDatastore = new SimpleMapDatastore(applicationContext)
+        applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
+        applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
+
         defineBeans {
             "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
                 defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
