@@ -171,8 +171,6 @@ class DomainClassControllerUnitTestMixinTests {
         assert Book.count() == 0
         assert Book.get(book.id) == null
         assert response.redirectedUrl == '/book/list'
-
-
     }
 
     @Test

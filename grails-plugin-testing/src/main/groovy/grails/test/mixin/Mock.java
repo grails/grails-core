@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
 package grails.test.mixin;
-
-import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 /**
  * Used to define a mocked collaborator when using the {@link TestFor} mixin
@@ -31,6 +29,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.test.MockTransformation")
 public @interface Mock {
-
-        Class[] value();
+    Class[] value();
 }

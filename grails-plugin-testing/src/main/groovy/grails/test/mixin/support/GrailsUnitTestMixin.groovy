@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.context.support.StaticMessageSource
 import junit.framework.AssertionFailedError
 
-
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
  *
@@ -48,7 +47,7 @@ class GrailsUnitTestMixin {
     static StaticMessageSource messageSource
 
     private static List emcEvents = []
-    Map validationErrorsMap = new java.util.IdentityHashMap()
+    Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
 
     static void defineBeans(Closure callable) {
@@ -59,13 +58,12 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
-        if(applicationContext == null) {
+        if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
             final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
             autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory
             applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
-
 
             defineBeans {
                 grailsProxyHandler(DefaultProxyHandler)
@@ -81,9 +79,7 @@ class GrailsUnitTestMixin {
             grailsApplication.applicationContext = applicationContext
             config = grailsApplication.config
         }
-
     }
-
 
     @After
     void resetGrailsApplication() {
@@ -99,7 +95,6 @@ class GrailsUnitTestMixin {
         MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances)
     }
 
-
     /**
      * Creates a new Grails mock for the given class. Use it as you
      * would use MockFor and StubFor.
@@ -112,7 +107,6 @@ class GrailsUnitTestMixin {
         return new GrailsMock(clazz, loose)
     }
 
-
     /**
      * Asserts that the given code closure fails when it is evaluated
      *
@@ -120,24 +114,24 @@ class GrailsUnitTestMixin {
      * @return the message of the thrown Throwable
      */
     String shouldFail(Closure code) {
-        boolean failed = false;
-        String result = null;
+        boolean failed = false
+        String result = null
         try {
-            code.call();
+            code.call()
         }
         catch (GroovyRuntimeException gre) {
-            failed = true;
-            result = ScriptBytecodeAdapter.unwrap(gre).getMessage();
+            failed = true
+            result = ScriptBytecodeAdapter.unwrap(gre).getMessage()
         }
         catch (Throwable e) {
-            failed = true;
-            result = e.getMessage();
+            failed = true
+            result = e.getMessage()
         }
-        if(!failed) {
+        if (!failed) {
             throw new AssertionFailedError("Closure " + code + " should have failed")
         }
 
-        return result;
+        return result
     }
 
     /**
@@ -149,17 +143,17 @@ class GrailsUnitTestMixin {
      * @return the message of the expected Throwable
      */
     String shouldFail(Class clazz, Closure code) {
-        Throwable th = null;
+        Throwable th = null
         try {
-            code.call();
+            code.call()
         } catch (GroovyRuntimeException gre) {
-            th = ScriptBytecodeAdapter.unwrap(gre);
+            th = ScriptBytecodeAdapter.unwrap(gre)
         } catch (Throwable e) {
-            th = e;
+            th = e
         }
 
         if (th == null) {
-            throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName());
+            throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName())
         } else if (!clazz.isInstance(th)) {
             throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName() + ", instead got Exception " + th);
         }
@@ -186,14 +180,12 @@ class GrailsUnitTestMixin {
         Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
 
-
     private metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
         GrailsUnitTestMixin.emcEvents << event
     } as MetaClassRegistryChangeEventListener
 
     @Before
     void registerMetaClassRegistryWatcher() {
-
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
     }
 
@@ -206,7 +198,7 @@ class GrailsUnitTestMixin {
 
     @AfterClass
     static void shutdownApplicationContext() {
-        if(applicationContext.isActive()) {
+        if (applicationContext.isActive()) {
             applicationContext.close()
         }
         applicationContext = null
