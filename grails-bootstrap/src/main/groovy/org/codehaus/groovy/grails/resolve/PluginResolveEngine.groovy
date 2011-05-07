@@ -59,15 +59,9 @@ final class PluginResolveEngine {
      * @param pluginsToInstall The list of plugins
      * @param scope The scope (defaults to runtime)
      */
-    ResolveReport resolvePlugins(List<ModuleRevisionId> pluginsToInstall, String scope = '') {
+    ResolveReport resolvePlugins(Collection<EnhancedDefaultDependencyDescriptor> pluginsToInstall, String scope = '') {
         IvyDependencyManager newManager = createFreshDependencyManager()
-        newManager.parseDependencies {
-            plugins {
-                for (ModuleRevisionId id in pluginsToInstall) {
-                    runtime group:id.organisation ?: "org.grails.plugins", name:id.name, version:id.revision
-                }
-            }
-        }
+        pluginsToInstall.each { newManager.registerPluginDependency("runtime", it) }
         return newManager.resolvePluginDependencies(scope)
     }
 

@@ -101,9 +101,20 @@ class PluginInstallEngine {
 
         // Get the plugin dependency descriptors for the max version of each applicable dependency
         def pluginDescriptors = dependencyManager.effectivePluginDependencyDescriptors
-
-        List<ModuleRevisionId> pluginsToInstall = findMissingOrUpgradePlugins(pluginDescriptors)
-        installPlugins(pluginsToInstall)
+        
+        def newPlugins = findMissingOrUpgradePlugins(pluginDescriptors)
+        if (newPlugins) {
+            eventHandler "StatusUpdate", "Installing ${newPlugins.size} plugins, please wait"
+            installPlugins(newPlugins)
+        }
+        
+        // We have to “install” all other plugins because they might have versions
+        // that are changing according to the chain resolver and one of the repos
+        def existingPlugins = pluginDescriptors.findAll { !newPlugins.contains(it) }
+        if (existingPlugins) {
+            eventHandler "StatusUpdate", "Checking for plugin updates, please wait"
+            installPlugins(existingPlugins)
+        }
 
         checkPluginsToUninstall(pluginDescriptors.collect { it.dependencyRevisionId })
     }
@@ -113,9 +124,8 @@ class PluginInstallEngine {
      *
      * @param params A list of plugins defined each by a ModuleRevisionId
      */
-    void installPlugins(List<ModuleRevisionId> plugins) {
+    void installPlugins(Collection<EnhancedDefaultDependencyDescriptor> plugins) {
         if (plugins) {
-            eventHandler "StatusUpdate", "Resolving new plugins. Please wait..."
             ResolveReport report = resolveEngine.resolvePlugins(plugins)
             if (report.hasError()) {
                 errorHandler "Failed to resolve plugins."
@@ -123,7 +133,7 @@ class PluginInstallEngine {
             else {
                 for (ArtifactDownloadReport ar in report.getArtifactsReports(null, false)) {
                     def arName = ar.artifact.moduleRevisionId.name
-                    if (plugins.any { it.name == arName }) {
+                    if (plugins.any { it.dependencyRevisionId.name == arName }) {
                         installPlugin ar.localFile
                     }
                 }
@@ -591,7 +601,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    protected List<ModuleRevisionId> findMissingOrUpgradePlugins(Collection<EnhancedDefaultDependencyDescriptor> descriptors) {
+    protected Collection<EnhancedDefaultDependencyDescriptor> findMissingOrUpgradePlugins(Collection<EnhancedDefaultDependencyDescriptor> descriptors) {
         def pluginsToInstall = []
         for (descriptor in descriptors) {
             def p = descriptor.dependencyRevisionId
@@ -604,12 +614,12 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 
             if (!pluginLoc?.exists()) {
                 eventHandler "StatusUpdate", "Plugin [${fullName}] not installed."
-                pluginsToInstall << p
+                pluginsToInstall << descriptor
             }
             else if (pluginLoc) {
 
                 if (version.startsWith("latest.")) {
-                    pluginsToInstall << p
+                    pluginsToInstall << descriptor
                 }
                 else {
                     def dirName = pluginLoc.file.canonicalFile.name
@@ -625,7 +635,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                             eventHandler "StatusUpdate", "$action plugin [$dirName] to [${fullName}]."
                         }
 
-                        pluginsToInstall << p
+                        pluginsToInstall << descriptor
                     }
                 }
             }
