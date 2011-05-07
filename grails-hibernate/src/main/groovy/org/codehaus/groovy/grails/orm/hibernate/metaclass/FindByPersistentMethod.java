@@ -41,13 +41,9 @@ import java.util.regex.Pattern;
  * @author Graeme Rocher
  * @since 31-Aug-2005
  */
-public class FindByPersistentMethod extends AbstractClausedStaticPersistentMethod {
-
-    private static final String OPERATOR_OR = "Or";
-    private static final String OPERATOR_AND = "And";
+public class FindByPersistentMethod extends AbstractFindByPersistentMethod {
 
     private static final String METHOD_PATTERN = "(findBy)([A-Z]\\w*)";
-    private static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
 
     /**
      * Constructor.
@@ -59,60 +55,4 @@ public class FindByPersistentMethod extends AbstractClausedStaticPersistentMetho
         super(application,sessionFactory, classLoader, Pattern.compile( METHOD_PATTERN ),OPERATORS);
     }
 
-    @SuppressWarnings("rawtypes")
-    @Override
-    protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {
-        final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
-        return getHibernateTemplate().execute(new HibernateCallback<Object>() {
-            public Object doInHibernate(Session session) throws HibernateException, SQLException {
-
-                Criteria crit = getCriteria(application, session, additionalCriteria, clazz);
-                if (arguments.length > 0) {
-                    if (arguments[0] instanceof Map<?, ?>) {
-                        Map<?, ?> argMap = (Map<?, ?>)arguments[0];
-                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit,argMap);
-                        if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
-                            crit.setMaxResults(1);
-                        }
-                    }
-                }
-
-                if (operator.equals(OPERATOR_OR)) {
-                    if (firstExpressionIsRequiredBoolean()) {
-                        GrailsMethodExpression expression = (GrailsMethodExpression) expressions.remove(0);
-                        crit.add(expression.getCriterion());
-                    }
-                    Disjunction dis = Restrictions.disjunction();
-                    for (Object expression : expressions) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
-                        dis.add(current.getCriterion());
-                    }
-                    crit.add(dis);
-                }
-                else {
-                    for (Object expression : expressions) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
-                        crit.add(current.getCriterion());
-                    }
-                }
-
-                final List<?> list = crit.list();
-                if (!list.isEmpty()) {
-                    return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
-                }
-                return null;
-            }
-        });
-    }
-
-    /**
-     * Indicates if the first expression in the query is a required boolean property and as such should
-     * be ANDed to the other expressions, not ORed.
-     *
-     * @return true if the first expression is a required boolean property, false otherwise
-     * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByBooleanPropertyPersistentMethod
-     */
-    protected boolean firstExpressionIsRequiredBoolean() {
-        return false;
-    }
 }

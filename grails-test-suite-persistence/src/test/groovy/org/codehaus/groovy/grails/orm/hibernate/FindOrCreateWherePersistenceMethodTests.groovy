@@ -37,9 +37,3 @@ class FindOrCreateWherePersistenceMethodTests extends AbstractGrailsHibernateTes
     }
 }
 
-@Entity
-class Person {
-    String firstName
-    String lastName
-}
-

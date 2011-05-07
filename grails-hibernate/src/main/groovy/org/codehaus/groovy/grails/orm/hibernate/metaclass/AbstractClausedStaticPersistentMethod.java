@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -98,6 +99,14 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
             this.negation = negation;
         }
 
+        public String getPropertyName() {
+        	return propertyName;
+        }
+        
+        public Object[] getArguments() {
+        	return Arrays.copyOf(arguments, arguments.length);
+        }
+        
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder("[GrailsMethodExpression] ");
