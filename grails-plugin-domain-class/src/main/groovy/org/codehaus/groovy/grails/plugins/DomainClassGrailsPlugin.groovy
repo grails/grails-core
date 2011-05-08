@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.springframework.datastore.mapping.model.MappingContext
 import org.springframework.validation.Validator
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -151,6 +152,10 @@ class DomainClassGrailsPlugin {
     }
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
+
+        final mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
+        def datastore = new SimpleMapDatastore(mappingContext, ctx)
+
         for (GrailsDomainClass dc in application.domainClasses) {
             def domainClass = dc
             def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
@@ -182,8 +187,14 @@ class DomainClassGrailsPlugin {
             else {
                 if(!domainClass.abstract) {
                     Validator validator = ctx.getBean("${domainClass.fullName}Validator", Validator)
-                    final mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-                    metaClass.static.currentGormValidationApi = {-> GormApiSupport.getGormValidationApi(ctx, mappingContext, domainClass.clazz, validator)}
+                    def gormValidationApi = null
+                    metaClass.static.currentGormValidationApi = {->
+                        // lazy initialize this, since in all likelihood this method will be overriden by the hibernate plugin
+                        if(gormValidationApi == null) {
+                            gormValidationApi = GormApiSupport.getGormValidationApi(datastore, domainClass.clazz, validator)
+                        }
+                        return gormValidationApi
+                    }
                 }
                 metaClass.static.autowireDomain = { instance ->
                     ctx.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)

@@ -16,14 +16,11 @@
 package org.codehaus.groovy.grails.domain
 
 import org.grails.datastore.gorm.GormValidationApi
-import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.datastore.mapping.core.Datastore
-import org.springframework.datastore.mapping.model.MappingContext
 import org.springframework.datastore.mapping.model.PersistentEntity
-import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
 
-/**
+ /**
  * Helper class used in the case where there is not GORM API installed in the application to provide
  * basic validation facility
  *
@@ -32,13 +29,8 @@ import org.springframework.validation.Validator
  */
 class GormApiSupport {
 
-    static Datastore datastore
-
-
-    static GormValidationApi getGormValidationApi(ConfigurableApplicationContext applicationContext, MappingContext ctx, Class cls, Validator validator) {
-        if(datastore == null) {
-            datastore = new SimpleMapDatastore(ctx, applicationContext)
-        }
+    static GormValidationApi getGormValidationApi(Datastore datastore, Class cls, Validator validator) {
+        def ctx = datastore.mappingContext
         PersistentEntity entity = ctx.getPersistentEntity(cls.getName())
 
         if(entity == null) {

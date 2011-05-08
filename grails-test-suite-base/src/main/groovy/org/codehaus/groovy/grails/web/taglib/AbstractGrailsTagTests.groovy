@@ -38,7 +38,6 @@ import org.springframework.web.servlet.theme.SessionThemeResolver
 import org.w3c.dom.Document
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.web.pages.*
-import org.codehaus.groovy.grails.domain.GormApiSupport
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -236,7 +235,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler)
 
         onDestroy()
-        GormApiSupport.datastore = null
 
         ServletContextHolder.servletContext = null
     }
