@@ -50,6 +50,8 @@ target(compile : "Implementation of compilation phase") {
 			projectCompiler.compile(grailsSettings.classesDir)
         }
         catch (Exception e) {
+			grails.util.GrailsUtil.deepSanitize(e)
+			e.printStackTrace()
             event("StatusFinal", ["Compilation error: ${e.message}"])
             exit(1)
         }
