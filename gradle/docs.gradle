@@ -67,6 +67,7 @@ task javadoc(type:Javadoc) {
 }
 
 task groovydoc(type:Groovydoc) {
+	classpath = files(subprojects.configurations.compile)
 	groovyClasspath = files(subprojects.configurations.compile)	
     destinationDir = file("$docs.destinationDir/api")
     windowTitle = "Grails $grailsVersion"
