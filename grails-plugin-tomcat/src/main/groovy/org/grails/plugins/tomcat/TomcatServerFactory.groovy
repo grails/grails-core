@@ -7,10 +7,10 @@ class TomcatServerFactory implements EmbeddableServerFactory {
 	def pluginSettings
 
 	EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
-		return new TomcatServer(basedir, webXml, contextPath, classLoader)
+		return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
 	}
 
 	EmbeddableServer createForWAR(String warPath, String contextPath) {
-		return new TomcatServer(warPath, contextPath)
+		return new IsolatedWarTomcatServer(warPath, contextPath)
 	}
 }

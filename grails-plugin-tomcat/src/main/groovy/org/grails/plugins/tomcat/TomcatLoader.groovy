@@ -44,7 +44,12 @@ class TomcatLoader extends LifecycleBase implements Loader, Lifecycle {
     boolean reloadable
 
 	TomcatLoader(ClassLoader classLoader) {
-		this.classLoader = new ParentDelegatingClassLoader(classLoader)
+        // Class loader that only searches the parent
+        this.classLoader = new ClassLoader(classLoader) {
+            Class<?> findClass(String name) {
+                parent.findClass(name)
+            }
+        }
 	}
 
     void addPropertyChangeListener(PropertyChangeListener listener) {}

@@ -38,7 +38,7 @@ public class IsolatedTomcat {
 	public static void main(String[] args) {
 
 		if(args.length < 3) {
-			System.err.println("Usage: IsolatedTomcat [tomcat_path] [war_path] [context_path] [host] [port]");
+			System.err.println("Usage: IsolatedTomcat [tomcat_path] [war_path] [context_path] [host] [httpPort] [httpsPort] [keystorePath] [keystorePassword]");
 			System.exit(1);
 		}
 		else {
@@ -47,11 +47,15 @@ public class IsolatedTomcat {
 			String contextPath = args[2];
 			String host = "localhost";
 			if(args.length>3) host = args[3];
-			int port = 8080;
-			try {
-				if(args.length>4) port = Integer.parseInt(args[4]);
-			} catch (NumberFormatException e) {
-				// ignore
+			int port = argToNumber(args, 4, 8080);
+			int httpsPort = argToNumber(args, 5, 0);
+
+			String keystorePath = "";
+			String keystorePassword = "";
+			if (httpsPort > 0) {
+				keystorePath = args[6];
+				keystorePassword = args[7];
+				System.out.println("path: " + keystorePath + ", password: " + keystorePassword);
 			}
 
 			final Tomcat tomcat = new Tomcat();
@@ -71,6 +75,24 @@ public class IsolatedTomcat {
 			connector.setAttribute("address", host);
 			connector.setURIEncoding("UTF-8");
 
+			if (httpsPort > 0) {
+				Connector sslConnector;
+				try {
+					sslConnector = new Connector();
+				} catch (Exception e) {
+					throw new RuntimeException("Couldn't create HTTPS connector", e);
+				}
+				
+				sslConnector.setScheme("https");
+				sslConnector.setSecure(true);
+				sslConnector.setPort(httpsPort);
+				sslConnector.setProperty("SSLEnabled", "true");
+				sslConnector.setAttribute("keystoreFile", keystorePath);
+				sslConnector.setAttribute("keystorePass", keystorePassword);
+				sslConnector.setURIEncoding("UTF-8");
+				tomcat.getService().addConnector(sslConnector);
+			}
+            
 			final int serverPort = port;
 			new Thread(new Runnable() {
 				public void run() {
@@ -119,4 +141,15 @@ public class IsolatedTomcat {
 		}
 	}
 
+	private static int argToNumber(String[] args, int i, int orDefault) {
+		if (args.length > i) {
+			try {
+				return Integer.parseInt(args[i]);
+			} catch (NumberFormatException e) {
+				return orDefault;
+			}
+		} else {
+			return orDefault;
+		}
+	}
 }
