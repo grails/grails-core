@@ -124,8 +124,26 @@ class UrlMappingsTestMixinTests {
             param1 = "value1"
         }
     }
+
+
+    @Test
+    void testGrails5222Again() {
+        mockUrlMappings(AnotherUrlMappings)
+        shouldFail(ComparisonFailure) {
+            assertForwardUrlMapping("/alias/param1value", controller: "grailsUrlMappingsTestCaseFake", action: "action1") {
+                param1 = "invalidparam1value"
+            }
+        }
+    }
 }
 
+class AnotherUrlMappings  {
+    static mappings = {
+        "/$controller/$action?/$id?" {}
+        "/alias/$param1/"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
+    }
+
+}
 class GrailsUrlMappingsTestCaseFakeController {
    static defaultAction = 'action1'
    def action1 = {}

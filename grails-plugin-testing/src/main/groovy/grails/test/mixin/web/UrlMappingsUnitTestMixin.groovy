@@ -203,23 +203,27 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
 
         if (mappingInfos.size() == 0) throw new AssertionFailedError("url '$url' did not match any mappings")
 
-        mappingInfos.find {mapping ->
+        def mappingMatched = mappingInfos.any {mapping ->
             mapping.configure(webRequest)
             for (key in assertionKeys) {
                 if (assertions.containsKey(key)) {
                     def expected = assertions[key]
                     def actual = mapping."${key}Name"
 
-                    // if this is not a match and there are still more potential matches try the next one
-                    if (!getControllerClass(actual) && mappingInfos.size() > 1) return
-
-                    if (key == "view") {
-                        if (actual[0] == "/") actual = actual.substring(1)
-                        if (expected[0] == "/") expected = expected.substring(1)
-                    }
-                    if (key == "action" && actual == null) {
-                        final controllerClass = getControllerClass(assertions.controller)
-                        actual = controllerClass?.defaultAction
+                    switch (key) {
+                        case "controller":
+                            if (actual && !getControllerClass(actual)) return false
+                            break
+                        case "view":
+                            if (actual[0] == "/") actual = actual.substring(1)
+                            if (expected[0] == "/") expected = expected.substring(1)
+                            break
+                        case "action":
+                            if (key == "action" && actual == null) {
+                                final controllerClass = getControllerClass(assertions.controller)
+                                actual = controllerClass?.defaultAction
+                            }
+                            break
                     }
 
                     assertEquals("Url mapping $key assertion for '$url' failed", expected, actual)
@@ -234,8 +238,10 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
                     assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value.toString(), mapping.params[name])
                 }
             }
-            true
+            return true
         }
+
+        if (!mappingMatched) throw new IllegalArgumentException("url '$url' did not match any mappings")
     }
 
     /**
