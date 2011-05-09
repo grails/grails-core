@@ -37,6 +37,18 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
         assert manager.ivySettings.defaultUseOrigin == true
     }
+
+    // test for GRAILS-7101
+    void testDisableChecksums() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            checksums false
+        }
+        assert manager.ivySettings.getVariable('ivy.checksums') == ''
+    }
+
     void testInheritRepositoryResolvers() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

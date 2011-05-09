@@ -29,6 +29,16 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
         super(context)
     }
 
+    void checksums(String checksumConfig) {
+        dependencyManager.ivySettings.setVariable("ivy.checksums", checksumConfig)
+    }
+
+    void checksums(boolean enable) {
+        if(!enable) {
+            dependencyManager.ivySettings.setVariable("ivy.checksums", "")
+        }
+    }
+
     void useOrigin(boolean b) {
         dependencyManager.ivySettings.setDefaultUseOrigin(b)
     }
