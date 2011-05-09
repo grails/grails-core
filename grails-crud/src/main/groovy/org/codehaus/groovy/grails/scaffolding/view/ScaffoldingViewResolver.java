@@ -80,7 +80,7 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
                 if (v == null) {
                     String viewCode = null;
                     try {
-                        viewCode = generateViewSource(viewName, domainClass);
+                        viewCode = generateViewSource(viewFileName, domainClass);
                     }
                     catch (Exception e) {
                         GrailsUtil.deepSanitize(e);
