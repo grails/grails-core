@@ -18,6 +18,7 @@ package org.grails.plugins.tomcat;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.coyote.http11.Http11NioProtocol;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -60,6 +61,14 @@ public class IsolatedTomcat {
 
 			final Tomcat tomcat = new Tomcat();
 			tomcat.setPort(port);
+
+            if(Boolean.getBoolean("tomcat.nio")) {
+                System.out.println("Enabling Tomcat NIO Connector");
+                Connector connector = new Connector(Http11NioProtocol.class.getName());
+                connector.setPort(port);
+                tomcat.getService().addConnector(connector);
+                tomcat.setConnector( connector );
+            }
 
 			tomcat.setBaseDir(tomcatDir);
 			try {

@@ -15,21 +15,7 @@
  */
 package org.grails.plugins.tomcat
 
-import org.apache.catalina.Container
-import org.apache.catalina.Lifecycle
-import org.apache.catalina.LifecycleListener
-import org.apache.catalina.Loader
-import org.apache.catalina.core.StandardContext
-import org.apache.catalina.deploy.ContextEnvironment
-import org.apache.catalina.startup.Tomcat
-
-import org.apache.juli.logging.Log
-import org.apache.juli.logging.LogFactory
-
-import org.apache.naming.resources.DirContextURLStreamHandlerFactory
-import org.apache.naming.resources.DirContextURLStreamHandler
-
-/**
+ /**
  * Serves a packaged war, in a forked JVM.
  */
 class IsolatedWarTomcatServer extends TomcatServer {
@@ -80,6 +66,10 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
                 for (a in (getConfigParam('jvmArgs') ?: DEFAULT_JVM_ARGS)) {
                     jvmarg value: a
+                }
+
+                for(entry in getConfigParams()) {
+                    sysproperty key:"tomcat.${entry.key}", value:"${entry.value}"
                 }
             }
         }

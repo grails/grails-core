@@ -15,9 +15,10 @@
  */
 package org.grails.plugins.tomcat
 
+import grails.util.GrailsNameUtils
+import org.apache.catalina.connector.Connector
 import org.apache.catalina.startup.Tomcat
-
-import grails.util.*
+import org.apache.coyote.http11.Http11NioProtocol
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 /**
@@ -71,6 +72,14 @@ class InlineExplodedTomcatServer extends TomcatServer {
     void doStart(String host, int httpPort, int httpsPort) {
         preStart()
         tomcat.hostname = host
+        if(getConfigParam("nio")) {
+            println "Enabling Tomcat NIO connector"
+            def connector = new Connector(Http11NioProtocol.name)
+            connector.port = httpPort
+            tomcat.service.addConnector(connector)
+            tomcat.connector = connector
+        }
+
         tomcat.port = httpPort
         tomcat.connector.setAttribute("address", host)
         tomcat.connector.URIEncoding = 'UTF-8'

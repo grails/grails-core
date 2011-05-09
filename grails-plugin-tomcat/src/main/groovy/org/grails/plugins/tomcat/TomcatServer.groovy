@@ -125,6 +125,10 @@ abstract class TomcatServer implements EmbeddableServer {
         buildSettings.config.grails.tomcat[name]
     }
 
+    protected Map getConfigParams() {
+        buildSettings.config.grails.tomcat
+    }
+
     protected createSSLCertificate() {
         println 'Creating SSL Certificate...'
 
