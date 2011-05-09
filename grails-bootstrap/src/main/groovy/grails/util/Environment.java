@@ -146,7 +146,7 @@ public enum Environment {
      * @return True if is
      */
     public static boolean isWithinShell() {
-        return DefaultGroovyMethods.getRootLoader(Environment.class.getClassLoader()) == null;
+        return DefaultGroovyMethods.getRootLoader(Environment.class.getClassLoader()) != null;
     }
 
     /**
