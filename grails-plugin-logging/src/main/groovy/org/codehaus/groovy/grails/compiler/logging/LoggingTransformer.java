@@ -42,6 +42,9 @@ import java.net.URL;
 @AstTransformer
 public class LoggingTransformer implements AllArtefactClassInjector{
     public static final String LOG_PROPERTY = "log";
+    private static final String FILTERS_ARTEFACT_TYPE_SUFFIX = "Filters";
+    public static final String CONF_DIR = "conf";
+    public static final String FILTERS_ARTEFACT_TYPE = "filters";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         final FieldNode existingField = classNode.getField(LOG_PROPERTY);
@@ -49,6 +52,11 @@ public class LoggingTransformer implements AllArtefactClassInjector{
             final String path = source.getName();
 
             String artefactType = path != null ? GrailsResourceUtils.getArtefactDirectory(path) : null;
+
+            // little bit of a hack, since filters aren't kept in a grails-app/filters directory as they probably should be
+            if(artefactType != null && CONF_DIR.equals(artefactType) && classNode.getName().endsWith(FILTERS_ARTEFACT_TYPE_SUFFIX)) {
+                artefactType = FILTERS_ARTEFACT_TYPE;
+            }
 
             String logName = artefactType == null ? classNode.getName() : "grails.app." + artefactType + "." + classNode.getName();
             addLogField(classNode, logName);
