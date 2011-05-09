@@ -13,9 +13,11 @@ class UaaIntegrationSupport {
      * @return The plugin node
      */
     static findPlugin(pluginList, String pluginName) {
-        def plugin =  pluginList.plugin.find { it.@name == pluginName }
-        if(plugin) {
-            return plugin
+        if(pluginList != null) {
+            def plugin =  pluginList.plugin.find { it.@name == pluginName }
+            if(plugin) {
+                return plugin
+            }
         }
         return null
     }
