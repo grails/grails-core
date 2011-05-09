@@ -23,6 +23,7 @@ import groovy.util.slurpersupport.GPathResult
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.regex.Pattern
 
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.id.ModuleRevisionId
@@ -107,13 +108,18 @@ class PluginInstallEngine {
             eventHandler "StatusUpdate", "Installing ${newPlugins.size} plugins, please wait"
             installPlugins(newPlugins)
         }
-        
-        // We have to “install” all other plugins because they might have versions
-        // that are changing according to the chain resolver and one of the repos
+
         def existingPlugins = pluginDescriptors.findAll { !newPlugins.contains(it) }
-        if (existingPlugins) {
-            eventHandler "StatusUpdate", "Checking for plugin updates, please wait"
+        def rootChangingPattern = dependencyManager.chainResolver.changingPattern
+        def rootChangingPatternCompiled = rootChangingPattern ? Pattern.compile(rootChangingPattern) : null
+        def changingPlugins = existingPlugins.findAll {
+            it.changing || rootChangingPatternCompiled?.matcher(it.dependencyRevisionId.revision)?.matches()
+        }
+        if (changingPlugins) {
+            def noChangingPlugins = changingPlugins.size()
+            eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for remote updates, please wait"
             installPlugins(existingPlugins)
+            eventHandler "StatusFinal", "Changing plugin checking complete"
         }
 
         checkPluginsToUninstall(pluginDescriptors.collect { it.dependencyRevisionId })
