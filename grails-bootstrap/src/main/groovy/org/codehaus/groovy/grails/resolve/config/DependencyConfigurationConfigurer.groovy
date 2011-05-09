@@ -14,13 +14,8 @@
  */
 package org.codehaus.groovy.grails.resolve.config
 
-import org.apache.ivy.core.module.id.ModuleId
-
-import org.apache.ivy.core.module.id.ArtifactId
-import org.apache.ivy.core.module.descriptor.DefaultExcludeRule
-
-import org.apache.ivy.util.Message
 import org.apache.ivy.util.DefaultMessageLogger
+import org.apache.ivy.util.Message
 import org.apache.ivy.util.url.CredentialsStore
 
 class DependencyConfigurationConfigurer extends AbstractDependencyManagementConfigurer {
@@ -35,7 +30,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
     }
 
     void useOrigin(boolean b) {
-        ivySettings.setDefaultUseOrigin(b)
+        dependencyManager.ivySettings.setDefaultUseOrigin(b)
     }
 
     void credentials(Closure c) {

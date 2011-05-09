@@ -28,6 +28,15 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
+    void testUseOriginSetting() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1",settings)
+
+        manager.parseDependencies {
+            useOrigin true
+        }
+        assert manager.ivySettings.defaultUseOrigin == true
+    }
     void testInheritRepositoryResolvers() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

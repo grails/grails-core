@@ -151,7 +151,11 @@ public abstract class AbstractIvyDependencyManager {
         this.buildSettings = buildSettings;
         this.metadata = metadata;
     }
-    
+
+    public IvySettings getIvySettings() {
+        return ivySettings;
+    }
+
     public DefaultModuleDescriptor getModuleDescriptor() {
         return moduleDescriptor;
     }
