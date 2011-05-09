@@ -15,14 +15,6 @@
 package org.codehaus.groovy.grails.scaffolding.view;
 
 import grails.util.GrailsUtil;
-
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -33,6 +25,13 @@ import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.View;
+
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Overrides the default Grails view resolver and resolves scaffolded views at runtime.
@@ -81,7 +80,7 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
                 if (v == null) {
                     String viewCode = null;
                     try {
-                        viewCode = generateViewSource(webRequest, domainClass);
+                        viewCode = generateViewSource(viewName, domainClass);
                     }
                     catch (Exception e) {
                         GrailsUtil.deepSanitize(e);
@@ -107,9 +106,9 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         return view;
     }
 
-    protected String generateViewSource(GrailsWebRequest webRequest, GrailsDomainClass domainClass) {
+    protected String generateViewSource(String viewName, GrailsDomainClass domainClass) {
         StringWriter sw = new StringWriter();
-        templateGenerator.generateView(domainClass,webRequest.getActionName(),sw);
+        templateGenerator.generateView(domainClass, viewName,sw);
         return sw.toString();
     }
 

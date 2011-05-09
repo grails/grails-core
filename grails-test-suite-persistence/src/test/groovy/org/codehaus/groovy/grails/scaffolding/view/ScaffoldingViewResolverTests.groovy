@@ -14,7 +14,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
-import org.springframework.web.servlet.View
 
 /**
  * @author Graeme Rocher
@@ -56,7 +55,10 @@ class ScaffoldingViewResolverTests extends GroovyTestCase {
 }
 
 class TestScaffoldingViewResolver extends ScaffoldingViewResolver {
-    protected String generateViewSource(GrailsWebRequest webRequest, GrailsDomainClass domainClass) {
-        "<%='success'+foo%>"
+    protected String generateViewSource(String viewName, GrailsDomainClass domainClass) {
+        if("/foo/list" == viewName) {
+            return "<%='success'+foo%>"
+        }
+        return null
     }
 }
