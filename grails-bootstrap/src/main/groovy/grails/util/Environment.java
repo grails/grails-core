@@ -18,12 +18,12 @@ package grails.util;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import org.springframework.util.StringUtils;
 
 /**
  * An enum that represents the current environment
@@ -131,6 +131,22 @@ public enum Environment {
     public static boolean isDevelopmentMode() {
         return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
              System.getProperty("grails.home") != null;
+    }
+
+    /**
+     * Check whether the application is deployed
+     * @return True if is
+     */
+    public static boolean isWarDeployed() {
+        return Metadata.getCurrent().isWarDeployed();
+    }
+
+    /**
+     * Returns whether the environment is running within the Grails shell (executed via the 'grails' command line in a terminal window)
+     * @return True if is
+     */
+    public static boolean isWithinShell() {
+        return DefaultGroovyMethods.getRootLoader(Environment.class.getClassLoader()) == null;
     }
 
     /**

@@ -58,7 +58,7 @@ class ConfigurationHelper {
 
         if(application != null) {
             classLoader = application.getClassLoader()
-            if(application.warDeployed) {
+            if(Environment.isWarDeployed() || !Environment.isWithinShell()) {
                 // use unique cache keys for each config based on the application instance
                 // this to ensure each application gets a unique config and avoid the scenario
                 // where applications deployed in a shared library mode (shared jars) share the
