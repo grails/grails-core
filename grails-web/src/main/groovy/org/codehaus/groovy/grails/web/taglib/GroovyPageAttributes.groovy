@@ -17,8 +17,9 @@ package org.codehaus.groovy.grails.web.taglib
 
 import org.apache.commons.lang.builder.HashCodeBuilder
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
- /**
+/**
  * Defines attributes passed to a GSP tag. Mixes in
  * TypeConvertingMap for ease of type conversion.
  *
@@ -107,4 +108,11 @@ class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
     List list(String name) {
         getList(name)
     }
+
+    @Override
+    String toString() {
+        DefaultGroovyMethods.toMapString(this)
+    }
+
+
 }
