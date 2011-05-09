@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.web.mime.MimeType;
@@ -143,6 +144,7 @@ public class GrailsContextLoader extends ContextLoader {
 
         PluginManagerHolder.setPluginManager(null);
         ConfigurationHolder.setConfig(null);
+        ConfigurationHelper.clearCachedConfigs();
         ExpandoMetaClass.disableGlobally();
         MimeType.reset();
         application = null;

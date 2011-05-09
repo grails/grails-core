@@ -18,19 +18,14 @@ import grails.util.Environment;
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.ConfigObject;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.helpers.LogLog;
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.helpers.LogLog;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
-import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
 
 /**
  * Configures Log4j in WAR deployment using Grails Log4j DSL.
@@ -40,7 +35,6 @@ import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
  */
 public class Log4jConfigListener implements ServletContextListener {
 
-    static final Log LOG = LogFactory.getLog(Log4jConfigListener.class);
 
     public void contextInitialized(ServletContextEvent event) {
         try {
@@ -51,20 +45,15 @@ public class Log4jConfigListener implements ServletContextListener {
                 // in this case we're running inside a WAR deployed environment
                 // create empty app to provide metadata
                 GrailsApplication application = new DefaultGrailsApplication();
-                try {
-                    ApplicationHolder.setApplication(application);
-                    co = ConfigurationHelper.loadConfigFromClasspath(application);
-                }
-                finally {
-                    ApplicationHolder.setApplication(null);
-                }
-
-                Object o = co.get("log4j");
-                if (o instanceof Closure) {
-                    new Log4jConfig().configure((Closure)o);
-                }
-                else {
-                    new Log4jConfig().configure();
+                co = application.getConfig();
+                if(co != null) {
+                    Object o = co.get("log4j");
+                    if (o instanceof Closure) {
+                        new Log4jConfig().configure((Closure)o);
+                    }
+                    else {
+                        new Log4jConfig().configure();
+                    }
                 }
             }
         }
