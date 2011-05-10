@@ -38,6 +38,6 @@ class RepositoryController {
      void testRedirect() {
          def c = ga.getControllerClass("PortalController").newInstance()
          c.content()
-         assertEquals "/repository", response.redirectedUrl
+         assertEquals "/repository/index", response.redirectedUrl
      }
 }
