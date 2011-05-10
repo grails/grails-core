@@ -14,6 +14,9 @@
  */
 package org.codehaus.groovy.grails.plugins.testing
 
+import grails.artefact.ApiDelegate
+import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.util.Assert
@@ -22,11 +25,13 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
 
- /**
+/**
  * A custom mock HTTP servlet request that provides the extra properties
  * and methods normally injected by the "servlets" plugin.
  */
 class GrailsMockHttpServletRequest extends MockHttpServletRequest implements MultipartHttpServletRequest{
+
+    @ApiDelegate RequestMimeTypesApi requestMimeTypesApi
 
     boolean invalidToken
     MultiValueMap<String, MultipartFile> multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
@@ -34,6 +39,13 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     private cachedJson
     private cachedXml
 
+    /**
+     * Sets the request format to use
+     * @param format The request format
+     */
+    void setFormat(String format) {
+        setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
+    }
 
 
     /**

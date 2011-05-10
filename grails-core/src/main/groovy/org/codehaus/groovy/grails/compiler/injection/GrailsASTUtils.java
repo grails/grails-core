@@ -395,4 +395,37 @@ public class GrailsASTUtils {
         }
     }
 
+    public static boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
+        Parameter[] parameterTypes = declaredMethod.getParameters();
+        return isCandidateMethod(declaredMethod) && parameterTypes != null && parameterTypes.length > 0;
+    }
+
+    public static boolean isCandidateMethod(MethodNode declaredMethod) {
+        return !declaredMethod.isSynthetic() &&
+                !declaredMethod.getName().contains("$")
+                && Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isAbstract(declaredMethod.getModifiers());
+    }
+
+    public static boolean isConstructorMethod(MethodNode declaredMethod) {
+        return declaredMethod.isStatic() && declaredMethod.isPublic() &&
+                declaredMethod.getName().equals("initialize") && declaredMethod.getParameters().length >= 1 && declaredMethod.getParameters()[0].getType().equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS);
+    }
+
+    public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
+        while(!delegateNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
+            List<MethodNode> declaredMethods = delegateNode.getMethods();
+            for (MethodNode declaredMethod : declaredMethods) {
+
+                if(isConstructorMethod(declaredMethod)) {
+                    addDelegateConstructor(classNode, declaredMethod);
+
+                }
+                else if(isCandidateInstanceMethod(declaredMethod)) {
+                    addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod);
+                }
+
+            }
+            delegateNode = delegateNode.getSuperClass();
+        }
+    }
 }

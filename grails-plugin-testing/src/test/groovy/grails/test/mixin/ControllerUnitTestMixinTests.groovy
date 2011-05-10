@@ -117,7 +117,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     void testRenderWithFormatXml() {
         def controller = getMockController()
 
-        request.format = 'xml'
+        response.format = 'xml'
         controller.renderWithFormat()
 
         assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
@@ -126,10 +126,20 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     void testRenderWithFormatHtml() {
         def controller = getMockController()
 
-        request.format = 'html'
+        response.format = 'html'
         def model = controller.renderWithFormat()
 
         assert model?.foo == 'bar'
+    }
+
+    void testRenderWithRequestFormat() {
+        def controller = getMockController()
+
+        request.format = 'xml'
+        controller.renderWithRequestFormat()
+
+        assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
+
     }
 
     void testWithFormTokenSynchronization() {
@@ -293,6 +303,14 @@ class TestController {
     def renderWithFormat = {
         def data = [foo:"bar"]
         withFormat {
+            xml { render data as XML }
+            html data
+        }
+    }
+
+    def renderWithRequestFormat = {
+        def data = [foo:"bar"]
+        request.withFormat {
             xml { render data as XML }
             html data
         }

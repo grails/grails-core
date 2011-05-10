@@ -1,0 +1,56 @@
+/*
+ * Copyright 2011 SpringSource
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.codehaus.groovy.grails.compiler.injection;
+
+import org.codehaus.groovy.GroovyBugError;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.control.CompilePhase;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.transform.ASTTransformation;
+import org.codehaus.groovy.transform.GroovyASTTransformation;
+
+import java.util.Arrays;
+
+/**
+ *
+ * The logic for the {@link grails.artefact.ApiDelegate} location transform
+ *
+ * @author Graeme Rocher
+ * @since 1.4
+ *
+ *
+ */
+@GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
+public class ApiDelegateTransformation implements ASTTransformation{
+    public void visit(ASTNode[] nodes, SourceUnit source) {
+        if (nodes.length != 2 || !(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
+            throw new GroovyBugError("Internal error: expecting [AnnotationNode, AnnotatedNode] but got: " + Arrays.asList(nodes));
+        }
+
+        AnnotatedNode parent = (AnnotatedNode) nodes[1];
+        AnnotationNode node = (AnnotationNode) nodes[0];
+
+        if (parent instanceof FieldNode) {
+            FieldNode fieldNode = (FieldNode) parent;
+            final ClassNode type = fieldNode.getType();
+            final ClassNode owner = fieldNode.getOwner();
+
+            GrailsASTUtils.addDelegateInstanceMethods(owner,type, new VariableExpression(fieldNode.getName()));
+        }
+    }
+}

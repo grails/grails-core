@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.grails.datastore.gorm.GormValidationApi;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -76,7 +77,7 @@ public class GormValidationTransformer extends AbstractGrailsArtefactTransformer
 
     @Override
     protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
-        return !EXCLUDES.contains(declaredMethod.getName()) && super.isCandidateInstanceMethod(declaredMethod);
+        return !EXCLUDES.contains(declaredMethod.getName()) && GrailsASTUtils.isCandidateInstanceMethod(declaredMethod);
     }
 
     @Override

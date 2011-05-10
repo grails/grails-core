@@ -74,8 +74,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         if(instanceImplementation != null) {
             ClassNode implementationNode = new ClassNode(instanceImplementation);
 
-
-
             String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
             Expression apiInstance = new VariableExpression(apiInstanceProperty);
 
@@ -97,12 +95,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             }
 
 
-
-            while(!implementationNode.equals(OBJECT_CLASS)) {
+            GrailsASTUtils.addDelegateInstanceMethods(classNode, implementationNode, apiInstance);
+            while(!implementationNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
                 List<MethodNode> declaredMethods = implementationNode.getMethods();
                 for (MethodNode declaredMethod : declaredMethods) {
 
-                    if(isConstructor(declaredMethod)) {
+                    if(GrailsASTUtils.isConstructorMethod(declaredMethod)) {
                         GrailsASTUtils.addDelegateConstructor(classNode, declaredMethod);
 
                     }
@@ -156,9 +154,13 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     }
 
+    protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
+        return GrailsASTUtils.isCandidateInstanceMethod(declaredMethod);
+    }
+
 
     protected boolean isStaticCandidateMethod(MethodNode declaredMethod) {
-        return isCandidateMethod(declaredMethod);
+        return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 
     private void createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiInstanceProperty, String lookupMethodName) {
@@ -213,23 +215,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         // do nothing
     }
 
-    private boolean isConstructor(MethodNode declaredMethod) {
-        return declaredMethod.isStatic() && declaredMethod.isPublic() &&
-                declaredMethod.getName().equals("initialize") && declaredMethod.getParameters().length >= 1 && declaredMethod.getParameters()[0].getType().equals(OBJECT_CLASS);
-    }
-
-
-
-    protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
-        Parameter[] parameterTypes = declaredMethod.getParameters();
-        return isCandidateMethod(declaredMethod) && parameterTypes != null && parameterTypes.length > 0 && parameterTypes[0].getType().equals(OBJECT_CLASS);
-    }
-
-    protected boolean isCandidateMethod(MethodNode declaredMethod) {
-        return !declaredMethod.isSynthetic() &&
-                !declaredMethod.getName().contains("$")
-                && Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isAbstract(declaredMethod.getModifiers());
-    }
 
     /**
      * The class that provides the implementation of all instance methods and properties

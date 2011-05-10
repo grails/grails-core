@@ -14,17 +14,34 @@
  */
 package org.codehaus.groovy.grails.plugins.testing
 
+import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import groovy.util.slurpersupport.GPathResult
-import org.springframework.mock.web.MockHttpServletResponse
+import javax.servlet.http.HttpServletRequest
+import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.json.JSONElement
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.mock.web.MockHttpServletResponse
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
  * left-shift operator, "<<".
  */
 class GrailsMockHttpServletResponse extends MockHttpServletResponse {
+
+    @ApiDelegate ResponseMimeTypesApi responseMimeTypesApi
+
+    /**
+     * Sets the response format
+     *
+     * @param format The format of the response
+     */
+    void setFormat(String format) {
+        HttpServletRequest request = GrailsWebRequest.lookup().getCurrentRequest()
+        request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, format)
+    }
+
     /**
      * Appends the given content string to the response's output stream.
      */

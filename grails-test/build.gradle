@@ -1,6 +1,6 @@
 dependencies {
     // Testing
-    compile 'junit:junit:4.8.1', project(":grails-plugin-converters")
+    compile 'junit:junit:4.8.1', project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
 
     compile project(":grails-web")
 }

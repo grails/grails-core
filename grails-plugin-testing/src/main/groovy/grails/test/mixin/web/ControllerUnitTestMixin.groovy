@@ -56,6 +56,8 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
+import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -198,8 +200,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             ServletsGrailsPluginSupport.enhanceServletApi()
             ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-            request = new GrailsMockHttpServletRequest()
-            response = new GrailsMockHttpServletResponse()
+            request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  applicationContext.getBean("requestMimeTypesApi", RequestMimeTypesApi))
+            response = new GrailsMockHttpServletResponse(responseMimeTypesApi: applicationContext.getBean("responseMimeTypesApi", ResponseMimeTypesApi))
             webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
             request = webRequest.getCurrentRequest()
             response = webRequest.getCurrentResponse()
