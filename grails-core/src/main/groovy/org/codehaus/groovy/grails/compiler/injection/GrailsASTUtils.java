@@ -395,9 +395,30 @@ public class GrailsASTUtils {
         }
     }
 
-    public static boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
+    public static boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
         Parameter[] parameterTypes = declaredMethod.getParameters();
-        return isCandidateMethod(declaredMethod) && parameterTypes != null && parameterTypes.length > 0;
+        return isCandidateMethod(declaredMethod) && parameterTypes != null && parameterTypes.length > 0 && isAssignableFrom(parameterTypes[0].getType(), classNode);
+    }
+
+    /**
+     *
+     * Determines if the class or interface represented by the superClass argument is either the same as, or is a superclass or superinterface of, the class or interface represented by the specified subClass parameter.
+     *
+     * @param superClass The super class to check
+     * @param childClass The sub class the check
+     *
+     * @return True if the childClass either equal to or a sub class of the specified superClass otherwise return false
+     */
+    private static boolean isAssignableFrom(ClassNode superClass, ClassNode childClass) {
+        ClassNode currentSuper = childClass;
+        while (currentSuper != null)  {
+            if(currentSuper.equals(superClass)) {
+                return true;
+            }
+
+            currentSuper = currentSuper.getSuperClass();
+        }
+        return false;
     }
 
     public static boolean isCandidateMethod(MethodNode declaredMethod) {
@@ -420,7 +441,7 @@ public class GrailsASTUtils {
                     addDelegateConstructor(classNode, declaredMethod);
 
                 }
-                else if(isCandidateInstanceMethod(declaredMethod)) {
+                else if(isCandidateInstanceMethod(classNode, declaredMethod)) {
                     addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod);
                 }
 

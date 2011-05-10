@@ -75,8 +75,8 @@ public class GormValidationTransformer extends AbstractGrailsArtefactTransformer
     }
 
     @Override
-    protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
-        return !EXCLUDES.contains(declaredMethod.getName()) && super.isCandidateInstanceMethod(declaredMethod);
+    protected boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
+        return !EXCLUDES.contains(declaredMethod.getName()) && super.isCandidateInstanceMethod(classNode, declaredMethod);
     }
 
     @Override

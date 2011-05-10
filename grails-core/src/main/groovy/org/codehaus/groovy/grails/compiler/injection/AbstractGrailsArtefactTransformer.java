@@ -103,7 +103,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                         GrailsASTUtils.addDelegateConstructor(classNode, declaredMethod);
 
                     }
-                    else if(isCandidateInstanceMethod(declaredMethod)) {
+                    else if(isCandidateInstanceMethod(classNode, declaredMethod)) {
                         GrailsASTUtils.addDelegateInstanceMethod(classNode, apiInstance, declaredMethod);
                     }
 
@@ -141,7 +141,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             MethodCallExpression apiLookupMethod = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
 
             for (MethodNode declaredMethod : declaredMethods) {
-                if(isStaticCandidateMethod(declaredMethod)) {
+                if(isStaticCandidateMethod(classNode,declaredMethod)) {
                     GrailsASTUtils.addDelegateStaticMethod(apiLookupMethod, classNode, declaredMethod);
                 }
             }
@@ -153,12 +153,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     }
 
-    protected boolean isCandidateInstanceMethod(MethodNode declaredMethod) {
-        return GrailsASTUtils.isCandidateInstanceMethod(declaredMethod);
+    protected boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
+        return GrailsASTUtils.isCandidateInstanceMethod(classNode, declaredMethod);
     }
 
 
-    protected boolean isStaticCandidateMethod(MethodNode declaredMethod) {
+    protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
         return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 

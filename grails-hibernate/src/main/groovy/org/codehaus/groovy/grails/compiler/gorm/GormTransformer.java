@@ -46,8 +46,8 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
 
 
     @Override
-    protected boolean isStaticCandidateMethod(MethodNode declaredMethod) {
-        return !(declaredMethod.getName().equals("create") && declaredMethod.getParameters().length == 0) && super.isStaticCandidateMethod(declaredMethod);
+    protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
+        return !(declaredMethod.getName().equals("create") && declaredMethod.getParameters().length == 0) && super.isStaticCandidateMethod(classNode, declaredMethod);
     }
 
     @Override

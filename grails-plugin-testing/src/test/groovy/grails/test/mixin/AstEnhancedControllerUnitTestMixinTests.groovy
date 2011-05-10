@@ -114,7 +114,7 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
     void testRenderWithFormatXml() {
         def controller = getMockController()
 
-        request.format = 'xml'
+        response.format = 'xml'
         controller.renderWithFormat()
 
         assert '<?xml version="1.0" encoding="UTF-8"?><map><entry key="foo">bar</entry></map>' == response.contentAsString
@@ -123,7 +123,7 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
     void testRenderWithFormatHtml() {
         def controller = getMockController()
 
-        request.format = 'html'
+        response.format = 'html'
         def model = controller.renderWithFormat()
 
         assert model?.foo == 'bar'
