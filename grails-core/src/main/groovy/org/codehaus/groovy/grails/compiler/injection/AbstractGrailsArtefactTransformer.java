@@ -95,7 +95,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             }
 
 
-            GrailsASTUtils.addDelegateInstanceMethods(classNode, implementationNode, apiInstance);
             while(!implementationNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
                 List<MethodNode> declaredMethods = implementationNode.getMethods();
                 for (MethodNode declaredMethod : declaredMethods) {
