@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.GrailsWebUtil
+import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -21,6 +22,9 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.web.mime.MimeType
+
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
@@ -91,12 +95,17 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         mockManager.applicationContext = appCtx
         mockManager.doDynamicMethods()
 
-        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
-        request = webRequest.currentRequest
+        request = new GrailsMockHttpServletRequest()
         request.characterEncoding = "utf-8"
-        response = webRequest.currentResponse
+        response = new GrailsMockHttpServletResponse()
+        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx, request, response)
+        
     }
 
+    protected setCurrentController(controller) {
+        RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
+    }
+    
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()

@@ -162,6 +162,7 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
+        ignoreFailures = true
     }
 
     task sourcesJar(type: Jar, dependsOn:classes) {

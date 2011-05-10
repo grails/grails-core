@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.GrailsUtil
+import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
@@ -136,6 +137,10 @@ hibernate {
             session = sessionFactory.openSession()
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
+    }
+    
+    protected setCurrentController(controller) {
+        RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
     }
     
     void onApplicationCreated() {}
