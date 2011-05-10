@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.binding
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -40,7 +41,7 @@ class PersonController {
 
     void testDataBindingBlankStringToNull() {
         def controller = ga.getControllerClass("PersonController").newInstance()
-
+        currentController = controller
         controller.params.name = "fred"
         controller.params.dateOfBirth = ''
 
@@ -51,7 +52,7 @@ class PersonController {
 
     void testDataBindingToNull() {
         def controller = ga.getControllerClass("PersonController").newInstance()
-
+        currentController = controller
         controller.params.name = "fred"
         controller.params.dateOfBirth = 'invalid'
 

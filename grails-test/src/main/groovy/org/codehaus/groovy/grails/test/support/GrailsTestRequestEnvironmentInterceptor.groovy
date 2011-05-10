@@ -16,6 +16,9 @@
 
 package org.codehaus.groovy.grails.test.support
 
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
@@ -42,7 +45,9 @@ class GrailsTestRequestEnvironmentInterceptor {
      * Establishes a mock request environment
      */
     void init(String controllerName = DEFAULT_CONTROLLER_NAME) {
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext)
+        def request = new GrailsMockHttpServletRequest()
+        def response = new GrailsMockHttpServletResponse()
+        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         ServletContextHolder.servletContext = webRequest.servletContext
         webRequest.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
         webRequest.controllerName = controllerName

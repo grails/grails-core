@@ -3,6 +3,9 @@ package org.codehaus.groovy.grails.web.errors
 import grails.util.GrailsWebUtil
 import grails.util.Environment
 
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -54,7 +57,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
         def mockCtx = new MockApplicationContext()
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebUtil.bindMockWebRequest(mockCtx, new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
@@ -148,6 +151,7 @@ grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
             request.addParameter "one", "two"
             request.addParameter "jennysPhoneNumber", "8675309"
 
+            System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
 
             assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:

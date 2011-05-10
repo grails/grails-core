@@ -163,31 +163,23 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
         }
 
-        try {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Executing redirect with response ["+response+"]");
-            }
-
-            String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
-            if (permanent) {
-                response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
-                response.setHeader("Location", redirectUrl);
-                response.flushBuffer();
-            } else {
-                response.sendRedirect(redirectUrl);
-            }
-            
-            if(redirectListeners != null) {
-                for (RedirectEventListener redirectEventListener : redirectListeners) {
-                    redirectEventListener.responseRedirected(redirectUrl);
-                }
-            }
-
-            request.setAttribute(GRAILS_REDIRECT_ISSUED, true);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Executing redirect with response ["+response+"]");
         }
-        catch (IOException e) {
-            throw new CannotRedirectException("Error redirecting request for url ["+actualUri +"]: " + e.getMessage(),e);
+
+        String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
+        int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
+        
+        response.setStatus(status);
+        response.setHeader("Location", redirectUrl);
+        
+        if(redirectListeners != null) {
+            for (RedirectEventListener redirectEventListener : redirectListeners) {
+                redirectEventListener.responseRedirected(redirectUrl);
+            }
         }
+
+        request.setAttribute(GRAILS_REDIRECT_ISSUED, true);
         return null;
     }
 
