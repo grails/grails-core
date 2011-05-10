@@ -19,6 +19,7 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -58,6 +59,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String GRAILS_REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";
 
     public static final String ARGUMENT_ERRORS = "errors";
+
+	public static final String ARGUMENT_PERMANENT = "permanent";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
     private boolean useJessionId = false;
@@ -138,7 +141,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             controller.setProperty(ControllerDynamicMethods.ERRORS_PROPERTY, errors);
         }
 
-        return redirectResponse(linkGenerator.link(argMap), request, response);
+        boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
+        return redirectResponse(linkGenerator.link(argMap), request, response, permanent);
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -154,7 +158,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     /*
      * Redirects the response the the given URI
      */
-    private Object redirectResponse(String actualUri, HttpServletRequest request, HttpServletResponse response) {
+    private Object redirectResponse(String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
         }
@@ -165,7 +169,14 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             }
 
             String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
-            response.sendRedirect(redirectUrl);
+            if (permanent) {
+                response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+                response.setHeader("Location", redirectUrl);
+                response.flushBuffer();
+            } else {
+                response.sendRedirect(redirectUrl);
+            }
+            
             if(redirectListeners != null) {
                 for (RedirectEventListener redirectEventListener : redirectListeners) {
                     redirectEventListener.responseRedirected(redirectUrl);
