@@ -37,6 +37,11 @@ class RedirectController {
     def toAction = {
         redirect(action:'foo')
     }
+
+    def toActionPermanent = {
+        redirect(action:'foo', permanent: true)
+    }
+
     def toActionWithGstring = {
         def prefix = 'f'
         redirect(action:"${prefix}oo")
@@ -102,7 +107,7 @@ class UrlMappings {
         def c = ga.getControllerClass("NewsSignupController").newInstance()
         webRequest.controllerName = 'newsSignup'
         c.redirectToDefaultAction.call()
-        assertEquals "/redirect", response.redirectedUrl
+        assertEquals "/redirect/toAction", response.redirectedUrl
     }
 
     void testRedirectEventListeners() {
@@ -232,6 +237,15 @@ class UrlMappings {
         c.testNoController.call()
         assertEquals "/little-brown-bottle/thankyou", response.redirectedUrl
     }
+
+    void testPermanentRedirect() {
+        def c = ga.getControllerClass("RedirectController").newInstance()
+        webRequest.controllerName = 'redirect'
+        c.toActionPermanent.call()
+        assertEquals "/redirect/foo", response.getHeader("Location")
+        assertEquals 301, response.status
+    }
+
 }
 
 class TestRedirectListener implements RedirectEventListener {

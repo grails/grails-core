@@ -54,8 +54,6 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
      */
     boolean exported = true
 
-    private confList
-
     /**
      * Whether the dependency should be exposed to the application
      */
@@ -67,7 +65,6 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
         super(mrid, force)
         this.scope = scope
-        confList = getModuleConfigurations().toList()
     }
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, boolean transitive, String scope) {
