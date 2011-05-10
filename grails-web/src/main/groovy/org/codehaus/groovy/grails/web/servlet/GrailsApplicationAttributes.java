@@ -15,19 +15,17 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
-
-import java.io.Writer;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.Writer;
 
 /**
  * Defines the names of and methods to retrieve Grails specific request and servlet attributes.
@@ -39,7 +37,9 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
     String CONTENT_FORMAT = "org.codehaus.groovy.grails.CONTENT_FORMAT";
+    String RESPONSE_FORMAT = "org.codehaus.groovy.grails.RESPONSE_FORMAT";
     String REQUEST_FORMATS = "org.codehaus.groovy.grails.REQUEST_FORMATS";
+    String RESPONSE_FORMATS = "org.codehaus.groovy.grails.RESPONSE_FORMATS";
     String FLASH_SCOPE = "org.codehaus.groovy.grails.FLASH_SCOPE";
     String PARAMS_OBJECT = "org.codehaus.groovy.grails.PARAMS_OBJECT";
     String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER";

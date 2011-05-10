@@ -40,7 +40,7 @@ import grails.persistence.*
 @Artefact('Controller')
 class ContentController {
     def testFormat = {
-        render request.format
+        render response.format
     }
 
     def testWithFormat = {
@@ -139,20 +139,20 @@ class Gizmo {
         request.addHeader "Accept", "*/*"
         def c = ga.getControllerClass("ContentController").newInstance()
         webRequest.controllerName = 'content'
-        assertEquals "all", request.format
+        assertEquals "all", response.format
         c.testWithFormat.call()
         assertEquals "<html></html>", response.contentAsString
-        assertEquals "html", request.format
+        assertEquals "html", response.format
     }
 
     void testWithFormatAndAll2() {
         request.addHeader "Accept", "*/*"
         def c = ga.getControllerClass("ContentController").newInstance()
         webRequest.controllerName = 'content'
-        assertEquals "all", request.format
+        assertEquals "all", response.format
         c.testWithFormatAndModel.call()
         assertEquals "alert('hello')", response.contentAsString
-        assertEquals "js", request.format
+        assertEquals "js", response.format
     }
 
     void testDefaultFormat() {
@@ -170,7 +170,7 @@ class Gizmo {
         def c = ga.getControllerClass("ContentController").newInstance()
         webRequest.controllerName = 'content'
         c.testFormat.call()
-        assertEquals "html", response.contentAsString
+        assertEquals "js", response.contentAsString
     }
 
     void testFirefox2AcceptHeader() {
