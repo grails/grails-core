@@ -24,8 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.web.mapping.UrlCreator;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
@@ -55,22 +54,15 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
     public static final String METHOD_SIGNATURE = "redirect";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
-    public static final String ARGUMENT_URI = "uri";
-    public static final String ARGUMENT_URL = "url";
-    public static final String ARGUMENT_CONTROLLER = "controller";
-    public static final String ARGUMENT_ACTION = "action";
-    public static final String ARGUMENT_ID = "id";
-    public static final String ARGUMENT_PARAMS = "params";
     public static final String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
     public static final String GRAILS_REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";
 
-    private static final String ARGUMENT_FRAGMENT = "fragment";
     public static final String ARGUMENT_ERRORS = "errors";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
     private boolean useJessionId = false;
     private Collection<RedirectEventListener> redirectListeners;
-    private UrlMappingsHolder urlMappingsHolder;
+    private LinkGenerator linkGenerator;
 
     /**
      */
@@ -97,8 +89,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         super(METHOD_PATTERN);
     }
 
-    public void setUrlMappingsHolder(UrlMappingsHolder urlMappingsHolder) {
-        this.urlMappingsHolder = urlMappingsHolder;
+    public void setLinkGenerator(LinkGenerator linkGenerator) {
+        this.linkGenerator = linkGenerator;
     }
 
     public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
@@ -122,7 +114,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        UrlMappingsHolder urlMappingsHolder = getUrlMappingsHolder(webRequest);
+        LinkGenerator linkGenerator = getLinkGenerator(webRequest);
 
         HttpServletRequest request = webRequest.getCurrentRequest();
         if (request.getAttribute(GRAILS_REDIRECT_ISSUED) != null) {
@@ -146,75 +138,17 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             controller.setProperty(ControllerDynamicMethods.ERRORS_PROPERTY, errors);
         }
 
-        Object uri = argMap.get(ARGUMENT_URI);
-        String url = argMap.containsKey(ARGUMENT_URL) ? argMap.get(ARGUMENT_URL).toString() : null;
-        String actualUri;
-        if (uri != null) {
-            GrailsApplicationAttributes attrs = webRequest.getAttributes();
-            actualUri = attrs.getApplicationUri(request) + uri.toString();
-        }
-        else if (url != null) {
-            actualUri = url;
-        }
-        else {
-            Object actionRef = argMap.get(ARGUMENT_ACTION);
-            String actionName = establishActionName(actionRef, target);
-            String controllerName = getControllerName(target, argMap);
-            controllerName = controllerName != null ? controllerName : webRequest.getControllerName();
-
-            Map params = (Map)argMap.get(ARGUMENT_PARAMS);
-            if (params == null) {
-                params = new HashMap();
-            }
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Dynamic method [redirect] looking up URL mapping for controller ["+controllerName+"] and action ["+actionName+"] and params ["+params+"] with ["+urlMappingsHolder+"]");
-            }
-
-            Object id = argMap.get(ARGUMENT_ID);
-            try {
-                if (id != null) {
-                    params.put(ARGUMENT_ID, id);
-                }
-
-                UrlCreator urlMapping = urlMappingsHolder.getReverseMapping(controllerName, actionName, params);
-                if (urlMapping == null && LOG.isDebugEnabled()) {
-                    LOG.debug("Dynamic method [redirect] no URL mapping found for params [" + params + "]");
-                }
-
-                String frag = argMap.get(ARGUMENT_FRAGMENT) != null ? argMap.get(ARGUMENT_FRAGMENT).toString() : null;
-                actualUri = urlMapping.createURL(controllerName, actionName, params, request.getCharacterEncoding(), frag);
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Dynamic method [redirect] mapped to URL [" + actualUri + "]");
-                }
-            }
-            finally {
-                if (id != null) {
-                    params.remove(ARGUMENT_ID);
-                }
-            }
-        }
-
-        return redirectResponse(actualUri, request,response);
+        return redirectResponse(linkGenerator.link(argMap), request, response);
     }
 
-    private UrlMappingsHolder getUrlMappingsHolder(GrailsWebRequest webRequest) {
-        if(this.urlMappingsHolder == null) {
+    private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
+        if(this.linkGenerator == null) {
             ApplicationContext applicationContext = webRequest.getApplicationContext();
             if(applicationContext != null) {
-                urlMappingsHolder = applicationContext.getBean(UrlMappingsHolder.BEAN_ID, UrlMappingsHolder.class);
+                linkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator.class);
             }
         }
-        return urlMappingsHolder;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private String getControllerName(Object target, Map argMap) {
-        return argMap.containsKey(ARGUMENT_CONTROLLER) ?
-                argMap.get(ARGUMENT_CONTROLLER).toString() :
-                GrailsNameUtils.getLogicalPropertyName(target.getClass().getName(),
-                        ControllerArtefactHandler.TYPE);
+        return linkGenerator;
     }
 
     /*

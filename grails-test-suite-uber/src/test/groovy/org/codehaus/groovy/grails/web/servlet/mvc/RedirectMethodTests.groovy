@@ -102,7 +102,7 @@ class UrlMappings {
         def c = ga.getControllerClass("NewsSignupController").newInstance()
         webRequest.controllerName = 'newsSignup'
         c.redirectToDefaultAction.call()
-        assertEquals "/redirect", response.redirectedUrl
+        assertEquals "/redirect/toAction", response.redirectedUrl
     }
 
     void testRedirectEventListeners() {

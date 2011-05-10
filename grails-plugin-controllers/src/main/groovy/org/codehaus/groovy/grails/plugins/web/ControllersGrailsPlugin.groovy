@@ -103,7 +103,7 @@ class ControllersGrailsPlugin {
         final pluginManager = manager
 
         instanceControllersApi(ControllersApi, pluginManager) {
-            urlMappingsHolder = ref("grailsUrlMappingsHolder")
+            linkGenerator = ref("grailsLinkGenerator")
         }
 
         for (controller in application.controllerClasses) {
