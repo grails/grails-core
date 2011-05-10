@@ -38,6 +38,18 @@ class ResponseMimeTypesApi {
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
+    /**
+     * Initialize with default settings
+     */
+    ResponseMimeTypesApi() {
+    }
+
+    /**
+     * Initialize with settings provided by GrailsApplication and the given MimeType[]
+     *
+     * @param grailsApplication The GrailsApplication
+     * @param mimeTypes The mime types
+     */
     ResponseMimeTypesApi(GrailsApplication grailsApplication, MimeType[] mimeTypes) {
         this.grailsApplication = grailsApplication
         this.mimeTypes = mimeTypes

@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse
  */
 class GrailsMockHttpServletResponse extends MockHttpServletResponse {
 
-    @ApiDelegate(HttpServletResponse) ResponseMimeTypesApi responseMimeTypesApi
+    @ApiDelegate(HttpServletResponse) ResponseMimeTypesApi responseMimeTypesApi = new ResponseMimeTypesApi()
 
     /**
      * Sets the response format
