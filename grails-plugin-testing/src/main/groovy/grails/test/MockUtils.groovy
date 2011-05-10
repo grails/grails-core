@@ -14,10 +14,10 @@
  */
 package grails.test
 
+import grails.validation.ValidationException
 import groovy.xml.StreamingMarkupBuilder
 import java.beans.Introspector
 import java.beans.PropertyDescriptor
-
 import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -42,13 +42,10 @@ import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
-import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
-import grails.validation.ValidationException
-
-/**
+ /**
  * A utility/helper class for mocking various types of Grails artifacts
  * and is one of the foundations of the Grails unit testing framework.
  *

@@ -433,6 +433,10 @@ public class GrailsASTUtils {
     }
 
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
+        addDelegateInstanceMethods(classNode, classNode,delegateNode, delegateInstance);
+    }
+
+    public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
         while(!delegateNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
             List<MethodNode> declaredMethods = delegateNode.getMethods();
             for (MethodNode declaredMethod : declaredMethods) {
@@ -441,7 +445,7 @@ public class GrailsASTUtils {
                     addDelegateConstructor(classNode, declaredMethod);
 
                 }
-                else if(isCandidateInstanceMethod(classNode, declaredMethod)) {
+                else if(isCandidateInstanceMethod(supportedSuperType, declaredMethod)) {
                     addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod);
                 }
 

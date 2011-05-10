@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
@@ -43,14 +45,19 @@ public class ApiDelegateTransformation implements ASTTransformation{
         }
 
         AnnotatedNode parent = (AnnotatedNode) nodes[1];
-        AnnotationNode node = (AnnotationNode) nodes[0];
+        AnnotationNode annotationNode = (AnnotationNode) nodes[0];
 
         if (parent instanceof FieldNode) {
+            Expression value = annotationNode.getMember("value");
             FieldNode fieldNode = (FieldNode) parent;
             final ClassNode type = fieldNode.getType();
             final ClassNode owner = fieldNode.getOwner();
+            ClassNode supportedType = owner;
+            if(value instanceof ClassExpression) {
+                supportedType = value.getType();
+            }
 
-            GrailsASTUtils.addDelegateInstanceMethods(owner,type, new VariableExpression(fieldNode.getName()));
+            GrailsASTUtils.addDelegateInstanceMethods(supportedType,owner,type, new VariableExpression(fieldNode.getName()));
         }
     }
 }

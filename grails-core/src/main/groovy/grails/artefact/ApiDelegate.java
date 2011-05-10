@@ -35,4 +35,8 @@ import java.lang.annotation.Target;
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.ApiDelegateTransformation")
 public @interface ApiDelegate {
 
+    /**
+     * @return The super class to check for in the first argument of api methods
+     */
+    Class value();
 }

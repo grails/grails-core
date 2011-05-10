@@ -24,6 +24,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
+import javax.servlet.http.HttpServletRequest
 
 /**
  * A custom mock HTTP servlet request that provides the extra properties
@@ -31,7 +32,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest
  */
 class GrailsMockHttpServletRequest extends MockHttpServletRequest implements MultipartHttpServletRequest{
 
-    @ApiDelegate RequestMimeTypesApi requestMimeTypesApi
+    @ApiDelegate(HttpServletRequest) RequestMimeTypesApi requestMimeTypesApi = new RequestMimeTypesApi()
 
     boolean invalidToken
     MultiValueMap<String, MultipartFile> multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();

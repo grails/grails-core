@@ -35,6 +35,10 @@ class RequestMimeTypesApi {
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
+
+    RequestMimeTypesApi() {
+    }
+
     RequestMimeTypesApi(GrailsApplication application, MimeType[] mimeTypes) {
         this.mimeTypes = mimeTypes
         this.grailsApplication = application
