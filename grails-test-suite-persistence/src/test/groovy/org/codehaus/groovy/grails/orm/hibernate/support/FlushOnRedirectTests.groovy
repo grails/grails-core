@@ -47,8 +47,9 @@ class FlushOnRedirectController {
         def controllerClass = ga.getControllerClass("FlushOnRedirectController").clazz
 
         def c = controllerClass.newInstance()
-
         GrailsWebUtil.bindMockWebRequest(appCtx)
+        RequestContextHolder.requestAttributes.controllerName = "flushOnRedirect"
+        
         c.test()
         session.clear()
 
@@ -68,6 +69,8 @@ class FlushOnRedirectController {
 
         def c = controllerClass.newInstance()
         GrailsWebUtil.bindMockWebRequest(appCtx)
+        RequestContextHolder.requestAttributes.controllerName = "flushOnRedirect"
+        
         c.test()
         session.clear()
 
