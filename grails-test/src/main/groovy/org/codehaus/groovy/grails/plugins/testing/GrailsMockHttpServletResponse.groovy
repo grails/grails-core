@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import javax.servlet.http.HttpServletResponse
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
@@ -30,7 +31,7 @@ import org.springframework.mock.web.MockHttpServletResponse
  */
 class GrailsMockHttpServletResponse extends MockHttpServletResponse {
 
-    @ApiDelegate ResponseMimeTypesApi responseMimeTypesApi
+    @ApiDelegate(HttpServletResponse) ResponseMimeTypesApi responseMimeTypesApi
 
     /**
      * Sets the response format
