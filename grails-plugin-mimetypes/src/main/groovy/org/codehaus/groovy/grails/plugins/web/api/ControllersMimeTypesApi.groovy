@@ -16,8 +16,9 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
 import javax.servlet.http.HttpServletResponse
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
- /**
+/**
  * Api extensions to controllers for the MimeTypes plugin
  *
  * @author Graeme Rocher
@@ -45,7 +46,7 @@ class ControllersMimeTypesApi {
      */
 
     def withFormat(instance, Closure callable) {
-        HttpServletResponse response = instance.response
+        HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         apiSupport.withFormat(response, callable)
     }
 

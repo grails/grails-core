@@ -26,6 +26,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     void cleanup() {
         GroovySystem.metaClassRegistry.removeMetaClass(HttpServletRequest)
+        GroovySystem.metaClassRegistry.removeMetaClass(HttpServletResponse)
     }
 
     void "Test format property is valid for CONTENT_TYPE header only"() {
