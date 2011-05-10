@@ -14,12 +14,12 @@
  */
 package org.codehaus.groovy.grails.cli;
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
  * Utility methods for use on the command line, including method to accept user input etc.
@@ -98,7 +98,7 @@ public class CommandLineHelper {
                 out.println();
             }
             catch (IOException ex) {
-                ex.printStackTrace();
+                System.out.println("ERROR: Could not read System.in due to:" + ex.getMessage() );
                 return null;
             }
         }
