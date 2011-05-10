@@ -91,11 +91,13 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
     @Override
     public void sendError(int i, String s) throws IOException {
         setStatus(i);
+        flushBuffer();
     }
 
     @Override
     public void sendError(int i) throws IOException {
         setStatus(i);
+        flushBuffer();
     }
 
     @Override
