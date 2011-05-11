@@ -339,8 +339,10 @@ class PluginInstallEngine {
     }
 
     protected void assertNoExistingInlinePlugin(String name) {
-        def pluginReference = settings.config.grails.plugin.location[name]
-        if (pluginReference) {
+        def inlinePlugins = settings.config.grails.plugin.location
+        
+        if (inlinePlugins.containsKey(name)) {
+            def pluginReference = inlinePlugins[name]
             errorHandler("""\
 Plugin [$name] is aliased as [grails.plugin.location.$name] to the location [$pluginReference] in grails-app/conf/BuildConfig.groovy.
 You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove the configuration to continue.""");
