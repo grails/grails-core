@@ -20,12 +20,14 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
 
-/**
- * Extends Groovyc and adds Grails' compiler extensions
- *
- * @author Graeme Rocher
- */
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Grailsc extends Groovyc {
+
+    private List<File> destList = new ArrayList<File>();
+
 
     @Override protected CompilationUnit makeCompileUnit() {
         CompilationUnit unit = super.makeCompileUnit();
@@ -33,4 +35,47 @@ public class Grailsc extends Groovyc {
         unit.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return unit;
     }
+
+
+    @Override
+    protected void scanDir(File srcDir, File destDir, String[] files) {
+       List<File> srcList = new ArrayList<File>();
+       String srcPath = srcDir.getAbsolutePath();
+       String destPath = destDir.getAbsolutePath();
+       for (String f : files) {
+           File sf = new File(srcPath, f);
+           File df = null;
+           if (f.endsWith(".groovy") ) {
+               df = new File(destPath, f.substring(0, f.length()-7) + ".class");
+               int i = f.lastIndexOf('/');
+               if (!df.exists() && i > -1) {
+                   // check root package
+                   File tmp = new File(destPath, f.substring(i, f.length()-7) + ".class");
+                   if (tmp.exists()) {
+                       df = tmp;
+                   }
+               }
+           }
+           else if (f.endsWith(".java")) {
+               df = new File(destPath, f.substring(0, f.length()-5) + ".class");
+           }
+           else {
+               continue;
+           }
+
+           if (sf.lastModified() > df.lastModified()) {
+               srcList.add(sf);
+               destList.add(df);
+           }
+       }
+       addToCompileList(srcList.toArray(new File[srcList.size()]));
+    }
+
+    @Override
+    protected void compile() {
+        if (compileList.length > 0) {
+           super.compile();
+        }
+    }
+
 }
