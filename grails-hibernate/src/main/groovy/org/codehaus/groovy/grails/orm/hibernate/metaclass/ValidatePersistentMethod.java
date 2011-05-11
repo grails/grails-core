@@ -14,15 +14,9 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.validation.DeferredBindingActions;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -30,11 +24,13 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.util.Assert;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
-import org.springframework.validation.Validator;
+import org.springframework.validation.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Validates an instance of a domain class against its constraints.
@@ -66,6 +62,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
+        DeferredBindingActions.runActions();
         Errors errors = setupErrorsProperty(target);
 
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,

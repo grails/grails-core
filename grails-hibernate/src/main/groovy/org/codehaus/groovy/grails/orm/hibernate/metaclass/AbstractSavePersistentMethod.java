@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.validation.DeferredBindingActions;
 import grails.validation.ValidationException;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
@@ -110,6 +111,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
                 target.getClass().getName());
 
+        DeferredBindingActions.runActions();
         boolean shouldFlush = shouldFlush(arguments);
         boolean shouldValidate = shouldValidate(arguments, domainClass);
         if (shouldValidate) {

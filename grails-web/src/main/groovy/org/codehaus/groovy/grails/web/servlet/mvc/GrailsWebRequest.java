@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.validation.DeferredBindingActions;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -86,6 +87,12 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
             params = new GrailsParameterMap(getCurrentRequest());
         }
         return params;
+    }
+
+    @Override
+    public void requestCompleted() {
+        super.requestCompleted();
+        DeferredBindingActions.clear();
     }
 
     /**

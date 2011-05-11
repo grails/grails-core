@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
-import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryProxy;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;

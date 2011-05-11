@@ -32,6 +32,7 @@ import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
 import junit.framework.AssertionFailedError
+import grails.validation.DeferredBindingActions
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -84,6 +85,7 @@ class GrailsUnitTestMixin {
     @After
     void resetGrailsApplication() {
         grailsApplication?.clear()
+        DeferredBindingActions.clear()
     }
 
     /**

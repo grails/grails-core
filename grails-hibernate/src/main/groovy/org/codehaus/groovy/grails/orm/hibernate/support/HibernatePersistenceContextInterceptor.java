@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import grails.validation.DeferredBindingActions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -53,6 +54,7 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#destroy()
      */
     public void destroy() {
+        DeferredBindingActions.clear();
         if (decNestingCount() > 0 || getParticipate()) {
             return;
         }

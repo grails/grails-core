@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.GrailsNameUtils;
+import grails.validation.DeferredBindingActions;
 import groovy.lang.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -95,6 +96,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private GrailsDomainClass domainClass;
     private GrailsApplication grailsApplication;
+    private Boolean attached = null;
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -697,10 +699,36 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     }
                     else {
                         Class<?> type = getPropertyTypeForPath(propertyName);
-                        Object persisted = getPersistentInstance(type, pv.getValue());
+
+
+                        final Object persisted = getPersistentInstance(type, pv.getValue());
+
 
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
+
+                            if(domainClass != null ) {
+                                GrailsDomainClassProperty property = domainClass.getPersistentProperty(propertyName);
+                                if(property != null) {
+                                    final GrailsDomainClassProperty otherSide = property.getOtherSide();
+                                    if(otherSide != null && List.class.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
+                                        DeferredBindingActions.addBindingAction(
+                                                new Runnable() {
+                                                    public void run() {
+                                                        if(otherSide.isOneToMany()) {
+                                                            String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
+                                                            GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
+                                                        }
+
+                                                    }
+                                                }
+                                        );
+                                    }
+                                }
+                            }
+
+
+
                         }
                     }
                 }

@@ -345,7 +345,8 @@ public final class GrailsDomainBinder {
             Class<?> mappedClass = referenced.getMappedClass();
             Mapping m = getMapping(mappedClass);
 
-            if (!isCompositeIdProperty(m,property.getOtherSide())) {
+            boolean compositeIdProperty = isCompositeIdProperty(m, property.getOtherSide());
+            if (!compositeIdProperty) {
                 Backref prop = new Backref();
                 prop.setEntityName(property.getDomainClass().getFullName());
                 prop.setName(UNDERSCORE + addUnderscore(property.getDomainClass().getShortName(), property.getName()) + "Backref");
@@ -366,8 +367,7 @@ public final class GrailsDomainBinder {
 
                 referenced.addProperty(prop);
             }
-
-            if(!list.getKey().isNullable() && !list.isInverse()) {
+            if((!list.getKey().isNullable() && !list.isInverse()) || compositeIdProperty) {
                 IndexBackref ib = new IndexBackref();
                 ib.setName(UNDERSCORE + property.getName() + "IndexBackref");
                 ib.setUpdateable(false);
