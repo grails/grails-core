@@ -15,15 +15,9 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collections;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -33,11 +27,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder;
 import org.codehaus.groovy.grails.web.util.IncludeResponseWrapper;
-import org.codehaus.groovy.grails.web.util.IncludedContent;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -46,15 +36,7 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
-import com.opensymphony.module.sitemesh.Factory;
-import com.opensymphony.module.sitemesh.HTMLPage;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.PageParser;
-import com.opensymphony.sitemesh.Decorator;
-import com.opensymphony.sitemesh.DecoratorSelector;
-import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
-import com.opensymphony.sitemesh.compatability.HTMLPage2Content;
-import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import org.codehaus.groovy.grails.web.servlet.*;
 
 /**
  * A servlet for handling errors.
@@ -107,104 +89,32 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingInfo urlMappingInfo = matchedInfo;
 
         if (urlMappingInfo != null) {
-            GrailsWebRequestFilter grailsWebRequestFilter = new GrailsWebRequestFilter();
-            grailsWebRequestFilter.setServletContext(getServletContext());
-            grailsWebRequestFilter.initialize();
-            grailsWebRequestFilter.doFilter(request, response, new FilterChain() {
+            final GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+            request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
+            urlMappingInfo.configure(webRequest);
 
-                @SuppressWarnings("unchecked")
-                public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse) throws IOException, ServletException {
-                    final GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-                    urlMappingInfo.configure(webRequest);
-
-                    String viewName = urlMappingInfo.getViewName();
-                    if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-
-                        IncludedContent includeResult = WebUtils.includeForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
-                        if (includeResult.getRedirectURL()!=null) {
-                            response.sendRedirect(includeResult.getRedirectURL());
-                        }
-                        else {
-                            layoutIncludedResponse(webRequest, includeResult, request, response);
-                        }
+            String viewName = urlMappingInfo.getViewName();
+            if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+            }
+            else {
+                ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
+                if (viewResolver != null) {
+                    View v;
+                    try {
+                        v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
+                        IncludeResponseWrapper includeResponse = new IncludeResponseWrapper(response);
+                        v.render(Collections.EMPTY_MAP, request, response);
                     }
-                    else {
-                        ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
-                        if (viewResolver != null) {
-                            View v;
-                            try {
-                                v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
-                                IncludeResponseWrapper includeResponse = new IncludeResponseWrapper(response);
-                                v.render(Collections.EMPTY_MAP, request, includeResponse);
-                                IncludedContent content = new IncludedContent(includeResponse.getContentType(), includeResponse.getContent());
-                                layoutIncludedResponse(webRequest,content, request, response);
-                            }
-                            catch (Exception e) {
-                                throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
-                            }
-                        }
+                    catch (Exception e) {
+                        throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
                     }
                 }
-            });
+            }
         }
         else {
             renderDefaultResponse(response, statusCode);
         }
-    }
-
-    private void layoutIncludedResponse(GrailsWebRequest webRequest, IncludedContent includeResult, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        final Factory factory = FactoryHolder.getFactory();
-        PageParser parser = getPageParser(factory, response);
-        Page p = parser != null ? parser.parse(includeResult.getContentAsCharArray()) : null;
-        String layout = p != null ? p.getProperty("meta.layout") : null;
-        if (layout != null && p != null) {
-            final HTMLPage2Content content = new HTMLPage2Content((HTMLPage) p);
-            DecoratorSelector decoratorSelector = new DecoratorMapper2DecoratorSelector(
-                    factory.getDecoratorMapper());
-            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(
-                    request, response, webRequest.getServletContext());
-            Decorator d = decoratorSelector.selectDecorator(content, webAppContext);
-
-            if (d != null) {
-                response.setContentType(includeResult.getContentType());
-                d.render(content, webAppContext);
-            }
-            else {
-                writeOriginal(response, includeResult);
-            }
-        }
-        else {
-            writeOriginal(response, includeResult);
-        }
-    }
-
-    private void writeOriginal(HttpServletResponse response, IncludedContent includeResult) {
-        try {
-            PrintWriter printWriter;
-            response.setContentType(includeResult.getContentType());
-            try {
-                printWriter= response.getWriter();
-            }
-            catch (IllegalStateException e) {
-                printWriter = new PrintWriter(new OutputStreamWriter(response.getOutputStream()));
-            }
-            includeResult.writeTo(printWriter);
-            printWriter.flush();
-        }
-        catch (IOException e) {
-            throw new ControllerExecutionException("Error writing out error page: " + e.getMessage(),e);
-        }
-    }
-
-    private PageParser getPageParser(Factory factory, HttpServletResponse response) {
-        if (factory != null) {
-            PageParser pageParser = factory.getPageParser(response.getContentType() != null ? response.getContentType() : "text/html");
-            if (pageParser == null) {
-                pageParser = factory.getPageParser("text/html;charset=UTF-8");
-            }
-            return pageParser;
-        }
-        return null;
     }
 
     private void renderDefaultResponse(HttpServletResponse response, int statusCode) throws IOException {

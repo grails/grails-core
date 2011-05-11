@@ -172,6 +172,7 @@ class ControllersGrailsPlugin {
                 'url-pattern'("/*")
                 'dispatcher'("FORWARD")
                 'dispatcher'("REQUEST")
+                'dispatcher'("ERROR")
             }
         }
 
