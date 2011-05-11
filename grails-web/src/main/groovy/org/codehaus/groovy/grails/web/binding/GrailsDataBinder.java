@@ -51,7 +51,6 @@ import java.beans.PropertyEditor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
-import java.security.AccessControlException;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -698,25 +697,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     }
                     else {
                         Class<?> type = getPropertyTypeForPath(propertyName);
-
-
                         Object persisted = getPersistentInstance(type, pv.getValue());
 
-
                         if (persisted != null) {
-                            bean.setPropertyValue(propertyName, persisted);
-
-                            if(domainClass != null) {
-                                GrailsDomainClassProperty property = domainClass.getPersistentProperty(propertyName);
-                                GrailsDomainClassProperty otherSide = property.getOtherSide();
-                                if(otherSide != null) {
-                                    if(otherSide.isOneToMany()) {
-                                        String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
-                                        GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
-                                    }
-
-                                }
-                            }
+                            ¤bean.setPropertyValue(propertyName, persisted);
                         }
                     }
                 }
@@ -734,12 +718,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
     }
 
-    private GrailsDomainClass lookupDomainClass(Class<?> type) {
-        if(grailsApplication != null) {
-            return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, type.getName());
-        }
-        return null;
-    }
 
     private Class<?> getPropertyTypeForPath(String propertyName) {
         Class<?> type = bean.getPropertyType(propertyName);
@@ -763,36 +741,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Object getPersistentInstance(Class<?> type, Object id) {
-        Object persisted;// In order to load the association instance using InvokerHelper below, we need to
-        // temporarily change this thread's ClassLoader to use the Grails ClassLoader.
-        // (Otherwise, we'll get a ClassNotFoundException.)
-        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader grailsClassLoader = getTarget().getClass().getClassLoader();
+        Object persisted;
         try {
-            try {
-                Thread.currentThread().setContextClassLoader(grailsClassLoader);
-            }
-            catch (AccessControlException e) {
-                // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
-            }
-
-            try {
-                persisted = InvokerHelper.invokeStaticMethod(type, "get", id);
-            }
-            catch (MissingMethodException e) {
-                return null; // GORM not installed, continue to operate as normal
-            }
-            catch (IllegalStateException e) {
-                return null; // GORM not installed, continue to operate as normal
-            }
+            persisted = InvokerHelper.invokeStaticMethod(type, "get", id);
         }
-        finally {
-            try {
-                Thread.currentThread().setContextClassLoader(currentClassLoader);
-            }
-            catch (AccessControlException e) {
-                // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
-            }
+        catch (MissingMethodException e) {
+            return null; // GORM not installed, continue to operate as normal
+        }
+        catch (IllegalStateException e) {
+            return null; // GORM not installed, continue to operate as normal
         }
         return persisted;
     }
@@ -1054,4 +1011,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
         return StringUtils.join(pathElements, PATH_SEPARATOR);
     }
+
+
 }
