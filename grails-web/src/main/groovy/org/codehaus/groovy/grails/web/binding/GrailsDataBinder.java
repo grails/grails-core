@@ -700,7 +700,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                         Object persisted = getPersistentInstance(type, pv.getValue());
 
                         if (persisted != null) {
-                            ¤bean.setPropertyValue(propertyName, persisted);
+                            bean.setPropertyValue(propertyName, persisted);
                         }
                     }
                 }
