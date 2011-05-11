@@ -66,11 +66,21 @@ public class GrailsNameUtils {
             throw new IllegalArgumentException("Argument [logicalName] cannot be null or blank");
         }
 
-        String className = logicalName.substring(0,1).toUpperCase() + logicalName.substring(1);
+        String className = logicalName.substring(0,1).toUpperCase(Locale.ENGLISH) + logicalName.substring(1);
         if (trailingName != null) {
             className = className + trailingName;
         }
         return className;
+    }
+
+    /**
+     * Return the class name for the given logical name. For example "person" would evaluate to "Person"
+     *
+     * @param logicalName The logical name
+     * @return The class name
+     */
+    public static String getClassName(String logicalName) {
+        return getClassName(logicalName, "");
     }
 
     /**

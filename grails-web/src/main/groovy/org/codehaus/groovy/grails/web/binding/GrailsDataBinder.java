@@ -698,9 +698,25 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     }
                     else {
                         Class<?> type = getPropertyTypeForPath(propertyName);
+
+
                         Object persisted = getPersistentInstance(type, pv.getValue());
+
+
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
+
+                            if(domainClass != null) {
+                                GrailsDomainClassProperty property = domainClass.getPersistentProperty(propertyName);
+                                GrailsDomainClassProperty otherSide = property.getOtherSide();
+                                if(otherSide != null) {
+                                    if(otherSide.isOneToMany()) {
+                                        String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
+                                        GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
+                                    }
+
+                                }
+                            }
                         }
                     }
                 }
@@ -716,6 +732,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 }
             }
         }
+    }
+
+    private GrailsDomainClass lookupDomainClass(Class<?> type) {
+        if(grailsApplication != null) {
+            return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, type.getName());
+        }
+        return null;
     }
 
     private Class<?> getPropertyTypeForPath(String propertyName) {

@@ -1,9 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import grails.util.GrailsUtil
 import grails.util.GrailsNameUtils
+import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
-
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -22,13 +21,14 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.mock.web.MockServletContext
 import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Log4jConfigurer
 import org.springframework.web.context.WebApplicationContext
+import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.plugins.*
-import org.springframework.mock.web.MockServletContext
 
 /**
  * @author Graeme Rocher
@@ -208,6 +208,7 @@ hibernate {
 
 
         ExpandoMetaClass.disableGlobally()
+        RequestContextHolder.setRequestAttributes(null)
 
         originalHandler = null
 
