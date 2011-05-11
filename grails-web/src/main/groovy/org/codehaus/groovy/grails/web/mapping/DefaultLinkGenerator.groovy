@@ -124,7 +124,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
         final contextPathAttribute = attrs.contextPath
         if(absolutePath == null) {
-            final cp = contextPathAttribute ?: getContextPath()
+            final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
             if(cp == null) {
                 absolutePath = handleAbsolute(absolute:true)
             }
