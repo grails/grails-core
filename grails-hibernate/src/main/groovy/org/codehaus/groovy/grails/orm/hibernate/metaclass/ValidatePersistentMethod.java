@@ -128,12 +128,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
                     getHibernateTemplate().evict(target);
                 }
             }
-            else {
-                setObjectToReadOnly(target);
-            }
-        }
-        else {
-            setObjectToReadWrite(target);
         }
 
         // If the errors have been filtered, update the 'errors' object attached to the target.

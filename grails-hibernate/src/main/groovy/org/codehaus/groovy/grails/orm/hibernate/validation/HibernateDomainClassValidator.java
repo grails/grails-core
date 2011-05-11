@@ -14,13 +14,9 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.validation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.hibernate.FlushMode;
 import org.hibernate.SessionFactory;
@@ -42,12 +38,6 @@ import org.springframework.validation.Errors;
  */
 public class HibernateDomainClassValidator extends GrailsDomainClassValidator implements ApplicationContextAware {
 
-    private static ThreadLocal<ArrayList<Object>> validatedInstances = new ThreadLocal<ArrayList<Object>>() {
-        @Override
-        protected ArrayList<Object> initialValue() {
-            return new ArrayList<Object>();
-        }
-    };
 
     private ApplicationContext applicationContext;
     private SessionFactory sessionFactory;
@@ -109,39 +99,7 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
         }
     }
 
-    @Override
-    protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject, GrailsDomainClassProperty persistentProperty, String propertyName) {
-        List<Object> validatedInstancesList = validatedInstances.get();
-        validatedInstancesList.add(associatedObject);
-        super.cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName);
-    }
 
-    @Override
-    protected void postValidate(Object obj, Errors errors) {
-        if (applicationContext == null || !applicationContext.containsBean("sessionFactory")) {
-            return;
-        }
-
-        try {
-            SessionFactory sf = (SessionFactory)applicationContext.getBean("sessionFactory");
-            if (errors.hasErrors()) {
-                GrailsHibernateUtil.setObjectToReadyOnly(obj, sf);
-                List<Object> invalidInstances = validatedInstances.get();
-                for (Object instance : invalidInstances) {
-                    GrailsHibernateUtil.setObjectToReadyOnly(instance, sf);
-                }
-            }
-            else {
-                GrailsHibernateUtil.setObjectToReadWrite(obj, sf);
-            }
-        }
-        finally {
-            List<Object> validatedInstancesList = validatedInstances.get();
-            if (validatedInstancesList != null) {
-                validatedInstancesList.clear();
-            }
-        }
-    }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
