@@ -18,18 +18,6 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-
-import java.io.IOException;
-import java.security.AccessControlException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import groovy.util.Proxy;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
@@ -54,6 +42,16 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.AccessControlException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Processes Grails controller requests and responses.
@@ -212,8 +210,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             // Step 6: get action from implementation
             Object action = retrieveAction(controller, actionName, response);
 
-
-            // Step 7: process the action
+                        // Step 7: process the action
             Object returnValue = null;
             try {
                 returnValue = handleAction( controller,action,request,response,params );
@@ -354,7 +351,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         if (params != null && !params.isEmpty()) {
             paramsMap.putAll( params );
         }
-        Object returnValue = invoke(controller, action);
+        Object returnValue = action != null ? invoke(controller, action) : null;
 
         // Step 8: add any errors to the request
         request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );
