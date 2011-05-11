@@ -16,19 +16,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import grails.validation.ValidationException;
-import groovy.lang.Closure;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
-import groovy.lang.MetaProperty;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import groovy.lang.*;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,25 +32,17 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.EntityEntry;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostDeleteEventListener;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.event.PostLoadEvent;
-import org.hibernate.event.PostLoadEventListener;
-import org.hibernate.event.PostUpdateEvent;
-import org.hibernate.event.PostUpdateEventListener;
-import org.hibernate.event.PreDeleteEvent;
-import org.hibernate.event.PreDeleteEventListener;
-import org.hibernate.event.PreLoadEvent;
-import org.hibernate.event.PreLoadEventListener;
-import org.hibernate.event.PreUpdateEvent;
-import org.hibernate.event.PreUpdateEventListener;
-import org.hibernate.event.SaveOrUpdateEvent;
-import org.hibernate.event.SaveOrUpdateEventListener;
+import org.hibernate.event.*;
 import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.Errors;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
@@ -257,6 +237,46 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
             event.getState()[ArrayUtils.indexOf(event.getPersister().getPropertyNames(), GrailsDomainClassProperty.LAST_UPDATED)] = now;
             lastUpdatedProperty.setProperty(entity, now);
         }
+        if (!AbstractSavePersistentMethod.isAutoValidationDisabled(entity)
+                && !DefaultTypeTransformation.castToBoolean(validateMethod.invoke(entity,
+                        new Object[] { validateParams }))) {
+            evict = true;
+            if (failOnErrorEnabled) {
+                Errors errors = (Errors) errorsProperty.getProperty(entity);
+                throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
+                        + "]", errors);
+            }
+
+        }
+        return evict;
+    }
+
+    public boolean onPreInsert(PreInsertEvent event) {
+        Object entity = event.getEntity();
+        boolean synchronizeState = false;
+        if (beforeInsertCaller != null) {
+            beforeInsertCaller.call(entity);
+            synchronizeState = true;
+        }
+        if (shouldTimestamp) {
+            long time = System.currentTimeMillis();
+            if (dateCreatedProperty != null) {
+                Object now = DefaultGroovyMethods.newInstance(dateCreatedProperty.getType(), new Object[] { time });
+                dateCreatedProperty.setProperty(entity, now);
+                synchronizeState = true;
+            }
+            if (lastUpdatedProperty != null) {
+                Object now = DefaultGroovyMethods.newInstance(lastUpdatedProperty.getType(), new Object[] { time });
+                lastUpdatedProperty.setProperty(entity, now);
+                synchronizeState = true;
+            }
+        }
+
+        if(synchronizeState) {
+            synchronizePersisterState(entity, event.getPersister(), event.getState());
+        }
+
+        boolean evict = false;
         if (!AbstractSavePersistentMethod.isAutoValidationDisabled(entity)
                 && !DefaultTypeTransformation.castToBoolean(validateMethod.invoke(entity,
                         new Object[] { validateParams }))) {

@@ -17,16 +17,6 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -34,24 +24,14 @@ import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.hibernate.HibernateException;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostDeleteEventListener;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostInsertEventListener;
-import org.hibernate.event.PostLoadEvent;
-import org.hibernate.event.PostLoadEventListener;
-import org.hibernate.event.PostUpdateEvent;
-import org.hibernate.event.PostUpdateEventListener;
-import org.hibernate.event.PreDeleteEvent;
-import org.hibernate.event.PreDeleteEventListener;
-import org.hibernate.event.PreLoadEvent;
-import org.hibernate.event.PreLoadEventListener;
-import org.hibernate.event.PreUpdateEvent;
-import org.hibernate.event.PreUpdateEventListener;
-import org.hibernate.event.SaveOrUpdateEvent;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.hibernate.event.*;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
@@ -72,7 +52,8 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                   PostUpdateEventListener,
                   PostDeleteEventListener,
                   PreDeleteEventListener,
-                  PreUpdateEventListener {
+                  PreUpdateEventListener,
+                  PreInsertEventListener{
 
     private static final long serialVersionUID = 1;
 
@@ -174,6 +155,15 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         }
     }
 
+    public boolean onPreInsert(PreInsertEvent event) {
+        boolean evict = false;
+        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        if (eventListener != null) {
+            evict = eventListener.onPreInsert(event);
+        }
+        return evict;
+    }
+
     public boolean onPreUpdate(PreUpdateEvent event) {
         boolean evict = false;
         ClosureEventListener eventListener=findEventListener(event.getEntity());
@@ -224,4 +214,6 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         eventListeners = new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
         cachedShouldTrigger = new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
     }
+
+
 }
