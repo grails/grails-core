@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Implements action invokation throught Closure
@@ -44,7 +43,7 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
             return mAction;
         } else {
             try {
-                return (Closure)controller.getProperty(actionName);
+                return controller.getProperty(actionName);
             } catch (MissingPropertyException mpe) {
                 try {
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
