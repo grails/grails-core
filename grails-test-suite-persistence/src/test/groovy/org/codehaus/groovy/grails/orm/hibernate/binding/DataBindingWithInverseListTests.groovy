@@ -70,4 +70,27 @@ class Part {
         def part = Part.newInstance(name:"Indel CPU")
         assert part.save(flush:true) != null
     }
+
+
+    void testCreateWithoutSave() {
+
+        buildMockRequest()
+
+        def Item = ga.getDomainClass("Item").clazz
+        def Part = ga.getDomainClass("Part").clazz
+
+
+        def item = Item.newInstance(name:"iMac")
+
+        assert item.save(flush:true)  != null
+
+        session.clear()
+
+        Part.newInstance('item.id': item.id)
+
+        session.flush()
+        session.clear()
+
+        assert Part.count() == 0
+    }
 }

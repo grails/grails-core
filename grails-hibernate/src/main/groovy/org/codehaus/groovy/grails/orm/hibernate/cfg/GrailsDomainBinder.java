@@ -367,16 +367,19 @@ public final class GrailsDomainBinder {
                 referenced.addProperty(prop);
             }
 
-            IndexBackref ib = new IndexBackref();
-            ib.setName(UNDERSCORE + property.getName() + "IndexBackref");
-            ib.setUpdateable(false);
-            ib.setSelectable(false);
-            if (isManyToMany)
-                ib.setInsertable(false);
-            ib.setCollectionRole(list.getRole());
-            ib.setEntityName(list.getOwner().getEntityName());
-            ib.setValue(list.getIndex());
-            referenced.addProperty(ib);
+            if(!list.getKey().isNullable() && !list.isInverse()) {
+                IndexBackref ib = new IndexBackref();
+                ib.setName(UNDERSCORE + property.getName() + "IndexBackref");
+                ib.setUpdateable(false);
+                ib.setSelectable(false);
+                if (isManyToMany)
+                    ib.setInsertable(false);
+                ib.setCollectionRole(list.getRole());
+                ib.setEntityName(list.getOwner().getEntityName());
+                ib.setValue(list.getIndex());
+                referenced.addProperty(ib);
+
+            }
         }
     }
 
