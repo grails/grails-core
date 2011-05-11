@@ -635,6 +635,14 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getPropertyByName(java.lang.String)
      */
     public GrailsDomainClassProperty getPropertyByName(String name) {
+        GrailsDomainClassProperty persistentProperty = getPersistentProperty(name);
+        if(persistentProperty == null)
+            throw new InvalidPropertyException("No property found for name ["+name+"] for class ["+getClazz()+"]");
+
+        return persistentProperty;
+    }
+
+    public GrailsDomainClassProperty getPersistentProperty(String name) {
         if (propertyMap.containsKey(name)) {
             return propertyMap.get(name);
         }
@@ -650,12 +658,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 }
             }
         }
-        throw new InvalidPropertyException("No property found for name ["+name+"] for class ["+getClazz()+"]");
+        return null;
     }
 
     /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getFieldName(java.lang.String)
-     */
+    * @see org.codehaus.groovy.grails.domain.GrailsDomainClass#getFieldName(java.lang.String)
+    */
     public String getFieldName(String propertyName) {
         return getPropertyByName(propertyName).getFieldName();
     }

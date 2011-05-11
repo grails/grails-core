@@ -90,6 +90,14 @@ public interface GrailsDomainClass extends GrailsClass {
     GrailsDomainClassProperty getPropertyByName(String name);
 
     /**
+     * Returns the property for the given name or null if non exists
+     *
+     * @param name The property name
+     * @return The property or null
+     */
+    GrailsDomainClassProperty getPersistentProperty(String name);
+
+    /**
      * Returns the field name for the given property name
      * @param propertyName
      * @return The field representation of the property name

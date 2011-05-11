@@ -198,6 +198,14 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         return version;
     }
 
+    public GrailsDomainClassProperty getPersistentProperty(String name) {
+        if (propertyMap.containsKey(name)) {
+            return propertyMap.get(name);
+        }
+
+        return null;
+    }
+
     public GrailsDomainClassProperty getPropertyByName(String name) {
         if (propertyMap.containsKey(name)) {
             return propertyMap.get(name);

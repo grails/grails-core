@@ -627,11 +627,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public GrailsDomainClassProperty getPropertyByName(@SuppressWarnings("hiding") String name) {
-            for (int i = 0; i < properties.length; i++) {
-                GrailsDomainClassProperty property = properties[i];
+            for (GrailsDomainClassProperty property : properties) {
                 if (property.getName().equals(name)) return property;
             }
             return null;
+        }
+
+        public GrailsDomainClassProperty getPersistentProperty(String name) {
+            return getPropertyByName(name);
         }
 
         public String getFieldName(String propertyName) {
