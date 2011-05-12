@@ -271,6 +271,16 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                    proxyIfReloadEnabled = false
                }
             }
+            for (GrailsDomainClass dc in application.domainClasses) {
+                if(!dc.abstract) {
+                    "${dc.fullName}Validator"(HibernateDomainClassValidator) {
+                        messageSource = ref("messageSource")
+                        domainClass = ref("${dc.fullName}DomainClass")
+                        grailsApplication = ref("grailsApplication", true)
+                    }
+                }
+            }
+
         }
         ApplicationContext ctx = event.ctx
         beans.registerBeans(ctx)
