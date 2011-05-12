@@ -38,7 +38,7 @@ public class GrailsPluginManagerReloadPlugin implements ReloadEventProcessorPlug
         CachedIntrospectionResults.clearClassLoader(aClass.getClassLoader());
         ClassPropertyFetcher.clearClassPropertyFetcherCache();
         if(!aClass.getName().contains("$")) {
-            GrailsProjectWatcher.firePendingClassChangeEvents();
+            GrailsProjectWatcher.firePendingClassChangeEvents(aClass);
         }
     }
 

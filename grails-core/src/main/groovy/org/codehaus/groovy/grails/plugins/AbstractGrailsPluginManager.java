@@ -36,7 +36,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.*;
 
 /**
@@ -335,9 +334,19 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     }
 
     public void informOfFileChange(File file) {
-        String absolutePath = file.getAbsolutePath();
-        String className = GrailsResourceUtils.getClassName(absolutePath);
-        if(className.equals(CONFIG_FILE)) {
+        String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
+        Class cls = null;
+
+        if(className != null) {
+            cls = loadApplicationClass(className);
+        }
+
+        informOfClassChange(file, cls);
+
+    }
+
+    public void informOfClassChange(File file, Class cls) {
+        if(cls != null && cls.getName().equals(CONFIG_FILE)) {
             ConfigSlurper configSlurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application);
             ConfigObject c;
             try {
@@ -351,12 +360,9 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         }
         else {
             for (GrailsPlugin grailsPlugin : pluginList) {
-                if(grailsPlugin.hasInterestInChange(absolutePath)) {
-                    if(className != null) {
-                        Class cls = loadApplicationClass(className);
-                        if(cls != null) {
-                            grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
-                        }
+                if(grailsPlugin.hasInterestInChange(file.getAbsolutePath())) {
+                    if(cls != null) {
+                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
                     }
                     else {
                         grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
@@ -364,7 +370,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                 }
             }
         }
-
     }
 
     private Class loadApplicationClass(String className) {
