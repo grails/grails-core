@@ -10,16 +10,17 @@ class BidirectionalListPersistTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+import grails.persistence.*
+
+@Entity
 class TestFaqSection {
-    Long id
-    Long version
     String title
     List elements
     static hasMany = [elements:TestFaqElement]
 }
+
+@Entity
 class TestFaqElement {
-    Long id
-    Long version
     String question
     String answer
     TestFaqSection section
@@ -35,7 +36,7 @@ class TestFaqElement {
         def element = ga.getDomainClass("TestFaqElement").newInstance()
         element.question = "question 1"
         element.answer = "the answer"
-        section.elements = [element]
+        section.addToElements(element)
 
         session.save section
 
