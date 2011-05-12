@@ -71,7 +71,11 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     void doStart(String host, int httpPort, int httpsPort) {
         preStart()
-        tomcat.hostname = host
+
+        if (host != "localhost") {
+            tomcat.connector.setAttribute("address", host)
+        }
+        
         if(getConfigParam("nio")) {
             println "Enabling Tomcat NIO connector"
             def connector = new Connector(Http11NioProtocol.name)
@@ -93,6 +97,11 @@ class InlineExplodedTomcatServer extends TomcatServer {
             sslConnector.setAttribute("keystoreFile", keystoreFile.absolutePath)
             sslConnector.setAttribute("keystorePass", keyPassword)
             sslConnector.URIEncoding = 'UTF-8'
+
+            if (host != "localhost") {
+                sslConnector.setAttribute("address", host)
+            }
+
             tomcat.service.addConnector(sslConnector)
         }
 

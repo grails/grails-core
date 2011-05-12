@@ -80,7 +80,12 @@ public class IsolatedTomcat {
             tomcat.enableNaming();
 
             final Connector connector = tomcat.getConnector();
-            connector.setAttribute("address", host);
+
+            // Only bind to host name if we aren't using the default
+            if (!host.equals("localhost")) {
+                connector.setAttribute("address", host);
+            }
+
             connector.setURIEncoding("UTF-8");
 
             if (httpsPort > 0) {
@@ -98,6 +103,11 @@ public class IsolatedTomcat {
                 sslConnector.setAttribute("keystoreFile", keystorePath);
                 sslConnector.setAttribute("keystorePass", keystorePassword);
                 sslConnector.setURIEncoding("UTF-8");
+                
+                if (!host.equals("localhost")) {
+                    sslConnector.setAttribute("address", host);
+                }
+                
                 tomcat.getService().addConnector(sslConnector);
             }
             
