@@ -90,6 +90,18 @@ class LinkGeneratorSpec extends Specification {
             link == "$customContextPath/$resource.dir/$resource.file"
     }
 
+    def "link has no context path if blank context supplied"() {
+        given:
+            def customContextPath = ""
+            
+        when:
+            resource = mainCssResource + [contextPath: customContextPath]
+
+        then:
+            link == "/$resource.dir/$resource.file"
+    }
+
+
 
     protected getGenerator(boolean cache=false) {
         def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
