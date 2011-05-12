@@ -50,16 +50,39 @@ case "`uname`" in
         ;;
 esac
 
-if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
-  CP=$2
-  shift 2
-fi
+# Process JVM args
+AGENT_STRING="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
+SAVED_OPTIONS=""
 
-if [ "$1" = "-agent" ] || [ "$1" = "run-app" ]; then
-  AGENT="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-fi
+while true; do
+  if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
+    CP=$2
+    shift 2
+    break
+  fi
 
-ARGUMENTS=$@
+  if [ "$1" = "-agent" ]; then
+    AGENT=$AGENT_STRING
+    shift
+    break
+  fi
+
+  if [[ $1 != -* ]]; then
+    break
+  fi
+
+  SAVED_OPTIONS="$SAVED_OPTIONS $1"
+  shift
+done
+
+# Enable agent-based reloading for the 'run-app' command.
+for a in "$@"; do
+  if [ "$a" = "run-app" ]; then
+    AGENT=$AGENT_STRING
+  fi
+done
+
+ARGUMENTS="$SAVED_OPTIONS $@"
 
 # Attempt to set JAVA_HOME if it's not already set
 if [ -z "$JAVA_HOME" ]; then
