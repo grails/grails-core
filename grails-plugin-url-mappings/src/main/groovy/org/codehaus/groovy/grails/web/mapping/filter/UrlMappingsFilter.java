@@ -121,7 +121,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 // only remove the file extension if its one of the configured mimes in Config.groovy
                 for (MimeType configuredMime : configuredMimes) {
                     if (configuredMime.getExtension().equals(format)) {
-                        request.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format);
+                        request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, format);
                         uri = uri.substring(0, (uri.length() - format.length() - 1));
                         break;
                     }
