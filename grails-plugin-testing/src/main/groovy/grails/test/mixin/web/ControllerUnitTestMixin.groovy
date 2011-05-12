@@ -125,7 +125,18 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
     String getView() {
         final controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
 
-        return controller?.modelAndView?.viewName ?: GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
+        final viewName = controller?.modelAndView?.viewName
+        if(viewName != null) {
+            return viewName
+        }
+        else {
+            if(webRequest.controllerName && webRequest.actionName) {
+                GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
+            }
+            else {
+                return null;
+            }
+        }
     }
 
 
