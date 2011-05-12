@@ -80,10 +80,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
      * Fire any pending class change events
      */
     public static void firePendingClassChangeEvents() {
-        for (Runnable runnable : classChangeEventQueue) {
-            runnable.run();
+        try {
+            for (Runnable runnable : classChangeEventQueue) {
+                runnable.run();
+            }
+        } finally {
+            classChangeEventQueue.clear();
         }
-        classChangeEventQueue.clear();
     }
 
     @Override
