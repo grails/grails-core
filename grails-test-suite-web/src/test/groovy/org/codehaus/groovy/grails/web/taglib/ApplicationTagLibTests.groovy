@@ -268,7 +268,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
 
         def linkGenerator = appCtx.getBean("grailsLinkGenerator")
-        linkGenerator.serverBaseURL="http://www.mysite.com"
+        linkGenerator.configuredServerBaseURL="http://www.mysite.com"
         assertOutputEquals 'http://www.mysite.com/testController/testAction', template
     }
 
