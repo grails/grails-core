@@ -15,14 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
@@ -36,10 +34,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -56,7 +52,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "redirect";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     public static final String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
-    public static final String GRAILS_REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";
+    public static final String GRAILS_REDIRECT_ISSUED = GrailsApplicationAttributes.REDIRECT_ISSUED;
 
     public static final String ARGUMENT_ERRORS = "errors";
 

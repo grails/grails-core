@@ -79,6 +79,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
     protected String controllerName;
     protected String actionName;
 
+
     public ServletContext getServletContext() {
         return servletContext;
     }
@@ -227,7 +228,8 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
             // Step 8: determine return value type and handle accordingly
             initChainModel(controller);
-            if (response.isCommitted()) {
+
+            if (response.isCommitted() || request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Response has been redirected, returning null model and view");
                 }
