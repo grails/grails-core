@@ -33,34 +33,34 @@ import java.net.ServerSocket;
 
 public class IsolatedTomcat {
 
-	/**
-	 * @param args Command line arguments
-	 */
-	public static void main(String[] args) {
+    /**
+     * @param args Command line arguments
+     */
+    public static void main(String[] args) {
 
-		if(args.length < 3) {
-			System.err.println("Usage: IsolatedTomcat [tomcat_path] [war_path] [context_path] [host] [httpPort] [httpsPort] [keystorePath] [keystorePassword]");
-			System.exit(1);
-		}
-		else {
-			String tomcatDir = args[0];
-			String warPath = args[1];
-			String contextPath = args[2];
-			String host = "localhost";
-			if(args.length>3) host = args[3];
-			int port = argToNumber(args, 4, 8080);
-			int httpsPort = argToNumber(args, 5, 0);
+        if(args.length < 3) {
+            System.err.println("Usage: IsolatedTomcat [tomcat_path] [war_path] [context_path] [host] [httpPort] [httpsPort] [keystorePath] [keystorePassword]");
+            System.exit(1);
+        }
+        else {
+            String tomcatDir = args[0];
+            String warPath = args[1];
+            String contextPath = args[2];
+            String host = "localhost";
+            if(args.length>3) host = args[3];
+            int port = argToNumber(args, 4, 8080);
+            int httpsPort = argToNumber(args, 5, 0);
 
-			String keystorePath = "";
-			String keystorePassword = "";
-			if (httpsPort > 0) {
-				keystorePath = args[6];
-				keystorePassword = args[7];
-				System.out.println("path: " + keystorePath + ", password: " + keystorePassword);
-			}
+            String keystorePath = "";
+            String keystorePassword = "";
+            if (httpsPort > 0) {
+                keystorePath = args[6];
+                keystorePassword = args[7];
+                System.out.println("path: " + keystorePath + ", password: " + keystorePassword);
+            }
 
-			final Tomcat tomcat = new Tomcat();
-			tomcat.setPort(port);
+            final Tomcat tomcat = new Tomcat();
+            tomcat.setPort(port);
 
             if(Boolean.getBoolean("tomcat.nio")) {
                 System.out.println("Enabling Tomcat NIO Connector");
@@ -70,92 +70,92 @@ public class IsolatedTomcat {
                 tomcat.setConnector( connector );
             }
 
-			tomcat.setBaseDir(tomcatDir);
-			try {
-				tomcat.addWebapp(contextPath, warPath);
-			} catch (ServletException e) {
-				e.printStackTrace();
-				System.err.println("Error loading Tomcat: " + e.getMessage());
-				System.exit(1);
-			}
-			tomcat.enableNaming();
+            tomcat.setBaseDir(tomcatDir);
+            try {
+                tomcat.addWebapp(contextPath, warPath);
+            } catch (ServletException e) {
+                e.printStackTrace();
+                System.err.println("Error loading Tomcat: " + e.getMessage());
+                System.exit(1);
+            }
+            tomcat.enableNaming();
 
-			final Connector connector = tomcat.getConnector();
-			connector.setAttribute("address", host);
-			connector.setURIEncoding("UTF-8");
+            final Connector connector = tomcat.getConnector();
+            connector.setAttribute("address", host);
+            connector.setURIEncoding("UTF-8");
 
-			if (httpsPort > 0) {
-				Connector sslConnector;
-				try {
-					sslConnector = new Connector();
-				} catch (Exception e) {
-					throw new RuntimeException("Couldn't create HTTPS connector", e);
-				}
-				
-				sslConnector.setScheme("https");
-				sslConnector.setSecure(true);
-				sslConnector.setPort(httpsPort);
-				sslConnector.setProperty("SSLEnabled", "true");
-				sslConnector.setAttribute("keystoreFile", keystorePath);
-				sslConnector.setAttribute("keystorePass", keystorePassword);
-				sslConnector.setURIEncoding("UTF-8");
-				tomcat.getService().addConnector(sslConnector);
-			}
+            if (httpsPort > 0) {
+                Connector sslConnector;
+                try {
+                    sslConnector = new Connector();
+                } catch (Exception e) {
+                    throw new RuntimeException("Couldn't create HTTPS connector", e);
+                }
+                
+                sslConnector.setScheme("https");
+                sslConnector.setSecure(true);
+                sslConnector.setPort(httpsPort);
+                sslConnector.setProperty("SSLEnabled", "true");
+                sslConnector.setAttribute("keystoreFile", keystorePath);
+                sslConnector.setAttribute("keystorePass", keystorePassword);
+                sslConnector.setURIEncoding("UTF-8");
+                tomcat.getService().addConnector(sslConnector);
+            }
             
-			final int serverPort = port;
-			new Thread(new Runnable() {
-				public void run() {
-					int killListenerPort = serverPort + 1;
-					ServerSocket serverSocket;
+            final int serverPort = port;
+            new Thread(new Runnable() {
+                public void run() {
+                    int killListenerPort = serverPort + 1;
+                    ServerSocket serverSocket;
 
-					serverSocket= createKillSwitch(killListenerPort);
+                    serverSocket= createKillSwitch(killListenerPort);
 
-					if(serverSocket!=null) {
-						try {
-							serverSocket.accept();
-							try {
-								tomcat.stop();
-							} catch (LifecycleException e) {
-								System.err.println("Error stopping Tomcat: " + e.getMessage());
-								System.exit(1);
-							}
-						} catch (IOException e) {
-							// just exit
-						}
-					}
+                    if(serverSocket!=null) {
+                        try {
+                            serverSocket.accept();
+                            try {
+                                tomcat.stop();
+                            } catch (LifecycleException e) {
+                                System.err.println("Error stopping Tomcat: " + e.getMessage());
+                                System.exit(1);
+                            }
+                        } catch (IOException e) {
+                            // just exit
+                        }
+                    }
 
-				}
-			}).start();
+                }
+            }).start();
 
-			try {
-				tomcat.start();
-				String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
-				System.out.println(message);
-			} catch (LifecycleException e) {
-				e.printStackTrace();
-				System.err.println("Error loading Tomcat: " + e.getMessage());
-				System.exit(1);
-			}
-		}
-	}
+            try {
+                tomcat.start();
+                String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
+                System.out.println(message);
+            } catch (LifecycleException e) {
+                e.printStackTrace();
+                System.err.println("Error loading Tomcat: " + e.getMessage());
+                System.exit(1);
+            }
+        }
+    }
 
-	private static ServerSocket createKillSwitch(int killListenerPort) {
-		try {
-			return new ServerSocket(killListenerPort);
-		} catch (IOException e) {
-			return null;
-		}
-	}
+    private static ServerSocket createKillSwitch(int killListenerPort) {
+        try {
+            return new ServerSocket(killListenerPort);
+        } catch (IOException e) {
+            return null;
+        }
+    }
 
-	private static int argToNumber(String[] args, int i, int orDefault) {
-		if (args.length > i) {
-			try {
-				return Integer.parseInt(args[i]);
-			} catch (NumberFormatException e) {
-				return orDefault;
-			}
-		} else {
-			return orDefault;
-		}
-	}
+    private static int argToNumber(String[] args, int i, int orDefault) {
+        if (args.length > i) {
+            try {
+                return Integer.parseInt(args[i]);
+            } catch (NumberFormatException e) {
+                return orDefault;
+            }
+        } else {
+            return orDefault;
+        }
+    }
 }
