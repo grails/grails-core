@@ -56,7 +56,6 @@ public class IsolatedTomcat {
             if (httpsPort > 0) {
                 keystorePath = args[6];
                 keystorePassword = args[7];
-                System.out.println("path: " + keystorePath + ", password: " + keystorePassword);
             }
 
             final Tomcat tomcat = new Tomcat();
