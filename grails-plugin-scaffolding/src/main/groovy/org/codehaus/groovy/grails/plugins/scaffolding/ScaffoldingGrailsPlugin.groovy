@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.scaffolding
 
-import groovyx.gpars.Parallelizer;
-
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -29,7 +28,7 @@ import org.springframework.beans.PropertyValue
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.ApplicationContext
 
-/**
+ /**
  * Handles the configuration of dynamic scaffolding in Grails.
  *
  * @author Graeme Rocher
@@ -67,20 +66,24 @@ class ScaffoldingGrailsPlugin {
         }
     }
 
-    def doWithApplicationContext = { ApplicationContext appCtx ->
-        def app = application
-        configureScaffolding(appCtx, app)
-    }
-
-    def configureScaffolding(ApplicationContext appCtx, app) {
-        Parallelizer.doParallel {
-            app.controllerClasses.eachParallel { GrailsControllerClass controllerClass ->
-                configureScaffoldingController(appCtx, app, controllerClass)
+    def doWithApplicationContext = { ApplicationContext ctx ->
+        if(!application.warDeployed) {
+            Thread.start {
+                configureScaffolding(ctx, application)
             }
+        }
+        else {
+            configureScaffolding(ctx, application)
         }
     }
 
-    private configureScaffoldingController(ApplicationContext appCtx, application, GrailsControllerClass controllerClass) {
+    def configureScaffolding(ApplicationContext appCtx, app) {
+        for( controllerClass in app.controllerClasses){
+            configureScaffoldingController(appCtx, app, controllerClass)
+        }
+    }
+
+    public static configureScaffoldingController(ApplicationContext appCtx, GrailsApplication application, GrailsControllerClass controllerClass) {
 
         def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
         if (!scaffoldProperty || !appCtx) {
@@ -142,7 +145,7 @@ class ScaffoldingGrailsPlugin {
         }
     }
 
-    private GrailsDomainClass getScaffoldedDomainClass(application, GrailsControllerClass controllerClass, scaffoldProperty) {
+    private static GrailsDomainClass getScaffoldedDomainClass(application, GrailsControllerClass controllerClass, scaffoldProperty) {
         GrailsDomainClass domainClass = null
 
         if (scaffoldProperty) {
@@ -157,13 +160,13 @@ class ScaffoldingGrailsPlugin {
         return domainClass
     }
 
-    private createScaffoldedInstance(ClassLoader parentLoader, String controllerSource) {
+    private static createScaffoldedInstance(ClassLoader parentLoader, String controllerSource) {
         def classLoader = new GroovyClassLoader(parentLoader)
         def scaffoldedControllerClass = classLoader.parseClass(controllerSource)
         return scaffoldedControllerClass.newInstance()
     }
 
-    private List getScaffoldedActions(scaffoldedInstance) {
+    private static List getScaffoldedActions(scaffoldedInstance) {
         def actionProperties = scaffoldedInstance.metaClass.properties.collect {MetaProperty mp ->
             try {
                 def val = mp.getProperty(scaffoldedInstance)
@@ -176,7 +179,7 @@ class ScaffoldingGrailsPlugin {
         return actionProperties
     }
 
-    private String generateControllerSource(GrailsTemplateGenerator generator, GrailsDomainClass domainClass) {
+    private static String generateControllerSource(GrailsTemplateGenerator generator, GrailsDomainClass domainClass) {
         def sw = new StringWriter()
         LOG.info "Generating controller logic for scaffolding domain: ${domainClass.fullName}"
         generator.generateController(domainClass, sw)
