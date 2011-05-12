@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.apache.commons.logging.Log;
@@ -140,6 +141,11 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
         boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
 
+        Object action = argMap.get(GrailsControllerClass.ACTION);
+        if(action != null) {
+            argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller));
+        }
+
         return redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(argMap), request, response, permanent);
     }
 
@@ -150,6 +156,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 linkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator.class);
             }
         }
+
         return linkGenerator;
     }
 
