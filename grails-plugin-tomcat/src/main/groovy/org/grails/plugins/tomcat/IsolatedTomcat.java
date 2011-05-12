@@ -136,9 +136,6 @@ public class IsolatedTomcat {
 				System.err.println("Error loading Tomcat: " + e.getMessage());
 				System.exit(1);
 			}
-
-
-
 		}
 	}
 
