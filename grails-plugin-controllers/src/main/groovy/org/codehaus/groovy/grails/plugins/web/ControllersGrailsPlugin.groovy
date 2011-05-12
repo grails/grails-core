@@ -19,7 +19,6 @@ import grails.artefact.Enhanced
 import grails.util.Environment
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
@@ -64,21 +63,10 @@ class ControllersGrailsPlugin {
             multipartResolver(ContentLengthAwareCommonsMultipartResolver)
         }
 
-        def resolveStrategyClass = MixedGrailsControllerHelper
-
-        switch (application.config.grails.controllers.actions.resolveStrategy) {
-            case DefaultGrailsControllerClass.RESOLVE_CLOSURE:
-                resolveStrategyClass = ClosureGrailsControllerHelper
-                break;
-            case DefaultGrailsControllerClass.RESOLVE_METHOD:
-                resolveStrategyClass = MethodGrailsControllerHelper
-                break;
-            }
-
-        grailsControllerHelper(resolveStrategyClass) { bean->
-                grailsApplication = ref('grailsApplication')
-                bean.scope = 'prototype'
-            }
+        grailsControllerHelper(MixedGrailsControllerHelper) { bean->
+            grailsApplication = ref('grailsApplication')
+            bean.scope = 'prototype'
+        }
 
         mainSimpleController(SimpleGrailsController) {
             grailsControllerHelper = ref('grailsControllerHelper')

@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
@@ -60,7 +61,7 @@ import java.util.Map;
  * @author Stephane Maldini
  * @since 1.4
  */
-public abstract class AbstractGrailsControllerHelper implements ApplicationContextAware, ServletContextAware {
+public abstract class AbstractGrailsControllerHelper implements ApplicationContextAware, ServletContextAware, GrailsApplicationAware {
 
     protected GrailsApplication application;
     protected ApplicationContext applicationContext;
