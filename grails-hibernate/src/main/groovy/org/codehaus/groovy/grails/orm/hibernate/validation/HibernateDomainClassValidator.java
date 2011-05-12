@@ -64,7 +64,7 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
             super.validate(obj, errors, cascade);
         }
         finally {
-            if (session != null && previousMode != null) {
+            if (session != null && previousMode != null && !errors.hasErrors()) {
                 session.setFlushMode(previousMode);
             }
         }

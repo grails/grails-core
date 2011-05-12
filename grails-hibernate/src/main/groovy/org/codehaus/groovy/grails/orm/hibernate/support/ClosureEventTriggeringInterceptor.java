@@ -24,12 +24,26 @@ import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.action.EntityIdentityInsertAction;
+import org.hibernate.action.EntityInsertAction;
+import org.hibernate.engine.*;
 import org.hibernate.event.*;
+import org.hibernate.event.def.AbstractSaveEventListener;
+import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.type.Type;
+import org.hibernate.type.TypeHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.ReflectionUtils;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,6 +69,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                   PreUpdateEventListener,
                   PreInsertEventListener{
 
+    private static final Logger log = LoggerFactory.getLogger(AbstractSaveEventListener.class);
     private static final long serialVersionUID = 1;
 
     public static final Collection<String> IGNORED = new HashSet<String>(Arrays.asList("version", "id"));
@@ -76,6 +91,16 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     boolean failOnError = false;
     List failOnErrorPackages = Collections.EMPTY_LIST;
+    private Method markInterceptorDirtyMethod;
+
+    public ClosureEventTriggeringInterceptor() {
+        try {
+            this.markInterceptorDirtyMethod = ReflectionUtils.findMethod(AbstractSaveEventListener.class, "markInterceptorDirty", new Class[]{Object.class, EntityPersister.class, EventSource.class});
+            ReflectionUtils.makeAccessible(markInterceptorDirtyMethod);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
 
     public void setConfiguration(ConfigObject co) {
         Object failOnErrorConfig = co.flatten().get("grails.gorm.failOnError");
@@ -215,5 +240,120 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         cachedShouldTrigger = new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
     }
 
+
+    /*
+     * TODO: This is a horrible hack due to a bug in Hibernate's post-insert event processing (HHH-3904)
+     */
+    @Override
+    protected Serializable performSaveOrReplicate(Object entity, EntityKey key, EntityPersister persister, boolean useIdentityColumn, Object anything, EventSource source, boolean requiresImmediateIdAccess) {
+		validate( entity, persister, source );
+
+		Serializable id = key == null ? null : key.getIdentifier();
+
+		boolean inTxn = source.getJDBCContext().isTransactionInProgress();
+		boolean shouldDelayIdentityInserts = !inTxn && !requiresImmediateIdAccess;
+
+		// Put a placeholder in entries, so we don't recurse back and try to save() the
+		// same object again. QUESTION: should this be done before onSave() is called?
+		// likewise, should it be done before onUpdate()?
+		source.getPersistenceContext().addEntry(
+				entity,
+				Status.SAVING,
+				null,
+				null,
+				id,
+				null,
+				LockMode.WRITE,
+				useIdentityColumn,
+				persister,
+				false,
+				false
+		);
+
+		cascadeBeforeSave( source, persister, entity, anything );
+
+		if ( useIdentityColumn && !shouldDelayIdentityInserts ) {
+			log.trace( "executing insertions" );
+			source.getActionQueue().executeInserts();
+		}
+
+		Object[] values = persister.getPropertyValuesToInsert( entity, getMergeMap( anything ), source );
+		Type[] types = persister.getPropertyTypes();
+
+		boolean substitute = substituteValuesIfNecessary( entity, id, values, persister, source );
+
+		if ( persister.hasCollections() ) {
+			substitute = substitute || visitCollectionsBeforeSave( entity, id, values, types, source );
+		}
+
+		if ( substitute ) {
+			persister.setPropertyValues( entity, values, source.getEntityMode() );
+		}
+
+		TypeHelper.deepCopy(
+                values,
+                types,
+                persister.getPropertyUpdateability(),
+                values,
+                source
+        );
+
+		new ForeignKeys.Nullifier( entity, false, useIdentityColumn, source )
+				.nullifyTransientReferences( values, types );
+		new Nullability( source ).checkNullability( values, persister, false );
+
+		if ( useIdentityColumn ) {
+			EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
+					values, entity, persister, source, shouldDelayIdentityInserts
+			);
+			if ( !shouldDelayIdentityInserts ) {
+				log.debug( "executing identity-insert immediately" );
+				source.getActionQueue().execute( insert );
+				id = insert.getGeneratedId();
+                if(id != null) {
+                    // As of HHH-3904, if the id is null the operation was vetoed so we bail
+                    key = new EntityKey( id, persister, source.getEntityMode() );
+                    source.getPersistenceContext().checkUniqueness( key, entity );
+                }
+			}
+			else {
+				log.debug( "delaying identity-insert due to no transaction in progress" );
+				source.getActionQueue().addAction(insert);
+
+				key = insert.getDelayedEntityKey();
+			}
+		}
+
+        if(key != null) {
+            Object version = Versioning.getVersion(values, persister);
+            source.getPersistenceContext().addEntity(
+                    entity,
+                    ( persister.isMutable() ? Status.MANAGED : Status.READ_ONLY ),
+                    values,
+                    key,
+                    version,
+                    LockMode.WRITE,
+                    useIdentityColumn,
+                    persister,
+                    isVersionIncrementDisabled(),
+                    false
+            );
+            //source.getPersistenceContext().removeNonExist( new EntityKey( id, persister, source.getEntityMode() ) );
+
+            if ( !useIdentityColumn ) {
+                source.getActionQueue().addAction(
+                        new EntityInsertAction( id, values, entity, version, persister, source )
+                );
+            }
+
+            cascadeAfterSave( source, persister, entity, anything );
+            // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
+            if(markInterceptorDirtyMethod != null) {
+                ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this,new Object[]{entity, persister, source});
+            }
+
+        }
+		return id;
+    }
 
 }
