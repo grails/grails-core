@@ -88,7 +88,7 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
     @Override
     String getRedirectedUrl() {
         if (getStatus() in [301, 302]) {
-            getHeader("Location")
+            super.getHeader("Location")
         } else {
             super.getRedirectedUrl()
         }
