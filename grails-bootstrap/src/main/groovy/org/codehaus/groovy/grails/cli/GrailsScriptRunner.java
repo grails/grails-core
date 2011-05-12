@@ -87,7 +87,8 @@ public class GrailsScriptRunner {
         }
 
         ScriptAndArgs script = processArgumentsAndReturnScriptName(allArgs.toString().trim());
-
+        boolean verbose = script.args != null ? script.args.indexOf("--verbose") >= 0 : false;
+        
         // Get hold of the GRAILS_HOME environment variable if it is available.
         String grailsHome = System.getProperty("grails.home");
 
@@ -108,11 +109,15 @@ public class GrailsScriptRunner {
         }
 
         // Show a nice header in the console when running commands.
-        System.out.println(
-"Welcome to Grails " + build.getGrailsVersion() + " - http://grails.org/" + '\n' +
-"Licensed under Apache Standard License 2.0" + '\n' +
-"Grails home is " + (grailsHome == null ? "not set" : "set to: " + grailsHome) + '\n');
-
+        if (verbose) {
+            System.out.println(
+    "Grails " + build.getGrailsVersion() + '\n' +
+    "Grails home is " + (grailsHome == null ? "not set" : "set to: " + grailsHome) + '\n');
+        } else {
+            System.out.print(
+    "Grails " + build.getGrailsVersion() +" initializing... ");
+        }
+        
         // If there aren't any arguments, then we don't have a command
         // to execute. So we have to exit.
         if (script.name == null) {
@@ -120,19 +125,42 @@ public class GrailsScriptRunner {
             System.exit(0);
         }
 
-        System.out.println("Base Directory: " + build.getBaseDir().getPath());
+        if (verbose) {
+            System.out.println("Base Directory: " + build.getBaseDir().getPath());
+        }
+            
 
+        PrintStream originalOut = System.out;
         try {
-            int exitCode = new GrailsScriptRunner(build).executeCommand(
-                    script.name, script.args, script.env);
-            System.exit(exitCode);
+            ByteArrayOutputStream cachedOutput = new ByteArrayOutputStream();
+            if (!verbose) {
+                PrintStream tempOut = new PrintStream(cachedOutput);
+                System.setOut(tempOut);
+            }
+            try {
+                GrailsScriptRunner runner = new GrailsScriptRunner(build);
+                runner.consoleOut = originalOut;
+                runner.ui = new DefaultScriptUserInterface(originalOut, verbose);
+                
+                int exitCode = runner.executeCommand(script.name, script.args, script.env);
+                        
+                if (!verbose) {
+                    if (exitCode != 0) {
+                        byte[] bytes = cachedOutput.toByteArray();
+                        originalOut.write(bytes, 0, bytes.length);
+                    }
+                }
+                System.exit(exitCode);
+            } finally {
+                System.setOut(originalOut);
+            }
         }
         catch (ScriptNotFoundException ex) {
-            System.out.println("Script not found: " + ex.getScriptName());
+            originalOut.println("Script not found: " + ex.getScriptName());
         }
         catch (Throwable t) {
             String msg = "Error executing script " + script.name + ": " + t.getMessage();
-            System.out.println(msg);
+            originalOut.println(msg);
             sanitizeStacktrace(t);
             t.printStackTrace(System.out);
             exitWithError(msg);
@@ -211,6 +239,8 @@ public class GrailsScriptRunner {
 
     private BuildSettings settings;
     private PrintStream out = System.out;
+    private PrintStream consoleOut = System.out;
+    private UserInterface ui;
     private CommandLineHelper helper = new CommandLineHelper(out);
     private boolean isInteractive = true;
 
@@ -294,7 +324,7 @@ public class GrailsScriptRunner {
         if (scriptName.equalsIgnoreCase("interactive")) {
             // Can't operate interactively in non-interactive mode!
             if (!isInteractive) {
-                out.println("You cannot use '--non-interactive' with interactive mode.");
+                ui.statusFinal("You cannot use '--non-interactive' with interactive mode.");
                 return 1;
             }
 
@@ -341,7 +371,7 @@ public class GrailsScriptRunner {
             System.clearProperty("grails.env.set");
             System.clearProperty(Environment.KEY);
 
-            out.println("--------------------------------------------------------");
+            consoleOut.println("--------------------------------------------------------");
             String enteredName = helper.userInput(message);
 
             if (enteredName != null && enteredName.trim().length() > 0) {
@@ -360,7 +390,7 @@ public class GrailsScriptRunner {
             }
 
             if (script.name == null) {
-                out.println("You must enter a command.\n");
+                consoleOut.println("You must enter a command.\n");
                 continue;
             }
             else if (script.name.equalsIgnoreCase("exit") || script.name.equalsIgnoreCase("quit")) {
@@ -372,20 +402,20 @@ public class GrailsScriptRunner {
                 callPluginOrGrailsScript(script.name, env);
             }
             catch (ScriptNotFoundException ex) {
-                out.println("No script found for " + script.name);
+                consoleOut.println("No script found for " + script.name);
             }
             catch (Throwable ex) {
                 if (ex.getCause() instanceof ScriptExitException) {
-                    out.println("Script exited with code " + ((ScriptExitException) ex.getCause()).getExitCode());
+                    consoleOut.println("Script exited with code " + ((ScriptExitException) ex.getCause()).getExitCode());
                 }
                 else {
-                    out.println("Script threw exception");
+                    consoleOut.println("Script threw exception");
                     ex.printStackTrace(out);
                 }
             }
             long end = System.currentTimeMillis();
-            out.println("--------------------------------------------------------");
-            out.println("Command " + script.name + " completed in " + (end - now) + "ms");
+            consoleOut.println("--------------------------------------------------------");
+            consoleOut.println("Command " + script.name + " completed in " + (end - now) + "ms");
         }
     }
 
@@ -487,8 +517,8 @@ public class GrailsScriptRunner {
             if (potentialScripts.size() == 1) {
                 final Resource scriptFile = potentialScripts.get(0);
                 if (!isGrailsProject() && !isExternalScript(scriptFile)) {
-                    out.println(settings.getBaseDir().getPath() + " does not appear to be part of a Grails application.");
-                    out.println("The following commands are supported outside of a project:");
+                    consoleOut.println(settings.getBaseDir().getPath() + " does not appear to be part of a Grails application.");
+                    consoleOut.println("The following commands are supported outside of a project:");
                     Collections.sort(scriptsAllowedOutsideOfProject, new Comparator<Resource>(){
 
                         public int compare(Resource resource, Resource resource1) {
@@ -496,12 +526,12 @@ public class GrailsScriptRunner {
                         }
                     });
                     for (Resource file : scriptsAllowedOutsideOfProject) {
-                        out.println("\t" + GrailsNameUtils.getScriptName(file.getFilename()));
+                        consoleOut.println("\t" + GrailsNameUtils.getScriptName(file.getFilename()));
                     }
                     out.println("Run 'grails help' for a complete list of available scripts.");
                     return -1;
-                }
-                out.println("Running script " + scriptFile.getFilename());
+                } 
+                consoleOut.println("Running script " + scriptFile.getFilename()+"...");
                 // We can now safely set the default environment
                 String scriptFileName = getScriptNameFromFile(scriptFile);
                 setRunningEnvironment(scriptFileName, env);
@@ -748,6 +778,8 @@ public class GrailsScriptRunner {
         binding.setVariable("projectWorkDir", settings.getProjectWorkDir().getPath());
         binding.setVariable("projectTargetDir", settings.getProjectTargetDir());
         binding.setVariable("classesDir", settings.getClassesDir());
+        binding.setVariable("consoleOut", consoleOut);
+        binding.setVariable("userInterface", ui);
         binding.setVariable("pluginClassesDir", settings.getPluginClassesDir());
         binding.setVariable("grailsTmp", grailsWork +"/tmp");
         binding.setVariable("classesDirPath", settings.getClassesDir().getPath());
@@ -1116,5 +1148,84 @@ public class GrailsScriptRunner {
         public String name;
         public String env;
         public String args;
+    }
+    
+    static final class DefaultScriptUserInterface implements UserInterface {
+        PrintStream consoleOut;
+        boolean lastWasPrintln = true;
+        boolean inStatusRun = false;
+        String lastVerbosePrefix;
+        boolean verbose;
+        
+        DefaultScriptUserInterface(PrintStream output, boolean verbose) {
+            consoleOut = output;
+            this.verbose = verbose;
+        }
+
+        protected void print(String s) {
+            consoleOut.print(s);
+            lastWasPrintln = false;
+        }
+
+        protected void println(String s) {
+            consoleOut.println(s);
+            lastWasPrintln = true;
+        }
+
+        public void statusBegin(String msg) {
+            print( (lastWasPrintln ? " # " : "\n # ") + msg + "... ");
+            inStatusRun = true;
+            if (verbose) {
+                lastVerbosePrefix = msg;
+            }
+        }
+
+        public void statusEnd(String msg) {
+            if (msg == null) {
+                msg = "Done";
+            }
+            if (lastVerbosePrefix != null) {
+                // Re-print the last status prefix because a bunch of output might have come out
+                statusBegin(lastVerbosePrefix);
+            }
+            if (!inStatusRun) {
+                // Script is old / forgot to call statusBegin first
+                statusBegin(msg);
+                inStatusRun = false;
+            } else {
+                println(msg);
+                inStatusRun = false;
+            }
+            lastVerbosePrefix = null;
+        }
+
+        public void statusUpdate(String msg) {
+            if (!inStatusRun) {
+                // Script is old / forgot to call statusBegin first
+                statusBegin(msg);
+            } else {
+                if (lastVerbosePrefix != null) {
+                    // Re-print the last status prefix because a bunch of output might have come out
+                    statusBegin(lastVerbosePrefix);
+                }
+                print(msg + "... ");
+                inStatusRun = true;
+            }
+        }
+
+        public void statusFinal(String msg) {
+            println(msg);
+        }
+
+        public void progressTicker(String charToAppend) {
+            print(charToAppend);
+        }
+        
+        public void progressString(String currentProgressValue) {
+            // @todo make this use cursor control to overwrite back to the previous non-progress location
+            // and then overwrite with this
+            print(currentProgressValue);
+        }
+        
     }
 }

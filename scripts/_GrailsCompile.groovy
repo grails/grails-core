@@ -47,7 +47,9 @@ target(compile : "Implementation of compilation phase") {
 
     profile("Compiling sources to location [$classesDirPath]") {
         try {
+            event("StatusBegin", ["Compiling application"])
 			projectCompiler.compile(grailsSettings.classesDir)
+            event("StatusEnd", ["Done"])
         }
         catch (Exception e) {
 			grails.util.GrailsUtil.deepSanitize(e)
@@ -67,7 +69,9 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
     profile("Compiling sources to location [$classesDirPath]") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
+        event("StatusBegin", ["Compiling plugins"])
 		projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
+        event("StatusEnd", ["Done"])
     }
 }
 
