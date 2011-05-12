@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,7 +139,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
-        return redirectResponse(linkGenerator.link(argMap), request, response, permanent);
+
+        return redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(argMap), request, response, permanent);
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -154,7 +156,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     /*
      * Redirects the response the the given URI
      */
-    private Object redirectResponse(String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
+    private Object redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
         }
@@ -163,11 +165,12 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             LOG.debug("Executing redirect with response ["+response+"]");
         }
 
-        String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
+        String absoluteURL = serverBaseURL + actualUri;
+        String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
         
         response.setStatus(status);
-        response.setHeader("Location", redirectUrl);
+        response.setHeader(HttpHeaders.LOCATION, redirectUrl);
         
         if(redirectListeners != null) {
             for (RedirectEventListener redirectEventListener : redirectListeners) {
@@ -175,7 +178,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             }
         }
 
-        request.setAttribute(GRAILS_REDIRECT_ISSUED, true);
+        request.setAttribute(GRAILS_REDIRECT_ISSUED, actualUri);
         return null;
     }
 
