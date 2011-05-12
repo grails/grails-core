@@ -31,7 +31,6 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.EntityEntry;
 import org.hibernate.event.*;
 import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.util.ReflectionUtils;
@@ -146,31 +145,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
     }
 
     public void onSaveOrUpdate(SaveOrUpdateEvent event) throws HibernateException {
-        Object entity = event.getObject();
-        boolean newEntity = !event.getSession().contains(entity);
-        if (newEntity) {
-            if (beforeInsertCaller != null) {
-                beforeInsertCaller.call(entity);
-                if (event.getSession().contains(entity)) {
-                    EntityEntry entry = event.getEntry();
-                    if (entry != null) {
-                        Object[] state = entry.getLoadedState();
-                        synchronizePersisterState(entity, entry.getPersister(), state);
-                    }
-                }
-            }
-            if (shouldTimestamp) {
-                long time = System.currentTimeMillis();
-                if (dateCreatedProperty != null && newEntity) {
-                    Object now = DefaultGroovyMethods.newInstance(dateCreatedProperty.getType(), new Object[] { time });
-                    dateCreatedProperty.setProperty(entity, now);
-                }
-                if (lastUpdatedProperty != null) {
-                    Object now = DefaultGroovyMethods.newInstance(lastUpdatedProperty.getType(), new Object[] { time });
-                    lastUpdatedProperty.setProperty(entity, now);
-                }
-            }
-        }
+        // no-op, merely a hook for plugins to override
     }
 
     private void synchronizePersisterState(Object entity, EntityPersister persister, Object[] state) {

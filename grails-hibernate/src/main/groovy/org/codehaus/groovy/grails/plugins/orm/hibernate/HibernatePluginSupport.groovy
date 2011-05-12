@@ -202,6 +202,8 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                 lobHandler = lobHandlerDetector
                 entityInterceptor = entityInterceptor
                 eventListeners = ['flush': new PatchedDefaultFlushEventListener(),
+                                  'save':eventTriggeringInterceptor,
+                                  'save-update':eventTriggeringInterceptor,
                                   'pre-load':eventTriggeringInterceptor,
                                   'post-load':eventTriggeringInterceptor,
                                   'pre-insert':eventTriggeringInterceptor,
