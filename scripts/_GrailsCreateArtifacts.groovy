@@ -130,7 +130,6 @@ createUnitTest = { Map args = [:] ->
 
 promptForName = { Map args = [:] ->
     if (!argsMap["params"]) {
-        def oldOut = System.out
         ant.input(addProperty: "artifact.name", message: "${args["type"]} name not specified. Please enter:")
         argsMap["params"] << ant.antProject.properties."artifact.name"
     }

@@ -146,7 +146,6 @@ runServer = { Map args ->
             server.grailsConfig = config
         }
 
-        event("StatusBegin", ["Starting container"])
         profile("start server") {
             if (args.scheme == 'https') {
                 usingSecureServer = true
@@ -159,7 +158,6 @@ runServer = { Map args ->
                 server.start args.host, args.httpPort
             }
         }
-        event("StatusEnd", ["Done"])
         event("StatusFinal", [message])
     }
     catch (Throwable t) {
