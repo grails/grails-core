@@ -142,9 +142,10 @@ public class GrailsASTUtils {
      * @param classNode The class node
      * @param delegate The expression that looks up the delegate
      * @param declaredMethod The declared method
+     * @return The added method node or null if it couldn't be added
      */
-    public static void addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod) {
-        addDelegateInstanceMethod(classNode, delegate, declaredMethod, true);
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod) {
+       return addDelegateInstanceMethod(classNode, delegate, declaredMethod, true);
     }
 
     /**
@@ -156,8 +157,9 @@ public class GrailsASTUtils {
      * @param delegate The expression that looks up the delegate
      * @param declaredMethod The declared method
      * @param thisAsFirstArgument Whether 'this' should be passed as the first argument to the method
+     * @return The added method node or null if it couldn't be added
      */
-    public static void addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
         Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
         if(!classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
             BlockStatement methodBody = new BlockStatement();
@@ -178,7 +180,9 @@ public class GrailsASTUtils {
             methodNode.addAnnotations(declaredMethod.getAnnotations());
 
             classNode.addMethod(methodNode);
+            return methodNode;
         }
+        return null;
     }
 
     /**
@@ -223,11 +227,12 @@ public class GrailsASTUtils {
      *
      * @param classNode The class node
      * @param delegateMethod The delegate method
+     * @return The added method node or null if it couldn't be added
      */
-    public static void addDelegateStaticMethod(ClassNode classNode, MethodNode delegateMethod) {
+    public static MethodNode addDelegateStaticMethod(ClassNode classNode, MethodNode delegateMethod) {
 
         ClassExpression classExpression = new ClassExpression(delegateMethod.getDeclaringClass());
-        addDelegateStaticMethod(classExpression, classNode, delegateMethod);
+        return addDelegateStaticMethod(classExpression, classNode, delegateMethod);
     }
 
     /**
@@ -237,8 +242,9 @@ public class GrailsASTUtils {
      * @param expression The expression
      * @param classNode The class node
      * @param delegateMethod The delegate method
+     * @return The added method node or null if it couldn't be added
      */
-    public static void addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod) {
+    public static MethodNode addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod) {
         Parameter[] parameterTypes = delegateMethod.getParameters();
         String declaredMethodName = delegateMethod.getName();
         if(!classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
@@ -265,7 +271,9 @@ public class GrailsASTUtils {
             methodNode.addAnnotations(delegateMethod.getAnnotations());
 
             classNode.addMethod(methodNode);
+            return methodNode;
         }
+        return null;
     }
 
 
