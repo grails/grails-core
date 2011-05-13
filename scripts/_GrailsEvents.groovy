@@ -38,14 +38,10 @@ eventsClassLoader = new GroovyClassLoader(classLoader)
 
 eventListener = new GrailsBuildEventListener(eventsClassLoader, binding, grailsSettings)
 eventListener.globalEventHooks = [
-    StatusFinal: [ {message -> userInterface.statusFinal(message) } ],
-    StatusBegin: [ {message -> userInterface.statusBegin(message) } ],
-    StatusUpdate: [ {message -> userInterface.statusUpdate(message) } ],
-    StatusEnd: [ {message -> userInterface.statusEnd(message) } ],
-    ProgressTicker: [ {message -> userInterface.progressTicker(message) } ],
-    ProgressString: [ {message -> userInterface.progressString(message) } ],
+    StatusFinal: [ {message -> println message } ],
+    StatusUpdate: [ {message -> println message + ' ...' } ],
     StatusError: [ {message -> System.err.println message } ],
-    CreatedArtefact: [ {artefactType, artefactName -> userInterface.statusBegin("Created $artefactType for $artefactName") } ]
+    CreatedArtefact: [ {artefactType, artefactName -> println "Created $artefactType for $artefactName" } ]
 ]
 
 hooksLoaded = false

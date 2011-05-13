@@ -50,21 +50,6 @@ public class CommandLineHelper {
     public String userInput(String message) {
         return userInput(message, null);
     }
-    
-    protected void showInputMessage(String message, String responses) {
-        out.print(message);
-        if (responses != null) {
-            out.print(" [");
-            out.print(responses);
-            out.print("] ");
-        }
-    }
-
-    protected void printMessage(String message) {
-        out.println();
-        out.println(message);
-        out.println();
-    }
 
     /**
      * Replacement for AntBuilder.input() to eliminate dependency of
@@ -90,7 +75,12 @@ public class CommandLineHelper {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
         for (int it = 0; it < 3; it++) {
-            showInputMessage(message, responsesString);
+            out.print(message);
+            if (responsesString != null) {
+                out.print(" [");
+                out.print(responsesString);
+                out.print("] ");
+            }
 
             try {
                 String line = reader.readLine();
@@ -103,16 +93,18 @@ public class CommandLineHelper {
                     }
                 }
 
-                printMessage("Invalid option '" + line + "' - must be one of: [" + responsesString + "]");
+                out.println();
+                out.println("Invalid option '" + line + "' - must be one of: [" + responsesString + "]");
+                out.println();
             }
             catch (IOException ex) {
-                printMessage("ERROR: Could not read System.in due to:" + ex.getMessage() );
+                System.out.println("ERROR: Could not read System.in due to:" + ex.getMessage() );
                 return null;
             }
         }
 
         // No valid response given.
-        printMessage("No valid response entered - giving up asking.");
+        out.println("No valid response entered - giving up asking.");
         return null;
     }
 }
