@@ -117,9 +117,9 @@ class PluginInstallEngine {
         }
         if (changingPlugins) {
             def noChangingPlugins = changingPlugins.size()
-            eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for remote updates, please wait"
+            eventHandler "StatusBegin", "Checking ${noChangingPlugins} snapshot plugin${noChangingPlugins > 1 ? 's' : ''} for remote updates, please wait"
             installPlugins(existingPlugins)
-            eventHandler "StatusFinal", "Changing plugin checking complete"
+            eventHandler "StatusEnd", "Snapshot plugin checking complete"
         }
 
         checkPluginsToUninstall(pluginDescriptors.collect { it.dependencyRevisionId })
