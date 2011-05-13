@@ -334,7 +334,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     @Override
     public Environment getEnvironment() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new org.springframework.web.context.support.DefaultWebEnvironment();
     }
 
     public class MockResource extends AbstractResource {
