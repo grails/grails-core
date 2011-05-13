@@ -321,6 +321,13 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = /<g:join in="['Bruce', 'Adrian', 'Dave', 'Nicko', 'Steve']"\/>/
         assertOutputEquals 'Bruce, Adrian, Dave, Nicko, Steve', template
     }
+    
+    void testImg() {
+        def template = '<g:img dir="images" file="logo.png" width="100" height="200"/>'
+        assertOutputEquals '<img src="/images/logo.png" width="100" height="200" />', template
+    }
+
+    
 }
 
 class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
