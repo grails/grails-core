@@ -45,6 +45,7 @@ public class GrailsWebUtil {
     public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
 
+
     /**
      * Looks up a GrailsApplication instance from the ServletContext
      *

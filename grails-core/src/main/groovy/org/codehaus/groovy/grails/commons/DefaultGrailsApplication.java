@@ -263,34 +263,20 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
 
-        CompilerConfiguration config = CompilerConfiguration.DEFAULT;
-        config.setSourceEncoding("UTF-8");
-
-        ClassLoader rootLoader = DefaultGroovyMethods.getRootLoader(contextLoader);
-        //ClassLoader parentLoader = beanClassLoader != null ? beanClassLoader : contextLoader;
-        @SuppressWarnings("hiding")
-        GroovyClassLoader cl;
-        if (rootLoader != null) {
-            // This is for when we are using run-app
-            cl = new GrailsClassLoader(contextLoader, config, resourceLoader);
+        GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader);
+        if (resourceLoader != null) {
+            gcl.setResourceLoader(resourceLoader);
         }
-        else {
-            // This is when we are in WAR
-            GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader, config);
-            if (resourceLoader != null) {
-                gcl.setResourceLoader(resourceLoader);
-            }
-            cl = gcl;
-        }
+        cl = gcl;
 
         try {
             Thread.currentThread().setContextClassLoader(cl);
         }
         catch (AccessControlException e) {
-            // container doesn't allow this, in WAR deployment this should be an issue
+            // container doesn't allow this, in WAR deployment this shouldn't be an issue
         }
 
-        return cl;
+        return gcl;
     }
 
     /**

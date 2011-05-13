@@ -221,7 +221,6 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("cglib", "cglib-nodep", "2.1_3"),
                             ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.1"),
                             ModuleRevisionId.newInstance("oro", "oro", "2.0.8"),
-                            ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             // data source
                             ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", "1.3"),
                             ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.5"),

@@ -177,6 +177,10 @@ subprojects { project ->
         from javadoc.destinationDir
     }
 
+	groovydoc.doLast {
+		delete("${buildDir}/tmp")
+	}
+
     configurations {
         meta
     }

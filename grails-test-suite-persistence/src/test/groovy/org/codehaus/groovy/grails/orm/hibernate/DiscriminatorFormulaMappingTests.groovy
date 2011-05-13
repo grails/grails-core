@@ -119,7 +119,7 @@ class Owner {
         def Owner = ga.getDomainClass("Owner").clazz
 
         def owner = Owner.newInstance()
-        owner.addToChildList(Child3.newInstance())
+        owner.addToChildList(Child3.newInstance(name:"Bob"))
         owner.addToChild2List(Child2.newInstance())
 
         assertNotNull "should have saved instance", owner.save(flush:true)

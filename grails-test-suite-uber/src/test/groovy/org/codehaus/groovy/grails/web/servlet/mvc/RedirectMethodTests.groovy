@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 
 /**
  * Tests the behaviour of the redirect method.
@@ -242,7 +243,9 @@ class UrlMappings {
         def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'
         c.toActionPermanent.call()
-        assertEquals "/redirect/foo", response.getHeader("Location")
+
+        // location header should be absolute
+        assertEquals "http://localhost:8080/redirect/foo", response.getHeader(HttpHeaders.LOCATION)
         assertEquals 301, response.status
     }
 

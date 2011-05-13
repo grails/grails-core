@@ -20,6 +20,8 @@ import grails.util.*;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
+import org.apache.tools.ant.BuildListener;
+import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
@@ -139,6 +141,7 @@ public class GrailsScriptRunner {
             }
             try {
                 GrailsScriptRunner runner = new GrailsScriptRunner(build);
+                runner.out = originalOut;
                 runner.consoleOut = originalOut;
                 runner.ui = new DefaultScriptUserInterface(originalOut, verbose);
                 
@@ -358,7 +361,9 @@ public class GrailsScriptRunner {
      * Runs Grails in interactive mode.
      */
     private void runInteractive() {
-        String message = "Interactive mode ready. Enter a Grails command or type \"exit\" to quit interactive mode (hit ENTER to run the last command):\n";
+        out.println("\n--------------------------------------------------------");
+        out.println("Interactive mode ready. Enter a Grails command or type \"exit\" to quit interactive mode (hit ENTER to run the last command)");
+        String prompt = "> ";
 
         // Disable exiting
         System.setProperty("grails.disable.exit", "true");
@@ -371,8 +376,7 @@ public class GrailsScriptRunner {
             System.clearProperty("grails.env.set");
             System.clearProperty(Environment.KEY);
 
-            consoleOut.println("--------------------------------------------------------");
-            String enteredName = helper.userInput(message);
+            String enteredName = helper.userInput(prompt);
 
             if (enteredName != null && enteredName.trim().length() > 0) {
                 script = processArgumentsAndReturnScriptName(enteredName);
@@ -414,8 +418,7 @@ public class GrailsScriptRunner {
                 }
             }
             long end = System.currentTimeMillis();
-            consoleOut.println("--------------------------------------------------------");
-            consoleOut.println("Command " + script.name + " completed in " + (end - now) + "ms");
+            out.println("\n---- Command completed in " + (end - now) + "ms");
         }
     }
 

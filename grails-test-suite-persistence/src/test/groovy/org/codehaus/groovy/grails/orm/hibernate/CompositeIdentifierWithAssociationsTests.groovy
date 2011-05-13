@@ -72,7 +72,7 @@ class CompositeIdentifierWithAssociationsAddress {
 
         parent.col1 = "one"
         parent.col2 = "two"
-        parent.address = addressClass.newInstance(postCode:"32984739")
+        parent.address = addressClass.newInstance(postCode:"32984739", parent:parent)
 
         assertNotNull "should have saved parent", parent.save(flush:true)
 

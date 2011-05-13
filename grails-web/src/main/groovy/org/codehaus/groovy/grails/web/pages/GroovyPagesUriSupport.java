@@ -17,13 +17,12 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
-
-import javax.servlet.ServletRequest;
-
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.util.Assert;
+
+import javax.servlet.ServletRequest;
 
 /**
  * Methods to establish template names, paths and so on.
@@ -165,7 +164,7 @@ public class GroovyPagesUriSupport {
     }
 
     String getViewURIInternal(String controllerName, String viewName, FastStringWriter buf, boolean includeSuffix) {
-        if (viewName.startsWith(SLASH_STR)) {
+        if (viewName != null && viewName.startsWith(SLASH_STR)) {
             String tmp = viewName.substring(1,viewName.length());
             if (tmp.indexOf(SLASH) > -1) {
                 buf.append(SLASH);
@@ -180,9 +179,12 @@ public class GroovyPagesUriSupport {
         }
         else {
             buf.append(SLASH)
-               .append(controllerName)
-               .append(SLASH)
-               .append(viewName);
+               .append(controllerName);
+            if(viewName != null) {
+
+                buf.append(SLASH)
+                   .append(viewName);
+            }
         }
 
         if (includeSuffix) {

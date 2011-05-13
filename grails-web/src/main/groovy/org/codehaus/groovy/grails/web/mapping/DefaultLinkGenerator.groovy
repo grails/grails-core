@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.springframework.beans.factory.annotation.Autowired
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * A link generating service for applications to use when generating links
@@ -30,7 +31,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrat
  * @since 1.4
  */
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
-    String serverBaseURL
+    String configuredServerBaseURL
     String contextPath
 
     GrailsRequestStateLookupStrategy requestStateLookupStrategy = new DefaultRequestStateLookupStrategy()
@@ -42,13 +43,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
 
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
-        this.serverBaseURL = serverBaseURL
+        this.configuredServerBaseURL = serverBaseURL
         this.contextPath = contextPath
     }
 
     DefaultLinkGenerator(String serverBaseURL) {
-        this.serverBaseURL = serverBaseURL
+        this.configuredServerBaseURL = serverBaseURL
     }
+
+
 
     /**
      * {@inheritDoc }
@@ -192,11 +195,28 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
      * Get the declared URL of the server from config, or guess at localhost for non-production.
      */
     String makeServerURL() {
-        def u = serverBaseURL
+        def u = configuredServerBaseURL
         if (!u) {
             // Leave it null if we're in production so we can throw
-            if (Environment.current != Environment.PRODUCTION) {
-                u = "http://localhost:" + (System.getProperty('server.port') ?: "8080")
+            final webRequest = GrailsWebRequest.lookup()
+            final request = webRequest?.currentRequest
+            if(request != null) {
+                def port = request.serverPort
+                def scheme = request.scheme
+                def contextPath = request.contextPath
+
+                def url = "${scheme}://${request.serverName}"
+                if((scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
+                    return contextPath ? "$url:$port$contextPath" : "$url:$port"
+                }
+                else {
+                    return contextPath ? "$url$contextPath" : url
+                }
+            }
+            else {
+                if(!Environment.isWarDeployed()) {
+                    u = "http://localhost:" + (System.getProperty('server.port') ?: "8080")
+                }
             }
         }
         return u
@@ -205,7 +225,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
 
     String getServerBaseURL() {
-        return serverBaseURL
+        return makeServerURL()
     }
 
     void setPluginManager(GrailsPluginManager pluginManager) {

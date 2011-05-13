@@ -60,8 +60,10 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Proxies the SessionFactory allowing for the underlying SessionFactory instance to be replaced at runtime.
- * Used to enable rebuilding of the SessionFactory at development time
+ * <p>Proxies the SessionFactory allowing for the underlying SessionFactory instance to be replaced at runtime.
+ * Used to enable rebuilding of the SessionFactory at development time</p>
+ *
+ * <p>NOTE: This class is not for production use and is development time only!</p>
  *
  * @since 1.4
  * @author Graeme Rocher
@@ -94,14 +96,16 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
      * @return The current SessionFactory being proxied
      */
     public SessionFactory getCurrentSessionFactory() {
-         return applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
+        SessionFactory sf = applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
+        updateCurrentSessionContext(sf);
+        return sf;
     }
 
     /**
      * @return The current SessionFactoryImplementor being proxied
      */
     public SessionFactoryImplementor getCurrentSessionFactoryImplementor() {
-         return (SessionFactoryImplementor) applicationContext.getBean(targetBean, SessionFactoryHolder.class).getSessionFactory();
+         return (SessionFactoryImplementor) getCurrentSessionFactory();
     }
 
     public Session openSession() throws HibernateException {
@@ -389,12 +393,15 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
 
     public void afterPropertiesSet() {
         SessionFactoryImplementor sessionFactory = getCurrentSessionFactoryImplementor();
+        updateCurrentSessionContext(sessionFactory);
+    }
 
+    private void updateCurrentSessionContext(SessionFactory sessionFactory) {
         // patch the currentSessionContext variable of SessionFactoryImpl to use this proxy as the key
         CurrentSessionContext ssc = createCurrentSessionContext();
 
         try {
-            Class<? extends SessionFactoryImplementor> sessionFactoryClass = sessionFactory.getClass();
+            Class<? extends SessionFactory> sessionFactoryClass = sessionFactory.getClass();
             Field currentSessionContextField = sessionFactoryClass.getDeclaredField("currentSessionContext");
             if(currentSessionContextField != null) {
 

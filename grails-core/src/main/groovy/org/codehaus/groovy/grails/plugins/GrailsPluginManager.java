@@ -326,4 +326,6 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * @since 1.4
      */
     void informOfFileChange(File file);
+
+    void informOfClassChange(File file, Class cls);
 }

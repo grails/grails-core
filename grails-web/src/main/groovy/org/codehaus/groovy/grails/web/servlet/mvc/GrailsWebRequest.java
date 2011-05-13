@@ -125,8 +125,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         attributes.setOut(getCurrentRequest(),out);
     }
 
-
-
     /**
      * @return The ServletContext instance
      */

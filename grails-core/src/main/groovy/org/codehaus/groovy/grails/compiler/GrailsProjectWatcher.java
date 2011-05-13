@@ -22,6 +22,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
@@ -34,9 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Watches a Grails projects and re-compiles sources when they change or fires events to the pluginManager
@@ -46,7 +45,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class GrailsProjectWatcher extends DirectoryWatcher{
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
-    private static final Queue<Runnable> classChangeEventQueue = new ConcurrentLinkedQueue<Runnable>();
+    private static final Map<String, ClassUpdate> classChangeEventQueue = new ConcurrentHashMap<String, ClassUpdate>();
     private static boolean active = false;
     public static final String SPRING_LOADED_PLUGIN_CLASS = "com.springsource.loaded.Plugins";
 
@@ -78,12 +77,15 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
 
     /**
      * Fire any pending class change events
+     * @param updatedClass The class to update
      */
-    public static void firePendingClassChangeEvents() {
-        for (Runnable runnable : classChangeEventQueue) {
-            runnable.run();
+    public static void firePendingClassChangeEvents(Class updatedClass) {
+        if(updatedClass != null) {
+            ClassUpdate classUpdate = classChangeEventQueue.remove(updatedClass.getName());
+            if(classUpdate != null) {
+                  classUpdate.run(updatedClass);
+            }
         }
-        classChangeEventQueue.clear();
     }
 
     @Override
@@ -175,15 +177,19 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         }
         else {
             // add to class change event queue
-            classChangeEventQueue.add(new Runnable() {
-                public void run() {
-                    try {
-                        pluginManager.informOfFileChange(file);
-                    } catch (Exception e) {
-                        LOG.error("Failed to reload file ["+file+"] with error: " + e.getMessage());
+            String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
+            if(className != null) {
+
+                classChangeEventQueue.put(className, new ClassUpdate() {
+                    public void run(Class cls) {
+                        try {
+                            pluginManager.informOfClassChange(file, cls);
+                        } catch (Exception e) {
+                            LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage());
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -220,5 +226,9 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
                 return true;
         }
         return false;
+    }
+
+    private interface ClassUpdate {
+        void run(Class cls);
     }
 }

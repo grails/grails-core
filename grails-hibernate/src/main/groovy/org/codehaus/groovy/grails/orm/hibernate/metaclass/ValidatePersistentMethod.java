@@ -62,7 +62,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     @Override
     @SuppressWarnings({"unchecked","rawtypes"})
     protected Object doInvokeInternal(final Object target, Object[] arguments) {
-        DeferredBindingActions.runActions();
         Errors errors = setupErrorsProperty(target);
 
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,

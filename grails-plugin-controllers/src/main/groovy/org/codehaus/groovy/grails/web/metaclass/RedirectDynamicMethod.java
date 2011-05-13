@@ -15,14 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
-import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
@@ -36,10 +36,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -56,7 +54,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     public static final String METHOD_SIGNATURE = "redirect";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
     public static final String GRAILS_VIEWS_ENABLE_JSESSIONID = "grails.views.enable.jsessionid";
-    public static final String GRAILS_REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";
+    public static final String GRAILS_REDIRECT_ISSUED = GrailsApplicationAttributes.REDIRECT_ISSUED;
 
     public static final String ARGUMENT_ERRORS = "errors";
 
@@ -142,7 +140,13 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
-        return redirectResponse(linkGenerator.link(argMap), request, response, permanent);
+
+        Object action = argMap.get(GrailsControllerClass.ACTION);
+        if(action != null) {
+            argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller));
+        }
+
+        return redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(argMap), request, response, permanent);
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -152,13 +156,14 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
                 linkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator.class);
             }
         }
+
         return linkGenerator;
     }
 
     /*
      * Redirects the response the the given URI
      */
-    private Object redirectResponse(String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
+    private Object redirectResponse(String serverBaseURL, String actualUri, HttpServletRequest request, HttpServletResponse response, boolean permanent) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Dynamic method [redirect] forwarding request to ["+actualUri +"]");
         }
@@ -167,11 +172,12 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             LOG.debug("Executing redirect with response ["+response+"]");
         }
 
-        String redirectUrl = useJessionId ? response.encodeRedirectURL(actualUri) : actualUri;
+        String absoluteURL = serverBaseURL + actualUri;
+        String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
         
         response.setStatus(status);
-        response.setHeader("Location", redirectUrl);
+        response.setHeader(HttpHeaders.LOCATION, redirectUrl);
         
         if(redirectListeners != null) {
             for (RedirectEventListener redirectEventListener : redirectListeners) {
@@ -179,7 +185,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             }
         }
 
-        request.setAttribute(GRAILS_REDIRECT_ISSUED, true);
+        request.setAttribute(GRAILS_REDIRECT_ISSUED, actualUri);
         return null;
     }
 

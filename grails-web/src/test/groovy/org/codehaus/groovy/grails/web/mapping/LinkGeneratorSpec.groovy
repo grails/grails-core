@@ -1,9 +1,12 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
+import org.springframework.mock.web.MockHttpServletRequest
 
 /**
  * Tests for the {@link DefaultLinkGenerator} class
@@ -101,6 +104,38 @@ class LinkGeneratorSpec extends Specification {
             link == "/$resource.dir/$resource.file"
     }
 
+    def "test absolute links created from request scheme"() {
+
+        given:
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+
+        when:
+            baseUrl = null
+            resource = mainCssResource + [absolute:true]
+
+        then:
+            link == "http://localhost/$resource.dir/$resource.file"
+
+        when:
+            request.serverPort = 8081
+
+        then:
+            link == "http://localhost:8081/$resource.dir/$resource.file"
+
+        when:
+            request.contextPath = "/blah"
+            request.serverPort = 8081
+
+        then:
+            link == "http://localhost:8081/blah/$resource.dir/$resource.file"
+
+
+    }
+
+    void cleanup() {
+        RequestContextHolder.setRequestAttributes(null)
+    }
 
 
     protected getGenerator(boolean cache=false) {
