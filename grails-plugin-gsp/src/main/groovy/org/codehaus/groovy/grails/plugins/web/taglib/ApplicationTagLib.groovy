@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
+import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -22,6 +23,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -140,23 +142,23 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     /**
      * Render an img tag with src set to a static resource
-     * @attr dir Optional name of resource directory
+     * @attr dir Optional name of resource directory, defaults to "images"
      * @attr file Name of resource file (optional if uri specified)
      * @attr plugin Optional the name of the grails plugin if the resource is not part of the application
      * @attr uri Optional relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
      */
     def img = { attrs ->
-        if(attrs.file != null && attrs.dir == null) {
-            attrs.dir = 'images'
+        if (!attrs.uri && !attrs.dir) {
+            attrs.dir = "images"
         }
-
         def uri = resource(attrs)
-
-        def excludes = ['dir', 'uri', 'file', 'plugin']
-
-        def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
-
-        out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
+        out << "<img src=\"${uri.encodeAsHTML()}\" "
+        attrs.each { k, v ->
+            if (!(k in ['dir', 'uri', 'file', 'plugin'])) {
+                out << "$k=\"${v.encodeAsHTML()}\" "
+            }
+        }
+        out << "/>"
     }
     
     /**
