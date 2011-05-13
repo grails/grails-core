@@ -224,10 +224,9 @@ public class GrailsCoreDependencies {
                             // data source
                             ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", "1.3"),
                             ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.5"),
-                            ModuleRevisionId.newInstance("hsqldb", "hsqldb", "1.8.0.10"),
                             ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
                             // JSP support
-                            ModuleRevisionId.newInstance("taglibs", "standard", "1.1.2"),
+                            ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
