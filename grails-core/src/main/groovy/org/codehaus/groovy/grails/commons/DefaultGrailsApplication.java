@@ -93,7 +93,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected Map<String, ArtefactInfo> artefactInfo = new HashMap<String, ArtefactInfo>();
     protected Class<?>[] allArtefactClassesArray;
     @SuppressWarnings("rawtypes")
-    protected Map applicationMeta = Metadata.getCurrent();
+    protected Metadata applicationMeta = Metadata.getCurrent();
     protected Resource[] resources;
     protected boolean initialised = false;
     protected ConfigObject config;
@@ -824,7 +824,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     @SuppressWarnings("rawtypes")
-    public Map getMetadata() {
+    public Metadata getMetadata() {
         return applicationMeta;
     }
 

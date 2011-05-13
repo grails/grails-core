@@ -17,15 +17,13 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
 import groovy.lang.GroovyObject;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.env.GrailsEnvironment;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.ui.context.ThemeSource;
@@ -36,6 +34,9 @@ import org.springframework.web.context.support.ServletContextAwareProcessor;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.context.support.ServletContextResourcePatternResolver;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 
 /**
  * A WebApplicationContext that extends StaticApplicationContext to allow for programmatic
@@ -70,13 +71,23 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 
     @Override
     public ClassLoader getClassLoader() {
-        ApplicationContext parent = getParent();
-        if (parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
-            final GrailsApplication application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID);
+        GrailsApplication application = getGrailsApplication();
+
+        if(application != null) {
             return application.getClassLoader();
         }
 
         return super.getClassLoader();
+    }
+
+    private GrailsApplication getGrailsApplication() {
+        ApplicationContext parent = getParent();
+        GrailsApplication application = null;
+        if (parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
+            application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID);
+
+        }
+        return application;
     }
 
     /**
@@ -165,5 +176,16 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 
     public ServletConfig getServletConfig() {
         return servletConfig;
+    }
+
+    @Override
+    protected ConfigurableEnvironment createEnvironment() {
+        GrailsApplication grailsApplication = getGrailsApplication();
+        if(grailsApplication != null) {
+            return new GrailsEnvironment(grailsApplication);
+        }
+        else {
+            return super.createEnvironment();
+        }
     }
 }

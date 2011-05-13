@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.util;
 
+import grails.util.Metadata;
 import groovy.util.ConfigObject;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
@@ -183,7 +184,7 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
-    public Map getMetadata() {
+    public Metadata getMetadata() {
         throw new UnsupportedOperationException();
     }
 
