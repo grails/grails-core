@@ -327,6 +327,11 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<img src="/images/logo.png" width="100" height="200" />', template
     }
 
+    void testImgDefaultsToImagesDir() {
+        def template = '<g:img file="header.png" width="200" height="100"/>'
+        assertOutputEquals '<img src="/images/header.png" width="200" height="100" />', template
+    }
+
     
 }
 

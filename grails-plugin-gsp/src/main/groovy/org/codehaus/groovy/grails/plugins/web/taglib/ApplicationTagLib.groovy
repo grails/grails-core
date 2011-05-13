@@ -142,12 +142,15 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     /**
      * Render an img tag with src set to a static resource
-     * @attr dir Optional name of resource directory
+     * @attr dir Optional name of resource directory, defaults to "images"
      * @attr file Name of resource file (optional if uri specified)
      * @attr plugin Optional the name of the grails plugin if the resource is not part of the application
      * @attr uri Optional relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
      */
     def img = { attrs ->
+        if (!attrs.uri && !attrs.dir) {
+            attrs.dir = "images"
+        }
         def uri = resource(attrs)
         out << "<img src=\"${uri.encodeAsHTML()}\" "
         attrs.each { k, v ->
