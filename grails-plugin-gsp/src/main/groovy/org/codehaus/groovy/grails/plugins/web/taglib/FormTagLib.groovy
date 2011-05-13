@@ -20,7 +20,7 @@ import grails.artefact.Artefact
 import java.text.DateFormat
 import java.text.DateFormatSymbols
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
+import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.context.MessageSourceResolvable
@@ -310,11 +310,11 @@ class FormTagLib {
         }
 
         if (useToken) {
-            def token = SynchronizerToken.store(session)
+            def tokensHolder = SynchronizerTokensHolder.store(session)
             writer.println()
-            hiddenFieldImpl(writer, [name: SynchronizerToken.KEY, value: token.currentToken])
+            hiddenFieldImpl(writer, [name: SynchronizerTokensHolder.TOKEN_KEY, value: tokensHolder.generateToken(request.forwardURI)])
             writer.println()
-            hiddenFieldImpl(writer, [name: SynchronizerToken.URI, value: request.forwardURI])
+            hiddenFieldImpl(writer, [name: SynchronizerTokensHolder.TOKEN_URI, value: request.forwardURI])
         }
 
         // output the body

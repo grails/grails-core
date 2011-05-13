@@ -238,13 +238,13 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
             TokenResponseHandler handler = (TokenResponseHandler) request.getAttribute(TokenResponseHandler.KEY);
             if (handler != null && !handler.wasInvoked() && handler.wasInvalidToken()) {
-                String uri = (String) request.getAttribute(SynchronizerToken.URI);
+                String uri = (String) request.getAttribute(SynchronizerTokensHolder.TOKEN_URI);
                 if (uri == null) {
                     uri = WebUtils.getForwardURI(request);
                 }
                 try {
                     FlashScope flashScope = webRequest.getFlashScope();
-                    flashScope.put("invalidToken", request.getParameter(SynchronizerToken.KEY));
+                    flashScope.put("invalidToken", request.getParameter(SynchronizerTokensHolder.TOKEN_KEY));
                     response.sendRedirect(uri);
                     return null;
                 }
