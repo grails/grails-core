@@ -7,7 +7,7 @@ import org.junit.Test
  * A Junit 4 test that tests a scaffolded controllers logic using the new mixins
  */
 @TestFor(BookController)
-@Mock(Book)
+@Mock([Book, Author])
 class DomainClassControllerUnitTestMixinTests {
 
     @Test
@@ -193,6 +193,11 @@ class Book {
     static mapping = {
         title index:true
     }
+}
+
+@Entity
+class Author {
+    String name
 }
 
 class BookController {

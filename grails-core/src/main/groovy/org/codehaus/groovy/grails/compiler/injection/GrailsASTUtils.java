@@ -453,4 +453,10 @@ public class GrailsASTUtils {
             delegateNode = delegateNode.getSuperClass();
         }
     }
+
+    public static void addFieldIfNonExistent(ClassNode classNode, ClassNode fieldType, String fieldName) {
+        if(classNode != null && classNode.getField(fieldName) == null) {
+            classNode.addField(fieldName, Modifier.PRIVATE, fieldType, new ConstructorCallExpression(fieldType, new ArgumentListExpression()));
+        }
+    }
 }
