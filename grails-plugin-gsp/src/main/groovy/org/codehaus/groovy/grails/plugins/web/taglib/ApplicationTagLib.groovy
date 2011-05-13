@@ -152,13 +152,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             attrs.dir = "images"
         }
         def uri = resource(attrs)
-        out << "<img src=\"${uri.encodeAsHTML()}\" "
-        attrs.each { k, v ->
-            if (!(k in ['dir', 'uri', 'file', 'plugin'])) {
-                out << "$k=\"${v.encodeAsHTML()}\" "
-            }
-        }
-        out << "/>"
+
+		def excludes = ['dir', 'uri', 'file', 'plugin']
+        def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
+        out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
     }
     
     /**
