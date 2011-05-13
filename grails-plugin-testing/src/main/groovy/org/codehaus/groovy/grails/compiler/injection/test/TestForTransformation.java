@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
 import grails.test.mixin.services.ServiceUnitTestMixin;
+import grails.test.mixin.support.MixinMethod;
 import grails.test.mixin.web.ControllerUnitTestMixin;
 import grails.test.mixin.web.FiltersUnitTestMixin;
 import grails.test.mixin.web.GroovyPageUnitTestMixin;
@@ -29,6 +30,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -73,6 +75,7 @@ public class TestForTransformation extends TestMixinTransformation {
     public static final String DOMAIN_TYPE = "Domain";
     public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
     public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
+
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
 
@@ -183,18 +186,54 @@ public class TestForTransformation extends TestMixinTransformation {
         BlockStatement methodBody;
         if(isJunit3Test(classNode)) {
             methodBody= getJunit3Setup(classNode);
+            addMockCollaborator(artefactType, targetClassExpression,methodBody);
         }
         else {
-            methodBody= getJunit4Setup(classNode);
+            addToJunit4BeforeMethods(classNode, artefactType, targetClassExpression);
         }
 
-        addMockCollaborator(artefactType, targetClassExpression,methodBody);
+    }
+
+    private void addToJunit4BeforeMethods(ClassNode classNode, String artefactType, ClassExpression targetClassExpression) {
+        Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+        boolean weavedIntoBeforeMethods = false;
+        for (MethodNode methodNode : declaredMethodsMap.values()) {
+            if(isDeclaredBeforeMethod(methodNode)) {
+                Statement code = getMethodBody(methodNode);
+                addMockCollaborator(artefactType, targetClassExpression, (BlockStatement) code);
+                weavedIntoBeforeMethods = true;
+            }
+        }
+
+        if(!weavedIntoBeforeMethods) {
+            BlockStatement junit4Setup = getJunit4Setup(classNode);
+            addMockCollaborator(artefactType,targetClassExpression,junit4Setup);
+        }
+    }
+
+    private Statement getMethodBody(MethodNode methodNode) {
+        Statement code = methodNode.getCode();
+        if(!(code instanceof BlockStatement)) {
+            BlockStatement body = new BlockStatement();
+            body.addStatement(code);
+            code = body;
+        }
+        return code;
+    }
+
+    private boolean isDeclaredBeforeMethod(MethodNode methodNode) {
+        return isPublicInstanceMethod(methodNode) && hasAnnotation(methodNode, Before.class) && !hasAnnotation(methodNode, MixinMethod.class);
+    }
+
+    private boolean isPublicInstanceMethod(MethodNode methodNode) {
+        return !methodNode.isSynthetic() && !methodNode.isStatic() && methodNode.isPublic();
     }
 
     private BlockStatement getJunit4Setup(ClassNode classNode) {
         MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if(setupMethod == null) {
             setupMethod = new MethodNode(SET_UP_METHOD,Modifier.PUBLIC,ClassHelper.VOID_TYPE,GrailsArtefactClassInjector.ZERO_PARAMETERS,null,new BlockStatement());
+            setupMethod.addAnnotation(MIXIN_METHOD_ANNOTATION);
             classNode.addMethod(setupMethod);
         }
         if(setupMethod.getAnnotations(BEFORE_CLASS_NODE).size() == 0) {
@@ -253,7 +292,7 @@ public class TestForTransformation extends TestMixinTransformation {
             methodBody.addStatement(new ExpressionStatement(testTargetAssignment));
             methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
             methodNode.addAnnotation(BEFORE_ANNOTATION);
-
+            methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
             classNode.addMethod(methodNode);
         }
 
@@ -264,6 +303,6 @@ public class TestForTransformation extends TestMixinTransformation {
     protected void addMockCollaborator(String mockType, ClassExpression targetClass, BlockStatement methodBody) {
         ArgumentListExpression args = new ArgumentListExpression();
         args.addExpression(targetClass);
-        methodBody.getStatements().add(0,new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION,"mock"+ mockType, args)));
+        methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "mock" + mockType, args)));
     }
 }

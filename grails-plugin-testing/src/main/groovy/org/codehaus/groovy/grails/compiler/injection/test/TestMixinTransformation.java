@@ -17,6 +17,7 @@
 package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.TestMixin;
+import grails.test.mixin.support.MixinMethod;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 import junit.framework.TestCase;
@@ -46,6 +47,7 @@ import java.util.List;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class TestMixinTransformation implements ASTTransformation{
+    public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(new ClassNode(MixinMethod.class));
     private static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     public static final String OBJECT_CLASS = "java.lang.Object";
@@ -125,10 +127,17 @@ public class TestMixinTransformation implements ASTTransformation{
                         for (MethodNode mixinMethod : mixinMethods) {
                             if(isCandidateMethod(mixinMethod) && !hasDeclaredMethod(classNode, mixinMethod)) {
                                 if(mixinMethod.isStatic()) {
-                                    GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
+                                    MethodNode methodNode = GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
+                                    if(methodNode != null) {
+                                        methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
+                                    }
+
                                 }
                                 else {
-                                    GrailsASTUtils.addDelegateInstanceMethod(classNode,fieldReference, mixinMethod, false);
+                                    MethodNode methodNode = GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false);
+                                    if(methodNode != null) {
+                                        methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
+                                    }
                                 }
                                 if(isJunit3) {
 
@@ -161,11 +170,11 @@ public class TestMixinTransformation implements ASTTransformation{
         }
     }
 
-    private boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
+    protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
         return classNode.hasDeclaredMethod(mixinMethod.getName(), mixinMethod.getParameters());
     }
 
-    private boolean hasAnnotation(MethodNode mixinMethod, Class beforeClass) {
+    protected boolean hasAnnotation(MethodNode mixinMethod, Class beforeClass) {
         return !mixinMethod.getAnnotations(new ClassNode(beforeClass)).isEmpty();
     }
 
