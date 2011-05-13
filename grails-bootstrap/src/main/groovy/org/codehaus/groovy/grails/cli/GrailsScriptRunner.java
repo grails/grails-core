@@ -116,7 +116,7 @@ public class GrailsScriptRunner {
     "Grails " + build.getGrailsVersion() + '\n' +
     "Grails home is " + (grailsHome == null ? "not set" : "set to: " + grailsHome) + '\n');
         } else {
-            System.out.print(
+            System.out.println(
     "Grails " + build.getGrailsVersion() +" initializing... ");
         }
         
@@ -130,9 +130,11 @@ public class GrailsScriptRunner {
         if (verbose) {
             System.out.println("Base Directory: " + build.getBaseDir().getPath());
         }
+        
             
-
         PrintStream originalOut = System.out;
+        UserInterface ui = new DefaultScriptUserInterface(originalOut, verbose);
+        
         try {
             ByteArrayOutputStream cachedOutput = new ByteArrayOutputStream();
             if (!verbose) {
@@ -141,9 +143,9 @@ public class GrailsScriptRunner {
             }
             try {
                 GrailsScriptRunner runner = new GrailsScriptRunner(build);
-                runner.out = originalOut;
-                runner.consoleOut = originalOut;
-                runner.ui = new DefaultScriptUserInterface(originalOut, verbose);
+                runner.setOut(originalOut);
+                runner.setConsoleOut(originalOut);
+                runner.setUserInterface(ui);
                 
                 int exitCode = runner.executeCommand(script.name, script.args, script.env);
                         
@@ -153,6 +155,7 @@ public class GrailsScriptRunner {
                         originalOut.write(bytes, 0, bytes.length);
                     }
                 }
+                ui.finished();
                 System.exit(exitCode);
             } finally {
                 System.setOut(originalOut);
@@ -265,7 +268,19 @@ public class GrailsScriptRunner {
 
     public void setOut(PrintStream outputStream) {
         this.out = outputStream;
-        this.helper = new CommandLineHelper(out);
+    }
+
+    public PrintStream getConsoleOut() {
+        return this.consoleOut;
+    }
+
+    public void setConsoleOut(PrintStream outputStream) {
+        this.consoleOut = outputStream;
+    }
+
+    public void setUserInterface(UserInterface ui) {
+        this.ui = ui;
+        this.helper = new UserInterfaceCommandLineHelper(ui);
     }
 
     public int executeCommand(String scriptName, String args) throws IOException {
@@ -472,11 +487,12 @@ public class GrailsScriptRunner {
             potentialScripts = cachedScript.potentialScripts;
             binding = cachedScript.binding;
             setDefaultInputStream(binding);
+            setUIListener(binding);
         }
         else {
             binding = new GantBinding();
             setDefaultInputStream(binding);
-
+            setUIListener(binding);
 
             // Now find what scripts match the one requested by the user.
             boolean exactMatchFound = false;
@@ -534,7 +550,7 @@ public class GrailsScriptRunner {
                     out.println("Run 'grails help' for a complete list of available scripts.");
                     return -1;
                 } 
-                consoleOut.println("Running script " + scriptFile.getFilename()+"...");
+                ui.statusBegin("Running script " + scriptFile.getFilename());
                 // We can now safely set the default environment
                 String scriptFileName = getScriptNameFromFile(scriptFile);
                 setRunningEnvironment(scriptFileName, env);
@@ -617,13 +633,19 @@ public class GrailsScriptRunner {
         return executeWithGantInstance(gant, doNothingClosure);
     }
 
+    private void setUIListener(GantBinding binding) {
+        AntBuilder ant = (AntBuilder) binding.getVariable("ant");
+        
+        ant.getProject().addBuildListener(new ConsoleUIBuildListener(this.ui, this.consoleOut));
+    }
+
     private void setDefaultInputStream(GantBinding binding) {
         // Gant does not initialise the default input stream for
         // the Ant project, so we manually do it here.
         AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
         Project p = antBuilder.getAntProject();
         try {
-            p.setInputHandler(new CommandLineInputHandler());
+            p.setInputHandler(new CommandLineInputHandler(helper));
             p.setDefaultInputStream(System.in);
         }
         catch (NoSuchMethodError nsme) {
@@ -1151,84 +1173,5 @@ public class GrailsScriptRunner {
         public String name;
         public String env;
         public String args;
-    }
-    
-    static final class DefaultScriptUserInterface implements UserInterface {
-        PrintStream consoleOut;
-        boolean lastWasPrintln = true;
-        boolean inStatusRun = false;
-        String lastVerbosePrefix;
-        boolean verbose;
-        
-        DefaultScriptUserInterface(PrintStream output, boolean verbose) {
-            consoleOut = output;
-            this.verbose = verbose;
-        }
-
-        protected void print(String s) {
-            consoleOut.print(s);
-            lastWasPrintln = false;
-        }
-
-        protected void println(String s) {
-            consoleOut.println(s);
-            lastWasPrintln = true;
-        }
-
-        public void statusBegin(String msg) {
-            print( (lastWasPrintln ? " # " : "\n # ") + msg + "... ");
-            inStatusRun = true;
-            if (verbose) {
-                lastVerbosePrefix = msg;
-            }
-        }
-
-        public void statusEnd(String msg) {
-            if (msg == null) {
-                msg = "Done";
-            }
-            if (lastVerbosePrefix != null) {
-                // Re-print the last status prefix because a bunch of output might have come out
-                statusBegin(lastVerbosePrefix);
-            }
-            if (!inStatusRun) {
-                // Script is old / forgot to call statusBegin first
-                statusBegin(msg);
-                inStatusRun = false;
-            } else {
-                println(msg);
-                inStatusRun = false;
-            }
-            lastVerbosePrefix = null;
-        }
-
-        public void statusUpdate(String msg) {
-            if (!inStatusRun) {
-                // Script is old / forgot to call statusBegin first
-                statusBegin(msg);
-            } else {
-                if (lastVerbosePrefix != null) {
-                    // Re-print the last status prefix because a bunch of output might have come out
-                    statusBegin(lastVerbosePrefix);
-                }
-                print(msg + "... ");
-                inStatusRun = true;
-            }
-        }
-
-        public void statusFinal(String msg) {
-            println(msg);
-        }
-
-        public void progressTicker(String charToAppend) {
-            print(charToAppend);
-        }
-        
-        public void progressString(String currentProgressValue) {
-            // @todo make this use cursor control to overwrite back to the previous non-progress location
-            // and then overwrite with this
-            print(currentProgressValue);
-        }
-        
     }
 }

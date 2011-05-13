@@ -12,4 +12,10 @@ interface UserInterface {
     void progressString(String currentProgressValue);
 
     void progressTicker(String charToAppend);
+
+    void inputPrompt(String message, String responses);
+
+    void message(String message);
+    
+    void finished();
 }

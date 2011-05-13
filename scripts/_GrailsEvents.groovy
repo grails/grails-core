@@ -45,7 +45,7 @@ eventListener.globalEventHooks = [
     ProgressTicker: [ {message -> userInterface.progressTicker(message) } ],
     ProgressString: [ {message -> userInterface.progressString(message) } ],
     StatusError: [ {message -> System.err.println message } ],
-    CreatedArtefact: [ {artefactType, artefactName -> consoleOut.println("Created $artefactType for $artefactName") } ]
+    CreatedArtefact: [ {artefactType, artefactName -> userInterface.statusBegin("Created $artefactType for $artefactName") } ]
 ]
 
 hooksLoaded = false
