@@ -243,21 +243,27 @@ public class TestForTransformation extends TestMixinTransformation {
         }
 
 
-        BlockStatement methodBody = new BlockStatement();
-        VariableExpression fieldExpression = new VariableExpression(fieldName);
-        addMockCollaborator(type, targetClass, methodBody);
-        BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
-        methodBody.addStatement(new ExpressionStatement(testTargetAssignment));
-        MethodNode methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
-        methodNode.addAnnotation(BEFORE_ANNOTATION);
+        MethodNode methodNode = classNode.getMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
 
-        classNode.addMethod(methodNode);
+        if(methodNode == null) {
+            BlockStatement methodBody = new BlockStatement();
+            VariableExpression fieldExpression = new VariableExpression(fieldName);
+            addMockCollaborator(type, targetClass, methodBody);
+            BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
+            methodBody.addStatement(new ExpressionStatement(testTargetAssignment));
+            methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
+            methodNode.addAnnotation(BEFORE_ANNOTATION);
+
+            classNode.addMethod(methodNode);
+        }
+
+
         return methodNode;
     }
 
     protected void addMockCollaborator(String mockType, ClassExpression targetClass, BlockStatement methodBody) {
         ArgumentListExpression args = new ArgumentListExpression();
         args.addExpression(targetClass);
-        methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION,"mock"+ mockType, args)));
+        methodBody.getStatements().add(0,new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION,"mock"+ mockType, args)));
     }
 }
