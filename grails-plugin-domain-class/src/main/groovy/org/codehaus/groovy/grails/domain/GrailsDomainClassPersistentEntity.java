@@ -299,12 +299,14 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity, Init
 	}
 	
 	public PersistentProperty getVersion() {
-        // TODO
-        throw new UnsupportedOperationException();
+        GrailsDomainClassProperty version = domainClass.getVersion();
+        if(version != null) {
+            return new GrailsDomainClassPersistentProperty(this, version);
+        }
+        return null;
     }
 
     public boolean isVersioned() {
-        // TODO
-        throw new UnsupportedOperationException();
+        return domainClass.getVersion() != null;
     }
 }
