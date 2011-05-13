@@ -111,7 +111,8 @@ public class TestMixinTransformation implements ASTTransformation{
                     ClassNode mixinClassNode = ce.getType();
 
                     final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
-                    classNode.addField(fieldName, Modifier.PRIVATE, mixinClassNode, new ConstructorCallExpression(mixinClassNode, new ArgumentListExpression()));
+
+                    GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
                     VariableExpression fieldReference = new VariableExpression(fieldName);
 
 
