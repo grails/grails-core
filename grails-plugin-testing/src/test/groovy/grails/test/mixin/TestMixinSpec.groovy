@@ -6,8 +6,8 @@ import org.junit.Before
 import org.junit.runner.Result
 import org.junit.runner.notification.RunNotifier
 import org.junit.runners.BlockJUnit4ClassRunner
-import org.spockframework.runtime.Sputnik
-import spock.lang.Specification
+import org.spockframework.runtime.*
+import spock.lang.*
 
  /**
  * Tests for the mixin that adds functionality to a test case
@@ -62,6 +62,10 @@ class TestMixinSpec extends Specification {
             MyMixin.doLastCalled == true
     }
 
+    @FailsWith(
+      value = ConditionNotSatisfiedError, 
+      reason = "Spock 0.5 does not support @Before etc., Spock 0.6 (not yet released) does"
+    )
     void "Test that appropriate test hooks are called for a Spock test"() {
         setup:
            MyMixin.doFirstCalled = false
@@ -79,9 +83,8 @@ class TestMixinSpec extends Specification {
             result.runCount == 1
             result.failureCount == 0
 
-            // TODO: These won't work until we upgrade Spock. Next version of Spock will support @Before/@After
-            MyMixin.doFirstCalled == false
-            MyMixin.doLastCalled == false
+            MyMixin.doFirstCalled == true
+            MyMixin.doLastCalled == true
     }
 
     def getJunit3Test() {
