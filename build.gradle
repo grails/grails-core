@@ -145,6 +145,20 @@ subprojects { project ->
         meta sourcesJar
         meta javadocJar
     }
+
+    uploadArchives {
+      repositories {
+        final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots" :
+                                                           "http://repo.grails.org/grails/libs-releases"
+        mavenRepo urls: url
+
+        repositories.mavenDeployer {
+          repository(url: url) {
+            authentication(userName: project.getProperty("artifactoryPublishUsername"), password: project.getProperty("artifactoryPublishPassword"))
+          }
+        }
+      }
+    }
 }
 
 
