@@ -28,19 +28,33 @@ import java.util.Set;
  */
 public interface LinkGenerator {
 
+    String ATTRIBUTE_CONTROLLER = "controller";
+    String ATTRIBUTE_ACTION = "action";
+    String ATTRIBUTE_URI = "uri";
+    String ATTRIBUTE_CONTEXT_PATH = "contextPath";
+    String ATTRIBUTE_URL = "url";
+    String ATTRIBUTE_BASE = "base";
+    String ATTRIBUTE_ABSOLUTE = "absolute";
+    String ATTRIBUTE_ID = "id";
+    String ATTRIBUTE_FRAGMENT = "fragment";
+    String ATTRIBUTE_PARAMS = "params";
+    String ATTRIBUTE_MAPPING = "mapping";
+    String ATTRIBUTE_EVENT = "event";
+    String ATTRIBUTE_ELEMENT_ID = "elementId";
+
     Set<String> LINK_ATTRIBUTES = new HashSet<String>() {{
-       add("controller");
-       add("action");
-       add("uri");
-       add("url");
-       add("base");
-       add("absolute");
-       add("id");
-       add("fragment");
-       add("params");
-       add("mapping");
-       add("event");
-       add("elementId");
+       add(ATTRIBUTE_CONTROLLER);
+       add(ATTRIBUTE_ACTION);
+       add(ATTRIBUTE_URI);
+       add(ATTRIBUTE_URL);
+       add(ATTRIBUTE_BASE);
+       add(ATTRIBUTE_ABSOLUTE);
+       add(ATTRIBUTE_ID);
+       add(ATTRIBUTE_FRAGMENT);
+       add(ATTRIBUTE_PARAMS);
+       add(ATTRIBUTE_MAPPING);
+       add(ATTRIBUTE_EVENT);
+       add(ATTRIBUTE_ELEMENT_ID);
     }};
     /**
      * Generates a link to a static resource for the given named parameters.
@@ -76,6 +90,7 @@ public interface LinkGenerator {
      *    <li>url -  A map containing the action,controller,id etc.</li>
      *    <li>base -  Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.</li>
      *    <li>absolute -  If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:&lt;port&gt; if no value in Config and not running in production.</li>
+     *    <li>contextPath - The context path to link to, defaults to the servlet context path</li>
      *    <li>id -  The id to use in the link</li>
      *    <li>fragment -  The link fragment (often called anchor tag) to use</li>
      *    <li>params -  A map containing URL query parameters</li>

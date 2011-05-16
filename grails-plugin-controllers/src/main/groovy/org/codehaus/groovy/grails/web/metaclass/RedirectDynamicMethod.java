@@ -61,6 +61,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 	public static final String ARGUMENT_PERMANENT = "permanent";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
+    private static final String BLANK = "";
+    private static final String CONTEXT_PATH_ARGUMENT = "contextPath";
     private boolean useJessionId = false;
     private Collection<RedirectEventListener> redirectListeners;
     private LinkGenerator linkGenerator;
@@ -146,6 +148,9 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller));
         }
 
+        // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
+        // which includes the contextPath
+        argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
         return redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(argMap), request, response, permanent);
     }
 

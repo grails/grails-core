@@ -59,48 +59,54 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     String link(Map attrs, String encoding = 'UTF-8') {
         def writer = new StringBuilder()
         // prefer URI attribute
-        if (attrs.uri) {
+        if (attrs.get(ATTRIBUTE_URI)) {
             final base = handleAbsolute(attrs)
             if(base != null) {
                 writer << base
             }
-            writer << attrs.uri.toString()
+            writer << attrs.get(ATTRIBUTE_URI).toString()
         }
         else {
             // prefer a URL attribute
             def urlAttrs = attrs
-            if (attrs.url instanceof Map) {
-                urlAttrs = attrs.url
+            final urlAttribute = attrs.get(ATTRIBUTE_URL)
+            if (urlAttribute instanceof Map) {
+                urlAttrs = urlAttribute
             }
-            else if (attrs.url) {
-                urlAttrs = attrs.url.toString()
+            else if (urlAttribute) {
+                urlAttrs = urlAttribute.toString()
             }
 
             if (urlAttrs instanceof String) {
                 writer << urlAttrs
             }
             else {
-                def controller = urlAttrs.controller ? urlAttrs.controller?.toString() : requestStateLookupStrategy.getControllerName()
-                def action = urlAttrs.action?.toString()
+                final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
+                def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
+                def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName(controller)
                 }
-                def id = urlAttrs.id
-                def frag = urlAttrs.fragment?.toString()
-                def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
-                def mappingName = urlAttrs.mapping
+                def id = urlAttrs.get(ATTRIBUTE_ID)
+                def frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
+                final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
+                def params = paramsAttribute && paramsAttribute instanceof Map ? paramsAttribute : [:]
+                def mappingName = urlAttrs.get(ATTRIBUTE_MAPPING)
                 if (mappingName != null) {
                     params.mappingName = mappingName
                 }
                 def url
-                if (id != null) params.id = id
+                if (id != null) {
+                    params.put(ATTRIBUTE_ID, id)
+                }
                 UrlCreator mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
 
-                if (!attrs.absolute) {
+                if (!attrs.get(ATTRIBUTE_ABSOLUTE)) {
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
-                    final cp = getContextPath()
-                    if(attrs.base || cp == null) {
-                        attrs.absolute = true
+                    final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
+                    final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()
+                    if(attrs.get(ATTRIBUTE_BASE) || cp == null) {
+                        attrs.put(ATTRIBUTE_ABSOLUTE, true)
                         writer << handleAbsolute(attrs)
                     }
                     else {
@@ -215,7 +221,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             }
             else {
                 if(!Environment.isWarDeployed()) {
-                    u = "http://localhost:" + (System.getProperty('server.port') ?: "8080")
+                    u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
                 }
             }
         }
