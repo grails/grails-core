@@ -1,9 +1,18 @@
 dependencies {
     runtime 'ognl:ognl:2.7.3'
     // Spring Web Flow
-    compile "org.springframework.webflow:spring-binding:2.0.8.RELEASE",
-            "org.springframework.webflow:spring-js:2.0.8.RELEASE",
-            "org.springframework.webflow:spring-webflow:2.0.8.RELEASE"
+    compile( "org.springframework.webflow:spring-binding:$springWebflowVersion") {
+        transitive = false
+    }
+    compile("org.springframework.webflow:spring-js:$springWebflowVersion") {
+        transitive = false
+    }
+    compile("org.springframework.webflow:spring-webflow:$springWebflowVersion" ) {
+	    transitive = false
+	}
+
+    compile "org.springframework:spring-orm:${springVersion}"
+    compile "org.springframework:spring-tx:${springVersion}"
 
     compile project(":grails-web"), project(':grails-hibernate'), project(':grails-plugin-controllers')
 }

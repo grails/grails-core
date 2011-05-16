@@ -1,4 +1,5 @@
 dependencies {
+    compile "commons-lang:commons-lang:$commonsLangVersion"
     compile project(":grails-web")
 }
 
