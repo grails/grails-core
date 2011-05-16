@@ -44,7 +44,7 @@ class ServicesGrailsPlugin {
 
     def doWithSpring = {
         xmlns tx:"http://www.springframework.org/schema/tx"
-        tx.'annotation-driven'()
+        tx.'annotation-driven'('transaction-manager':'transactionManager')
 
         for (serviceGrailsClass in application.serviceClasses) {
             GrailsServiceClass serviceClass = serviceGrailsClass
