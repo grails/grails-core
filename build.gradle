@@ -148,13 +148,19 @@ subprojects { project ->
 
     uploadArchives {
       repositories {
-        final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots" :
-                                                           "http://repo.grails.org/grails/libs-releases"
+        final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
+                                                           "http://repo.grails.org/grails/libs-releases-local"
+
+
         mavenRepo urls: url
 
         repositories.mavenDeployer {
           repository(url: url) {
-            authentication(userName: project.getProperty("artifactoryPublishUsername"), password: project.getProperty("artifactoryPublishPassword"))
+              final username = project.getProperty("artifactoryPublishUsername")
+              final password = project.getProperty("artifactoryPublishPassword")
+
+              org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
+              authentication(userName: username, password: password)
           }
         }
       }
