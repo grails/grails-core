@@ -38,7 +38,8 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
     @Override
     protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
         Method mAction = ReflectionUtils.findMethod(controller.getClass(), actionName, MethodGrailsControllerHelper.NOARGS);
-        ReflectionUtils.makeAccessible(mAction);
+        if(mAction != null)
+            ReflectionUtils.makeAccessible(mAction);
 
         if (mAction != null && mAction.getAnnotation(Action.class) != null) {
             return mAction;

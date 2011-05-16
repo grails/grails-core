@@ -169,7 +169,9 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 
     public boolean isActionMethod(String methodName) {
         Method m =  ReflectionUtils.findMethod(getClazz(), methodName, new Class[0]);
-        ReflectionUtils.makeAccessible(m);
+        if(m != null) {
+            ReflectionUtils.makeAccessible(m);
+        }
         return m != null && m.getAnnotation(Action.class) != null;
     }
 
