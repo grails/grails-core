@@ -86,7 +86,7 @@ binExecutables = ["cygrails", "grails", "grails-debug", "grails-debug.bat", "gra
 distSpec = copySpec {
     from(projectDir) {
         into "grails-$grailsVersion"
-        include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties',
+        include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties', 'dependencies.txt',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
         exclude 'ant/bin'
 
