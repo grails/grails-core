@@ -23,8 +23,12 @@ dependencies {
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
-    runtime "org.springframework:spring-jms:${springVersion}"
+    runtime "org.springframework:spring-jms:${springVersion}",
+            "org.springframework:spring-instrument:${springVersion}",
+            "org.springframework:spring-oxm:${springVersion}"
 
+    runtime 'xalan:serializer:2.7.1'
+    
     agent "com.springsource.springloaded:springloaded-core:$springLoadedVersion"
 
 
