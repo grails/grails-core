@@ -156,10 +156,13 @@ subprojects { project ->
 
         repositories.mavenDeployer {
           repository(url: url) {
-              final username = project.getProperty("artifactoryPublishUsername")
-              final password = project.getProperty("artifactoryPublishPassword")
+              final username = project.properties["artifactoryPublishUsername"]
+              final password = project.properties["artifactoryPublishPassword"]
 
-              org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
+              if(username && password) {
+                org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
+              }
+
               authentication(userName: username, password: password)
           }
         }
