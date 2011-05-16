@@ -122,6 +122,7 @@ distSpec = copySpec {
         into "grails-$grailsVersion/bin"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
 		filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
         fileMode = 0755
     }
     from("grails-resources/src/grails/home/conf") {
