@@ -31,6 +31,7 @@ import org.grails.datastore.gorm.GormInstanceApi;
 import org.grails.datastore.gorm.GormStaticApi;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Transforms GORM entities making the GORM API available to Java
@@ -44,10 +45,16 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You either don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
     public static final String NEW_INSTANCE_METHOD = "newInstance";
 
+    private static final java.util.List<String> EXCLUDES = new ArrayList<String>() {{
+        add("create");
+        add("setTransactionManager");
+    }};
+
 
     @Override
     protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
-        return !(declaredMethod.getName().equals("create") && declaredMethod.getParameters().length == 0) && super.isStaticCandidateMethod(classNode, declaredMethod);
+        String methodName = declaredMethod.getName();
+        return !(EXCLUDES.contains(methodName)) && super.isStaticCandidateMethod(classNode, declaredMethod);
     }
 
     @Override
