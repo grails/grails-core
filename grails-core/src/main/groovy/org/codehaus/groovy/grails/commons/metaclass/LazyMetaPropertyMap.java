@@ -16,21 +16,13 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.GroovySystem;
+import groovy.lang.MetaBeanProperty;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import groovy.util.MapEntry;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.springframework.util.Assert;
+
+import java.util.*;
 
 /**
  * A map implementation that reads an objects properties lazily using Groovy's MetaClass.
@@ -214,6 +206,8 @@ public class LazyMetaPropertyMap implements Map {
         Set<MapEntry> entries = new HashSet<MapEntry>();
         for (MetaProperty mp : metaClass.getProperties()) {
             if (EXCLUDES.contains(mp.getName())) continue;
+            if((mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null) continue;
+
             entries.add(new MapEntry(mp.getName(), mp.getProperty(instance)));
         }
         return entries;
