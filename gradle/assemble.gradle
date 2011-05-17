@@ -25,7 +25,8 @@ dependencyCache = {
 	}
 	copy {
 	    from ( cacheLocation ) {
-	        includes = ['org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-*.jar']
+	        includes = ['org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-*.jar', 
+						'org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-*.jar']
 	    }
 	    into "$projectDir/lib"
 	}
