@@ -37,6 +37,8 @@ class JavascriptTagLib  {
     static final PROVIDER_MAPPINGS = [:]
 
     GrailsPluginManager pluginManager
+    
+    def resourceService
 
     /**
      * Includes a javascript src file, library or inline script
@@ -47,7 +49,7 @@ class JavascriptTagLib  {
      * The 'library' attribute will attempt to use the library mappings defined above to import the
      * right js files and not duplicate imports eg.<br/>
      *
-     * &lt;g:javascript library="scripaculous" /&gt; // imports all the necessary js for the scriptaculous library<br/>
+     * &lt;g:javascript library="scriptaculous" /&gt; // imports all the necessary js for the scriptaculous library<br/>
      *
      * The 'src' attribute will merely import the js file but within the right context (ie inside the /js/ directory of
      * the Grails application:<br/>
@@ -68,33 +70,41 @@ class JavascriptTagLib  {
             javascriptInclude(attrs)
         }
         else if (attrs.library) {
-            if (LIBRARY_MAPPINGS.containsKey(attrs.library)) {
-                LIBRARY_MAPPINGS[attrs.library].each {
-                    if (!request[INCLUDED_JS].contains(it)) {
-                        request[INCLUDED_JS] << it
-                        def newattrs = [:] + attrs
-                        newattrs.src = it + '.js'
-                        javascriptInclude(newattrs)
+            if (resourceService) {
+                out << r.use(module:attrs.library)
+            } else {
+                if (LIBRARY_MAPPINGS.containsKey(attrs.library)) {
+                    LIBRARY_MAPPINGS[attrs.library].each {
+                        if (!request[INCLUDED_JS].contains(it)) {
+                            request[INCLUDED_JS] << it
+                            def newattrs = [:] + attrs
+                            newattrs.src = it + '.js'
+                            javascriptInclude(newattrs)
+                        }
+                    }
+                    if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
+                        request[INCLUDED_LIBRARIES] << attrs.library
                     }
                 }
-                if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-                    request[INCLUDED_LIBRARIES] << attrs.library
-                }
-            }
-            else {
-                if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-                    def newattrs = [:] + attrs
-                    newattrs.src = newattrs.remove('library') + '.js'
-                    javascriptInclude(newattrs)
-                    request[INCLUDED_LIBRARIES] << attrs.library
-                    request[INCLUDED_JS] << attrs.library
+                else {
+                    if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
+                        def newattrs = [:] + attrs
+                        newattrs.src = newattrs.remove('library') + '.js'
+                        javascriptInclude(newattrs)
+                        request[INCLUDED_LIBRARIES] << attrs.library
+                        request[INCLUDED_JS] << attrs.library
+                    }
                 }
             }
         }
         else {
-            out.println '<script type="text/javascript">'
-            out.println body()
-            out.println '</script>'
+            if (resourceService) {
+                r.script([disposition:'head'], body)
+            } else {
+                out.println '<script type="text/javascript">'
+                out.println body()
+                out.println '</script>'
+            }
         }
     }
 
@@ -112,29 +122,20 @@ class JavascriptTagLib  {
             }
         }
 
-        def writer = out
-        writer << '<script type="text/javascript" src="'
-        if (!attrs.base) {
-            def baseUri = grailsAttributes.getApplicationUri(request)
-            writer << baseUri << (baseUri.endsWith('/') ? '' : '/')
-            if (requestPluginContext) {
-                writer << (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext)
-                writer << "/"
+        if (attrs.base) {
+            attrs.uri = attrs.remove('base') + attrs.remove('src')
+        } else {
+            def appBase = grailsAttributes.getApplicationUri(request)
+            if (!appBase.endsWith('/')) {
+                appBase += '/'
             }
-            writer << 'js/'
+            def reqResCtx = ''
+            if (requestPluginContext) {
+                reqResCtx = (requestPluginContext.startsWith("/") ? requestPluginContext.substring(1) : requestPluginContext) + '/'
+            }
+            attrs.uri = appBase + reqResCtx + 'js/'+attrs.remove('src')
         }
-        else {
-            writer << attrs.base
-        }
-
-        writer << attrs.src
-        writer << '"'
-        def otherAttrs = [:] + attrs
-        otherAttrs.remove('base')
-        otherAttrs.remove('src')
-        otherAttrs.remove('library')
-        otherAttrs.each {k, v -> writer << " $k=\"${v.encodeAsHTML()}\"" }
-        writer.println '></script>'
+        out << g.external(attrs)
     }
 
     /**

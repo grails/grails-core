@@ -330,6 +330,20 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<img src="/images/logo.png" width="100" height="200" />', template
     }
 
+    void testExternal() {
+        def template = '<g:external uri="/js/main.js"/>'
+        assertOutputEquals '<script src="/js/main.js" type="text/javascript"></script>\r\n', template
+
+        template = '<g:external uri="/css/style.css"/>'
+        assertOutputEquals '<link href="/css/style.css" type="text/css" rel="stylesheet" media="screen, projector"/>\r\n', template
+
+        template = '<g:external uri="/css/print.css" media="print"/>'
+        assertOutputEquals '<link href="/css/print.css" type="text/css" rel="stylesheet" media="print"/>\r\n', template
+
+        template = '<g:external uri="/images/icons/iphone-icon.png" type="appleicon"/>'
+        assertOutputEquals '<link href="/images/icons/iphone-icon.png" rel="apple-touch-icon"/>\r\n', template
+    }
+
 }
 
 class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
