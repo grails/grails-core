@@ -20,6 +20,7 @@ import grails.util.*;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
+import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.Project;
@@ -75,6 +76,7 @@ public class GrailsScriptRunner {
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
     private static final Pattern pluginDescriptorPattern = Pattern.compile("^(\\S+)GrailsPlugin.groovy$");
     public static final String AGENT_FLAG = "-agent";
+    private InputStream orignalIn;
 
     /**
      * Evaluate the arguments to get the name of the script to execute, which environment
@@ -587,13 +589,19 @@ public class GrailsScriptRunner {
     }
 
     private void setDefaultInputStream(GantBinding binding) {
+
+        if(this.orignalIn == null) {
+            this.orignalIn = System.in;
+        }
         // Gant does not initialise the default input stream for
         // the Ant project, so we manually do it here.
         AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
         Project p = antBuilder.getAntProject();
+
         try {
-            p.setInputHandler(new CommandLineInputHandler());
-            p.setDefaultInputStream(System.in);
+            System.setIn(orignalIn);
+            p.setInputHandler(new CommandLineInputHandler(orignalIn, System.out));
+            p.setDefaultInputStream(orignalIn);
         }
         catch (NoSuchMethodError nsme) {
             // will only happen due to a bug in JRockit
@@ -602,7 +610,7 @@ public class GrailsScriptRunner {
                 if ("setDefaultInputStream".equals(m.getName()) && m.getParameterTypes().length == 1 &&
                         InputStream.class.equals(m.getParameterTypes()[0])) {
                     try {
-                        m.invoke(p, System.in);
+                        m.invoke(p, orignalIn);
                         break;
                     }
                     catch (Exception e) {

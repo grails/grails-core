@@ -16,10 +16,7 @@ package org.codehaus.groovy.grails.cli;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 
 /**
  * Utility methods for use on the command line, including method to accept user input etc.
@@ -30,6 +27,7 @@ import java.io.PrintStream;
 public class CommandLineHelper {
 
     private PrintStream out = System.out;
+    private InputStream input = System.in;
 
     public CommandLineHelper() {
         // default
@@ -37,6 +35,11 @@ public class CommandLineHelper {
 
     public CommandLineHelper(PrintStream out) {
         this.out = out;
+    }
+
+    public CommandLineHelper(InputStream input, PrintStream out) {
+        this.out = out;
+        this.input = input;
     }
 
     /**
@@ -72,7 +75,7 @@ public class CommandLineHelper {
             responsesString = DefaultGroovyMethods.join(validResponses, ",");
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         for (int it = 0; it < 3; it++) {
             out.print(message);

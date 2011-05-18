@@ -21,6 +21,8 @@ import org.apache.tools.ant.input.InputHandler;
 import org.apache.tools.ant.input.InputRequest;
 import org.apache.tools.ant.input.MultipleChoiceInputRequest;
 
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.Vector;
 
 /**
@@ -35,6 +37,10 @@ public class CommandLineInputHandler implements InputHandler {
 
     public CommandLineInputHandler() {
         this.commandLineHelper = new CommandLineHelper(System.out);
+    }
+
+    public CommandLineInputHandler(InputStream input, PrintStream out) {
+        this.commandLineHelper = new CommandLineHelper(input, System.out);
     }
 
     public void handleInput(InputRequest inputRequest) throws BuildException {
