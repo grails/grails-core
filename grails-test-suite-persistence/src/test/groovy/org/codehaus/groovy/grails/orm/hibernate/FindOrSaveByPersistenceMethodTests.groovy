@@ -6,7 +6,7 @@ class FindOrSaveByPersistenceMethodTests extends AbstractGrailsHibernateTests {
 		[Person]
 	}
 
-	void testFindOrSaveByForARecordThatDoesExistInTheDatabase() {
+		void testFindOrSaveByForARecordThatDoesExistInTheDatabase() {
 		def ginger = new Person(firstName: 'Ginger', lastName: 'Baker').save(flush: true)
 		assertNotNull 'save should not have returned null', ginger
 		
@@ -47,9 +47,45 @@ class FindOrSaveByPersistenceMethodTests extends AbstractGrailsHibernateTests {
 		assertNotNull 'id should not have been null', person.id
 	}
 	
-	void testFindOrSaveByThrowsExceptionIfOrClauseIsUsed() {
-		shouldFail(UnsupportedOperationException) {
+	void testPatternsWhichShouldThrowMissingMethodException() {
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByLastNameLike('B%')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByLastNameIlike('B%')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByLastNameInList(['Joe', 'Bob'])
+		}
+		shouldFail(MissingMethodException) {
 			Person.findOrSaveByFirstNameOrLastName('Ginger', 'Baker')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameRlike('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameNotEqual('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameGreaterThan('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameLessThan('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameIsNull()
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameIsNotNull()
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameBetween('A', 'C')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameGreaterThanEquals('A')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrSaveByFirstNameLessThanEquals('A')
 		}
 	}
 }

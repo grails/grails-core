@@ -3,8 +3,10 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+import groovy.lang.MissingMethodException;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -24,15 +26,27 @@ public class FindOrCreateByPersistentMethod extends AbstractFindByPersistentMeth
     public FindOrCreateByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader, String pattern) {
     	super(application,sessionFactory, classLoader, Pattern.compile( pattern ), OPERATORS);
     }
+ 
     
     @Override
     protected Object doInvokeInternalWithExpressions(Class clazz,
     		String methodName, Object[] arguments, List expressions,
     		String operatorInUse, Closure additionalCriteria) {
+    	boolean isValidMethod = true;
+    	
 		if(OPERATOR_OR.equals(operatorInUse)) {
-            throw new UnsupportedOperationException(
-            "'Or' expressions are not allowed in findOrCreateBy queries.");
+			isValidMethod = false;
     	}
+		
+		Iterator iterator = expressions.iterator();
+		if(isValidMethod && iterator.hasNext()) {
+			GrailsMethodExpression gme = (GrailsMethodExpression) iterator.next();
+			isValidMethod = GrailsMethodExpression.EQUAL.equals(gme.type);
+		}
+		
+		if(!isValidMethod) {
+			throw new MissingMethodException(methodName, clazz, arguments);
+		}
     	Object result = super.doInvokeInternalWithExpressions(clazz, methodName, arguments,
     			expressions, operatorInUse, additionalCriteria);
     	
