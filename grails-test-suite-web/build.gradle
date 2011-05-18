@@ -4,6 +4,7 @@ dependencies {
     testRuntime 'jstl:jstl:1.1.2'
     testRuntime 'javax.el:el-api:1.0'
 
+    testCompile "commons-io:commons-io:${commonsIOVersion}"
     testCompile project(':grails-test-suite-base'),
 	            project(':grails-plugin-testing'),
                 project(':grails-plugin-domain-class'),

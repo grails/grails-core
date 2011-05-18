@@ -1,8 +1,9 @@
 dependencies {
+    compile "commons-lang:commons-lang:$commonsLangVersion"
     compile 'com.lowagie:itext:2.1.7',
             'org.xhtmlrenderer:core-renderer:R8',
             'commons-lang:commons-lang:2.4',
-            'org.grails:grails-gdoc-engine:1.0-SNAPSHOT'
+            'org.grails:grails-gdoc-engine:1.0.1'
     compile project(":grails-core"),project(":grails-bootstrap")
 }
 

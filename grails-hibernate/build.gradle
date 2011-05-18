@@ -1,5 +1,8 @@
 dependencies {
 
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
+
     compile project(":grails-bootstrap"),
             project(":grails-core"),
             project(":grails-spring"),
@@ -7,24 +10,31 @@ dependencies {
             project(":grails-plugin-domain-class")
 
 
-    // Srping Datastore APIs
-    compile( 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT' ) {
+    // Specs
+    compile 'javax.transaction:jta:1.1'
+
+    // Spring Datastore APIs
+    compile( "org.grails:grails-datastore-gorm:$springDatastoreVersion" ) {
         transitive = false
     }
-    compile( 'org.springframework:spring-datastore-core:1.0.0.BUILD-SNAPSHOT' ) {
+    compile( "org.springframework:spring-datastore-core:$springDatastoreVersion" ) {
         transitive = false
     }
-    compile( 'org.springframework:spring-datastore-simple:1.0.0.BUILD-SNAPSHOT' ) {
+    compile( "org.springframework:spring-datastore-simple:$springDatastoreVersion" ) {
         transitive = false
     }
+
+    compile "org.springframework:spring-jdbc:${springVersion}"
+    compile "org.springframework:spring-orm:${springVersion}"
+    compile "org.springframework:spring-tx:${springVersion}"
 
     // Hibernate related
     compile 'org.hibernate:hibernate-core:3.6.1.Final'
     compile 'javassist:javassist:3.11.0.GA'
+        compile 'javax.transaction:jta:1.1'
 
 
-
-
+    runtime 'net.sf.ehcache:ehcache-core:2.3.1'
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',
             'org.hibernate:hibernate-ehcache:3.6.1.Final',
             'antlr:antlr:2.7.6'

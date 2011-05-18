@@ -8,8 +8,17 @@ dependencies {
     compile( 'commons-el:commons-el:1.0' ) {
          exclude module:'commons-logging'
     }
+
+    compile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
+    compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile('commons-fileupload:commons-fileupload:1.2.1')
+    compile "commons-io:commons-io:${commonsIOVersion}"
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+
+    compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.1_jdk5'
     compile 'opensymphony:sitemesh:2.4'
+
+    compile "org.springframework:spring-webmvc:${springVersion}"
 
     // Required for JSP support
     compile 'javax.servlet:jsp-api:2.0'

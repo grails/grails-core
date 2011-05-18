@@ -22,13 +22,13 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
-import org.apache.commons.beanutils.MethodUtils;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -168,7 +168,10 @@ public abstract class AbstractGrailsClass implements GrailsClass {
     }
 
     public boolean isActionMethod(String methodName) {
-        Method m =  MethodUtils.getAccessibleMethod(getClazz(), methodName, new Class[0]);
+        Method m =  ReflectionUtils.findMethod(getClazz(), methodName, new Class[0]);
+        if(m != null) {
+            ReflectionUtils.makeAccessible(m);
+        }
         return m != null && m.getAnnotation(Action.class) != null;
     }
 

@@ -1,4 +1,8 @@
 dependencies {
+
+    compile "org.springframework:spring-tx:${springVersion}"
+
+
     // Testing
     compile 'junit:junit:4.8.1', project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
 

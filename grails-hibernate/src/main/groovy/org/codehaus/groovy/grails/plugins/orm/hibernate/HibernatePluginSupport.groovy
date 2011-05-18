@@ -286,6 +286,10 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         }
         ApplicationContext ctx = event.ctx
         beans.registerBeans(ctx)
+        if(event.source instanceof Class) {
+            def mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
+            mappingContext.addPersistentEntity(event.source)
+        }
         enhanceSessionFactories(ctx, event.application)
     }
     static final doWithDynamicMethods = {ApplicationContext ctx ->

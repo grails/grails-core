@@ -117,7 +117,7 @@ public class GrailsCoreDependencies {
                         ModuleRevisionId[] docDependencies = {
                             ModuleRevisionId.newInstance("org.xhtmlrenderer", "core-renderer","R8"),
                             ModuleRevisionId.newInstance("com.lowagie","itext", "2.1.7"),
-                            ModuleRevisionId.newInstance("org.grails", "grails-radeox", "1.0-b4")
+                            ModuleRevisionId.newInstance("org.grails", "grails-gdoc-engine", "1.0.1")
                         };
                         registerDependencies(dependencyManager, "docs", docDependencies);
                         
@@ -191,11 +191,9 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-context", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-context-support", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-expression", springVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-instrument", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-jdbc", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-jms", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-orm", springVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-oxm", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-tx", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-web", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", springVersion),

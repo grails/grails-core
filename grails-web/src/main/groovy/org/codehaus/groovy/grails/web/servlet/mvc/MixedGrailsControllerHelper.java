@@ -19,8 +19,8 @@ import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
-import org.apache.commons.beanutils.MethodUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.util.ReflectionUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -37,7 +37,9 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
 
     @Override
     protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
-        Method mAction = MethodUtils.getAccessibleMethod(controller.getClass(),actionName,  MethodGrailsControllerHelper.NOARGS);
+        Method mAction = ReflectionUtils.findMethod(controller.getClass(), actionName, MethodGrailsControllerHelper.NOARGS);
+        if(mAction != null)
+            ReflectionUtils.makeAccessible(mAction);
 
         if (mAction != null && mAction.getAnnotation(Action.class) != null) {
             return mAction;

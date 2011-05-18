@@ -1,4 +1,5 @@
 dependencies {
+    compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile project(":grails-web")
 }
 jar.appendix = 'plugin-mimetypes'

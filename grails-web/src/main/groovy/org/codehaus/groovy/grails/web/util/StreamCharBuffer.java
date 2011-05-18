@@ -1809,7 +1809,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
                 ReflectionUtils.makeAccessible(instanceField);
                 instance = instanceField.get(null);
                 mapMethod = ReflectionUtils.findMethod(instance.getClass(), "convertToReference", char.class);
-                ReflectionUtils.makeAccessible(mapMethod);
+                if(mapMethod != null)
+                    ReflectionUtils.makeAccessible(mapMethod);
             } catch (Exception e) {
                 log.warn("Couldn't use reflection for resolving characterEntityReferences in HtmlUtils class", e);
                 disabled = true;

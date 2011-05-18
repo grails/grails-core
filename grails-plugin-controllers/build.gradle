@@ -1,4 +1,6 @@
 dependencies {
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
     compile project(":grails-core"), 
             project(":grails-web"),
             project(':grails-plugin-converters'),

@@ -1,5 +1,7 @@
 dependencies {
 
+    testCompile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
+
     testCompile 'net.sf.ehcache:ehcache-core:2.3.1'
 
     testCompile project(':grails-test-suite-base'),

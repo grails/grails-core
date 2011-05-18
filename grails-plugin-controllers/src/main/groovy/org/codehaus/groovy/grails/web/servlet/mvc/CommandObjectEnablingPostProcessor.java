@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import org.apache.commons.beanutils.MethodUtils;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter;

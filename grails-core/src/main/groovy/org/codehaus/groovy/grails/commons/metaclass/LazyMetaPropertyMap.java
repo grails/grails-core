@@ -16,21 +16,13 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.GroovySystem;
+import groovy.lang.MetaBeanProperty;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import groovy.util.MapEntry;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.springframework.util.Assert;
+
+import java.util.*;
 
 /**
  * A map implementation that reads an objects properties lazily using Groovy's MetaClass.
@@ -172,7 +164,7 @@ public class LazyMetaPropertyMap implements Map {
     public Set<String> keySet() {
         Set<String> names = new HashSet<String>();
         for (MetaProperty mp : metaClass.getProperties()) {
-            if (EXCLUDES.contains(mp.getName()))continue;
+            if (isExcluded(mp)) continue;
             names.add(mp.getName());
         }
         return names;
@@ -181,7 +173,7 @@ public class LazyMetaPropertyMap implements Map {
     public Collection<Object> values() {
         Collection<Object> values = new ArrayList<Object>();
         for (MetaProperty mp : metaClass.getProperties()) {
-            if (EXCLUDES.contains(mp.getName()))continue;
+            if (isExcluded(mp)) continue;
             values.add(mp.getProperty(instance));
         }
         return values;
@@ -213,9 +205,16 @@ public class LazyMetaPropertyMap implements Map {
     public Set<MapEntry> entrySet() {
         Set<MapEntry> entries = new HashSet<MapEntry>();
         for (MetaProperty mp : metaClass.getProperties()) {
-            if (EXCLUDES.contains(mp.getName())) continue;
+            if (isExcluded(mp)) continue;
+
             entries.add(new MapEntry(mp.getName(), mp.getProperty(instance)));
         }
         return entries;
+    }
+
+    private boolean isExcluded(MetaProperty mp) {
+        if (EXCLUDES.contains(mp.getName())) return true;
+        if((mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null) return true;
+        return false;
     }
 }

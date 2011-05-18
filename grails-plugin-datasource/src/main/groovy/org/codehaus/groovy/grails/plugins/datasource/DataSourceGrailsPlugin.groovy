@@ -18,21 +18,21 @@ package org.codehaus.groovy.grails.plugins.datasource
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
-
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
 import javax.sql.DataSource
-
 import org.apache.commons.dbcp.BasicDataSource
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
 import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
+import org.springframework.util.ClassUtils
 
-/**
+ /**
  * Handles the configuration of a DataSource within Grails.
  *
  * @author Graeme Rocher
@@ -67,8 +67,12 @@ class DataSourceGrailsPlugin {
             return
         }
 
-        def properties = {
+        abstractGrailsDataSourceBean {
             def driver = ds?.driverClassName ? ds.driverClassName : "org.h2.Driver"
+            final hsqldbDriver = "org.hsqldb.jdbcDriver"
+            if(hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
+                throw new GrailsConfigurationException( "Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 1.4 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy    or add HSQLDB as a dependency of your application." )
+            }
             driverClassName = driver
             url = ds?.url ? ds.url : "jdbc:h2:mem:grailsDB"
             boolean defaultDriver = (driver == "org.h2.Driver")
@@ -124,25 +128,14 @@ class DataSourceGrailsPlugin {
                     password = thePassword
                 }
             }
-        }
 
-        if (ds) {
-            log.info("[RuntimeConfiguration] Configuring data source for environment: ${Environment.current}")
-            def bean
-            if (ds.pooled) {
-                bean = dataSourceUnproxied(BasicDataSource, properties)
-                bean.destroyMethod = "close"
-            }
-            else {
-                bean = dataSourceUnproxied(DriverManagerDataSource, properties)
-            }
             // support for setting custom properties (for example maxActive) on the dataSource bean
             def dataSourceProperties = ds.properties
             if (dataSourceProperties != null) {
                 if (dataSourceProperties instanceof Map) {
-                    dataSourceProperties.each { entry ->
+                    for(entry in dataSourceProperties) {
                         log.debug("Setting property on dataSource bean ${entry.key} -> ${entry.value}")
-                        bean.setPropertyValue(entry.key.toString(), entry.value)
+                        delegate."${entry.key}" = entry.value
                     }
                 }
                 else {
@@ -150,8 +143,24 @@ class DataSourceGrailsPlugin {
                 }
             }
         }
+
+        def parentConfig = { dsBean ->
+            dsBean.parent = 'abstractGrailsDataSourceBean'
+        }
+        if (ds) {
+            log.info("[RuntimeConfiguration] Configuring data source for environment: ${Environment.current}")
+
+            if (ds.pooled) {
+                def bean = dataSourceUnproxied(BasicDataSource, parentConfig)
+                bean.destroyMethod = "close"
+            }
+            else {
+                dataSourceUnproxied(DriverManagerDataSource, parentConfig)
+            }
+
+        }
         else {
-            def bean = dataSourceUnproxied(BasicDataSource, properties)
+            def bean = dataSourceUnproxied(BasicDataSource, parentConfig)
             bean.destroyMethod = "close"
         }
 
@@ -191,8 +200,17 @@ class DataSourceGrailsPlugin {
         }
     }
 
-    def onChange = {
-        restartContainer()
+    def onChange = { event ->
+        if(event.source) {
+            final application = event.application
+            final slurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application)
+
+            final newConfig = slurper.parse(event.source)
+            application.config.merge(newConfig)
+
+            // TODO: Handle reloading of the dataSource bean
+        }
+
     }
 
     def onShutdown = { event ->

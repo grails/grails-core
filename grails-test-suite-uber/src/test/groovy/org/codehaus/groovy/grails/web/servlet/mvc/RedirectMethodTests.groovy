@@ -242,6 +242,7 @@ class UrlMappings {
     void testPermanentRedirect() {
         def c = ga.getControllerClass("RedirectController").newInstance()
         webRequest.controllerName = 'redirect'
+        webRequest.currentRequest.serverPort = 8080
         c.toActionPermanent.call()
 
         // location header should be absolute

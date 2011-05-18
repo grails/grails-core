@@ -13,13 +13,13 @@ dependencies {
             project(':grails-hibernate')
 
     // Spring/Grails Datastore APIs
-    compile( 'org.grails:grails-datastore-gorm:1.0.0.BUILD-SNAPSHOT' ) {
+    compile( "org.grails:grails-datastore-gorm:$springDatastoreVersion" ) {
         transitive = false
     }
-    compile( 'org.springframework:spring-datastore-core:1.0.0.BUILD-SNAPSHOT' ) {
+    compile( "org.springframework:spring-datastore-core:$springDatastoreVersion" ) {
         transitive = false
     }
-    compile( 'org.springframework:spring-datastore-simple:1.0.0.BUILD-SNAPSHOT' ) {
+    compile( "org.springframework:spring-datastore-simple:$springDatastoreVersion" ) {
         transitive = false
     }
 }

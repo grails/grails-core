@@ -55,7 +55,7 @@ public class UaaIntegration {
            + "To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.\n"
            + "##########################################################.\n"
            + "Enter Y or N:";
-    public static final int ONE_MINUTE = 60000;
+    public static final int ONE_MINUTE = 180000;
 
 
     public static boolean isAvailable() {

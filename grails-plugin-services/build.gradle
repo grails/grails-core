@@ -1,4 +1,6 @@
 dependencies {
+    compile "org.springframework:spring-tx:${springVersion}"
+
     compile project(":grails-core"),
             project(':grails-bootstrap')
 }

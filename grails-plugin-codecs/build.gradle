@@ -1,4 +1,5 @@
 dependencies {
+    compile 'commons-codec:commons-codec:1.4'
     compile project(":grails-web")
 }
 jar.appendix = 'plugin-codecs'
