@@ -332,7 +332,6 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         this.servletContext = servletContext;
     }
 
-    @Override
     public Environment getEnvironment() {
         return new org.springframework.web.context.support.DefaultWebEnvironment();
     }
