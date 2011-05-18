@@ -39,7 +39,7 @@ public class FindOrCreateByPersistentMethod extends AbstractFindByPersistentMeth
     	}
 		
 		Iterator iterator = expressions.iterator();
-		if(isValidMethod && iterator.hasNext()) {
+		while(isValidMethod && iterator.hasNext()) {
 			GrailsMethodExpression gme = (GrailsMethodExpression) iterator.next();
 			isValidMethod = GrailsMethodExpression.EQUAL.equals(gme.type);
 		}
