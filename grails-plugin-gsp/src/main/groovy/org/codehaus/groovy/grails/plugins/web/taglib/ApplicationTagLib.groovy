@@ -18,12 +18,16 @@ import grails.artefact.Artefact
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
+
+import org.apache.commons.io.FilenameUtils
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -206,6 +210,101 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         writer << '>'
         writer << body()
         writer << '</a>'
+    }
+
+    static writeAttrs( attrs, output) {
+        // Output any remaining user-specified attributes
+        attrs.each { k, v ->
+            if (v != null) {
+                output << ' '
+                output << k
+                output << '="'
+                output << v.encodeAsHTML()
+                output << '"'    
+            }
+        }
+    }
+
+    static LINK_WRITERS = [
+        js: { url, constants, attrs ->
+           def o = new StringBuilder()
+           o << "<script src=\"${url}\""
+
+           // Output info from the mappings
+           writeAttrs(constants, o)
+           writeAttrs(attrs, o)
+
+           o << '></script>'
+           return o    
+        },
+
+        link: { url, constants, attrs ->
+           def o = new StringBuilder()
+           o << "<link href=\"${url}\""
+
+           // Output info from the mappings
+           writeAttrs(constants, o)
+           writeAttrs(attrs, o)
+
+           o << '/>'
+           return o
+        }
+    ]
+
+    static SUPPORTED_TYPES = [
+        css:[type:"text/css", rel:'stylesheet', media:'screen, projector'],
+        js:[type:'text/javascript', writer:'js'],
+
+        gif:[type:'image/x-icon', rel:'shortcut icon'],
+        jpg:[type:'image/x-icon', rel:'shortcut icon'],
+        png:[type:'image/x-icon', rel:'shortcut icon'],
+        ico:[type:'image/x-icon', rel:'shortcut icon'],
+        appleicon:[rel:'apple-touch-icon']
+        
+        // @todo add feed link types here too
+    ]
+       
+    /**
+     * Render the appropriate kind of external link for use in <head> based on the type of the URI.
+     * For JS will render <script> tags, for CSS will render <link> with the correct rel, and so on for icons.
+     * @attr uri
+     * @attr dir
+     * @attr file
+     * @attr plugin
+     * @attr type
+     */
+    def external = { attrs ->
+        if (!attrs.uri) {
+            attrs.uri = g.resource(attrs).toString()
+        }
+        renderResourceLink(attrs)
+    }
+    
+    /**
+     *
+     * @attr uri
+     * @attr type
+     */
+    protected renderResourceLink(attrs) {
+        def uri = attrs.remove('uri')
+        def type = attrs.remove('type')
+        if (!type) {
+            type = FilenameUtils.getExtension(uri)
+        }
+        
+        def typeInfo = SUPPORTED_TYPES[type]?.clone()
+        if (!typeInfo) {
+            throwTagError "I can't work out the type of ${uri} with type [${type}]. Please check the URL, resource definition or specify [type] attribute"
+        }
+        
+        def writerName = typeInfo.remove('writer')
+        def writer = LINK_WRITERS[writerName ?: 'link']
+
+        // Allow attrs to overwrite any constants
+        attrs.each { typeInfo.remove(it.key) }
+
+        out << writer(uri, typeInfo, attrs)
+        out << "\r\n"
     }
 
     /**

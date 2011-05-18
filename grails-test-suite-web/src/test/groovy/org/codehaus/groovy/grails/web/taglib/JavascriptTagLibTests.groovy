@@ -43,40 +43,40 @@ class TestUrlMappings {
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
         String newLine = EOL
-        assertOutputContains('<script type="text/javascript" src="/js/test.js"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" controller="bar" action="list"></a></p><a href="/foo/list" onclick="<remote>return false;" controller="foo" action="list"></a>', template)
+        assertOutputContains('<script src="/js/test.js" type="text/javascript"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" controller="bar" action="list"></a></p><a href="/foo/list" onclick="<remote>return false;" controller="foo" action="list"></a>', template)
     }
 
     void testJavascriptIncludeWithPluginAttribute() {
         def template = '<g:javascript src="foo.js" plugin="controllers" />'
         def grailsVersion = GrailsUtil.getGrailsVersion()
-        assertOutputContains "<script type=\"text/javascript\" src=\"/plugins/controllers-$grailsVersion/js/foo.js\"></script>", template
+        assertOutputContains "<script src=\"/plugins/controllers-$grailsVersion/js/foo.js\" type=\"text/javascript\"></script>", template
     }
 
     void testJavascriptInclude() {
         def template = '<g:javascript src="foo.js" />'
-        assertOutputContains '<script type="text/javascript" src="/js/foo.js"></script>', template
+        assertOutputContains '<script src="/js/foo.js" type="text/javascript"></script>', template
     }
 
     void testJavascriptIncludeWithPlugin() {
         def template = '<g:javascript src="foo.js" />'
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
-        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
+        assertOutputContains '<script src="/plugin/one/js/foo.js" type="text/javascript"></script>', template
     }
 
     void testJavascriptIncludeWithContextPathSpecified() {
         def template = '<g:javascript src="foo.js" />'
 
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("/plugin/one"))
-        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>', template
+        assertOutputContains '<script src="/plugin/one/js/foo.js" type="text/javascript"></script>', template
 
         template = '<g:javascript src="foo.js" contextPath="/foo" />'
-        assertOutputContains '<script type="text/javascript" src="/foo/js/foo.js"></script>', template
+        assertOutputContains '<script src="/foo/js/foo.js" type="text/javascript"></script>', template
     }
 
     void testJavascriptIncludeWithPluginNoLeadingSlash() {
         def template = '<g:javascript src="foo.js" />'
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugin/one"))
-        assertOutputContains '<script type="text/javascript" src="/plugin/one/js/foo.js"></script>' + EOL, template
+        assertOutputContains '<script src="/plugin/one/js/foo.js" type="text/javascript"></script>' + EOL, template
     }
 
     /**
@@ -133,7 +133,7 @@ class TestUrlMappings {
             setupPluginController(tag)
             def attrs = [src: 'lib.js']
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/myapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -145,7 +145,7 @@ class TestUrlMappings {
             setRequestContext('/otherapp/')
             def attrs = [src: 'lib.js']
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/plugins/myplugin/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/otherapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -156,7 +156,7 @@ class TestUrlMappings {
             setupPluginController(tag)
             def attrs = [library: 'lib']
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/plugins/myplugin/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/myapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -167,7 +167,7 @@ class TestUrlMappings {
             def attrs = [src: 'lib.js']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -178,7 +178,7 @@ class TestUrlMappings {
             def attrs = [src: 'lib.js']
             setRequestContext('/otherapp/')
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/otherapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -190,7 +190,7 @@ class TestUrlMappings {
             setRequestContext()
             request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null)
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -201,7 +201,7 @@ class TestUrlMappings {
             def attrs = [library: 'lib']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/myapp/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -212,7 +212,7 @@ class TestUrlMappings {
             def attrs = [library: 'lib']
             setRequestContext('/otherapp/')
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"/otherapp/js/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"/otherapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -234,7 +234,7 @@ class TestUrlMappings {
             def attrs = [library: 'lib', base: 'http://testserver/static/']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/lib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"http://testserver/static/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
@@ -246,7 +246,7 @@ class TestUrlMappings {
             def attrs = [src: 'mylib.js', base: 'http://testserver/static/']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script type=\"text/javascript\" src=\"http://testserver/static/mylib.js\"></script>" + EOL, sw.toString())
+            assertEquals("<script src=\"http://testserver/static/mylib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
 
