@@ -95,18 +95,19 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        def parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 
-        assertNotNull beanDef.propertyValues.getPropertyValue('username')
-        assertNotNull beanDef.propertyValues.getPropertyValue('password')
-        assertEquals "foo", beanDef.propertyValues.getPropertyValue('username').value
-        assertEquals "blah", beanDef.propertyValues.getPropertyValue('password').value
+        assertNotNull parentBeanDef.propertyValues.getPropertyValue('username')
+        assertNotNull parentBeanDef.propertyValues.getPropertyValue('password')
+        assertEquals "foo", parentBeanDef.propertyValues.getPropertyValue('username').value
+        assertEquals "blah", parentBeanDef.propertyValues.getPropertyValue('password').value
 
-        assertEquals "com.oracle.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
-        assertEquals "jdbc:oracle::someserver", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "com.oracle.jdbcDriver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "jdbc:oracle::someserver", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginOtherDriverNoUserAndPass() {
@@ -128,16 +129,18 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.setBinding(new Binding(mock))
         bb.beans(beans)
 
+        def parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean')
         def beanDef = bb.getBeanDefinition('dataSource')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 
+        assert beanDef.parentName == 'abstractGrailsDataSourceBean'
         assertNull beanDef.propertyValues.getPropertyValue('username')
         assertNull beanDef.propertyValues.getPropertyValue('password')
-        assertEquals "com.oracle.jdbcDriver", beanDef.propertyValues.getPropertyValue('driverClassName').value
-        assertEquals "jdbc:oracle::someserver", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "com.oracle.jdbcDriver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "jdbc:oracle::someserver", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginH2DBNoUserAndPass() {
@@ -159,15 +162,17 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        def parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 
-        assertEquals "org.h2.Driver", beanDef.propertyValues.getPropertyValue('driverClassName').value
-        assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
-        assertEquals "", beanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:h2:mem:grailsDB", beanDef.propertyValues.getPropertyValue('url').value
+        assert beanDef.parentName == 'abstractGrailsDataSourceBean'
+        assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
+        assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
+        assertEquals "jdbc:h2:mem:grailsDB", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginPoolingOn() {
@@ -211,15 +216,16 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        def parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals BasicDataSource.name, beanDef.beanClassName
 
-        assertEquals "org.h2.Driver", beanDef.propertyValues.getPropertyValue('driverClassName').value
-        assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
-        assertEquals "", beanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:h2:mem:testDb", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
+        assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
+        assertEquals "jdbc:h2:mem:testDb", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginPoolingOff() {
@@ -263,15 +269,16 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         bb.beans(beans)
 
         def beanDef = bb.getBeanDefinition('dataSource')
+        def parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals DriverManagerDataSource.name, beanDef.beanClassName
 
-        assertEquals "org.h2.Driver", beanDef.propertyValues.getPropertyValue('driverClassName').value
-        assertEquals "sa", beanDef.propertyValues.getPropertyValue('username').value
-        assertEquals "", beanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:h2:mem:testDb", beanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
+        assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
+        assertEquals "jdbc:h2:mem:testDb", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testJndiDataSource() {
