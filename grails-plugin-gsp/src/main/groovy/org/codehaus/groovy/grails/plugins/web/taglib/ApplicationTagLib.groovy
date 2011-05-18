@@ -15,19 +15,14 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
-import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
-
 import org.apache.commons.io.FilenameUtils
-
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -212,44 +207,25 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         writer << '</a>'
     }
 
-    static writeAttrs( attrs, output) {
+    static attrsToString( Map attrs) {
         // Output any remaining user-specified attributes
-        attrs.each { k, v ->
-            if (v != null) {
-                output << ' '
-                output << k
-                output << '="'
-                output << v.encodeAsHTML()
-                output << '"'    
-            }
-        }
+        final resultingAttributes = attrs.entrySet().collect { "$it.key=\"${it.value.encodeAsHTML()}\""}.join(' ')
+        return " $resultingAttributes"
     }
 
     static LINK_WRITERS = [
         js: { url, constants, attrs ->
-           def o = new StringBuilder()
-           o << "<script src=\"${url}\""
-
-           // Output info from the mappings
-           writeAttrs(constants, o)
-           writeAttrs(attrs, o)
-
-           o << '></script>'
-           return o    
+           return "<script src=\"${url}\"${getAttributesToRender(constants, attrs)}></script>"
         },
 
         link: { url, constants, attrs ->
-           def o = new StringBuilder()
-           o << "<link href=\"${url}\""
-
-           // Output info from the mappings
-           writeAttrs(constants, o)
-           writeAttrs(attrs, o)
-
-           o << '/>'
-           return o
+           return "<link href=\"${url}\"${getAttributesToRender(constants, attrs)}/>"
         }
     ]
+
+    static getAttributesToRender(constants, attrs) {
+        return "${constants ? attrsToString(constants) : ''}${attrs ? attrsToString(attrs) : ''}"
+    }
 
     static SUPPORTED_TYPES = [
         css:[type:"text/css", rel:'stylesheet', media:'screen, projector'],
