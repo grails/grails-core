@@ -26,20 +26,22 @@ import java.io.*;
  */
 public class CommandLineHelper {
 
-    private PrintStream out = System.out;
-    private InputStream input = System.in;
+    // Use static variables so that feature uses of CommandLineHelper use those provided by the constructor
+    // bit of a hack, but don't see many other options
+    private static PrintStream out = System.out;
+    private static InputStream input = System.in;
 
     public CommandLineHelper() {
         // default
     }
 
     public CommandLineHelper(PrintStream out) {
-        this.out = out;
+        CommandLineHelper.out = out;
     }
 
     public CommandLineHelper(InputStream input, PrintStream out) {
-        this.out = out;
-        this.input = input;
+        CommandLineHelper.out = out;
+        CommandLineHelper.input = input;
     }
 
     /**
