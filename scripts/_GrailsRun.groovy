@@ -85,7 +85,7 @@ private EmbeddableServerFactory loadServerFactory() {
     def load = { name -> classLoader.loadClass(name).newInstance() }
 
 
-    String defaultServer = "org.grails.tomcat.TomcatServerFactory"
+    String defaultServer = "org.grails.plugins.tomcat.TomcatServerFactory"
     def containerClass = getPropertyValue("grails.server.factory", defaultServer)
     EmbeddableServerFactory serverFactory
     try {
