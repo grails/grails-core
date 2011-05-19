@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.compiler.web;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi;
 
 import java.net.URL;
@@ -14,7 +13,8 @@ import java.net.URL;
  * @author Graeme Rocher
  * @since 1.4
  */
-@AstTransformer
+// This transformer is currently disabled, because it adds properties to domains which the various GORM implementations have to take into account
+//@AstTransformer
 public class ControllerDomainTransformer extends AbstractGrailsArtefactTransformer{
 
     @Override
