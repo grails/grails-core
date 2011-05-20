@@ -34,7 +34,7 @@ target(default:"Adds a proxy configuration") {
 
         config[argsMap.params[0]] = ['http.proxyHost':argsMap.host,
                                      'http.proxyPort':argsMap.port,
-                                     "http.proxyUserName": argsMap.username?: '',
+                                     "http.proxyUser": argsMap.username?: '',
                                      "http.proxyPassword": argsMap.password?: '']
 
         settingsFile.withWriter { w -> config.writeTo(w) }
