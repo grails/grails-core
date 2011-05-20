@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
-import org.springframework.beans.BeanUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
@@ -37,7 +36,7 @@ import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMa
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 
-/**
+ /**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
@@ -214,14 +213,6 @@ class ControllersGrailsPlugin {
             def enhancer = new MetaClassEnhancer()
             enhancer.addApi(new ControllersDomainBindingApi())
             enhancer.enhance mc
-            mc.constructor = {->
-                ctx.getBean dc.fullName
-            }
-            mc.constructor = { Map bindFrom ->
-                final bean = BeanUtils.instantiateClass(dc.clazz)
-                ControllersDomainBindingApi.initialize(bean, bindFrom)
-                return bean
-            }
         }
     }
 
