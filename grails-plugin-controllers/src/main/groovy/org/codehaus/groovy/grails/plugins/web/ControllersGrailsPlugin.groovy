@@ -202,6 +202,9 @@ class ControllersGrailsPlugin {
                 enhancer.enhance mc
             }
         }
+        for(GrailsDomainClass domainClass in application.domainClasses) {
+            enhanceDomainWithBinding(ctx, domainClass, domainClass.metaClass)
+        }
 
     }
 

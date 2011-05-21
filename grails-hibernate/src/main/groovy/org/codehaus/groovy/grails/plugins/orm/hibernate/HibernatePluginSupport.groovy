@@ -387,7 +387,6 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                 enhancer.enhance entity, true
             }
         }
-
     }
 
     static final LAZY_PROPERTY_HANDLER = { String propertyName ->

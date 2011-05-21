@@ -371,7 +371,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             IvyDependencyManager dependencyManager = settings.dependencyManager
             dependencyManager.resetGrailsPluginsResolver()
 
-            def dependencyConfigurationsToAdd = [IvyDependencyManager.RUNTIME_CONFIGURATION]
+            def dependencyConfigurationsToAdd = [IvyDependencyManager.RUNTIME_CONFIGURATION, IvyDependencyManager.BUILD_CONFIGURATION, IvyDependencyManager.PROVIDED_CONFIGURATION]
             if (settings.grailsEnv == "test") {
                 dependencyConfigurationsToAdd << IvyDependencyManager.TEST_CONFIGURATION
             }

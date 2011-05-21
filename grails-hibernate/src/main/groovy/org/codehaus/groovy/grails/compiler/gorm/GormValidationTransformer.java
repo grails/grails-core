@@ -23,6 +23,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
@@ -48,8 +49,30 @@ public class GormValidationTransformer extends AbstractGrailsArtefactTransformer
     public static final String HAS_ERRORS_METHOD = "hasErrors";
     private static final java.util.List<String> EXCLUDES = new ArrayList<String>() {{
        add("setErrors"); add("getErrors"); add(HAS_ERRORS_METHOD);
+       add("getBeforeValidateHelper"); add("setBeforeValidateHelper");
+       add("getValidator"); add("setValidator");
     }};
+    private static final Class[] EMPTY_JAVA_CLASS_ARRAY = new Class[0];
+    private static final Class[] OBJECT_CLASS_ARG = new Class[]{Object.class};
 
+
+
+    @Override
+    protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
+        String methodName = declaredMethod.getName();
+        return !EXCLUDES.contains(methodName) &&
+                !isGetter(methodName, declaredMethod) &&
+                !isSetter(methodName, declaredMethod) &&
+                super.isStaticCandidateMethod(classNode, declaredMethod);
+    }
+
+    private boolean isSetter(String methodName, MethodNode declaredMethod) {
+        return declaredMethod.getParameters().length ==1 && GrailsClassUtils.isSetter(methodName, OBJECT_CLASS_ARG);
+    }
+
+    private boolean isGetter(String methodName, MethodNode declaredMethod) {
+        return declaredMethod.getParameters().length == 0 && GrailsClassUtils.isGetter(methodName, EMPTY_JAVA_CLASS_ARRAY);
+    }
     @Override
     protected boolean requiresStaticLookupMethod() {
         return true;

@@ -22,6 +22,7 @@ import grails.util.PluginBuildSettings
 import groovy.xml.MarkupBuilder
 import groovyx.gpars.Parallelizer;
 
+import org.codehaus.groovy.grails.compiler.support.*
 import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -327,10 +328,11 @@ private PluginInstallEngine createPluginInstallEngine() {
     return pluginInstallEngine
 }
 
-protected GrailsPluginManager resetClasspath() {
+protected void resetClasspath() {
     classpathSet = false
     classpath()
     PluginManagerHolder.pluginManager = null
+	GrailsResourceLoaderHolder.resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResources())
 }
 
 doInstallPluginFromURL = { URL url ->
