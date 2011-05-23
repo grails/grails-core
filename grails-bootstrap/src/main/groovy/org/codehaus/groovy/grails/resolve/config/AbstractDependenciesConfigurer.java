@@ -14,18 +14,16 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import groovy.lang.Closure;
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
+
 import java.util.Arrays;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-
-import java.util.regex.Pattern;
+import java.util.Map;
 import java.util.regex.Matcher;
-
-import groovy.lang.Closure;
-
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
-import org.apache.ivy.core.module.id.ModuleRevisionId;
+import java.util.regex.Pattern;
 
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
@@ -166,7 +164,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         String branch = nullSafeToString(dependency.get("branch"));
         
         boolean transitive = getBooleanValueOrDefault(dependency, "transitive", true);
-        boolean export = getBooleanValueOrDefault(dependency, "export", true);
+        Boolean export = dependency.containsKey("export") ? Boolean.valueOf(dependency.get("export").toString()) : null;
         
         boolean isExcluded = context.pluginName != null ? 
                 context.dependencyManager.isExcludedFromPlugin(context.pluginName, name) : 
@@ -190,8 +188,13 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
 
         EnhancedDefaultDependencyDescriptor dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, transitive, scope);
-        dependencyDescriptor.setExported(export);
-        
+        if(export != null) {
+            dependencyDescriptor.setExported(export);
+        }
+        else {
+            dependencyDescriptor.setExport( context.exported );
+        }
+
         boolean inherited = context.inherited || context.dependencyManager.getInheritsAll() || context.pluginName != null;
         dependencyDescriptor.setInherited(inherited);
         

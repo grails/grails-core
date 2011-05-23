@@ -20,21 +20,18 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
-
+import java.util.regex.Pattern
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
-import java.util.regex.Pattern
-
-import org.apache.ivy.core.module.descriptor.DependencyDescriptor
-import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
 import org.codehaus.groovy.grails.cli.CommandLineHelper
 import org.codehaus.groovy.grails.cli.ScriptExitException
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
 
-/**
+ /**
  * Manages the installation and uninstallation of plugins from a Grails project.
  *
  * @author Graeme Rocher
@@ -122,7 +119,7 @@ class PluginInstallEngine {
             eventHandler "StatusFinal", "Changing plugin checking complete"
         }
 
-        checkPluginsToUninstall(pluginDescriptors.collect { it.dependencyRevisionId })
+        checkPluginsToUninstall(pluginDescriptors)
     }
 
     /**
@@ -582,24 +579,32 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         commandLineHelper.userInput(msg, ['y','n'] as String[]) == 'y'
     }
 
-    protected void checkPluginsToUninstall(List<DependencyDescriptor> pluginDeps) {
+    protected void checkPluginsToUninstall(Collection<EnhancedDefaultDependencyDescriptor> pluginDeps) {
         // Find out which plugins are in the search path but not in the
         // metadata. We only check on the plugins in the project's "plugins"
         // directory and the global "plugins" dir. Plugins loaded via an
         // explicit path should be left alone.
-        def pluginDirs = pluginSettings.implicitPluginDirectories
-        def pluginsToUninstall = pluginDirs.findAll { Resource r ->
-            !pluginDeps.find {  ModuleRevisionId plugin ->
-                r.filename ==~ "$plugin.name-.+"
+        def pluginInfos = pluginSettings.getPluginInfos()
+        def dependencyManager = settings.dependencyManager
+        def pluginsToUninstall = pluginInfos.findAll { GrailsPluginInfo pluginInfo ->
+            !pluginDeps.find {  EnhancedDefaultDependencyDescriptor dd ->
+                pluginInfo.pluginDir.file.canonicalFile.name ==~ "${dd.dependencyRevisionId.name}-.+"
             }
         }
 
-        for (Resource pluginDir in pluginsToUninstall) {
+        pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
+            !dependencyManager.isPluginTransitivelyIncluded(pluginInfo.name) && pluginInfo.pluginDir.file != settings.baseDir
+        }
+
+        for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
+            Resource pluginDir = pluginInfo.pluginDir
+            if(pluginDir.file.canonicalFile == settings.baseDir) continue;
+
             if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
                 registerMetadataForPluginLocation(pluginDir)
             }
             else {
-                if (!isInteractive || confirmInput("Plugin [${pluginDir.filename}] is installed, but was not found in the application's metadata, do you want to uninstall?")) {
+                if (!isInteractive || confirmInput("Plugin [${pluginInfo.name}] is installed, but was not found in the application's metadata, do you want to uninstall?")) {
                     uninstallPlugin(pluginDir.filename)
                 }
                 else {
@@ -652,7 +657,9 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
     }
 
     private registerMetadataForPluginLocation(Resource pluginDir) {
-        def plugin = pluginSettings.getMetadataForPlugin(pluginDir.filename)
-        registerPluginWithMetadata(plugin.@name.text(), plugin.@version.text())
+        def plugin = pluginSettings.getPluginInfo(pluginDir.file.absolutePath)
+        if(plugin != null) {
+            registerPluginWithMetadata(plugin.name, plugin.version)
+        }
     }
 }

@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 public class DependencyConfigurationContext {
@@ -21,11 +23,14 @@ public class DependencyConfigurationContext {
     final public IvyDependencyManager dependencyManager;
     final public String pluginName;
     final public boolean inherited;
-    
+    final public boolean exported;
+
     private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String pluginName, boolean inherited) {
         this.dependencyManager = dependencyManager;
         this.pluginName = pluginName;
         this.inherited = inherited;
+        DependencyDescriptor pluginDependencyDescriptor = pluginName != null ? dependencyManager.getPluginDependencyDescriptor(pluginName) : null;
+        exported = !(pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) || ((EnhancedDefaultDependencyDescriptor) pluginDependencyDescriptor).getExported();
     }
     
     static public DependencyConfigurationContext forApplication(IvyDependencyManager dependencyManager) {

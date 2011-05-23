@@ -269,7 +269,7 @@ public abstract class AbstractIvyDependencyManager {
     }
     
     /**
-     * Returns whether a plugin is transitive
+     * Returns whether a plugin is transitive, ie whether its dependencies are resolved transitively
      *
      * @param pluginName The name of the plugin
      * @return True if the plugin is transitive
@@ -277,6 +277,16 @@ public abstract class AbstractIvyDependencyManager {
     public boolean isPluginTransitive(String pluginName) {
         DependencyDescriptor dd = pluginNameToDescriptorMap.get(pluginName);
         return dd == null || dd.isTransitive();
+    }
+
+    /**
+     * Whether the plugin is directly included or a transitive dependency of another plugin
+     * @param pluginName The plugin name
+     * @return True if is transitively included
+     */
+    public boolean isPluginTransitivelyIncluded(String pluginName) {
+        EnhancedDefaultDependencyDescriptor dd = (EnhancedDefaultDependencyDescriptor) pluginNameToDescriptorMap.get(pluginName);
+        return dd != null && dd.isTransitivelyIncluded();
     }
 
     /**
@@ -331,8 +341,8 @@ public abstract class AbstractIvyDependencyManager {
     public void registerPluginDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         String name = descriptor.getDependencyId().getName();
         
-        String classifierAttribute = (String)descriptor.getExtraAttribute("m:classifier");
-        String packaging = null;
+        String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
+        String packaging;
         if (classifierAttribute != null && classifierAttribute.equals("plugin")) {
             packaging = "xml";
         } else {
