@@ -144,17 +144,21 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr dir Optional name of resource directory, defaults to "images"
      * @attr file Name of resource file (optional if uri specified)
      * @attr plugin Optional the name of the grails plugin if the resource is not part of the application
-     * @attr uri Optional relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
+     * @attr uri Optional app-relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
      */
     def img = { attrs ->
         if (!attrs.uri && !attrs.dir) {
             attrs.dir = "images"
         }
-        def uri = resource(attrs)
+        if (resourceService) {
+            out << r.img(attrs)
+        } else {
+            def uri = attrs.uri ?: resource(attrs)
 
-		def excludes = ['dir', 'uri', 'file', 'plugin']
-        def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
-        out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
+    		def excludes = ['dir', 'uri', 'file', 'plugin']
+            def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
+            out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
+        }
     }
     
     /**
@@ -231,10 +235,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         css:[type:"text/css", rel:'stylesheet', media:'screen, projector'],
         js:[type:'text/javascript', writer:'js'],
 
-        gif:[type:'image/x-icon', rel:'shortcut icon'],
-        jpg:[type:'image/x-icon', rel:'shortcut icon'],
-        png:[type:'image/x-icon', rel:'shortcut icon'],
-        ico:[type:'image/x-icon', rel:'shortcut icon'],
+        gif:[rel:'shortcut icon'],
+        jpg:[rel:'shortcut icon'],
+        png:[rel:'shortcut icon'],
+        ico:[rel:'shortcut icon'],
         appleicon:[rel:'apple-touch-icon']
         
         // @todo add feed link types here too

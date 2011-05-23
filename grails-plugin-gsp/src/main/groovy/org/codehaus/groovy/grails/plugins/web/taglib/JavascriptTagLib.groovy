@@ -71,7 +71,7 @@ class JavascriptTagLib  {
         }
         else if (attrs.library) {
             if (resourceService) {
-                out << r.use(module:attrs.library)
+                out << r.require(module:attrs.library)
             } else {
                 if (LIBRARY_MAPPINGS.containsKey(attrs.library)) {
                     LIBRARY_MAPPINGS[attrs.library].each {
