@@ -45,9 +45,46 @@ class FindOrCreateByPersistenceMethodTests extends AbstractGrailsHibernateTests 
 		assertNull 'id should have been null', person.id
 	}
 	
-	void testFindOrCreateByThrowsExceptionIfOrClauseIsUsed() {
-		shouldFail(UnsupportedOperationException) {
+	void testPatternsWhichShouldThrowMissingMethodException() {
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByLastNameLike('B%')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByLastNameIlike('B%')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByLastNameInList(['Joe', 'Bob'])
+		}
+		shouldFail(MissingMethodException) {
 			Person.findOrCreateByFirstNameOrLastName('Ginger', 'Baker')
 		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameRlike('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameNotEqual('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameGreaterThan('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameLessThan('B')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameIsNull()
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameIsNotNull()
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameBetween('A', 'C')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameGreaterThanEquals('A')
+		}
+		shouldFail(MissingMethodException) {
+			Person.findOrCreateByFirstNameLessThanEquals('A')
+		}
 	}
+
 }

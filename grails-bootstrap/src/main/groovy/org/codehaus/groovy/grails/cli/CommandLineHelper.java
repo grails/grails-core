@@ -16,10 +16,7 @@ package org.codehaus.groovy.grails.cli;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 
 /**
  * Utility methods for use on the command line, including method to accept user input etc.
@@ -29,14 +26,22 @@ import java.io.PrintStream;
  */
 public class CommandLineHelper {
 
-    private PrintStream out = System.out;
+    // Use static variables so that feature uses of CommandLineHelper use those provided by the constructor
+    // bit of a hack, but don't see many other options
+    private static PrintStream out = System.out;
+    private static InputStream input = System.in;
 
     public CommandLineHelper() {
         // default
     }
 
     public CommandLineHelper(PrintStream out) {
-        this.out = out;
+        CommandLineHelper.out = out;
+    }
+
+    public CommandLineHelper(InputStream input, PrintStream out) {
+        CommandLineHelper.out = out;
+        CommandLineHelper.input = input;
     }
 
     /**
@@ -72,7 +77,7 @@ public class CommandLineHelper {
             responsesString = DefaultGroovyMethods.join(validResponses, ",");
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
         for (int it = 0; it < 3; it++) {
             out.print(message);

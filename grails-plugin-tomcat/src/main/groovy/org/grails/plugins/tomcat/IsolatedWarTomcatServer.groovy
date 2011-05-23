@@ -47,7 +47,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
             ant.java(classname: IsolatedTomcat.name, fork: true, failonerror: false, output: outFile, error: errFile, resultproperty: resultProperty) {
 
                 classpath {
-                    for (jar in buildSettings.compileDependencies.findAll { it.name.contains("tomcat") }) {
+                    for (jar in buildSettings.buildDependencies.findAll { it.name.contains("tomcat") }) {
                         pathelement location: jar
                     }
                 }

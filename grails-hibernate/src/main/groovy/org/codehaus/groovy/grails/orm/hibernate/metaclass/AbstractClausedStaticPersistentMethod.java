@@ -56,20 +56,20 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
      * @author Graeme Rocher
      */
     protected abstract static class GrailsMethodExpression {
-        private static final String LESS_THAN = "LessThan";
-        private static final String LESS_THAN_OR_EQUAL = "LessThanEquals";
-        private static final String GREATER_THAN = "GreaterThan";
-        private static final String GREATER_THAN_OR_EQUAL = "GreaterThanEquals";
-        private static final String LIKE = "Like";
-        private static final String ILIKE = "Ilike";
-        private static final String RLIKE = "Rlike";
-        private static final String BETWEEN = "Between";
-        private static final String IN_LIST= "InList";
-        private static final String IS_NOT_NULL = "IsNotNull";
-        private static final String IS_NULL = "IsNull";
-        private static final String NOT = "Not";
-        private static final String EQUAL = "Equal";
-        private static final String NOT_EQUAL = "NotEqual";
+    	protected static final String LESS_THAN = "LessThan";
+    	protected static final String LESS_THAN_OR_EQUAL = "LessThanEquals";
+    	protected static final String GREATER_THAN = "GreaterThan";
+    	protected static final String GREATER_THAN_OR_EQUAL = "GreaterThanEquals";
+    	protected static final String LIKE = "Like";
+    	protected static final String ILIKE = "Ilike";
+    	protected static final String RLIKE = "Rlike";
+    	protected static final String BETWEEN = "Between";
+    	protected static final String IN_LIST= "InList";
+    	protected static final String IS_NOT_NULL = "IsNotNull";
+    	protected static final String IS_NULL = "IsNull";
+    	protected static final String NOT = "Not";
+    	protected static final String EQUAL = "Equal";
+    	protected static final String NOT_EQUAL = "NotEqual";
 
         protected String propertyName;
         protected Object[] arguments;

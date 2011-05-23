@@ -15,15 +15,14 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
-import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
+import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -145,17 +144,21 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr dir Optional name of resource directory, defaults to "images"
      * @attr file Name of resource file (optional if uri specified)
      * @attr plugin Optional the name of the grails plugin if the resource is not part of the application
-     * @attr uri Optional relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
+     * @attr uri Optional app-relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
      */
     def img = { attrs ->
         if (!attrs.uri && !attrs.dir) {
             attrs.dir = "images"
         }
-        def uri = resource(attrs)
+        if (resourceService) {
+            out << r.img(attrs)
+        } else {
+            def uri = attrs.uri ?: resource(attrs)
 
-		def excludes = ['dir', 'uri', 'file', 'plugin']
-        def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
-        out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
+    		def excludes = ['dir', 'uri', 'file', 'plugin']
+            def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
+            out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
+        }
     }
     
     /**
@@ -206,6 +209,82 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         writer << '>'
         writer << body()
         writer << '</a>'
+    }
+
+    static attrsToString( Map attrs) {
+        // Output any remaining user-specified attributes
+        final resultingAttributes = attrs.entrySet().collect { "$it.key=\"${it.value.encodeAsHTML()}\""}.join(' ')
+        return " $resultingAttributes"
+    }
+
+    static LINK_WRITERS = [
+        js: { url, constants, attrs ->
+           return "<script src=\"${url}\"${getAttributesToRender(constants, attrs)}></script>"
+        },
+
+        link: { url, constants, attrs ->
+           return "<link href=\"${url}\"${getAttributesToRender(constants, attrs)}/>"
+        }
+    ]
+
+    static getAttributesToRender(constants, attrs) {
+        return "${constants ? attrsToString(constants) : ''}${attrs ? attrsToString(attrs) : ''}"
+    }
+
+    static SUPPORTED_TYPES = [
+        css:[type:"text/css", rel:'stylesheet', media:'screen, projector'],
+        js:[type:'text/javascript', writer:'js'],
+
+        gif:[rel:'shortcut icon'],
+        jpg:[rel:'shortcut icon'],
+        png:[rel:'shortcut icon'],
+        ico:[rel:'shortcut icon'],
+        appleicon:[rel:'apple-touch-icon']
+        
+        // @todo add feed link types here too
+    ]
+       
+    /**
+     * Render the appropriate kind of external link for use in <head> based on the type of the URI.
+     * For JS will render <script> tags, for CSS will render <link> with the correct rel, and so on for icons.
+     * @attr uri
+     * @attr dir
+     * @attr file
+     * @attr plugin
+     * @attr type
+     */
+    def external = { attrs ->
+        if (!attrs.uri) {
+            attrs.uri = g.resource(attrs).toString()
+        }
+        renderResourceLink(attrs)
+    }
+    
+    /**
+     *
+     * @attr uri
+     * @attr type
+     */
+    protected renderResourceLink(attrs) {
+        def uri = attrs.remove('uri')
+        def type = attrs.remove('type')
+        if (!type) {
+            type = FilenameUtils.getExtension(uri)
+        }
+        
+        def typeInfo = SUPPORTED_TYPES[type]?.clone()
+        if (!typeInfo) {
+            throwTagError "I can't work out the type of ${uri} with type [${type}]. Please check the URL, resource definition or specify [type] attribute"
+        }
+        
+        def writerName = typeInfo.remove('writer')
+        def writer = LINK_WRITERS[writerName ?: 'link']
+
+        // Allow attrs to overwrite any constants
+        attrs.each { typeInfo.remove(it.key) }
+
+        out << writer(uri, typeInfo, attrs)
+        out << "\r\n"
     }
 
     /**

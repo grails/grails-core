@@ -145,7 +145,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis");
 
-                        String springDatastoreMappingVersion = "1.0.0.BUILD-SNAPSHOT";
+                        String springDatastoreMappingVersion = "1.0.0.M6";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("org.coconut.forkjoin", "jsr166y", "070108"),
                             ModuleRevisionId.newInstance("org.codehaus.gpars", "gpars", "0.9"),

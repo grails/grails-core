@@ -18,8 +18,8 @@ antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 aspectjVersion = "1.6.10"
 springVersion = "3.1.0.M1"
-springDatastoreVersion = "1.0.0.BUILD-SNAPSHOT"
-springLoadedVersion = "0.8.0.BUILD-SNAPSHOT"
+springDatastoreVersion = "1.0.0.M6"
+springLoadedVersion = "0.8.0.RELEASE"
 springWebflowVersion= "2.0.8.RELEASE"
 ivyVersion = "2.2.0"
 gantVersion = "1.9.5"
@@ -156,6 +156,11 @@ subprojects { project ->
 
         repositories.mavenDeployer {
           repository(url: url) {
+			  beforeDeployment { deployment ->
+			  	  ["sources", "javadoc"].each { type ->
+			          deployment.addArtifact configurations.meta.artifacts.find { it.classifier == type }
+			      }
+			  }	
               final username = project.properties["artifactoryPublishUsername"]
               final password = project.properties["artifactoryPublishPassword"]
 
@@ -168,6 +173,7 @@ subprojects { project ->
         }
       }
     }
+	uploadArchives.dependsOn sourcesJar, javadocJar
 }
 
 

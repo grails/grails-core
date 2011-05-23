@@ -5,12 +5,14 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
+import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 
 /**
  * Tests for ControllerDomainTransformer
@@ -73,6 +75,10 @@ class ControllerDomainTransformerSpec extends Specification{
         GrailsApplication application = GrailsWebRequest.lookup().applicationContext.grailsApplication
         application.initialise()
         application.addArtefact(DomainClassArtefactHandler.TYPE,cls)
+
+        MetaClassEnhancer enhancer =  new MetaClassEnhancer()
+        enhancer.addApi(new ControllersDomainBindingApi())
+        enhancer.enhance(cls.metaClass)
         return cls
     }
 

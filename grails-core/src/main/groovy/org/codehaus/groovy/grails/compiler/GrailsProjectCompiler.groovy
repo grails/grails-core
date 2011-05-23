@@ -257,7 +257,9 @@ class GrailsProjectCompiler {
 
         // If this is a plugin project, the descriptor is not included
         // in the compiler's source path. So, we manually compile it now.
-        if (isPluginProject) compilePluginDescriptor(pluginDescriptor, classesDirPath)
+        if (isPluginProject) {
+			compilePluginDescriptor(pluginDescriptor, classesDirPath)
+		}
     }
 
 
@@ -357,7 +359,9 @@ class GrailsProjectCompiler {
         if (descriptor.lastModified() > classFile.lastModified()) {
             ant.echo(message: "Compiling plugin descriptor...")
             config.setTargetDirectory(classesDir)
-            def unit = new CompilationUnit(config, null, new GroovyClassLoader(classLoader))
+			def cl = new URLClassLoader([classesDir,targetPluginClassesDir]*.toURL() as URL[], classLoader)
+			
+            def unit = new CompilationUnit(config, null, new GroovyClassLoader(cl))
             unit.addSource(descriptor)
             unit.compile()
         }

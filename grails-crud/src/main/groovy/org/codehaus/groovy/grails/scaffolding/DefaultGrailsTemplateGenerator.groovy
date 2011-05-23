@@ -197,6 +197,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                        propertyName: domainClass.logicalPropertyName]
 
         if(canWrite(destFile)) {
+            destFile.parentFile.mkdirs()	
             destFile.withWriter {
                 t.make(binding).writeTo(it)
             }
