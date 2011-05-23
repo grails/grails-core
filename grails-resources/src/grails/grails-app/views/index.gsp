@@ -7,7 +7,7 @@
 			#status {
 				background-color: #eee;
 				border: .2em solid #fff;
-				margin: 2em 1em 1em;
+				margin: 2em 2em 1em;
 				padding: 1em;
 				width: 12em;
 				float: left;
@@ -17,9 +17,6 @@
 			  -moz-border-radius: 0.6em;
 		   -webkit-border-radius: 0.6em;
 				   border-radius: 0.6em;
-			}
-			.boxshadow #status {
-				margin: 2em 2em 1em;
 			}
 
 			.ie6 #status {
@@ -40,11 +37,7 @@
 			}
 
 			#page-body {
-				margin: 2em 1em 1.25em 16em;
-			}
-
-			.boxshadow #page-body {
-				margin-left: 18em;
+				margin: 2em 1em 1.25em 18em;
 			}
 
 			h2 {
@@ -71,7 +64,7 @@
 					display: none;
 				}
 
-				#page-body, .boxshadow #page-body {
+				#page-body {
 					margin: 0 1em 1em;
 				}
 
