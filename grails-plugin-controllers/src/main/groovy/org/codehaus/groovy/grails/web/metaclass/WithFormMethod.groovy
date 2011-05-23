@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.metaclass
 import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractTokenResponseHandler
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
+import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.TokenResponseHandler
 
 /**
@@ -46,16 +46,15 @@ class WithFormMethod {
      */
     TokenResponseHandler withForm(GrailsWebRequest webRequest, Closure callable) {
         TokenResponseHandler handler
-        def request = webRequest.getCurrentRequest()
         if (isTokenValid(webRequest)) {
-            resetToken(request)
+            resetToken(webRequest)
             handler = new ValidResponseHandler(callable?.call())
         }
         else {
             handler = new InvalidResponseHandler()
         }
 
-        request.setAttribute(TokenResponseHandler.KEY, handler)
+        webRequest.request.setAttribute(TokenResponseHandler.KEY, handler)
         return handler
     }
 
@@ -66,14 +65,17 @@ class WithFormMethod {
      */
     protected synchronized boolean isTokenValid(GrailsWebRequest webRequest) {
         final request = webRequest.getCurrentRequest()
-        SynchronizerToken tokenInSession = request.getSession(false)?.getAttribute(SynchronizerToken.KEY)
-        if (!tokenInSession) return false
+        SynchronizerTokensHolder tokensHolderInSession = request.getSession(false)?.getAttribute(SynchronizerTokensHolder.HOLDER)
+        if (!tokensHolderInSession) return false
 
-        String tokenInRequest = webRequest.params[SynchronizerToken.KEY]
+        String tokenInRequest = webRequest.params[SynchronizerTokensHolder.TOKEN_KEY]
         if (!tokenInRequest) return false
 
+        String urlInRequest = webRequest.params[SynchronizerTokensHolder.TOKEN_URI]
+        if (!urlInRequest) return false
+
         try {
-            return tokenInSession.isValid(tokenInRequest)
+            return tokensHolderInSession.isValid(urlInRequest, tokenInRequest)
         }
         catch (IllegalArgumentException ) {
             return false
@@ -83,8 +85,13 @@ class WithFormMethod {
     /**
      * Resets the token in the request
      */
-    protected synchronized resetToken(HttpServletRequest request) {
-        request.getSession(false)?.removeAttribute(SynchronizerToken.KEY)
+    protected synchronized resetToken(GrailsWebRequest webRequest) {
+        final request = webRequest.getCurrentRequest()
+        SynchronizerTokensHolder tokensHolderInSession = request.getSession(false)?.getAttribute(SynchronizerTokensHolder.HOLDER)
+        String urlInRequest = webRequest.params[SynchronizerTokensHolder.TOKEN_URI]
+
+        tokensHolderInSession.resetToken(urlInRequest)
+        if (tokensHolderInSession.isEmpty()) request.getSession(false)?.removeAttribute(SynchronizerTokensHolder.HOLDER)
     }
 }
 
