@@ -17,6 +17,7 @@ package org.grails.plugins.tomcat;
 
 import org.springframework.util.ReflectionUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -38,6 +39,12 @@ public class ParentDelegatingClassLoader extends ClassLoader{
 
     @Override
     protected Class<?> findClass(String className) throws ClassNotFoundException {
-        return (Class<?>) ReflectionUtils.invokeMethod(findClassMethod, getParent(), className);
+        try {
+            return (Class<?>) findClassMethod.invoke(getParent(), className);
+        } catch (IllegalAccessException e) {
+            throw new ClassNotFoundException(className);
+        } catch (InvocationTargetException e) {
+            throw new ClassNotFoundException(className);
+        }
     }
 }
