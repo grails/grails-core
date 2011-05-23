@@ -203,6 +203,24 @@ public abstract class AbstractIvyDependencyManager {
     }
 
     /**
+     * Returns all plugin dependency descriptors that are not transitively included
+     *
+     * @return Declared plugin descriptors
+     */
+    Set<DependencyDescriptor> getDeclaredPluginDependencyDescriptors() {
+        Set<DependencyDescriptor> descriptors = getPluginDependencyDescriptors();
+        Set<DependencyDescriptor> declaredDescriptors = new HashSet<DependencyDescriptor>();
+        for (DependencyDescriptor descriptor : descriptors) {
+            if(descriptor instanceof EnhancedDefaultDependencyDescriptor) {
+                if(!((EnhancedDefaultDependencyDescriptor)descriptor).isTransitivelyIncluded()) {
+                    declaredDescriptors.add(descriptor);
+                }
+            }
+        }
+        return declaredDescriptors;
+    }
+
+    /**
      * Obtains a particular DependencyDescriptor by the plugin name
      * @param pluginName The plugin name
      * @return A DependencyDescriptor or null
