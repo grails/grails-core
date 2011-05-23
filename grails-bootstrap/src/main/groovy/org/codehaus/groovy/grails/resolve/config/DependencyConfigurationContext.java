@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import grails.util.Metadata;
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
@@ -29,8 +30,16 @@ public class DependencyConfigurationContext {
         this.dependencyManager = dependencyManager;
         this.pluginName = pluginName;
         this.inherited = inherited;
-        DependencyDescriptor pluginDependencyDescriptor = pluginName != null ? dependencyManager.getPluginDependencyDescriptor(pluginName) : null;
-        exported = !(pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) || ((EnhancedDefaultDependencyDescriptor) pluginDependencyDescriptor).getExported();
+        if(pluginName != null) {
+            DependencyDescriptor pluginDependencyDescriptor = dependencyManager.getPluginDependencyDescriptor(pluginName);
+            exported = Metadata.getCurrent().getInstalledPlugins().containsKey(pluginName) ||
+                        !(pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) ||
+                        ((EnhancedDefaultDependencyDescriptor) pluginDependencyDescriptor).getExported();
+        }
+        else {
+            exported = true;
+        }
+
     }
     
     static public DependencyConfigurationContext forApplication(IvyDependencyManager dependencyManager) {
