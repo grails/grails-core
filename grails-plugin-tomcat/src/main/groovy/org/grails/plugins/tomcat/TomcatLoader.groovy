@@ -45,7 +45,7 @@ class TomcatLoader extends LifecycleBase implements Loader, Lifecycle {
 
 	TomcatLoader(ClassLoader classLoader) {
         // Class loader that only searches the parent
-        this.classLoader = new ParentOnlyClassLoader(classLoader)
+        this.classLoader = new ParentDelegatingClassLoader(classLoader)
 	}
 
     void addPropertyChangeListener(PropertyChangeListener listener) {}
