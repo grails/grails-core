@@ -19,7 +19,7 @@
 				   border-radius: 0.6em;
 			}
 			.boxshadow #status {
-				margin: 0 2em 1em;
+				margin: 2em 2em 1em;
 			}
 
 			.ie6 #status {

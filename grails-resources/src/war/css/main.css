@@ -47,7 +47,10 @@ body {
 	background-color: #abbf78;
 }
 
-.no-boxshadow body {
+/* replace with .no-boxshadow body if you have modernizr available */
+.ie6 body,
+.ie7 body,
+.ie8 body {
 	border-color: #255b17;
 	border-style: solid;
 	border-width: 0 1px;
@@ -111,6 +114,17 @@ img {
 
 .footer a {
 	color: #255b17;
+}
+
+.spinner {
+	background: url(../images/spinner.gif) 50% 50% no-repeat transparent;
+	height: 16px;
+	width: 16px;
+    padding: 0.5em;
+    position: absolute;
+    right: 0;
+	top: 0;
+	text-indent: -9999px;
 }
 
 /* NAVIGATION MENU */
