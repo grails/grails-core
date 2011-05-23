@@ -598,7 +598,8 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 
         for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
             Resource pluginDir = pluginInfo.pluginDir
-            if(pluginDir.file.canonicalFile == settings.baseDir) continue;
+            final pluginDirFile = pluginDir.file.canonicalFile
+            if((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue;
 
             if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
                 registerMetadataForPluginLocation(pluginDir)
