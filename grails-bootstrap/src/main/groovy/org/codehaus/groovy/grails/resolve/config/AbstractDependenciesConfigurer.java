@@ -165,6 +165,8 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         
         boolean transitive = getBooleanValueOrDefault(dependency, "transitive", true);
         Boolean export = getExportSetting(dependency);
+
+
         
         boolean isExcluded = context.pluginName != null ? 
                 context.dependencyManager.isExcludedFromPlugin(context.pluginName, name) : 
@@ -188,7 +190,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
 
         EnhancedDefaultDependencyDescriptor dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, transitive, scope);
-
+        handleExport(dependencyDescriptor,export);
 
         boolean inherited = context.inherited || context.dependencyManager.getInheritsAll() || context.pluginName != null;
         dependencyDescriptor.setInherited(inherited);
@@ -201,7 +203,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             dependencyDescriptor.configure(configurer);
         }
 
-        addDependency(scope, dependencyDescriptor, export);
+        addDependency(scope, dependencyDescriptor);
     }
 
     protected Boolean getExportSetting(Map<Object, Object> dependency) {
@@ -216,6 +218,8 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         // used in plugin subclass to populate default group id
     }
     
-    abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
+    abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor);
+
+    abstract protected void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
     
 }
