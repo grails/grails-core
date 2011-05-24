@@ -164,7 +164,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         String branch = nullSafeToString(dependency.get("branch"));
         
         boolean transitive = getBooleanValueOrDefault(dependency, "transitive", true);
-        Boolean export = dependency.containsKey("export") ? Boolean.valueOf(dependency.get("export").toString()) : null;
+        Boolean export = getExportSetting(dependency);
         
         boolean isExcluded = context.pluginName != null ? 
                 context.dependencyManager.isExcludedFromPlugin(context.pluginName, name) : 
@@ -188,12 +188,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
 
         EnhancedDefaultDependencyDescriptor dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, transitive, scope);
-        if(export != null) {
-            dependencyDescriptor.setExported(export);
-        }
-        else {
-            dependencyDescriptor.setExport( context.exported );
-        }
+
 
         boolean inherited = context.inherited || context.dependencyManager.getInheritsAll() || context.pluginName != null;
         dependencyDescriptor.setInherited(inherited);
@@ -206,9 +201,13 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             dependencyDescriptor.configure(configurer);
         }
 
-        addDependency(scope, dependencyDescriptor);
+        addDependency(scope, dependencyDescriptor, export);
     }
-    
+
+    protected Boolean getExportSetting(Map<Object, Object> dependency) {
+        return dependency.containsKey("export") ? Boolean.valueOf(dependency.get("export").toString()) : null;
+    }
+
     private boolean getBooleanValueOrDefault(Map<Object, Object> properties, String propertyName, boolean defaultValue) {
         return properties.containsKey(propertyName) ? Boolean.valueOf(properties.get(propertyName).toString()) : defaultValue;
     }
@@ -217,6 +216,6 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         // used in plugin subclass to populate default group id
     }
     
-    abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor);
+    abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
     
 }

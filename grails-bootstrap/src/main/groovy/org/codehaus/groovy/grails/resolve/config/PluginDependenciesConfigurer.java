@@ -23,9 +23,15 @@ class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
         super(context);
     }
 
-    protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+    protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor, Boolean export) {
         if(context.pluginName != null) {
             descriptor.setTransitivelyIncluded(true);
+        }
+        if(export != null) {
+            descriptor.setExported(export);
+        }
+        else {
+            descriptor.setExport( context.exported );
         }
         getDependencyManager().registerPluginDependency(scope, descriptor);
     }

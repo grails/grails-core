@@ -22,7 +22,13 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
         super(context);
     }
 
-    protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+    protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor, Boolean export) {
+        if(export != null) {
+            descriptor.setExported(export);
+        }
+        else {
+            descriptor.setExport( true );
+        }
         getDependencyManager().registerDependency(scope, descriptor);
     }
 
