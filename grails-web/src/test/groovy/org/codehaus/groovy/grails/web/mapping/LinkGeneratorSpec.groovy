@@ -27,7 +27,13 @@ class LinkGeneratorSpec extends Specification {
             linkParams.uri = '/'
 
         then:
-            link == '/'
+            link == '/bar'
+
+        when:
+            linkParams.uri = ''
+
+        then:
+            link == '/bar'
     }
 
     def "Test create relative link with custom context"() {

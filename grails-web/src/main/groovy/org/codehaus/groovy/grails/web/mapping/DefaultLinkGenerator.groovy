@@ -59,12 +59,20 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     String link(Map attrs, String encoding = 'UTF-8') {
         def writer = new StringBuilder()
         // prefer URI attribute
-        if (attrs.get(ATTRIBUTE_URI)) {
+        if (attrs.get(ATTRIBUTE_URI) != null) {
             final base = handleAbsolute(attrs)
             if(base != null) {
                 writer << base
             }
-            writer << attrs.get(ATTRIBUTE_URI).toString()
+            else {
+                final cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
+                if(cp == null) cp = getContextPath()
+                if(cp != null)
+                    writer << cp
+            }
+            final uriPath = attrs.get(ATTRIBUTE_URI).toString()
+            if(uriPath != '/')
+                writer << uriPath
         }
         else {
             // prefer a URL attribute
