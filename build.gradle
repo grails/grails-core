@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'idea'
 
 
-grailsVersion = '1.4.0.BUILD-SNAPSHOT'
+grailsVersion = '1.4.0.M1'
 antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 aspectjVersion = "1.6.10"
