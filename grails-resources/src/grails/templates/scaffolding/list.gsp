@@ -38,7 +38,7 @@
 				</thead>
 				<tbody>
 				<g:each in="\${${propertyName}List}" status="i" var="${propertyName}">
-					<tr class="\${(i % 2) == 0 ? 'odd' : 'even'}">
+					<tr class="\${(i % 2) == 0 ? 'even' : 'odd'}">
 					<%  props.eachWithIndex { p, i ->
 							if (i == 0) { %>
 						<td><g:link action="show" id="\${${propertyName}.id}">\${fieldValue(bean: ${propertyName}, field: "${p.name}")}</g:link></td>
