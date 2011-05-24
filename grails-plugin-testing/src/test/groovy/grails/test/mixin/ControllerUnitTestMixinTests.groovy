@@ -6,10 +6,10 @@ import grails.test.mixin.web.ControllerUnitTestMixin
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeUtility
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
+import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 
 /**
  * Specification for the behavior of the ControllerUnitTestMixin
@@ -150,8 +150,10 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert "Bad" == response.contentAsString
 
-        def token = SynchronizerToken.store(session)
-        params[SynchronizerToken.KEY] = token.currentToken.toString()
+        def holder = SynchronizerTokensHolder.store(session)
+        def token = holder.generateToken('/test')
+        params[SynchronizerTokensHolder.TOKEN_URI] = '/test'
+        params[SynchronizerTokensHolder.TOKEN_KEY] = token
 
         response.reset()
 

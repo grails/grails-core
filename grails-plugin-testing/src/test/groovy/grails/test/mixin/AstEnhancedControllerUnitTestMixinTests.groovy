@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
@@ -7,7 +8,7 @@ import grails.test.mixin.web.ControllerUnitTestMixin
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeUtility
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerToken
+import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
@@ -137,8 +138,10 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
 
         assert "Bad" == response.contentAsString
 
-        def token = SynchronizerToken.store(session)
-        params[SynchronizerToken.KEY] = token.currentToken.toString()
+        def holder = SynchronizerTokensHolder.store(session)
+        def token = holder.generateToken('/test')
+        params[SynchronizerTokensHolder.TOKEN_URI] = '/test'
+        params[SynchronizerTokensHolder.TOKEN_KEY] = token
 
         response.reset()
 
