@@ -71,8 +71,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     writer << cp
             }
             final uriPath = attrs.get(ATTRIBUTE_URI).toString()
-            if(uriPath != '/')
-                writer << uriPath
+            writer << uriPath
         }
         else {
             // prefer a URL attribute

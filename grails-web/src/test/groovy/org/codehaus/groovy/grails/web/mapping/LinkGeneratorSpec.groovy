@@ -27,7 +27,7 @@ class LinkGeneratorSpec extends Specification {
             linkParams.uri = '/'
 
         then:
-            link == '/bar'
+            link == '/bar/'
 
         when:
             linkParams.uri = ''
