@@ -56,12 +56,6 @@ environments {
     production {
         grails.serverURL = "http://www.changeme.com"
     }
-    development {
-        grails.serverURL = "http://localhost:8080/${appName}"
-    }
-    test {
-        grails.serverURL = "http://localhost:8080/${appName}"
-    }
 }
 
 // log4j configuration
