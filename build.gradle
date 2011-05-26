@@ -183,7 +183,10 @@ subprojects { project ->
             pom.dependencies.removeAll(pom.dependencies.findAll { it.scope == "test" })
         }
         
-        Mods are run in order they are encountered in the build script
+        Mods are run in order they are encountered in the build script.
+        
+        The pom argument is of the following type:
+        http://maven.apache.org/ref/2.2.1/maven-model/apidocs/org/apache/maven/model/Model.html
     */
     project.poms = [project.install.repositories.mavenInstaller.pom, project.deployer.pom]
     project.pomModifications = []
