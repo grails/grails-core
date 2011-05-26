@@ -29,6 +29,10 @@ public abstract class AbstractStaticMethodInvocation implements StaticMethodInvo
     public void setPattern(Pattern pattern) {
         this.pattern = pattern;
     }
+    
+    public void setPattern(String methodPattern) {
+    	setPattern(Pattern.compile(methodPattern));
+    }
 
     protected Pattern getPattern() {
         return pattern;
