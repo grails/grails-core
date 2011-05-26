@@ -17,16 +17,18 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.orm.HibernateCriteriaBuilder;
 import groovy.lang.Closure;
+
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.grails.datastore.gorm.finders.FinderMethod;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
-
-import java.util.regex.Pattern;
 
 /**
  * Abstract base class for static persistent methods.
@@ -35,7 +37,7 @@ import java.util.regex.Pattern;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation {
+public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation implements FinderMethod {
 
     private ClassLoader classLoader;
     private HibernateTemplate hibernateTemplate;
