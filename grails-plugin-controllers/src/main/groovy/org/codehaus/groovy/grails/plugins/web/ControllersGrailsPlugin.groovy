@@ -219,7 +219,7 @@ class ControllersGrailsPlugin {
     def onChange = {event ->
         if (application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) {
             def dc = application.getDomainClass(event.source.name)
-            enhanceDomainWithBinding(event.ctx, dc, dc.metaClass)
+            enhanceDomainWithBinding(event.ctx, dc, GroovySystem.metaClassRegistry.getMetaClass(event.source))
         }
         else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
             def context = event.ctx
@@ -252,7 +252,5 @@ class ControllersGrailsPlugin {
             beanDefinitions.registerBeans(event.ctx)
 
         }
-
-        event.manager?.getGrailsPlugin("controllers")?.doWithDynamicMethods(event.ctx)
     }
 }

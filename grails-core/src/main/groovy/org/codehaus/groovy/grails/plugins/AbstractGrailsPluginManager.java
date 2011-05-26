@@ -19,6 +19,8 @@ import grails.util.BuildScope;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
@@ -359,6 +361,14 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             }
         }
         else {
+
+            MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+            registry.removeMetaClass(cls);
+            ExpandoMetaClass newMc = new ExpandoMetaClass(cls, true, true);
+            newMc.initialize();
+            registry.setMetaClass(cls, newMc);
+
+
             for (GrailsPlugin grailsPlugin : pluginList) {
                 if(grailsPlugin.hasInterestInChange(file.getAbsolutePath())) {
                     if(cls != null) {
