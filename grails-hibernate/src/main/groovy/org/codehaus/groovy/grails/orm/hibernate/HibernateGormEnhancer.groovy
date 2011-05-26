@@ -103,7 +103,7 @@ class HibernateGormEnhancer extends GormEnhancer{
 			SessionFactory sessionFactory = datastore.sessionFactory
 			def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.name)
 			if(domainClass != null) {
-				def builder = new HibernateNamedQueriesBuilder(domainClass, grailsApplication, sessionFactory)
+				def builder = new HibernateNamedQueriesBuilder(domainClass, grailsApplication, sessionFactory, finders)
 				builder.evaluate((Closure)namedQueries)
 			}
 		}
