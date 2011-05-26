@@ -29,13 +29,12 @@ import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersAp
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
-import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
+import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
+import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
@@ -55,9 +54,7 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
-import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
-import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.api.*
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers
@@ -191,11 +188,13 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
 
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
+        ConverterUtil.setGrailsApplication(grailsApplication)
     }
 
     @AfterClass
     static void cleanupGrailsWeb() {
         servletContext = null
+        ConverterUtil.setGrailsApplication(null)
     }
 
     @Before

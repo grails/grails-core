@@ -1,9 +1,10 @@
 package grails.test.mixin
 
+import grails.converters.XML
 import grails.persistence.Entity
 import org.junit.Test
 
- /**
+/**
  * A Junit 4 test that tests a scaffolded controllers logic using the new mixins
  */
 @TestFor(BookController)
@@ -15,6 +16,24 @@ class DomainClassControllerUnitTestMixinTests {
         controller.index()
 
         assert "/book/list" == response.redirectedUrl
+    }
+
+    @Test
+    void testConvertToXml() {
+        controller.renderXml()
+
+        assert response.xml.title.text() == "The Stand"
+    }
+
+    @Test
+    void testBinding() {
+        def book = new Book(title:"The Stand", pages:"200")
+
+        assert book.pages == 200
+
+        book.properties = [pages:"300"]
+
+        assert book.pages == 300
     }
 
     @Test
@@ -208,6 +227,9 @@ class BookController {
         redirect(action: "list", params: params)
     }
 
+    def renderXml = {
+        render new Book(title:"The Stand") as XML
+    }
     def list = {
         params.max = Math.min(params.max ? params.int('max') : 10, 100)
         [bookInstanceList: Book.list(params), bookInstanceTotal: Book.count()]
