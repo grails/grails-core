@@ -154,7 +154,7 @@ subprojects { project ->
 
         mavenRepo urls: url
 
-        repositories.mavenDeployer {
+        project.deployer = repositories.mavenDeployer {
           repository(url: url) {
 			  beforeDeployment { deployment ->
 			  	  ["sources", "javadoc"].each { type ->
@@ -174,6 +174,23 @@ subprojects { project ->
       }
     }
 	uploadArchives.dependsOn sourcesJar, javadocJar
+
+
+    /*
+        Install a method that can be used to fine tune the poms, e.g…
+        
+        modifyPom { pom ->
+            pom.dependencies.removeAll(pom.dependencies.findAll { it.scope == "test" })
+        }
+        
+        Mods are run in order they are encountered in the build script
+    */
+    project.poms = [project.install.repositories.mavenInstaller.pom, project.deployer.pom]
+    project.pomModifications = []
+    project.modifyPom = { Closure modification -> project.pomModifications << modification }
+    project.poms*.whenConfigured {
+        project.pomModifications*.call(it)
+    }
 }
 
 
