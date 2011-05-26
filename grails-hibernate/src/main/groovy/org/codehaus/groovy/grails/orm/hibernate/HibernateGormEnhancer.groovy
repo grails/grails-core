@@ -59,19 +59,11 @@ class HibernateGormEnhancer extends GormEnhancer{
 	private GrailsApplication grailsApplication
 	
 	public HibernateGormEnhancer(HibernateDatastore datastore,
-			PlatformTransactionManager transactionManager) {
+			PlatformTransactionManager transactionManager,
+			GrailsApplication grailsApplication) {
 		super(datastore, transactionManager);
-		
-		def mappingContext = datastore.mappingContext
-		
-		if(mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
-			grailsApplication = mappingContext.grailsApplication
-			classLoader = grailsApplication.classLoader
-		}
-		else {
-			classLoader = Thread.currentThread().contextClassLoader
-		}
-		
+		this.grailsApplication = grailsApplication
+		this.classLoader = grailsApplication.classLoader
 	}
 
     protected GormValidationApi getValidationApi(Class cls) {

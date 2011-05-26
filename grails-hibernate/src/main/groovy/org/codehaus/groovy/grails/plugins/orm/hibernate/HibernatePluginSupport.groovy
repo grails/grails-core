@@ -378,7 +378,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         def transactionManager = ctx.getBean(HibernateTransactionManager)
         final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx)
 
-        HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager)
+        HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)
         for(entity in mappingContext.getPersistentEntities()) {
             if(entity.javaClass.getAnnotation(Enhanced) == null) {
                 enhancer.enhance entity
