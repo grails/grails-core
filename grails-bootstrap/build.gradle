@@ -8,16 +8,22 @@ dependencies {
 
 
     compile( "org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE" ) {
-        transitive = false
+        // Explicitly exclude OSGIified dependencies - GRAILS-7525
+        // Have to use excludes instead of transitive = false - GRADLE-1574
+        ["protobuf-java-lite", "json-simple", "bcpg-jdk15", "bcprov-jdk15"].each { dep ->
+            exclude group: "org.springframework.roo.wrapping", module: "org.springframework.roo.wrapping." + dep
+        }
     }
 
-    compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile 'commons-cli:commons-cli:1.2'
-
-    // These 3 are required by UAA but not Grails
+    // These 3 are required by UAA but not Grails (non OSGI version of excludes above)
     compile 'com.google.protobuf:protobuf-java:2.3.0',
             'com.googlecode.json-simple:json-simple:1.1',
             "org.bouncycastle:bcpg-jdk15:1.45"
+    
+    
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile 'commons-cli:commons-cli:1.2'
+
 
 
     compile( 'org.codehaus.gpars:gpars:0.9' ) {
