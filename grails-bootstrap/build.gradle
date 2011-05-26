@@ -1,8 +1,4 @@
 import org.apache.tools.ant.filters.ReplaceTokens
-
-repositories {
-    mavenRepo urls:'http://spring-roo-repository.springsource.org.s3.amazonaws.com/release'
-}
 dependencies {
     compile "org.springframework:spring-core:${springVersion}",
             "org.springframework:spring-beans:${springVersion}",
