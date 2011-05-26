@@ -64,6 +64,17 @@ class HibernateGormEnhancer extends GormEnhancer{
 		super(datastore, transactionManager);
 		this.grailsApplication = grailsApplication
 		this.classLoader = grailsApplication.classLoader
+		
+		def sessionFactory = datastore.sessionFactory
+		
+		finders = Collections.unmodifiableList([new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new FindOrSaveByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+			new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ])
 	}
 
     protected GormValidationApi getValidationApi(Class cls) {
@@ -96,9 +107,7 @@ class HibernateGormEnhancer extends GormEnhancer{
 				builder.evaluate((Closure)namedQueries)
 			}
 		}
-
 	}
-
 }
 
 /**
@@ -121,7 +130,6 @@ class HibernateGormStaticApi extends GormStaticApi {
 	private ExecuteUpdatePersistentMethod executeUpdateMethod
 	private MergePersistentMethod mergeMethod
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
-    private List<StaticMethodInvocation> dynamicMethods = []
 	
 	public HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders) {
 		super(persistentClass, datastore, finders);
@@ -148,56 +156,8 @@ class HibernateGormStaticApi extends GormStaticApi {
 			this.mergeMethod = new MergePersistentMethod( sessionFactory, classLoader, grailsApplication, domainClass )
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
 
-            this.dynamicMethods = [	new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new FindOrSaveByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new CountByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-                                    new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ]
-
 		}
 	}
-
-    @Override
-    def methodMissing(String methodName, Object args) {
-        def result = null
-        StaticMethodInvocation method = dynamicMethods.find {it.isMethodMatch(methodName)}
-        def cls = persistentClass
-        def mc = cls.metaClass
-        if (method) {
-            // register the method invocation for next time
-            synchronized(this) {
-                mc.static."$methodName" = {List varArgs ->
-                    method.invoke(cls, methodName, varArgs)
-                }
-            }
-            result = method.invoke(cls, methodName, args)
-        }
-        else {
-            try {
-                if(respondsTo(methodName, args)) {
-                    result = this."$methodName"(*args)
-                    synchronized(this) {
-                        mc.static."$methodName" = {List varArgs ->
-                             this."$methodName"(*varArgs )
-                        }
-                    }
-                }
-                else {
-                    throw new MissingMethodException(methodName, cls, args)
-                }
-
-            }
-            catch(MissingMethodException e) {
-                throw new MissingMethodException(methodName, cls, args)
-            }
-        }
-        return result
-    }
-
-
 
     @Override
 	public Object get(Serializable id) {
