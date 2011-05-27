@@ -1,6 +1,5 @@
 package grails.test.mixin
 
-
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
@@ -29,7 +28,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
     protected getMockController() {
         mockController(AnotherController)
     }
-
 
     void testSimpleControllerRedirect() {
 
@@ -65,7 +63,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
 
         assert '{"book":"Great"}' == controller.response.contentAsString
         assert "Great" == controller.response.json.book
-
     }
 
     void testRenderAsJson() {
@@ -76,7 +73,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
 
         assert '{"foo":"bar"}' == controller.response.contentAsString
         assert "bar" == controller.response.json.foo
-
     }
 
     void testRenderState() {
@@ -132,7 +128,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
 
     void testWithFormTokenSynchronization() {
 
-
         def controller = getMockController()
         controller.renderWithForm()
 
@@ -148,7 +143,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
         controller.renderWithForm()
 
         assert "Good" == response.contentAsString
-
     }
 
     void testFileUpload() {
@@ -168,7 +162,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
         controller.renderTemplate()
 
         assert response.contentAsString == "Hello 10"
-
     }
 
     void testRenderBasicTemplateWithTags() {
@@ -227,17 +220,15 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
         controller.handleCommand(cmd)
 
         assert response.contentAsString == 'Good'
-
     }
-
-
 }
+
 @Artefact("Controller")
 class AnotherController {
 
     def handleCommand = { TestCommand test ->
 
-         if(test.hasErrors()) {
+         if (test.hasErrors()) {
              render "Bad"
          }
          else {
@@ -289,7 +280,7 @@ class AnotherController {
     }
 
     def renderAsJson = {
-        render( [foo:"bar"] as JSON )
+        render([foo:"bar"] as JSON)
     }
 
     def renderWithFormat = {
@@ -305,14 +296,13 @@ class AnotherController {
             println params.foo
             println request.bar
             requestInfo {
-                for(p in params) {
+                for (p in params) {
                     parameter(name:p.key, value:p.value)
                 }
                 request.each {
                     attribute(name:it.key, value:it.value)
                 }
             }
-
         }
     }
 

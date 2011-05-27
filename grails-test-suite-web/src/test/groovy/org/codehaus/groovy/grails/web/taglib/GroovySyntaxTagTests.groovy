@@ -44,7 +44,7 @@ class GroovySyntaxTagTests extends TestCase {
     void testCalculateExpression() {
         assertEquals("test", tag.calculateExpression(" test "))
         assertEquals("test",tag.calculateExpression(" \" test\" "))
-        assertEquals("test.method()", tag.calculateExpression(' ${ test.method() } ' ))
+        assertEquals("test.method()", tag.calculateExpression(' ${ test.method() } '))
     }
 }
 

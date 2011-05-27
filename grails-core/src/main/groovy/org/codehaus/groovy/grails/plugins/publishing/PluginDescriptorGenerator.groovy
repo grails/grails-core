@@ -94,8 +94,9 @@ class PluginDescriptorGenerator {
                     for (r in resourceList) {
                         def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
                         def name = matcher[0][1].replaceAll('/', /\./)
-                        if(!excludes.contains(name))
+                        if (!excludes.contains(name)) {
                             xml.resource(name)
+                        }
                     }
                 }
                 dependencies {

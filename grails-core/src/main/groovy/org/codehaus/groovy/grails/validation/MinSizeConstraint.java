@@ -72,7 +72,7 @@ public class MinSizeConstraint extends AbstractConstraint {
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minSize};
 
         if (propertyValue.getClass().isArray()) {
-            int length = Array.getLength( propertyValue );
+            int length = Array.getLength(propertyValue);
             if (length < minSize) {
                 rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
                         ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
@@ -85,7 +85,7 @@ public class MinSizeConstraint extends AbstractConstraint {
             }
         }
         else if (propertyValue instanceof String) {
-            if (((String)propertyValue ).length() < minSize) {
+            if (((String)propertyValue).length() < minSize) {
                 rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
                         ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
             }

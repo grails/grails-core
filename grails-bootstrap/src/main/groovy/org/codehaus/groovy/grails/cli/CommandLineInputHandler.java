@@ -26,11 +26,10 @@ import java.io.PrintStream;
 import java.util.Vector;
 
 /**
- * Custom input handler mechanism for Ant that ignores case of input
+ * Custom input handler mechanism for Ant that ignores case of input.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public class CommandLineInputHandler implements InputHandler {
     private CommandLineHelper commandLineHelper;
@@ -40,14 +39,15 @@ public class CommandLineInputHandler implements InputHandler {
     }
 
     public CommandLineInputHandler(InputStream input, PrintStream out) {
-        this.commandLineHelper = new CommandLineHelper(input, System.out);
+        this.commandLineHelper = new CommandLineHelper(input, out);
     }
 
     public void handleInput(InputRequest inputRequest) throws BuildException {
        String[] validInputs = null;
-       if(inputRequest instanceof MultipleChoiceInputRequest) {
-           Vector choices = ((MultipleChoiceInputRequest) inputRequest).getChoices();
-           validInputs = (String[]) choices.toArray(new String[choices.size()]);
+       if (inputRequest instanceof MultipleChoiceInputRequest) {
+           @SuppressWarnings("unchecked")
+           Vector<String> choices = ((MultipleChoiceInputRequest) inputRequest).getChoices();
+           validInputs = choices.toArray(new String[choices.size()]);
        }
         String result = commandLineHelper.userInput(inputRequest.getPrompt(), validInputs);
         inputRequest.setInput(result);

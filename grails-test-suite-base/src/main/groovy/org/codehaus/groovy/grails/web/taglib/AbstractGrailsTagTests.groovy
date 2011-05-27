@@ -158,7 +158,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         def mockControllerClass = gcl.parseClass("class MockController {  def index = {} } ")
         ctx = new MockApplicationContext()
-        ctx.servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
+        ctx.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
 
         grailsApplication.setApplicationContext(ctx)
 
@@ -168,8 +168,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 
         messageSource = new StaticMessageSource()
-        ctx.registerMockBean("manager", mockManager )
-        ctx.registerMockBean("messageSource", messageSource )
+        ctx.registerMockBean("manager", mockManager)
+        ctx.registerMockBean("messageSource", messageSource)
         ctx.registerMockBean("grailsApplication",grailsApplication)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
@@ -205,7 +205,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         appCtx = springConfig.getApplicationContext()
 
-        ctx.servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        ctx.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         mockManager.applicationContext = appCtx
@@ -331,7 +331,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         assertEquals expected, transform(mockResponse.contentAsString)
     }
 
-    def applyTemplate(template, params = [:], target = null, String filename = null ) {
+    def applyTemplate(template, params = [:], target = null, String filename = null) {
 
         GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
 

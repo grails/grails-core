@@ -33,7 +33,7 @@ class GormApiSupport {
         def ctx = datastore.mappingContext
         PersistentEntity entity = ctx.getPersistentEntity(cls.getName())
 
-        if(entity == null) {
+        if (entity == null) {
             entity = ctx.addPersistentEntity(cls)
         }
 
@@ -41,5 +41,4 @@ class GormApiSupport {
 
         return new GormValidationApi(cls, datastore)
     }
-
 }

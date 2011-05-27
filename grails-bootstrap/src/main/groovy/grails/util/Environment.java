@@ -332,7 +332,7 @@ public enum Environment {
      */
     public String getName() {
         if (name == null) {
-            return this.toString().toLowerCase(Locale.getDefault());
+            return toString().toLowerCase(Locale.getDefault());
         }
         return name;
     }

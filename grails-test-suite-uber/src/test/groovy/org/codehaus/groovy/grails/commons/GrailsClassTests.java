@@ -53,7 +53,7 @@ public class GrailsClassTests extends TestCase {
 
     public void testGrailsClassNonPublicConstructor() throws Exception {
         GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class ProtectedConstructor { protected ProtectedConstructor(){}}");
+        Class<?> clazz = cl.parseClass("class ProtectedConstructor { protected ProtectedConstructor() {}}");
         GrailsClass grailsClass = new AbstractGrailsClass(clazz, "ProtectedConstructor") {/*empty*/};
         assertNotNull(grailsClass.newInstance());
     }

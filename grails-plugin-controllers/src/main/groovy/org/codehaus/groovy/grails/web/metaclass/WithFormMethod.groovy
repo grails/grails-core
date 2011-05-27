@@ -77,7 +77,7 @@ class WithFormMethod {
         try {
             return tokensHolderInSession.isValid(urlInRequest, tokenInRequest)
         }
-        catch (IllegalArgumentException ) {
+        catch (IllegalArgumentException) {
             return false
         }
     }

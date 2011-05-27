@@ -9,18 +9,17 @@ dependencies {
             project(":grails-web"),
             project(":grails-plugin-domain-class")
 
-
     // Specs
     compile 'javax.transaction:jta:1.1'
 
     // Spring Datastore APIs
-    compile( "org.grails:grails-datastore-gorm:$springDatastoreVersion" ) {
+    compile("org.grails:grails-datastore-gorm:$springDatastoreVersion") {
         transitive = false
     }
-    compile( "org.springframework:spring-datastore-core:$springDatastoreVersion" ) {
+    compile("org.springframework:spring-datastore-core:$springDatastoreVersion") {
         transitive = false
     }
-    compile( "org.springframework:spring-datastore-simple:$springDatastoreVersion" ) {
+    compile("org.springframework:spring-datastore-simple:$springDatastoreVersion") {
         transitive = false
     }
 
@@ -31,16 +30,14 @@ dependencies {
     // Hibernate related
     compile 'org.hibernate:hibernate-core:3.6.1.Final'
     compile 'javassist:javassist:3.11.0.GA'
-        compile 'javax.transaction:jta:1.1'
-
+    compile 'javax.transaction:jta:1.1'
 
     runtime 'net.sf.ehcache:ehcache-core:2.3.1'
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',
             'org.hibernate:hibernate-ehcache:3.6.1.Final',
             'antlr:antlr:2.7.6'
-             
-
 }
+
 test {
 //    maxParallelForks = 4
     forkEvery = 100

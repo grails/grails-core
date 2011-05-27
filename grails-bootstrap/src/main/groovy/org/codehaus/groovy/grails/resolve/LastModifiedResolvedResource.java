@@ -21,7 +21,7 @@ import org.apache.ivy.plugins.repository.Resource;
 import org.apache.ivy.plugins.resolver.util.ResolvedResource;
 
 /**
- * Correctly handles last modified in a resolved Ivy resource
+ * Correctly handles last modified in a resolved Ivy resource.
  *
  * @since 1.4
  * @author Luke Daley
@@ -40,11 +40,11 @@ public class LastModifiedResolvedResource extends ResolvedResource {
         this.lastModified = lastModified;
     }
 
+    @Override
     public long getLastModified() {
         if (lastModified < 0) {
             return getResource().getLastModified();
-        } else {
-            return lastModified;
         }
+        return lastModified;
     }
 }

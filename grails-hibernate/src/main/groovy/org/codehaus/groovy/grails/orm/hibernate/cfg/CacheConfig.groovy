@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
 
 /**
  * Defines the cache configuration.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
  */

@@ -46,9 +46,8 @@ class MimeType {
     int hashCode() { name.hashCode() }
 
     String toString() {
-        return "MimeType { name=$name,extension=$extension,parameters=$parameters }".toString()
+        "MimeType { name=$name,extension=$extension,parameters=$parameters }"
     }
-
 
     /**
      * @return An array of MimeTypes
@@ -56,11 +55,10 @@ class MimeType {
     static MimeType[] getConfiguredMimeTypes() {
         def webRequest = GrailsWebRequest.lookup()
         def context = webRequest?.getApplicationContext()
-        if(context?.containsBean(MimeType.BEAN_NAME))
+        if (context?.containsBean(MimeType.BEAN_NAME)) {
             return context?.getBean(MimeType.BEAN_NAME, MimeType[].class)
-        else {
-            return DEFAULTS
         }
+        return DEFAULTS
     }
 
     static reset() {

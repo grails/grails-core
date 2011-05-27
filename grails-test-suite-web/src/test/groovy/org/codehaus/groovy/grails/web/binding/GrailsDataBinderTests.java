@@ -178,12 +178,12 @@ public class GrailsDataBinderTests extends TestCase {
         testBindStructuredDate("1999", "12", null, null, null); // December 1st, 1999 - 00:00
     }
 
-    public void testAllowedAndDissallowedDefaultToEmptyArray(){
+    public void testAllowedAndDissallowedDefaultToEmptyArray() {
         TestBean testBean = new TestBean();
         GrailsDataBinder binder = new GrailsDataBinder(testBean,"testBean");
-        assertNotNull( binder.getAllowedFields());
+        assertNotNull(binder.getAllowedFields());
         assertEquals(0, binder.getAllowedFields().length);
-        assertNotNull( binder.getDisallowedFields());
+        assertNotNull(binder.getDisallowedFields());
         assertEquals(2, binder.getDisallowedFields().length);
     }
 
@@ -251,7 +251,7 @@ public class GrailsDataBinderTests extends TestCase {
         assertNull(testBean.getMyDate());
     }
 
-    public void testFiltersRequestParams(){
+    public void testFiltersRequestParams() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addParameter("joe.name","joe");
         request.addParameter("tom.name","tom");
@@ -261,7 +261,7 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals("joe",testBean.getName());
     }
 
-    public void testFiltersPropertyValues(){
+    public void testFiltersPropertyValues() {
         MutablePropertyValues vals = new MutablePropertyValues();
         vals.addPropertyValue("joe.name","joe");
         vals.addPropertyValue("tom.name","tom");
@@ -285,10 +285,10 @@ public class GrailsDataBinderTests extends TestCase {
         }
 
         public int getAge() {
-            return this.age;
+            return age;
         }
 
-        public void setAge(int age){
+        public void setAge(int age) {
             this.age = age;
         }
     }

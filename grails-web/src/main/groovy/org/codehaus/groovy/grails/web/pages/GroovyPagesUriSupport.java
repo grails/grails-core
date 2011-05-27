@@ -17,12 +17,13 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
+
+import javax.servlet.ServletRequest;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.util.Assert;
-
-import javax.servlet.ServletRequest;
 
 /**
  * Methods to establish template names, paths and so on.
@@ -180,7 +181,7 @@ public class GroovyPagesUriSupport {
         else {
             buf.append(SLASH)
                .append(controllerName);
-            if(viewName != null) {
+            if (viewName != null) {
 
                 buf.append(SLASH)
                    .append(viewName);

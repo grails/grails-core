@@ -378,7 +378,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         }
         catch (Exception e) {
             GrailsUtil.deepSanitize(e);
-            throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(),e );
+            throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
         }
     }
 
@@ -467,7 +467,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             idx = lastToken.lastIndexOf('.');
             if (idx > -1 && idx != lastToken.length() - 1) {
                 String extension =  lastToken.substring(idx+1, lastToken.length());
-                if(mimeTypes != null) {
+                if (mimeTypes != null) {
                     for (MimeType mimeType : mimeTypes) {
                         if (mimeType.getExtension().equals(extension)) return extension;
                     }

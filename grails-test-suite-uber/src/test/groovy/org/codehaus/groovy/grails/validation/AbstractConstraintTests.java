@@ -14,43 +14,43 @@ import org.springframework.validation.FieldError;
  */
 public abstract class AbstractConstraintTests extends TestCase {
 
-    protected Constraint getConstraint( String field, Object parameter ) {
+    protected Constraint getConstraint(String field, Object parameter) {
         Constraint constraint = null;
         try {
-            constraint = ( Constraint ) getConstraintClass().newInstance();
-        } catch( Exception e ) {
-            fail( "Cannot instantiate constraint class [" + getConstraintClass().getName() + "]" );
+            constraint = (Constraint) getConstraintClass().newInstance();
+        } catch (Exception e) {
+            fail("Cannot instantiate constraint class [" + getConstraintClass().getName() + "]");
         }
-        constraint.setOwningClass( TestClass.class );
-        constraint.setPropertyName( field );
-        constraint.setParameter( parameter );
+        constraint.setOwningClass(TestClass.class);
+        constraint.setPropertyName(field);
+        constraint.setParameter(parameter);
         return constraint;
     }
 
-    protected void testConstraintDefaultMessage( Constraint constraint, Object value, String message ) {
-        Errors errors = testConstraintFailed( constraint, value );
-        assertEquals( message, errors.getFieldError( constraint.getPropertyName() ).getDefaultMessage() );
+    protected void testConstraintDefaultMessage(Constraint constraint, Object value, String message) {
+        Errors errors = testConstraintFailed(constraint, value);
+        assertEquals(message, errors.getFieldError(constraint.getPropertyName()).getDefaultMessage());
     }
 
-    protected void testConstraintMessageCode( Constraint constraint, Object value, String code ) {
-        Errors errors = testConstraintFailed( constraint, value );
-        checkCode( errors.getFieldError( constraint.getPropertyName()), code );
+    protected void testConstraintMessageCode(Constraint constraint, Object value, String code) {
+        Errors errors = testConstraintFailed(constraint, value);
+        checkCode(errors.getFieldError(constraint.getPropertyName()), code);
     }
 
-    protected void testConstraintMessageCode( Constraint constraint, Object value, String code, Object[] args ) {
-        Errors errors = testConstraintFailed( constraint, value );
-        FieldError fieldError = errors.getFieldError( constraint.getPropertyName() );
-        checkCode( fieldError, code );
-        checkArguments( args, fieldError.getArguments() );
+    protected void testConstraintMessageCode(Constraint constraint, Object value, String code, Object[] args) {
+        Errors errors = testConstraintFailed(constraint, value);
+        FieldError fieldError = errors.getFieldError(constraint.getPropertyName());
+        checkCode(fieldError, code);
+        checkArguments(args, fieldError.getArguments());
     }
 
-    protected void testConstraintMessageCodes( Constraint constraint, Object value, String[] code, Object[] args ) {
-        Errors errors = testConstraintFailed( constraint, value );
-        FieldError fieldError = errors.getFieldError( constraint.getPropertyName() );
-        for ( int j = 0; j < code.length; j++ ) {
-            checkCode( fieldError, code[j] );
+    protected void testConstraintMessageCodes(Constraint constraint, Object value, String[] code, Object[] args) {
+        Errors errors = testConstraintFailed(constraint, value);
+        FieldError fieldError = errors.getFieldError(constraint.getPropertyName());
+        for (int j = 0; j < code.length; j++) {
+            checkCode(fieldError, code[j]);
         }
-        checkArguments( args, fieldError.getArguments() );
+        checkArguments(args, fieldError.getArguments());
     }
 
     protected Errors testConstraintFailed(Constraint constraint, Object value) {
@@ -93,22 +93,22 @@ public abstract class AbstractConstraintTests extends TestCase {
         return errors;
     }
 
-    private void checkCode( FieldError error, String code ) {
+    private void checkCode(FieldError error, String code) {
         String[] codes = error.getCodes();
         boolean result = false;
-        for ( int i = 0; i < codes.length; i++ ) {
-            if (code.equals( codes[i] ) ) {
+        for (int i = 0; i < codes.length; i++) {
+            if (code.equals(codes[i])) {
                 result = true;
                 break;
             }
         }
-        assertTrue( "Code " + code + " is not found in error", result );
+        assertTrue("Code " + code + " is not found in error", result);
     }
 
-    private void checkArguments( Object[] left, Object[] right ) {
-        assertEquals( left.length, right.length );
-        for ( int i = 0; i < left.length; i++ ) {
-            assertEquals( left[i], right[i] );
+    private void checkArguments(Object[] left, Object[] right) {
+        assertEquals(left.length, right.length);
+        for (int i = 0; i < left.length; i++) {
+            assertEquals(left[i], right[i]);
         }
     }
 

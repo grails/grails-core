@@ -97,7 +97,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * @return The ServletContext instance
      */
     public ServletContext getServletContext(@SuppressWarnings("unused") Object instance) {
-        if(servletContext == null) {
+        if (servletContext == null) {
             GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
             servletContext = webRequest.getServletContext();
         }
@@ -129,7 +129,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * @return The GrailsApplication instance
      */
     public GrailsApplication getGrailsApplication(@SuppressWarnings("unused") Object instance) {
-        if(grailsApplication == null) {
+        if (grailsApplication == null) {
             GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
             grailsApplication = webRequest.getAttributes().getGrailsApplication();
         }
@@ -141,7 +141,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * @return The ApplicationContext instance
      */
     public ApplicationContext getApplicationContext(Object instance) {
-        if(applicationContext == null) {
+        if (applicationContext == null) {
             applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext(instance));
         }
         return applicationContext;

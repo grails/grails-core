@@ -15,13 +15,17 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import org.codehaus.groovy.grails.commons.*;
+import java.util.Map;
+
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.validation.BindingResult;
-
-import java.util.Map;
 
 /**
  * Enhancements made to domain classes to for data binding
@@ -29,6 +33,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 1.4
  */
+@SuppressWarnings("rawtypes")
 public class ControllersDomainBindingApi {
 
     public static final String AUTOWIRE_DOMAIN_METHOD = "autowireDomain";
@@ -51,7 +56,7 @@ public class ControllersDomainBindingApi {
     public static void initialize(Object instance, Map namedArgs) {
         initialize(instance);
         GrailsDomainClass dc = getDomainClass(instance);
-        if(dc != null) {
+        if (dc != null) {
             DataBindingUtils.bindObjectToDomainInstance(dc, instance, namedArgs);
             DataBindingUtils.assignBidirectionalAssociations(instance, namedArgs, dc);
         }
@@ -69,12 +74,10 @@ public class ControllersDomainBindingApi {
      */
     public BindingResult setProperties(Object instance, Object bindingSource) {
         GrailsDomainClass dc = getDomainClass(instance);
-        if(dc != null) {
+        if (dc != null) {
             return DataBindingUtils.bindObjectToDomainInstance(dc, instance, bindingSource);
         }
-        else {
-            return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
-        }
+        return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
     }
 
     /**
@@ -89,11 +92,11 @@ public class ControllersDomainBindingApi {
 
     private static GrailsDomainClass getDomainClass(Object instance) {
         GrailsDomainClass domainClass = GrailsMetaClassUtils.getPropertyIfExists(instance, GrailsDomainClassProperty.DOMAIN_CLASS, GrailsDomainClass.class);
-        if(domainClass == null) {
+        if (domainClass == null) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if(webRequest != null) {
+            if (webRequest != null) {
                 GrailsApplication grailsApplication = webRequest.getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-                if(grailsApplication != null) {
+                if (grailsApplication != null) {
                     domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
                 }
             }
@@ -101,7 +104,6 @@ public class ControllersDomainBindingApi {
         }
         return domainClass;
     }
-
 
     private static void autowire(Object instance) {
         GrailsMetaClassUtils.invokeMethodIfExists(instance, AUTOWIRE_DOMAIN_METHOD, new Object[]{instance});

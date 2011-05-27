@@ -51,8 +51,7 @@ class TestTagLib {
         out << "foo:${attrs.foo}"
     }
 }
-'''
-        )
+''')
 
         ga.addArtefact(tagLibClass)
     }

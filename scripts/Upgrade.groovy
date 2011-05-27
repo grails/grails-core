@@ -97,11 +97,11 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         }
         delete(dir: "${basedir}/tmp", failonerror: false)
 
-		if(!new File("$grailsHome/src/war").exists()) {
-			if(new File("${grailsHome}/grails-resources").exists()) {
-				grailsHome = new File("${grailsHome}/grails-resources")
-			}
-		}
+        if (!new File("$grailsHome/src/war").exists()) {
+            if (new File("${grailsHome}/grails-resources").exists()) {
+                grailsHome = new File("${grailsHome}/grails-resources")
+            }
+        }
 
         copy(todir: "${basedir}/web-app") {
             fileset(dir: "${grailsHome}/src/war") {
@@ -155,15 +155,15 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         // add reasonable defaults for them
         def configFile = new File(baseFile, '/grails-app/conf/Config.groovy')
         if (configFile.exists()) {
-			def configText = configFile.text			
-			configFile.withWriterAppend {
-				if(!configText.contains("grails.views.default.codec") ) {				               
+            def configText = configFile.text
+            configFile.withWriterAppend {
+                if (!configText.contains("grails.views.default.codec")) {
                     it.writeLine 'grails.views.default.codec="none" // none, html, base64'
-	            }
-				if(!configText.contains("grails.views.gsp.encoding") ) {
-                    it.writeLine 'grails.views.gsp.encoding="UTF-8"'				
-				}
-			}
+                }
+                if (!configText.contains("grails.views.gsp.encoding")) {
+                    it.writeLine 'grails.views.gsp.encoding="UTF-8"'
+                }
+            }
         }
 
         if (new File("${basedir}/spring").exists()) {

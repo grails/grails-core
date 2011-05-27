@@ -122,7 +122,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         MutablePropertyValues propValues = new MutablePropertyValues();
 
         BeanDefinition grailsApplicationBean = new RootBeanDefinition(DefaultGrailsApplication.class,args,propValues);
-        localContext.registerBeanDefinition( "grailsApplication", grailsApplicationBean );
+        localContext.registerBeanDefinition("grailsApplication", grailsApplicationBean);
 
         localContext.refresh();
 

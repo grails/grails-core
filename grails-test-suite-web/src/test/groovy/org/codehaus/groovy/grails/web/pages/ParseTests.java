@@ -51,7 +51,7 @@ public class ParseTests extends TestCase {
     protected String makeImports() {
         StringBuffer result = new StringBuffer();
         for (int i = 0; i < GroovyPageParser.DEFAULT_IMPORTS.length; i++) {
-            result.append( "import " + GroovyPageParser.DEFAULT_IMPORTS[i]+"\n");
+            result.append("import " + GroovyPageParser.DEFAULT_IMPORTS[i]+"\n");
         }
         return result.toString();
     }
@@ -195,7 +195,7 @@ public class ParseTests extends TestCase {
     public String trimAndRemoveCR(String s) {
         int index;
         StringBuffer sb = new StringBuffer(s.trim());
-        while (((index = sb.toString().indexOf('\r')) != -1) || ((index = sb.toString().indexOf('\n')) != -1) ) {
+        while (((index = sb.toString().indexOf('\r')) != -1) || ((index = sb.toString().indexOf('\n')) != -1)) {
             sb.deleteCharAt(index);
         }
         return sb.toString();
@@ -226,7 +226,7 @@ public class ParseTests extends TestCase {
                  "  <tt:form />\n" +
                  "</tbody>").generatedGsp;
          System.out.println("output = " + output);
-         assertTrue( "should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',2,[:],null)") > -1);
+         assertTrue("should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',2,[:],null)") > -1);
      }
 
      public void testParseWithWhitespaceNotEaten() throws Exception {

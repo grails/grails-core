@@ -30,10 +30,10 @@ import org.apache.commons.collections.set.AbstractSerializableSetDecorator;
 
 /**
  * Forked from Apache Commons Collections' implementation of ListOrderedSet. This one actually implements the List interface.
- * 
- * Yes we are away of the warnings in the javadoc about problems with incompatibilities between the List and Set interfaces, however 
+ *
+ * Yes we are away of the warnings in the javadoc about problems with incompatibilities between the List and Set interfaces, however
  * this class is designed to used internally only for data binding and not by end users.
- * 
+ *
  * @author Stephen Colebourne
  * @author Henning P. Schmiedehausen
  * @author Graeme Rocher
@@ -47,9 +47,9 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
 
     /**
      * Factory method to create an ordered set.
-     * 
+     *
      * An ArrayList is used to retain order.
-     * 
+     *
      * @param set the set to decorate, must not be null
      * @throws IllegalArgumentException if set is null
      */
@@ -59,9 +59,9 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
 
     /**
      * Factory method to create an ordered set using the supplied list to retain order.
-     * 
+     *
      * A HashSet is used for the set behaviour.
-     * 
+     *
      * @param list the list to decorate, must not be null
      * @throws IllegalArgumentException if list is null
      */
@@ -79,7 +79,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     /**
      * Constructs a new empty ListOrderedSet using
      * a HashSet and an ArrayList internally.
-     * 
+     *
      * @since Commons Collections 3.1
      */
     public ListOrderedSet() {
@@ -89,7 +89,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
 
     /**
      * Constructor that wraps (not copies).
-     * 
+     *
      * @param set the set to decorate, must not be null
      * @throws IllegalArgumentException if set is null
      */
@@ -100,9 +100,9 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
 
     /**
      * Constructor that wraps (not copies) the Set and specifies the list to use.
-     * 
+     *
      * The set and list must both be correctly initialised to the same elements.
-     * 
+     *
      * @param set the set to decorate, must not be null
      * @param list the list to decorate, must not be null
      * @throws IllegalArgumentException if set or list is null
@@ -118,7 +118,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     //-----------------------------------------------------------------------
     /**
      * Gets an unmodifiable view of the order of the Set.
-     * 
+     *
      * @return an unmodifiable list view
      */
     public List asList() {
@@ -244,9 +244,9 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
     }
 
     /**
-     * Uses the underlying List's toString so that order is achieved. 
-     * This means that the decorated Set's toString is not used, so 
-     * any custom toStrings will be ignored. 
+     * Uses the underlying List's toString so that order is achieved.
+     * This means that the decorated Set's toString is not used, so
+     * any custom toStrings will be ignored.
      */
     // Fortunately List.toString and Set.toString look the same
     @Override

@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins.web.mapping;
 
-
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
@@ -46,7 +45,7 @@ class UrlMappingsGrailsPlugin {
     def doWithSpring = {
         def serverURL = null
         final configuredServerURL = application.config?.grails?.serverURL
-        if(configuredServerURL) {
+        if (configuredServerURL) {
             serverURL = configuredServerURL
         }
         grailsLinkGenerator(CachingLinkGenerator, serverURL)

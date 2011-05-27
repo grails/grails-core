@@ -194,10 +194,10 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         for (String pluginName : getLoadBeforeNames()) {
             if (pluginName.equals(thatName)) return 1;
         }
-        for(String pluginName : that.getLoadAfterNames()) {
+        for (String pluginName : that.getLoadAfterNames()) {
             if (pluginName.equals(getName())) return 1;
         }
-        for(String pluginName : that.getLoadBeforeNames()) {
+        for (String pluginName : that.getLoadBeforeNames()) {
             if (pluginName.equals(getName())) return -1;
         }
 

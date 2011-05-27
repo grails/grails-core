@@ -112,22 +112,22 @@ class MockUtilsTests extends GroovyTestCase {
         }
         assertEquals 'No signature of method: grails.test.TestDomain.noSuchMethod() is applicable for argument types: () values: []', msg
     }
-    
+
     void testBeforeValidateOnSave() {
         MockUtils.mockDomain ClassWithListArgBeforeValidate
         MockUtils.mockDomain ClassWithNoArgBeforeValidate
         MockUtils.mockDomain ClassWithOverloadedBeforeValidate
-        
+
         def obj = new ClassWithListArgBeforeValidate()
         assertEquals 0, obj.listArgCounter
         obj.save()
         assertEquals 1, obj.listArgCounter
-        
+
         obj = new ClassWithNoArgBeforeValidate()
         assertEquals 0, obj.noArgCounter
         obj.save()
         assertEquals 1, obj.noArgCounter
-        
+
         obj = new ClassWithOverloadedBeforeValidate()
         assertEquals 0, obj.noArgCounter
         assertEquals 0, obj.listArgCounter
@@ -140,14 +140,14 @@ class MockUtilsTests extends GroovyTestCase {
         MockUtils.mockDomain ClassWithListArgBeforeValidate
         MockUtils.mockDomain ClassWithNoArgBeforeValidate
         MockUtils.mockDomain ClassWithOverloadedBeforeValidate
-        
+
         def obj = new ClassWithListArgBeforeValidate()
         assertEquals 0, obj.listArgCounter
         obj.validate()
         assertEquals 1, obj.listArgCounter
         obj.validate(['name'])
         assertEquals 2, obj.listArgCounter
-        
+
         obj = new ClassWithNoArgBeforeValidate()
         assertEquals 0, obj.noArgCounter
         obj.validate()
@@ -165,7 +165,7 @@ class MockUtilsTests extends GroovyTestCase {
         assertEquals 1, obj.noArgCounter
         assertEquals 1, obj.listArgCounter
     }
-    
+
     /**
      * Tests the  {@link MockUtils#mockDomain(Class, Map, List)}  method.
      */
@@ -626,7 +626,7 @@ class MockUtilsTests extends GroovyTestCase {
 
     /**
      * Tests the <code>validate()</code> method added by  {@link
-     * MockUtils # prepareForConstraintsTests ( Class , List )} .
+     * MockUtils # prepareForConstraintsTests (Class , List)} .
      */
     void testConstraintValidation() {
         def testInstances = [

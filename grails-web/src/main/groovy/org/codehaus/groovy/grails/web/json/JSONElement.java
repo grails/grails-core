@@ -7,5 +7,5 @@ package org.codehaus.groovy.grails.web.json;
  * @since 1.1
  */
 public interface JSONElement {
-	// empty
+    // empty
 }

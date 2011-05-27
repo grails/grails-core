@@ -17,11 +17,11 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 /**
- *
- * Extended marker interface that indicates this ClassInjector applies to all types of artefacts
+ * Extended marker interface that indicates this ClassInjector applies to all types of artefacts.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-public interface AllArtefactClassInjector extends ClassInjector{
+public interface AllArtefactClassInjector extends ClassInjector {
+    // marker interface
 }

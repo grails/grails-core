@@ -137,5 +137,5 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         configurer.delegate = this
         configurer.call()
         this
-    } 
+    }
 }

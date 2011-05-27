@@ -1,5 +1,5 @@
 if (typeof jQuery !== 'undefined') {
-	(function($) { 
+	(function($) {
 		$('#spinner').ajaxStart(function() {
 			$(this).fadeIn();
 		}).ajaxStop(function() {

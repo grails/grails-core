@@ -52,10 +52,10 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
         GrailsWebRequest webRequest= GrailsWebRequest.lookup(request)
         Map params = webRequest.params
         def newParams = [execution:flowExecutionKey]
-        for(entry in params) {
+        for (entry in params) {
             def key = entry.key
-            if(key instanceof String) {
-                if(key.startsWith("_event") || key == 'execution') continue
+            if (key instanceof String) {
+                if (key.startsWith("_event") || key == 'execution') continue
 
                 newParams[key] = entry.value
             }
@@ -63,8 +63,6 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
                 newParams[key] = entry.value
             }
         }
-
-
 
         UrlCreator creator = holder.getReverseMapping(controllerName, flowId, newParams)
 

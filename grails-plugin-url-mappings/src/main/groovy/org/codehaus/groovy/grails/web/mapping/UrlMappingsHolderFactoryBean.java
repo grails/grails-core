@@ -72,8 +72,8 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         defaultUrlMappingEvaluator.setPluginManager(pluginManager);
         mappingEvaluator = defaultUrlMappingEvaluator;
 
-        if(mappings.length == 0) {
-            urlMappings.addAll( mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()) );
+        if (mappings.length == 0) {
+            urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
         }
         else {
             for (GrailsClass mapping : mappings) {
@@ -98,7 +98,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
         Map flatConfig = grailsApplication.getFlatConfig();
         Integer cacheSize = mapGetInteger(flatConfig, URL_MAPPING_CACHE_MAX_SIZE);
-        if (cacheSize != null){
+        if (cacheSize != null) {
             defaultUrlMappingsHolder.setMaxWeightedCacheCapacity(cacheSize);
         }
         Integer urlCreatorCacheSize = mapGetInteger(flatConfig, URL_CREATOR_CACHE_MAX_SIZE);
@@ -109,7 +109,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         defaultUrlMappingsHolder.initialize();
         urlMappingsHolder=defaultUrlMappingsHolder;
     }
-    
+
     // this should possibly be somewhere in utility classes , MapUtils.getInteger doesn't handle GStrings/CharSequence
     private static Integer mapGetInteger(Map map, String key) {
         Object value=map.get(key);

@@ -37,7 +37,7 @@ class FlowBuilderDecisionExecutionTests extends AbstractGrailsTagAwareFlowExecut
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "noResults"
     }
@@ -49,7 +49,7 @@ class FlowBuilderDecisionExecutionTests extends AbstractGrailsTagAwareFlowExecut
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "displayResults"
     }

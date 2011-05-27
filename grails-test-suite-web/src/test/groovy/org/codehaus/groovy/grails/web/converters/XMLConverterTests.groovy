@@ -58,7 +58,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         assertTrue pum.supports(proxy)
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
+        assertEquals('''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
     }
 
     void testMarshalProxiedAssociations() {
@@ -79,7 +79,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         c.params.b = book
         c.testProxyAssociations()
 
-        assertEquals( '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher id="1" /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
+        assertEquals('''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher id="1" /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString)
     }
 
     void onSetUp() {

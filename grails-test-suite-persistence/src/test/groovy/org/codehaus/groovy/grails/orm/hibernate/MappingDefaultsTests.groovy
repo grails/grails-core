@@ -20,7 +20,7 @@ class MappingDefaultsTests extends AbstractGrailsHibernateTests {
 grails.gorm.default.mapping = {
    cache true
    id generator:'sequence'
-   'user-type'( type: org.hibernate.type.YesNoType, class: Boolean )
+   'user-type'(type: org.hibernate.type.YesNoType, class: Boolean)
 
 }
 grails.gorm.default.constraints = {

@@ -78,7 +78,7 @@ class WebFlowPluginSupport {
 
         flowScopeRegistrar(ScopeRegistrar)
         boolean configureHibernateListener = manager.hasGrailsPlugin('hibernate') && springConfig.containsBean("sessionFactory")
-        if (configureHibernateListener ) {
+        if (configureHibernateListener) {
             try {
                 hibernateConversationListener(org.codehaus.groovy.grails.webflow.persistence.SessionAwareHibernateFlowExecutionListener, sessionFactory, transactionManager)
                 executionListenerLoader(org.springframework.webflow.execution.factory.StaticFlowExecutionListenerLoader, hibernateConversationListener)
@@ -99,7 +99,7 @@ class WebFlowPluginSupport {
 
         conversationManager(SessionBindingConversationManager)
         flowExecutionSnapshotFactory(SerializedFlowExecutionSnapshotFactory, flowExecutionFactory, flowRegistry)
-        flowExecutionRepository(DefaultFlowExecutionRepository, conversationManager, flowExecutionSnapshotFactory )
+        flowExecutionRepository(DefaultFlowExecutionRepository, conversationManager, flowExecutionSnapshotFactory)
         flowExecutor(GrailsFlowExecutorImpl, flowRegistry, flowExecutionFactory, flowExecutionRepository)
 
         mainFlowController(GrailsFlowHandlerAdapter) {
@@ -159,7 +159,7 @@ class WebFlowPluginSupport {
             registry.removeMetaClass controllerClass
             controller.getReference().getWrappedInstance().metaClass = registry.getMetaClass(controllerClass)
             for (flow in controller.flows) {
-                def FlowBuilder builder = new FlowBuilder( ("${controller.logicalPropertyName}/" + flow.key).toString(), flow.value, appCtx.flowBuilderServices, flowRegistry)
+                def FlowBuilder builder = new FlowBuilder(("${controller.logicalPropertyName}/" + flow.key).toString(), flow.value, appCtx.flowBuilderServices, flowRegistry)
                 builder.viewPath = "/"
                 builder.applicationContext = event.ctx
 

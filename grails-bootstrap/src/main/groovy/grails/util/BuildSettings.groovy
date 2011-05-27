@@ -278,12 +278,12 @@ class BuildSettings extends AbstractBuildSettings {
      * Setting for whether or not to enable verbose compilation, can be overridden via -verboseCompile(=[true|false])?
      */
     boolean verboseCompile = false
-    
+
     /**
      * Return whether the BuildConfig has been modified
      */
     boolean modified = false
-    
+
     final GrailsCoreDependencies coreDependencies
 
     private List<File> compileDependencies = []
@@ -521,7 +521,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         coreDependencies = new GrailsCoreDependencies(grailsVersion)
-        
+
         // If 'grailsHome' is set, add the JAR file dependencies.
         defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
         defaultPluginSet = defaultPluginMap.keySet()
@@ -648,9 +648,9 @@ class BuildSettings extends AbstractBuildSettings {
         projectWarExplodedDirSet = true
     }
 
-    boolean getConvertClosuresArtefacts(){ convertClosuresArtefacts }
+    boolean getConvertClosuresArtefacts() { convertClosuresArtefacts }
 
-    void setConvertClosuresArtefacts(boolean convert){
+    void setConvertClosuresArtefacts(boolean convert) {
         convertClosuresArtefacts = convert
         convertClosuresArtefactsSet = true
     }
@@ -767,7 +767,7 @@ class BuildSettings extends AbstractBuildSettings {
     ConfigObject loadConfig(ConfigObject config) {
         try {
             this.config.merge(config)
-            return this.config
+            return config
         }
         finally {
             postLoadConfig()
@@ -799,7 +799,7 @@ class BuildSettings extends AbstractBuildSettings {
                 def ois = new ObjectInputStream(input)
                 Map dependencyMap = ois.readObject()
 
-                if(dependencyMap?.values()*.any { !it.exists() }) {
+                if (dependencyMap?.values()*.any { !it.exists() }) {
                     modified = true
                 }
                 else {

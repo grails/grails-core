@@ -91,7 +91,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertCurrentStateEquals "displayResults"
 
         signalEvent("searchDeeper")
@@ -109,7 +109,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertCurrentStateEquals "displayResults"
 
         signalEvent("searchDeeper")

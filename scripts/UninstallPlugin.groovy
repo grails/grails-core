@@ -26,25 +26,25 @@ includeTargets << grailsScript("_GrailsPlugins")
 includePluginJarsOnClasspath=false
 
 target(uninstallPlugin:"Uninstalls a plug-in for a given name") {
-	depends(checkVersion, parseArguments, clean)
+    depends(checkVersion, parseArguments, clean)
 
-	if (argsMap['global']) {
-		globalInstall = true
-	}
+    if (argsMap['global']) {
+        globalInstall = true
+    }
 
-	def pluginArgs = argsMap['params']
-	if (pluginArgs) {
+    def pluginArgs = argsMap['params']
+    if (pluginArgs) {
 
-		def pluginName = pluginArgs[0]
-		def pluginRelease = pluginArgs[1]
+        def pluginName = pluginArgs[0]
+        def pluginRelease = pluginArgs[1]
 
-		uninstallPluginForName(pluginName, pluginRelease)
+        uninstallPluginForName(pluginName, pluginRelease)
 
-		event("PluginUninstalled", ["The plugin ${pluginName}-${pluginRelease} has been uninstalled from the current application"])
-	}
-	else {
-		event("StatusError", ["You need to specify the plug-in name and (optional) version, e.g. \"grails uninstall-plugin feeds 1.0\""])
-	}
+        event("PluginUninstalled", ["The plugin ${pluginName}-${pluginRelease} has been uninstalled from the current application"])
+    }
+    else {
+        event("StatusError", ["You need to specify the plug-in name and (optional) version, e.g. \"grails uninstall-plugin feeds 1.0\""])
+    }
 }
 
 setDefaultTarget("uninstallPlugin")

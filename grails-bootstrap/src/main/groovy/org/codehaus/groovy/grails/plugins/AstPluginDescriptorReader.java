@@ -92,7 +92,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                     String name = node.getName();
                     final Expression expr = node.getField().getInitialExpression();
 
-                    if(expr != null) {
+                    if (expr != null) {
                         Object value;
                         if (expr instanceof ListExpression) {
                             final List<String> list = new ArrayList<String>();

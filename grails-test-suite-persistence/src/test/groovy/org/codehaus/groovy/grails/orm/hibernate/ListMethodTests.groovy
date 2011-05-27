@@ -22,7 +22,7 @@ class ListableBook {
         def bookClass = ga.getDomainClass("ListableBook").clazz
         ['A','C','b', 'a', 'c', 'B'].each { bookClass.newInstance(title:it).save(flush:true) }
 
-        assertEquals( ['A','a','b','B',  'C', 'c'], bookClass.list(sort:'title').title )
-        assertEquals( ['A','B','C', 'a', 'b', 'c'], bookClass.list(sort:'title', ignoreCase:false).title )
+        assertEquals(['A','a','b','B',  'C', 'c'], bookClass.list(sort:'title').title)
+        assertEquals(['A','B','C', 'a', 'b', 'c'], bookClass.list(sort:'title', ignoreCase:false).title)
     }
 }

@@ -40,8 +40,8 @@ class BatchAction {
         def mClass = ga.getDomainClass("Measurement").clazz
         def bClass = ga.getDomainClass("BatchAction").clazz
 
-        def u = unitClass.newInstance(name:"metres",abbreviation:"m" )
-        def u2 = unitClass.newInstance(name:"centimetres",abbreviation:"cm" )
+        def u = unitClass.newInstance(name:"metres",abbreviation:"m")
+        def u2 = unitClass.newInstance(name:"centimetres",abbreviation:"cm")
 
         u.save()
         u2.save()

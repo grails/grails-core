@@ -791,7 +791,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         private final boolean isNextChunkBigEnough(final int len) {
             // check if allocBuffer has enough chars to flush
             return chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 ||
-                allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft() ;
+                allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft();
         }
 
         @Override
@@ -1733,18 +1733,20 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     void notifyBufferChange() {
-        if (parentBuffers != null) {
-            for (Iterator<SoftReference<StreamCharBufferKey>> i=parentBuffers.iterator();i.hasNext();){
-                SoftReference<StreamCharBufferKey> ref=i.next();
-                final StreamCharBuffer.StreamCharBufferKey parentKey = ref.get();
-                boolean removeIt=true;
-                if (parentKey != null) {
-                    StreamCharBuffer parent= parentKey.getBuffer();
-                    removeIt=!parent.bufferChanged(this);
-                }
-                if (removeIt) {
-                    i.remove();
-                }
+        if (parentBuffers == null) {
+            return;
+        }
+
+        for (Iterator<SoftReference<StreamCharBufferKey>> i = parentBuffers.iterator(); i.hasNext();) {
+            SoftReference<StreamCharBufferKey> ref = i.next();
+            final StreamCharBuffer.StreamCharBufferKey parentKey = ref.get();
+            boolean removeIt = true;
+            if (parentKey != null) {
+                StreamCharBuffer parent = parentKey.getBuffer();
+                removeIt = !parent.bufferChanged(this);
+            }
+            if (removeIt) {
+                i.remove();
             }
         }
     }
@@ -1809,7 +1811,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
                 ReflectionUtils.makeAccessible(instanceField);
                 instance = instanceField.get(null);
                 mapMethod = ReflectionUtils.findMethod(instance.getClass(), "convertToReference", char.class);
-                if(mapMethod != null)
+                if (mapMethod != null)
                     ReflectionUtils.makeAccessible(mapMethod);
             } catch (Exception e) {
                 log.warn("Couldn't use reflection for resolving characterEntityReferences in HtmlUtils class", e);

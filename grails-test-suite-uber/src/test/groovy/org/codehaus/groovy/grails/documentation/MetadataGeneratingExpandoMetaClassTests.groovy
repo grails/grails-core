@@ -41,7 +41,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
 
         assertEquals "testMethod", method.name
         assertEquals "A test instance method", method.text
-        assertEquals( [String, Integer] as Class[], method.arguments )
+        assertEquals([String, Integer] as Class[], method.arguments)
         assertEquals "Controller", method.artefact
         assertEquals TestController, method.type
 
@@ -50,7 +50,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
 
         assertEquals "A test property", method.text
         assertEquals "getSomeProp", method.name
-        assertEquals( [] as Class[], method.arguments )
+        assertEquals([] as Class[], method.arguments)
         assertEquals "Controller", method.artefact
         assertEquals TestController, method.type
 
@@ -59,7 +59,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
 
         assertEquals "A test static method", method.text
         assertEquals "listTests", method.name
-        assertEquals( [Map] as Class[], method.arguments )
+        assertEquals([Map] as Class[], method.arguments)
         assertEquals "Controller", method.artefact
         assertEquals TestController, method.type
 

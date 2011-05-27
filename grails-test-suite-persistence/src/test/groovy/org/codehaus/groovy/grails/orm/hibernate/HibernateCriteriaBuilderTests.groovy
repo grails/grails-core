@@ -325,7 +325,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         assertEquals 1 , results.size()
 
-        results = parse(   ".list { " +
+        results = parse(".list { " +
                     "or {" +
                         "eq('firstName','lisa');" +
                         "children { " +
@@ -377,7 +377,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         assertEquals 1 , results.size()
 
-        results = parse(   ".list { " +
+        results = parse(".list { " +
                     "or {" +
                        "eq('lastName','simpson');" +
                         "children { " +
@@ -460,7 +460,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj4.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "or { " +
                         "eq('firstName','fred');" +
                         "eq('lastName', 'flintstone');" +
@@ -470,7 +470,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         assertEquals 3, results.size()
 
-        results = parse(   "{ " +
+        results = parse("{ " +
                     "or { " +
                         "eq('lastName', 'flintstone');" +
                     "}" +
@@ -478,7 +478,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         assertEquals 2, results.size()
 
-        results = parse(   "{ " +
+        results = parse("{ " +
                     "and { " +
                         "eq('age', 45);" +
                         "or { " +
@@ -517,7 +517,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "distinct('lastName');" +
                     "}" +
@@ -576,7 +576,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                              "}\n" +
                         "}\n" +
                     "}", "Test2",CriteriaBuilderTestClass.name)
-        results = parse(   "{\n" +
+        results = parse("{\n" +
                         "eq(\"firstName\",\"Fred\");\n" +
                         "order(\"firstName\")\n" +
                         "maxResults(10)\n" +
@@ -584,7 +584,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         shouldFail(MissingMethodException) {
             // rubbish argument
-            results = parse(   "{\n" +
+            results = parse("{\n" +
                     "and {\n" +
                         "eq(\"firstName\",\"Fred\")\n" +
                         "not {\n" +
@@ -639,7 +639,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "avg('age',)" +
                     "}" +
@@ -670,7 +670,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "count('firstName')" +
                     "}" +
@@ -699,7 +699,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "countDistinct('lastName')" +
                     "}" +
@@ -727,7 +727,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "max('age')" +
                     "}" +
@@ -756,7 +756,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "min('age')" +
                     "}" +
@@ -785,7 +785,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "rowCount()" +
                     "}" +
@@ -814,7 +814,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "sum('age')" +
                     "}" +
@@ -843,7 +843,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                     "projections { " +
                         "property('firstName');" +
                         "order('firstName', 'asc');" +
@@ -907,7 +907,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "eqProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 2, results.size()
@@ -934,7 +934,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "gtProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
@@ -962,7 +962,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "ge('age',43)" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 2, results.size()
@@ -989,7 +989,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "le('age',45)" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1017,7 +1017,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "lt('age',44)" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1044,7 +1044,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "eq('firstName','fred')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
@@ -1070,27 +1070,27 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
       obj2.invokeMethod("save", null)
 
-      List results = parse(  "{ " +
+      List results = parse("{ " +
             "eq('firstName','Fred')" +
             "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'default not ignoring case', 0, results.size()
 
-      results = parse(  "{ " +
+      results = parse("{ " +
             "eq 'firstName','Fred', ignoreCase: false" +
             "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'explicitly not ignoring case', 0, results.size()
 
-      results = parse(  "{ " +
+      results = parse("{ " +
             "eq 'firstName', 'Fred', ignoreCase: true" +
             "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'ignoring case should match one', 1, results.size()
 
-      results = parse(  "{ " +
+      results = parse("{ " +
               "eq('firstName', 'Fred', [ignoreCase: true])" +
               "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'ignoring case should match one', 1, results.size()
 
-      results = parse(  "{ " +
+      results = parse("{ " +
             "eq 'firstName', 'Fred', dontKnowWhatToDoWithThis: 'foo'" +
             "}", "Test1",CriteriaBuilderTestClass.name)
       assertEquals 'an unknown parameter should be ignored', 0, results.size()
@@ -1117,7 +1117,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "ne('firstName','fred')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
@@ -1144,7 +1144,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "ltProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
@@ -1171,7 +1171,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "geProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1199,7 +1199,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "leProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1227,7 +1227,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "neProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1262,7 +1262,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "between('age',40, 46)" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1290,7 +1290,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "ilike('lastName', 'flint%')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1318,7 +1318,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.invokeMethod("save", null)
 
 
-        List results = parse(   "{ " +
+        List results = parse("{ " +
                         "'in'('firstName',['fred','donkey'])" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1, results.size()
@@ -1363,7 +1363,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 1, results.size()
 
         shouldFail(IllegalArgumentException) {
-            results = parse(   "{ " +
+            results = parse("{ " +
                     "not{" +
                     "}" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1432,7 +1432,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.invokeMethod("save", null)
 
         // Try sorting on one of the string fields.
-        List results = parse(   ".list(offset: 10, maxSize: 20, sort: 'firstName', order: 'asc') { " +
+        List results = parse(".list(offset: 10, maxSize: 20, sort: 'firstName', order: 'asc') { " +
                     "children { " +
                         "eq('firstName','bart')" +
                     "}" +
@@ -1440,7 +1440,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 0 , results.size()
 
         // Now try sorting on the integer field.
-        results = parse(   ".list(offset: 0, maxSize: 10, sort: 'age', order: 'asc') { " +
+        results = parse(".list(offset: 0, maxSize: 10, sort: 'age', order: 'asc') { " +
                     "children { " +
                         "eq('firstName','bart')" +
                     "}" +

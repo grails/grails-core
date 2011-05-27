@@ -21,10 +21,6 @@ import junit.framework.TestCase;
  *
  * @author Graeme Rocher
  * @since 0.5
- *
- *        <p/>
- *        Created: Feb 26, 2007
- *        Time: 5:44:06 PM
  */
 public class GroovyPageResourceLoaderTests extends TestCase {
 
@@ -33,8 +29,8 @@ public class GroovyPageResourceLoaderTests extends TestCase {
 
         assertEquals("grails-app/views/layouts/main.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/layouts/main.gsp"));
         assertEquals("grails-app/views/books/list.gsp", rl.getRealLocationInProject("/WEB-INF/grails-app/views/books/list.gsp"));
-        assertEquals("grails-app/views/_template.gsp",rl.getRealLocationInProject( "/WEB-INF/grails-app/views/_template.gsp"));
+        assertEquals("grails-app/views/_template.gsp",rl.getRealLocationInProject("/WEB-INF/grails-app/views/_template.gsp"));
         assertEquals("web-app/other.gsp", rl.getRealLocationInProject("/other.gsp"));
-        assertEquals("web-app/somedir/other.gsp",rl.getRealLocationInProject( "/somedir/other.gsp"));
+        assertEquals("web-app/somedir/other.gsp",rl.getRealLocationInProject("/somedir/other.gsp"));
     }
 }

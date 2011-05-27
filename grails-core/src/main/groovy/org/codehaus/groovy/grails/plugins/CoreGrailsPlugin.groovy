@@ -39,7 +39,7 @@ import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 
 /**
- * A plugin that configures the core shared beans within the Grails application context.
+ * Configures the core shared beans within the Grails application context.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -59,7 +59,7 @@ class CoreGrailsPlugin {
         // replace AutoProxy advisor with Groovy aware one
         def grailsConfig = application.config.grails
         def springConfig = grailsConfig.spring
-        if(springConfig.disable.aspectj.autoweaving) {
+        if (springConfig.disable.aspectj.autoweaving) {
             "org.springframework.aop.config.internalAutoProxyCreator"(GroovyAwareInfrastructureAdvisorAutoProxyCreator)
         }
         else {

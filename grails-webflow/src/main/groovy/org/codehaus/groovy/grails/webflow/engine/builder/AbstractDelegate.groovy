@@ -57,7 +57,7 @@ abstract class AbstractDelegate extends WebRequestDelegatingRequestContext {
     /**
      * Returns the current event
      */
-    Event getCurrentEvent(){ context.currentEvent }
+    Event getCurrentEvent() { context.currentEvent }
 
     /**
      * Resolves properties from the currently executing controller

@@ -10,21 +10,24 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 /**
- * Enhances controller classes with a method missing implementation for tags
+ * Enhances controller classes with a method missing implementation for tags.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 @AstTransformer
-public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTransformer{
-    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/"+ GrailsResourceUtils.GRAILS_APP_DIR+"/controllers/(.+)Controller\\.groovy");
+public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTransformer {
+
+    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
+            GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
+
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return ControllerTagLibraryApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;  // No static api
     }
 
@@ -35,6 +38,5 @@ public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTrans
     @Override
     public String getArtefactType() {
         return ControllerArtefactHandler.TYPE;
-
     }
 }

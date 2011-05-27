@@ -16,7 +16,6 @@ class Thing {
    String name
 
    def whoHello = { who -> "Hello, ${who}!" }
-}'''
-        )
+}''')
     }
 }

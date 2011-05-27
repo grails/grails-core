@@ -7,7 +7,7 @@ class ConstructorAutowiringTests extends AbstractGrailsHibernateTests {
 
         def b = factory.newBook()
         assertNotNull "Service autowiring failed", b.bookService
-        assertEquals( "foo", b.talkToService() )
+        assertEquals("foo", b.talkToService())
 
         b = factory.newBook(title:"gina")
         assertNotNull b.bookService

@@ -67,7 +67,7 @@ class ScaffoldingGrailsPlugin {
     }
 
     def doWithApplicationContext = { ApplicationContext ctx ->
-        if(!application.warDeployed) {
+        if (!application.warDeployed) {
             Thread.start {
                 configureScaffolding(ctx, application)
             }
@@ -78,7 +78,7 @@ class ScaffoldingGrailsPlugin {
     }
 
     def configureScaffolding(ApplicationContext appCtx, app) {
-        for( controllerClass in app.controllerClasses){
+        for (controllerClass in app.controllerClasses) {
             configureScaffoldingController(appCtx, app, controllerClass)
         }
     }

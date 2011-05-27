@@ -264,7 +264,7 @@ public class JSONObject implements JSONElement,Map {
      *
      * @param key   A key string.
      * @param value An object to be accumulated under the key.
-     * @return this.
+     * @return this
      * @throws JSONException If the value is an invalid number
      *                       or if the key is null.
      */
@@ -430,7 +430,7 @@ public class JSONObject implements JSONElement,Map {
      * @return true if the key exists in the JSONObject.
      */
     public boolean has(String key) {
-        return this.myHashMap.containsKey(key);
+        return myHashMap.containsKey(key);
     }
 
 
@@ -453,7 +453,7 @@ public class JSONObject implements JSONElement,Map {
      * @return An iterator of the keys.
      */
     public Iterator keys() {
-        return this.myHashMap.keySet().iterator();
+        return myHashMap.keySet().iterator();
     }
 
 
@@ -463,7 +463,7 @@ public class JSONObject implements JSONElement,Map {
      * @return The number of keys in the JSONObject.
      */
     public int length() {
-        return this.myHashMap.size();
+        return myHashMap.size();
     }
 
 
@@ -719,7 +719,7 @@ public class JSONObject implements JSONElement,Map {
      *
      * @param key   A key string.
      * @param value A boolean which is the value.
-     * @return this.
+     * @return this
      * @throws JSONException If the key is null.
      */
     public JSONObject put(String key, boolean value) throws JSONException {
@@ -733,7 +733,7 @@ public class JSONObject implements JSONElement,Map {
      *
      * @param key   A key string.
      * @param value A double which is the value.
-     * @return this.
+     * @return this
      * @throws JSONException If the key is null or if the number is invalid.
      */
     public JSONObject put(String key, double value) throws JSONException {
@@ -747,7 +747,7 @@ public class JSONObject implements JSONElement,Map {
      *
      * @param key   A key string.
      * @param value An int which is the value.
-     * @return this.
+     * @return this
      * @throws JSONException If the key is null.
      */
     public JSONObject put(String key, int value) throws JSONException {
@@ -761,7 +761,7 @@ public class JSONObject implements JSONElement,Map {
      *
      * @param key   A key string.
      * @param value A long which is the value.
-     * @return this.
+     * @return this
      * @throws JSONException If the key is null.
      */
     public JSONObject put(String key, long value) throws JSONException {
@@ -778,7 +778,7 @@ public class JSONObject implements JSONElement,Map {
      * @param value An object which is the value. It should be of one of these
      *              types: Boolean, Double, Integer, JSONArray, JSONObject, Long, String,
      *              or the JSONObject.NULL object.
-     * @return this.
+     * @return this
      * @throws JSONException If the value is non-finite number
      *                       or if the key is null.
      */
@@ -804,7 +804,7 @@ public class JSONObject implements JSONElement,Map {
      * @param value An object which is the value. It should be of one of these
      *              types: Boolean, Double, Integer, JSONArray, JSONObject, Long, String,
      *              or the JSONObject.NULL object.
-     * @return this.
+     * @return this
      * @throws JSONException If the value is a non-finite number.
      */
     public JSONObject putOpt(String key, Object value) throws JSONException {
@@ -888,7 +888,7 @@ public class JSONObject implements JSONElement,Map {
      *         or null if there was no value.
      */
     public Object remove(String key) {
-        return this.myHashMap.remove(key);
+        return myHashMap.remove(key);
     }
 
     /**
@@ -1154,11 +1154,11 @@ public class JSONObject implements JSONElement,Map {
     }
 
     public int size() {
-        return this.myHashMap.size();
+        return myHashMap.size();
     }
 
     public boolean isEmpty() {
-        return this.myHashMap.isEmpty();
+        return myHashMap.isEmpty();
     }
 
     public boolean containsKey(Object o) {
@@ -1166,19 +1166,19 @@ public class JSONObject implements JSONElement,Map {
     }
 
     public boolean containsValue(Object o) {
-        return this.myHashMap.containsValue(o);
+        return myHashMap.containsValue(o);
     }
 
     public Object get(Object o) {
-        return this.myHashMap.get(o);
+        return myHashMap.get(o);
     }
 
     public Object put(Object o, Object o1) {
-        return this.myHashMap.put(o, o1);
+        return myHashMap.put(o, o1);
     }
 
     public Object remove(Object o) {
-        return this.myHashMap.remove(o);
+        return myHashMap.remove(o);
     }
 
     public void putAll(Map map) {
@@ -1190,15 +1190,15 @@ public class JSONObject implements JSONElement,Map {
     }
 
     public Set keySet() {
-        return this.myHashMap.keySet();
+        return myHashMap.keySet();
     }
 
     public Collection values() {
-        return this.myHashMap.values();
+        return myHashMap.values();
     }
 
     public Set entrySet() {
-        return this.myHashMap.entrySet();
+        return myHashMap.entrySet();
     }
 
     @Override

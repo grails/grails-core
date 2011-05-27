@@ -44,8 +44,8 @@ public class GrailsNameUtils {
      */
     public static String getGetterName(String propertyName) {
         final String suffix;
-        if(propertyName.length() > 1 && 
-                Character.isLowerCase(propertyName.charAt(0)) && 
+        if (propertyName.length() > 1 &&
+                Character.isLowerCase(propertyName.charAt(0)) &&
                 Character.isUpperCase(propertyName.charAt(1))) {
             suffix = propertyName;
         } else {
@@ -97,9 +97,9 @@ public class GrailsNameUtils {
             for (String token1 : tokens) {
                 String token = token1.trim();
                 int length = token.length();
-                if(length > 0) {
+                if (length > 0) {
                     buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH));
-                    if(length > 1) {
+                    if (length > 1) {
                         buf.append(token.substring(1));
                     }
                 }

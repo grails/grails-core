@@ -43,13 +43,13 @@ class GrailsParameterMapTests extends GroovyTestCase {
         map.array = ["one", "two" ] as String[]
         map.longNumber = 1234567890
 
-        assertEquals( ["1"], map.list("one") )
-        assertEquals( [1,2], map.list("aList") )
-        assertEquals( ["one","two"], map.list("array") )
-        assertEquals( [], map.list("nonexistant") )
+        assertEquals(["1"], map.list("one"))
+        assertEquals([1,2], map.list("aList"))
+        assertEquals(["one","two"], map.list("array"))
+        assertEquals([], map.list("nonexistant"))
 
         assertEquals 1, map.byte('one')
-        assertEquals( -46,map.byte('longNumber') ) // overflows
+        assertEquals(-46, map.byte('longNumber')) // overflows
         assertNull map.byte("test")
         assertNull map.byte("bad")
         assertNull map.byte("nonexistant")

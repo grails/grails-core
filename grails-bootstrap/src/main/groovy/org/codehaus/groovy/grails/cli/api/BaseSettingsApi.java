@@ -37,12 +37,11 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Utility methods used on the command line
+ * Utility methods used on the command line.
  *
  * @author Graeme Rocher
  */
 public class BaseSettingsApi {
-
 
     private static final Resource[] NO_RESOURCES = new Resource[0];
     private BuildSettings buildSettings;
@@ -88,14 +87,12 @@ public class BaseSettingsApi {
         }
         this.configSlurper = buildSettings.createConfigSlurper();
         this.configSlurper.setEnvironment(buildSettings.getGrailsEnv());
-
     }
 
     public void enableUaa() {
-        if(UaaIntegration.isAvailable()) {
+        if (UaaIntegration.isAvailable()) {
             UaaIntegration.enable(buildSettings, pluginSettings, isInteractive);
         }
-
     }
 
     public ConfigSlurper getConfigSlurper() {
@@ -124,21 +121,21 @@ public class BaseSettingsApi {
         return (String)getPropertyValue("grails.server.host", null);
     }
 
-    public String getGrailsAppName() { return this.grailsAppName; }
+    public String getGrailsAppName() { return grailsAppName; }
     public String getGrailsAppVersion() { return metadata.getApplicationVersion(); }
     public String getAppGrailsVersion() { return metadata.getGrailsVersion(); }
     public String getServletVersion() { return metadata.getServletVersion() != null ? metadata.getServletVersion() : "2.5"; }
 
     public String getPluginsHome() {
-        return this.pluginsHome;
+        return pluginsHome;
     }
 
     public PluginBuildSettings getPluginBuildSettings() {
-        return this.pluginSettings;
+        return pluginSettings;
     }
 
     public PluginBuildSettings getPluginSettings() {
-        return this.pluginSettings;
+        return pluginSettings;
     }
 
     public BuildSettings getBuildSettings() {
@@ -200,7 +197,7 @@ public class BaseSettingsApi {
         copyGrailsResource(targetFile, resource, true);
     }
 
-    public void copyGrailsResource(Object targetFile, Resource resource, boolean overwrite ) throws FileNotFoundException, IOException {
+    public void copyGrailsResource(Object targetFile, Resource resource, boolean overwrite) throws FileNotFoundException, IOException {
         File file = new File(targetFile.toString());
         if (overwrite || !file.exists()) {
             FileCopyUtils.copy(resource.getInputStream(), new FileOutputStream(file));
@@ -227,7 +224,7 @@ public class BaseSettingsApi {
      * system property, then in the BuildSettings configuration, and finally
      * uses the given default value if other options are exhausted.
      */
-    public Object getPropertyValue( String propName, Object defaultValue ) {
+    public Object getPropertyValue(String propName, Object defaultValue) {
         // First check whether we have a system property with the given name.
         Object value = System.getProperty(propName);
         if (value != null) return value;
@@ -263,7 +260,7 @@ public class BaseSettingsApi {
      *
      * where 'compile' is the target.
      */
-    public void profile(String name, Closure<?> callable ) {
+    public void profile(String name, Closure<?> callable) {
         if (enableProfile) {
             long now = System.currentTimeMillis();
             System.out.println("Profiling ["+name+"] start");

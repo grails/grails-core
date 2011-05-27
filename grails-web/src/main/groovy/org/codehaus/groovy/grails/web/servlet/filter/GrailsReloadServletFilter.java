@@ -49,8 +49,8 @@ import java.util.Map;
  * @author Graeme Rocher
  *
  * @deprecated This filter is no longer used and is here for binary compatibility. Replaced by agent-based reloading in 1.4
- *
  */
+@Deprecated
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
     public static final Log LOG = LogFactory.getLog(GrailsReloadServletFilter.class);

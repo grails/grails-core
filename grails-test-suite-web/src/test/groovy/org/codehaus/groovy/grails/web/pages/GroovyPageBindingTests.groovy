@@ -11,7 +11,7 @@ class GroovyPageBindingTests extends GroovyTestCase {
 
         binding.foo = "bar"
         assertEquals "bar", binding.foo
-        assertEquals( [foo:'bar'], binding.variables )
+        assertEquals([foo:'bar'], binding.variables)
         assertEquals binding.getMetaClass(), binding.metaClass
     }
 }

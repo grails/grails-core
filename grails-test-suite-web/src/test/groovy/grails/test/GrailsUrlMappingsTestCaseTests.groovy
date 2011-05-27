@@ -46,7 +46,7 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         mockApplication.applicationContext = ctx
 
         def servletContext = ctx.servletContext
-        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx )
+        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
 
         mockApplicationContext = ctx

@@ -70,9 +70,9 @@ public class DefaultUrlCreator implements UrlCreator {
         final String encoding = requestStateLookupStrategy.getCharacterEncoding();
 
         String id = null;
-        if    (parameterValues.containsKey(ARGUMENT_ID)) {
+        if (parameterValues.containsKey(ARGUMENT_ID)) {
             Object o = parameterValues.get(ARGUMENT_ID);
-            if(o != null) {
+            if (o != null) {
                 id = o.toString();
             }
         }

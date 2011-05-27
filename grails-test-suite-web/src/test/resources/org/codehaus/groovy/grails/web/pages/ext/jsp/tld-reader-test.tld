@@ -192,7 +192,7 @@
         </attribute>
         <dynamic-attributes>true</dynamic-attributes>
     </tag>
- 
+
     <tag>
         <description>
         	Enables the storing of a value into the given ${var} into the page context

@@ -102,12 +102,12 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         configureURIsForCurrentState();
     }
 
-    private void mixedStrategy(Collection<String> actionNames){
+    private void mixedStrategy(Collection<String> actionNames) {
         closureStrategy(actionNames);
         methodStrategy(actionNames);
     }
 
-    private void closureStrategy(Collection<String> closureNames){
+    private void closureStrategy(Collection<String> closureNames) {
 
         for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors()) {
             Method readMethod = propertyDescriptor.getReadMethod();
@@ -132,16 +132,16 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         }
     }
 
-    private void methodStrategy(Collection<String> methodNames){
+    private void methodStrategy(Collection<String> methodNames) {
 
         for (Method method : getClazz().getMethods()) {
             if (Modifier.isPublic(method.getModifiers())
                     && method.getAnnotation(Action.class) != null) {
-                    String methodName = method.getName();
-                   
-                    methodNames.add(methodName);
+                String methodName = method.getName();
 
-                    configureMappingForClosureProperty(methodName);
+                methodNames.add(methodName);
+
+                configureMappingForClosureProperty(methodName);
             }
         }
 

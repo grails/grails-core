@@ -11,16 +11,7 @@ import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 25/03/2011
- * Time: 15:26
- * To change this template use File | Settings | File Templates.
- */
-class MimeTypesTransformerSpec extends Specification{
-
-
+class MimeTypesTransformerSpec extends Specification {
 
     void setup() {
         MetaClassEnhancer responseEnhancer = new MetaClassEnhancer()
@@ -39,10 +30,7 @@ class MimeTypesTransformerSpec extends Specification{
             def gcl = new GrailsAwareClassLoader()
             def transformer = new MimeTypesTransformer() {
                 @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
-
+                boolean shouldInject(URL url) { true }
             }
             gcl.classInjectors = [transformer] as ClassInjector[]
 
@@ -50,7 +38,6 @@ class MimeTypesTransformerSpec extends Specification{
             def cls = getControllerClass(gcl)
             def controller = cls.newInstance()
             def format = controller.index()
-
 
         then:
             format == "html"
@@ -73,7 +60,7 @@ class MyMockRequest extends org.springframework.mock.web.MockHttpServletRequest 
     String getFormat() { "html" }
 
     void putAt(String name, val) {}
-    def getAt(String name){}
+    def getAt(String name) {}
 }
 
 ''')
@@ -110,5 +97,4 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                     ]
 '''
     }
-
 }

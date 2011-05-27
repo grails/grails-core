@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Overrides the default Ivy resolver to substitute the release tag in Grails'
- * repository format prior to a resolve
+ * repository format prior to a resolve.
  *
  * @author Graeme Rocher
  * @since 1.3
@@ -61,7 +61,7 @@ public class GrailsRepoResolver extends URLResolver{
     protected ResolvedResource findResourceUsingPattern(ModuleRevisionId mrid, String pattern, Artifact artifact, ResourceMDParser rmdparser, Date date) {
         installIvyAuth();
         pattern = transformGrailsRepositoryPattern(mrid, pattern);
-        return super.findResourceUsingPattern(mrid, pattern, artifact, rmdparser, date);    
+        return super.findResourceUsingPattern(mrid, pattern, artifact, rmdparser, date);
     }
 
     private void installIvyAuth() {
@@ -78,9 +78,7 @@ public class GrailsRepoResolver extends URLResolver{
             versionTag = "RELEASE_" + revision.replace('.', '_');
         }
         return pattern.replace("RELEASE_*", versionTag);
-
     }
-
 
     /**
      * Obtains the XML representation of the plugin-list.xml held in a Grails compatible repository
@@ -90,7 +88,7 @@ public class GrailsRepoResolver extends URLResolver{
     @SuppressWarnings("rawtypes")
     public GPathResult getPluginList(File localFile) {
         GPathResult parsedXml = parsedXmlCache.get(localFile);
-        if(parsedXml == null) {
+        if (parsedXml == null) {
             installIvyAuth();
             try {
                 final Repository repo = getRepository();

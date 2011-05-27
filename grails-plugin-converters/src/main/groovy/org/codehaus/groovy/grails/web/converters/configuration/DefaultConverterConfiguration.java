@@ -165,6 +165,6 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public ProxyHandler getProxyHandler() {
-        return this.proxyHandler;
+        return proxyHandler;
     }
 }

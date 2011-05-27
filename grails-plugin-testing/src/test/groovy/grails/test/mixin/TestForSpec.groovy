@@ -4,13 +4,6 @@ import org.junit.Test
 import spock.lang.Specification
 import org.apache.commons.logging.Log
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 15/04/2011
- * Time: 12:11
- * To change this template use File | Settings | File Templates.
- */
 class TestForSpec extends Specification{
 
     void "Test that imports aren't needed for junit"() {

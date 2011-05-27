@@ -28,7 +28,7 @@ class PersonController {
     def update = {
         def p = new Person()
         p.properties = params
-        if(p.hasErrors()) {
+        if (p.hasErrors()) {
             [personInstance:p]
         }
         else {

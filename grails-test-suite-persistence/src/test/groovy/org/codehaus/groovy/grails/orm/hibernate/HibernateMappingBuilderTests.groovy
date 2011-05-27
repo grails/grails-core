@@ -69,19 +69,19 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
             id natural: 'one'
         }
 
-        assertEquals( ['one'], mapping.identity.natural.propertyNames)
+        assertEquals(['one'], mapping.identity.natural.propertyNames)
 
         mapping = builder.evaluate {
             id natural: ['one','two']
         }
 
-        assertEquals( ['one','two'], mapping.identity.natural.propertyNames)
+        assertEquals(['one','two'], mapping.identity.natural.propertyNames)
 
         mapping = builder.evaluate {
             id natural: [properties:['one','two'], mutable:true]
         }
 
-        assertEquals( ['one','two'], mapping.identity.natural.propertyNames)
+        assertEquals(['one','two'], mapping.identity.natural.propertyNames)
         assertTrue mapping.identity.natural.mutable
     }
 

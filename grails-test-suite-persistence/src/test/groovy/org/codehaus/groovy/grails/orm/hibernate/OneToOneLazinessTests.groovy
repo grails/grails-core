@@ -31,7 +31,7 @@ class OneToOneLazinessTestsAuthor {
         def bookClass = ga.getDomainClass("OneToOneLazinessTestsBook").clazz
         def authorClass= ga.getDomainClass("OneToOneLazinessTestsAuthor").clazz
 
-        def author = authorClass.newInstance(name:"Stephen King", book:bookClass.newInstance(title:"The Stand") )
+        def author = authorClass.newInstance(name:"Stephen King", book:bookClass.newInstance(title:"The Stand"))
         assertNotNull author.save()
 
         session.clear()
@@ -46,7 +46,7 @@ class OneToOneLazinessTestsAuthor {
         def bookClass = ga.getDomainClass("OneToOneLazinessTestsBook").clazz
         def authorClass = ga.getDomainClass("OneToOneLazinessTestsAuthor").clazz
 
-        def author = authorClass.newInstance(name:"Stephen King", book:bookClass.newInstance(title:"The Stand") )
+        def author = authorClass.newInstance(name:"Stephen King", book:bookClass.newInstance(title:"The Stand"))
         assertNotNull author.save()
 
         session.clear()

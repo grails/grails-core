@@ -16,14 +16,17 @@
 package org.codehaus.groovy.grails.commons.metaclass;
 
 import groovy.lang.GString;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -33,14 +36,6 @@ public abstract class BaseApiProvider {
 
     private static List<String> EXCLUDED_METHODS = Arrays.asList("setMetaClass", "getMetaClass");
 
-    @SuppressWarnings("serial")
-    private static Map<String, Integer> METHOD_CLOSURES = new HashMap<String, Integer>() {{
-        put("setProperty", 2);
-        put("getProperty", 1);
-        put("invokeMethod", 2);
-        put("methodMissing", 2);
-        put("propertyMissing", 1);
-    }};
     public static final String CONSTRUCTOR_METHOD = "initialize";
     public static final String CTOR_GROOVY_METHOD = "<ctor>";
 
@@ -73,7 +68,7 @@ public abstract class BaseApiProvider {
                         public String getName() {
 
                             String methodName = super.getName();
-                            if(methodName.equals(CONSTRUCTOR_METHOD)) {
+                            if (methodName.equals(CONSTRUCTOR_METHOD)) {
                                 return CTOR_GROOVY_METHOD;
                             }
                             return methodName;
@@ -81,12 +76,10 @@ public abstract class BaseApiProvider {
 
                         @Override
                         public Object invoke(Object object, Object[] arguments) {
-                            if(arguments.length == 0) {
+                            if (arguments.length == 0) {
                                 return super.invoke(apiInstance, new Object[]{object});
                             }
-                            else {
-                                return super.invoke(apiInstance, ArrayUtils.add(checkForGStrings(arguments), 0, object));
-                            }
+                            return super.invoke(apiInstance, ArrayUtils.add(checkForGStrings(arguments), 0, object));
                         }
 
                         private Object[] checkForGStrings(Object[] arguments) {

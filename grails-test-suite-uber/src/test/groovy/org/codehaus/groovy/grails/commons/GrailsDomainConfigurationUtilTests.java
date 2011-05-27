@@ -108,8 +108,7 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
                 "       testString1 insertable:false \n" +
                 "       testString2 max:50 \n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
 
         getDomainConfig(cl, new Class[] { domainClass.getClazz() });
         Map<String, ConstrainedProperty> mapping = new HibernateConstraintsEvaluator().evaluate(domainClass.getClazz(), domainClass.getProperties());

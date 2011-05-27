@@ -18,11 +18,12 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 
 /**
  * Implements action invokation throught Closure
@@ -32,12 +33,12 @@ import java.io.IOException;
  */
 public class ClosureGrailsControllerHelper extends AbstractGrailsControllerHelper {
 
-
     @Override
-    protected Closure retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
-        Closure action;
+    protected Closure<?> retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+                 HttpServletResponse response) {
+        Closure<?> action;
         try {
-            action = (Closure) controller.getProperty(actionName);
+            action = (Closure<?>) controller.getProperty(actionName);
         } catch (MissingPropertyException mpe) {
             try {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -51,6 +52,6 @@ public class ClosureGrailsControllerHelper extends AbstractGrailsControllerHelpe
 
     @Override
     protected Object invoke(GroovyObject controller, Object action) {
-        return ((Closure)action).call();
+        return ((Closure<?>)action).call();
     }
 }

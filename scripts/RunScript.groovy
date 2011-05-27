@@ -17,7 +17,7 @@
 import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.support.TransactionSynchronizationManager
- 
+
 includeTargets << grailsScript('_GrailsBootstrap')
 
 /*

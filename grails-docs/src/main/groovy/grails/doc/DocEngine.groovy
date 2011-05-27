@@ -95,7 +95,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                 ref = ref.replace('.' as char, '/' as char)
                 if (ref.indexOf('#') > -1) {
                     ref = ref[0..ref.indexOf("#")-1]
-                } 
+                }
 
                 def apiBase = initialContext.get(API_BASE_PATH)
                 if (apiBase) {

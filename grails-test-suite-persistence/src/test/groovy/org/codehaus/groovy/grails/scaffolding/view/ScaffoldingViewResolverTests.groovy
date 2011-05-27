@@ -56,7 +56,7 @@ class ScaffoldingViewResolverTests extends GroovyTestCase {
 
 class TestScaffoldingViewResolver extends ScaffoldingViewResolver {
     protected String generateViewSource(String viewName, GrailsDomainClass domainClass) {
-        if("/list" == viewName) {
+        if ("/list" == viewName) {
             return "<%='success'+foo%>"
         }
         return null

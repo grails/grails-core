@@ -164,7 +164,7 @@ class FindAllMethodTests extends AbstractGrailsHibernateTests {
         theClass.newInstance(name:"Stuff").save(flush:true)
 
         assertEquals 3, theClass.findAll(sort:'name').size()
-        assertEquals(  ["Bar", "Foo", "Stuff"], theClass.findAll(sort:'name').name )
+        assertEquals(["Bar", "Foo", "Stuff"], theClass.findAll(sort:'name').name)
     }
 
     void testWithExample() {
@@ -178,7 +178,7 @@ class FindAllMethodTests extends AbstractGrailsHibernateTests {
         theClass.newInstance(name:"Stuff").save(flush:true)
 
         assertEquals 2, theClass.findAll(theClass.newInstance(name:"Bar"), [sort:'name']).size()
-        assertEquals(  ["Bar", "Bar"], theClass.findAll(theClass.newInstance(name:"Bar"),[sort:'name']).name )
+        assertEquals(["Bar", "Bar"], theClass.findAll(theClass.newInstance(name:"Bar"),[sort:'name']).name)
     }
 
     void testWithExampleAndSort() {
@@ -195,17 +195,17 @@ class FindAllMethodTests extends AbstractGrailsHibernateTests {
         // Execute the query
         def results = theClass.findAll(theClass.newInstance(name: "Bar"), [max: 1])
         assertEquals 1, results.size()
-        assertEquals( ["Bar"], results*.name )
+        assertEquals(["Bar"], results*.name)
 
         // Try the sort arguments now.
         results = theClass.findAll(theClass.newInstance(name: "Bar"), [sort: "index", order: "asc"])
         assertEquals 3, results.size()
-        assertEquals( [2, 3, 5], results*.index )
+        assertEquals([2, 3, 5], results*.index)
 
         // Now all the arguments together.
         results = theClass.findAll(theClass.newInstance(name: "Bar"), [sort: "index", order: "desc", offset: 1])
         assertEquals 2, results.size()
-        assertEquals( [3, 2], results*.index )
+        assertEquals([3, 2], results*.index)
     }
 }
 

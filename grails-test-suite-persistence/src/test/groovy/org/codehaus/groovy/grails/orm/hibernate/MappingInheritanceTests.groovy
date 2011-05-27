@@ -36,7 +36,7 @@ class Child2 extends Parent {
         def Child1 = ga.getDomainClass("Child1").clazz
         def Child2 = ga.getDomainClass("Child2").clazz
 
-        def c1 = Child1.newInstance(active:true, someField:"foo" ).save(flush:true)
+        def c1 = Child1.newInstance(active:true, someField:"foo").save(flush:true)
         assertNotNull "should have saved Child1", c1
 
         def c2 = Child2.newInstance(active:false, anotherBoolean:true).save(flush:true)

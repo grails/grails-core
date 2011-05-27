@@ -134,7 +134,7 @@ public class ConfigurableLocalSessionFactoryBean extends
         try {
             SessionFactory sf = super.newSessionFactory(config);
             // if reloading is enabled in this environment then we need to use a SessionFactoryProxy instance
-            if(grails.util.Environment.getCurrent().isReloadEnabled() && proxyIfReloadEnabled) {
+            if (grails.util.Environment.getCurrent().isReloadEnabled() && proxyIfReloadEnabled) {
                 SessionFactoryProxy sfp = new SessionFactoryProxy();
                 SessionFactoryHolder sessionFactoryHolder = applicationContext.getBean(SessionFactoryHolder.class);
                 sessionFactoryHolder.setSessionFactory(sf);
@@ -144,9 +144,7 @@ public class ConfigurableLocalSessionFactoryBean extends
                 sfp.afterPropertiesSet();
                 return sfp;
             }
-            else {
-                return sf;
-            }
+            return sf;
         }
         catch (HibernateException e) {
             Throwable cause = e.getCause();

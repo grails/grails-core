@@ -193,7 +193,7 @@ class GrailsUnitTestMixin {
 
     @After
     void cleanupModifiedMetaClasses() {
-        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener( metaClassRegistryListener )
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
         emcEvents*.clazz.each { GroovySystem.metaClassRegistry.removeMetaClass(it)}
         emcEvents.clear()
     }

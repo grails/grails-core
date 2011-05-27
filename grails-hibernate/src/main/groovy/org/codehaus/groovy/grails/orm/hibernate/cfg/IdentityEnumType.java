@@ -54,7 +54,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
     private static final Map<Class<? extends Enum<?>>, BidiEnumMap> ENUM_MAPPINGS = new HashMap<Class<? extends Enum<?>>, BidiEnumMap>();
     private Class<? extends Enum<?>> enumClass;
     private BidiEnumMap bidiMap;
-    private AbstractStandardBasicType type;
+    private AbstractStandardBasicType<?> type;
     private int[] sqlTypes;
 
     public static BidiEnumMap getBidiEnumMap(Class<? extends Enum<?>> cls) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -106,7 +106,7 @@ public class IdentityEnumType implements UserType, ParameterizedType, Serializab
                 LOG.debug(String.format("Building ID-mapping for Enum Class %s", enumClass.getName()));
             }
             bidiMap = getBidiEnumMap(enumClass);
-            type = (AbstractStandardBasicType)typeResolver.basic(bidiMap.keyType.getName());
+            type = (AbstractStandardBasicType<?>)typeResolver.basic(bidiMap.keyType.getName());
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Mapped Basic Type is %s", type));
             }

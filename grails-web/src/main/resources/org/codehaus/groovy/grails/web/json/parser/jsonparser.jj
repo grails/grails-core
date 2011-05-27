@@ -225,7 +225,7 @@ private String Digits() :
 private String JsonString() :
 { Token t; }
 {
-  (t=<SINGLE_QUOTE_LITERAL> | t=<DOUBLE_QUOTE_LITERAL>) { 
-    return StringUnmarshaller.unmarshall(t.image);    
+  (t=<SINGLE_QUOTE_LITERAL> | t=<DOUBLE_QUOTE_LITERAL>) {
+    return StringUnmarshaller.unmarshall(t.image);
   }
 }

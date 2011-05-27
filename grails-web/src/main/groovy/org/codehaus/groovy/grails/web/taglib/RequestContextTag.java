@@ -76,7 +76,7 @@ public abstract class RequestContextTag implements GrailsTag {
         else {
             attributes = (Map)context.get(GroovyPage.ATTRIBUTES);
         }
-        contextPath = urlPathHelper.getContextPath((HttpServletRequest)request );
+        contextPath = urlPathHelper.getContextPath((HttpServletRequest)request);
         init = true;
     }
 
@@ -108,8 +108,8 @@ public abstract class RequestContextTag implements GrailsTag {
         doStartTagInternal();
     }
 
-    protected abstract void doStartTagInternal() ;
-    protected abstract void doEndTagInternal() ;
+    protected abstract void doStartTagInternal();
+    protected abstract void doEndTagInternal();
 
     public final void doEndTag()  {
         Assert.state(init, "Tag not initialised called 'init' first");

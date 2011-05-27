@@ -2,13 +2,6 @@ package org.codehaus.groovy.grails.plugins.testing
 
 import spock.lang.Specification
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 10/05/2011
- * Time: 17:02
- * To change this template use File | Settings | File Templates.
- */
 class SubclassRequestWithApiDelegateSpec extends Specification{
 
     void "Test that delegate methods are available on request"() {

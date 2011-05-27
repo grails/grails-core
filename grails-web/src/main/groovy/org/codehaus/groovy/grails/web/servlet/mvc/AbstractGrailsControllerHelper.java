@@ -169,7 +169,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             }
         }
 
-        request.setAttribute( GrailsApplicationAttributes.CONTROLLER, controller );
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
 
         // Step 4: Set grails attributes in request scope
         request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,grailsAttributes);
@@ -189,7 +189,8 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         return returnModelAndView ? mv : null;
     }
 
-    protected abstract Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response);
+    protected abstract Object retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+            HttpServletResponse response);
 
     /**
      * Invokes the action defined by the webRequest for the given arguments.
@@ -204,7 +205,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected ModelAndView executeAction(GroovyObject controller,
-            GrailsControllerClass controllerClass,
+            @SuppressWarnings("unused") GrailsControllerClass controllerClass,
             String viewName, HttpServletRequest request, HttpServletResponse response, Map params) {
         // Step 5a: Check if there is a before interceptor if there is execute it
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -215,7 +216,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
                         // Step 7: process the action
             Object returnValue = null;
             try {
-                returnValue = handleAction( controller,action,request,response,params );
+                returnValue = handleAction(controller,action,request,response,params);
             }
             catch (Throwable t) {
                 GrailsUtil.deepSanitize(t);
@@ -339,7 +340,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         return grailsAttributes;
     }
 
-    public Object handleAction(GroovyObject controller, @SuppressWarnings("rawtypes") Object action, HttpServletRequest request,
+    public Object handleAction(GroovyObject controller, Object action, HttpServletRequest request,
             HttpServletResponse response) {
         return handleAction(controller,action,request,response,Collections.EMPTY_MAP);
     }
@@ -348,16 +349,16 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     @SuppressWarnings("rawtypes")
     public Object handleAction(GroovyObject controller, Object action, HttpServletRequest request,
-            HttpServletResponse response, Map params) {
+            @SuppressWarnings("unused") HttpServletResponse response, Map params) {
         GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
         // if there are additional params add them to the params dynamic property
         if (params != null && !params.isEmpty()) {
-            paramsMap.putAll( params );
+            paramsMap.putAll(params);
         }
         Object returnValue = action != null ? invoke(controller, action) : null;
 
         // Step 8: add any errors to the request
-        request.setAttribute( GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY) );
+        request.setAttribute(GrailsApplicationAttributes.ERRORS, controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY));
 
         return returnValue;
     }
@@ -366,7 +367,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleActionResponse(org.codehaus.groovy.grails.commons.GrailsControllerClass, java.lang.Object, java.lang.String, java.lang.String)
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public ModelAndView handleActionResponse( GroovyObject controller,Object returnValue,String closurePropertyName, String viewName) {
+    public ModelAndView handleActionResponse(GroovyObject controller,Object returnValue,String closurePropertyName, String viewName) {
         boolean viewNameBlank = (viewName == null || viewName.length() == 0);
         // reset the metaclass
         ModelAndView explicitModelAndView = (ModelAndView)controller.getProperty(ControllerDynamicMethods.MODEL_AND_VIEW_PROPERTY);
@@ -458,7 +459,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         this.grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
     }
 
-    public void setGrailsApplication(GrailsApplication application){
+    public void setGrailsApplication(GrailsApplication application) {
         this.application = application;
     }
 }

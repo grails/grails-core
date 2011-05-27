@@ -20,7 +20,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
         ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
         go.setMetaClass(pmc);
 
-        pmc.setInterceptor( new ConstructorInterceptor() {
+        pmc.setInterceptor(new ConstructorInterceptor() {
             public Object beforeConstructor(Object[] args, InvocationCallback callback) {
                 return null;
             }
@@ -53,7 +53,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
         ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
         go.setMetaClass(pmc);
 
-        pmc.setInterceptor( new ConstructorInterceptor() {
+        pmc.setInterceptor(new ConstructorInterceptor() {
             public Object beforeConstructor(Object[] args, InvocationCallback callback) {
                 callback.markInvoked();
                 return "success";
@@ -85,7 +85,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
         ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
         go.setMetaClass(pmc);
 
-        pmc.setInterceptor( new Interceptor() {
+        pmc.setInterceptor(new Interceptor() {
             public Object beforeInvoke(Object object, String methodName, Object[] arguments, InvocationCallback callback) {
                 callback.markInvoked();
                 return "success";
@@ -111,7 +111,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
         ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
         go.setMetaClass(pmc);
 
-        pmc.setInterceptor( new Interceptor() {
+        pmc.setInterceptor(new Interceptor() {
             public Object beforeInvoke(Object object, String methodName, Object[] arguments, InvocationCallback callback) {
                 return null;
             }
@@ -138,7 +138,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
         ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
         go.setMetaClass(pmc);
 
-        pmc.setInterceptor( new PropertyAccessInterceptor(){
+        pmc.setInterceptor(new PropertyAccessInterceptor() {
 
             public Object beforeGet(Object object, String property, InvocationCallback callback) {
                 callback.markInvoked();
@@ -174,7 +174,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
         ProxyMetaClass pmc = ProxyMetaClass.getInstance(testClass);
         go.setMetaClass(pmc);
 
-        pmc.setInterceptor( new PropertyAccessInterceptor(){
+        pmc.setInterceptor(new PropertyAccessInterceptor() {
 
             public Object beforeGet(Object object, String property, InvocationCallback callback) {
                 return null;

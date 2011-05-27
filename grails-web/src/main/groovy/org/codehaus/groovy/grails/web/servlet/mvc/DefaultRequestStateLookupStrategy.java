@@ -23,8 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Default implementation that uses the web request to obtain information about the currently
- * executing request
- *
+ * executing request.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -36,6 +35,7 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
     private GrailsWebRequest webRequest;
 
     public DefaultRequestStateLookupStrategy() {
+        // default
     }
 
     public DefaultRequestStateLookupStrategy(GrailsWebRequest webRequest) {
@@ -48,43 +48,43 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
     }
 
     public String getContextPath() {
-        final GrailsWebRequest webRequest = getWebRequest();
-        if(webRequest != null) {
-            return webRequest.getContextPath();
+        final GrailsWebRequest req = getWebRequest();
+        if (req != null) {
+            return req.getContextPath();
         }
         return null;
     }
 
     public String getCharacterEncoding() {
-        final GrailsWebRequest webRequest = getWebRequest();
-        if(webRequest != null) {
-            return webRequest.getCurrentRequest().getCharacterEncoding();
+        final GrailsWebRequest req = getWebRequest();
+        if (req != null) {
+            return req.getCurrentRequest().getCharacterEncoding();
         }
         return DEFAULT_REQUEST_ENCODING;
     }
 
     public String getControllerName() {
-        final GrailsWebRequest webRequest = getWebRequest();
-        return getControllerNameInternal(webRequest);
+        final GrailsWebRequest req = getWebRequest();
+        return getControllerNameInternal(req);
     }
 
-    private String getControllerNameInternal(GrailsWebRequest webRequest) {
-        if(webRequest != null) {
-            return webRequest.getControllerName();
+    private String getControllerNameInternal(GrailsWebRequest req) {
+        if (req != null) {
+            return req.getControllerName();
         }
         return null;
     }
 
     public String getActionName() {
-        final GrailsWebRequest webRequest = getWebRequest();
-        if(webRequest != null) {
-            String actionName = webRequest.getActionName();
-            if(actionName == null) {
-                if(grailsApplication == null) {
-                    grailsApplication = webRequest.getAttributes().getGrailsApplication();
+        final GrailsWebRequest req = getWebRequest();
+        if (req != null) {
+            String actionName = req.getActionName();
+            if (actionName == null) {
+                if (grailsApplication == null) {
+                    grailsApplication = req.getAttributes().getGrailsApplication();
                 }
-                if(grailsApplication != null) {
-                    final String controllerName = getControllerNameInternal(webRequest);
+                if (grailsApplication != null) {
+                    final String controllerName = getControllerNameInternal(req);
                     return getActionName(grailsApplication,controllerName);
                 }
             }
@@ -92,10 +92,10 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
         return null;
     }
 
-    private String getActionName(GrailsApplication grailsApplication, String controllerName) {
-        if(grailsApplication != null) {
-            final GrailsControllerClass controllerClass = (GrailsControllerClass) grailsApplication.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controllerName);
-            if(controllerClass != null) {
+    private String getActionName(GrailsApplication application, String controllerName) {
+        if (application != null) {
+            final GrailsControllerClass controllerClass = (GrailsControllerClass) application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controllerName);
+            if (controllerClass != null) {
                 return controllerClass.getDefaultAction();
             }
         }
@@ -103,10 +103,10 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
     }
 
     public String getActionName(String controllerName) {
-        if(controllerName != null) {
-            if(grailsApplication == null) {
+        if (controllerName != null) {
+            if (grailsApplication == null) {
                 final GrailsWebRequest grailsWebRequest = getWebRequest();
-                if(grailsWebRequest!= null)
+                if (grailsWebRequest!= null)
                     grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
 
             }
@@ -116,6 +116,6 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
     }
 
     private GrailsWebRequest getWebRequest() {
-        return this.webRequest != null ? this.webRequest :  GrailsWebRequest.lookup();
+        return webRequest != null ? webRequest : GrailsWebRequest.lookup();
     }
 }

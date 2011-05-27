@@ -15,7 +15,12 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import groovy.lang.*;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
@@ -60,7 +65,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
     public Object methodMissing(Object instance, String methodName, Object argsObject) {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
         TagLibraryLookup lookup = getTagLibraryLookup();
-        if(lookup != null) {
+        if (lookup != null) {
             GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
             if (tagLibrary != null) {
                 MetaClass controllerMc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
@@ -84,22 +89,20 @@ public class ControllerTagLibraryApi extends CommonWebApi {
      * @return The namespace or a MissingPropertyException
      */
     public Object propertyMissing(Object instance, String propertyName) {
-        TagLibraryLookup tagLibraryLookup = getTagLibraryLookup();
-        NamespacedTagDispatcher namespacedTagDispatcher = tagLibraryLookup.lookupNamespaceDispatcher(propertyName);
-        if(namespacedTagDispatcher != null) {
+        TagLibraryLookup lookup = getTagLibraryLookup();
+        NamespacedTagDispatcher namespacedTagDispatcher = lookup.lookupNamespaceDispatcher(propertyName);
+        if (namespacedTagDispatcher != null) {
             WebMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
             return namespacedTagDispatcher;
         }
-        else {
-            throw new MissingPropertyException(propertyName, instance.getClass());
-        }
+
+        throw new MissingPropertyException(propertyName, instance.getClass());
     }
 
     public TagLibraryLookup getTagLibraryLookup() {
-        if(this.tagLibraryLookup == null) {
+        if (this.tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);
-            if(applicationContext != null) {
-
+            if (applicationContext != null) {
                 try {
                     tagLibraryLookup = applicationContext.getBean(TagLibraryLookup.class);
                 } catch (BeansException e) {

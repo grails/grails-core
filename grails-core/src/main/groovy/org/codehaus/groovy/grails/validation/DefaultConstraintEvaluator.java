@@ -14,7 +14,20 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.Script;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+
+import javax.persistence.Entity;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -24,15 +37,8 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-import javax.persistence.Entity;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-
 /**
- * Default implementation of the {@link ConstraintsEvaluator} interface
+ * Default implementation of the {@link ConstraintsEvaluator} interface.
  *
  * TODO: Subclass this to add hibernate-specific exceptions!
  *
@@ -105,8 +111,8 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             for (GrailsDomainClassProperty p : properties) {
                 // assume no formula issues if Hibernate isn't available to avoid CNFE
                 if (canPropertyBeConstrained(p)) {
-                    if(p.isDerived()) {
-                        if(constrainedProperties.remove(p.getName()) != null) {
+                    if (p.isDerived()) {
+                        if (constrainedProperties.remove(p.getName()) != null) {
                             LOG.warn("Derived properties may not be constrained. Property [" + p.getName() + "] of domain class " + theClass.getName() + " will not be checked during validation.");
                         }
                     } else {
@@ -126,7 +132,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                 }
             }
         }
-        
+
         applySharedConstraints(delegate, constrainedProperties);
 
         return constrainedProperties;
@@ -139,9 +145,10 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             String propertyName = entry.getKey();
             ConstrainedProperty constrainedProperty = entry.getValue();
             String sharedConstraintReference = constrainedPropertyBuilder.getSharedConstraint(propertyName);
-            if(sharedConstraintReference != null) {
+            if (sharedConstraintReference != null) {
                 Object o = defaultConstraints.get(sharedConstraintReference);
-                if(o instanceof Map) {
+                if (o instanceof Map) {
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
                     Map<String, Object> constraintsWithinSharedConstraint = (Map) o;
                     for (Map.Entry<String, Object> e : constraintsWithinSharedConstraint.entrySet()) {
                         constrainedProperty.applyConstraint(e.getKey(), e.getValue());
@@ -187,25 +194,25 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                 return null;
             }
             catch (CompilationFailedException e) {
-                LOG.error("Compilation error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
+                LOG.error("Compilation error evaluating constraints for class [" + className + "]: " + e.getMessage(), e);
                 return null;
             }
             catch (InstantiationException e) {
-                LOG.error("Instantiation error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
+                LOG.error("Instantiation error evaluating constraints for class [" + className + "]: " + e.getMessage(), e);
                 return null;
             }
             catch (IllegalAccessException e) {
-                LOG.error("Illegal access error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
+                LOG.error("Illegal access error evaluating constraints for class [" + className + "]: " + e.getMessage(), e);
                 return null;
             }
             catch (IOException e) {
-                LOG.error("IO error evaluating constraints for class [" + className + "]: " + e.getMessage(),e );
+                LOG.error("IO error evaluating constraints for class [" + className + "]: " + e.getMessage(), e);
             }
         }
         return null;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     protected void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
             ConstrainedProperty cp, @SuppressWarnings("hiding") Map<String, Object> defaultConstraints) {
 
@@ -227,8 +234,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
     protected void applyDefaultNullableConstraint(GrailsDomainClassProperty p, ConstrainedProperty cp) {
         cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
                 Collection.class.isAssignableFrom(p.getType()) ||
-                Map.class.isAssignableFrom(p.getType())
-        );
+                Map.class.isAssignableFrom(p.getType()));
     }
 
     protected boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {

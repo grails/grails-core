@@ -15,9 +15,17 @@
  */
 package org.codehaus.groovy.grails.compiler.gorm;
 
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
@@ -31,9 +39,6 @@ import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.grails.datastore.gorm.GormInstanceApi;
 import org.grails.datastore.gorm.GormStaticApi;
 
-import java.net.URL;
-import java.util.ArrayList;
-
 /**
  * Transforms GORM entities making the GORM API available to Java
  *
@@ -46,12 +51,9 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You either don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
     public static final String NEW_INSTANCE_METHOD = "newInstance";
 
-    private static final java.util.List<String> EXCLUDES = new ArrayList<String>() {{
-        add("create");
-    }};
-    private static final Class[] EMPTY_JAVA_CLASS_ARRAY = new Class[0];
-    private static final Class[] OBJECT_CLASS_ARG = new Class[]{Object.class};
-
+    private static final List<String> EXCLUDES = Arrays.asList("create");
+    private static final Class<?>[] EMPTY_JAVA_CLASS_ARRAY = {};
+    private static final Class<?>[] OBJECT_CLASS_ARG = { Object.class };
 
     @Override
     protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
@@ -84,12 +86,12 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     }
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return GormInstanceApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return GormStaticApi.class;
     }
 

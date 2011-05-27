@@ -174,7 +174,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      * Returns the flatten ConfigObject for use from Java classes.
      * @return The flattened config
      */
-    @SuppressWarnings("rawtypes")
     Map<String, Object> getFlatConfig();
 
     /**
@@ -383,7 +382,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      * but <b>NOT</b> general application settings.</p>
      * @return A read-only Map of data about the application, not environment specific
      */
-    @SuppressWarnings("rawtypes")
     Metadata getMetadata();
 
     /**

@@ -6,7 +6,7 @@
 //                             "file:${userHome}/.grails/${appName}-config.properties",
 //                             "file:${userHome}/.grails/${appName}-config.groovy"]
 
-// if(System.properties["${appName}.config.location"]) {
+// if (System.properties["${appName}.config.location"]) {
 //    grails.config.locations << "file:" + System.properties["${appName}.config.location"]
 // }
 
@@ -62,7 +62,6 @@ environments {
     test {
         grails.serverURL = "http://localhost:8080/${appName}"
     }
-
 }
 
 // log4j configuration

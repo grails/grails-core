@@ -247,7 +247,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
             FlowArtifactFactory flowFactory, Closure customRenderAction = null,
             Closure customEntryAction = null, Closure customExitAction=null) {
 
-        def renderAction = new ClosureInvokingAction( {
+        def renderAction = new ClosureInvokingAction({
             for (entry in flash.asMap()) {
                 def key = entry.key
                 if (key.startsWith(GrailsApplicationAttributes.ERRORS)) {
@@ -340,7 +340,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
               new ExternalRedirectAction(new StaticExpression(url)), null, null, null)
     }
 
-    protected State createEndState( String stateId, String viewId, FlowArtifactFactory flowFactory, Mapper outputMapper=null, Closure customEntryAction=null) {
+    protected State createEndState(String stateId, String viewId, FlowArtifactFactory flowFactory, Mapper outputMapper=null, Closure customEntryAction=null) {
         ViewFactory viewFactory = createViewFactory(viewId)
 
         return flowFactory.createEndState(stateId, getFlow(),

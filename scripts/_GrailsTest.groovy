@@ -15,7 +15,7 @@
  */
 
 import grails.util.GrailsUtil
- 
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
@@ -95,11 +95,11 @@ testReportsDir = grailsSettings.testReportsDir
 testSourceDir = grailsSettings.testSourceDir
 
 // The 'styledir' argument to the 'junitreport' ant task (null == default provided by Ant)
-if(grailsSettings.grailsHome) {
+if (grailsSettings.grailsHome) {
     junitReportStyleDir = new File(grailsSettings.grailsHome, "src/resources/tests")
-	if(!junitReportStyleDir.exists()) {
-		junitReportStyleDir = new File(grailsSettings.grailsHome, "grails-resources/src/grails/home/tests")
-	}
+    if (!junitReportStyleDir.exists()) {
+        junitReportStyleDir = new File(grailsSettings.grailsHome, "grails-resources/src/grails/home/tests")
+    }
 }
 
 // Set up an Ant path for the tests.
@@ -296,13 +296,15 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
 }
 
 initPersistenceContext = {
-	if(appCtx != null)
-    	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
+    if (appCtx != null) {
+        appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.init()
+    }
 }
 
-destroyPersistenceContext = {	
-	if(appCtx != null)
-    	appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
+destroyPersistenceContext = {
+    if (appCtx != null) {
+        appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
+    }
 }
 
 unitTestPhasePreparation = {}
@@ -343,14 +345,14 @@ functionalTestPhasePreparation = {
     runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
     if (runningFunctionalTestsAgainstWar) {
-		includeTargets << grailsScript("_GrailsWar")
+        includeTargets << grailsScript("_GrailsWar")
         // need to swap out the args map so any test phase/targetting patterns
         // aren't intepreted as the war name.
         def realArgsMap = argsMap
         argsMap = [:]
         war()
         argsMap = realArgsMap
-        
+
         testOptions.https ? runWarHttps() : runWar()
     } else if (runningFunctionalTestsInline) {
         packageApp()
@@ -359,13 +361,13 @@ functionalTestPhasePreparation = {
         appCtx = ApplicationHolder.application.mainContext
         initPersistenceContext()
     }
-    
+
     if (testOptions.containsKey('baseUrl')) {
         functionalBaseUrl = testOptions.baseUrl
     } else {
-        functionalBaseUrl = (testOptions.httpsBaseUrl ? 'https' : 'http') + "://localhost:$serverPort$serverContextPath/" 
+        functionalBaseUrl = (testOptions.httpsBaseUrl ? 'https' : 'http') + "://localhost:$serverPort$serverContextPath/"
     }
-    
+
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
 }
 
@@ -378,11 +380,11 @@ functionalTestPhaseCleanUp = {
         appCtx?.close()
         appCtx = prevAppCtx
     }
-    
+
     if (runningFunctionalTestsInline || runningFunctionalTestsAgainstWar) {
         stopServer()
     }
-    
+
     functionalBaseUrl = null
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
 }

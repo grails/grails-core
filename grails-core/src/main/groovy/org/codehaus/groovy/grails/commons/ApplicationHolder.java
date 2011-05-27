@@ -24,6 +24,7 @@ import grails.util.GrailsUtil;
  *
  * @deprecated Use dependency injection or implement GrailsApplicationAware instead
  */
+@Deprecated
 public abstract class ApplicationHolder {
 
     private static GrailsApplication application;

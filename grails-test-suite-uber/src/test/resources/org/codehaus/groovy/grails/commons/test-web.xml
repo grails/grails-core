@@ -67,8 +67,7 @@
     <servlet-mapping>
         <servlet-name>gsp</servlet-name>
         <url-pattern>*.gsp</url-pattern>
-    </servlet-mapping>    
-	
+    </servlet-mapping>
 
     <jsp-config>
         <taglib>
@@ -86,7 +85,7 @@
 		<taglib>
 			<taglib-uri>http://grails.codehaus.org/tags</taglib-uri>
 			<taglib-location>/WEB-INF/tld/grails.tld</taglib-location>
-		</taglib>						
+		</taglib>
     </jsp-config>
 
 </web-app>

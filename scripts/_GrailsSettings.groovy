@@ -76,7 +76,7 @@ if (!System.getProperty("grails.env.set")) {
     if (grailsSettings.defaultEnv && getBinding().variables.containsKey("scriptEnv")) {
         grailsEnv = scriptEnv
         grailsSettings.grailsEnv = grailsEnv
-		configSlurper.environment = grailsEnv
+        configSlurper.environment = grailsEnv
         System.setProperty(Environment.KEY, grailsEnv)
         System.setProperty(Environment.DEFAULT, "")
     }
@@ -97,11 +97,10 @@ else {
 // includes all the Grails JARs, the plugin libraries, and any JARs
 // provided by the application. Useful for task definitions.
 ant.path(id: "core.classpath") {
-    for(url in classLoader.URLs) {
+    for (url in classLoader.URLs) {
         pathelement(location: url.file)
     }
 }
-
 
 // Closure for unpacking a JAR file that's on the classpath.
 grailsUnpack = {Map args ->

@@ -13,10 +13,10 @@
          <xsd:complexContent>
             <xsd:extension base="beans:identifiedType">
                 <xsd:group ref="beans:beanElements"/>
-                <xsd:attribute name="base-package" type="xsd:string" use="required"/>                               
+                <xsd:attribute name="base-package" type="xsd:string" use="required"/>
                 <xsd:attribute name="data-source-ref" type="xsd:string" use="required"/>
                 <xsd:attribute name="message-source-ref" type="xsd:string" use="required" />
-                <xsd:attribute name="lob-handler-ref" type="xsd:string" />                
+                <xsd:attribute name="lob-handler-ref" type="xsd:string" />
                 <xsd:attribute name="transaction-manager-ref" type="xsd:string" />
                 <xsd:attribute name="config-location" type="xsd:string" />
                 <xsd:attribute name="config-class" type="xsd:string" />

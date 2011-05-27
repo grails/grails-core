@@ -81,8 +81,8 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 
         messageSource = new StaticMessageSource()
-        ctx.registerMockBean("manager", mockManager )
-        ctx.registerMockBean("messageSource", messageSource )
+        ctx.registerMockBean("manager", mockManager)
+        ctx.registerMockBean("messageSource", messageSource)
         ctx.registerMockBean("grailsApplication",grailsApplication)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
@@ -119,9 +119,9 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         mockManager.applicationContext = appCtx
-        servletContext.setAttribute( GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
-        GroovySystem.metaClassRegistry.removeMetaClass(String.class)
-        GroovySystem.metaClassRegistry.removeMetaClass(Object.class)
+        servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
+        GroovySystem.metaClassRegistry.removeMetaClass(String)
+        GroovySystem.metaClassRegistry.removeMetaClass(Object)
        //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
         mockManager.doDynamicMethods()
 

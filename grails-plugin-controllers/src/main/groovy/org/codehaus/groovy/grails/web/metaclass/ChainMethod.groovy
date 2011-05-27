@@ -33,7 +33,7 @@ class ChainMethod {
 
     static invoke(target, Map args = [:]) {
         def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(
-            target.class.name, ControllerArtefactHandler.TYPE )
+            target.class.name, ControllerArtefactHandler.TYPE)
         def action = args.action
         def id = args.id
         def params = args.params ?: [:]

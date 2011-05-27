@@ -7,7 +7,7 @@ class ControllerInheritanceTests extends AbstractGrailsControllerTests {
         gcl.parseClass '''
 class ControllerInheritanceFooBaseController {
 
-    protected void bar(){
+    protected void bar() {
         println('bar in base class')
     }
 }
@@ -15,7 +15,7 @@ class ControllerInheritanceFooBaseController {
 class ControllerInheritanceFooController extends ControllerInheritanceFooBaseController {
 
     @Override
-    protected void bar(){
+    protected void bar() {
         println "bar in subclass"
         super.bar()
         println "bar after subclass"

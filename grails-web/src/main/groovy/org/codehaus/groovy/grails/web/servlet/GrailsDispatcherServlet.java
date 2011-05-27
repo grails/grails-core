@@ -177,7 +177,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
      */
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
-        String[] webRequestInterceptors = webContext.getBeanNamesForType( WebRequestInterceptor.class);
+        String[] webRequestInterceptors = webContext.getBeanNamesForType(WebRequestInterceptor.class);
         @SuppressWarnings("hiding")
         HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 

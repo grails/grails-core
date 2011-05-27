@@ -30,13 +30,13 @@ import java.util.Map;
 public class ConstraintsEvaluatorFactoryBean implements FactoryBean<ConstraintsEvaluator>, InitializingBean {
     private ConstraintsEvaluator constraintsEvaluator;
     private Class<?> constraintsEvaluatorClass = DefaultConstraintEvaluator.class;
-    private Map defaultConstraints;
+    @SuppressWarnings("rawtypes") private Map defaultConstraints;
 
     public void setConstraintsEvaluatorClass(Class<?> constraintsEvaluatorClass) {
         this.constraintsEvaluatorClass = constraintsEvaluatorClass;
     }
 
-    public void setDefaultConstraints(Map defaultConstraints) {
+    public void setDefaultConstraints(@SuppressWarnings("rawtypes") Map defaultConstraints) {
         this.defaultConstraints = defaultConstraints;
     }
 

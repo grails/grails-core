@@ -36,7 +36,7 @@
 			<value>org.codehaus.groovy.grails.web.servlet.mvc.ReturnModelAndViewController</value>
 		</property>
 	</bean>
-	<bean id="org.codehaus.groovy.grails.web.servlet.mvc.ReturnModelAndViewController" 
+	<bean id="org.codehaus.groovy.grails.web.servlet.mvc.ReturnModelAndViewController"
 		factory-bean="returnModelAndViewControllerClass" factory-method="newInstance"/>
 	<bean id="parameterControllerClass" parent="controllerClass">
 		<property name="arguments">

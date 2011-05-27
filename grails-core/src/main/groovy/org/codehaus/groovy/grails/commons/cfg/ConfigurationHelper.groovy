@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.commons.cfg
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
+
 import java.util.concurrent.ConcurrentHashMap
+
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -56,9 +58,9 @@ class ConfigurationHelper {
         ClassLoader classLoader
         Integer cacheKey = -1
 
-        if(application != null) {
+        if (application != null) {
             classLoader = application.getClassLoader()
-            if(Environment.isWarDeployed() || !Environment.isWithinShell()) {
+            if (Environment.isWarDeployed() || !Environment.isWithinShell()) {
                 // use unique cache keys for each config based on the application instance
                 // this to ensure each application gets a unique config and avoid the scenario
                 // where applications deployed in a shared library mode (shared jars) share the
@@ -71,7 +73,7 @@ class ConfigurationHelper {
         }
 
         co = cachedConfigs.get(cacheKey)
-        if(co == null) {
+        if (co == null) {
             ConfigSlurper configSlurper = getConfigSlurper(environment, application)
             try {
                 try {

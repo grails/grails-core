@@ -58,7 +58,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     private GroovyPagesTemplateEngine templateEngine;
     private long createTimestamp = System.currentTimeMillis();
     private static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
-    private Class viewClass;
+    private Class<?> viewClass;
 
     /**
      * Delegates to renderMergedOutputModel(..)
@@ -145,7 +145,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
 
             Template t;
 
-            if(viewClass != null) {
+            if (viewClass != null) {
                 t = engine.createTemplate(viewClass);
             }
             else {
@@ -210,7 +210,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
         return System.currentTimeMillis() - createTimestamp > LASTMODIFIED_CHECK_INTERVAL;
     }
 
-    public void setViewClass(Class viewClass) {
+    public void setViewClass(Class<?> viewClass) {
         this.viewClass = viewClass;
     }
 }

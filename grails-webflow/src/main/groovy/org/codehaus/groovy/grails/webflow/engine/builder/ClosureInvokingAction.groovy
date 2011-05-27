@@ -72,7 +72,7 @@ class ClosureInvokingAction extends AbstractAction {
                     if (constrainedProperties) {
                         for (prop in constrainedProperties.values()) {
                             prop.messageSource = applicationContext.getBean("messageSource")
-                            prop.validate(delegate, delegate.getProperty( prop.getPropertyName() ),localErrors)
+                            prop.validate(delegate, delegate.getProperty(prop.getPropertyName()), localErrors)
                         }
                     }
                     !localErrors.hasErrors()
@@ -150,7 +150,7 @@ class ClosureInvokingAction extends AbstractAction {
                 if (entry.value instanceof GroovyObject) {
                     def errors = entry.value.errors
                     if (errors?.hasErrors()) {
-                        context.flashScope.put("${GrailsApplicationAttributes.ERRORS}_${entry.key}", errors )
+                        context.flashScope.put("${GrailsApplicationAttributes.ERRORS}_${entry.key}", errors)
                     }
                 }
             }

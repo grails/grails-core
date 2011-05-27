@@ -24,7 +24,7 @@ class FlowBuilderDynamicTransitionTests extends AbstractGrailsTagAwareFlowExecut
         startFlow()
 
         assertCurrentStateEquals "stepOne"
-        signalEvent( "submit" )
+        signalEvent("submit")
 
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "stepFour"

@@ -139,7 +139,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
             enhancer.enhance(entity)
         }
         if (domains) {
-            for(obj in domains) {
+            for (obj in domains) {
                 if (obj instanceof Map) {
                     domainClassToMock.newInstance(obj).save()
                 }

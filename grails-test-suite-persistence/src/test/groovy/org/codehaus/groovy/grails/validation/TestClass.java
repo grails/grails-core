@@ -99,7 +99,7 @@ public class TestClass {
         return testString;
     }
 
-    public void setTestString( String testString ) {
+    public void setTestString(String testString) {
         this.testString = testString;
     }
 
@@ -107,7 +107,7 @@ public class TestClass {
         return testLong;
     }
 
-    public void setTestLong( Long testLong ) {
+    public void setTestLong(Long testLong) {
         this.testLong = testLong;
     }
 }

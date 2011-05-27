@@ -131,7 +131,7 @@ public class GrailsResourceUtilsTests extends TestCase {
         assertEquals("/myapp/plugins/myplugin", GrailsResourceUtils.getStaticResourcePathForResource(
                 new UrlResource(WEBINF_PLUGIN_CTRL), request.getContextPath()));
     }
-    
+
     public void testAppendPiecesForUri() {
         assertEquals("", GrailsResourceUtils.appendPiecesForUri(""));
         assertEquals("/alpha/beta/gamma", GrailsResourceUtils.appendPiecesForUri("/alpha", "/beta", "/gamma"));

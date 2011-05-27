@@ -87,7 +87,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
     }
 
     public String[] getTokens() {
-        return this.tokens;
+        return tokens;
     }
 
     public String[] getLogicalUrls() {
@@ -95,7 +95,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
     }
 
     public String getUrlPattern() {
-        return this.urlPattern;
+        return urlPattern;
     }
 
     public boolean isOptional(int index) {

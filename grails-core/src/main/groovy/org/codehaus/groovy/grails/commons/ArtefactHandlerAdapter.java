@@ -82,7 +82,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
      * @return True if it is an artefact of this type
      */
     public boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
-        if(clazz == null) return false;
+        if (clazz == null) return false;
 
         boolean ok = clazz.getName().endsWith(artefactSuffix) && !Closure.class.isAssignableFrom(clazz);
         if (ok && !allowAbstract) {
@@ -99,21 +99,21 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
      */
     public GrailsClass newArtefactClass(@SuppressWarnings("rawtypes") Class artefactClass) {
         try {
-            Constructor<?> c = grailsClassImpl.getDeclaredConstructor(new Class[] { Class.class } );
+            Constructor<?> c = grailsClassImpl.getDeclaredConstructor(new Class[] { Class.class });
             // TODO GRAILS-720 plugin class instance created here first
             return (GrailsClass) c.newInstance(new Object[] { artefactClass});
         }
         catch (NoSuchMethodException e) {
-            throw new RuntimeException( "Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
         }
         catch (IllegalAccessException e) {
-            throw new RuntimeException( "Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
         }
         catch (InvocationTargetException e) {
-            throw new RuntimeException( "Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
         }
         catch (InstantiationException e) {
-            throw new RuntimeException( "Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
+            throw new RuntimeException("Unable to locate constructor with Class parameter for "+grailsClassImpl, e);
         }
     }
 

@@ -103,7 +103,7 @@ public class CommandLineHelper {
                 out.println();
             }
             catch (IOException ex) {
-                System.out.println("ERROR: Could not read System.in due to:" + ex.getMessage() );
+                System.out.println("ERROR: Could not read System.in due to:" + ex.getMessage());
                 return null;
             }
         }

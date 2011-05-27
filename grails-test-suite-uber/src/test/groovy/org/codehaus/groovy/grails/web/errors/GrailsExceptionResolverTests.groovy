@@ -70,7 +70,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         def request = webRequest.currentRequest
         def response = webRequest.currentResponse
         def handler = new Object()
-        def modelAndView = resolver.resolveException( request, response, handler, ex )
+        def modelAndView = resolver.resolveException(request, response, handler, ex)
 
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertEquals "/myView", modelAndView.view.url
@@ -100,7 +100,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         def request = webRequest.currentRequest
         MockHttpServletResponse response = webRequest.currentResponse
         def handler = new Object()
-        def modelAndView = resolver.resolveException( request, response, handler, ex )
+        def modelAndView = resolver.resolveException(request, response, handler, ex)
 
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertTrue modelAndView.empty
@@ -133,7 +133,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         MockHttpServletResponse response = webRequest.currentResponse
         def handler = new Object()
         response.setCommitted(true)
-        def modelAndView = resolver.resolveException( request, response, handler, ex )
+        def modelAndView = resolver.resolveException(request, response, handler, ex)
 
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertFalse modelAndView.empty

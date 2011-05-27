@@ -63,13 +63,13 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
 
         Expression value = node.getMember("value");
 
-        if(value != null && (value instanceof ConstantExpression)) {
+        if (value != null && (value instanceof ConstantExpression)) {
             ConstantExpression ce = (ConstantExpression) value;
             String artefactType = ce.getText();
             try {
                 ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
                 java.util.List<ClassInjector> injectors = findInjectors(artefactType, classInjectors);
-                if(!injectors.isEmpty()) {
+                if (!injectors.isEmpty()) {
                     for (ClassInjector injector : injectors) {
                         injector.performInjection(sourceUnit,cNode);
                     }
@@ -89,14 +89,14 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
     public static List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();
         for (ClassInjector classInjector : classInjectors) {
-            if(classInjector instanceof GrailsArtefactClassInjector) {
+            if (classInjector instanceof GrailsArtefactClassInjector) {
                 GrailsArtefactClassInjector gace = (GrailsArtefactClassInjector) classInjector;
 
-                if(artefactType.equals(gace.getArtefactType())) {
+                if (artefactType.equals(gace.getArtefactType())) {
                     injectors.add(gace);
                 }
             }
-            else if(classInjector instanceof AllArtefactClassInjector) {
+            else if (classInjector instanceof AllArtefactClassInjector) {
                 injectors.add(classInjector);
             }
         }

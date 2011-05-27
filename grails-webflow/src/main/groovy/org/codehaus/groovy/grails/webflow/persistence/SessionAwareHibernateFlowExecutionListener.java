@@ -92,7 +92,7 @@ public class SessionAwareHibernateFlowExecutionListener extends HibernateFlowExe
 
     @Override
     public void sessionEnded(RequestContext context, FlowSession session, String outcome, AttributeMap output) {
-        if (isPersistenceContext(session.getDefinition() ) && !isSessionAlreadyBound()) {
+        if (isPersistenceContext(session.getDefinition()) && !isSessionAlreadyBound()) {
             super.sessionEnded(context, session, outcome, output);
         }
     }

@@ -759,7 +759,7 @@ private int jjMoveNfa_1(int startState, int curPos)
    }
 }
 static final int[] jjnextStates = {
-   21, 22, 29, 30, 10, 11, 18, 19, 
+   21, 22, 29, 30, 10, 11, 18, 19,
 };
 private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, long l2)
 {
@@ -776,8 +776,8 @@ private static final boolean jjCanMove_0(int hiByte, int i1, int i2, long l1, lo
 
 /** Token literal values. */
 public static final String[] jjstrLiteralImages = {
-"", null, null, null, null, null, null, null, null, null, null, null, "\42", 
-null, null, null, null, null, null, null, "\173", "\175", "\156\165\154\154", "\54", 
+"", null, null, null, null, null, null, null, null, null, null, null, "\42",
+null, null, null, null, null, null, null, "\173", "\175", "\156\165\154\154", "\54",
 "\72", "\133", "\135", "\164\162\165\145", "\146\141\154\163\145", "\55", "\56", };
 
 /** Lexer state names. */
@@ -790,17 +790,17 @@ public static final String[] lexStateNames = {
 
 /** Lex State array. */
 public static final int[] jjnewLexState = {
-   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2, 0, -1, 1, 3, -1, 1, -1, -1, -1, -1, -1, 
-   -1, -1, -1, -1, -1, -1, 
+   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 2, 0, -1, 1, 3, -1, 1, -1, -1, -1, -1, -1,
+   -1, -1, -1, -1, -1, -1,
 };
 static final long[] jjtoToken = {
-   0x7ff9dd61L, 
+   0x7ff9dd61L,
 };
 static final long[] jjtoSkip = {
-   0x1eL, 
+   0x1eL,
 };
 static final long[] jjtoMore = {
-   0x22000L, 
+   0x22000L,
 };
 protected SimpleCharStream input_stream;
 private final int[] jjrounds = new int[31];
@@ -882,7 +882,7 @@ int jjmatchedPos;
 int jjmatchedKind;
 
 /** Get the next Token. */
-public Token getNextToken() 
+public Token getNextToken()
 {
   Token matchedToken;
   int curPos = 0;

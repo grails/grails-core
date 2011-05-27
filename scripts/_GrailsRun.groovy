@@ -175,12 +175,12 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-	def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
-	watcher.start()
+    def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+    watcher.start()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
-	// do nothing, here for compatibility
+    // do nothing, here for compatibility
 }
 
 /**
@@ -238,7 +238,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
         daemonThread.run()
     }
 
-	keepServerAlive()
+    keepServerAlive()
 }
 
 target(keepServerAlive: "Idles the script, ensuring that the server stays running.") {

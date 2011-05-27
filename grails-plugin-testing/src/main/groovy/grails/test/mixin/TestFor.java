@@ -33,5 +33,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.test.TestForTransformation")
 public @interface TestFor {
-    Class value();
+    Class<?> value();
 }

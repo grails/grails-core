@@ -65,10 +65,10 @@ class ScaffoldingTest {
 
         assertThat "Should have rendered a datePicker for regularDate",
             sw.toString(),
-			containsString('g:datePicker name="regularDate" precision="day" value="${scaffoldingTestInstance?.regularDate}"')
+            containsString('g:datePicker name="regularDate" precision="day" value="${scaffoldingTestInstance?.regularDate}"')
         assertThat "Should have rendered a datePicker for sqlDate",
             sw.toString(),
-			containsString('datePicker name="sqlDate" precision="day" value="${scaffoldingTestInstance?.sqlDate}"')
+            containsString('datePicker name="sqlDate" precision="day" value="${scaffoldingTestInstance?.sqlDate}"')
     }
 
     void testGenerateNumberSelect() {
@@ -86,6 +86,6 @@ class ScaffoldingTest {
 
         assertThat "Should have rendered a select box for the number editor",
             sw.toString(),
-			containsString('g:select name="status" from="${scaffoldingTestInstance.constraints.status.inList}" required="" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
+            containsString('g:select name="status" from="${scaffoldingTestInstance.constraints.status.inList}" required="" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
     }
 }

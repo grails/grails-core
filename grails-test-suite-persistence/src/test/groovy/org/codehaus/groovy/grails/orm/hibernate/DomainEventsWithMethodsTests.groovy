@@ -11,7 +11,7 @@ class DomainEventsWithMethodsTests extends AbstractGrailsHibernateTests {
     protected getDomainClasses() {
         [PersonEvent, PersonEvent2, Address, PersonWithOverloadedBeforeValidate, PersonWithNoArgBeforeValidate, PersonWithListArgBeforeValidate]
     }
-    
+
     // test for GRAILS-4059
     void testLastUpdateDoesntChangeWhenNotDirty() {
         def personClass = ga.getDomainClass(PersonEvent.name).clazz

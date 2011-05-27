@@ -67,21 +67,19 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         return obj != null && obj == disableAutoValidationFor.get();
     }
 
-
-
-    @SuppressWarnings("rawtypes")
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
-              ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
+              ClassLoader classLoader, GrailsApplication application,
+              @SuppressWarnings("unused") GrailsDomainClass domainClass) {
         super(pattern, sessionFactory, classLoader);
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
 
         this.application = application;
-
     }
 
-    private boolean shouldFail(GrailsApplication application, GrailsDomainClass domainClass) {
+    @SuppressWarnings("rawtypes")
+    private boolean shouldFail(GrailsApplication grailsApplication, GrailsDomainClass domainClass) {
         boolean shouldFail = false;
-        final Map config = application.getFlatConfig();
+        final Map config = grailsApplication.getFlatConfig();
         if (config.containsKey(FAIL_ON_ERROR_CONFIG_PROPERTY)) {
             Object configProperty = config.get(FAIL_ON_ERROR_CONFIG_PROPERTY);
             if (configProperty instanceof Boolean) {
@@ -138,7 +136,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
                 if (errors.hasErrors()) {
                     handleValidationError(target,errors);
-                    @SuppressWarnings("hiding")
                     boolean shouldFail = shouldFail(application, domainClass);
                     if (argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);

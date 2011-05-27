@@ -179,10 +179,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         }
         else {
             String result = findMessageInSourcePlugins(code, locale);
-            if(result != null) return result;
+            if (result != null) return result;
 
             result = findCodeInBinaryPlugins(code, locale);
-            if(result != null) return result;
+            if (result != null) return result;
 
         }
         return null;
@@ -197,7 +197,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
                 if (binaryPluginProperties != null) {
                     result = binaryPluginProperties.getProperty(code);
-                    if(result != null) break;
+                    if (result != null) break;
                 }
             }
         }
@@ -226,10 +226,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
                 if (binaryPluginProperties != null) {
                     String foundCode = binaryPluginProperties.getProperty(code);
-                    if(foundCode != null) {
+                    if (foundCode != null) {
                         result = new MessageFormat(foundCode, locale);
                     }
-                    if(result != null) return result;
+                    if (result != null) return result;
                 }
             }
         }
@@ -266,10 +266,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         }
         else {
             MessageFormat result = findMessageFormatInSourcePlugins(code, locale);
-            if(result != null) return result;
+            if (result != null) return result;
 
             result = findMessageFormatInBinaryPlugins(code, locale);
-            if(result != null) return result;
+            if (result != null) return result;
         }
         return null;
     }

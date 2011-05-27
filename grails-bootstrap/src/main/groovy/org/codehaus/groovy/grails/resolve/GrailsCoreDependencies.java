@@ -14,20 +14,23 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
-import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.codehaus.groovy.grails.resolve.config.*;
 import groovy.lang.Closure;
+
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
+import org.codehaus.groovy.grails.resolve.config.JarDependenciesConfigurer;
+import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
 
 /**
  * Encapsulates information about the core dependencies of Grails.
- * 
+ *
  * This may eventually expand to expose information such as Spring version etc.
  * and be made available in the binding for user dependency declarations.
  */
 public class GrailsCoreDependencies {
-    
+
     public final String grailsVersion;
-    
+
     public GrailsCoreDependencies(String grailsVersion) {
         this.grailsVersion = grailsVersion;
     }
@@ -44,38 +47,39 @@ public class GrailsCoreDependencies {
             dependencyManager.registerDependency(scope, descriptor);
         }
     }
-    
+
     /**
      * Returns a closure suitable for passing to a DependencyDefinitionParser that will configure
      * the necessary core dependencies for Grails.
      */
+    @SuppressWarnings({ "serial", "rawtypes" })
     public Closure createDeclaration() {
         return new Closure(this, this) {
             public Object doCall() {
                 DependencyConfigurationConfigurer rootDelegate = (DependencyConfigurationConfigurer)getDelegate();
-                
+
                 rootDelegate.log("warn");
-                
+
                 // Repositories
-                
+
                 rootDelegate.repositories(new Closure(this, GrailsCoreDependencies.this) {
                     public Object doCall() {
                         RepositoriesConfigurer repositoriesDelegate = (RepositoriesConfigurer)getDelegate();
-                     
+
                         repositoriesDelegate.grailsPlugins();
                         repositoriesDelegate.grailsHome();
-                        
+
                         return null;
                     }
                 });
-                
+
                 // Dependencies
-                
+
                 rootDelegate.dependencies(new Closure(this, GrailsCoreDependencies.this) {
                     public Object doCall() {
-                        JarDependenciesConfigurer dependenciesDelegate = (JarDependenciesConfigurer)getDelegate(); 
+                        JarDependenciesConfigurer dependenciesDelegate = (JarDependenciesConfigurer)getDelegate();
                         IvyDependencyManager dependencyManager = dependenciesDelegate.getDependencyManager();
-                        
+
                         boolean defaultDependenciesProvided = dependencyManager.getDefaultDependenciesProvided();
                         String compileTimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "compile";
                         String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime";
@@ -111,8 +115,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5")
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
-                        
-                        
+
                         // depenencies needed when creating docs
                         ModuleRevisionId[] docDependencies = {
                             ModuleRevisionId.newInstance("org.xhtmlrenderer", "core-renderer","R8"),
@@ -120,8 +123,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-gdoc-engine", "1.0.1")
                         };
                         registerDependencies(dependencyManager, "docs", docDependencies);
-                        
-                        
+
                         // dependencies needed during development, but not for deployment
                         String tomcatVersion = "7.0.8";
                         ModuleRevisionId[] providedDependencies = {
@@ -130,14 +132,13 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-logging-log4j",tomcatVersion)
                         };
                         registerDependencies(dependencyManager, "provided", providedDependencies);
-                        
-                        
+
                         // dependencies needed at compile time
                         ModuleRevisionId[] groovyDependencies = {
                             ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.0")
-                        };                        
+                        };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
-                        
+
                         ModuleRevisionId[] commonsExcludingLoggingAndXmlApis = {
                             ModuleRevisionId.newInstance("commons-beanutils", "commons-beanutils", "1.8.0"),
                             ModuleRevisionId.newInstance("commons-el", "commons-el", "1.0"),
@@ -166,7 +167,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-spring", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", springDatastoreMappingVersion),
-                            
+
                             // Plugins
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-codecs", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-controllers", grailsVersion),
@@ -197,13 +198,12 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-tx", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-web", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", springVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-core", springDatastoreMappingVersion),							
+                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-core", springDatastoreMappingVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-datastore-simple", springDatastoreMappingVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion)
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
-                        
-                        
+
                         // dependencies needed for running tests
                         ModuleRevisionId[] testDependencies = {
                             ModuleRevisionId.newInstance("junit", "junit", "4.8.1"),
@@ -213,8 +213,7 @@ public class GrailsCoreDependencies {
 
                         };
                         registerDependencies(dependencyManager, "test", testDependencies);
-                        
-                        
+
                         // dependencies needed at runtime only
                         ModuleRevisionId[] runtimeDependencies = {
                             ModuleRevisionId.newInstance("org.aspectj", "aspectjweaver", "1.6.10"),
@@ -231,7 +230,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
-                        
+
                         ModuleRevisionId[] ehcacheDependencies = {
                             ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.3.1")
                         };
@@ -246,15 +245,11 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "mail", "jms", "jmxtools", "jmxri");
 
                         return null;
-                        
-                    } 
+                    }
                 }); // end depenencies closure
-                
+
                 return null;
             }
-            
-        }; // end root closure 
-
+        }; // end root closure
     }
-    
 }

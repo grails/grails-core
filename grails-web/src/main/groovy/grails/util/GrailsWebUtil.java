@@ -40,11 +40,11 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 0.4
  */
+@SuppressWarnings("rawtypes")
 public class GrailsWebUtil {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
-
 
     /**
      * Looks up a GrailsApplication instance from the ServletContext
@@ -53,10 +53,10 @@ public class GrailsWebUtil {
      * @return A GrailsApplication or null if there isn't one
      */
     public static GrailsApplication lookupApplication(ServletContext servletContext) {
-        if(servletContext != null) {
+        if (servletContext != null) {
             final WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-            if(context != null) {
-                if(context.containsBean(GrailsApplication.APPLICATION_ID)) {
+            if (context != null) {
+                if (context.containsBean(GrailsApplication.APPLICATION_ID)) {
                     return context.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
                 }
             }
@@ -70,7 +70,7 @@ public class GrailsWebUtil {
      */
     public static GrailsApplication currentApplication() {
         final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if(requestAttributes instanceof GrailsWebRequest) {
+        if (requestAttributes instanceof GrailsWebRequest) {
             GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
             return webRequest.getAttributes().getGrailsApplication();
         }
@@ -83,7 +83,7 @@ public class GrailsWebUtil {
      */
     public static Map currentConfiguration() {
         GrailsApplication application = currentApplication();
-        if(application != null) {
+        if (application != null) {
             return application.getConfig();
         }
         return new ConfigObject();
@@ -95,7 +95,7 @@ public class GrailsWebUtil {
      */
     public static Map currentFlatConfiguration() {
         GrailsApplication application = currentApplication();
-        if(application != null) {
+        if (application != null) {
             return application.getFlatConfig();
         }
         return Collections.emptyMap();
@@ -138,8 +138,7 @@ public class GrailsWebUtil {
                 request,
                 response,
                 ctx.getServletContext(),
-                ctx
-        );
+                ctx);
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         String[] paramListenerBeans = ctx.getBeanNamesForType(ParameterCreationListener.class);
         for (String paramListenerBean : paramListenerBeans) {
@@ -165,8 +164,7 @@ public class GrailsWebUtil {
         GrailsWebRequest webRequest = new GrailsWebRequest(
                 request,
                 new MockHttpServletResponse(),
-                new MockServletContext()
-        );
+                new MockServletContext());
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;

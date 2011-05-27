@@ -101,7 +101,7 @@ public class JSONTokener {
      * @return true if not yet at the end of the source.
      */
     public boolean more() {
-        return this.myIndex < this.mySource.length();
+        return myIndex < mySource.length();
     }
 
 
@@ -153,9 +153,8 @@ public class JSONTokener {
             throw syntaxError("Substring bounds error");
         }
         this.myIndex += n;
-        return this.mySource.substring(i, j);
+        return mySource.substring(i, j);
     }
-
 
     /**
      * Get the next char in the string, skipping whitespace
@@ -375,9 +374,8 @@ public class JSONTokener {
                     return new Date(time);
                 }
             } catch (Exception e) {
-            	// ignored
+                // ignored
             }
-
         }
 
         /*

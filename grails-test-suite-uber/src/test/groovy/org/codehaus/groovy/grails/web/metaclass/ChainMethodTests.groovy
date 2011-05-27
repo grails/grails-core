@@ -15,7 +15,7 @@ class ChainMethodTests extends AbstractGrailsControllerTests{
 class TestChainController {
     def save = {
         def book = new TestChainBook(params)
-        if(!book.hasErrors() && book.save()) {
+        if (!book.hasErrors() && book.save()) {
             flash.message = "Book ${book.id} created"
             redirect(action:"show",id:book.id)
         }
@@ -60,7 +60,7 @@ class TestChainBook {
         def controller = ga.getControllerClass("TestChainController").newInstance()
         controller.testId()
 
-        assertEquals "Test param", controller.flash.chainModel.str 
-        assertEquals "/testChain/show/5", response.redirectedUrl 
+        assertEquals "Test param", controller.flash.chainModel.str
+        assertEquals "/testChain/show/5", response.redirectedUrl
     }
 }

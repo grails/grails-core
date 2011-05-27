@@ -61,7 +61,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   String name\n" +
                 "   static constraints = {\n" +
-                "      name( nullable: false, validator : { 'called' } )\n" +
+                "      name(nullable: false, validator : { 'called' })\n" +
                 "   }" +
                 "}";
         ensureConstraintsPresent(new String[] { classSource }, 0, 2); // Must have nullable and validator
@@ -85,8 +85,8 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "   Map remarks\n" +
                 "   static hasMany = [chapters:Chapter]\n" +
                 "   static constraints = {\n" +
-                "      description( nullable: true)\n" +
-                "      assistent( nullable: true)\n" +
+                "      description(nullable: true)\n" +
+                "      assistent(nullable: true)\n" +
                 "   }\n" +
                 "}\n" +
                 "class Author {\n" +
@@ -102,22 +102,22 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
         GroovyClassLoader gcl = new GroovyClassLoader();
 
-        DefaultGrailsDomainClass bookClass = new DefaultGrailsDomainClass(gcl.parseClass( bookClassSource, "Book" ));
+        DefaultGrailsDomainClass bookClass = new DefaultGrailsDomainClass(gcl.parseClass(bookClassSource, "Book"));
 
         Map constraints = bookClass.getConstrainedProperties();
         ConstrainedProperty p = (ConstrainedProperty)constraints.get("title");
         assertFalse("Title property should be required", p.isNullable());
         p = (ConstrainedProperty)constraints.get("description");
-        assertTrue("Description property should be optional", p.isNullable() );
+        assertTrue("Description property should be optional", p.isNullable());
         p = (ConstrainedProperty)constraints.get("author");
         assertFalse("Author property should be required", p.isNullable());
         p = (ConstrainedProperty)constraints.get("assistent");
-        assertTrue("Assistent property should be optional", p.isNullable() );
+        assertTrue("Assistent property should be optional", p.isNullable());
         // Test that Collections and Maps are nullable by default
         p = (ConstrainedProperty)constraints.get("chapters");
         assertTrue("Chapters property should be optional", p.isNullable());
         p = (ConstrainedProperty)constraints.get("remarks");
-        assertTrue("Remarks property should be optional", p.isNullable() );
+        assertTrue("Remarks property should be optional", p.isNullable());
     }
 
 
@@ -131,13 +131,13 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
                 "   Long version\n"+ // WE NEED this even though GORM 2 doesn't, as we're not a "domain" class within grails-app
                 "   String name\n" +
                 "   static constraints = {\n" +
-                "      name( nullable: false, validator : { 'called' } )\n" +
+                "      name(nullable: false, validator : { 'called' })\n" +
                 "   }" +
                 "}";
         String descendentSource = "package org.codehaus.groovy.grails.validation\n" +
                 "class TestB extends Test {\n" +
                 "   static constraints = {\n" +
-                "      name( size:5..20)\n" +
+                "      name(size:5..20)\n" +
                 "   }" +
                 "}";
         ensureConstraintsPresent(new String[] { classSource, descendentSource}, 1, 3); // Must have nullable and validator
@@ -160,7 +160,7 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         ConstrainedProperty p = (ConstrainedProperty)constraints.get("name");
         Collection cons = p.getAppliedConstraints();
 
-        assertEquals( "Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());
+        assertEquals("Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());
     }
 
 }

@@ -60,7 +60,7 @@ public class MatchesConstraint extends AbstractConstraint {
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (!propertyValue.toString().matches( regex )) {
+        if (!propertyValue.toString().matches(regex)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex };
             rejectValue(target, errors, ConstrainedProperty.DEFAULT_DOESNT_MATCH_MESSAGE_CODE,
                     ConstrainedProperty.MATCHES_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);

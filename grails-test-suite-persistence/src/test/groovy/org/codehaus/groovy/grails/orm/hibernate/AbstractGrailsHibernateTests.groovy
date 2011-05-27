@@ -53,9 +53,10 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
     protected void setUp() {
         super.setUp()
 
-        if(new File("src/test/groovy/log4j.properties").exists())
+        if (new File("src/test/groovy/log4j.properties").exists()) {
             Log4jConfigurer.initLogging("src/test/groovy/log4j.properties")
-        else if(new File("grails-test-suite-persistence/src/test/groovy/log4j.properties").exists()) {
+        }
+        else if (new File("grails-test-suite-persistence/src/test/groovy/log4j.properties").exists()) {
             Log4jConfigurer.initLogging("grails-test-suite-persistence/src/test/groovy/log4j.properties")
         }
 
@@ -138,30 +139,31 @@ hibernate {
             TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
         }
     }
-    
+
     protected setCurrentController(controller) {
         RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
     }
-    
+
     void onApplicationCreated() {}
 
     /**
      * Subclasses may override this method to return a list of classes which should
      * be added to the GrailsApplication as domain classes
-     * 
+     *
      * @return a list of classes
      */
     protected getDomainClasses() {
         Collections.EMPTY_LIST
     }
-    
+
     protected void doWithRuntimeConfiguration(dependentPlugins, springConfig) {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
      }
 
     GrailsWebRequest buildMockRequest(ConfigObject config = null) throws Exception {
-        if(config != null)
+        if (config != null) {
             ga.config = config
+        }
         def servletContext = new MockServletContext()
         appCtx.setServletContext(servletContext)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)

@@ -247,7 +247,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
             }
         }
 
-        if(synchronizeState) {
+        if (synchronizeState) {
             synchronizePersisterState(entity, event.getPersister(), event.getState());
         }
 

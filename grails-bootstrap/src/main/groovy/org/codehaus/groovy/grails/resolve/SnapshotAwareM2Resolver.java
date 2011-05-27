@@ -39,9 +39,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-
 /**
- * Fixes the broken snapshot support in IBiblioResolver
+ * Fixes the broken snapshot support in IBiblioResolver.
  */
 public class SnapshotAwareM2Resolver extends IBiblioResolver {
 
@@ -49,11 +48,11 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
     private static final String M2_PATTERN = "[organisation]/[module]/" + M2_PER_MODULE_PATTERN;
 
     public SnapshotAwareM2Resolver() {
-        super();
         setM2compatible(true);
         setAlwaysCheckExactRevision(true);
     }
 
+    @Override
     public ResolvedResource findIvyFileRef(DependencyDescriptor dd, ResolveData data) {
         if (isM2compatible() && isUsepoms()) {
             ModuleRevisionId mrid = dd.getDependencyRevisionId();
@@ -71,11 +70,11 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                 DefaultArtifact.newPomArtifact(mrid, data.getDate()), getRMDParser(dd, data), data
                         .getDate());
             return rres;
-        } else {
-            return null;
         }
+        return null;
     }
 
+    @Override
     public ResolvedResource findArtifactRef(Artifact artifact, Date date) {
         ensureConfigured(getSettings());
         ModuleRevisionId mrid = artifact.getModuleRevisionId();
@@ -104,14 +103,14 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
 
             if (uniqueResource != null) {
                 return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.uniqueRevision, rev.lastModified);
-            } else {
-                pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
-                ResolvedResource nonUnique = findResourceUsingPattern(mrid, pattern, artifact,
-                    getDefaultRMDParser(artifact.getModuleRevisionId().getModuleId()), date);
+            }
 
-                if (nonUnique != null) {
-                    return new LastModifiedResolvedResource(nonUnique.getResource(), rev.revision, rev.lastModified);
-                }
+            pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
+            ResolvedResource nonUnique = findResourceUsingPattern(mrid, pattern, artifact,
+                getDefaultRMDParser(artifact.getModuleRevisionId().getModuleId()), date);
+
+            if (nonUnique != null) {
+                return new LastModifiedResolvedResource(nonUnique.getResource(), rev.revision, rev.lastModified);
             }
         }
         return null;
@@ -135,15 +134,15 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
 
             if (uniqueResource != null) {
                 return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.uniqueRevision, rev.lastModified);
-            } else {
-                pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
-                ResolvedResource nonUnique = findResourceUsingPattern(mrid, pattern,
-                    DefaultArtifact.newPomArtifact(
-                        mrid, data.getDate()), getRMDParser(dd, data), data.getDate());
+            }
 
-                if (nonUnique != null) {
-                    return new LastModifiedResolvedResource(nonUnique.getResource(), rev.revision, rev.lastModified);
-                }
+            pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
+            ResolvedResource nonUnique = findResourceUsingPattern(mrid, pattern,
+                DefaultArtifact.newPomArtifact(
+                    mrid, data.getDate()), getRMDParser(dd, data), data.getDate());
+
+            if (nonUnique != null) {
+                return new LastModifiedResolvedResource(nonUnique.getResource(), rev.revision, rev.lastModified);
             }
         }
         return null;
@@ -165,13 +164,13 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                     final StringBuffer timestamp = new StringBuffer();
                     final StringBuffer buildNumer = new StringBuffer();
                     XMLHelper.parse(metadataStream, null, new ContextualSAXHandler() {
+                        @Override
                         public void endElement(String uri, String localName, String qName)
                                 throws SAXException {
                             if ("metadata/versioning/lastUpdated".equals(getContext())) {
                                 timestamp.append(getText());
                             }
-                            if ("metadata/versioning/snapshot/buildNumber"
-                                    .equals(getContext())) {
+                            if ("metadata/versioning/snapshot/buildNumber".equals(getContext())) {
                                 buildNumer.append(getText());
                             }
                             super.endElement(uri, localName, qName);
@@ -182,11 +181,8 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                         String rev = mrid.getRevision();
                         rev = rev.substring(0, rev.length() - "-SNAPSHOT".length());
 
-                        SnapshotRevision version = new SnapshotRevision(
-                            rev, Long.parseLong(timestamp.toString()), Long.parseLong(buildNumer.toString())
-                        );
-
-                        return version;
+                        return new SnapshotRevision(rev, Long.parseLong(timestamp.toString()),
+                             Long.parseLong(buildNumer.toString()));
                     }
                 } else {
                     Message.verbose("\tmaven-metadata not available: " + metadata);
@@ -215,17 +211,12 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
 
     static private class SnapshotRevision {
         public final String revision;
-        public final long timestamp;
-        public final long buildNumber;
 
         public final String uniqueRevision;
         public final long lastModified;
 
         private SnapshotRevision(String revision, long timestamp, long buildNumber) {
             this.revision = revision + "-SNAPSHOT";
-            this.timestamp = timestamp;
-            this.buildNumber = buildNumber;
-
             this.uniqueRevision = revision + "-" + timestamp + "-" + buildNumber;
             this.lastModified = calculateLastModified(timestamp);
         }
@@ -240,6 +231,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
             }
         }
 
+        @Override
         public String toString() {
             return uniqueRevision;
         }
@@ -252,5 +244,4 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
     private boolean shouldUseMavenMetadata(String pattern) {
         return isUseMavenMetadata() && isM2compatible() && getPattern().endsWith(M2_PATTERN);
     }
-
 }

@@ -18,7 +18,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.ProxyFactory;
-import org.hibernate.type.AbstractComponentType;
 import org.hibernate.type.CompositeType;
 
 import java.io.Serializable;
@@ -41,7 +40,7 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
     private Class<?>[] interfaces;
     private Method getIdentifierMethod;
     private Method setIdentifierMethod;
-    private AbstractComponentType componentIdType;
+    private CompositeType componentIdType;
     private Class<?> factory;
 
     @SuppressWarnings({"unchecked", "hiding", "rawtypes"})
@@ -51,7 +50,7 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
             final Set interfaces,
             final Method getIdentifierMethod,
             final Method setIdentifierMethod,
-            final AbstractComponentType componentIdType) throws HibernateException {
+            final CompositeType componentIdType) throws HibernateException {
         this.entityName = entityName;
         this.persistentClass = persistentClass;
         this.interfaces = (Class<?>[])interfaces.toArray(NO_CLASSES);
@@ -59,10 +58,6 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
         this.setIdentifierMethod = setIdentifierMethod;
         this.componentIdType = componentIdType;
         factory = GroovyAwareJavassistLazyInitializer.getProxyFactory(persistentClass, this.interfaces);
-    }
-
-    public void postInstantiate(String entityName, Class persistentClass, Set interfaces, Method getIdentifierMethod, Method setIdentifierMethod, CompositeType componentIdType) throws HibernateException {
-        // do nothing
     }
 
     public HibernateProxy getProxy(Serializable id, SessionImplementor session) throws HibernateException {
@@ -75,7 +70,6 @@ public class GroovyAwareJavassistProxyFactory implements ProxyFactory, Serializa
                 setIdentifierMethod,
                 componentIdType,
                 id,
-                session
-        );
+                session);
     }
 }

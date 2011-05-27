@@ -24,7 +24,7 @@ import java.io.IOException;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class StreamingMarkupWriter extends groovy.xml.streamingmarkupsupport.StreamingMarkupWriter{
+public class StreamingMarkupWriter extends groovy.xml.streamingmarkupsupport.StreamingMarkupWriter {
 
     public StreamingMarkupWriter(Writer writer, String s) {
         super(writer, s);
@@ -36,8 +36,11 @@ public class StreamingMarkupWriter extends groovy.xml.streamingmarkupsupport.Str
 
     @Override
     public void write(int i) throws IOException {
-        if(this.writingAttribute && i == '"') {
-            this.writer.write("&quot;");
-        } else super.write(i);
+        if (writingAttribute && i == '"') {
+            writer.write("&quot;");
+        }
+        else {
+            super.write(i);
+        }
     }
 }

@@ -9,5 +9,4 @@
 			<value>**/*.groovy</value>
 		</property>
 	</bean>
-	
 </beans>

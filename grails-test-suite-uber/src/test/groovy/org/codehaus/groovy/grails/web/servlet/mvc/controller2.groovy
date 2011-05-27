@@ -1,5 +1,5 @@
 class SimpleController {
-	 Closure test = {
-		return null;
-	}
+    Closure test = {
+        return null;
+    }
 }

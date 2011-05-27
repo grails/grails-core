@@ -57,11 +57,11 @@ public class DefaultArtefactInfo implements ArtefactInfo {
             addToGrailsClasses = ((InjectableGrailsClass)artefactClass).getAvailable();
         }
         if (addToGrailsClasses) {
-            GrailsClass oldVersion = grailsClassesByName.put( actualClass.getName(), artefactClass);
+            GrailsClass oldVersion = grailsClassesByName.put(actualClass.getName(), artefactClass);
             grailsClasses.remove(oldVersion);
         }
-        classesByName.put( actualClass.getName(), actualClass);
-        logicalPropertyNameToClassMap.put( artefactClass.getLogicalPropertyName(), artefactClass);
+        classesByName.put(actualClass.getName(), actualClass);
+        logicalPropertyNameToClassMap.put(artefactClass.getLogicalPropertyName(), artefactClass);
 
         if (!grailsClasses.contains(artefactClass)) {
             if (atStart) {

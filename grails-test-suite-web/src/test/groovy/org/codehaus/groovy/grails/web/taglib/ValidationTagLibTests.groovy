@@ -333,7 +333,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
             // test when no message found it returns code
             def attrs = [:]
-            tag.call( attrs, { "error found"} )
+            tag.call(attrs, { "error found"})
 
             assertEquals "error found", sw.toString()
         }
@@ -347,8 +347,8 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testMessageTagWithLocaleAttribute() {
-        messageSource.addMessage( "welcome.message", Locale.ENGLISH, "Hello!")
-        messageSource.addMessage( "welcome.message", Locale.ITALIAN, "Ciao!")
+        messageSource.addMessage("welcome.message", Locale.ENGLISH, "Hello!")
+        messageSource.addMessage("welcome.message", Locale.ITALIAN, "Ciao!")
 
         def template = '<g:message code="welcome.message" />'
 
@@ -359,7 +359,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
     void testMessageTagWithBlankButExistingMessageBundleValue() {
 
-        messageSource.addMessage( "test.blank.message", Locale.ENGLISH, "")
+        messageSource.addMessage("test.blank.message", Locale.ENGLISH, "")
 
         def template = '<g:message code="test.blank.message" />'
 

@@ -74,10 +74,10 @@ public class IncludedContent implements Writable {
             return target;
         }
 
-        if(content instanceof StreamCharBuffer) {
+        if (content instanceof StreamCharBuffer) {
             ((StreamCharBuffer)content).writeTo(target);
         }
-        else if (content instanceof String){
+        else if (content instanceof String) {
             target.write((String)content);
         }
         else {
@@ -95,7 +95,7 @@ public class IncludedContent implements Writable {
             return ((StreamCharBuffer)content).toCharArray();
         }
 
-        if (content instanceof String){
+        if (content instanceof String) {
             return ((String)content).toCharArray();
         }
 

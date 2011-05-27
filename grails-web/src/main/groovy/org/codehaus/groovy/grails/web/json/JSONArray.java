@@ -399,7 +399,7 @@ public class JSONArray implements JSONElement, List {
      * @return The length (or size).
      */
     public int length() {
-        return this.myArrayList.size();
+        return myArrayList.size();
     }
 
 
@@ -598,7 +598,7 @@ public class JSONArray implements JSONElement, List {
      * Append a boolean value. This increases the array's length by one.
      *
      * @param value A boolean value.
-     * @return this.
+     * @return this
      */
     public JSONArray put(boolean value) {
         put(value ? Boolean.TRUE : Boolean.FALSE);
@@ -610,7 +610,7 @@ public class JSONArray implements JSONElement, List {
      * Append a double value. This increases the array's length by one.
      *
      * @param value A double value.
-     * @return this.
+     * @return this
      * @throws JSONException if the value is not finite.
      */
     public JSONArray put(double value) throws JSONException {
@@ -625,7 +625,7 @@ public class JSONArray implements JSONElement, List {
      * Append an int value. This increases the array's length by one.
      *
      * @param value An int value.
-     * @return this.
+     * @return this
      */
     public JSONArray put(int value) {
         put(new Integer(value));
@@ -637,7 +637,7 @@ public class JSONArray implements JSONElement, List {
      * Append an long value. This increases the array's length by one.
      *
      * @param value A long value.
-     * @return this.
+     * @return this
      */
     public JSONArray put(long value) {
         put(new Long(value));
@@ -651,7 +651,7 @@ public class JSONArray implements JSONElement, List {
      * @param value An object value.  The value should be a
      *              Boolean, Double, Integer, JSONArray, JSObject, Long, or String, or the
      *              JSONObject.NULL object.
-     * @return this.
+     * @return this
      */
     public JSONArray put(Object value) {
         this.myArrayList.add(value);
@@ -666,7 +666,7 @@ public class JSONArray implements JSONElement, List {
      *
      * @param index The subscript.
      * @param value A boolean value.
-     * @return this.
+     * @return this
      * @throws JSONException If the index is negative.
      */
     public JSONArray put(int index, boolean value) throws JSONException {
@@ -682,7 +682,7 @@ public class JSONArray implements JSONElement, List {
      *
      * @param index The subscript.
      * @param value A double value.
-     * @return this.
+     * @return this
      * @throws JSONException If the index is negative or if the value is
      *                       not finite.
      */
@@ -699,7 +699,7 @@ public class JSONArray implements JSONElement, List {
      *
      * @param index The subscript.
      * @param value An int value.
-     * @return this.
+     * @return this
      * @throws JSONException If the index is negative.
      */
     public JSONArray put(int index, int value) throws JSONException {
@@ -715,7 +715,7 @@ public class JSONArray implements JSONElement, List {
      *
      * @param index The subscript.
      * @param value A long value.
-     * @return this.
+     * @return this
      * @throws JSONException If the index is negative.
      */
     public JSONArray put(int index, long value) throws JSONException {
@@ -731,7 +731,7 @@ public class JSONArray implements JSONElement, List {
      *
      * @param index The subscript.
      * @param value The value to put into the array.
-     * @return this.
+     * @return this
      * @throws JSONException If the index is negative or if the the value is
      *                       an invalid number.
      */

@@ -17,6 +17,18 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -27,7 +39,11 @@ import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.action.EntityIdentityInsertAction;
 import org.hibernate.action.EntityInsertAction;
-import org.hibernate.engine.*;
+import org.hibernate.engine.EntityKey;
+import org.hibernate.engine.ForeignKeys;
+import org.hibernate.engine.Nullability;
+import org.hibernate.engine.Status;
+import org.hibernate.engine.Versioning;
 import org.hibernate.event.*;
 import org.hibernate.event.def.AbstractSaveEventListener;
 import org.hibernate.persister.entity.EntityPersister;
@@ -38,14 +54,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ReflectionUtils;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.*;
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
@@ -158,7 +166,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public void onPreLoad(PreLoadEvent event) {
         Object entity = event.getEntity();
-        GrailsHibernateUtil.ensureCorrectGroovyMetaClass(entity, entity.getClass() );
+        GrailsHibernateUtil.ensureCorrectGroovyMetaClass(entity, entity.getClass());
         ClosureEventListener eventListener=findEventListener(entity);
         if (eventListener != null) {
             eventListener.onPreLoad(event);
@@ -220,10 +228,8 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         return false;
     }
 
-    private transient ApplicationContext applicationContext;
-
     public void setApplicationContext(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext;
+        // not used
     }
 
     // Support for Serialization, not sure if Hibernate really requires Serialization support for Interceptors
@@ -246,89 +252,86 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
      */
     @Override
     protected Serializable performSaveOrReplicate(Object entity, EntityKey key, EntityPersister persister, boolean useIdentityColumn, Object anything, EventSource source, boolean requiresImmediateIdAccess) {
-		validate( entity, persister, source );
+        validate(entity, persister, source);
 
-		Serializable id = key == null ? null : key.getIdentifier();
+        Serializable id = key == null ? null : key.getIdentifier();
 
-		boolean inTxn = source.getJDBCContext().isTransactionInProgress();
-		boolean shouldDelayIdentityInserts = !inTxn && !requiresImmediateIdAccess;
+        boolean inTxn = source.getJDBCContext().isTransactionInProgress();
+        boolean shouldDelayIdentityInserts = !inTxn && !requiresImmediateIdAccess;
 
-		// Put a placeholder in entries, so we don't recurse back and try to save() the
-		// same object again. QUESTION: should this be done before onSave() is called?
-		// likewise, should it be done before onUpdate()?
-		source.getPersistenceContext().addEntry(
-				entity,
-				Status.SAVING,
-				null,
-				null,
-				id,
-				null,
-				LockMode.WRITE,
-				useIdentityColumn,
-				persister,
-				false,
-				false
-		);
+        // Put a placeholder in entries, so we don't recurse back and try to save() the
+        // same object again. QUESTION: should this be done before onSave() is called?
+        // likewise, should it be done before onUpdate()?
+        source.getPersistenceContext().addEntry(
+                entity,
+                Status.SAVING,
+                null,
+                null,
+                id,
+                null,
+                LockMode.WRITE,
+                useIdentityColumn,
+                persister,
+                false,
+                false);
 
-		cascadeBeforeSave( source, persister, entity, anything );
+        cascadeBeforeSave(source, persister, entity, anything);
 
-		if ( useIdentityColumn && !shouldDelayIdentityInserts ) {
-			log.trace( "executing insertions" );
-			source.getActionQueue().executeInserts();
-		}
+        if (useIdentityColumn && !shouldDelayIdentityInserts) {
+            log.trace("executing insertions");
+            source.getActionQueue().executeInserts();
+        }
 
-		Object[] values = persister.getPropertyValuesToInsert( entity, getMergeMap( anything ), source );
-		Type[] types = persister.getPropertyTypes();
+        Object[] values = persister.getPropertyValuesToInsert(entity, getMergeMap(anything), source);
+        Type[] types = persister.getPropertyTypes();
 
-		boolean substitute = substituteValuesIfNecessary( entity, id, values, persister, source );
+        boolean substitute = substituteValuesIfNecessary(entity, id, values, persister, source);
 
-		if ( persister.hasCollections() ) {
-			substitute = substitute || visitCollectionsBeforeSave( entity, id, values, types, source );
-		}
+        if (persister.hasCollections()) {
+            substitute = substitute || visitCollectionsBeforeSave(entity, id, values, types, source);
+        }
 
-		if ( substitute ) {
-			persister.setPropertyValues( entity, values, source.getEntityMode() );
-		}
+        if (substitute) {
+            persister.setPropertyValues(entity, values, source.getEntityMode());
+        }
 
-		TypeHelper.deepCopy(
+        TypeHelper.deepCopy(
                 values,
                 types,
                 persister.getPropertyUpdateability(),
                 values,
-                source
-        );
+                source);
 
-		new ForeignKeys.Nullifier( entity, false, useIdentityColumn, source )
-				.nullifyTransientReferences( values, types );
-		new Nullability( source ).checkNullability( values, persister, false );
+        new ForeignKeys.Nullifier(entity, false, useIdentityColumn, source)
+                .nullifyTransientReferences(values, types);
+        new Nullability(source).checkNullability(values, persister, false);
 
-		if ( useIdentityColumn ) {
-			EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
-					values, entity, persister, source, shouldDelayIdentityInserts
-			);
-			if ( !shouldDelayIdentityInserts ) {
-				log.debug( "executing identity-insert immediately" );
-				source.getActionQueue().execute( insert );
-				id = insert.getGeneratedId();
-                if(id != null) {
+        if (useIdentityColumn) {
+            EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
+                    values, entity, persister, source, shouldDelayIdentityInserts);
+            if (!shouldDelayIdentityInserts) {
+                log.debug("executing identity-insert immediately");
+                source.getActionQueue().execute(insert);
+                id = insert.getGeneratedId();
+                if (id != null) {
                     // As of HHH-3904, if the id is null the operation was vetoed so we bail
-                    key = new EntityKey( id, persister, source.getEntityMode() );
-                    source.getPersistenceContext().checkUniqueness( key, entity );
+                    key = new EntityKey(id, persister, source.getEntityMode());
+                    source.getPersistenceContext().checkUniqueness(key, entity);
                 }
-			}
-			else {
-				log.debug( "delaying identity-insert due to no transaction in progress" );
-				source.getActionQueue().addAction(insert);
+            }
+            else {
+                log.debug("delaying identity-insert due to no transaction in progress");
+                source.getActionQueue().addAction(insert);
 
-				key = insert.getDelayedEntityKey();
-			}
-		}
+                key = insert.getDelayedEntityKey();
+            }
+        }
 
-        if(key != null) {
+        if (key != null) {
             Object version = Versioning.getVersion(values, persister);
             source.getPersistenceContext().addEntity(
                     entity,
-                    ( persister.isMutable() ? Status.MANAGED : Status.READ_ONLY ),
+                    (persister.isMutable() ? Status.MANAGED : Status.READ_ONLY),
                     values,
                     key,
                     version,
@@ -336,24 +339,21 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                     useIdentityColumn,
                     persister,
                     isVersionIncrementDisabled(),
-                    false
-            );
-            //source.getPersistenceContext().removeNonExist( new EntityKey( id, persister, source.getEntityMode() ) );
+                    false);
+            //source.getPersistenceContext().removeNonExist(new EntityKey(id, persister, source.getEntityMode()));
 
-            if ( !useIdentityColumn ) {
+            if (!useIdentityColumn) {
                 source.getActionQueue().addAction(
-                        new EntityInsertAction( id, values, entity, version, persister, source )
-                );
+                        new EntityInsertAction(id, values, entity, version, persister, source));
             }
 
-            cascadeAfterSave( source, persister, entity, anything );
+            cascadeAfterSave(source, persister, entity, anything);
             // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
-            if(markInterceptorDirtyMethod != null) {
+            if (markInterceptorDirtyMethod != null) {
                 ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this,new Object[]{entity, persister, source});
             }
-
         }
-		return id;
-    }
 
+        return id;
+    }
 }

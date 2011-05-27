@@ -34,8 +34,7 @@ class Address {
     String number
     String postCode
 }
-'''
-        )
+''')
     }
 
 }

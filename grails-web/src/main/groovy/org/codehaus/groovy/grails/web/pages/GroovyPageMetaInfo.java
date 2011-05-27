@@ -141,7 +141,7 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
             input = new DataInputStream(pageClass.getResourceAsStream(dataResourceName));
             int arrayLen = input.readInt();
             htmlParts = new String[arrayLen];
-            for(int i = 0; i < arrayLen; i++) {
+            for (int i = 0; i < arrayLen; i++) {
                 htmlParts[i] = input.readUTF();
             }
         }

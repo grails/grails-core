@@ -78,8 +78,8 @@ class WebMetaUtils {
      *
      * @param action The binding action
      */
+    @SuppressWarnings("rawtypes")
     static void prepareCommandObjectBindingAction(Method action, Class[] commandObjectClasses, ApplicationContext ctx) {
-
         for (type in commandObjectClasses) {
             enhanceCommandObject ctx, type
         }
@@ -196,7 +196,7 @@ class WebMetaUtils {
                 DomainClassPluginSupport.validateInstance(delegate, ctx)
             }
             def constraintsEvaluator
-            if(ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+            if (ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
                 constraintsEvaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME)
             }
             else {

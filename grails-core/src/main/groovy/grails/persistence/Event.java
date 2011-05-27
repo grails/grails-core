@@ -30,7 +30,7 @@ public enum Event {
     private static final String[] allEvents;
     static {
         List<String> events = new ArrayList<String>();
-        for(Event e : values()) {
+        for (Event e : values()) {
             events.add(e.toString());
         }
         allEvents = events.toArray(new String[events.size()]);

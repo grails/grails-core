@@ -86,8 +86,9 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
 
         try {
-            if(!redirectCalled && !isCommitted())
+            if (!redirectCalled && !isCommitted()) {
                 super.sendError(sc);
+            }
         }
         finally {
             WebUtils.storeGrailsWebRequest(webRequest);
@@ -98,8 +99,9 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     public void sendError(int sc, String msg) throws IOException {
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
         try {
-            if(!redirectCalled && !isCommitted())
+            if (!redirectCalled && !isCommitted()) {
                 super.sendError(sc, msg);
+            }
         }
         finally {
             WebUtils.storeGrailsWebRequest(webRequest);

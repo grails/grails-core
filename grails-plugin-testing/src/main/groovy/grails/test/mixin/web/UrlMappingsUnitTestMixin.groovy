@@ -76,16 +76,16 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
     def mapURI(String uri) {
         UrlMappingsHolder mappingsHolder = getUrlMappingsHolder()
 
-        if(!UrlMappingsFilter.isUriExcluded(mappingsHolder, uri)) {
+        if (!UrlMappingsFilter.isUriExcluded(mappingsHolder, uri)) {
             UrlMappingInfo[] mappingInfos = mappingsHolder.matchAll(uri, request.method)
-            for(UrlMappingInfo info in mappingInfos) {
+            for (UrlMappingInfo info in mappingInfos) {
                 def backupParams = new HashMap(webRequest.params)
                 info.configure(webRequest)
 
                 webRequest.params.putAll(backupParams)
-                if(info.viewName == null && info.URI == null) {
+                if (info.viewName == null && info.URI == null) {
                     def controller = grailsApplication.getArtefactForFeature(ControllerArtefactHandler.TYPE, "${WebUtils.SLASH}${info.controllerName}${WebUtils.SLASH}${info.actionName ?: ''}");
-                    if(controller != null) {
+                    if (controller != null) {
                         return applicationContext.getBean(controller.fullName)
                     }
                 }
@@ -129,7 +129,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
      */
     void assertView(controller, view, url) {
         def pathPattern =  ((controller) ? "$controller/" : "") + "${view}.gsp"
-        if(!pathPattern.startsWith('/')) {
+        if (!pathPattern.startsWith('/')) {
             pathPattern = "/$pathPattern"
         }
         GroovyPagesTemplateEngine templateEngine = applicationContext.getBean("groovyPagesTemplateEngine", GroovyPagesTemplateEngine)
@@ -137,8 +137,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
         def t = templateEngine.createTemplate(pathPattern)
         if (!t) {
             throw new AssertionFailedError(
-                (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view"
-            )
+                (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view")
         }
     }
 
@@ -291,5 +290,4 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
     private GrailsControllerClass getControllerClass(controller) {
         return grailsApplication.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE, controller)
     }
-
 }

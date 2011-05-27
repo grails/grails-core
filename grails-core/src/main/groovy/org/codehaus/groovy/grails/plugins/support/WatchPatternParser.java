@@ -29,20 +29,19 @@ import java.util.List;
  */
 public class WatchPatternParser {
 
-
     public static final String WILD_CARD = "*";
 
-    public java.util.List<WatchPattern> getWatchPatterns(List<String> patterns) {
+    public List<WatchPattern> getWatchPatterns(List<String> patterns) {
        List<WatchPattern> watchPatterns = new ArrayList<WatchPattern>();
 
         for (String pattern : patterns) {
             WatchPattern watchPattern = new WatchPattern();
             watchPattern.setPattern(pattern);
-            if(pattern.startsWith("file:")) {
+            if (pattern.startsWith("file:")) {
                 pattern = pattern.substring(5);
             }
 
-            if(pattern.contains(WILD_CARD)) {
+            if (pattern.contains(WILD_CARD)) {
                 watchPattern.setDirectory(new File(pattern.substring(0, pattern.indexOf(WILD_CARD))));
                 setExtension(pattern, watchPattern);
                 watchPatterns.add(watchPattern);
@@ -60,7 +59,7 @@ public class WatchPatternParser {
 
     private void setExtension(String pattern, WatchPattern watchPattern) {
         String ext = StringUtils.getFilenameExtension(pattern);
-        if(ext != null) {
+        if (ext != null) {
             watchPattern.setExtension(ext);
         }
     }

@@ -75,8 +75,8 @@ public class StreamCharBufferTests extends TestCase {
         writer.flush();
 
         // Serialize to a byte array
-        ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
-        ObjectOutputStream out = new ObjectOutputStream(bos) ;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bos);
         out.writeObject(charBuffer);
         out.close();
 

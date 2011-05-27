@@ -1,12 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 31/03/2011
- * Time: 11:46
- * To change this template use File | Settings | File Templates.
- */
 class JoinAssociationTests extends AbstractGrailsHibernateTests {
     @Override protected void onSetUp() {
         gcl.parseClass('''
@@ -33,11 +26,8 @@ class Role {
     static constraints = {
     }
 }
-
-
 ''')
     }
-
 
     // test for GRAILS-7087
     void testObtainCorrectResultsViaJoin() {
@@ -53,13 +43,12 @@ class Role {
         assertEquals 2, users.head().roles.size()
     }
 
-
     // test for GRAILS-7087
     void testObtainCorrectResultsViaLeftJoin() {
         Class User = createData()
 
         def users = User.createCriteria().list{
-            roles(org.hibernate.criterion.CriteriaSpecification.LEFT_JOIN){
+            roles(org.hibernate.criterion.CriteriaSpecification.LEFT_JOIN) {
                 eq('name', 'Role1')
             }
         }
@@ -89,13 +78,12 @@ class Role {
             def user = User.newInstance(name: "User $it")
             user.save(flush: true)
 
-            if(it%2) {
+            if (it % 2) {
                 user.addToRoles(user: user, name: 'Role1')
             }
             else {
                 user.addToRoles(user: user, name: 'Role2')
             }
-
         }
 
         session.flush()
@@ -103,7 +91,7 @@ class Role {
 
 
         def results = User.createCriteria().listDistinct {
-            roles{
+            roles {
                 eq('name', 'Role1')
             }
             order 'id', 'asc'

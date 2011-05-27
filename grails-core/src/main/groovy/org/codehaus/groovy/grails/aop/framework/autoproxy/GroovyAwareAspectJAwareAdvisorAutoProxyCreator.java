@@ -5,7 +5,7 @@ import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProx
 
 /**
  * Enables AspectJ weaving from the application context.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.3.4
  */

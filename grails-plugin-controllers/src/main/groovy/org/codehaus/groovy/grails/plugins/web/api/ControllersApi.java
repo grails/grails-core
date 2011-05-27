@@ -67,7 +67,7 @@ public class ControllersApi extends CommonWebApi {
 
     public static ApplicationContext getStaticApplicationContext() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if(requestAttributes instanceof GrailsWebRequest) {
+        if (requestAttributes instanceof GrailsWebRequest) {
             GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
             return webRequest.getApplicationContext();
         }
@@ -75,7 +75,7 @@ public class ControllersApi extends CommonWebApi {
     }
 
     public void setGspEncoding(String gspEncoding) {
-        render.setGspEncoding( gspEncoding );
+        render.setGspEncoding(gspEncoding);
     }
 
     public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
@@ -98,7 +98,7 @@ public class ControllersApi extends CommonWebApi {
      */
     public static void initialize(Object instance) {
         ApplicationContext applicationContext = getStaticApplicationContext();
-        if(applicationContext != null) {
+        if (applicationContext != null) {
             applicationContext.getAutowireCapableBeanFactory().autowireBean(instance);
 
         }
@@ -149,7 +149,7 @@ public class ControllersApi extends CommonWebApi {
      *
      * @param errors The error instance
      */
-    public void setErrors(@SuppressWarnings("unused") Object instance, Errors errors ) {
+    public void setErrors(@SuppressWarnings("unused") Object instance, Errors errors) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
     }
@@ -220,12 +220,12 @@ public class ControllersApi extends CommonWebApi {
      * @param args The arguments
      * @return Result of the redirect call
      */
-    public Object chain(Object instance, Map args){
-        return ChainMethod.invoke( instance, args );
+    public Object chain(Object instance, Map args) {
+        return ChainMethod.invoke(instance, args);
     }
 
     // the render method
-    public Object render(Object instance, Object o ) {
+    public Object render(Object instance, Object o) {
         return render.invoke(instance, RENDER_METHOD_NAME, new Object[] { DefaultGroovyMethods.inspect(o) });
     }
 
@@ -284,9 +284,9 @@ public class ControllersApi extends CommonWebApi {
      * @param headerValue The header value
      */
     public void header(Object instance, String headerName, Object headerValue) {
-        if(headerValue != null) {
+        if (headerValue != null) {
             final HttpServletResponse response = getResponse(instance);
-            if(response != null) {
+            if (response != null) {
                 response.setHeader(headerName, headerValue.toString());
             }
         }

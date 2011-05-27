@@ -9,7 +9,6 @@ import spock.lang.Specification
 
 class MethodActionTransformerSpec extends Specification {
 
-
     def gcl
 
     void setup() {
@@ -78,7 +77,7 @@ class MethodActionTransformerSpec extends Specification {
                 def action = { CommandObject cmd->
                     commandObjectClosure = cmd
                 }
-                def action2(CommandObject cmd){
+                def action2(CommandObject cmd) {
                     commandObjectMethod = cmd
                 }
             }

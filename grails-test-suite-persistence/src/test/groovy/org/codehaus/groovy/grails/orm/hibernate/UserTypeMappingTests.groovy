@@ -113,7 +113,7 @@ class UserTypeMappingTestsPerson {
 
     static mapping = {
         columns {
-            weight( type:WeightUserType)
+            weight(type:WeightUserType)
         }
     }
 }

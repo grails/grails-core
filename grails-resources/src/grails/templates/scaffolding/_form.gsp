@@ -19,7 +19,7 @@
 			renderFieldForProperty(p, domainClass)
 		}
 	}
-	
+
 private renderFieldForProperty(p, owningClass, prefix = "") {
 	boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
 	boolean display = true

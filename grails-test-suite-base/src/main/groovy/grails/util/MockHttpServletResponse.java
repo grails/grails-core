@@ -2,13 +2,13 @@ package grails.util;
 
 /**
  * Subclass Spring's MockHttpServletResponse to tag the methods that have been deprecated in
- * the Servlet API.  
+ * the Servlet API.
  *
- * Because Spring's MockHttpServletResponse doesn't tag these methods as deprecated, the 
+ * Because Spring's MockHttpServletResponse doesn't tag these methods as deprecated, the
  * compiler outputs noisy warnings complaining that we're using deprecated methods if we use
- * the raw MockHttpServletResponse from Spring.  By subclassing Spring's 
- * MockHttpServletResponse and tagging the methods as deprecated, we acknowledge to the 
- * compiler that these methods are deprecated, and we silence the compiler warnings.  
+ * the raw MockHttpServletResponse from Spring.  By subclassing Spring's
+ * MockHttpServletResponse and tagging the methods as deprecated, we acknowledge to the
+ * compiler that these methods are deprecated, and we silence the compiler warnings.
  *
  * Created: 08-Feb-2008
  */

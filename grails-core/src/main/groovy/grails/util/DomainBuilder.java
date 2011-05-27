@@ -28,10 +28,10 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  *      def builder = new DomainBuilder()
 
         def company = builder.company(name: 'ACME') {
-            employee( name: 'Duke', employeeId: 1) {
+            employee(name: 'Duke', employeeId: 1) {
                 address(street: '123 Groovy Rd')
             }
-            employee( name: 'George', employeeId: 2)
+            employee(name: 'George', employeeId: 2)
         }
  * </code></pre>
  * @author Scott Vlaminck

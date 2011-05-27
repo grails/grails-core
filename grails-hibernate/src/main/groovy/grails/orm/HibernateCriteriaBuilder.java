@@ -127,7 +127,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
     private List<Order> orderEntries;
     private GrailsApplication grailsApplication;
 
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("rawtypes")
     public HibernateCriteriaBuilder(Class targetClass, SessionFactory sessionFactory) {
         this.targetClass = targetClass;
         this.sessionFactory = sessionFactory;
@@ -1210,7 +1210,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         ((AssociationType) type).getAssociatedEntityName((SessionFactoryImplementor) sessionFactory);
                     Class oldTargetClass = targetClass;
                     targetClass = sessionFactory.getClassMetadata(otherSideEntityName).getMappedClass(EntityMode.POJO);
-                    if(targetClass.equals(oldTargetClass) && !hasMoreThanOneArg) {
+                    if (targetClass.equals(oldTargetClass) && !hasMoreThanOneArg) {
                         joinType = CriteriaSpecification.LEFT_JOIN; // default to left join if joining on the same table
                     }
                     associationStack.add(name);
@@ -1255,7 +1255,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                 }
                 String propertyName = calculatePropertyName((String)value);
                 if (name.equals(IS_NULL)) {
-                    c = Restrictions.isNull(propertyName) ;
+                    c = Restrictions.isNull(propertyName);
                 }
                 else if (name.equals(IS_NOT_NULL)) {
                     c = Restrictions.isNotNull(propertyName);
@@ -1273,8 +1273,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             }
         }
 
-
-        throw new MissingMethodException(name, getClass(), args) ;
+        throw new MissingMethodException(name, getClass(), args);
     }
 
     private boolean isAssociationQueryMethod(Object[] args) {

@@ -57,14 +57,14 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def tagLibBean = appCtx.getBean("org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib")
         ga.config.grails.views.enable.jsessionid=true
         tagLibBean.afterPropertiesSet()
-        assertTrue( tagLibBean.@useJsessionId )
+        assertTrue(tagLibBean.@useJsessionId)
 
         def template = '<g:createLink controller="foo" action="test" />'
         assertOutputEquals "/foo/test;jsessionid=test", template
 
         ga.config.grails.views.enable.jsessionid=false
         tagLibBean.afterPropertiesSet()
-        assertFalse( tagLibBean.@useJsessionId )
+        assertFalse(tagLibBean.@useJsessionId)
         assertOutputEquals "/foo/test", template
     }
 
@@ -323,7 +323,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = /<g:join in="['Bruce', 'Adrian', 'Dave', 'Nicko', 'Steve']"\/>/
         assertOutputEquals 'Bruce, Adrian, Dave, Nicko, Steve', template
     }
-    
+
     void testImg() {
         def template = '<g:img dir="images" file="logo.png" width="100" height="200"/>'
         assertOutputEquals '<img src="/images/logo.png" width="100" height="200" />', template

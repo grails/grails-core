@@ -29,5 +29,5 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 @Target({ElementType.TYPE})
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.injection.test.MockTransformation")
 public @interface Mock {
-    Class[] value();
+    Class<?>[] value();
 }

@@ -112,46 +112,46 @@ target(packageApp : "Implementation of package target") {
     def nativeascii = config.grails.enable.native2ascii
     nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
     if (nativeascii) {
-		Thread.start {
-			profile("converting native message bundles to ascii") {
-				def ant = new AntBuilder()
-				ant.native2ascii(src:"${basedir}/grails-app/i18n",
-								 dest:i18nDir,
-								 includes:"**/*.properties",
-								 encoding:"UTF-8")
-	
-				PluginBuildSettings settings = pluginSettings
-				def i18nPluginDirs = settings.pluginI18nDirectories
-				if (i18nPluginDirs) {
-					Asynchronizer.doParallel(5) {
-						i18nPluginDirs.eachParallel { Resource srcDir ->
-							if (srcDir.exists()) {
-								def file = srcDir.file
-								def pluginDir = file.parentFile.parentFile
-								def info = settings.getPluginInfo(pluginDir.absolutePath)
-	
-								if (info) {
-									def pluginDirName = pluginDir.name
-									def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
-									try {
-										def localAnt = new AntBuilder()
-										localAnt.project.defaultInputStream = System.in
-										localAnt.mkdir(dir:destDir)
-										localAnt.native2ascii(src:file,
-														 dest:destDir,
-														 includes:"**/*.properties",
-														 encoding:"UTF-8")
-									}
-									catch (e) {
-										println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+        Thread.start {
+            profile("converting native message bundles to ascii") {
+                def ant = new AntBuilder()
+                ant.native2ascii(src:"${basedir}/grails-app/i18n",
+                                 dest:i18nDir,
+                                 includes:"**/*.properties",
+                                 encoding:"UTF-8")
+
+                PluginBuildSettings settings = pluginSettings
+                def i18nPluginDirs = settings.pluginI18nDirectories
+                if (i18nPluginDirs) {
+                    Asynchronizer.doParallel(5) {
+                        i18nPluginDirs.eachParallel { Resource srcDir ->
+                            if (srcDir.exists()) {
+                                def file = srcDir.file
+                                def pluginDir = file.parentFile.parentFile
+                                def info = settings.getPluginInfo(pluginDir.absolutePath)
+
+                                if (info) {
+                                    def pluginDirName = pluginDir.name
+                                    def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
+                                    try {
+                                        def localAnt = new AntBuilder()
+                                        localAnt.project.defaultInputStream = System.in
+                                        localAnt.mkdir(dir:destDir)
+                                        localAnt.native2ascii(src:file,
+                                                         dest:destDir,
+                                                         includes:"**/*.properties",
+                                                         encoding:"UTF-8")
+                                    }
+                                    catch (e) {
+                                        println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     else {
         ant.copy(todir:i18nDir) {
@@ -167,14 +167,13 @@ target(packageApp : "Implementation of package target") {
 
     startLogging()
 
-	
-	if(grailsSettings.modified || !webXmlFile.exists()) {
-		loadPlugins()
-		generateWebXml()	
-	}
-	else {
-		loadPluginsAsync()
-	}
+    if (grailsSettings.modified || !webXmlFile.exists()) {
+        loadPlugins()
+        generateWebXml()
+    }
+    else {
+        loadPluginsAsync()
+    }
     event("PackagingEnd",[])
 }
 

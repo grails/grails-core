@@ -375,7 +375,7 @@ public class UrlValidator implements Serializable {
         }
 
         String extra = authorityMatcher.group(PARSE_AUTHORITY_EXTRA);
-        if (extra != null && extra.trim().length() > 0){
+        if (extra != null && extra.trim().length() > 0) {
             return false;
         }
 

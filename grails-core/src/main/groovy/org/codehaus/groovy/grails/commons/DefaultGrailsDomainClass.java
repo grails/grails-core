@@ -459,7 +459,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
             property.setOneToMany(true);
             property.setBidirectional(false);
         }
-        else if (Collection.class.isAssignableFrom(relatedClassPropertyType) || Map.class.isAssignableFrom(relatedClassPropertyType) ){
+        else if (Collection.class.isAssignableFrom(relatedClassPropertyType) ||
+                 Map.class.isAssignableFrom(relatedClassPropertyType)) {
             // many-to-many
             property.setManyToMany(true);
             property.setBidirectional(true);
@@ -636,8 +637,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      */
     public GrailsDomainClassProperty getPropertyByName(String name) {
         GrailsDomainClassProperty persistentProperty = getPersistentProperty(name);
-        if(persistentProperty == null)
+        if (persistentProperty == null) {
             throw new InvalidPropertyException("No property found for name ["+name+"] for class ["+getClazz()+"]");
+        }
 
         return persistentProperty;
     }
@@ -779,9 +781,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     private ConstraintsEvaluator getConstraintsEvaluator() {
-        if(grailsApplication != null && grailsApplication.getMainContext() != null) {
+        if (grailsApplication != null && grailsApplication.getMainContext() != null) {
             final ApplicationContext context = grailsApplication.getMainContext();
-            if(context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+            if (context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
                 return context.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator.class);
             }
         }

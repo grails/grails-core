@@ -5,14 +5,7 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import spock.lang.Specification
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 01/03/2011
- * Time: 14:47
- * To change this template use File | Settings | File Templates.
- */
-class BinaryPluginSpec extends Specification{
+class BinaryPluginSpec extends Specification {
 
     def "Test creation of a binary plugin"() {
         given:

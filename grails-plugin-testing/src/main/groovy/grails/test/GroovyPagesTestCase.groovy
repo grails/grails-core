@@ -21,7 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * A test harness that eases testing of GSP and tag libraries for Grails.
- * 
+ *
  * @author Graeme Rocher
  */
 class GroovyPagesTestCase extends GroovyTestCase  {

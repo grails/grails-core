@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.plugins.support
 
 /**
- *
  * @author Graeme Rocher
  * @since 1.4
  */
@@ -47,10 +46,11 @@ class WatchPattern {
      * @return True if it does
      */
     boolean matchesPath(String path) {
-        if(file != null) {
+        if (file != null) {
             return file.equals(new File(path))
         }
-        else if(directory != null){
+
+        if (directory != null) {
             try {
                 def matchPath = /${directory.absolutePath}.+?${extension}/
                 def absolutePath = new File(path).absolutePath
@@ -58,8 +58,6 @@ class WatchPattern {
             } catch (e) {
                 // ignore
             }
-
-
         }
     }
 }

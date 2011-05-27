@@ -112,7 +112,7 @@ public class GrailsContextLoader extends ContextLoader {
 
         WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         GrailsPluginManager pluginManager = null;
-        if(ctx.containsBean(GrailsPluginManager.BEAN_NAME)) {
+        if (ctx.containsBean(GrailsPluginManager.BEAN_NAME)) {
             pluginManager = ctx.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
         }
 

@@ -182,7 +182,7 @@ public abstract class GroovyPage extends Script {
         }
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
-            if(grailsApplication == null) {
+            if (grailsApplication == null) {
                 grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
             }
         }
@@ -346,7 +346,7 @@ public abstract class GroovyPage extends Script {
 
         try {
             GroovyObject tagLib = getTagLib(tagNamespace,tagName);
-            if (tagLib != null || gspTagLibraryLookup.hasNamespace(tagNamespace) ) {
+            if (tagLib != null || gspTagLibraryLookup.hasNamespace(tagNamespace)) {
                 if (tagLib != null) {
                     boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
                     Object tagLibProp = tagLib.getProperty(tagName);
@@ -362,7 +362,7 @@ public abstract class GroovyPage extends Script {
 
                         switch (tag.getParameterTypes().length) {
                             case 1:
-                                tagresult = tag.call( new Object[]{ attrs });
+                                tagresult = tag.call(new Object[]{ attrs });
                                 if (returnsObject && tagresult != null && !(tagresult instanceof Writer)) {
                                     out.print(tagresult);
                                 }
@@ -374,7 +374,7 @@ public abstract class GroovyPage extends Script {
 
                             case 2:
                                 if (tag.getParameterTypes().length == 2) {
-                                    tagresult = tag.call( new Object[] { attrs, (body != null) ? body : EMPTY_BODY_CLOSURE });
+                                    tagresult = tag.call(new Object[] { attrs, (body != null) ? body : EMPTY_BODY_CLOSURE });
                                     if (returnsObject && tagresult != null && !(tagresult instanceof Writer)) {
                                         out.print(tagresult);
                                     }
@@ -534,7 +534,7 @@ public abstract class GroovyPage extends Script {
 
                 switch(tag.getParameterTypes().length) {
                     case 1:
-                        bodyResult = tag.call( new Object[]{ attrs });
+                        bodyResult = tag.call(new Object[]{ attrs });
                         if (actualBody != null && actualBody != EMPTY_BODY_CLOSURE) {
                             Object bodyResult2=actualBody.call();
                             if (bodyResult2 != null) {
@@ -544,7 +544,7 @@ public abstract class GroovyPage extends Script {
 
                     break;
                     case 2:
-                        bodyResult = tag.call( new Object[] { attrs, actualBody });
+                        bodyResult = tag.call(new Object[] { attrs, actualBody });
                     break;
                     default:
                         throw new GrailsTagException("Tag [" + tagName +

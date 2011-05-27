@@ -97,14 +97,12 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
         JSON.use("with-version") {
             assertEquals(
                 """{"class":"Book","id":4711,"version":0,"author":"Graeme Rocher","title":"The Definitive Guide to Grails"}""",
-                (createBook() as JSON).toString()
-            )
+                (createBook() as JSON).toString())
         }
         XML.use("with-version") {
             assertEquals(
                 """<?xml version="1.0" encoding="UTF-8"?><book id="4711" version="0"><author>Graeme Rocher</author><title>The Definitive Guide to Grails</title></book>""",
-                (createBook() as XML).toString()
-            )
+                (createBook() as XML).toString())
         }
     }
 

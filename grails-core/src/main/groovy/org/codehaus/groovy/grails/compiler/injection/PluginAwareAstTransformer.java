@@ -30,7 +30,7 @@ import java.net.URL;
 import java.util.List;
 
 /**
- * Automatically annotates each class based on the plugin it originated from
+ * Automatically annotates each class based on the plugin it originated from.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -63,7 +63,7 @@ public class PluginAwareAstTransformer implements ClassInjector {
                 return;
             }
 
-            if(classNode.isAnnotationDefinition()){
+            if (classNode.isAnnotationDefinition()) {
                 return;
             }
 

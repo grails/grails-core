@@ -36,18 +36,14 @@ target(shell:"The shell implementation target") {
 
     loadApp()
     configureApp()
-    def b = new Binding()
-    b.ctx = appCtx
-    b.grailsApplication = grailsApp
+    def b = new Binding(ctx: appCtx, grailsApplication: grailsApp)
 
     def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
-    listeners?.each { key, listener ->
-        listener.init()
-    }
+    listeners?.each { key, listener -> listener.init() }
     def shell = new Groovysh(classLoader,b, new IO(System.in, System.out, System.err))
 
-	def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
-	watcher.start()
+    def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+    watcher.start()
 
     shell.run([] as String[])
     listeners?.each { key, listener ->

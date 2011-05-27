@@ -183,7 +183,7 @@ class RenderTagLib implements RequestConstants {
      * Used to retrieve a property of the decorated page.<br/>
      *
      * &lt;g:pageProperty default="defaultValue" name="body.onload" /&gt;<br/>
-     * 
+     *
      * @attr REQUIRED name the property name
      * @attr default the default value to use if the property is null
      * @attr writeEntireProperty if true, writes the property in the form 'foo = "bar"', otherwise renders 'bar'
@@ -300,7 +300,7 @@ class RenderTagLib implements RequestConstants {
      * Creates next/previous links to support pagination for the current controller.<br/>
      *
      * &lt;g:paginate total="${Account.count()}" /&gt;<br/>
-     * 
+     *
      * @attr total REQUIRED The total number of results to paginate
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
      * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
@@ -510,7 +510,7 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:render template="atemplate" collection="${users}" /&gt;<br/>
      * &lt;g:render template="atemplate" model="[user:user,company:company]" /&gt;<br/>
      * &lt;g:render template="atemplate" bean="${user}" /&gt;<br/>
-     * 
+     *
      * @attr template REQUIRED The name of the template to apply
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
      * @attr bean The bean to apply the template against
@@ -573,18 +573,18 @@ class RenderTagLib implements RequestConstants {
                 }
                 t = engine.createTemplateForUri(templateResolveOrder as String[])
 
-                if(t == null) {
+                if (t == null) {
                     GrailsPlugin pagePlugin = pageScope.getPagePlugin()
-                    if(pagePlugin instanceof BinaryGrailsPlugin) {
+                    if (pagePlugin instanceof BinaryGrailsPlugin) {
                         def binaryView = GrailsResourceUtils.appendPiecesForUri('/WEB-INF/grails-app/views', uri)
                         def viewClass = pagePlugin.resolveView(binaryView)
-                        if(viewClass != null) {
+                        if (viewClass != null) {
                             t = engine.createTemplate(viewClass)
                         }
                     }
-                    else if(pagePlugin != null) {
+                    else if (pagePlugin != null) {
                         def pluginPath = pm?.getPluginPath(pagePlugin.getName())
-                        if(pluginPath != null) {
+                        if (pluginPath != null) {
                             t = engine.createTemplateForUri(GrailsResourceUtils.appendPiecesForUri(pluginPath, '/grails-app/views', uri))
                         }
                     }

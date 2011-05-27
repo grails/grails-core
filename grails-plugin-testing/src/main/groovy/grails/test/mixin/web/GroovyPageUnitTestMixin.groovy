@@ -27,7 +27,6 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 
 /**
- *
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
  * and GSP pages. Can be used in combination with
  * {@link grails.test.mixin.domain.DomainClassUnitTestMixin} to support the testing of
@@ -59,7 +58,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin{
     def mockTagLib(Class tagLibClass) {
         GrailsTagLibClass tagLib = grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibClass)
 
-        if(tagLibClass.getAnnotation(Enhanced)) {
+        if (tagLibClass.getAnnotation(Enhanced)) {
             defineBeans {
                 instanceTagLibraryApi(TagLibraryApi)
             }
@@ -92,16 +91,16 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin{
     String render(Map args) {
         def uri = null
         final attributes = webRequest.attributes
-        if(args.template) {
+        if (args.template) {
             uri = attributes.getTemplateUri(args.template, request)
         }
-        else if(args.view) {
+        else if (args.view) {
             uri = attributes.getViewUri(args.view, request)
         }
-        if(uri != null) {
+        if (uri != null) {
             def engine = applicationContext.getBean(GroovyPagesTemplateEngine)
             final t = engine.createTemplate(uri)
-            if(t != null) {
+            if (t != null) {
                 def sw = new StringWriter()
                 renderTemplateToStringWriter(sw, t, args.model ?: [:])
                 return sw.toString()

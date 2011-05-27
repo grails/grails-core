@@ -268,7 +268,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @return The ApplicationContext
      */
     public ApplicationContext getApplicationContext() {
-        if(applicationContext == null) {
+        if (applicationContext == null) {
             return getAttributes().getApplicationContext();
         }
         return applicationContext;
@@ -315,7 +315,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return webRequest;
     }
 
-
     /**
      * Looks up the GrailsApplication from the current request.
 
@@ -323,11 +322,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public static GrailsApplication lookupApplication() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes != null) {
-
-            if (requestAttributes instanceof GrailsWebRequest) {
-                return ((GrailsWebRequest) requestAttributes).getAttributes().getGrailsApplication();
-            }
+        if (requestAttributes instanceof GrailsWebRequest) {
+            return ((GrailsWebRequest) requestAttributes).getAttributes().getGrailsApplication();
         }
         return null;
     }

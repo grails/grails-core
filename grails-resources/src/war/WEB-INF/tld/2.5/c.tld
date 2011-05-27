@@ -4,7 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
     version="2.1">
-    
+
   <description>JSTL 1.2 core library</description>
   <display-name>JSTL core</display-name>
   <tlib-version>1.2</tlib-version>
@@ -74,7 +74,7 @@ not the body content should be processed.
         <description>
 Name of the exported scoped variable for the
 resulting value of the test condition. The type
-of the scoped variable is Boolean.        
+of the scoped variable is Boolean.
         </description>
         <name>var</name>
         <required>false</required>
@@ -328,7 +328,7 @@ visibility.
   <tag>
     <description>
         Like &lt;%= ... &gt;, but for expressions.
-    </description> 
+    </description>
     <name>out</name>
     <tag-class>org.apache.taglibs.standard.tag.rt.core.OutTag</tag-class>
     <body-content>JSP</body-content>

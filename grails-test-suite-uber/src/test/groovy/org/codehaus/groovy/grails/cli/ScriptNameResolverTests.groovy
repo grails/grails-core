@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.cli
 
 class ScriptNameResolverTests extends GroovyTestCase {
-    void testFoo(){
+    void testFoo() {
         assert ScriptNameResolver.resolvesTo('F', 'Foo')
         assert ScriptNameResolver.resolvesTo('FB', 'FooBar')
         assert ScriptNameResolver.resolvesTo('FoB', 'FooBar')

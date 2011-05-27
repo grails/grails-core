@@ -18,24 +18,22 @@ package org.codehaus.groovy.grails.web.mime
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
- /**
-* Parsed the HTTP accept header into a a list of MimeType instances in the order of priority. Priority is dictated
-* by the order of the mime entries and the associated q parameter. The higher the q parameter the higher the prioirity.
-*
-* @author Graeme Rocher
-* @since 1.0
-*/
-class DefaultAcceptHeaderParser implements AcceptHeaderParser{
+/**
+ * Parsed the HTTP accept header into a a list of MimeType instances in the order of priority.
+ * Priority is dictated by the order of the mime entries and the associated q parameter.
+ * The higher the q parameter the higher the priority.
+ *
+ * @author Graeme Rocher
+ * @since 1.0
+ */
+class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
     static final LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
 
     GrailsApplication application
     MimeType[] configuredMimeTypes
 
-
-
-    DefaultAcceptHeaderParser() {
-    }
+    DefaultAcceptHeaderParser() {}
 
     DefaultAcceptHeaderParser(GrailsApplication application) {
         this.application = application
@@ -52,22 +50,20 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
         }
 
         if (!header) {
-            if(configuredMimeTypes != null) {
+            if (configuredMimeTypes != null) {
                 return configuredMimeTypes
             }
-            else {
-                return MimeType.getConfiguredMimeTypes()
-            }
+            return MimeType.getConfiguredMimeTypes()
         }
 
         def tokens = header.split(',')
         for (t in tokens) {
-            if(t.indexOf(';') > -1) {
+            if (t.indexOf(';') > -1) {
                 t = t.split(';')
                 def params = [:]
                 t[1..-1].each {
                     def i = it.indexOf('=')
-                    if(i > -1) {
+                    if (i > -1) {
                         params[it[0..i-1].trim()] = it[i+1..-1].trim()
                     }
                 }
@@ -97,7 +93,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
 
             mimes.remove(textXml)
         }
-        else if(textXml) {
+        else if (textXml) {
             textXml.name = MimeType.XML
         }
 
@@ -120,7 +116,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser{
     }
 
     private createMimeTypeAndAddToList(name, mimeConfig, mimes, params = null) {
-        def mime = params ? new MimeType(name, params ) : new MimeType(name)
+        def mime = params ? new MimeType(name, params) : new MimeType(name)
         def ext = mimeConfig.find { it.value == name }
         if (!ext) {
             def multiMimeFormats = mimeConfig.findAll {it.value instanceof List}
@@ -139,7 +135,7 @@ class QualityComparator implements Comparator {
         def left = t.parameters.q.toBigDecimal()
         def right = t1.parameters.q.toBigDecimal()
         if (left > right) return -1
-        if(left < right ) return 1
+        if (left < right) return 1
         return 0
     }
 }

@@ -82,7 +82,7 @@
 		<mkdir dir="${lib.dir}/build"/>
 		<mkdir dir="${lib.dir}/compile"/>
 		<mkdir dir="${lib.dir}/runtime"/>
-		<mkdir dir="${lib.dir}/test"/>	
+		<mkdir dir="${lib.dir}/test"/>
 		<delete failonerror="true">
 		<fileset dir="${lib.dir}/build" includes="*/"/>
 		<fileset dir="${lib.dir}/compile" includes="*/"/>

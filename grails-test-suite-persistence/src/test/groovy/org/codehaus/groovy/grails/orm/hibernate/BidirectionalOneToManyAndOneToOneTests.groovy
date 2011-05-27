@@ -34,15 +34,14 @@ class BidirectionalOneToManyAndOneToOneUser{
         def Membership = ga.getDomainClass("BidirectionalOneToManyAndOneToOneMembership").clazz
         def user = User.newInstance()
         user.name = 'Pete'
-        user.membership = Membership.newInstance( user: user, dateCreated: new Date() )
-        user.save( failOnError : true )
+        user.membership = Membership.newInstance(user: user, dateCreated: new Date())
+        user.save(failOnError : true)
 
-        user = User.findByName( 'Pete' )
-        user.save( failOnError : true )
+        user = User.findByName('Pete')
+        user.save(failOnError : true)
         session.flush()
         session.clear()
 
-        user = User.findByName( 'Pete' )
-        user.save( failOnError : true )
+        user = User.findByName('Pete')
     }
 }

@@ -142,7 +142,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
             it.key.toString().startsWith("foo")
         }
 
-        assertEquals( [foo:"bar",foobar:"yes!"],results )
+        assertEquals([foo:"bar",foobar:"yes!"], results)
     }
 
     void testFindMethod() {
@@ -154,6 +154,6 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
         def results = request.find { it.key.toString().startsWith("bar") }
 
-        assertEquals( [bar:"foo"],results )
+        assertEquals([bar:"foo"], results)
     }
 }

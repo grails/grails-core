@@ -70,7 +70,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
             else {
                 cp = new ConstrainedProperty(targetClass, property, classPropertyFetcher.getPropertyType(property));
                 cp.setOrder(order++);
-                constrainedProperties.put( property, cp );
+                constrainedProperties.put(property, cp);
             }
 
             if (cp.getPropertyType() == null) {

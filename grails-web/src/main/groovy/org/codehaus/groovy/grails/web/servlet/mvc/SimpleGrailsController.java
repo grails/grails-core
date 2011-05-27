@@ -43,8 +43,8 @@ public class SimpleGrailsController implements Controller {
 
     private AbstractGrailsControllerHelper grailsControllerHelper;
 
-    public void setGrailsControllerHelper(AbstractGrailsControllerHelper _gch){
-        this.grailsControllerHelper = _gch;
+    public void setGrailsControllerHelper(AbstractGrailsControllerHelper gch) {
+        grailsControllerHelper = gch;
     }
 
     /**
@@ -60,7 +60,7 @@ public class SimpleGrailsController implements Controller {
         // Step 1: determine the correct URI of the request.
         String uri = urlPathHelper.getPathWithinApplication(request);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("[SimpleGrailsController] Processing request for uri ["+uri+"]");
+            LOG.debug("[SimpleGrailsController] Processing request for uri [" + uri + "]");
         }
 
         RequestAttributes ra = RequestContextHolder.getRequestAttributes();
@@ -79,5 +79,4 @@ public class SimpleGrailsController implements Controller {
         }
         return mv;
     }
-
 }

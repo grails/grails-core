@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  *
  * eg.
  * Account.findAllByHolder("Joe Blogs"); // Where class "Account" has a property called "holder"
- * Account.findAllByHolderAndBranch("Joe Blogs", "London" ); // Where class "Account" has a properties called "holder" and "branch"
+ * Account.findAllByHolderAndBranch("Joe Blogs", "London"); // Where class "Account" has a properties called "holder" and "branch"
  *
  * @author Graeme Rocher
  */

@@ -52,7 +52,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         Class<?> c = gcl.parseClass("class TestController { def list = {} }");
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl );
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl);
 
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
@@ -69,7 +69,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         // test class editor setup
         assertNotNull(ctx);
-        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader );
+        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader);
 
         // test exception resolver
         GrailsExceptionResolver er = getBean(ctx, GrailsRuntimeConfigurator.EXCEPTION_HANDLER_BEAN);
@@ -107,7 +107,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         Class<?> c = gcl.parseClass("class TestController { def scaffold = Test }");
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl );
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl);
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 
@@ -120,7 +120,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader();
         Class<?> dc = gcl.parseClass("class Test { Long id; Long version; }");
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl );
+        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 

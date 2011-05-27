@@ -29,13 +29,10 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 import java.util.Arrays;
 
 /**
- *
- * The logic for the {@link grails.artefact.ApiDelegate} location transform
+ * The logic for the {@link grails.artefact.ApiDelegate} location transform.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
- *
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class ApiDelegateTransformation implements ASTTransformation{
@@ -53,7 +50,7 @@ public class ApiDelegateTransformation implements ASTTransformation{
             final ClassNode type = fieldNode.getType();
             final ClassNode owner = fieldNode.getOwner();
             ClassNode supportedType = owner;
-            if(value instanceof ClassExpression) {
+            if (value instanceof ClassExpression) {
                 supportedType = value.getType();
             }
 

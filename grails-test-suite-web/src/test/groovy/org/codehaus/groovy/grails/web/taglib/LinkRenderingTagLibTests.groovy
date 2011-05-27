@@ -103,16 +103,14 @@ class TestUrlMappings {
         assertOutputEquals(
             "/controller/action?test=1&test=2",
             template,
-            [:]
-        )
+            [:])
 
         template = '''<g:createLink controller="controller" action="action" params="[test:['2','3']]"/>'''
 
         assertOutputEquals(
             "/controller/action?test=2&test=3",
             template,
-            [:]
-        )
+            [:])
     }
 
     void testCreateLinkWithObjectArrayParams() {
@@ -121,15 +119,13 @@ class TestUrlMappings {
         assertOutputEquals(
             "/controller/action?test=1&test=2",
             template,
-            [:]
-        )
+            [:])
 
         template = '''<g:createLink controller="controller" action="action" params="[test:['2','3'] as Object[]]"/>'''
 
         assertOutputEquals(
             "/controller/action?test=2&test=3",
             template,
-            [:]
-        )
+            [:])
     }
 }

@@ -18,9 +18,8 @@ class LinkGeneratorSpec extends Specification {
     def resource = null
     def linkParams = [:]
     def pluginManager
-    
-    def mainCssResource = [dir:'css', file:'main.css']
 
+    def mainCssResource = [dir:'css', file:'main.css']
 
     def "Test create link with root URI"() {
         when:
@@ -101,11 +100,11 @@ class LinkGeneratorSpec extends Specification {
     def "plugin paths are resolved with the plugin attribute"() {
         given:
             plugins = [CoreGrailsPlugin]
-        
+
         and:
             def pluginName = "core"
             def pluginVersion = pluginManager.getGrailsPlugin(pluginName).version
-            
+
         when:
             resource = mainCssResource + [plugin: pluginName]
 
@@ -116,7 +115,7 @@ class LinkGeneratorSpec extends Specification {
     def "link contains given explicit context path"() {
         given:
             def customContextPath = "/test"
-            
+
         when:
             resource = mainCssResource + [contextPath: customContextPath]
 
@@ -127,7 +126,7 @@ class LinkGeneratorSpec extends Specification {
     def "link has no context path if blank context supplied"() {
         given:
             def customContextPath = ""
-            
+
         when:
             resource = mainCssResource + [contextPath: customContextPath]
 
@@ -186,7 +185,7 @@ class LinkGeneratorSpec extends Specification {
     }
 
     protected getLink() {
-        if(resource != null) {
+        if (resource != null) {
             getGenerator().resource(resource)
         }
         else {
@@ -195,13 +194,12 @@ class LinkGeneratorSpec extends Specification {
     }
 
     protected getCachedLink() {
-        if(resource != null) {
+        if (resource != null) {
             getGenerator(true).resource(resource)
         }
         else {
             getGenerator(true).link(linkParams)
         }
-
     }
 
     protected setPlugins(List<Class> pluginClasses) {

@@ -68,6 +68,6 @@ public class GroovyPageBinding extends Binding {
     }
 
     public GrailsPlugin getPagePlugin() {
-        return this.plugin;
+        return plugin;
     }
 }

@@ -97,7 +97,6 @@ class ManyToManyCompositeIdAuthor implements Serializable {
         id composite:['family', 'child'], generator:'assigned'
     }
 }
-'''
-        )
+''')
     }
 }

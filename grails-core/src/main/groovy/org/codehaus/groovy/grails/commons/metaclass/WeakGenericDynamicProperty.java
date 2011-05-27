@@ -103,7 +103,9 @@ public class WeakGenericDynamicProperty extends AbstractDynamicProperty {
     public void set(Object object, Object newValue) {
         if (!readyOnly) {
             if (type.isInstance(newValue)) {
-                propertyToInstanceMap.put(String.valueOf(System.identityHashCode(object)) + getPropertyName(), new SoftReference<Object>(newValue) );
+                propertyToInstanceMap.put(
+                      String.valueOf(System.identityHashCode(object)) + getPropertyName(),
+                      new SoftReference<Object>(newValue));
             }
             else if (newValue != null) {
                 throw new MissingPropertyException("Property '" + getPropertyName() + "' for object '" +

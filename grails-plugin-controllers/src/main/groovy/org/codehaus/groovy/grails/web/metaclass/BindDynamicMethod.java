@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
  *
  * <code>
  *         def a = new Account()
- *         bindData( a, this.params )
+ *         bindData(a, this.params)
  * </code>
  *
  * @author Graeme Rocher

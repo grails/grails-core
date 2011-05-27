@@ -21,7 +21,7 @@ import org.springframework.web.util.HtmlUtils;
 
 /**
  * Encodes and decodes strings to and from HTML.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.1
  */

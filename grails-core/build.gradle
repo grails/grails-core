@@ -17,16 +17,15 @@ dependencies {
             "org.springframework:spring-test:${springVersion}",
             "org.springframework:spring-web:${springVersion}"
 
-
     runtime 'oro:oro:2.0.8'
-    runtime( 'cglib:cglib-nodep:2.1_3') // Used to generate proxies for classes via Spring AOP
+    runtime 'cglib:cglib-nodep:2.1_3' // Used to generate proxies for classes via Spring AOP
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
     runtime "org.springframework:spring-jms:${springVersion}"
     runtime 'xalan:serializer:2.7.1'
-    
+
     agent "com.springsource.springloaded:springloaded-core:$springLoadedVersion"
 
     compile "org.springframework:spring-tx:${springVersion}"

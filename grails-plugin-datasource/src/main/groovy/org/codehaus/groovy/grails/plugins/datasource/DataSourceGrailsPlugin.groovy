@@ -70,8 +70,8 @@ class DataSourceGrailsPlugin {
         abstractGrailsDataSourceBean {
             def driver = ds?.driverClassName ? ds.driverClassName : "org.h2.Driver"
             final hsqldbDriver = "org.hsqldb.jdbcDriver"
-            if(hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
-                throw new GrailsConfigurationException( "Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 1.4 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy    or add HSQLDB as a dependency of your application." )
+            if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
+                throw new GrailsConfigurationException("Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 1.4 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy    or add HSQLDB as a dependency of your application.")
             }
             driverClassName = driver
             url = ds?.url ? ds.url : "jdbc:h2:mem:grailsDB"
@@ -133,7 +133,7 @@ class DataSourceGrailsPlugin {
             def dataSourceProperties = ds.properties
             if (dataSourceProperties != null) {
                 if (dataSourceProperties instanceof Map) {
-                    for(entry in dataSourceProperties) {
+                    for (entry in dataSourceProperties) {
                         log.debug("Setting property on dataSource bean ${entry.key} -> ${entry.value}")
                         delegate."${entry.key}" = entry.value
                     }
@@ -201,7 +201,7 @@ class DataSourceGrailsPlugin {
     }
 
     def onChange = { event ->
-        if(event.source) {
+        if (event.source) {
             final application = event.application
             final slurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application)
 

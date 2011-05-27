@@ -18,14 +18,35 @@ import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+
+import java.lang.reflect.Modifier;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
-import org.hibernate.*;
+import org.hibernate.Criteria;
+import org.hibernate.EntityMode;
+import org.hibernate.FetchMode;
+import org.hibernate.FlushMode;
+import org.hibernate.Hibernate;
+import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.SessionImplementor;
@@ -36,14 +57,10 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.property.Getter;
 import org.hibernate.property.Setter;
 import org.hibernate.proxy.HibernateProxy;
-import org.hibernate.type.AbstractComponentType;
+import org.hibernate.type.CompositeType;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
-
-import java.lang.reflect.Modifier;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * Utility methods for configuring Hibernate inside Grails.
@@ -85,10 +102,8 @@ public class GrailsHibernateUtil {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
-        ArtefactHandler artefactHandler = application.getArtefactHandler(DomainClassArtefactHandler.TYPE);
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
             configureDomainClass(sessionFactory, application, classMetadata,
@@ -120,7 +135,6 @@ public class GrailsHibernateUtil {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application,
                                              ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap) {
 
@@ -139,7 +153,6 @@ public class GrailsHibernateUtil {
             dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
         }
     }
-
 
     /**
      * Populates criteria arguments for the given target class and arguments map
@@ -197,7 +210,7 @@ public class GrailsHibernateUtil {
             c.setCacheable(true);
         }
         if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_LOCK, argMap)) {
-            c.setLockMode(LockMode.UPGRADE);
+            c.setLockMode(LockMode.PESSIMISTIC_WRITE);
         }
         else {
             if (argMap.get(ARGUMENT_CACHE) == null) {
@@ -228,6 +241,7 @@ public class GrailsHibernateUtil {
      *
      * @deprecated Use {@link #populateArgumentsForCriteria(org.codehaus.groovy.grails.commons.GrailsApplication, Class, org.hibernate.Criteria, java.util.Map)} instead
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Class<?> targetClass, Criteria c, Map argMap) {
         populateArgumentsForCriteria(null, targetClass, c, argMap);
@@ -260,10 +274,10 @@ public class GrailsHibernateUtil {
      */
     private static void addOrder(Criteria c, String sort, String order, boolean ignoreCase) {
         if (ORDER_DESC.equals(order)) {
-            c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
+            c.addOrder(ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
         }
         else {
-            c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
+            c.addOrder(ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort));
         }
     }
 
@@ -457,7 +471,7 @@ public class GrailsHibernateUtil {
             proxyFactory.postInstantiate(persistentClass.getEntityName(), javaClass, proxyInterfaces,
                     idGetter.getMethod(), idSetter.getMethod(),
                     persistentClass.hasEmbeddedIdentifier() ?
-                            (AbstractComponentType) persistentClass.getIdentifier().getType() :
+                            (CompositeType) persistentClass.getIdentifier().getType() :
                             null);
         }
         catch (HibernateException e) {

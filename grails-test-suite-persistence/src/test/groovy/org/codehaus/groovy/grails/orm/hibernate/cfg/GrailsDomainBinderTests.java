@@ -410,8 +410,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "       testString1 insertable:false \n" +
                 "       testString2 insertable:true \n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
                 new Class[] { domainClass.getClazz() });
@@ -442,8 +441,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "       testString1 updateable:false \n" +
                 "       testString2 updateable:true \n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
                 new Class[] { domainClass.getClazz() });
@@ -471,8 +469,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "       testString1 insertable:false, updateable:false \n" +
                 "       testString2 updateable:false, insertable:false \n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
                 new Class[] { domainClass.getClazz() });
@@ -608,8 +605,8 @@ public class GrailsDomainBinderTests extends TestCase {
                 "        lastName(nullable:false)\n" +
                 "        age(nullable:true)\n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
+
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl, cl.getLoadedClasses());
 
         // Test database mappings
@@ -635,8 +632,7 @@ public class GrailsDomainBinderTests extends TestCase {
                         "    Long version \n" +
                         "    String name \n" +
                         "    String description \n" +
-                        "}")
-        );
+                        "}"));
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
                 cl.parseClass(
                         "class TestManySide {\n" +
@@ -650,8 +646,7 @@ public class GrailsDomainBinderTests extends TestCase {
                         "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
                         "        }\n" +
                         "    }\n" +
-                        "}")
-        );
+                        "}"));
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
             new Class[]{ oneClass.getClazz(), domainClass.getClazz() });
@@ -771,8 +766,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "    Long version \n" +
                 "    String fooName \n" +
                 "    String barDescriPtion \n" +
-                "}")
-        );
+                "}"));
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
             cl.parseClass(
                 "class TestManySide {\n" +
@@ -785,8 +779,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
                 "        }\n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
                 new Class[]{ oneClass.getClazz(), domainClass.getClazz() });
@@ -833,8 +826,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "    Long version \n" +
                 "    String fooName \n" +
                 "    String barDescriPtion \n" +
-                "}")
-        );
+                "}"));
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
             cl.parseClass(
                 "class TestManySide {\n" +
@@ -847,8 +839,7 @@ public class GrailsDomainBinderTests extends TestCase {
                 "            testOneSide column:'EXPECTED_COLUMN_NAME'" +
                 "        }\n" +
                 "    }\n" +
-                "}")
-        );
+                "}"));
 
         DefaultGrailsDomainConfiguration config = getDomainConfig(cl,
                 new Class[] { oneClass.getClazz(), domainClass.getClazz() });
@@ -898,7 +889,7 @@ public class GrailsDomainBinderTests extends TestCase {
 
     private Table getTableMapping(String tablename, DefaultGrailsDomainConfiguration config) {
         Table result = null;
-        for (Iterator<?> tableMappings = config.getTableMappings(); tableMappings.hasNext(); ) {
+        for (Iterator<?> tableMappings = config.getTableMappings(); tableMappings.hasNext();) {
             Table table = (Table) tableMappings.next();
             if (tablename.equals(table.getName())) {
                 result = table;
@@ -918,7 +909,7 @@ public class GrailsDomainBinderTests extends TestCase {
     private void assertForeignKey(String parentTablename, String childTablename, DefaultGrailsDomainConfiguration config) {
         boolean fkFound = false;
         Table childTable = getTableMapping(childTablename, config);
-        for (Iterator<?> fks = childTable.getForeignKeyIterator(); fks.hasNext(); ) {
+        for (Iterator<?> fks = childTable.getForeignKeyIterator(); fks.hasNext();) {
             ForeignKey fk = (ForeignKey) fks.next();
             if (parentTablename.equals(fk.getReferencedTable().getName())) {
                 fkFound = true;

@@ -24,26 +24,28 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 /**
- * Enhances controller classes with the appropriate API at compile time
+ * Enhances controller classes with the appropriate API at compile time.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 @AstTransformer
 public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
-    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/"+ GrailsResourceUtils.GRAILS_APP_DIR+"/controllers/(.+)Controller\\.groovy");
+
+    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
+             GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
+
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return ControllersApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;  // No static api
     }
 
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
-
     }
 }

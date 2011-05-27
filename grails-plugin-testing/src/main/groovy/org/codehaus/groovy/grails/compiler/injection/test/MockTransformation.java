@@ -28,7 +28,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
- *
  * Used by the {@link grails.test.mixin.Mock} local transformation to add mocking capabilities for the given classes
  *
  * @author Graeme Rocher
@@ -38,7 +37,6 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 public class MockTransformation extends TestForTransformation{
     private static final ClassNode MY_TYPE = new ClassNode(Mock.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
-
 
     @Override
     public void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -62,11 +60,10 @@ public class MockTransformation extends TestForTransformation{
         ListExpression values = getListOfClasses(node);
 
         for (Expression expression : values.getExpressions()) {
-            if(expression instanceof ClassExpression) {
+            if (expression instanceof ClassExpression) {
                 ClassExpression ce = (ClassExpression) expression;
 
                 weaveMock(classNode,ce, false);
-
             }
         }
     }

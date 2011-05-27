@@ -40,6 +40,6 @@ class MenuController {
 
         def model = controller.save()
 
-        assertEquals( ['rice', 'soup'], model.menu.items )
+        assertEquals(['rice', 'soup'], model.menu.items)
     }
 }

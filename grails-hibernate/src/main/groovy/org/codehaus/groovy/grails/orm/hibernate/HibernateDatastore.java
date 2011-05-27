@@ -26,43 +26,36 @@ import java.util.Map;
 
 /**
  * Datastore implementation that uses a Hibernate SessionFactory underneath
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
- * 
  */
-public class HibernateDatastore extends AbstractDatastore  {
+public class HibernateDatastore extends AbstractDatastore {
 
-	private SessionFactory sessionFactory;
-	
-	
-	public HibernateDatastore(MappingContext mappingContext,
-			SessionFactory sessionFactory, ApplicationContext applicationContext) {
-		super(mappingContext);
-		this.sessionFactory = sessionFactory;
-		super.initializeConverters(mappingContext);
+    private SessionFactory sessionFactory;
+
+    public HibernateDatastore(MappingContext mappingContext,
+            SessionFactory sessionFactory, ApplicationContext applicationContext) {
+        super(mappingContext);
+        this.sessionFactory = sessionFactory;
+        super.initializeConverters(mappingContext);
         setApplicationContext(applicationContext);
-	}
-	
-	
+    }
 
-	/**
-	 * @return The Hibernate {@link SessionFactory} being used by this datastore instance
-	 */
-	public SessionFactory getSessionFactory() {
-		return sessionFactory;
-	}
+    /**
+     * @return The Hibernate {@link SessionFactory} being used by this datastore instance
+     */
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
 
-
-
-
-	@Override
-	protected Session createSession(Map<String, String> connectionDetails) {
-		return new HibernateSession(this, this.sessionFactory);
-	}
+    @Override
+    protected Session createSession(@SuppressWarnings("hiding") Map<String, String> connectionDetails) {
+        return new HibernateSession(this, sessionFactory);
+    }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if(!(applicationContext instanceof ConfigurableApplicationContext)) {
+        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
             throw new IllegalArgumentException("ApplicationContext must be an instanceof ConfigurableApplicationContext");
         }
         super.setApplicationContext((ConfigurableApplicationContext) applicationContext);

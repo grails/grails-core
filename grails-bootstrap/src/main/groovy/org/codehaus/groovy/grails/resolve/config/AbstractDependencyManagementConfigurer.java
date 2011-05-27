@@ -18,7 +18,7 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import groovy.lang.GroovyObjectSupport;
 
 abstract class AbstractDependencyManagementConfigurer extends GroovyObjectSupport {
-    
+
     protected final DependencyConfigurationContext context;
 
     public AbstractDependencyManagementConfigurer(DependencyConfigurationContext context) {
@@ -26,10 +26,10 @@ abstract class AbstractDependencyManagementConfigurer extends GroovyObjectSuppor
     }
 
     public IvyDependencyManager getDependencyManager() {
-        return this.context.dependencyManager;
+        return context.dependencyManager;
     }
-    
+
     public DependencyConfigurationContext getContext() {
-        return this.context;
+        return context;
     }
 }

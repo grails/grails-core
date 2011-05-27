@@ -15,7 +15,15 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import groovy.lang.*;
+import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+
+import java.io.Writer;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
@@ -30,8 +38,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.io.Writer;
 
 /**
  * API for Tag libraries in a Grails application
@@ -96,7 +102,6 @@ public class TagLibraryApi extends CommonWebApi {
         GroovyPageOutputStack.currentStack().push(newOut,true);
     }
 
-
     /**
      * Method missing implementation that handles tag invocation by method name
      *
@@ -109,15 +114,15 @@ public class TagLibraryApi extends CommonWebApi {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
         String usednamespace = getNamespace(instance);
-        TagLibraryLookup tagLibraryLookup = getTagLibraryLookup();
-        Object tagLibrary = tagLibraryLookup.lookupTagLibrary(usednamespace, methodName);
+        TagLibraryLookup lookup = getTagLibraryLookup();
+        Object tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName);
         if (tagLibrary == null) {
-            tagLibrary = tagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
+            tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
             usednamespace = GroovyPage.DEFAULT_NAMESPACE;
         }
 
-        if(tagLibrary != null) {
-            WebMetaUtils.registerMethodMissingForTags(mc, tagLibraryLookup, usednamespace, methodName);
+        if (tagLibrary != null) {
+            WebMetaUtils.registerMethodMissingForTags(mc, lookup, usednamespace, methodName);
         }
         if (mc.respondsTo(instance, methodName, args).size()>0) {
             return mc.invokeMethod(instance, methodName, args);
@@ -146,12 +151,10 @@ public class TagLibraryApi extends CommonWebApi {
                 tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name);
             }
 
-            if(tagLibrary != null) {
-
+            if (tagLibrary != null) {
                 Object tagProperty = tagLibrary.getProperty(name);
-                if(tagProperty instanceof Closure) {
-
-                    result = ((Closure)tagProperty).clone() ;
+                if (tagProperty instanceof Closure) {
+                    result = ((Closure<?>)tagProperty).clone();
                 }
             }
         }
@@ -167,9 +170,9 @@ public class TagLibraryApi extends CommonWebApi {
 
     private String getNamespace(Object instance) {
         GrailsApplication grailsApplication = getGrailsApplication(null);
-        if(grailsApplication != null) {
+        if (grailsApplication != null) {
             GrailsTagLibClass taglibrary = (GrailsTagLibClass) grailsApplication.getArtefact(TagLibArtefactHandler.TYPE, instance.getClass().getName());
-            if(taglibrary != null) {
+            if (taglibrary != null) {
                 return taglibrary.getNamespace();
             }
         }
@@ -177,9 +180,9 @@ public class TagLibraryApi extends CommonWebApi {
     }
 
     public TagLibraryLookup getTagLibraryLookup() {
-        if(this.tagLibraryLookup == null) {
+        if (this.tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);
-            if(applicationContext != null) {
+            if (applicationContext != null) {
                 tagLibraryLookup = applicationContext.getBean(TagLibraryLookup.class);
             }
         }

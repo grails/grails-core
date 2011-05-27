@@ -18,10 +18,41 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
-import groovy.lang.*;
-import groovy.util.ConfigObject;
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyShell;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.Writer;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletContext;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,16 +73,6 @@ import org.springframework.util.Assert;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import javax.servlet.ServletContext;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.util.*;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -101,11 +122,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private ServletContext servletContext;
     private Map<String, Set<GrailsPlugin>> pluginToObserverMap = new HashMap<String, Set<GrailsPlugin>>();
 
-    private long configLastModified;
     private PluginFilter pluginFilter;
     private static final String GRAILS_PLUGIN_SUFFIX = "GrailsPlugin";
     private List<GrailsPlugin> userPlugins = new ArrayList<GrailsPlugin>();
-    private ConfigObject config;
 
     public DefaultGrailsPluginManager(String resourcePath, GrailsApplication application) {
         super(application);
@@ -172,6 +191,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     /**
      * @deprecated Will be removed in a future version of Grails
      */
+    @Deprecated
     public void startPluginChangeScanner() {
         // do nothing
     }
@@ -179,6 +199,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     /**
      * @deprecated Will be removed in a future version of Grails
      */
+    @Deprecated
     public void stopPluginChangeScanner() {
         // do nothing
     }
@@ -323,13 +344,13 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
 
         List<GrailsPlugin> grailsCorePlugins = new ArrayList<GrailsPlugin>();
 
-        final Class[] corePluginClasses = finder.getPluginClasses();
+        final Class<?>[] corePluginClasses = finder.getPluginClasses();
 
-        for (Class pluginClass : corePluginClasses) {
+        for (Class<?> pluginClass : corePluginClasses) {
             if (pluginClass != null && !Modifier.isAbstract(pluginClass.getModifiers()) && pluginClass != DefaultGrailsPlugin.class) {
                 final BinaryGrailsPluginDescriptor binaryDescriptor = finder.getBinaryDescriptor(pluginClass);
                 GrailsPlugin plugin;
-                if(binaryDescriptor != null) {
+                if (binaryDescriptor != null) {
                     plugin = createBinaryGrailsPlugin(pluginClass, binaryDescriptor);
                 }
                 else {
@@ -621,10 +642,10 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     /**
      * @deprecated Replaced by agent-based reloading, will be removed in a future version of Grails
      */
+    @Deprecated
     public void checkForChanges() {
         // do nothing
     }
-
 
     public void reloadPlugin(GrailsPlugin plugin) {
         plugin.doArtefactConfiguration();

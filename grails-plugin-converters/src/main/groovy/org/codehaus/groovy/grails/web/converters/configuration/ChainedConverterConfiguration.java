@@ -97,8 +97,8 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         }
 
         public ObjectMarshaller<C> findMarhallerFor(Object o) {
-            if (supports(o)){
-                return this.om;
+            if (supports(o)) {
+                return om;
             }
 
             return next != null ? next.findMarhallerFor(o) : null;
@@ -114,6 +114,6 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
     }
 
     public ProxyHandler getProxyHandler() {
-        return this.proxyHandler;
+        return proxyHandler;
     }
 }

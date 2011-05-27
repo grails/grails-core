@@ -62,7 +62,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         this.pluginManager = pluginManager;
         this.compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
-        if(ClassUtils.isPresent(SPRING_LOADED_PLUGIN_CLASS, getClass().getClassLoader())) {
+        if (ClassUtils.isPresent(SPRING_LOADED_PLUGIN_CLASS, getClass().getClassLoader())) {
             GrailsPluginManagerReloadPlugin.register();
         }
     }
@@ -79,10 +79,10 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
      * Fire any pending class change events
      * @param updatedClass The class to update
      */
-    public static void firePendingClassChangeEvents(Class updatedClass) {
-        if(updatedClass != null) {
+    public static void firePendingClassChangeEvents(Class<?> updatedClass) {
+        if (updatedClass != null) {
             ClassUpdate classUpdate = classChangeEventQueue.remove(updatedClass.getName());
-            if(classUpdate != null) {
+            if (classUpdate != null) {
                   classUpdate.run(updatedClass);
             }
         }
@@ -97,7 +97,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
         for (Resource pluginSourceFile : pluginSourceFiles) {
             try {
-                if(pluginSourceFile.getFile().isDirectory()) {
+                if (pluginSourceFile.getFile().isDirectory()) {
                     addWatchDirectory(pluginSourceFile.getFile(), compilerExtensions);
                 }
             } catch (IOException e) {
@@ -108,7 +108,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         addListener(new FileChangeListener() {
             public void onChange(File file) {
                 LOG.info("File ["+file+"] changed. Applying changes to application.");
-                if(descriptorToPluginMap.containsKey(file)) {
+                if (descriptorToPluginMap.containsKey(file)) {
                     reloadPlugin(file);
                 }
                 else {
@@ -132,7 +132,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
             // watch the plugin descriptor for changes
             GrailsPluginInfo info = compiler.getPluginSettings().getPluginInfoForName(plugin.getFileSystemShortName());
 
-            if(info != null && info.getDescriptor() != null) {
+            if (info != null && info.getDescriptor() != null) {
                 try {
                     Resource descriptor = info.getDescriptor();
                     plugin.setDescriptor(descriptor);
@@ -144,12 +144,12 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
                 }
             }
             List<WatchPattern> watchPatterns = plugin.getWatchedResourcePatterns();
-            if(watchPatterns != null) {
+            if (watchPatterns != null) {
                 for (WatchPattern watchPattern : watchPatterns) {
-                    if(watchPattern.getFile() != null) {
+                    if (watchPattern.getFile() != null) {
                         addWatchFile(watchPattern.getFile());
                     }
-                    else if(watchPattern.getDirectory() != null) {
+                    else if (watchPattern.getDirectory() != null) {
                         addWatchDirectory(watchPattern.getDirectory(),watchPattern.getExtension());
                     }
                 }
@@ -162,13 +162,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
     private void reloadPlugin(File file) {
         GrailsPlugin grailsPlugin = descriptorToPluginMap.get(file);
         grailsPlugin.refresh();
-        if(pluginManager instanceof DefaultGrailsPluginManager) {
+        if (pluginManager instanceof DefaultGrailsPluginManager) {
             ((DefaultGrailsPluginManager)pluginManager).reloadPlugin(grailsPlugin);
         }
     }
 
     private void informPluginManager(final File file, boolean isNew) {
-        if(!isSourceFile(file) || isNew) {
+        if (!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);
             } catch (Exception e) {
@@ -178,10 +178,10 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
         else {
             // add to class change event queue
             String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
-            if(className != null) {
+            if (className != null) {
 
                 classChangeEventQueue.put(className, new ClassUpdate() {
-                    public void run(Class cls) {
+                    public void run(Class<?> cls) {
                         try {
                             pluginManager.informOfClassChange(file, cls);
                         } catch (Exception e) {
@@ -195,7 +195,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
 
     private void compileIfSource(File file) {
         try {
-            if(isSourceFile(file)) {
+            if (isSourceFile(file)) {
                 compiler.compileAll();
                 ClassPropertyFetcher.clearClassPropertyFetcherCache();
             }
@@ -222,13 +222,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
 
     private boolean isSourceFile(File file) {
         for (String compilerExtension : compilerExtensions) {
-            if(file.getName().endsWith(compilerExtension))
+            if (file.getName().endsWith(compilerExtension)) {
                 return true;
+            }
         }
         return false;
     }
 
     private interface ClassUpdate {
-        void run(Class cls);
+        void run(Class<?> cls);
     }
 }

@@ -35,11 +35,11 @@ class FlowBuilderExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertCurrentStateEquals "displayResults"
 
         def model = getFlowScope()
-        assertEquals( ["foo", "bar"],model.results)
+        assertEquals(["foo", "bar"],model.results)
 
         signalEvent("return")
         assertCurrentStateEquals "displaySearchForm"
@@ -52,7 +52,7 @@ class FlowBuilderExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "errorView"
     }

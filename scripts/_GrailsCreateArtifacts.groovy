@@ -30,9 +30,9 @@ createArtifact = { Map args = [:] ->
     def suffix = args["suffix"]
 
     def type = args["type"]
-	if(type) {
-		lastType = type		
-	}
+    if (type) {
+        lastType = type
+    }
 
     def artifactPath = args["path"]
 
@@ -74,7 +74,7 @@ createArtifact = { Map args = [:] ->
         }
     }
 
-	def templatePath = args["templatePath"] ?: 'templates/artifacts'
+    def templatePath = args["templatePath"] ?: 'templates/artifacts'
     // first check for presence of template in application
     templateFile = new FileSystemResource("${basedir}/src/${templatePath}/${type ?: lastType}.groovy")
     if (!templateFile.exists()) {

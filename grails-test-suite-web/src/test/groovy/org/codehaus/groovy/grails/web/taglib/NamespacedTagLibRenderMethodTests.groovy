@@ -10,7 +10,7 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 class NamespacedTagLibRenderMethodTests extends AbstractGrailsTagTests {
 
     protected void onInit() {
-        def tagClass = gcl.parseClass( '''
+        def tagClass = gcl.parseClass('''
 class WithNamespaceTagLib {
 
     static namespace = "ns1"

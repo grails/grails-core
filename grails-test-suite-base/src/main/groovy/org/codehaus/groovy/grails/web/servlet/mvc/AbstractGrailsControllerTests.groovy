@@ -99,13 +99,12 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         request.characterEncoding = "utf-8"
         response = new GrailsMockHttpServletResponse()
         webRequest = GrailsWebUtil.bindMockWebRequest(appCtx, request, response)
-        
     }
 
     protected setCurrentController(controller) {
         RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
     }
-    
+
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()

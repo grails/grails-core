@@ -44,8 +44,7 @@ public class ToStringBeanMarshaller implements ObjectMarshaller<XML> {
     @SuppressWarnings("unchecked")
     public ToStringBeanMarshaller() {
         classes = Collections.unmodifiableSet(new HashSet<Class<?>>(Arrays.asList(
-                Currency.class, TimeZone.class, Locale.class, URL.class
-        )));
+                Currency.class, TimeZone.class, Locale.class, URL.class)));
     }
 
     public boolean supports(Object object) {

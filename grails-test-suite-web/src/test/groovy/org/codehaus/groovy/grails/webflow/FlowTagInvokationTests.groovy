@@ -15,7 +15,7 @@ class FlowTagInvokationTests extends AbstractGrailsTagAwareFlowExecutionTests {
     void testRegularTagInvokation() {
         request[GrailsApplicationAttributes.CONTROLLER] = ga.getControllerClass("TestController").newInstance()
         startFlow()
-        signalEvent( 'two' )
+        signalEvent('two')
 
         def model = getFlowScope()
 
@@ -24,7 +24,7 @@ class FlowTagInvokationTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
     void testNamespacedTagInvokation() {
         startFlow()
-        signalEvent( 'three' )
+        signalEvent('three')
 
         def model = getFlowScope()
         assertEquals '<a href="/foo/bar?execution=1"></a>',model.theLink
@@ -42,10 +42,10 @@ class TestController {
     Closure getFlowClosure() {
         return {
             one {
-                on('two'){
+                on('two') {
                     [theLink:link(controller:"foo", action:"bar")?.toString()]
                 }.to 'two'
-                on('three'){
+                on('three') {
                     [theLink:g.link(controller:"foo", action:"bar")?.toString()]
                 }.to 'three'
             }

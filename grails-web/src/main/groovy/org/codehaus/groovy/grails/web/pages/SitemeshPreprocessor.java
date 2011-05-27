@@ -43,7 +43,7 @@ public class SitemeshPreprocessor {
             sb.append("</sitemesh:captureHead>");
             m.appendTail(sb);
         }
-        else if (!bodyPattern.matcher(gspSource).find()){
+        else if (!bodyPattern.matcher(gspSource).find()) {
             // no body either, so replace meta & title in the entire gsp source
             // fix title in sub-template -problem
             sb.append(addMetaCapturing(addTitleCapturing(gspSource)));

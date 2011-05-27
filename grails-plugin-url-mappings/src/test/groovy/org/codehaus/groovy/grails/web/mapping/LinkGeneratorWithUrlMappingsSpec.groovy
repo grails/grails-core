@@ -16,16 +16,16 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
     def mappings = {
         "/${this.path}"(this.action)
     }
-    
+
     def link = null
-    
+
     protected getGenerator() {
         def generator = new DefaultLinkGenerator(baseUrl, context)
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         generator.urlMappingsHolder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappings ?: {}))
         generator
     }
-    
+
     protected getUri() {
         generator.link(link)
     }

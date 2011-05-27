@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 public class DependencyConfigurationContext {
-    
+
     final public IvyDependencyManager dependencyManager;
     final public String pluginName;
     final public boolean inherited;
@@ -30,7 +30,7 @@ public class DependencyConfigurationContext {
         this.dependencyManager = dependencyManager;
         this.pluginName = pluginName;
         this.inherited = inherited;
-        if(pluginName != null) {
+        if (pluginName != null) {
             DependencyDescriptor pluginDependencyDescriptor = dependencyManager.getPluginDependencyDescriptor(pluginName);
             exported = Metadata.getCurrent().getInstalledPlugins().containsKey(pluginName) ||
                         !(pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) ||
@@ -39,19 +39,17 @@ public class DependencyConfigurationContext {
         else {
             exported = true;
         }
-
     }
-    
+
     static public DependencyConfigurationContext forApplication(IvyDependencyManager dependencyManager) {
         return new DependencyConfigurationContext(dependencyManager, null, false);
     }
-    
+
     static public DependencyConfigurationContext forPlugin(IvyDependencyManager dependencyManager, String pluginName) {
         return new DependencyConfigurationContext(dependencyManager, pluginName, false);
     }
-    
+
     public DependencyConfigurationContext createInheritedContext() {
         return new DependencyConfigurationContext(dependencyManager, pluginName, true);
     }
-    
 }

@@ -1,68 +1,65 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencyCache = {
-	def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
-	copy {
-		from( cacheLocation ) {
-			def dependencyIncludes = [] as Set
-			def includeClosure = { artifact ->
-				def dependency = artifact.getResolvedDependency()
-				def file = artifact.file
+    def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
+    copy {
+        from(cacheLocation) {
+            def dependencyIncludes = [] as Set
+            def includeClosure = { artifact ->
+                def dependency = artifact.getResolvedDependency()
+                def file = artifact.file
                     dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
                     dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
                     dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
                 }
-			for(project in subprojects) {
-				project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
-				project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
-				project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
-				project.configurations.findByName("agent")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
-			}
-			includes = dependencyIncludes as List
-          exclude "org.grails/**"
-		}
-		into "$projectDir/lib"
-	}
-	copy {
-	    from ( cacheLocation ) {
-	        includes = ['org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-*.jar', 
-						'org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-*.jar']
-	    }
-	    into "$projectDir/lib"
-	}
-
+            for (project in subprojects) {
+                project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
+                project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
+                project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
+                project.configurations.findByName("agent")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
+            }
+            includes = dependencyIncludes as List
+            exclude "org.grails/**"
+        }
+        into "$projectDir/lib"
+    }
+    copy {
+        from (cacheLocation) {
+            includes = ['org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-*.jar', 
+                        'org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-*.jar']
+        }
+        into "$projectDir/lib"
+    }
 }
 
 task populateDependencies {
-	doFirst dependencyCache
+    doFirst dependencyCache
 }
 
 task libs(dependsOn: getTasksByName("assemble", true))  {
-	doFirst dependencyCache
+    doFirst dependencyCache
 
     destinationDir = 'dist'
-	doLast {
-		copy {
-			for(project in subprojects) {
-				from( project.libsDir ) {
-					include "*-${grailsVersion}.jar"
-				}
-			}
-			into 'dist'
-		}
-		copy {
-			from("$projectDir/grails-resources") {
-				include 'src/grails', 'src/war'
-			}
-			into projectDir
-		}
-
-	}
+    doLast {
+        copy {
+            for (project in subprojects) {
+                from(project.libsDir) {
+                    include "*-${grailsVersion}.jar"
+                }
+            }
+            into 'dist'
+        }
+        copy {
+            from("$projectDir/grails-resources") {
+                include 'src/grails', 'src/war'
+            }
+            into projectDir
+        }
+    }
 }
 
 libs.inputs.files(subprojects.configurations.compile, subprojects.configurations.runtime)
 libs.outputs.files(fileTree("lib"))
-
 
 task pluginsFromSvn {
     dir = "$buildDir/pluginsFromSvn"
@@ -72,12 +69,11 @@ task pluginsFromSvn {
     doFirst {
         ant {
             mkdir(dir: dir)
-			def versionTag = grailsVersion.replaceAll(/\./, '_').toUpperCase()
+            def versionTag = grailsVersion.replaceAll(/\./, '_').toUpperCase()
             get(src: "http://svn.codehaus.org/grails-plugins/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${grailsVersion}.zip",
-                    dest: grailsHibernateDest, verbose: true, usetimestamp: true)
+                dest: grailsHibernateDest, verbose: true, usetimestamp: true)
             get(src: "http://svn.codehaus.org/grails-plugins/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${grailsVersion}.zip",
-                    dest: grailsTomcatDest, verbose: true, usetimestamp: true)
-
+                dest: grailsTomcatDest, verbose: true, usetimestamp: true)
         }
     }
 }
@@ -90,19 +86,17 @@ distSpec = copySpec {
         include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties', 'dependencies.txt',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
         exclude 'ant/bin'
-
     }
-	from("grails-resources") {
-		into "grails-$grailsVersion"
-		include 'src/grails/**', 'src/war/**'
+    from("grails-resources") {
+        into "grails-$grailsVersion"
+        include 'src/grails/**', 'src/war/**'
         // this file is accounted for later with special handling to do some token replacement
         exclude 'src/grails/grails-macros.xml'
-
-	}
+    }
     from(projectDir) {
-    	into "grails-$grailsVersion"
-    	include "gradlew"
-    	fileMode = 0755
+        into "grails-$grailsVersion"
+        include "gradlew"
+        fileMode = 0755
     }
     from(docs.destinationDir) {
         into "grails-$grailsVersion/doc"
@@ -122,18 +116,17 @@ distSpec = copySpec {
     from("grails-resources/src/grails/home/bash") {
         into "grails-$grailsVersion/bin"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-		filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
         fileMode = 0755
     }
     from("grails-resources/src/grails/home/conf") {
         into "grails-$grailsVersion/conf"
-      	filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         filter(ReplaceTokens, tokens: ['ant.version': antVersion])
         filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
         filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
-
     }
     from(libs.destinationDir) {
         into "grails-$grailsVersion/dist"
@@ -147,9 +140,9 @@ distSpec = copySpec {
 
 task zipDist(type: Zip,dependsOn:libs) {
     from distSpec
-	destinationDir = "${buildDir}/distributions" as File
-	baseName = 'grails'
-	appendix = grailsVersion
+    destinationDir = "${buildDir}/distributions" as File
+    baseName = 'grails'
+    appendix = grailsVersion
 }
 
 /*task zipDoc(type: Zip) {

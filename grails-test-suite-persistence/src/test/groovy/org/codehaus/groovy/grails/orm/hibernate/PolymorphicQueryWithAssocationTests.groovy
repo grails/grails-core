@@ -35,7 +35,7 @@ class PolymorphicQueryWithAssocationSpecialBase extends PolymorphicQueryWithAsso
         def specialBaseClass = ga.getDomainClass("PolymorphicQueryWithAssocationSpecialBase").clazz
 
         def p = personClass.newInstance().save()
-        assertNotNull hyperBaseClass.newInstance( person: p).save()
+        assertNotNull hyperBaseClass.newInstance(person: p).save()
         assertNotNull specialBaseClass.newInstance(person: p).save()
 
         assertEquals personClass.findAll().size(), 1

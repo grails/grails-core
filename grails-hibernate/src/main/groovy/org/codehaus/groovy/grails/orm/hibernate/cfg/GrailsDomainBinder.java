@@ -367,7 +367,7 @@ public final class GrailsDomainBinder {
 
                 referenced.addProperty(prop);
             }
-            if((!list.getKey().isNullable() && !list.isInverse()) || compositeIdProperty) {
+            if ((!list.getKey().isNullable() && !list.isInverse()) || compositeIdProperty) {
                 IndexBackref ib = new IndexBackref();
                 ib.setName(UNDERSCORE + property.getName() + "IndexBackref");
                 ib.setUpdateable(false);
@@ -837,7 +837,7 @@ public final class GrailsDomainBinder {
     private static void linkBidirectionalOneToMany(Collection collection, PersistentClass associatedClass, DependantValue key, GrailsDomainClassProperty otherSide) {
         collection.setInverse(true);
 
-        //        Iterator mappedByColumns = associatedClass.getProperty( otherSide.getName() ).getValue().getColumnIterator();
+        //        Iterator mappedByColumns = associatedClass.getProperty(otherSide.getName()).getValue().getColumnIterator();
         Iterator<?> mappedByColumns = getProperty(associatedClass, otherSide.getName()).getValue().getColumnIterator();
         while (mappedByColumns.hasNext()) {
             Column column = (Column) mappedByColumns.next();
@@ -968,8 +968,7 @@ public final class GrailsDomainBinder {
                 mappings.getCatalogName(),
                 tableName,
                 null,
-                false
-        );
+                false);
         collection.setCollectionTable(t);
     }
 
@@ -1361,11 +1360,11 @@ public final class GrailsDomainBinder {
 
         entity.setPolymorphic(true);
     }
-    
+
     private static void configureDerivedProperties(GrailsDomainClass domainClass, Mapping m) {
-        for(GrailsDomainClassProperty prop : domainClass.getPersistentProperties()) {
+        for (GrailsDomainClassProperty prop : domainClass.getPersistentProperties()) {
             PropertyConfig propertyConfig = m.getPropertyConfig(prop.getName());
-            if(propertyConfig != null && propertyConfig.getFormula() != null) {
+            if (propertyConfig != null && propertyConfig.getFormula() != null) {
                 prop.setDerived(true);
             }
         }
@@ -1387,7 +1386,7 @@ public final class GrailsDomainBinder {
             CacheConfig cc = m.getCache();
             if (cc != null && cc.getEnabled()) {
                 root.setCacheConcurrencyStrategy(cc.getUsage());
-                if("read-only".equals(cc.getUsage())) {
+                if ("read-only".equals(cc.getUsage())) {
                     root.setMutable(false);
                 }
                 root.setLazyPropertiesCacheable(!"non-lazy".equals(cc.getInclude()));
@@ -1420,8 +1419,7 @@ public final class GrailsDomainBinder {
                 catalog,
                 getTableName(domainClass),
                 null,
-                false
-        );
+                false);
         root.setTable(table);
 
         if (LOG.isDebugEnabled())
@@ -1781,8 +1779,7 @@ public final class GrailsDomainBinder {
                     currentGrailsProp,
                     persistentClass,
                     path,
-                    mappings
-            );
+                    mappings);
             mappings.addCollection(collection);
             value = collection;
         }
@@ -1828,7 +1825,7 @@ public final class GrailsDomainBinder {
             component.addProperty(persistentProperty);
             if (isComponentPropertyNullable(componentProperty)) {
                 final Iterator<?> columnIterator = value.getColumnIterator();
-                while(columnIterator.hasNext()) {
+                while (columnIterator.hasNext()) {
                     Column c = (Column) columnIterator.next();
                     c.setNullable(true);
                 }
@@ -1950,9 +1947,9 @@ public final class GrailsDomainBinder {
         final GrailsDomainClassProperty otherSide = property.getOtherSide();
 
         oneToOne.setConstrained(otherSide.isHasOne());
-        oneToOne.setForeignKeyType( oneToOne.isConstrained() ?
-                                    ForeignKeyDirection.FOREIGN_KEY_FROM_PARENT :
-                                    ForeignKeyDirection.FOREIGN_KEY_TO_PARENT);
+        oneToOne.setForeignKeyType(oneToOne.isConstrained() ?
+                                   ForeignKeyDirection.FOREIGN_KEY_FROM_PARENT :
+                                   ForeignKeyDirection.FOREIGN_KEY_TO_PARENT);
         oneToOne.setAlternateUniqueKey(true);
 
         if (config != null && config.getFetch() != null) {
@@ -2047,7 +2044,7 @@ public final class GrailsDomainBinder {
             id.setIdentifierGeneratorStrategy("native");
         }
 
-        params.put( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, mappings.getObjectNameNormalizer() );
+        params.put(PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, mappings.getObjectNameNormalizer());
 
         if (mappings.getSchemaName() != null) {
             params.setProperty(PersistentIdentifierGenerator.SCHEMA, mappings.getSchemaName());
@@ -2353,7 +2350,7 @@ public final class GrailsDomainBinder {
                 else
                     column.setNullable(true);
             }
-            else if ((property.isManyToOne() || property.isOneToOne()) && property.isCircular() ) {
+            else if ((property.isManyToOne() || property.isOneToOne()) && property.isCircular()) {
                 column.setNullable(true);
             }
             else {
@@ -2362,7 +2359,7 @@ public final class GrailsDomainBinder {
         }
         else {
             column.setName(columnName);
-            column.setNullable(property.isOptional() || (parentProperty != null && parentProperty.isOptional() ));
+            column.setNullable(property.isOptional() || (parentProperty != null && parentProperty.isOptional()));
 
             // Use the constraints for this property to more accurately define
             // the column's length, precision, and scale
@@ -2632,15 +2629,13 @@ public final class GrailsDomainBinder {
         if ((minConstraintValue != null) && (minConstraintValue instanceof Number)) {
             minConstraintValueLength = Math.max(
                     countDigits((Number) minConstraintValue),
-                    countDigits(new Long(((Number) minConstraintValue).longValue())) + scale
-            );
+                    countDigits(new Long(((Number) minConstraintValue).longValue())) + scale);
         }
         int maxConstraintValueLength = 0;
         if ((maxConstraintValue != null) && (maxConstraintValue instanceof Number)) {
             maxConstraintValueLength = Math.max(
                     countDigits((Number) maxConstraintValue),
-                    countDigits(new Long(((Number) maxConstraintValue).longValue())) + scale
-            );
+                    countDigits(new Long(((Number) maxConstraintValue).longValue())) + scale);
         }
 
         if (minConstraintValueLength > 0 && maxConstraintValueLength > 0) {

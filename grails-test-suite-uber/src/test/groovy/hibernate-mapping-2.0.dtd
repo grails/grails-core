@@ -1,14 +1,14 @@
 <!-- Hibernate Mapping DTD.
 
-<!DOCTYPE hibernate-mapping PUBLIC 
+<!DOCTYPE hibernate-mapping PUBLIC
 	"-//Hibernate/Hibernate Mapping DTD 2.0//EN"
 	"http://hibernate.sourceforge.net/hibernate-mapping-2.0.dtd">
 
-An instance of this XML document may contain mappings for an arbitrary 
+An instance of this XML document may contain mappings for an arbitrary
 number of classes. The class mappings may contain associations to classes
-mapped in the same document or in another document. No class may be 
+mapped in the same document or in another document. No class may be
 mapped more than once. Each document may also contain definitions of an
-arbitrary number of queries, and import declarations of arbitrary classes. 
+arbitrary number of queries, and import declarations of arbitrary classes.
 
 -->
 
@@ -20,7 +20,7 @@ arbitrary number of queries, and import declarations of arbitrary classes.
   <!ATTLIST hibernate-mapping default-access CDATA "property">
   <!ATTLIST hibernate-mapping auto-import (true|false) "true">
   <!ATTLIST hibernate-mapping package CDATA #IMPLIED>                           <!-- default: none -->
-  
+
 <!-- An explicit query language "import" -->
 
 <!ELEMENT import EMPTY>
@@ -29,13 +29,13 @@ arbitrary number of queries, and import declarations of arbitrary classes.
 
 <!-- Root of an entity class hierarchy. Entities have their own tables. -->
 
-<!ELEMENT class ( 
+<!ELEMENT class (
   meta*,
   (cache|jcs-cache)?,
   (id|composite-id),
   discriminator?,
   (version|timestamp)?,
-  (property|many-to-one|one-to-one|component|dynamic-component|any|map|set|list|bag|idbag|array|primitive-array)*, 
+  (property|many-to-one|one-to-one|component|dynamic-component|any|map|set|list|bag|idbag|array|primitive-array)*,
   ((subclass*)|(joined-subclass*))
 )>
   <!ATTLIST class name CDATA #REQUIRED>
@@ -56,8 +56,8 @@ arbitrary number of queries, and import declarations of arbitrary classes.
   <!ATTLIST class check CDATA #IMPLIED>                        <!-- default: none -->
 
 <!-- Declares the id type, column and generation algorithm for an entity class.
-If a name attribut is given, the id is exposed to the application through the 
-named property of the class. If not, the id is only exposed to the application 
+If a name attribut is given, the id is exposed to the application through the
+named property of the class. If not, the id is only exposed to the application
 via Session.getIdentifier() -->
 
 <!ELEMENT id (meta*, column*, generator)>
@@ -68,15 +68,15 @@ via Session.getIdentifier() -->
   <!ATTLIST id length CDATA #IMPLIED>
   <!ATTLIST id unsaved-value CDATA "null">          <!-- any|none|null|0|-1|... -->
 
-<!-- A composite key may be modelled by a java class with a property for each 
-key column. The class must implement java.io.Serializable and reimplement equals() 
+<!-- A composite key may be modelled by a java class with a property for each
+key column. The class must implement java.io.Serializable and reimplement equals()
 and hashCode(). -->
 
 <!ELEMENT composite-id ( meta*, (key-property|key-many-to-one)+ )>
   <!ATTLIST composite-id class CDATA #IMPLIED>
   <!ATTLIST composite-id name CDATA #IMPLIED>
   <!ATTLIST composite-id access CDATA #IMPLIED>
-  <!ATTLIST composite-id unsaved-value (any|none) "none"> 
+  <!ATTLIST composite-id unsaved-value (any|none) "none">
 
 <!-- Polymorphic data requires a column holding a class discriminator value. This
 value is not directly exposed to the application. -->
@@ -88,7 +88,7 @@ value is not directly exposed to the application. -->
   <!ATTLIST discriminator length CDATA #IMPLIED>
   <!ATTLIST discriminator force (true|false) "false">
   <!ATTLIST discriminator insert (true|false) "true">
-  
+
 <!-- Versioned data requires a column holding a version number. This is exposed to the
 application through a property of the Java class. -->
 
@@ -108,9 +108,9 @@ application through a property of the Java class. -->
 <!-- Subclass declarations are nested beneath the root class declaration to achieve
 polymorphic persistence. -->
 
-<!ELEMENT subclass ( 
+<!ELEMENT subclass (
 	meta*,
-	(property|many-to-one|one-to-one|component|dynamic-component|any|map|set|list|bag|idbag|array|primitive-array)*, 
+	(property|many-to-one|one-to-one|component|dynamic-component|any|map|set|list|bag|idbag|array|primitive-array)*,
 	subclass*
 )>
   <!ATTLIST subclass name CDATA #REQUIRED>
@@ -125,10 +125,10 @@ polymorphic persistence. -->
 
 <!-- Joined subclasses are used for the normalized table-per-subclass mapping strategy -->
 
-<!ELEMENT joined-subclass ( 
+<!ELEMENT joined-subclass (
 	meta*,
 	key,
-	(property|many-to-one|one-to-one|component|dynamic-component|any|map|set|list|bag|idbag|array|primitive-array)*, 
+	(property|many-to-one|one-to-one|component|dynamic-component|any|map|set|list|bag|idbag|array|primitive-array)*,
 	joined-subclass*
 )>
   <!ATTLIST joined-subclass name CDATA #REQUIRED>
@@ -142,8 +142,8 @@ polymorphic persistence. -->
   <!ATTLIST joined-subclass lazy (true|false) #IMPLIED>
   <!ATTLIST joined-subclass persister CDATA #IMPLIED>
   <!ATTLIST joined-subclass check CDATA #IMPLIED>         <!-- default: none -->
-  
-<!-- Property of an entity class or component, component-element, composite-id, etc. 
+
+<!-- Property of an entity class or component, component-element, composite-id, etc.
 JavaBeans style properties are mapped to table columns. -->
 
 <!ELEMENT property (meta*,column*)>
@@ -176,8 +176,8 @@ etc. to an entity). -->
   <!ATTLIST many-to-one foreign-key CDATA #IMPLIED>
   <!ATTLIST many-to-one property-ref CDATA #IMPLIED>
   <!ATTLIST many-to-one index CDATA #IMPLIED>         <!-- include the columns spanned by this association in an index -->
-    
-<!-- Declares a one-to-one association between two entities (Or from a component, 
+
+<!-- Declares a one-to-one association between two entities (Or from a component,
 component element, etc. to an entity). -->
 
 <!ELEMENT one-to-one (meta*)>
@@ -199,7 +199,7 @@ component element, etc. to an entity). -->
   <!ATTLIST key-property column CDATA #IMPLIED>
   <!ATTLIST key-property length CDATA #IMPLIED>
 
-<!-- A many-to-one association embedded in a composite identifier or map index 
+<!-- A many-to-one association embedded in a composite identifier or map index
 (always not-null, never cascade). -->
 
 <!ELEMENT key-many-to-one (meta*,column*)>
@@ -210,7 +210,7 @@ component element, etc. to an entity). -->
   <!ATTLIST key-many-to-one foreign-key CDATA #IMPLIED>
 
 <!-- An "any" association is a polymorphic association to any table with
-the given identifier type. The first listed column is a VARCHAR column 
+the given identifier type. The first listed column is a VARCHAR column
 holding the name of the class (for that row). -->
 
 <!ELEMENT any (meta*,meta-value*,column,column+)>
@@ -258,14 +258,14 @@ the owning entity. -->
 <!ELEMENT parent EMPTY>
   <!ATTLIST parent name CDATA #REQUIRED>
 
-<!-- Collection declarations nested inside a class declaration indicate a foreign key 
+<!-- Collection declarations nested inside a class declaration indicate a foreign key
 relationship from the collection table to the enclosing class. -->
 
 <!ELEMENT map (
 	meta*,
 	(cache|jcs-cache)?,
-	key, 
-	(index|composite-index|index-many-to-many|index-many-to-any), 
+	key,
+	(index|composite-index|index-many-to-many|index-many-to-any),
 	(element|one-to-many|many-to-many|composite-element|many-to-any)
 )>
   <!ATTLIST map name CDATA #REQUIRED>
@@ -280,13 +280,13 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST map where CDATA #IMPLIED>                              <!-- default: none -->
   <!ATTLIST map batch-size CDATA "1">
   <!ATTLIST map outer-join (true|false|auto) "auto">
-  <!ATTLIST map check CDATA #IMPLIED>                              <!-- default: none -->  
-  <!ATTLIST map persister CDATA #IMPLIED>                            
-  
+  <!ATTLIST map check CDATA #IMPLIED>                              <!-- default: none -->
+  <!ATTLIST map persister CDATA #IMPLIED>
+
 <!ELEMENT set (
 	meta*,
 	(cache|jcs-cache)?,
-	key, 
+	key,
 	(element|one-to-many|many-to-many|composite-element|many-to-any)
 )>
   <!ATTLIST set name CDATA #REQUIRED>
@@ -301,13 +301,13 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST set where CDATA #IMPLIED>                              <!-- default: none -->
   <!ATTLIST set batch-size CDATA "1">
   <!ATTLIST set outer-join (true|false|auto) "auto">
-  <!ATTLIST set persister CDATA #IMPLIED>                            
+  <!ATTLIST set persister CDATA #IMPLIED>
   <!ATTLIST set check CDATA #IMPLIED>                              <!-- default: none -->
 
 <!ELEMENT bag (
 	meta*,
 	(cache|jcs-cache)?,
-	key, 
+	key,
 	(element|one-to-many|many-to-many|composite-element|many-to-any)
 )>
   <!ATTLIST bag name CDATA #REQUIRED>
@@ -321,14 +321,14 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST bag where CDATA #IMPLIED>                              <!-- default: none -->
   <!ATTLIST bag batch-size CDATA "1">
   <!ATTLIST bag outer-join (true|false|auto) "auto">
-  <!ATTLIST bag persister CDATA #IMPLIED>                              
+  <!ATTLIST bag persister CDATA #IMPLIED>
   <!ATTLIST bag check CDATA #IMPLIED>                              <!-- default: none -->
 
 <!ELEMENT idbag (
 	meta*,
 	(cache|jcs-cache)?,
 	collection-id,
-	key, 
+	key,
 	(element|many-to-many|composite-element|many-to-any)
 )>
   <!ATTLIST idbag name CDATA #REQUIRED>
@@ -341,14 +341,14 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST idbag where CDATA #IMPLIED>                              <!-- default: none -->
   <!ATTLIST idbag batch-size CDATA "1">
   <!ATTLIST idbag outer-join (true|false|auto) "auto">
-  <!ATTLIST idbag persister CDATA #IMPLIED>                              
+  <!ATTLIST idbag persister CDATA #IMPLIED>
   <!ATTLIST idbag check CDATA #IMPLIED>                              <!-- default: none -->
 
 <!ELEMENT list (
 	meta*,
 	(cache|jcs-cache)?,
-	key, 
-	index, 
+	key,
+	index,
 	(element|one-to-many|many-to-many|composite-element|many-to-any)
 )>
   <!ATTLIST list name CDATA #REQUIRED>
@@ -361,14 +361,14 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST list where CDATA #IMPLIED>                             <!-- default: none -->
   <!ATTLIST list batch-size CDATA "1">
   <!ATTLIST list outer-join (true|false|auto) "auto">
-  <!ATTLIST list persister CDATA #IMPLIED>                                
+  <!ATTLIST list persister CDATA #IMPLIED>
   <!ATTLIST list check CDATA #IMPLIED>                             <!-- default: none -->
 
 <!ELEMENT array (
 	meta*,
 	(cache|jcs-cache)?,
-	key, 
-	index, 
+	key,
+	index,
 	(element|one-to-many|many-to-many|composite-element|many-to-any)
 )>
   <!ATTLIST array name CDATA #REQUIRED>
@@ -381,7 +381,7 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST array where CDATA #IMPLIED>                            <!-- default: none -->
   <!ATTLIST array batch-size CDATA "1">
   <!ATTLIST array outer-join (true|false|auto) "auto">
-  <!ATTLIST array persister CDATA #IMPLIED>                              
+  <!ATTLIST array persister CDATA #IMPLIED>
   <!ATTLIST array check CDATA #IMPLIED>                            <!-- default: none -->
 
 <!ELEMENT primitive-array (meta*, (cache|jcs-cache)?, key, index, element)>
@@ -392,7 +392,7 @@ relationship from the collection table to the enclosing class. -->
   <!ATTLIST primitive-array where CDATA #IMPLIED>                  <!-- default: none -->
   <!ATTLIST primitive-array batch-size CDATA "1">
   <!ATTLIST primitive-array outer-join (true|false|auto) "auto">
-  <!ATTLIST primitive-array persister CDATA #IMPLIED>                                
+  <!ATTLIST primitive-array persister CDATA #IMPLIED>
   <!ATTLIST primitive-array check CDATA #IMPLIED>                  <!-- default: none -->
 
 <!-- Declares the element type of a collection of basic type -->
@@ -422,33 +422,33 @@ element type of a collection and specifies a many-to-many relational model -->
   <!ATTLIST many-to-many foreign-key CDATA #IMPLIED>
   <!-- unique makes no sense here since it would make the association one-to-many -->
 
-<!-- A composite element allows a collection to hold instances of an arbitrary 
+<!-- A composite element allows a collection to hold instances of an arbitrary
 class, without the requirement of joining to an entity table. Composite elements
-have component semantics - no shared references and ad hoc null value semantics. 
+have component semantics - no shared references and ad hoc null value semantics.
 Composite elements may not hold nested collections. -->
 
-<!ELEMENT composite-element ( 
+<!ELEMENT composite-element (
   (meta*),
   parent?,
-  (property|many-to-one|any|nested-composite-element)* 
+  (property|many-to-one|any|nested-composite-element)*
 )>
   <!ATTLIST composite-element class CDATA #REQUIRED>
 
-<!ELEMENT nested-composite-element ( 
+<!ELEMENT nested-composite-element (
   (meta*),
   parent?,
-  (property|many-to-one|any|nested-composite-element)* 
+  (property|many-to-one|any|nested-composite-element)*
 )>
   <!ATTLIST nested-composite-element class CDATA #REQUIRED>
   <!ATTLIST nested-composite-element name CDATA #REQUIRED>
   <!ATTLIST nested-composite-element access CDATA #IMPLIED>
-  
+
 <!-- Declares the column name of a foreign key. -->
 
 <!ELEMENT key (column*)>
   <!ATTLIST key column CDATA #IMPLIED>
   <!ATTLIST key foreign-key CDATA #IMPLIED>
-  
+
 <!-- Declares the type and column mapping for a collection index (array or
 list index, or key of a map). -->
 
@@ -470,8 +470,8 @@ on entities. -->
 <!ELEMENT composite-index ( (key-property|key-many-to-one)+ )>
   <!ATTLIST composite-index class CDATA #REQUIRED>
 
-<!-- A "many to any" defines a polymorphic association to any table 
-with the given identifier type. The first listed column is a VARCHAR column 
+<!-- A "many to any" defines a polymorphic association to any table
+with the given identifier type. The first listed column is a VARCHAR column
 holding the name of the class (for that row). -->
 
 <!ELEMENT many-to-any (meta-value*,column, column+)>
@@ -486,8 +486,8 @@ holding the name of the class (for that row). -->
   <!ATTLIST collection-id column CDATA #REQUIRED>
   <!ATTLIST collection-id type CDATA #REQUIRED>
   <!ATTLIST collection-id length CDATA #IMPLIED>
-  
-<!-- Generators generate unique identifiers. The class attribute specifies a Java 
+
+<!-- Generators generate unique identifiers. The class attribute specifies a Java
 class implementing an id generation algorithm. -->
 
 <!ELEMENT generator (param*)>
@@ -495,7 +495,7 @@ class implementing an id generation algorithm. -->
 <!ELEMENT param (#PCDATA)>
   <!ATTLIST param name CDATA #REQUIRED>
 
-<!-- The column element is an alternative to column attributes and required for 
+<!-- The column element is an alternative to column attributes and required for
 mapping associations to classes with composite ids. -->
 
 <!ELEMENT column EMPTY>
@@ -510,9 +510,9 @@ mapping associations to classes with composite ids. -->
 
 <!-- The cache or jcs-cache element enables caching of an entity class. -->
 <!ELEMENT cache EMPTY>
-  <!ATTLIST cache usage (read-only|read-write|nonstrict-read-write|transactional) #REQUIRED>        
+  <!ATTLIST cache usage (read-only|read-write|nonstrict-read-write|transactional) #REQUIRED>
 <!ELEMENT jcs-cache EMPTY>
-  <!ATTLIST jcs-cache usage (read-only|read-write|nonstrict-read-write|transactional) #REQUIRED>      <!-- deprecated -->  
+  <!ATTLIST jcs-cache usage (read-only|read-write|nonstrict-read-write|transactional) #REQUIRED>      <!-- deprecated -->
 
 <!-- The query element declares a named Hibernate query string -->
 
@@ -531,7 +531,7 @@ mapping associations to classes with composite ids. -->
 <!ELEMENT sql-query (#PCDATA|return|synchronize)*>
   <!ATTLIST sql-query name CDATA #REQUIRED>
 
-  
+
 <!-- The meta element is used to assign meta-level attributes to a class or property.
  Is currently used by codegenerator as a placeholder for values that is not directly
  related to OR mappings. -->
@@ -539,4 +539,4 @@ mapping associations to classes with composite ids. -->
 <!ELEMENT meta (#PCDATA)>
   <!ATTLIST meta attribute CDATA #REQUIRED>
   <!ATTLIST meta inherit (true|false) "true">
- 
+

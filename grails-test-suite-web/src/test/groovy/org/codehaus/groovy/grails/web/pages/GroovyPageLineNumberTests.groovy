@@ -32,7 +32,7 @@ class GroovyPageLineNumberTests extends AbstractGrailsTagTests {
 
         template = '<g:link name="blah" controller="foo" action="${remoteFunction(action:\'bar\', params:\'\\\'grp=\\\' + encodeURIComponent(this.value)\')}"></g:link>'
         JavascriptTagLib.PROVIDER_MAPPINGS["test"] = TestProvider
-		request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
         printCompiledSource template
 
         // test will fail if compilation fails
@@ -54,7 +54,7 @@ class GroovyPageLineNumberTests extends AbstractGrailsTagTests {
         }
         catch (GroovyPagesException e) {
             def cause = e.cause
-            while(cause != cause.cause && cause.cause) {
+            while (cause != cause.cause && cause.cause) {
                 cause = cause.cause
             }
             assertTrue "The cause should have been a NPE but was ${cause}", cause instanceof NullPointerException

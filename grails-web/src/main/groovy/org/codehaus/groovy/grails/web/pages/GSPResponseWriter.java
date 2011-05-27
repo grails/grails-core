@@ -79,7 +79,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
             }
             streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() {
                 public Writer getWriter() throws IOException {
-                    return response.getWriter(); 
+                    return response.getWriter();
                 }
             }, AUTOFLUSH_ENABLED);
         }

@@ -41,7 +41,7 @@ public class ConvertersControllersTransformer extends AbstractGrailsArtefactTran
     }
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return ConvertersControllersApi.class;
     }
 
@@ -51,7 +51,7 @@ public class ConvertersControllersTransformer extends AbstractGrailsArtefactTran
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;
     }
 

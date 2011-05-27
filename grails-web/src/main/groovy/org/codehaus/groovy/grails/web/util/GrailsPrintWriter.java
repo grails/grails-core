@@ -67,7 +67,7 @@ public class GrailsPrintWriter extends PrintWriter {
     public Writer getFinalTarget() {
         Writer wrapped = getOut();
         if (!isFinalTargetHere()) {
-            while(wrapped instanceof GrailsPrintWriter) {
+            while (wrapped instanceof GrailsPrintWriter) {
                 wrapped = ((GrailsPrintWriter)wrapped).getFinalTarget();
             }
         }
@@ -128,7 +128,7 @@ public class GrailsPrintWriter extends PrintWriter {
         if (trouble) return;
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("I/O exception in GrailsPrintWriter: " + e.getMessage(),e  );
+            LOG.debug("I/O exception in GrailsPrintWriter: " + e.getMessage(), e);
         }
         trouble = true;
         setError();

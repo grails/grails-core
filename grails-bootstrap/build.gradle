@@ -1,4 +1,5 @@
 import org.apache.tools.ant.filters.ReplaceTokens
+
 dependencies {
     compile "org.springframework:spring-core:${springVersion}",
             "org.springframework:spring-beans:${springVersion}",
@@ -7,7 +8,7 @@ dependencies {
             "org.springframework:spring-context-support:${springVersion}"
 
 
-    compile( "org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE" ) {
+    compile("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {
         // Explicitly exclude OSGIified dependencies - GRAILS-7525
         // Have to use excludes instead of transitive = false - GRADLE-1574
         ["protobuf-java-lite", "json-simple", "bcpg-jdk15", "bcprov-jdk15"].each { dep ->
@@ -19,17 +20,13 @@ dependencies {
     compile 'com.google.protobuf:protobuf-java:2.3.0',
             'com.googlecode.json-simple:json-simple:1.1',
             "org.bouncycastle:bcpg-jdk15:1.45"
-    
-    
+
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile 'commons-cli:commons-cli:1.2'
 
-
-
-    compile( 'org.codehaus.gpars:gpars:0.9' ) {
+    compile('org.codehaus.gpars:gpars:0.9') {
         exclude module:'netty'
     }
-
 
     // Ant
     compile "org.apache.ant:ant:${antVersion}",
@@ -42,8 +39,6 @@ dependencies {
     runtime 'org.coconut.forkjoin:jsr166y:070108', // Dependency for parallel execution in Gpars
             'org.fusesource.jansi:jansi:1.2.1',
             'jline:jline:0.9.94'
-
-
 }
 
 processResources{

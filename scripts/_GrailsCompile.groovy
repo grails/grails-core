@@ -38,7 +38,7 @@ target(setCompilerSettings: "Updates the compile build settings based on args") 
 
     if (argsMap.containsKey('verboseCompile')) {
         grailsSettings.verboseCompile = argsMap.verboseCompile as boolean
-		projectCompiler.verbose = grailsSettings.verboseCompile
+        projectCompiler.verbose = grailsSettings.verboseCompile
     }
 }
 
@@ -47,11 +47,11 @@ target(compile : "Implementation of compilation phase") {
 
     profile("Compiling sources to location [$classesDirPath]") {
         try {
-			projectCompiler.compile(grailsSettings.classesDir)
+            projectCompiler.compile(grailsSettings.classesDir)
         }
         catch (Exception e) {
-			grails.util.GrailsUtil.deepSanitize(e)
-			e.printStackTrace()
+            grails.util.GrailsUtil.deepSanitize(e)
+            e.printStackTrace()
             event("StatusFinal", ["Compilation error: ${e.message}"])
             exit(1)
         }
@@ -67,7 +67,7 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
     profile("Compiling sources to location [$classesDirPath]") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-		projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
+        projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
     }
 }
 
@@ -77,5 +77,5 @@ target(compilepackage : "Compile & Compile GSP files") {
 }
 
 target(compilegsp : "Compile GSP files") {
-	projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
+    projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
 }

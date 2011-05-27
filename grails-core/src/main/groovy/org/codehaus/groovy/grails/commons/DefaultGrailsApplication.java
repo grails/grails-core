@@ -26,7 +26,13 @@ import groovy.util.ConfigObject;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.security.AccessControlException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,17 +40,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
@@ -92,7 +95,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected List<Class<?>> allArtefactClasses = new ArrayList<Class<?>>();
     protected Map<String, ArtefactInfo> artefactInfo = new HashMap<String, ArtefactInfo>();
     protected Class<?>[] allArtefactClassesArray;
-    @SuppressWarnings("rawtypes")
     protected Metadata applicationMeta = Metadata.getCurrent();
     protected Resource[] resources;
     protected boolean initialised = false;
@@ -376,7 +378,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         this.config = config;
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getFlatConfig() {
         return config != null ? config.flatten() : Collections.<String, String>emptyMap();
     }
@@ -823,7 +825,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         return initialised;
     }
 
-    @SuppressWarnings("rawtypes")
     public Metadata getMetadata() {
         return applicationMeta;
     }
@@ -842,8 +843,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public boolean isWarDeployed() {
-        Metadata metadata = (Metadata) getMetadata();
-        return metadata.isWarDeployed();
+        return getMetadata().isWarDeployed();
     }
 
     public void setBeanClassLoader(ClassLoader classLoader) {

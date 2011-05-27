@@ -92,9 +92,9 @@ class FiltersGrailsPlugin {
         while (list.size() > 0) {
             def filtersAdded = 0;
 
-            LOG.debug("Current filter order is '"+filterConfigs.join(",")+"'")
+            LOG.debug("Current filter order is '${filterConfigs.join(",")}'")
 
-            for (Iterator iter = list.iterator(); iter.hasNext(); ) {
+            for (Iterator iter = list.iterator(); iter.hasNext();) {
                 def c = iter.next();
                 def filterClass = applicationContext.getBean("${c.fullName}Class")
                 def bean = applicationContext.getBean(c.fullName)
@@ -177,7 +177,7 @@ class FiltersGrailsPlugin {
         for (c in sortedFilterConfigs) {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
             def bean = applicationContext.getBean(c.fullName)
-            if(filterClass != null) {
+            if (filterClass != null) {
                 for (filterConfig in filterClass.getConfigs(bean)) {
                     applicationContext.autowireCapableBeanFactory.autowireBean(filterConfig)
                     def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)

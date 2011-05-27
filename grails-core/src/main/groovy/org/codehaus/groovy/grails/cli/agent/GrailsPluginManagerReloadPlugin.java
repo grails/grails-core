@@ -22,8 +22,7 @@ import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.springframework.beans.CachedIntrospectionResults;
 
 /**
- *
- * Reloading agent plugin for use with the GrailsPluginManager
+ * Reloading agent plugin for use with the GrailsPluginManager.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -37,11 +36,10 @@ public class GrailsPluginManagerReloadPlugin implements ReloadEventProcessorPlug
     public void reloadEvent(String typename, Class<?> aClass, String encodedTimestamp) {
         CachedIntrospectionResults.clearClassLoader(aClass.getClassLoader());
         ClassPropertyFetcher.clearClassPropertyFetcherCache();
-        if(!aClass.getName().contains("$")) {
+        if (!aClass.getName().contains("$")) {
             GrailsProjectWatcher.firePendingClassChangeEvents(aClass);
         }
     }
-
 
     public static void register() {
         Plugins.registerGlobalPlugin(new GrailsPluginManagerReloadPlugin());

@@ -55,13 +55,12 @@ eventListener.initialize()
 
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
 event = {String name, args ->
-	try {
-    	eventListener.triggerEvent(name, * args)		
-	}
-	catch(e) {
-		println "Exception occurred trigger event [$name]: ${e.message}"
-	}
-
+    try {
+        eventListener.triggerEvent(name, * args)
+    }
+    catch(e) {
+        println "Exception occurred trigger event [$name]: ${e.message}"
+    }
 }
 
 // Give scripts a chance to modify classpath

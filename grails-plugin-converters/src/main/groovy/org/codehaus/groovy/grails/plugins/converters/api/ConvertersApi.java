@@ -22,14 +22,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
- *
- * The API for converting objects to target types such as XML
+ * The API for converting objects to target types such as XML.
  *
  * @since 1.4
  * @author Graeme Rocher
  */
 public class ConvertersApi implements ApplicationContextAware {
-
 
     private ApplicationContext applicationContext;
 
@@ -40,7 +38,7 @@ public class ConvertersApi implements ApplicationContextAware {
      * @param clazz The type to convert to
      * @return the converted object
      */
-    public Object asType(Object instance, Class clazz) {
+    public Object asType(Object instance, Class<?> clazz) {
         if (ConverterUtil.isConverterClass(clazz)) {
             return ConverterUtil.createConverter(clazz, instance, getApplicationContext());
         }
@@ -48,9 +46,9 @@ public class ConvertersApi implements ApplicationContextAware {
     }
 
     public ApplicationContext getApplicationContext() {
-        if(applicationContext == null) {
+        if (applicationContext == null) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if(webRequest != null) {
+            if (webRequest != null) {
                 applicationContext = webRequest.getApplicationContext();
             }
         }

@@ -49,11 +49,11 @@ public class PersistentConstraintFactory implements ConstraintFactory {
         }
         catch (InstantiationException e) {
             throw new GrailsDomainException("Error instantiating constraint [" + constraintClass +
-                    "] during validation: " + e.getMessage(),e );
+                    "] during validation: " + e.getMessage(), e);
         }
         catch (IllegalAccessException e) {
             throw new GrailsDomainException("Error instantiating constraint [" + constraintClass +
-                    "] during validation: " + e.getMessage(),e );
+                    "] during validation: " + e.getMessage(), e);
         }
     }
 }

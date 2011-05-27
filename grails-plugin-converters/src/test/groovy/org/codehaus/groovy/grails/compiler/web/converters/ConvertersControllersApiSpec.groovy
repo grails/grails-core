@@ -6,14 +6,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 25/03/2011
- * Time: 18:10
- * To change this template use File | Settings | File Templates.
- */
-class ConvertersControllersApiSpec extends Specification{
+class ConvertersControllersApiSpec extends Specification {
 
     void "Test that the render method for converters is added at compile time"() {
         given:

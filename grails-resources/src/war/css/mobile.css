@@ -22,7 +22,7 @@
 	.pagination .nextLink {
 		float: right;
 	}
-	
+
 	/* pagination needs to wrap around floated buttons */
 	.pagination {
 		overflow: hidden;
@@ -33,7 +33,7 @@
 	.property-list {
 		padding: 0.3em 1em 1em;
 	}
-	
+
 	input, textarea {
 		width: 100%;
 		   -moz-box-sizing: border-box;
@@ -41,7 +41,7 @@
 		    -ms-box-sizing: border-box;
 		        box-sizing: border-box;
 	}
-	
+
 	select, input[type=checkbox], input[type=radio], input[type=submit], input[type=button], input[type=reset] {
 		width: auto;
 	}
@@ -70,7 +70,7 @@
 		text-align: left;
 		width: auto;
 	}
-	
+
 	.errors ul,
 	.message p {
 		margin: 0.5em;

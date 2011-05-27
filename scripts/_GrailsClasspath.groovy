@@ -57,6 +57,6 @@ void setClasspath() {
     if (classpathSet) return
 
     projectCompiler.configureClasspath()
-	compConfig = projectCompiler.config
+    compConfig = projectCompiler.config
     classpathSet = true
 }

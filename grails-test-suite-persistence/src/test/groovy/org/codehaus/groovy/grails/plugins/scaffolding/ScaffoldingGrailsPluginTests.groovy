@@ -44,7 +44,7 @@ class TestTagLib {
     void testScaffoldingPlugin() {
 
         def mockManager = new MockGrailsPluginManager()
-        ctx.registerMockBean("pluginManager", mockManager )
+        ctx.registerMockBean("pluginManager", mockManager)
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
 
         def dependantPluginClasses = []
@@ -62,7 +62,7 @@ class TestTagLib {
         springConfig.servletContext = createMockServletContext()
 
         dependentPlugins.each {
-            mockManager.registerMockPlugin(it) ; it.manager = mockManager
+            mockManager.registerMockPlugin(it); it.manager = mockManager;
         }
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 

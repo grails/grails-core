@@ -26,8 +26,8 @@ class FooBarGrailsPlugin {
         assert "1.3" == plugin.grailsVersion : "grails version should have been '1.2'"
         assertEquals "The full plugin name should be 'foo-bar-0.1'","foo-bar-0.1" ,plugin.fullName
 
-        assertEquals( ['hibernate', 'domainClass'], plugin.evicts )
-        assertEquals( ['hibernate':'1.3', 'domainClass':'1.2'], plugin.dependsOn)
+        assertEquals(['hibernate', 'domainClass'], plugin.evicts)
+        assertEquals(['hibernate':'1.3', 'domainClass':'1.2'], plugin.dependsOn)
 
         assertEquals 5, plugin.properties.size()
     }
@@ -46,7 +46,7 @@ class FooBarGrailsPlugin {
         def pluginSettings = new PluginBuildSettings(new BuildSettings())
         def pluginDescriptorReader = new XmlPluginDescriptorReader(pluginSettings)
 
-        def info = pluginDescriptorReader.readPluginInfo( new ByteArrayResource(xml.bytes) {
+        def info = pluginDescriptorReader.readPluginInfo(new ByteArrayResource(xml.bytes) {
             Resource createRelative(String relativePath) { new ByteArrayResource(xml.bytes) }
         })
 

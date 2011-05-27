@@ -44,9 +44,9 @@ class ConvertersPluginSupport {
         enhancer.addApi(new ConvertersApi(applicationContext:applicationContext))
 
         // Override GDK asType for some common Interfaces and Classes
-        enhancer.enhanceAll( [Errors,BeanPropertyBindingResult, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {
+        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {
             GrailsMetaClassUtils.getExpandoMetaClass(it)
-        } )
+        })
 
         // Methods for Reading JSON/XML from Requests
         def getXMLMethod = { -> XML.parse((HttpServletRequest) delegate) }

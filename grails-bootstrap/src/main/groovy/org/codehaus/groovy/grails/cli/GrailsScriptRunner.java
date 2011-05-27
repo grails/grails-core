@@ -16,13 +16,44 @@
 package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
-import grails.util.*;
+import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
+import grails.util.CosineSimilarity;
+import grails.util.Environment;
+import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
-import org.apache.tools.ant.BuildEvent;
-import org.apache.tools.ant.BuildListener;
-import org.apache.tools.ant.BuildLogger;
+
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
@@ -34,19 +65,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.util.ReflectionUtils;
-
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.*;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -203,7 +221,7 @@ public class GrailsScriptRunner {
             int i = allArgs.lastIndexOf(lastMatch) + lastMatch.length();
             allArgs = allArgs.substring(i);
         }
-        if(allArgs.contains(AGENT_FLAG)) {
+        if (allArgs.contains(AGENT_FLAG)) {
             allArgs = allArgs.replace(AGENT_FLAG, "");
         }
         return allArgs;
@@ -231,7 +249,7 @@ public class GrailsScriptRunner {
     }
 
     public PrintStream getOut() {
-        return this.out;
+        return out;
     }
 
     public void setOut(PrintStream outputStream) {
@@ -493,8 +511,7 @@ public class GrailsScriptRunner {
                 if (!isGrailsProject() && !isExternalScript(scriptFile)) {
                     out.println(settings.getBaseDir().getPath() + " does not appear to be part of a Grails application.");
                     out.println("The following commands are supported outside of a project:");
-                    Collections.sort(scriptsAllowedOutsideOfProject, new Comparator<Resource>(){
-
+                    Collections.sort(scriptsAllowedOutsideOfProject, new Comparator<Resource>() {
                         public int compare(Resource resource, Resource resource1) {
                             return resource.getFilename().compareTo(resource1.getFilename());
                         }
@@ -590,7 +607,7 @@ public class GrailsScriptRunner {
 
     private void setDefaultInputStream(GantBinding binding) {
 
-        if(this.orignalIn == null) {
+        if (this.orignalIn == null) {
             this.orignalIn = System.in;
         }
         // Gant does not initialise the default input stream for
@@ -772,7 +789,7 @@ public class GrailsScriptRunner {
         final BaseSettingsApi cla = new BaseSettingsApi(settings, isInteractive);
 
         // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
-        if(scriptName.equals("RunApp")) {
+        if (scriptName.equals("RunApp")) {
             cla.enableUaa();
         }
 

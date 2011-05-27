@@ -21,16 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * {@inheritDoc}
- *
  * @author Graeme Rocher
  * @since 1.4
  */
-public class DefaultMimeUtility implements MimeUtility{
+public class DefaultMimeUtility implements MimeUtility {
 
     private List<MimeType> mimeTypes;
-    private Map<String, MimeType> extensionToMimeMap = new HashMap();
+    private Map<String, MimeType> extensionToMimeMap = new HashMap<String, MimeType>();
 
     public DefaultMimeUtility(MimeType[] mimeTypes) {
         this(Arrays.asList(mimeTypes));
@@ -40,8 +37,9 @@ public class DefaultMimeUtility implements MimeUtility{
         this.mimeTypes = mimeTypes;
         for (MimeType mimeType : mimeTypes) {
             final String ext = mimeType.getExtension();
-            if(!extensionToMimeMap.containsKey(ext))
+            if (!extensionToMimeMap.containsKey(ext)) {
                 extensionToMimeMap.put(ext,mimeType);
+            }
         }
     }
 
@@ -56,17 +54,17 @@ public class DefaultMimeUtility implements MimeUtility{
      * {@inheritDoc}
      */
     public MimeType getMimeTypeForExtension(String extension) {
-        if(extension != null) {
+        if (extension != null) {
             return extensionToMimeMap.get(extension);
         }
         return null;
     }
 
     public MimeType getMimeTypeForURI(String uri) {
-        if(uri != null) {
+        if (uri != null) {
             final int i = uri.lastIndexOf('.');
             final int length = uri.length();
-            if(i > -1 && i < length) {
+            if (i > -1 && i < length) {
                 final String extension = uri.substring(i+1, length);
                 return getMimeTypeForExtension(extension);
             }

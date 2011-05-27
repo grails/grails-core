@@ -20,14 +20,14 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     }
 
     private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
-        if(grailsApplication != null && codecClass != null) {
+        if (grailsApplication != null && codecClass != null) {
             GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
             encodeClosure = codecArtefact.getEncodeMethod();
         }
     }
 
     private Object encodeObject(Object o) {
-        if(encodeClosure == null) return o;
+        if (encodeClosure == null) return o;
         try {
             return encodeClosure.call(o);
         } catch (Exception e) {

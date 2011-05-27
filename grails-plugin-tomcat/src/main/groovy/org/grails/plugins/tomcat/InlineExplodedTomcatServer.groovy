@@ -26,14 +26,11 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder
  */
 class InlineExplodedTomcatServer extends TomcatServer {
 
-    final Tomcat tomcat
+    final Tomcat tomcat = new Tomcat()
 
     def context
 
     InlineExplodedTomcatServer(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
-        super()
-
-        tomcat = new Tomcat()
 
         if (contextPath == '/') {
             contextPath = ''
@@ -75,8 +72,8 @@ class InlineExplodedTomcatServer extends TomcatServer {
         if (host != "localhost") {
             tomcat.connector.setAttribute("address", host)
         }
-        
-        if(getConfigParam("nio")) {
+
+        if (getConfigParam("nio")) {
             println "Enabling Tomcat NIO connector"
             def connector = new Connector(Http11NioProtocol.name)
             connector.port = httpPort
@@ -120,25 +117,27 @@ class InlineExplodedTomcatServer extends TomcatServer {
         eventListener?.event("ConfigureTomcat", [tomcat])
         def jndiEntries = grailsConfig?.grails?.naming?.entries
 
-        if (jndiEntries instanceof Map) {
-            jndiEntries.each { name, resCfg ->
-                if (resCfg) {
-                    if (!resCfg["type"]) {
-                        throw new IllegalArgumentException("Must supply a resource type for JNDI configuration")
-                    }
-                    def res = loadInstance('org.apache.catalina.deploy.ContextResource')
-                    res.name = name
-                    res.type = resCfg.remove("type")
-                    res.auth = resCfg.remove("auth")
-                    res.description = resCfg.remove("description")
-                    res.scope = resCfg.remove("scope")
-                    // now it's only the custom properties left in the Map...
-                    resCfg.each {key, value ->
-                        res.setProperty (key, value)
-                    }
+        if (!(jndiEntries instanceof Map)) {
+            return
+        }
 
-                    context.namingResources.addResource res
+        jndiEntries.each { name, resCfg ->
+            if (resCfg) {
+                if (!resCfg["type"]) {
+                    throw new IllegalArgumentException("Must supply a resource type for JNDI configuration")
                 }
+                def res = loadInstance('org.apache.catalina.deploy.ContextResource')
+                res.name = name
+                res.type = resCfg.remove("type")
+                res.auth = resCfg.remove("auth")
+                res.description = resCfg.remove("description")
+                res.scope = resCfg.remove("scope")
+                // now it's only the custom properties left in the Map...
+                resCfg.each {key, value ->
+                    res.setProperty (key, value)
+                }
+
+                context.namingResources.addResource res
             }
         }
     }

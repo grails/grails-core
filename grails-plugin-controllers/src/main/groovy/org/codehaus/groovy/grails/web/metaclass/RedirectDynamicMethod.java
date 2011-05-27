@@ -58,11 +58,10 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
 
     public static final String ARGUMENT_ERRORS = "errors";
 
-	public static final String ARGUMENT_PERMANENT = "permanent";
+    public static final String ARGUMENT_PERMANENT = "permanent";
 
     private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
     private static final String BLANK = "";
-    private static final String CONTEXT_PATH_ARGUMENT = "contextPath";
     private boolean useJessionId = false;
     private Collection<RedirectEventListener> redirectListeners;
     private LinkGenerator linkGenerator;
@@ -71,21 +70,16 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
      */
     public RedirectDynamicMethod(Collection<RedirectEventListener> redirectListeners) {
         super(METHOD_PATTERN);
-
         this.redirectListeners = redirectListeners;
     }
 
-
-
     /**
-     *
      * @param applicationContext The ApplicationContext
      * @deprecated Here fore compatibility, will be removed in a future version of Grails
      */
-    public RedirectDynamicMethod(ApplicationContext applicationContext) {
+    @Deprecated
+    public RedirectDynamicMethod(@SuppressWarnings("unused") ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
-
-        this.redirectListeners = redirectListeners;
     }
 
     public RedirectDynamicMethod() {
@@ -117,7 +111,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
-        LinkGenerator linkGenerator = getLinkGenerator(webRequest);
+        LinkGenerator requestLinkGenerator = getLinkGenerator(webRequest);
 
         HttpServletRequest request = webRequest.getCurrentRequest();
         if (request.getAttribute(GRAILS_REDIRECT_ISSUED) != null) {
@@ -144,20 +138,20 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
 
         Object action = argMap.get(GrailsControllerClass.ACTION);
-        if(action != null) {
+        if (action != null) {
             argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller));
         }
 
         // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
         // which includes the contextPath
         argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
-        return redirectResponse(linkGenerator.getServerBaseURL(), linkGenerator.link(argMap), request, response, permanent);
+        return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
-        if(this.linkGenerator == null) {
+        if (this.linkGenerator == null) {
             ApplicationContext applicationContext = webRequest.getApplicationContext();
-            if(applicationContext != null) {
+            if (applicationContext != null) {
                 linkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator.class);
             }
         }
@@ -180,11 +174,11 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         String absoluteURL = serverBaseURL + actualUri;
         String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
-        
+
         response.setStatus(status);
         response.setHeader(HttpHeaders.LOCATION, redirectUrl);
-        
-        if(redirectListeners != null) {
+
+        if (redirectListeners != null) {
             for (RedirectEventListener redirectEventListener : redirectListeners) {
                 redirectEventListener.responseRedirected(redirectUrl);
             }

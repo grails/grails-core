@@ -138,7 +138,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     void testRenderTemplate() {
         def mockController = ga.getControllerClass("RenderController").newInstance()
 
-        request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
         appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
@@ -182,7 +182,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     void testRenderTemplateWithContentType() {
         def mockController = ga.getControllerClass("RenderController").newInstance()
 
-        request.setAttribute( GrailsApplicationAttributes.CONTROLLER, mockController)
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource "/render/_xmlTemplate.gsp", '<hello>world</hello>'
         appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
@@ -217,10 +217,10 @@ class RenderController {
         render text:"test", status:500
     }
     def renderList = {
-        render( [1,2,3] )
+        render([1,2,3])
     }
     def renderMap = {
-        render( [a:1, b:2] )
+        render([a:1, b:2])
     }
     def renderText = {
         render "test render"
@@ -254,7 +254,6 @@ class RenderTest {
 
     String toString() { foo }
 }
-'''
-        )
+''')
     }
 }

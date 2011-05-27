@@ -21,7 +21,7 @@ class VetoingNullableBehaviour {
 
     static constraints = {
         name(nullable:true, validator:{ val ->
-            if(val) {
+            if (val) {
                 return Character.isUpperCase(val.toCharArray()[0])
             }
         })

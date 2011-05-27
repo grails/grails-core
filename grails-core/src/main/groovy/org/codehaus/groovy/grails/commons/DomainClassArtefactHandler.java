@@ -19,8 +19,6 @@ import grails.persistence.Entity;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
-import java.util.Map;
-
 /**
  * Evaluates the conventions that define a domain class in Grails.
  *
@@ -31,15 +29,12 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
 
     public static final String TYPE = "Domain";
 
-    @SuppressWarnings("rawtypes")
-    private Map defaultConstraints;
-
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
 
     @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("rawtypes")
     public GrailsClass newArtefactClass(Class artefactClass) {
         return new DefaultGrailsDomainClass(artefactClass);
     }
@@ -99,6 +94,4 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
         }
         return result;
     }
-
-
 }

@@ -253,37 +253,37 @@ target(pdf: "Produces PDF documentation") {
 }
 
 target(createIndex: "Produces an index.html page in the root directory") {
-	if (docsDisabled()) {
-		 return
-	}
+    if (docsDisabled()) {
+         return
+    }
 
-	new File("${grailsSettings.docsOutputDir}/all-docs.html").withWriter { writer ->
-		writer.write """\
+    new File("${grailsSettings.docsOutputDir}/all-docs.html").withWriter { writer ->
+        writer.write """\
 <html>
 
-	<head>
-		<title>$grailsAppName Documentation</title>
-	</head>
-    
-	<body>
-		<a href="api/index.html">Java API docs</a><br />
-		<a href="gapi/index.html">Groovy API docs</a><br />
+    <head>
+        <title>$grailsAppName Documentation</title>
+    </head>
+
+    <body>
+        <a href="api/index.html">Java API docs</a><br />
+        <a href="gapi/index.html">Groovy API docs</a><br />
 """
 
-		if (createdManual) {
-			writer.write '\t\t<a href="guide/index.html">Manual (Page per chapter)</a><br />\n'
-			writer.write '\t\t<a href="guide/single.html">Manual (Single page)</a><br />\n'
-		}
+        if (createdManual) {
+            writer.write '\t\t<a href="guide/index.html">Manual (Page per chapter)</a><br />\n'
+            writer.write '\t\t<a href="guide/single.html">Manual (Single page)</a><br />\n'
+        }
 
-		if (createdPdf) {
-			writer.write '\t\t<a href="guide/single.pdf">Manual (PDF)</a><br />\n'
-		}
+        if (createdPdf) {
+            writer.write '\t\t<a href="guide/single.pdf">Manual (PDF)</a><br />\n'
+        }
 
-		writer.write """\
-	</body>
+        writer.write """\
+    </body>
 </html>
 """
-	}
+    }
 }
 
 def readPluginMetadataForDocs(DocPublisher publisher) {

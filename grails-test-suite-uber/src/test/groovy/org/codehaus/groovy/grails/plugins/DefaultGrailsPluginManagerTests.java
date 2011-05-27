@@ -39,7 +39,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
             "def dependsOn = [second:version, third:version]\n" +
             "}");
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl );
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 
@@ -90,7 +90,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
             "def loadAfter = ['core', 'hibernate']\n" +
             "}");
 
-        GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl );
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 

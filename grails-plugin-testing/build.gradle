@@ -13,14 +13,15 @@ dependencies {
             project(':grails-hibernate')
 
     // Spring/Grails Datastore APIs
-    compile( "org.grails:grails-datastore-gorm:$springDatastoreVersion" ) {
+    compile("org.grails:grails-datastore-gorm:$springDatastoreVersion") {
         transitive = false
     }
-    compile( "org.springframework:spring-datastore-core:$springDatastoreVersion" ) {
+    compile("org.springframework:spring-datastore-core:$springDatastoreVersion") {
         transitive = false
     }
-    compile( "org.springframework:spring-datastore-simple:$springDatastoreVersion" ) {
+    compile("org.springframework:spring-datastore-simple:$springDatastoreVersion") {
         transitive = false
     }
 }
+
 jar.appendix = 'plugin-testing'

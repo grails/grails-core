@@ -4,13 +4,6 @@ import grails.test.mixin.web.FiltersUnitTestMixin
 import org.junit.Before
 import org.junit.Test
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 13/04/2011
- * Time: 16:00
- * To change this template use File | Settings | File Templates.
- */
 @TestMixin(FiltersUnitTestMixin)
 class FiltersUnitTestMixinTests {
 

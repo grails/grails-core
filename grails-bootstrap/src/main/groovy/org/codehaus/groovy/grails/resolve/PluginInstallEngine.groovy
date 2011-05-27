@@ -99,7 +99,7 @@ class PluginInstallEngine {
 
         // Get the plugin dependency descriptors for the max version of each applicable dependency
         def pluginDescriptors = dependencyManager.effectivePluginDependencyDescriptors
-        
+
         def newPlugins = findMissingOrUpgradePlugins(pluginDescriptors)
         if (newPlugins) {
             eventHandler "StatusUpdate", "Installing ${newPlugins.size} plugins, please wait"
@@ -337,7 +337,7 @@ class PluginInstallEngine {
 
     protected void assertNoExistingInlinePlugin(String name) {
         def inlinePlugins = settings.config.grails.plugin.location
-        
+
         if (inlinePlugins.containsKey(name)) {
             def pluginReference = inlinePlugins[name]
             errorHandler("""\
@@ -517,7 +517,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    private void runPluginScript( File scriptFile, fullPluginName, msg ) {
+    private void runPluginScript(File scriptFile, fullPluginName, msg) {
         if (pluginScriptRunner != null) {
             if (pluginScriptRunner.maximumNumberOfParameters < 3) {
                 throw new IllegalStateException("The [pluginScriptRunner] closure property must accept at least 3 arguments")
@@ -599,7 +599,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
             Resource pluginDir = pluginInfo.pluginDir
             final pluginDirFile = pluginDir.file.canonicalFile
-            if((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue;
+            if ((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue;
 
             if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
                 registerMetadataForPluginLocation(pluginDir)
@@ -659,7 +659,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 
     private registerMetadataForPluginLocation(Resource pluginDir) {
         def plugin = pluginSettings.getPluginInfo(pluginDir.file.absolutePath)
-        if(plugin != null) {
+        if (plugin != null) {
             registerPluginWithMetadata(plugin.name, plugin.version)
         }
     }

@@ -42,7 +42,7 @@ class PdfBuilder {
      */
     static void build(Map options) {
         File baseDir = new File(options.basedir).canonicalFile
- 
+
         File guideDir = new File(baseDir, "guide")
         File htmlFile = new File(guideDir, "single.html")
         File outputFile = new File(guideDir, "single.pdf")

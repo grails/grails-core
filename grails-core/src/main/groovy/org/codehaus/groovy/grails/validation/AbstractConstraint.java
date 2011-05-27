@@ -80,7 +80,7 @@ public abstract class AbstractConstraint implements Constraint {
     }
 
     public Object getParameter() {
-        return this.constraintParameter;
+        return constraintParameter;
     }
 
     protected void checkState() {
@@ -185,8 +185,7 @@ public abstract class AbstractConstraint implements Constraint {
                 false,
                 newCodes.toArray(new String[newCodes.size()]),
                 args,
-                defaultMessage
-        );
+                defaultMessage);
         ((BindingResult)errors).addError(error);
     }
 

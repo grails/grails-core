@@ -11,13 +11,13 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi;
 import java.net.URL;
 
 /**
- * A transformer that adds binding methods to domain classes
+ * Adds binding methods to domain classes.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 @AstTransformer
-public class ControllerDomainTransformer extends AbstractGrailsArtefactTransformer{
+public class ControllerDomainTransformer extends AbstractGrailsArtefactTransformer {
 
     @Override
     public String getArtefactType() {
@@ -25,7 +25,7 @@ public class ControllerDomainTransformer extends AbstractGrailsArtefactTransform
     }
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return ControllersDomainBindingApi.class;
     }
 
@@ -35,7 +35,7 @@ public class ControllerDomainTransformer extends AbstractGrailsArtefactTransform
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;  // no static methods
     }
 

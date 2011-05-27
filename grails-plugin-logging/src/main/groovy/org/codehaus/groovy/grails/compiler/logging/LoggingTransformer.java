@@ -48,13 +48,13 @@ public class LoggingTransformer implements AllArtefactClassInjector{
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         final FieldNode existingField = classNode.getField(LOG_PROPERTY);
-        if(existingField == null && !classNode.isInterface()) {
+        if (existingField == null && !classNode.isInterface()) {
             final String path = source.getName();
 
             String artefactType = path != null ? GrailsResourceUtils.getArtefactDirectory(path) : null;
 
             // little bit of a hack, since filters aren't kept in a grails-app/filters directory as they probably should be
-            if(artefactType != null && CONF_DIR.equals(artefactType) && classNode.getName().endsWith(FILTERS_ARTEFACT_TYPE_SUFFIX)) {
+            if (artefactType != null && CONF_DIR.equals(artefactType) && classNode.getName().endsWith(FILTERS_ARTEFACT_TYPE_SUFFIX)) {
                 artefactType = FILTERS_ARTEFACT_TYPE;
             }
 
@@ -64,11 +64,11 @@ public class LoggingTransformer implements AllArtefactClassInjector{
     }
 
     public static void addLogField(ClassNode classNode, String logName) {
-        FieldNode logVariable = new FieldNode(  LOG_PROPERTY,
-                                                Modifier.STATIC | Modifier.PRIVATE,
-                                                new ClassNode(Log.class),
-                                                classNode,
-                                                new MethodCallExpression(new ClassExpression(new ClassNode(LogFactory.class)), "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
+        FieldNode logVariable = new FieldNode(LOG_PROPERTY,
+                                              Modifier.STATIC | Modifier.PRIVATE,
+                                              new ClassNode(Log.class),
+                                              classNode,
+                                              new MethodCallExpression(new ClassExpression(new ClassNode(LogFactory.class)), "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
 
         classNode.addField(logVariable);
     }

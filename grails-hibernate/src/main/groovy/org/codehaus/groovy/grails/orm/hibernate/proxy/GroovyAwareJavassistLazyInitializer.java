@@ -33,7 +33,7 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.pojo.BasicLazyInitializer;
 import org.hibernate.proxy.pojo.javassist.SerializableProxy;
-import org.hibernate.type.AbstractComponentType;
+import org.hibernate.type.CompositeType;
 import org.hibernate.util.ReflectHelper;
 
 /**
@@ -72,7 +72,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
             final Serializable id,
             final Method getIdentifierMethod,
             final Method setIdentifierMethod,
-            final AbstractComponentType componentIdType,
+            final CompositeType componentIdType,
             final SessionImplementor session) {
         super(entityName, persistentClass, id, getIdentifierMethod, setIdentifierMethod, componentIdType, session);
         this.interfaces = interfaces;
@@ -84,7 +84,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
             final Class<?>[] interfaces,
             final Method getIdentifierMethod,
             final Method setIdentifierMethod,
-            AbstractComponentType componentIdType,
+            CompositeType componentIdType,
             final Serializable id,
             final SessionImplementor session) throws HibernateException {
         // note: interface is assumed to already contain HibernateProxy.class
@@ -97,8 +97,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
                     getIdentifierMethod,
                     setIdentifierMethod,
                     componentIdType,
-                    session
-            );
+                    session);
             ProxyFactory factory = createProxyFactory(persistentClass, interfaces);
             Class<?> proxyClass = factory.createClass();
             HibernatePluginSupport.enhanceProxyClass(proxyClass);
@@ -123,7 +122,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
             final Class<?>[] interfaces,
             final Method getIdentifierMethod,
             final Method setIdentifierMethod,
-            final AbstractComponentType componentIdType,
+            final CompositeType componentIdType,
             final Serializable id,
             final SessionImplementor session) throws HibernateException {
 
@@ -134,8 +133,7 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
                 getIdentifierMethod,
                 setIdentifierMethod,
                 componentIdType,
-                session
-        );
+                session);
 
         final HibernateProxy proxy;
         try {
@@ -234,7 +232,6 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
                 false,
                 getIdentifierMethod,
                 setIdentifierMethod,
-                componentIdType
-        );
+                componentIdType);
     }
 }

@@ -17,38 +17,37 @@ body {
 	margin-left: 30px;
 	font-family: Tahoma, Verdana, Arial;
 	font-size:95%;
-}  
+}
 
 h1 {
 	font-family: Arial, Verdana, Tahoma;
-	border-bottom:1px solid #eeeeee;  
+	border-bottom:1px solid #eeeeee;
 	font-size:1.2em;
 	margin-left:30px;
 	margin-top:50px;
-}                
+}
 
 h2 {
 	font-family: Arial, Verdana, Tahoma;
 	font-weight:normal;
 	font-style: italic;
 	font-size:1.0em;
-	margin-left:30px;	
-}                
+	margin-left:30px;
+}
 
 p {
 	margin-left:50px;
-}     
+}
 
 ul {
 
 	margin-left:50px;
-}                    
+}
 
 ol {
 
 	margin-left:50px;
-}                    
-
+}
 
 blockquote {
 	margin-left:50px;
@@ -106,7 +105,7 @@ img.float-right {
 
 /*
 .graph-image {
-  position: relative; 
+  position: relative;
   width: 100%;
 }
 */
@@ -145,7 +144,7 @@ img.float-right {
   padding: 10px;
   padding-left: 40px;
   line-height: 100%;
-  width: 85%;	
+  width: 85%;
   background-color: #FFCCCC;
 }
 
@@ -160,7 +159,7 @@ img.float-right {
   padding: 10px;
   padding-left: 40px;
   line-height: 100%;
-  width: 85%;	
+  width: 85%;
   background-color: #FFFFCE;
 }
 /************************************************/

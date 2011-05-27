@@ -21,7 +21,7 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         def c = ga.getControllerClass("RestController").newInstance()
         c.testNullValues()
 
-        assertEquals( '{}', response.contentAsString)
+        assertEquals('{}', response.contentAsString)
     }
 
     void testJSONConverter() {
@@ -30,7 +30,7 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals( '''{"class":"Book","id":null,"author":"Stephen King","title":"The Stand"}''', response.contentAsString)
+        assertEquals('''{"class":"Book","id":null,"author":"Stephen King","title":"The Stand"}''', response.contentAsString)
     }
 
     void testConvertErrors() {
@@ -62,7 +62,7 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals( '''{"class":"Book","id":null,"author":"Stephen King","title":"The Stand"}''', response.contentAsString)
+        assertEquals('''{"class":"Book","id":null,"author":"Stephen King","title":"The Stand"}''', response.contentAsString)
     }
 
     void testJSONEnumConverting() {
@@ -82,7 +82,7 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
             // @todo this test is fragile and depends on runtime environment because
             // of hash key ordering variations
-            assertEquals( '{"enumType":"Role","name":"HEAD"}', response.contentAsString)
+            assertEquals('{"enumType":"Role","name":"HEAD"}', response.contentAsString)
         }
     }
 

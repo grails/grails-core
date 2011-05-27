@@ -71,7 +71,7 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
 
     @Override
     public Object getViewName() {
-        return this.viewName;
+        return viewName;
     }
 
     @Override

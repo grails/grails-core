@@ -117,7 +117,7 @@ class TestCustomPropertyEditor extends PropertyEditorSupport {
 
     void setAsText(String s) {
         Object v = getValue()
-        if(v == null) v = new CustomProperty()
+        if (v == null) v = new CustomProperty()
         value = v
         value.name = s
     }

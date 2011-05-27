@@ -249,7 +249,7 @@ class GroovyPageWritable implements Writable {
                 new GroovyPageBinding(pluginManager.getPluginPathForClass(pageClass)) :
                 new GroovyPageBinding();
 
-        if(pluginManager != null) {
+        if (pluginManager != null) {
             binding.setPagePlugin(pluginManager.getPluginForClass(pageClass));
         }
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
@@ -364,7 +364,7 @@ class GroovyPageWritable implements Writable {
             String key = (String) attributeEnum.nextElement();
             if (!GroovyPage.isReservedName(key)) {
                 if (!variables.containsKey(key)) {
-                    binding.setVariable( key, req.getAttribute(key) );
+                    binding.setVariable(key, req.getAttribute(key));
                 }
             }
             else {

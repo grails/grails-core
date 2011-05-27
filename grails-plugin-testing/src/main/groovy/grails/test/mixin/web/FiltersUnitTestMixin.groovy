@@ -48,11 +48,11 @@ import org.springframework.web.servlet.ModelAndView
  * @since 1.4
  * @author Graeme Rocher
  */
-class FiltersUnitTestMixin extends ControllerUnitTestMixin{
+class FiltersUnitTestMixin extends ControllerUnitTestMixin {
 
     @BeforeClass
     static void setupFilterBeans() {
-        if(applicationContext == null) {
+        if (applicationContext == null) {
             initGrailsApplication()
         }
 
@@ -106,25 +106,25 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin{
      * @return
      */
     def withFilters(Map arguments, Closure callable) {
-        if(arguments?.controller) {
+        if (arguments?.controller) {
             webRequest.controllerName = arguments?.controller
         }
-        if(arguments?.action) {
+        if (arguments?.action) {
             webRequest.actionName = arguments?.action
         }
 
         final interceptor = getCompositeInterceptor()
         try {
-            if(interceptor.preHandle(request, response, this)) {
+            if (interceptor.preHandle(request, response, this)) {
                 def result = callable.call()
 
                 final controller = request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
                 def modelAndView = controller?.modelAndView
-                if(modelAndView == null && (result instanceof Map)) {
+                if (modelAndView == null && (result instanceof Map)) {
                     modelAndView = new ModelAndView('/', result)
                     controller?.modelAndView = new ModelAndView(controller.actionUri ?: "/${webRequest.controllerName}/${webRequest.actionName}", result)
                 }
-                interceptor.postHandle(request, response, this, modelAndView )
+                interceptor.postHandle(request, response, this, modelAndView)
                 interceptor.afterCompletion(request, response, this, null)
 
                 return result

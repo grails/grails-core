@@ -49,9 +49,9 @@ class StreamCharTagLib {
             assert StreamCharMe.findWhere(name:result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.findAllWhere(name:result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.withCriteria{ eq 'name',result } : "should have found a result when passing a StreamCharBuffer value"
-            assert StreamCharMe.find("from StreamCharMe s where s.name = ?", [result] ) : "should have found a result when passing a StreamCharBuffer value"
-            assert StreamCharMe.findAll("from StreamCharMe s where s.name = ?", [result] ) : "should have found a result when passing a StreamCharBuffer value"
-            assert StreamCharMe.executeQuery("from StreamCharMe s where s.name = ?", [result] ) : "should have found a result when passing a StreamCharBuffer value"
+            assert StreamCharMe.find("from StreamCharMe s where s.name = ?", [result]) : "should have found a result when passing a StreamCharBuffer value"
+            assert StreamCharMe.findAll("from StreamCharMe s where s.name = ?", [result]) : "should have found a result when passing a StreamCharBuffer value"
+            assert StreamCharMe.executeQuery("from StreamCharMe s where s.name = ?", [result]) : "should have found a result when passing a StreamCharBuffer value"
         }
         finally {
             RequestContextHolder.setRequestAttributes(null)

@@ -3,16 +3,16 @@ dependencies {
     compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
 
     // Spring/Grails Datastore APIs
-    compile( "org.grails:grails-datastore-gorm:$springDatastoreVersion" ) {
+    compile("org.grails:grails-datastore-gorm:$springDatastoreVersion") {
         transitive = false
     }
-    compile( "org.springframework:spring-datastore-core:$springDatastoreVersion" ) {
+    compile("org.springframework:spring-datastore-core:$springDatastoreVersion") {
         transitive = false
     }
-    compile( "org.springframework:spring-datastore-simple:$springDatastoreVersion" ) {
+    compile("org.springframework:spring-datastore-simple:$springDatastoreVersion") {
         transitive = false
     }
-    
+
     runtime project(":grails-plugin-i18n") // for messageSource
 }
 

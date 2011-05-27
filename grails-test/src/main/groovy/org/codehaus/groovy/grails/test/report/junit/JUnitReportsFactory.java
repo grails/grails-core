@@ -39,8 +39,7 @@ public class JUnitReportsFactory {
                 (String)buildBinding.getProperty("currentTestPhaseName"),
                 (String)buildBinding.getProperty("currentTestTypeName"),
                 (File)buildBinding.getProperty("testReportsDir"),
-                (List<String>)buildBinding.getProperty("reportFormats")
-        );
+                (List<String>)buildBinding.getProperty("reportFormats"));
     }
 
     public JUnitReportsFactory(String phaseName, String typeName, File reportsDir, List<String> formats) {

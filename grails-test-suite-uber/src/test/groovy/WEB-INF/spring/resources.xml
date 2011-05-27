@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
-<beans>	
-	<!-- This is the context that is loaded after Grails' runtime bean 
+<beans>
+	<!-- This is the context that is loaded after Grails' runtime bean
 		configuration. Put post initialization beans here if you need to get hold
 		of the SessionFactory etc.
-	--> 
-	
-	<bean id="currentTime" class="java.util.Date" singleton="false">	
-	</bean> 
-	
+	-->
+
+	<bean id="currentTime" class="java.util.Date" singleton="false">
+	</bean>
+
 	<bean id="grailsDependent" class="org.codehaus.groovy.grails.commons.spring.GrailsMockDependantObject">
 		<property name="application" ref="grailsApplication" />
 	</bean>

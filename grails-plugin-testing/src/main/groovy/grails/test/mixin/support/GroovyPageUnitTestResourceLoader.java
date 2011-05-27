@@ -33,10 +33,10 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
     @Override
     public Resource getResource(String location) {
 
-        if(location.startsWith(WEB_INF_PREFIX)) {
+        if (location.startsWith(WEB_INF_PREFIX)) {
             location = location.substring(WEB_INF_PREFIX.length());
         }
-        if(groovyPages.containsKey(location)) {
+        if (groovyPages.containsKey(location)) {
             try {
                 return new ByteArrayResource(groovyPages.get(location).getBytes("UTF-8"));
             } catch (UnsupportedEncodingException e) {
@@ -46,8 +46,8 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
 
         BuildSettings buildSettings = BuildSettingsHolder.getSettings();
         String systemBaseDirectory = System.getProperty("base.dir");
-        String basedir = systemBaseDirectory != null ? systemBaseDirectory : "." ;
-        if(buildSettings != null) {
+        String basedir = systemBaseDirectory != null ? systemBaseDirectory : ".";
+        if (buildSettings != null) {
             try {
                 basedir = buildSettings.getBaseDir().getCanonicalPath();
             } catch (IOException e) {

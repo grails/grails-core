@@ -596,7 +596,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
             try {
                 int i = ((Integer)node);
-                while(i-- > 0) {
+                while (i-- > 0) {
                     last = stack.pop();
                     if (BuilderMode.ARRAY == last) writer.endArray();
                     if (BuilderMode.OBJECT == last) writer.endObject();

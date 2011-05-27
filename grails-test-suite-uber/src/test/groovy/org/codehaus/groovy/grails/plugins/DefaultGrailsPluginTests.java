@@ -40,7 +40,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         versioned = gcl.parseClass("class MyGrailsPlugin {\n" +
                         "def version = 1.1;" +
                         "def doWithSpring = {" +
-                        "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader )" +
+                        "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
                         "}\n" +
                         "def doWithApplicationContext = { ctx ->" +
                         "assert ctx != null" +

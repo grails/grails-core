@@ -94,6 +94,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     private Collection<HandlerExceptionResolver> exceptionResolvers;
     private GroovyPagesTemplateEngine groovyPagesTemplateEngine;
     private GrailsPluginManager pluginManager;
+    @SuppressWarnings("rawtypes")
     private Map<String, Class> binaryPluginViewsMap = new ConcurrentHashMap<String, Class>();
 
     @Override
@@ -127,7 +128,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
         Template template = groovyPagesTemplateEngine.createTemplateForUri(pageName);
 
-        if(template == null) {
+        if (template == null) {
             template = findPageInBinaryPlugins(pageName);
         }
 
@@ -141,23 +142,23 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     }
 
     protected Template findPageInBinaryPlugins(String pageName) {
-        if(pageName != null) {
-            Class pageClass = binaryPluginViewsMap.get(pageName);
-            if(pageClass == null && pluginManager != null) {
+        if (pageName != null) {
+            Class<?> pageClass = binaryPluginViewsMap.get(pageName);
+            if (pageClass == null && pluginManager != null) {
                 final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
                 for (GrailsPlugin plugin : allPlugins) {
-                    if(plugin instanceof BinaryGrailsPlugin) {
+                    if (plugin instanceof BinaryGrailsPlugin) {
                         BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
 
                         pageClass = binaryPlugin.resolveView(pageName);
-                        if(pageClass != null){
+                        if (pageClass != null) {
                             binaryPluginViewsMap.put(pageName, pageClass);
                             break;
                         }
                     }
                 }
             }
-            if(pageClass != null) {
+            if (pageClass != null) {
                 return groovyPagesTemplateEngine.createTemplate(pageClass);
             }
         }

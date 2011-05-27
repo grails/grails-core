@@ -38,6 +38,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 1.4
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class LazyTagLibraryLookup extends TagLibraryLookup{
 
     private Map<String, String> resolveTagLibraries = new HashMap<String, String>();
@@ -51,13 +52,13 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
         tagClassesByNamespace.put(GrailsTagLibClass.DEFAULT_NAMESPACE, new ArrayList<Class>());
         namespaceDispatchers.put(GrailsTagLibClass.DEFAULT_NAMESPACE, new NamespacedTagDispatcher(GrailsTagLibClass.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this));
         for (Class providedArtefact : providedArtefacts) {
-            if(!grailsApplication.isArtefactOfType(TagLibArtefactHandler.TYPE, providedArtefact)) continue;
+            if (!grailsApplication.isArtefactOfType(TagLibArtefactHandler.TYPE, providedArtefact)) continue;
             Object value = GrailsClassUtils.getStaticPropertyValue(providedArtefact, GrailsTagLibClass.NAMESPACE_FIELD_NAME);
-            if(value != null) {
+            if (value != null) {
 
                 String namespace = value.toString();
                 List<Class> classes = tagClassesByNamespace.get(namespace);
-                if(classes == null) {
+                if (classes == null) {
                     classes = new ArrayList<Class>();
                     tagClassesByNamespace.put(namespace, classes);
                 }
@@ -77,40 +78,37 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
 
         String tagKey = tagNameKey(namespace, tagName);
-        if(resolveTagLibraries.containsKey(tagKey)) {
+        if (resolveTagLibraries.containsKey(tagKey)) {
             return applicationContext.getBean(resolveTagLibraries.get(tagKey), GroovyObject.class);
         }
-        else {
-            List<Class> tagLibraryClasses = tagClassesByNamespace.get(namespace);
-            if(tagLibraryClasses != null) {
-                for (Class tagLibraryClass : tagLibraryClasses) {
 
-                    GrailsTagLibClass tagLib = tagClassToTagLibMap.get(tagLibraryClass);
-                    if(tagLib == null) {
-                        tagLib = (GrailsTagLibClass) grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibraryClass);
-                        tagClassToTagLibMap.put(tagLibraryClass, tagLib);
-                    }
-                    String tagLibraryClassName = tagLibraryClass.getName();
-                    if(tagLib == null || !tagLib.hasTag(tagName)) {
-                        continue;
-                    }
+        List<Class> tagLibraryClasses = tagClassesByNamespace.get(namespace);
+        if (tagLibraryClasses != null) {
+            for (Class tagLibraryClass : tagLibraryClasses) {
 
-                    if(!applicationContext.containsBean(tagLibraryClassName)) {
-                        registerTagLib(tagLib);
-                        if(tagLib.hasTag(tagName)) {
-                            GenericBeanDefinition bd = new GenericBeanDefinition();
-                            bd.setBeanClass(tagLibraryClass);
-                            bd.setAutowireCandidate(true);
-                            bd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
-                            ((GenericApplicationContext)applicationContext).getDefaultListableBeanFactory().registerBeanDefinition(tagLibraryClassName, bd);
-                            resolveTagLibraries.put(tagKey, tagLib.getFullName());
-                            return (GroovyObject) applicationContext.getBean(tagLibraryClassName);
-                        }
-                    }
+                GrailsTagLibClass tagLib = tagClassToTagLibMap.get(tagLibraryClass);
+                if (tagLib == null) {
+                    tagLib = (GrailsTagLibClass) grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibraryClass);
+                    tagClassToTagLibMap.put(tagLibraryClass, tagLib);
+                }
+                String tagLibraryClassName = tagLibraryClass.getName();
+                if (tagLib == null || !tagLib.hasTag(tagName)) {
+                    continue;
+                }
 
+                if (!applicationContext.containsBean(tagLibraryClassName)) {
+                    registerTagLib(tagLib);
+                    if (tagLib.hasTag(tagName)) {
+                        GenericBeanDefinition bd = new GenericBeanDefinition();
+                        bd.setBeanClass(tagLibraryClass);
+                        bd.setAutowireCandidate(true);
+                        bd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
+                        ((GenericApplicationContext)applicationContext).getDefaultListableBeanFactory().registerBeanDefinition(tagLibraryClassName, bd);
+                        resolveTagLibraries.put(tagKey, tagLib.getFullName());
+                        return (GroovyObject) applicationContext.getBean(tagLibraryClassName);
+                    }
                 }
             }
-
         }
 
         return null;

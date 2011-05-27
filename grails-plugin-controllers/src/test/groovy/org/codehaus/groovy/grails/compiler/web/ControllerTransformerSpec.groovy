@@ -7,14 +7,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 07/03/2011
- * Time: 16:56
- * To change this template use File | Settings | File Templates.
- */
-class ControllerTransformerSpec extends Specification{
+class ControllerTransformerSpec extends Specification {
 
     void "Test get artefact type"() {
         when:

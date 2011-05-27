@@ -6,12 +6,12 @@
 .menuTitle {
 	font-size:85%;
 	font-family:Tahoma, Verdana, Arial;
-}           
+}
 .menuUsageItem {
 	font-size:95%;
-	font-family:Tahoma, Verdana, Arial;	
+	font-family:Tahoma, Verdana, Arial;
 	margin-bottom:10px;
-}                                  
+}
 .menuUsageItem a {
 	text-decoration: none;
 }

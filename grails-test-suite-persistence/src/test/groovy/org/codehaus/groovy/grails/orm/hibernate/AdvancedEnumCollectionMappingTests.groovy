@@ -10,11 +10,10 @@ import grails.persistence.Entity
  */
 class AdvancedEnumCollectionMappingTests extends AbstractGrailsHibernateTests {
 
-
     protected getDomainClasses() {
         [EnumCollectionMappingUser]
     }
-    
+
     void testAdvancedEnumCollectionMapping() {
         def User = ga.getDomainClass(EnumCollectionMappingUser.name).clazz
         def Role = ga.classLoader.loadClass(EnumCollectionMappingRole.name)

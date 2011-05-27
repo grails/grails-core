@@ -16,12 +16,12 @@ class MessageTagTests extends AbstractGrailsTagTests {
 
             // test when no message found it returns code
             def attrs = [code:"test.code"]
-            def result=tag.call( attrs )
+            def result=tag.call(attrs)
             assertEquals "test.code", result
 
             // now test that when there is a message it finds it
             messageSource.addMessage("test.code", new Locale("en"), "hello world!")
-            result = tag.call( attrs )
+            result = tag.call(attrs)
             assertEquals "hello world!", result
 
             // now test with arguments
@@ -41,7 +41,7 @@ class MessageTagTests extends AbstractGrailsTagTests {
 
             def attrs = [code:"test.code", encodeAs:'HTML']
             messageSource.addMessage("test.code", new Locale("en"), ">>&&")
-            def result=tag.call( attrs )
+            def result = tag.call(attrs)
             assertEquals "&gt;&gt;&amp;&amp;", result
         }
     }

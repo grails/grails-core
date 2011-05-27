@@ -12,7 +12,7 @@ class ModifyOurScopeWithBodyTagTests extends AbstractGrailsTagTests {
 class OutScopeTagLib {
   def threeTimes = { attrs, body ->
     3.times {
-        if(attrs.var)
+        if (attrs.var)
             out << body((attrs.var):it)
         else
             out << body()
@@ -43,7 +43,7 @@ class OutScopeTagLib {
         def template = '<g:set var="counter" value="${1}"/><g:threeTimes var="counter">${counter++}</g:threeTimes>${counter}'
         assertOutputEquals '0121', template
     }
-    
+
     // test for GRAILS-7306
     void testRestoreOuterVariableNamesWithBodyArgumentsEvenIfOuterValueIsNull() {
         def template = '''<g:set var="foo" value="parentFooVal"/><g:set var="bar" value="${null}"/><g:local vars="[foo:'innerFooVal', bar:'nonNullVal']" someValue="nonNull" var="counter">inner foo: ${foo}, inner bar: ${bar}</g:local> outer foo: ${foo}, outer bar: ${bar}'''

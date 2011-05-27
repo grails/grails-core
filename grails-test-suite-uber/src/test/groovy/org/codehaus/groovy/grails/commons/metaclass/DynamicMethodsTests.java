@@ -24,7 +24,7 @@ public class DynamicMethodsTests extends TestCase {
     }
 
     public void testInvokeConstructor() {
-        DynamicMethods dm = new AbstractDynamicMethods(){/*empty*/};
+        DynamicMethods dm = new AbstractDynamicMethods() {/*empty*/};
         dm.addDynamicConstructor(new AbstractDynamicConstructor(new Class[]{String.class, Integer.class}) {
             @SuppressWarnings("rawtypes")
             public Object invoke(Class clazz, Object[] args) {

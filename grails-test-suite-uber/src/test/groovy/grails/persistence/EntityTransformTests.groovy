@@ -22,7 +22,7 @@ class Permission {
     }
 
     User getOwner() {
-        return this.user
+        return user
     }
 }
 

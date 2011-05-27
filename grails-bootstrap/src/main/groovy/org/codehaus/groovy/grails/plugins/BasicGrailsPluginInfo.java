@@ -83,12 +83,12 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
     }
 
     public Resource getDescriptor() {
-        return this.descriptor;
+        return descriptor;
     }
 
     public Resource getPluginDir() {
         try {
-            return this.descriptor.createRelative(".");
+            return descriptor.createRelative(".");
         }
         catch (IOException e) {
             return null;

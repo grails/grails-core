@@ -56,8 +56,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
         new DefaultUrlMappingsHolder(
             urlMappingEvaluatees.collect {
                 mappingEvaluator.evaluateMappings((it instanceof Closure) ? it : GrailsClassUtils.getStaticPropertyValue(it, "mappings"))
-            }.flatten()
-        )
+            }.flatten())
     }
 
     def createControllerMap() {
@@ -122,8 +121,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
         def pathPattern = "grails-app/views/" + ((controller) ? "$controller/" : "") + "${view}.*"
         if (!patternResolver.getResources(pathPattern)) {
             throw new IllegalArgumentException(
-                (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view"
-            )
+                (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view")
         }
     }
 
@@ -196,7 +194,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
             }
             return true
         }
-        
+
         if (!mappingMatched) throw new IllegalArgumentException("url '$url' did not match any mappings")
     }
 

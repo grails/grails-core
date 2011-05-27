@@ -16,12 +16,29 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
-import grails.util.*;
+import grails.util.BuildScope;
+import grails.util.Environment;
+import grails.util.GrailsUtil;
+import grails.util.Metadata;
+import grails.util.PluginBuildSettings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,11 +62,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.*;
 
 /**
  * Implementation of the GrailsPlugin interface that wraps a Groovy plugin class
@@ -82,10 +94,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private String[] watchedResourcePatternReferences;
     private String[] loadAfterNames = new String[0];
     private String[] loadBeforeNames = new String[0];
-    private String[] influencedPluginNames = new String[0];
     private String status = STATUS_ENABLED;
     private String[] observedPlugins;
-    private URL pluginUrl;
     private Closure onConfigChangeListener;
     private Closure onShutdownListener;
     private Class<?>[] providedArtefacts = new Class[0];
@@ -106,20 +116,19 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         initialisePlugin(pluginClass);
     }
 
-
+    @Override
     public List<WatchPattern> getWatchedResourcePatterns() {
         return watchedResourcePatterns;
     }
 
     @Override
     public boolean hasInterestInChange(String path) {
-        if(watchedResourcePatterns != null) {
+        if (watchedResourcePatterns != null) {
             for (WatchPattern watchedResourcePattern : watchedResourcePatterns) {
-                if(watchedResourcePattern.matchesPath(path)) {
+                if (watchedResourcePattern.matchesPath(path)) {
                     return true;
                 }
             }
-
         }
         return false;
     }
@@ -135,7 +144,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         evaluatePluginLoadAfters();
         evaluateProvidedArtefacts();
         evaluatePluginEvictionPolicy();
-        evaluatePluginInfluencePolicy();
         evaluateOnChangeListener();
         evaluateObservedPlugins();
         evaluatePluginStatus();
@@ -233,7 +241,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     @SuppressWarnings("unchecked")
     private Set lazilyCreateIncludeOrExcludeSet(Map targetMap, boolean include) {
-        String key = include ? INCLUDES : EXCLUDES ;
+        String key = include ? INCLUDES : EXCLUDES;
         Set set = (Set) targetMap.get(key);
         if (set == null) {
             set = new HashSet();
@@ -385,16 +393,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         else if (resourcePath.startsWith("file:./")) resourcePath = resourcePath.substring(7);
         resourcePath = "file:" + location + resourcePath;
         return resourcePath;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void evaluatePluginInfluencePolicy() {
-        if (pluginBean.isReadableProperty(INFLUENCES)) {
-            List influencedList = (List)pluginBean.getPropertyValue(INFLUENCES);
-            if (influencedList != null) {
-                influencedPluginNames = (String[])influencedList.toArray(new String[influencedList.size()]);
-            }
-        }
     }
 
     private void evaluatePluginVersion() {
@@ -588,12 +586,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
      * @return the watchedResources
      */
     public Resource[] getWatchedResources() {
-        if(watchedResources.length == 0) {
-            if(watchedResourcePatternReferences != null) {
+        if (watchedResources.length == 0) {
+            if (watchedResourcePatternReferences != null) {
                 for (String resourcesReference : watchedResourcePatternReferences) {
                     try {
                         Resource[] tmp = resolver.getResources(resourcesReference);
-                        if(tmp.length>0) {
+                        if (tmp.length>0) {
                             watchedResources = (Resource[])ArrayUtils.addAll(watchedResources, tmp);
                         }
                     }
@@ -638,20 +636,22 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
      * @deprecated
      */
     @Override
+    @Deprecated
     public boolean checkForChanges() {
         return false; // do nothing
     }
-
 
     /**
      * Restarts the container
      *
      * @deprecated Not needed any more due to the reload agent
      */
+    @Deprecated
     public void restartContainer() {
         // do nothing
     }
 
+    @SuppressWarnings("unused")
     public void setWatchedResources(Resource[] watchedResources) throws IOException {
         this.watchedResources = watchedResources;
     }
@@ -677,19 +677,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     public void refresh() {
         // do nothing
         Resource descriptor = getDescriptor();
-        if(application != null && descriptor != null) {
+        if (application != null && descriptor != null) {
             ClassLoader parent = application.getClassLoader();
             GroovyClassLoader gcl = new GroovyClassLoader(parent);
             try {
-                Class pluginClass = gcl.parseClass(descriptor.getFile());
-                initialisePlugin(pluginClass);
+                initialisePlugin(gcl.parseClass(descriptor.getFile()));
             } catch (Exception e) {
                 GrailsUtil.deepSanitize(e);
                 LOG.error("Error refreshing plugin: " + e.getMessage(), e);
             }
         }
     }
-
 
     public GroovyObject getInstance() {
         return plugin;

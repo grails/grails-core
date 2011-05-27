@@ -113,18 +113,18 @@ public class StreamByteBufferTest extends TestCase {
     }
 
     private void bufferTest(int streamByteBufferSize, int testBufferSize) throws IOException {
-        StreamByteBuffer streamBuf=new StreamByteBuffer(streamByteBufferSize);
-        OutputStream output=streamBuf.getOutputStream();
-        for(int i=0;i < testBufferSize;i++) {
+        StreamByteBuffer streamBuf = new StreamByteBuffer(streamByteBufferSize);
+        OutputStream output = streamBuf.getOutputStream();
+        for (int i = 0; i < testBufferSize; i++) {
             output.write(i % (Byte.MAX_VALUE*2));
         }
         output.close();
-        byte[] buffer=new byte[testBufferSize];
-        InputStream input=streamBuf.getInputStream();
+        byte[] buffer = new byte[testBufferSize];
+        InputStream input = streamBuf.getInputStream();
         assertEquals(testBufferSize, input.available());
-        int readBytes=input.read(buffer);
+        int readBytes = input.read(buffer);
         assertEquals(readBytes, testBufferSize);
-        for(int i=0;i < buffer.length;i++) {
+        for (int i = 0; i < buffer.length; i++) {
             assertEquals((byte)(i % (Byte.MAX_VALUE*2)), buffer[i]);
         }
         assertEquals(-1, input.read());
@@ -136,8 +136,8 @@ public class StreamByteBufferTest extends TestCase {
 
     private void bufferTest2(int streamByteBufferSize, int testBufferSize) throws IOException {
         StreamByteBuffer streamBuf=new StreamByteBuffer(streamByteBufferSize);
-        OutputStream output=streamBuf.getOutputStream();
-        for(int i=0;i < testBufferSize;i++) {
+        OutputStream output = streamBuf.getOutputStream();
+        for (int i = 0;i < testBufferSize; i++) {
             output.write(i % (Byte.MAX_VALUE*2));
         }
         output.close();

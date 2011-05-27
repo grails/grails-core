@@ -97,7 +97,7 @@ class DocPublisher {
     void setEngineProperties(Properties p) {
         engineProperties = p
     }
-    
+
     /**
      * Registers a custom Radeox macro. If the macro has an 'initialContext'
      * property, it is set to the render context before first use.
@@ -208,7 +208,7 @@ class DocPublisher {
             if (matcher) {
                 level = matcher.group(1).split(/\./).size() - 1
             }
-            
+
             // This cryptic line finds the appropriate parent section list based
             // on the current section's level. If the level is 0, then it's 'book'.
             def parent = (0..<level).inject(book) { sectionList, n -> sectionList[-1].subSections }
@@ -254,10 +254,12 @@ class DocPublisher {
         def chapterVars
         book.eachWithIndex{ chapter, i ->
             chapterVars = [*:vars]
-            if(i!=0)
-              chapterVars['prev'] = book[i-1]
-            if(i!=(book.size()-1))
-              chapterVars['next'] = book[i+1]
+            if (i != 0) {
+                chapterVars['prev'] = book[i - 1]
+            }
+            if (i != (book.size() - 1)) {
+                chapterVars['next'] = book[i + 1]
+            }
             writeChapter(chapter, template, sectionTemplate, refGuideDir, fullContents, chapterVars)
         }
 

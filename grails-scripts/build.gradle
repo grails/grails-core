@@ -10,19 +10,20 @@ dependencies {
             "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
 
     compile 'org.tmatesoft.svnkit:svnkit:1.3.4'
-	compile project(":grails-web"), 
-			project(':grails-hibernate'),
-			project(':grails-docs'), 
-			project(':grails-crud'),
-			project(':grails-plugin-controllers'),
-			project(':grails-plugin-logging'),
-    		project(":grails-test"), 
-			project(":grails-plugin-testing")
-    
+    compile project(":grails-web"),
+            project(':grails-hibernate'),
+            project(':grails-docs'),
+            project(':grails-crud'),
+            project(':grails-plugin-controllers'),
+            project(':grails-plugin-logging'),
+            project(":grails-test"),
+            project(":grails-plugin-testing")
 }
+
 sourceSets {
     main {
-		groovy.srcDirs = ['../scripts']
+        groovy.srcDirs = ['../scripts']
     }
 }
+
 jar.appendix = 'scripts'

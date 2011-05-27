@@ -47,7 +47,7 @@ class FormatTagLib {
         def messageSource = grailsAttributes.applicationContext.messageSource
         def message
         try {
-            message = messageSource.getMessage( code, args == null ? null : args.toArray(), locale )
+            message = messageSource.getMessage(code, args == null ? null : args.toArray(), locale)
         }
         catch (NoSuchMessageException e) {
             if (defaultMessage != null) {
@@ -239,11 +239,11 @@ class FormatTagLib {
                 }
             }
             else if (!format) {
-                format = messageHelper( "number.format", { messageHelper( "default.number.format", "0", null, locale) } ,null ,locale)
+                format = messageHelper("number.format", { messageHelper("default.number.format", "0", null, locale) } ,null ,locale)
             }
         }
 
-        DecimalFormatSymbols dcfs = locale ? new DecimalFormatSymbols( locale ) : new DecimalFormatSymbols()
+        DecimalFormatSymbols dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
 
         DecimalFormat decimalFormat
         if (!type) {

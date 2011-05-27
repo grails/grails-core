@@ -29,9 +29,9 @@ public abstract class AbstractStaticMethodInvocation implements StaticMethodInvo
     public void setPattern(Pattern pattern) {
         this.pattern = pattern;
     }
-    
+
     public void setPattern(String methodPattern) {
-    	setPattern(Pattern.compile(methodPattern));
+        setPattern(Pattern.compile(methodPattern));
     }
 
     protected Pattern getPattern() {
@@ -39,7 +39,7 @@ public abstract class AbstractStaticMethodInvocation implements StaticMethodInvo
     }
 
     public boolean isMethodMatch(String methodName) {
-        return this.pattern.matcher(methodName.subSequence(0, methodName.length())).find();
+        return pattern.matcher(methodName.subSequence(0, methodName.length())).find();
     }
 
     @SuppressWarnings("rawtypes")

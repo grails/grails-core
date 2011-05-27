@@ -99,7 +99,7 @@ public class GrailsResourceUtils {
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
         GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "java"));
-        GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "groovy" ));
+        GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "groovy"));
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
         GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
@@ -146,7 +146,7 @@ public class GrailsResourceUtils {
             return getClassName(resource.getFile().getAbsolutePath());
         }
         catch (IOException e) {
-            throw new GrailsConfigurationException("I/O error reading class name from resource ["+resource+"]: " + e.getMessage(),e );
+            throw new GrailsConfigurationException("I/O error reading class name from resource ["+resource+"]: " + e.getMessage(), e);
         }
     }
 
@@ -335,39 +335,39 @@ public class GrailsResourceUtils {
      */
     public static String getArtefactDirectory(String path) {
 
-        if(path != null) {
+        if (path != null) {
             final Matcher matcher = RESOURCE_PATH_PATTERN.matcher(path);
-            if(matcher.find()) {
+            if (matcher.find()) {
                 return matcher.group(1);
             }
         }
         return null;
     }
-    
+
     /**
      * Takes any number of Strings and appends them into a uri, making
      * sure that a forward slash is inserted between each piece and
      * making sure that no duplicate slashes are in the uri
-     * 
+     *
      * <pre>
      * Input: ""
      * Output: ""
-     * 
+     *
      * Input: "/alpha", "/beta", "/gamma"
      * Output: "/alpha/beta/gamma
-     * 
+     *
      * Input: "/alpha/, "/beta/", "/gamma"
      * Output: "/alpha/beta/gamma
-     * 
+     *
      * Input: "/alpha/", "/beta/", "/gamma/"
      * Output "/alpha/beta/gamma/
-     * 
+     *
      * Input: "alpha", "beta", "gamma"
      * Output: "alpha/beta/gamma
      * </pre>
-     *  
+     *
      * @param pieces Strings to concatenate together into a uri
-     * @return a uri 
+     * @return a uri
      */
     public static String appendPiecesForUri(String... pieces) {
         StringBuilder builder = new StringBuilder();
@@ -381,9 +381,9 @@ public class GrailsResourceUtils {
             }
         }
         String result = builder.toString();
-        while(result.contains("//")) {
+        while (result.contains("//")) {
             result = result.replaceAll("//", "/");
         }
-        return result;        
+        return result;
     }
 }

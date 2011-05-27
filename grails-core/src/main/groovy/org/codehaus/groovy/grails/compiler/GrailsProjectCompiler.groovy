@@ -89,30 +89,25 @@ class GrailsProjectCompiler {
         def excludedPaths =  EXCLUDED_PATHS
 
         final grailsAppDirs = new File("${basedir}/grails-app").listFiles()
-        if(grailsAppDirs != null) {
+        if (grailsAppDirs != null) {
             for (dir in grailsAppDirs) {
-                if(dir != null) {
+                if (dir != null) {
                     if (!excludedPaths?.contains(dir.name) && dir.isDirectory()) {
                         srcDirectories << "${dir}".toString()
                     }
                 }
             }
-
         }
-
 
         initializeAntClasspaths()
 
         Resource[] resources = pluginBuildSettings.getArtefactResources()
         GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources)
         GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
-
     }
 
-
-
     AntBuilder getAnt() {
-        if(this.ant == null) {
+        if (ant == null) {
            ant = new AntBuilder()
            ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
            ant.path(id: "grails.compile.classpath", compileClasspath)
@@ -222,6 +217,7 @@ class GrailsProjectCompiler {
         compilePlugins()
         compile()
     }
+
     /**
      * Compiles project sources using the target directory passed by PluginBuildSettings
      *
@@ -229,6 +225,7 @@ class GrailsProjectCompiler {
     void compile() {
         compile(targetClassesDir)
     }
+
     /**
      * Compiles project sources to the given target directory
      *
@@ -237,8 +234,8 @@ class GrailsProjectCompiler {
     void compile(targetDir) {
 
         def compilerPaths = { String classpathId ->
-            for(srcPath in srcDirectories) {
-               if(new File(srcPath).exists()) {
+            for (srcPath in srcDirectories) {
+               if (new File(srcPath).exists()) {
                    src(path:srcPath)
                }
             }
@@ -258,14 +255,14 @@ class GrailsProjectCompiler {
         // If this is a plugin project, the descriptor is not included
         // in the compiler's source path. So, we manually compile it now.
         if (isPluginProject) {
-			compilePluginDescriptor(pluginDescriptor, classesDirPath)
-		}
+            compilePluginDescriptor(pluginDescriptor, classesDirPath)
+        }
     }
-
 
     void compilePlugins() {
         compilePlugins(targetPluginClassesDir)
     }
+
     /**
      * Compiles plugin sources files to the given target directory
      *
@@ -359,8 +356,8 @@ class GrailsProjectCompiler {
         if (descriptor.lastModified() > classFile.lastModified()) {
             ant.echo(message: "Compiling plugin descriptor...")
             config.setTargetDirectory(classesDir)
-			def cl = new URLClassLoader([classesDir,targetPluginClassesDir]*.toURL() as URL[], classLoader)
-			
+            def cl = new URLClassLoader([classesDir,targetPluginClassesDir]*.toURL() as URL[], classLoader)
+
             def unit = new CompilationUnit(config, null, new GroovyClassLoader(cl))
             unit.addSource(descriptor)
             unit.compile()

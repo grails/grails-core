@@ -55,7 +55,7 @@ subprojects { project ->
     targetCompatibility = "1.5"
     archivesBaseName = 'grails'
     version = grailsVersion
-	group = "org.grails"
+    group = "org.grails"
 
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
@@ -81,7 +81,6 @@ subprojects { project ->
         mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
-
             }
         }
     }
@@ -105,7 +104,6 @@ subprojects { project ->
         testCompile('org.spockframework:spock-core:0.5-groovy-1.8') {
             transitive = false
         }
-
     }
 
     install.doLast {
@@ -133,9 +131,9 @@ subprojects { project ->
         from javadoc.destinationDir
     }
 
-	groovydoc.doLast {
-		delete("${buildDir}/tmp")
-	}
+    groovydoc.doLast {
+        delete("${buildDir}/tmp")
+    }
 
     configurations {
         meta
@@ -156,11 +154,11 @@ subprojects { project ->
 
         project.deployer = repositories.mavenDeployer {
           repository(url: url) {
-			  beforeDeployment { deployment ->
-			  	  ["sources", "javadoc"].each { type ->
-			          deployment.addArtifact configurations.meta.artifacts.find { it.classifier == type }
-			      }
-			  }	
+              beforeDeployment { deployment ->
+                  ["sources", "javadoc"].each { type ->
+                      deployment.addArtifact configurations.meta.artifacts.find { it.classifier == type }
+                  }
+              }
               final username = project.properties["artifactoryPublishUsername"]
               final password = project.properties["artifactoryPublishPassword"]
 
@@ -173,8 +171,8 @@ subprojects { project ->
         }
       }
     }
-	uploadArchives.dependsOn sourcesJar, javadocJar
 
+    uploadArchives.dependsOn sourcesJar, javadocJar
 
     /*
         Install a method that can be used to fine tune the poms, e.g…

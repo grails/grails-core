@@ -20,7 +20,7 @@ import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProx
 
 /**
  * Tells Spring always to proxy Groovy classes.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.2
  */

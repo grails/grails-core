@@ -96,7 +96,7 @@ public class GrailsMetaClassUtils {
         for (Object o : emc.getExpandoProperties()) {
             if (o instanceof ThreadManagedMetaBeanProperty) {
                 ThreadManagedMetaBeanProperty mbp = (ThreadManagedMetaBeanProperty)o;
-                replacement.setProperty( mbp.getName(), mbp.getInitialValue() );
+                replacement.setProperty(mbp.getName(), mbp.getInitialValue());
             }
         }
         replacement.initialize();
@@ -146,19 +146,17 @@ public class GrailsMetaClassUtils {
     }
 
     public static MetaClass getMetaClass(Object instance) {
-        if(instance instanceof GroovyObject) {
+        if (instance instanceof GroovyObject) {
             GroovyObject groovyObject = (GroovyObject) instance;
             MetaClass metaClass = groovyObject.getMetaClass();
-            if(!(metaClass instanceof ExpandoMetaClass)) {
+            if (!(metaClass instanceof ExpandoMetaClass)) {
                 metaClass = getExpandoMetaClass(instance.getClass());
                 groovyObject.setMetaClass(metaClass);
             }
 
             return metaClass;
         }
-        else {
-            return getExpandoMetaClass(instance.getClass());
-        }
+        return getExpandoMetaClass(instance.getClass());
     }
 
     /**
@@ -180,13 +178,14 @@ public class GrailsMetaClassUtils {
      * @param requiredType The required type of the property
      * @return The property value
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getPropertyIfExists(Object instance, String property, Class<T> requiredType) {
         MetaClass metaClass = getMetaClass(instance);
 
         MetaProperty metaProperty = metaClass.getMetaProperty(property);
-        if(metaProperty != null) {
+        if (metaProperty != null) {
             Object value = metaProperty.getProperty(instance);
-            if(value != null && requiredType.isInstance(value)) {
+            if (value != null && requiredType.isInstance(value)) {
                 return (T) value;
             }
         }
@@ -217,7 +216,7 @@ public class GrailsMetaClassUtils {
     public static Object invokeMethodIfExists(Object instance, String methodName, Object[] args) {
         MetaClass metaClass = getMetaClass(instance);
         List<MetaMethod> methodList = metaClass.respondsTo(instance, methodName, args);
-        if(methodList != null && !methodList.isEmpty()) {
+        if (methodList != null && !methodList.isEmpty()) {
             return metaClass.invokeMethod(instance, methodName, args);
         }
         return null;

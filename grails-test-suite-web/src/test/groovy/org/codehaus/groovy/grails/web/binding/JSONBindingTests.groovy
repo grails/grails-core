@@ -14,7 +14,7 @@ class JSONBindingTests extends AbstractGrailsControllerTests {
         RequestContextHolder.setRequestAttributes(null)
         MimeType.reset()
 
-        gcl.parseClass( """
+        gcl.parseClass("""
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',

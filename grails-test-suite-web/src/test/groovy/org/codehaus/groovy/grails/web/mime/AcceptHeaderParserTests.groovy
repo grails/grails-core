@@ -11,7 +11,7 @@ class AcceptHeaderParserTests extends GroovyTestCase {
 
     def config
     protected void setUp() {
-        config = new ConfigSlurper().parse( """
+        config = new ConfigSlurper().parse("""
 grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       text: 'text/plain',
                       js: 'text/javascript',
@@ -39,8 +39,8 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals 1, mimes.size()
         assertEquals "application/xml", mimes[0].name
         assertEquals "xml", mimes[0].extension
-        assertEquals( 'UTF-8', mimes[0].parameters.charset )
-        assertEquals( '1.0', mimes[0].parameters.q)
+        assertEquals('UTF-8', mimes[0].parameters.charset)
+        assertEquals('1.0', mimes[0].parameters.q)
     }
 
     void testFirefox2AcceptHeaderOrdering() {
@@ -49,8 +49,8 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
         assertEquals 5, mimes.size()
 
-        assertEquals( ['application/xhtml+xml','application/xml', 'text/html', 'text/plain', '*/*'], mimes.name )
-        assertEquals( ['html', 'xml', 'html', 'text', 'all'], mimes.extension )
+        assertEquals(['application/xhtml+xml','application/xml', 'text/html', 'text/plain', '*/*'], mimes.name)
+        assertEquals(['html', 'xml', 'html', 'text', 'all'], mimes.extension)
     }
 
     void testFirefox3AcceptHeaderOrdering() {
@@ -59,7 +59,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
         assertEquals 4, mimes.size()
 
-        assertEquals( ['html','html','xml', 'all'], mimes.extension )
+        assertEquals(['html','html','xml', 'all'], mimes.extension)
     }
 
     void testAcceptHeaderWithQNumberOrdering() {
@@ -67,7 +67,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
         assertEquals 4, mimes.size()
 
-        assertEquals( ['xml','html','html', 'all'], mimes.extension )
+        assertEquals(['xml','html','html', 'all'], mimes.extension)
     }
 
     void testPrototypeHeaderOrdering() {
@@ -75,15 +75,15 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
         assertEquals 4, mimes.size()
 
-        assertEquals( ["js",'html', 'xml', 'all'], mimes.extension )
-        assertEquals( ["text/javascript",'text/html', 'application/xml', '*/*'], mimes.name )
+        assertEquals(["js",'html', 'xml', 'all'], mimes.extension)
+        assertEquals(["text/javascript",'text/html', 'application/xml', '*/*'], mimes.name)
     }
 
     void testOldBrowserHeader() {
         def mimes = new DefaultAcceptHeaderParser(new DefaultGrailsApplication(config:config)).parse("*/*")
 
         assertEquals 1, mimes.size()
-        assertEquals( ['all'], mimes.extension )
+        assertEquals(['all'], mimes.extension)
     }
 
     // test for GRAILS-3389
@@ -92,7 +92,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
         assertEquals 4, mimes.size()
 
-        assertEquals( ['html','html', 'xml','all'], mimes.extension )
+        assertEquals(['html','html', 'xml','all'], mimes.extension)
     }
 
     // test for GRAILS-3493

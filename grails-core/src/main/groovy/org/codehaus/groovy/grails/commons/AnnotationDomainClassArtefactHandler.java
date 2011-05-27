@@ -41,10 +41,10 @@ public class AnnotationDomainClassArtefactHandler extends DomainClassArtefactHan
         if (isJpaDomainClass) {
             jpaClassNames.add(clazz.getName());
         }
-        return super.isArtefactClass(clazz) ;
+        return super.isArtefactClass(clazz);
     }
 
-    public static boolean isJPADomainClass(Class <?>clazz){
+    public static boolean isJPADomainClass(Class<?> clazz) {
         return clazz != null && clazz.getAnnotation(Entity.class) != null;
     }
 

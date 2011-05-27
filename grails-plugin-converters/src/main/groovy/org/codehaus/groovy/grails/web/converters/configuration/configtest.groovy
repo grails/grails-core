@@ -39,7 +39,7 @@ def start = System.currentTimeMillis()
 }
 def time = System.currentTimeMillis()-start
 println "$label --> ${time}ms"
-map[label] = map[label] + time    
+map[label] = map[label] + time
 }
 
 test("default", defcfg)

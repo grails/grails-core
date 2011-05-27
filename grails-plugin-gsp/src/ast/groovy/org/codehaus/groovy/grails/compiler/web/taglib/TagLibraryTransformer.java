@@ -61,12 +61,12 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer{
     private static final String NAMESPACE_PROPERTY = "namespace";
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return TagLibraryApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;  // no static methods
     }
 
@@ -76,9 +76,9 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer{
 
         PropertyNode namespaceProperty = classNode.getProperty(NAMESPACE_PROPERTY);
         String namespace = GroovyPage.DEFAULT_NAMESPACE;
-        if(namespaceProperty != null && namespaceProperty.isStatic()) {
+        if (namespaceProperty != null && namespaceProperty.isStatic()) {
             Expression initialExpression = namespaceProperty.getInitialExpression();
-            if(initialExpression instanceof ConstantExpression) {
+            if (initialExpression instanceof ConstantExpression) {
                 namespace = initialExpression.getText();
             }
         }
@@ -125,20 +125,20 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer{
 
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(GROOVY_PAGE_CLASS_NODE),"captureTagOutput", arguments)));
 
-        if(includeBody && includeAttrs) {
-            if(!methodExists(classNode, tagName, MAP_CLOSURE_PARAMETERS))
+        if (includeBody && includeAttrs) {
+            if (!methodExists(classNode, tagName, MAP_CLOSURE_PARAMETERS))
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_CLOSURE_PARAMETERS, null, methodBody));
         }
-        else if(includeAttrs && !includeBody) {
-            if(!methodExists(classNode, tagName, MAP_PARAMETERS))
+        else if (includeAttrs && !includeBody) {
+            if (!methodExists(classNode, tagName, MAP_PARAMETERS))
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_PARAMETERS, null, methodBody));
         }
-        else if(includeBody) {
-            if(!methodExists(classNode, tagName, CLOSURE_PARAMETERS))
+        else if (includeBody) {
+            if (!methodExists(classNode, tagName, CLOSURE_PARAMETERS))
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, CLOSURE_PARAMETERS, null, methodBody));
         }
         else  {
-            if(!methodExists(classNode, tagName, Parameter.EMPTY_ARRAY))
+            if (!methodExists(classNode, tagName, Parameter.EMPTY_ARRAY))
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, Parameter.EMPTY_ARRAY, null, methodBody));
         }
     }
@@ -152,12 +152,12 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer{
         List<PropertyNode> properties = classNode.getProperties();
 
         for (PropertyNode property : properties) {
-            if(property.isPublic()) {
+            if (property.isPublic()) {
                 Expression initialExpression = property.getInitialExpression();
-                if(initialExpression instanceof ClosureExpression) {
+                if (initialExpression instanceof ClosureExpression) {
                     ClosureExpression ce = (ClosureExpression) initialExpression;
                     Parameter[] parameters = ce.getParameters();
-                    if(parameters.length > 0) {
+                    if (parameters.length > 0) {
                         tags.add(property);
                     }
                 }

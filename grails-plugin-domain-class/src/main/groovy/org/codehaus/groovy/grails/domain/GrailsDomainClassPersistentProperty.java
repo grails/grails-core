@@ -22,24 +22,21 @@ import org.springframework.datastore.mapping.model.PropertyMapping;
 import org.springframework.datastore.mapping.reflect.NameUtils;
 
 /**
- * Bridges a {@link GrailsDomainClassProperty} to the {@link PersistentProperty} interface
+ * Bridges a {@link GrailsDomainClassProperty} to the {@link PersistentProperty} interface.
  *
  * @author Graeme Rocher
  * @since 1.0
- *
  */
-public class GrailsDomainClassPersistentProperty implements PersistentProperty{
+@SuppressWarnings("rawtypes")
+public class GrailsDomainClassPersistentProperty implements PersistentProperty {
 
-	private PersistentEntity owner;
-	private GrailsDomainClassProperty property;
+    private PersistentEntity owner;
+    private GrailsDomainClassProperty property;
     private PropertyMapping propertyMapping;
 
-
-    public GrailsDomainClassPersistentProperty(final PersistentEntity owner,
-			GrailsDomainClassProperty property) {
-		super();
-		this.owner = owner;
-		this.property = property;
+    public GrailsDomainClassPersistentProperty(final PersistentEntity owner, GrailsDomainClassProperty property) {
+        this.owner = owner;
+        this.property = property;
         propertyMapping = new PropertyMapping() {
             public ClassMapping getClassMapping() {
                 return owner.getMapping();
@@ -49,30 +46,29 @@ public class GrailsDomainClassPersistentProperty implements PersistentProperty{
                 return null;
             }
         };
-	}
+    }
 
-	public String getName() {
-		return property.getName();
-	}
+    public String getName() {
+        return property.getName();
+    }
 
-	public String getCapitilizedName() {
-		return NameUtils.capitalize(getName());
-	}
+    public String getCapitilizedName() {
+        return NameUtils.capitalize(getName());
+    }
 
-	public Class getType() {
-		return property.getType();
-	}
+    public Class getType() {
+        return property.getType();
+    }
 
-	public PropertyMapping getMapping() {
+    public PropertyMapping getMapping() {
         return propertyMapping;
-	}
+    }
 
-	public PersistentEntity getOwner() {
-		return owner;
-	}
+    public PersistentEntity getOwner() {
+        return owner;
+    }
 
-	public boolean isNullable() {
-		return property.isOptional();
-	}
-
+    public boolean isNullable() {
+        return property.isOptional();
+    }
 }

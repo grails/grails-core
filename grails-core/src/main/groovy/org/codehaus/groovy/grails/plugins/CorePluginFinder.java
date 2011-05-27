@@ -18,6 +18,17 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import groovy.util.slurpersupport.Node;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -28,11 +39,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.StringUtils;
 import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 
 /**
  * Loads core plugin classes. Contains functionality moved in from <code>DefaultGrailsPluginManager</code>.
@@ -47,14 +53,16 @@ public class CorePluginFinder implements ParentApplicationContextAware {
 
     private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     private final Set<Class<?>> foundPluginClasses = new HashSet<Class<?>>();
+    @SuppressWarnings("unused")
     private final GrailsApplication application;
+    @SuppressWarnings("rawtypes")
     private final Map<Class, BinaryGrailsPluginDescriptor> binaryDescriptors = new HashMap<Class, BinaryGrailsPluginDescriptor>();
 
     public CorePluginFinder(GrailsApplication application) {
         this.application = application;
     }
 
-    public Class[] getPluginClasses() {
+    public Class<?>[] getPluginClasses() {
 
         // just in case we try to use this twice
         foundPluginClasses.clear();
@@ -74,7 +82,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         return foundPluginClasses.toArray(new Class[foundPluginClasses.size()]);
     }
 
-    public BinaryGrailsPluginDescriptor getBinaryDescriptor(Class pluginClass) {
+    public BinaryGrailsPluginDescriptor getBinaryDescriptor(Class<?> pluginClass) {
         return binaryDescriptors.get(pluginClass);
     }
 
@@ -105,6 +113,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
     }
 
+    @SuppressWarnings("rawtypes")
     private void loadCorePluginsFromResources(Resource[] resources) throws IOException {
 
         LOG.debug("Attempting to load [" + resources.length + "] core plugins");
@@ -133,8 +142,9 @@ public class CorePluginFinder implements ParentApplicationContextAware {
                         }
                     }
                 } finally {
-                   if(input != null)
+                    if (input != null) {
                         input.close();
+                    }
                 }
             }
         } catch (ParserConfigurationException e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,32 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import grails.web.Action;
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.util.ReflectionUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.util.ReflectionUtils;
+
 /**
- * Implements action invokation throught Method
+ * Implements action invocation through Method.
  *
  * @author Stephane Maldini
  * @since 1.4
  */
 public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper {
 
-    public static final Class[] NOARGS = new Class[]{};
-
+    public static final Class<?>[] NOARGS = {};
 
     @Override
-    protected Method retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
+    protected Method retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+             HttpServletResponse response) {
         Method action = ReflectionUtils.findMethod(controller.getClass(), actionName, NOARGS);
-        if(action != null)
+        if (action != null) {
             ReflectionUtils.makeAccessible(action);
+        }
 
         if (action == null || action.getAnnotation(Action.class) == null) {
             try {
@@ -48,10 +51,8 @@ public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper
             } catch (IOException e) {
                 throw new ControllerExecutionException("I/O error sending 404 error", e);
             }
-        } else {
-            return action;
         }
-
+        return action;
     }
 
     @Override

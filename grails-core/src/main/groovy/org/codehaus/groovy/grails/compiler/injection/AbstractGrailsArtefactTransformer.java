@@ -33,6 +33,7 @@ import java.util.List;
  * @since 1.4
  * @author  Graeme Rocher
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable{
 
 
@@ -40,7 +41,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
-    private static final ClassNode CLASS_CLASSNODE = new ClassNode(Class.class);
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
     public static final int PUBLIC_STATIC_MODIFIER = Modifier.PUBLIC | Modifier.STATIC;
@@ -50,7 +50,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     public String getArtefactType() {
         String simpleName = getClass().getSimpleName();
-        if(simpleName.length()>11) {
+        if (simpleName.length()>11) {
             return simpleName.substring(0, simpleName.length()-11);
         }
         return simpleName;
@@ -71,18 +71,18 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public final void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         Class instanceImplementation = getInstanceImplementation();
 
-        if(instanceImplementation != null) {
+        if (instanceImplementation != null) {
             ClassNode implementationNode = new ClassNode(instanceImplementation);
 
             String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
             Expression apiInstance = new VariableExpression(apiInstanceProperty);
 
-            if(requiresStaticLookupMethod()) {
+            if (requiresStaticLookupMethod()) {
                 final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();
                 createStaticLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName);
                 apiInstance = new MethodCallExpression(new ClassExpression(classNode),lookupMethodName, ZERO_ARGS);
             }
-            else if(requiresAutowiring()) {
+            else if (requiresAutowiring()) {
 
                 PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null);
                 propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
@@ -94,19 +94,15 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 classNode.addField(fieldNode);
             }
 
-
-            while(!implementationNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
+            while (!implementationNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
                 List<MethodNode> declaredMethods = implementationNode.getMethods();
                 for (MethodNode declaredMethod : declaredMethods) {
-
-                    if(GrailsASTUtils.isConstructorMethod(declaredMethod)) {
+                    if (GrailsASTUtils.isConstructorMethod(declaredMethod)) {
                         GrailsASTUtils.addDelegateConstructor(classNode, declaredMethod);
-
                     }
-                    else if(isCandidateInstanceMethod(classNode, declaredMethod)) {
+                    else if (isCandidateInstanceMethod(classNode, declaredMethod)) {
                         GrailsASTUtils.addDelegateInstanceMethod(classNode, apiInstance, declaredMethod);
                     }
-
                 }
                 implementationNode = implementationNode.getSuperClass();
             }
@@ -115,7 +111,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
         Class staticImplementation = getStaticImplementation();
 
-        if(staticImplementation != null) {
+        if (staticImplementation != null) {
             ClassNode staticImplementationNode = new ClassNode(staticImplementation);
 
             final List<MethodNode> declaredMethods = staticImplementationNode.getMethods();
@@ -123,7 +119,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             String apiInstanceProperty = STATIC_PREFIX + staticImplementationSimpleName;
             final String lookupMethodName = CURRENT_PREFIX + staticImplementationSimpleName;
 
-            if(requiresStaticLookupMethod()) {
+            if (requiresStaticLookupMethod()) {
                 createStaticLookupMethod(classNode, staticImplementationNode, apiInstanceProperty, lookupMethodName);
             }
             else {
@@ -141,24 +137,22 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             MethodCallExpression apiLookupMethod = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
 
             for (MethodNode declaredMethod : declaredMethods) {
-                if(isStaticCandidateMethod(classNode,declaredMethod)) {
+                if (isStaticCandidateMethod(classNode,declaredMethod)) {
                     GrailsASTUtils.addDelegateStaticMethod(apiLookupMethod, classNode, declaredMethod);
                 }
             }
-
         }
 
-        if(classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty())
+        if (classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty()) {
             classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
-
+        }
     }
 
     protected boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
         return GrailsASTUtils.isCandidateInstanceMethod(classNode, declaredMethod);
     }
 
-
-    protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
+    protected boolean isStaticCandidateMethod(@SuppressWarnings("unused") ClassNode classNode, MethodNode declaredMethod) {
         return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 
@@ -170,7 +164,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         classNode.addMethod(lookupMethod);
     }
 
-
     /**
      * Subclasses should override in the instance API requires a static lookup method instead of autowiring.
      * Defaults to false.
@@ -181,7 +174,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return false;
     }
 
-    protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
+    protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode,
+            @SuppressWarnings("unused") String apiInstanceProperty, String methodName, BlockStatement methodBody) {
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(new ConstantExpression("Cannot locate Grails API implementation. Grails code can only be run within the context of a Grails application."));
         methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
@@ -210,10 +204,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      * @param source The source
      * @param classNode The class node
      */
+    @SuppressWarnings("unused")
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         // do nothing
     }
-
 
     /**
      * The class that provides the implementation of all instance methods and properties
@@ -232,6 +226,4 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public final void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
-
-
 }

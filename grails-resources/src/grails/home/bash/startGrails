@@ -44,7 +44,7 @@ case "`uname`" in
     CYGWIN*)
         cygwin=true
         ;;
-        
+
     Darwin*)
         darwin=true
         ;;
@@ -86,18 +86,18 @@ ARGUMENTS="$SAVED_OPTIONS $@"
 
 # Attempt to set JAVA_HOME if it's not already set
 if [ -z "$JAVA_HOME" ]; then
-	
+
 	# Set JAVA_HOME for Darwin
 	if $darwin; then
-		
+
 		[ -z "$JAVA_HOME" -a -d "/Library/Java/Home" ] &&
 			export JAVA_HOME="/Library/Java/Home"
-			
+
 		[ -z "$JAVA_HOME" -a -d "/System/Library/Frameworks/JavaVM.framework/Home" ] &&
 			export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Home"
-		
+
 	fi
-	
+
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched
@@ -150,7 +150,7 @@ fi
 
 # Create the final classpath
 # Setting a classpath using the -cp or -classpath option means not to use
-# the global classpath. Groovy behaves then the same as the java 
+# the global classpath. Groovy behaves then the same as the java
 # interpreter
 if [ -n "$CP" ] ; then
     CP="$CP"
@@ -187,7 +187,7 @@ if [ "$cygwin" = "false" ]; then
 	            # use the businessSystem max
 	            MAX_FD="$MAX_FD_LIMIT"
 	        fi
-        
+
 	        ulimit -n $MAX_FD
 	        if [ $? -ne 0 ]; then
 	            warn "Could not set maximum file descriptor limit: $MAX_FD"
@@ -220,7 +220,7 @@ if $cygwin; then
     GRAILS_HOME=`cygpath --path --mixed "$GRAILS_HOME"`
     JAVA_HOME=`cygpath --path --mixed "$JAVA_HOME"`
     GROOVY_CONF=`cygpath --path --mixed "$GROOVY_CONF"`
-    CP=`cygpath --path --mixed "$CP"`    
+    CP=`cygpath --path --mixed "$CP"`
     TOOLS_JAR=`cygpath --path --mixed "$TOOLS_JAR"`
     STARTER_CLASSPATH=`cygpath --path --mixed "$STARTER_CLASSPATH"`
 	# We build the pattern for arguments to be converted via cygpath
@@ -243,7 +243,7 @@ if $cygwin; then
 	    	convArg=`cygpath --path --ignore --mixed "$arg"`
     	else
 			convArg=$arg
-    	fi   
+    	fi
 		ARGUMENTS="$ARGUMENTS $convArg"
     done
 fi
@@ -274,7 +274,7 @@ startGrails() {
           $STARTER_MAIN_CLASS \
           --main $CLASS \
           --conf "$GROOVY_CONF" \
-          --classpath "$CP" 
+          --classpath "$CP"
   	else
          exec "$JAVACMD" $JAVA_OPTS \
           -classpath "$STARTER_CLASSPATH" \

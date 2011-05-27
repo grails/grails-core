@@ -54,7 +54,7 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector{
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         FieldNode field = classNode.getField(FIELD_MIME_TYPES_API);
-        if(field == null) {
+        if (field == null) {
             final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
             field = new FieldNode(FIELD_MIME_TYPES_API, PRIVATE_STATIC_MODIFIER, mimeTypesApiClass,classNode, new ConstructorCallExpression(mimeTypesApiClass, GrailsArtefactClassInjector.ZERO_ARGS));
 

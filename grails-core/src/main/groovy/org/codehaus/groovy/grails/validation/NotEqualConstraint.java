@@ -65,7 +65,7 @@ public class NotEqualConstraint extends AbstractConstraint {
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (constraintParameter.equals( propertyValue)) {
+        if (constraintParameter.equals(propertyValue)) {
             Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, constraintParameter };
             rejectValue(target, errors, ConstrainedProperty.DEFAULT_NOT_EQUAL_MESSAGE_CODE,
                     ConstrainedProperty.NOT_EQUAL_CONSTRAINT, args);

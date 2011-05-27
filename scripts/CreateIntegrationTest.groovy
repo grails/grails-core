@@ -30,8 +30,8 @@ target ('default': "Creates a new Grails integration test which loads the whole 
 
     promptForName(type: "Integration test")
 
-    for ( name in argsMap["params"] ) {
+    for (name in argsMap["params"]) {
         name = purgeRedundantArtifactSuffix(name, 'Tests')
-        createIntegrationTest(name: name, suffix: "", testType:"Generic") 
+        createIntegrationTest(name: name, suffix: "", testType:"Generic")
     }
 }

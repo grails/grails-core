@@ -73,7 +73,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     public ClassLoader getClassLoader() {
         GrailsApplication application = getGrailsApplication();
 
-        if(application != null) {
+        if (application != null) {
             return application.getClassLoader();
         }
 
@@ -181,11 +181,9 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     @Override
     protected ConfigurableEnvironment createEnvironment() {
         GrailsApplication grailsApplication = getGrailsApplication();
-        if(grailsApplication != null) {
+        if (grailsApplication != null) {
             return new GrailsEnvironment(grailsApplication);
         }
-        else {
-            return super.createEnvironment();
-        }
+        return super.createEnvironment();
     }
 }

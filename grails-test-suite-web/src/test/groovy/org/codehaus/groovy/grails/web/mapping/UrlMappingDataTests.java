@@ -41,10 +41,10 @@ public class UrlMappingDataTests extends TestCase {
 
         assertFalse(tokens.length == 0);
 
-        assertEquals("blog",tokens[0] );
-        assertEquals("(*)",tokens[1] );
-        assertEquals("2007",tokens[2] );
-        assertEquals("(*)",tokens[3] );
+        assertEquals("blog",tokens[0]);
+        assertEquals("(*)",tokens[1]);
+        assertEquals("2007",tokens[2]);
+        assertEquals("(*)",tokens[3]);
 
         assertFalse(data.isOptional(0));
         assertTrue(data.isOptional(1));

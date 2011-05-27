@@ -96,7 +96,7 @@ public class GSPWriter extends PrintWriter {
     }
 
     public int getCurrentLineNumber() {
-        return this.lineNumber;
+        return lineNumber;
     }
 
     public int[] getLineNumbers() {

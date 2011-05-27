@@ -18,15 +18,14 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
+
+import java.io.IOException;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
 
 /**
  * Allows files references like /WEB-INF/grails-app to be loaded from ./grails-app to support
@@ -35,7 +34,7 @@ import java.io.IOException;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class DevelopmentResourceLoader extends DefaultResourceLoader{
+public class DevelopmentResourceLoader extends DefaultResourceLoader {
 
     private String baseLocation = ".";
     private GrailsApplication application;
@@ -107,12 +106,5 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader{
         }
 
         return defaultPath;
-    }
-
-    private GrailsPluginManager getPluginManager(ApplicationContext mainContext) {
-        if (mainContext != null) {
-            return mainContext.getBean(GrailsPluginManager.class);
-        }
-        return null;
     }
 }

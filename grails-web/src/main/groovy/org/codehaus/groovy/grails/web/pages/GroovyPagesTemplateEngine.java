@@ -118,7 +118,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     public void afterPropertiesSet() {
         if (classLoader == null) {
             classLoader = initGroovyClassLoader(Thread.currentThread().getContextClassLoader());
-        }else if(!classLoader.getClass().equals(GroovyPageClassLoader.class)){
+        }else if (!classLoader.getClass().equals(GroovyPageClassLoader.class)) {
             classLoader = new GroovyPageClassLoader(classLoader);
         }
     }
@@ -184,7 +184,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @param viewClass The view class
      * @return The Template instance
      */
-    public Template createTemplate(Class viewClass) {
+    public Template createTemplate(@SuppressWarnings("rawtypes") Class viewClass) {
+        @SuppressWarnings("unchecked")
         final GroovyPageMetaInfo metaInfo = createPreCompiledGroovyPageMetaInfo(viewClass);
         return new GroovyPageTemplate(metaInfo);
     }
@@ -586,7 +587,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         String path = getPathForResource(res);
         try {
             String encoding = GroovyPageParser.DEFAULT_ENCODING;
-            if(grailsApplication != null) {
+            if (grailsApplication != null) {
                 ConfigObject config = grailsApplication.getConfig();
                 Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
@@ -596,7 +597,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             }
             parser = new GroovyPageParser(name, path, path, inputStream, encoding);
 
-            if(grailsApplication != null) {
+            if (grailsApplication != null) {
                 ConfigObject config = grailsApplication.getConfig();
 
                 Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
@@ -610,10 +611,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                     parser.setKeepGeneratedDirectory((File) keepDirObj);
                 }
                 else if (keepDirObj != null) {
-                    parser.setKeepGeneratedDirectory( new File(String.valueOf(keepDirObj)) );
+                    parser.setKeepGeneratedDirectory(new File(String.valueOf(keepDirObj)));
                 }
-
-
             }
         }
         catch (IOException e) {
@@ -626,7 +625,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         GroovyPageMetaInfo metaInfo = createPageMetaInfo(parser, in);
         metaInfo.applyLastModifiedFromResource(res);
         try {
-            metaInfo.setPageClass( compileGroovyPage(in, name, path, metaInfo) );
+            metaInfo.setPageClass(compileGroovyPage(in, name, path, metaInfo));
             metaInfo.setHtmlParts(parser.getHtmlPartsArray());
         }
         catch (GroovyPagesException e) {
@@ -792,7 +791,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         if (resourceLoader == null) {
             resourceLoader = applicationContext;
         }
-        if(applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
+        if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
             this.grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
         }
     }

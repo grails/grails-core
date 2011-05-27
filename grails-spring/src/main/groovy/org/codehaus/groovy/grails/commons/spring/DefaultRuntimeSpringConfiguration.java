@@ -154,7 +154,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         registerBeansWithContext(context);
         context.refresh();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Created ApplicationContext in " +(System.currentTimeMillis()-now)+ "ms" );
+            LOG.debug("Created ApplicationContext in " + (System.currentTimeMillis() - now) + "ms");
         }
         return context;
     }

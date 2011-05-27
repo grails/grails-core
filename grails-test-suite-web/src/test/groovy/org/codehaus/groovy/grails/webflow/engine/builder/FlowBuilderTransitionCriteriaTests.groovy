@@ -26,7 +26,7 @@ class FlowBuilderTransitionCriteriaTests extends AbstractGrailsTagAwareFlowExecu
         startFlow()
         assertCurrentStateEquals "enterPersonalDetails"
 
-        signalEvent( "submit" )
+        signalEvent("submit")
         assertCurrentStateEquals "enterPersonalDetails"
 
         signalEvent("another")

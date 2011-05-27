@@ -66,15 +66,15 @@ target(packagePlugin: "Implementation target") {
     packager.ant = ant
     packager.resourcesDir = new File(resourcesDirPath)
     packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
-	if(argsMap.binary) {
-		pluginInfo.packaging = "binary"
-	}
-	else if(argsMap.source) {
-		pluginInfo.packaging = "source"
-	}
-	else if(plugin?.hasProperty('packaging')) {
-		pluginInfo.packaging = plugin.packaging
-	}
+    if (argsMap.binary) {
+        pluginInfo.packaging = "binary"
+    }
+    else if (argsMap.source) {
+        pluginInfo.packaging = "source"
+    }
+    else if (plugin?.hasProperty('packaging')) {
+        pluginInfo.packaging = plugin.packaging
+    }
 
     def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
     def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginGrailsVersion)
@@ -103,14 +103,11 @@ target(packagePlugin: "Implementation target") {
 
     event("PackagePluginStart", [pluginInfo.name])
 
-
     // Package plugin's zip distribution
     pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
 
-
     event("PackagePluginEnd", [pluginInfo.name])
 }
-
 
 private loadBasePlugin() {
     pluginManager?.allPlugins?.find { it.basePlugin }

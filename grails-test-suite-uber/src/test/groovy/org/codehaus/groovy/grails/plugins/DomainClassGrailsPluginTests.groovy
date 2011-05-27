@@ -26,15 +26,15 @@ class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
 
         gcl.parseClass("""package grails.test
 class Parent2 {
-   Date someDate
-    String toString(){
+    Date someDate
+    String toString() {
         return 'my toString'
     }
 } """, "myapp${fs}grails-app${fs}domain${fs}grails${fs}test${fs}Parent2.groovy")
 
         gcl.parseClass("""class Child2 extends grails.test.Parent2 {
-   String someField
-  String toString(){
+    String someField
+    String toString() {
         return 'my other toString'
     }
 

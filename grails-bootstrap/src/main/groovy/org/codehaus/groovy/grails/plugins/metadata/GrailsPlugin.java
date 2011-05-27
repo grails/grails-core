@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 
 /**
- * Annotation that appears on classes of a particular plugin
- * 
+ * Annotation that appears on classes of a particular plugin.
+ *
  * @author Graeme Rocher
  * @since 1.2
  */

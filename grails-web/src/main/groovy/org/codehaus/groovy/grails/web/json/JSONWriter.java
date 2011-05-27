@@ -172,7 +172,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter endArray() {
-        return this.end(ARRAY, ']');
+        return end(ARRAY, ']');
     }
 
     /**
@@ -182,7 +182,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter endObject() {
-        return this.end(KEY, '}');
+        return end(KEY, '}');
     }
 
     /**
@@ -271,7 +271,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(boolean b) {
-        return this.append(b ? "true" : "false");
+        return append(b ? "true" : "false");
     }
 
     /**
@@ -281,7 +281,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(double d) {
-        return this.value(new Double(d));
+        return value(new Double(d));
     }
 
     /**
@@ -291,7 +291,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(long l) {
-        return this.append(Long.toString(l));
+        return append(Long.toString(l));
     }
 
 
@@ -303,7 +303,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(Object o) {
-        return this.append(JSONObject.valueToString(o));
+        return append(JSONObject.valueToString(o));
     }
 
     /**
@@ -316,5 +316,4 @@ public class JSONWriter {
         KEY,
         DONE
     }
-
 }

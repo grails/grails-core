@@ -31,7 +31,7 @@ public class CodecArtefactHandlerTests extends TestCase {
                 "static def encode = { str -> }\n" +
                 "static def decode = { str -> }\n" +
                 "}\n");
-        assertTrue("class was an encoder/decoder", handler.isArtefact( fullCodecClass));
+        assertTrue("class was an encoder/decoder", handler.isArtefact(fullCodecClass));
 
         Class<?> decodeOnlyCodecClass = gcl.parseClass("class DecodeOnlyCodec {\n" +
                 "static def decode = { str -> }\n" +

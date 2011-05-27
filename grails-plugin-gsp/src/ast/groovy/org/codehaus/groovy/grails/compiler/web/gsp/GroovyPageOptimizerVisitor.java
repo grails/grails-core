@@ -23,13 +23,11 @@ import java.util.Stack;
  * @author Stephane Maldini
  * @since 1.4
  */
-
 class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
 
     private static final ClassNode groovyPageClassNode = new ClassNode(GroovyPage.class);
     private static final MethodNode writerMethodNode = new ClassNode(GrailsPrintWriter.class).getMethod("print",
             new Parameter[]{new Parameter(new ClassNode(Object.class), "obj")});
-
 
     private static final String THIS_RECEIVER = "this";
     private static final String THISOBJECT = "thisObject";
@@ -42,7 +40,6 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
 
     private DeclarationExpression thisObjectDeclaration;
     private VariableExpression thisObjectVariable;
-
 
     public GroovyPageOptimizerVisitor(ClassNode targetGroovyPage) {
         this.targetGroovyPageNode = targetGroovyPage;
@@ -58,7 +55,7 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
                     ,thisObjectMethodCall);
     }
 
-
+    @Override
     public void visitClosureExpression(ClosureExpression expression) {
         innerClosures.push(expression);
         introduceThisObjectVariable(expression);
@@ -67,7 +64,7 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
     }
 
     private void introduceThisObjectVariable(ClosureExpression closureExpression) {
-        if(closureExpression.getCode() instanceof BlockStatement){
+        if (closureExpression.getCode() instanceof BlockStatement) {
             List<Statement> oldBlock = ((BlockStatement)closureExpression.getCode()).getStatements();
             BlockStatement newBlock = new BlockStatement();
 
@@ -75,10 +72,10 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
             newBlock.addStatements(oldBlock);
 
             closureExpression.setCode(newBlock);
-
         }
     }
 
+    @Override
     public void visitMethodCallExpression(MethodCallExpression call) {
 
         if (isCallFromGroovyPageClass(call)) {
@@ -131,6 +128,4 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
         return expression.getObjectExpression().getText().equals(THIS_RECEIVER)
                 && !groovyPageClassNode.getMethods(expression.getMethodAsString()).isEmpty();
     }
-
-
 }

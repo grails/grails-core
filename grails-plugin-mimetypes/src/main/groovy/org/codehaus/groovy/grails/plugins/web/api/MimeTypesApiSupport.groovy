@@ -15,21 +15,21 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api
 
+import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.plugins.web.mimes.FormatInterceptor
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import javax.servlet.ServletRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * Support class for dealing with calls to withFormat
+ * Support class for dealing with calls to withFormat.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 class MimeTypesApiSupport {
-
 
     def withFormat(HttpServletRequest request, Closure callable) {
         def formats = getDefinedFormats(callable)
@@ -87,7 +87,7 @@ class MimeTypesApiSupport {
     }
 
     private getResponseForFormat(formatResponse, format, formatProvider) {
-        if(formatProvider instanceof ServletRequest) {
+        if (formatProvider instanceof ServletRequest) {
             formatProvider.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
         }
         else {

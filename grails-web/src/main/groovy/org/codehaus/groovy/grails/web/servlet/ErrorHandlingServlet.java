@@ -36,8 +36,6 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
-import org.codehaus.groovy.grails.web.servlet.*;
-
 /**
  * A servlet for handling errors.
  *
@@ -56,6 +54,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         return request; // ignore multipart requests when an error occurs
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void doDispatch(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         int statusCode;

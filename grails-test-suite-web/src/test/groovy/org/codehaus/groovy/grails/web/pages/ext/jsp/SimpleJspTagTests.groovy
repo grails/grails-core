@@ -34,7 +34,7 @@ class SimpleJspTagTests extends GroovyTestCase {
         resolver.servletContext = new MockServletContext()
         resolver.grailsApplication = new DefaultGrailsApplication()
 
-        JspTagLib tagLib = resolver.resolveTagLibrary( "http://java.sun.com/jsp/jstl/fmt" )
+        JspTagLib tagLib = resolver.resolveTagLibrary("http://java.sun.com/jsp/jstl/fmt")
 
         assert tagLib
 

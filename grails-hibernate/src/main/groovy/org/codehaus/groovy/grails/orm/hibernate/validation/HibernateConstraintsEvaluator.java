@@ -23,12 +23,10 @@ import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import java.util.Map;
 
 /**
- *
- * Extends default implementation to add Hibernate specific exceptions
+ * Extends default implementation to add Hibernate specific exceptions.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public class HibernateConstraintsEvaluator extends DefaultConstraintEvaluator{
 
@@ -37,6 +35,7 @@ public class HibernateConstraintsEvaluator extends DefaultConstraintEvaluator{
     }
 
     public HibernateConstraintsEvaluator() {
+        // default
     }
 
     @Override
@@ -44,12 +43,11 @@ public class HibernateConstraintsEvaluator extends DefaultConstraintEvaluator{
         final PropertyConfig propertyConfig = GrailsDomainBinder.getPropertyConfig(p);
         boolean insertable = propertyConfig != null ? propertyConfig.isInsertable() : true;
 
-        if(!insertable) {
+        if (!insertable) {
            cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,true);
         }
         else {
             super.applyDefaultNullableConstraint(p, cp);
         }
-
     }
 }

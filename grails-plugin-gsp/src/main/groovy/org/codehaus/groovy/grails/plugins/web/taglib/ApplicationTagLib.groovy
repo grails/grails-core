@@ -124,7 +124,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Creates a link to a resource, generally used as a method rather than a tag.<br/>
      *
      * eg. &lt;link type="text/css" href="${resource(dir:'css',file:'main.css')}" /&gt;
-     * 
+     *
      * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.x≈
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
      * @attr dir the name of the directory within the grails app to link to
@@ -133,7 +133,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr plugin The plugin to look for the resource in
      */
     def resource = { attrs ->
-        if(pageScope.pluginContextPath) {
+        if (pageScope.pluginContextPath) {
             attrs.pluginContextPath = pageScope.pluginContextPath
         }
         out << (resourceService ? r.resource(attrs) : linkGenerator.resource(attrs))
@@ -155,12 +155,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         } else {
             def uri = attrs.uri ?: resource(attrs)
 
-    		def excludes = ['dir', 'uri', 'file', 'plugin']
+            def excludes = ['dir', 'uri', 'file', 'plugin']
             def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
             out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
         }
     }
-    
+
     /**
      * General linking to controllers, actions etc. Examples:<br/>
      *
@@ -180,7 +180,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr event Webflow _eventId parameter
      * @attr elementId DOM element id
      */
-
     def link = { attrs, body ->
 
         def writer = getOut()
@@ -200,10 +199,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
 
         def remainingKeys = attrs.keySet() - LinkGenerator.LINK_ATTRIBUTES
-        for(key in remainingKeys) {
+        for (key in remainingKeys) {
             writer << " $key=\"${attrs[key]?.encodeAsHTML()}\""
         }
-        for(entry in linkAttrs) {
+        for (entry in linkAttrs) {
             writer << " ${entry.key}=\"${entry.value?.encodeAsHTML()}\""
         }
         writer << '>'
@@ -211,7 +210,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         writer << '</a>'
     }
 
-    static attrsToString( Map attrs) {
+    static attrsToString(Map attrs) {
         // Output any remaining user-specified attributes
         final resultingAttributes = attrs.entrySet().collect { "$it.key=\"${it.value.encodeAsHTML()}\""}.join(' ')
         return " $resultingAttributes"
@@ -240,10 +239,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         png:[rel:'shortcut icon'],
         ico:[rel:'shortcut icon'],
         appleicon:[rel:'apple-touch-icon']
-        
+
         // @todo add feed link types here too
     ]
-       
+
     /**
      * Render the appropriate kind of external link for use in <head> based on the type of the URI.
      * For JS will render <script> tags, for CSS will render <link> with the correct rel, and so on for icons.
@@ -259,7 +258,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         renderResourceLink(attrs)
     }
-    
+
     /**
      *
      * @attr uri
@@ -271,12 +270,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (!type) {
             type = FilenameUtils.getExtension(uri)
         }
-        
+
         def typeInfo = SUPPORTED_TYPES[type]?.clone()
         if (!typeInfo) {
             throwTagError "I can't work out the type of ${uri} with type [${type}]. Please check the URL, resource definition or specify [type] attribute"
         }
-        
+
         def writerName = typeInfo.remove('writer')
         def writer = LINK_WRITERS[writerName ?: 'link']
 
@@ -293,7 +292,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * rather than a tag eg.<br/>
      *
      * &lt;a href="${createLink(action:'list')}"&gt;List&lt;/a&gt;
-     * 
+     *
      * @attr controller The name of the controller to use in the link, if not specified the current controller will be linked
      * @attr action The name of the action to use in the link, if not specified the default action will be linked
      * @attr uri relative URI
@@ -388,5 +387,4 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         out << Metadata.current[attrs.name]
     }
-
 }

@@ -45,7 +45,7 @@ public class ConstraintsEvaluatingDynamicProperty extends AbstractDynamicPropert
 
     @Override
     public Object get(Object object) {
-        return new DefaultConstraintEvaluator().evaluate(object,properties );
+        return new DefaultConstraintEvaluator().evaluate(object, properties);
     }
 
     @Override

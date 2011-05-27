@@ -203,7 +203,7 @@ public class GrailsStarter {
                     }
                 }
                 catch (IOException e) {
-                    System.out.println("WARNING: I/O error reading VM specific classpath ["+vmConfig+"]: " + e.getMessage() );
+                    System.out.println("WARNING: I/O error reading VM specific classpath ["+vmConfig+"]: " + e.getMessage());
                 }
                 finally {
                     try {

@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractClausedStaticPersistentMethod.GrailsMethodExpression;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -23,12 +22,12 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
     public static final String OPERATOR_AND = "And";
     public static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
 
-	public AbstractFindByPersistentMethod(GrailsApplication application,
-			SessionFactory sessionFactory, ClassLoader classLoader,
-			Pattern pattern, String[] operators) {
-		super(application, sessionFactory, classLoader, pattern, operators);
-		// TODO Auto-generated constructor stub
-	}
+    public AbstractFindByPersistentMethod(GrailsApplication application,
+            SessionFactory sessionFactory, ClassLoader classLoader,
+            Pattern pattern, String[] operators) {
+        super(application, sessionFactory, classLoader, pattern, operators);
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments, final List expressions, String operatorInUse, final Closure additionalCriteria) {

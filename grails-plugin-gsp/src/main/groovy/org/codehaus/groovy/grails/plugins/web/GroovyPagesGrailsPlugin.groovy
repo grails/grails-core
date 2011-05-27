@@ -174,7 +174,7 @@ class GroovyPagesGrailsPlugin {
 
             final tagLibClass = taglib.clazz
             def enhancedAnn = tagLibClass.getAnnotation(Enhanced)
-            if(enhancedAnn == null) {
+            if (enhancedAnn == null) {
                 nonEnhancedTagLibClasses << taglib
             }
 
@@ -240,7 +240,7 @@ class GroovyPagesGrailsPlugin {
             for (Class controller in controllerClasses) {
                 Class controllerClass = controller
                 MetaClass mc = controllerClass.metaClass
-                for(entry in namespaceGetters) {
+                for (entry in namespaceGetters) {
                     final String propertyName = entry.key
                     final dispatcher = entry.value
                     if (!mc.getMetaProperty(propertyName)) {
@@ -248,7 +248,7 @@ class GroovyPagesGrailsPlugin {
                     }
                 }
 
-                if(!controllerClass.getAnnotation(Enhanced)) {
+                if (!controllerClass.getAnnotation(Enhanced)) {
                     registerControllerMethodMissing(mc, gspTagLibraryLookup, ctx)
                     Class superClass = controllerClass.superclass
                     // deal with abstract super classes
@@ -264,7 +264,7 @@ class GroovyPagesGrailsPlugin {
         }
 
 
-        if(nonEnhancedTagLibClasses) {
+        if (nonEnhancedTagLibClasses) {
             def tagLibApi = ctx.getBean("instanceTagLibraryApi")
 
             def enhancer = new MetaClassEnhancer()
@@ -351,7 +351,7 @@ class GroovyPagesGrailsPlugin {
                 def beans = beans {
                     "$beanName"(taglibClass.clazz) { bean ->
                         bean.autowire = true
-                        if(taglibClass.clazz.getAnnotation(Enhanced)) {
+                        if (taglibClass.clazz.getAnnotation(Enhanced)) {
 
                             instanceTagLibraryApi = ref("instanceTagLibraryApi")
                         }

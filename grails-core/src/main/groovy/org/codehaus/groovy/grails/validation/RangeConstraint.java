@@ -81,10 +81,12 @@ public class RangeConstraint extends AbstractConstraint {
             }
 
             if (from.compareTo(propertyValue) > 0) {
-                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX,args );
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
+                       ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX, args);
             }
             else if (to.compareTo(propertyValue) < 0) {
-                rejectValue(target,errors,ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE, ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX,args );
+                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
+                       ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX, args);
             }
         }
     }

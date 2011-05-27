@@ -5,9 +5,9 @@
 @rem                                                                         ##
 @rem ##########################################################################
 
-@rem 
+@rem
 @rem $Revision: 4170 $ $Date: 2006-10-26 12:11:12 +0000 (Thu, 26 Oct 2006) $
-@rem 
+@rem
 
 @rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
@@ -58,7 +58,7 @@ goto end
 :check_GRAILS_HOME
 @rem Define GRAILS_HOME if not set
 if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
- 
+
 :init
 @rem Get command-line arguments, handling Windowz variants
 if "%@eval[2+2]" == "4" goto 4NT_args
@@ -67,7 +67,7 @@ if "%@eval[2+2]" == "4" goto 4NT_args
 @rem remove trailing slash from GRAILS_HOME
 if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 
-@rem Slurp the command line arguments.  
+@rem Slurp the command line arguments.
 set CMD_LINE_ARGS=
 set CP=
 set GRAILS_OPTIONS=
@@ -78,31 +78,31 @@ set CURR_ARG=%~1
 if "%CURR_ARG:~0,2%" == "-D" (
 	set GRAILS_OPTIONS=%GRAILS_OPTIONS% %~1=%~2
 	shift
-	shift	
+	shift
 	goto win9xME_args_slurp
 ) else (
 	if "x%~1" == "x-cp" (
 		set CP=%~2
-		shift	
-		shift	
+		shift
+		shift
 		goto win9xME_args_slurp
 	) else (
 		if "x%~1" == "x-classpath" (
 			set CP=%~2
-			shift	
-			shift	
+			shift
+			shift
 			goto win9xME_args_slurp
 		) else (
 			if "x%~1" == "x-agent" (
 				set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-				shift	
-				shift	
+				shift
+				shift
 				goto win9xME_args_slurp
 			) else (
 				if "x%~1" == "x-run-app" (
 					set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-					shift	
-					shift	
+					shift
+					shift
 					goto win9xME_args_slurp
 				) else (
 					set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
@@ -125,7 +125,7 @@ set STARTER_CLASSPATH=%GRAILS_HOME%\lib\org.codehaus.groovy\groovy-all\jars\groo
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
 @rem Setting a classpath using the -cp or -classpath option means not to use
-@rem the global classpath. Groovy behaves then the same as the java 
+@rem the global classpath. Groovy behaves then the same as the java
 @rem interpreter
 
 if "x" == "x%CLASSPATH%" goto after_classpath

@@ -2,13 +2,6 @@ package grails.test.mixin
 
 import org.junit.Test
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 15/04/2011
- * Time: 15:03
- * To change this template use File | Settings | File Templates.
- */
 @TestFor(ConstrainedBook)
 class MockForConstraintsTests {
 

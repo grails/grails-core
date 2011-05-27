@@ -1,12 +1,13 @@
 configurations {
     jsp21.extendsFrom compile
 }
+
 dependencies {
     jsp21 'javax.servlet.jsp:jsp-api:2.1'
 
-    compile  project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
-    compile( 'commons-el:commons-el:1.0' ) {
-         exclude module:'commons-logging'
+    compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
+    compile('commons-el:commons-el:1.0') {
+        exclude module:'commons-logging'
     }
 
     compile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
@@ -26,6 +27,7 @@ dependencies {
     runtime 'taglibs:standard:1.1.2'
     runtime "javax.servlet:jstl:1.1.2"
 }
+
 sourceSets {
     jsp21 {
         compileClasspath = files(configurations.jsp21, main.classes)
@@ -34,7 +36,7 @@ sourceSets {
     }
 }
 
-jar{
+jar {
     from compileJsp21Groovy.outputs.files
 }
 

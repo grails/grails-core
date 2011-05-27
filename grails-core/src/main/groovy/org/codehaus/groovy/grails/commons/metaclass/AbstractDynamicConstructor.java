@@ -22,6 +22,7 @@ package org.codehaus.groovy.grails.commons.metaclass;
  * @since 0.2
  * @deprecated Use ExpandoMetaClass instead
  */
+@Deprecated
 public abstract class AbstractDynamicConstructor implements DynamicConstructor {
 
     private Class<?>[] argumentTypes;

@@ -57,7 +57,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
                 arg value: contextPath
                 arg value: host
                 arg value: httpPort
-                
+
                 if (httpsPort) {
                     arg value: httpsPort
                     arg value: keystoreFile.absolutePath
@@ -68,7 +68,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
                     jvmarg value: a
                 }
 
-                for(entry in getConfigParams()) {
+                for (entry in getConfigParams()) {
                     sysproperty key:"tomcat.${entry.key}", value:"${entry.value}"
                 }
             }

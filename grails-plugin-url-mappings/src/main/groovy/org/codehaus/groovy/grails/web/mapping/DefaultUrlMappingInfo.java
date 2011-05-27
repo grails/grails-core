@@ -100,7 +100,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     }
 
     public boolean isParsingRequest() {
-        return this.parsingRequest;
+        return parsingRequest;
     }
 
     public void setParsingRequest(boolean parsingRequest) {

@@ -19,98 +19,88 @@ public class CreditCardConstraintTests extends AbstractConstraintTests {
 
     public void testValidate() {
         testConstraintMessageCodes(
-                getConstraint( "testString", Boolean.TRUE ),
+                getConstraint("testString", Boolean.TRUE),
                 "1234512",
                 new String[] {"testClass.testString.creditCard.error", "testClass.testString.creditCard.invalid"},
-                new Object[] {"testString", TestClass.class, "1234512"}
-        );
+                new Object[] {"testString", TestClass.class, "1234512"});
 
         // too short number
         testConstraintFailed(
-                getConstraint( "testString", Boolean.TRUE ),
-                "123456789012"
-        );
+                getConstraint("testString", Boolean.TRUE),
+                "123456789012");
+
         // too long number
         testConstraintFailed(
-                getConstraint( "testString", Boolean.TRUE ),
-                "12345678901234567890"
-        );
+                getConstraint("testString", Boolean.TRUE),
+                "12345678901234567890");
+
         // non-digit symbols in number
         testConstraintFailed(
-                getConstraint( "testString", Boolean.TRUE ),
-                "4417q23456w89113"
-        );
+                getConstraint("testString", Boolean.TRUE),
+                "4417q23456w89113");
+
         // non-digit symbols in number
         testConstraintFailed(
-                getConstraint( "testString", Boolean.TRUE ),
-                "4417q23456w89113"
-        );
+                getConstraint("testString", Boolean.TRUE),
+                "4417q23456w89113");
+
         // wrong number (luhn check)
         testConstraintFailed(
-                getConstraint( "testString", Boolean.TRUE ),
-                "4417123456789112"
-        );
-
+                getConstraint("testString", Boolean.TRUE),
+                "4417123456789112");
 
         // null value should always pass validation
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                null
-        );
+                getConstraint("testString", Boolean.TRUE),
+                null);
 
         // blank value should always pass validation
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                " "
-        );
+                getConstraint("testString", Boolean.TRUE),
+                " ");
 
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                VALID_VISA
-        );
+                getConstraint("testString", Boolean.TRUE),
+                VALID_VISA);
 
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                VALID_SHORT_VISA
-        );
+                getConstraint("testString", Boolean.TRUE),
+                VALID_SHORT_VISA);
 
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                VALID_AMEX
-        );
+                getConstraint("testString", Boolean.TRUE),
+                VALID_AMEX);
+
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                VALID_MASTERCARD
-        );
+                getConstraint("testString", Boolean.TRUE),
+                VALID_MASTERCARD);
+
         testConstraintPassed(
-                getConstraint( "testString", Boolean.TRUE ),
-                VALID_DISCOVER
-        );
+                getConstraint("testString", Boolean.TRUE),
+                VALID_DISCOVER);
 
         // must always pass when parameter is false
         testConstraintPassed(
-                getConstraint( "testString", Boolean.FALSE ),
-                "123"
-        );
+                getConstraint("testString", Boolean.FALSE),
+                "123");
 
         testConstraintDefaultMessage(
-                getConstraint( "testString", Boolean.TRUE),
+                getConstraint("testString", Boolean.TRUE),
                 "12345",
-                "Property [{0}] of class [{1}] with value [{2}] is not a valid credit card number"
-        );
+                "Property [{0}] of class [{1}] with value [{2}] is not a valid credit card number");
     }
 
     public void testConstraintCreation() {
         CreditCardConstraint constraint = new CreditCardConstraint();
-        assertEquals( ConstrainedProperty.CREDIT_CARD_CONSTRAINT, constraint.getName());
-        assertTrue( constraint.supports( String.class ));
-        assertFalse( constraint.supports( null ));
-        assertFalse( constraint.supports( Long.class ));
+        assertEquals(ConstrainedProperty.CREDIT_CARD_CONSTRAINT, constraint.getName());
+        assertTrue(constraint.supports(String.class));
+        assertFalse(constraint.supports(null));
+        assertFalse(constraint.supports(Long.class));
 
         try {
-            getConstraint( "testString", "wrong");
+            getConstraint("testString", "wrong");
             fail("CreditCardConstraint must throw an exception for non-boolean parameters.");
-        } catch( IllegalArgumentException iae ) {
+        } catch (IllegalArgumentException iae) {
             // Great
         }
     }

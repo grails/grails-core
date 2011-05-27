@@ -65,17 +65,16 @@ import org.apache.ivy.core.report.*
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
     static final SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT"
-    
+
     ResolveEngine resolveEngine
     MessageLogger logger
     ChainResolver chainResolver = new ChainResolver(
         name: "default",
         returnFirst: true,
-        changingPattern: SNAPSHOT_CHANGING_PATTERN
-    )
-    
+        changingPattern: SNAPSHOT_CHANGING_PATTERN)
+
     Collection repositoryData = new ConcurrentLinkedQueue()
-    
+
     Collection moduleExcludes = new ConcurrentLinkedQueue()
     TransferListener transferListener
 
@@ -90,7 +89,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      */
     IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null) {
         super(new IvySettings(), settings, metadata)
-        
+
         ivySettings.defaultInit()
         // don't cache for snapshots
         if (settings?.grailsVersion?.endsWith("SNAPSHOT")) {
@@ -178,7 +177,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             if (dd.inherited) continue
 
             def mrid = dd.dependencyRevisionId
-            builder.dependency( group: mrid.organisation, name: mrid.name, version: mrid.revision, conf: dd.scope, transitive: dd.transitive) {
+            builder.dependency(group: mrid.organisation, name: mrid.name, version: mrid.revision, conf: dd.scope, transitive: dd.transitive) {
                 for (ExcludeRule er in dd.allExcludeRules) {
                     def mid = er.id.moduleId
                     excludes group:mid.organisation,name:mid.name
@@ -208,7 +207,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         def aid = createExcludeArtifactId(name)
         return moduleDescriptor.doesExclude(configurationNames, aid)
     }
-    
+
     boolean isPluginConfiguredByApplication(String name) {
         def propertyName = GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(name)
         def descriptor = pluginNameToDescriptorMap[name] ?: pluginNameToDescriptorMap[propertyName]

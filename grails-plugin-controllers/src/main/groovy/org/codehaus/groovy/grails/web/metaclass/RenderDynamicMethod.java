@@ -364,7 +364,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean renderJSON(Closure callable, HttpServletResponse response) {
         boolean renderView = true;
         JSONBuilder builder = new JSONBuilder();
-        JSON json = builder.build(  callable);
+        JSON json = builder.build(callable);
         json.render(response);
         renderView = false;
         return renderView;

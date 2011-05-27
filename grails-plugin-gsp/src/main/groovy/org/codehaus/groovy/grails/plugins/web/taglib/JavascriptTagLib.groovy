@@ -37,7 +37,7 @@ class JavascriptTagLib  {
     static final PROVIDER_MAPPINGS = [:]
 
     GrailsPluginManager pluginManager
-    
+
     def resourceService
 
     /**
@@ -245,7 +245,7 @@ class JavascriptTagLib  {
 
     /**
      * A field that sends its value to a remote link.
-     * 
+     *
      * @attr name REQUIRED the name of the field
      * @attr value The initial value of the field
      * @attr paramName The name of the parameter send to the server
@@ -288,7 +288,7 @@ class JavascriptTagLib  {
 
     /**
      * A form which uses the javascript provider to serialize its parameters and submit via an asynchronous ajax call.
-     * 
+     *
      * @attr name REQUIRED The form name
      * @attr url REQUIRED The url to submit to as either a map (containing values for the controller, action, id, and params) or a URL string
      * @attr action The action to execute as a fallback, defaults to the url if non specified
@@ -321,7 +321,7 @@ a 'params' key to the [url] attribute instead.""")
         p.prepareAjaxForm(attrs)
 
         def params = [onsubmit:remoteFunction(attrs) + 'return false',
-                      method: (attrs.method? attrs.method : 'POST' ),
+                      method: (attrs.method? attrs.method : 'POST'),
                       action: (attrs.action? attrs.action : createLink(url))]
         attrs.remove('url')
         params.putAll(attrs)

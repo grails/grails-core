@@ -10,29 +10,28 @@ task stubs {
             mkdir(dir: destinationDir)
             taskdef(name: "generatestubs", classname: "org.codehaus.groovy.grails.cli.GenerateStubsTask") {
                 classpath {
-					for(sub in subprojects) {
-	                    pathelement path: sub.sourceSets.main.compileClasspath.asPath
-					}
-                }	
-			}
+                    for(sub in subprojects) {
+                        pathelement path: sub.sourceSets.main.compileClasspath.asPath
+                    }
+                }
+            }
+
             generatestubs(destdir: destinationDir) {
                 classpath {
-					for(sub in subprojects) {
-	                    pathelement path: sub.sourceSets.main.compileClasspath.asPath
-					}
+                    for(sub in subprojects) {
+                        pathelement path: sub.sourceSets.main.compileClasspath.asPath
+                    }
                 }
                 src {
-					for(sub in subprojects) {
-	                    sub.sourceSets.main.groovy.srcDirs.each { srcDir ->
-							if(srcDir.exists()) {
-		                        dirset(dir: srcDir) {
-		                            exclude name: "**/*.properties"
-		                        }
-								
-							}
-	                    }						
-					}
-
+                    for (sub in subprojects) {
+                        sub.sourceSets.main.groovy.srcDirs.each { srcDir ->
+                            if (srcDir.exists()) {
+                                dirset(dir: srcDir) {
+                                    exclude name: "**/*.properties"
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -44,13 +43,13 @@ task docs {
 }
 
 task javadoc(type:Javadoc) {
-	classpath = files(subprojects.configurations.compile)
+    classpath = files(subprojects.configurations.compile)
     dependsOn stubs
     maxMemory = '256M'
     destinationDir = file("$docs.destinationDir/javadoc")
     source subprojects.sourceSets.main.groovy.srcDirs + stubs.destinationDir
     include "org/codehaus/groovy/grails/**", "grails/**"
-	exclude "**/**.groovy"
+    exclude "**/**.groovy"
     project.configure(options) {
         windowTitle = "Grails $grailsVersion"
         docTitle = "<h1>Grails</h1>"
@@ -67,8 +66,8 @@ task javadoc(type:Javadoc) {
 }
 
 task groovydoc(type:Groovydoc) {
-	classpath = files(subprojects.configurations.compile)
-	groovyClasspath = files(subprojects.configurations.compile)	
+    classpath = files(subprojects.configurations.compile)
+    groovyClasspath = files(subprojects.configurations.compile)
     destinationDir = file("$docs.destinationDir/api")
     windowTitle = "Grails $grailsVersion"
     docTitle = "Grails $grailsVersion"
@@ -78,9 +77,9 @@ task groovydoc(type:Groovydoc) {
 //    link("http://static.springsource.org/spring/docs/3.0.x/javadoc-api", "org.springframework.")
 //    link("http://download.oracle.com/javase/1.5.0/docs/api", "java." , "javax.")
 //    link("http://download.oracle.com/javaee/5/api", "javax.")
-	doLast {
-		delete("${buildDir}/tmp")
-	}
+    doLast {
+        delete("${buildDir}/tmp")
+    }
 }
 
 task fetchGrailsDocsSource << {

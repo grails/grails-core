@@ -3,22 +3,13 @@ package org.codehaus.groovy.grails.plugins.publishing
 import org.springframework.core.io.FileSystemResource
 import spock.lang.Specification
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 02/03/2011
- * Time: 09:38
- * To change this template use File | Settings | File Templates.
- */
 class PublishingDescriptorGeneratorSpec extends Specification {
-
 
     def "Test that valid descriptor is generated for a plugin"() {
         given:
             def generator = new PluginDescriptorGenerator("foo", [
-                                                                    new FileSystemResource(new File("grails-app/controllers/FooController.groovy")),
-                                                                    new FileSystemResource(new File("grails-app/controllers/bar/BarController.groovy"))
-                                                                    ] )
+                  new FileSystemResource(new File("grails-app/controllers/FooController.groovy")),
+                  new FileSystemResource(new File("grails-app/controllers/bar/BarController.groovy"))])
 
         when:
             def sw = new StringWriter()

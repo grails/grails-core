@@ -54,7 +54,7 @@ class ControllerFlowRegistry implements GrailsApplicationAware, ApplicationConte
             for (flow in c.flows) {
                 def flowId = ("${c.logicalPropertyName}/" + flow.key).toString()
 
-                FlowBuilder builder = new FlowBuilder( flowId, flow.value,flowBuilderServices, registry)
+                FlowBuilder builder = new FlowBuilder(flowId, flow.value,flowBuilderServices, registry)
                 builder.viewPath = "/"
                 builder.applicationContext = applicationContext
                 FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())

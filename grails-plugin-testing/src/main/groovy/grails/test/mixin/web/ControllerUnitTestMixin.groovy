@@ -57,12 +57,12 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.codehaus.groovy.grails.plugins.web.api.*
 
 /**
- * A mixin that can be applied to a unit test in order to test controllers
+ * A mixin that can be applied to a unit test in order to test controllers.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-class ControllerUnitTestMixin extends GrailsUnitTestMixin{
+class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
     /**
      * The {@link GrailsWebRequest} object
@@ -123,19 +123,17 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
         final controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
 
         final viewName = controller?.modelAndView?.viewName
-        if(viewName != null) {
+        if (viewName != null) {
             return viewName
         }
+
+        if (webRequest.controllerName && webRequest.actionName) {
+            GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
+        }
         else {
-            if(webRequest.controllerName && webRequest.actionName) {
-                GroovyPageUtils.getViewURI(webRequest.controllerName, webRequest.actionName)
-            }
-            else {
-                return null;
-            }
+            return null;
         }
     }
-
 
     /**
      * The Grails 'flash' object
@@ -148,7 +146,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
     @BeforeClass
     static void configureGrailsWeb() {
-        if(applicationContext == null) {
+        if (applicationContext == null) {
             initGrailsApplication()
         }
         servletContext = new MockServletContext()
@@ -163,7 +161,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
 
             final classLoader = ControllerUnitTestMixin.class.getClassLoader()
-            if(ClassUtils.isPresent("UrlMappings", classLoader )) {
+            if (ClassUtils.isPresent("UrlMappings", classLoader)) {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass("UrlMappings"))
             }
             multipartResolver(CommonsMultipartResolver)
@@ -199,8 +197,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
 
     @Before
     void bindGrailsWebRequest() {
-        if(webRequest == null) {
-            if(!applicationContext.isActive()) {
+        if (webRequest == null) {
+            if (!applicationContext.isActive()) {
                 applicationContext.refresh()
             }
 
@@ -236,12 +234,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
      * @return An instance of the controller
      */
     def <T> T  mockController(Class<T> controllerClass) {
-        if(webRequest == null) {
+        if (webRequest == null) {
             bindGrailsWebRequest()
         }
         final controllerArtefact = grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
 
-        if(!controllerClass.getAnnotation(Enhanced)) {
+        if (!controllerClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
 
             enhancer.addApi(new ControllersApi())
@@ -249,16 +247,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             enhancer.addApi(new ControllerTagLibraryApi())
             enhancer.addApi(new ControllersMimeTypesApi())
             enhancer.enhance(controllerClass.metaClass)
-
         }
-
-
 
         defineBeans {
             "${controllerClass.name}"(controllerClass) { bean ->
                 bean.scope = 'prototype'
                 bean.autowire = true
-
             }
         }
 
@@ -269,7 +263,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin{
             controller
         }
         controllerClass.metaClass.constructor = callable
-
 
         return callable.call()
     }

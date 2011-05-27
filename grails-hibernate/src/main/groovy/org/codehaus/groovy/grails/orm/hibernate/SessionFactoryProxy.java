@@ -68,7 +68,10 @@ import java.util.Set;
  * @since 1.4
  * @author Graeme Rocher
  */
+@SuppressWarnings("rawtypes")
 public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean{
+
+    private static final long serialVersionUID = 1;
 
     private String targetBean;
     private ApplicationContext applicationContext;
@@ -173,49 +176,41 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         return getCurrentSessionFactory().getCache();
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evict(Class persistentClass) throws HibernateException {
         getCurrentSessionFactory().evict(persistentClass);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evict(Class persistentClass, Serializable id) throws HibernateException {
         getCurrentSessionFactory().evict(persistentClass, id);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evictEntity(String entityName) throws HibernateException {
         getCurrentSessionFactory().evictEntity(entityName);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evictEntity(String entityName, Serializable id) throws HibernateException {
         getCurrentSessionFactory().evictEntity(entityName, id);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evictCollection(String roleName) throws HibernateException {
         getCurrentSessionFactory().evictCollection(roleName);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evictCollection(String roleName, Serializable id) throws HibernateException {
         getCurrentSessionFactory().evictCollection(roleName, id);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evictQueries(String cacheRegion) throws HibernateException {
         getCurrentSessionFactory().evictQueries(cacheRegion);
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public void evictQueries() throws HibernateException {
         getCurrentSessionFactory().evictQueries();
@@ -373,7 +368,6 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         return getCurrentSessionFactoryImplementor().getFactoryObserver();
     }
 
-    @SuppressWarnings({"deprecation"})
     @Deprecated
     public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
         return getCurrentSessionFactoryImplementor().getIdentifierGeneratorFactory();
@@ -403,7 +397,7 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         try {
             Class<? extends SessionFactory> sessionFactoryClass = sessionFactory.getClass();
             Field currentSessionContextField = sessionFactoryClass.getDeclaredField("currentSessionContext");
-            if(currentSessionContextField != null) {
+            if (currentSessionContextField != null) {
 
                 ReflectionUtils.makeAccessible(currentSessionContextField);
                 currentSessionContextField.set(sessionFactory, ssc);
@@ -419,9 +413,10 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
         }
     }
 
+    @SuppressWarnings("unchecked")
     protected CurrentSessionContext createCurrentSessionContext() {
         Class sessionContextClass = currentSessionContextClass;
-        if(sessionContextClass == null) {
+        if (sessionContextClass == null) {
             sessionContextClass = SpringSessionContext.class;
         }
         try {

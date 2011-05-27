@@ -37,17 +37,17 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
 
     void testInvokeDefaultNamespaceFromNamespacedTag() {
         def template = '''<alt:showme />'''
-        assertOutputEquals("/test/foo", template )
+        assertOutputEquals("/test/foo", template)
 
         template = '''<alt:showmeToo />'''
-        assertOutputEquals("/test/foo", template )
+        assertOutputEquals("/test/foo", template)
 
         template = '''<alt:showmeThree />'''
-        assertOutputEquals("hello! bar", template )
+        assertOutputEquals("hello! bar", template)
     }
 
     protected void onInit() {
-        def tagClass = gcl.parseClass( '''
+        def tagClass = gcl.parseClass('''
 class MyTagLib {
     static namespace = "my"
     def test1 = { attrs, body ->

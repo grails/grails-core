@@ -83,7 +83,7 @@ class HibernatePluginSupport {
         }
 
         for (GrailsDomainClass dc in application.domainClasses) {
-            if(!dc.abstract) {
+            if (!dc.abstract) {
                 "${dc.fullName}Validator"(HibernateDomainClassValidator) {
                     messageSource = ref("messageSource")
                     domainClass = ref("${dc.fullName}DomainClass")
@@ -96,7 +96,7 @@ class HibernatePluginSupport {
         if (hibernateDialects) {
             def p = new Properties()
             p.load(hibernateDialects.openStream())
-            for(entry in p) {
+            for (entry in p) {
                 vendorToDialect[entry.value] = "org.hibernate.dialect.${entry.key}".toString()
             }
         }
@@ -215,7 +215,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                 hibernateEventListeners = hibernateEventListeners
             }
 
-            if(grails.util.Environment.current.isReloadEnabled()) {
+            if (grails.util.Environment.current.isReloadEnabled()) {
                 "${SessionFactoryHolder.BEAN_ID}"(SessionFactoryHolder)
             }
             sessionFactory(ConfigurableLocalSessionFactoryBean) { bean ->
@@ -274,7 +274,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
                }
             }
             for (GrailsDomainClass dc in application.domainClasses) {
-                if(!dc.abstract) {
+                if (!dc.abstract) {
                     "${dc.fullName}Validator"(HibernateDomainClassValidator) {
                         messageSource = ref("messageSource")
                         domainClass = ref("${dc.fullName}DomainClass")
@@ -286,7 +286,7 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         }
         ApplicationContext ctx = event.ctx
         beans.registerBeans(ctx)
-        if(event.source instanceof Class) {
+        if (event.source instanceof Class) {
             def mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
             mappingContext.addPersistentEntity(event.source)
         }
@@ -379,8 +379,8 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
         final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx)
 
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)
-        for(entity in mappingContext.getPersistentEntities()) {
-            if(entity.javaClass.getAnnotation(Enhanced) == null) {
+        for (entity in mappingContext.getPersistentEntities()) {
+            if (entity.javaClass.getAnnotation(Enhanced) == null) {
                 enhancer.enhance entity
             }
             else {
@@ -454,8 +454,8 @@ Using Grails' default naming strategy: '${GrailsDomainBinder.namingStrategy.getC
     }
 
     /**
-     * Converts an id value to the appropriate type for a domain class
-     * 
+     * Converts an id value to the appropriate type for a domain class.
+     *
      * @param grailsDomainClass a GrailsDomainClass
      * @param idValue an value to be converted
      * @return the idValue parameter converted to the type that grailsDomainClass expects

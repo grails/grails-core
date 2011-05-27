@@ -16,6 +16,7 @@
 package org.grails.plugins.tomcat
 
 import java.beans.PropertyChangeListener
+
 import org.apache.catalina.Container
 import org.apache.catalina.Lifecycle
 import org.apache.catalina.LifecycleState
@@ -27,7 +28,7 @@ import org.apache.naming.resources.DirContextURLStreamHandler
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory
 
 /**
- * A loader instance used for the embedded version of Tomcat 7
+ * A loader instance used for the embedded version of Tomcat 7.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -43,21 +44,21 @@ class TomcatLoader extends LifecycleBase implements Loader, Lifecycle {
     boolean delegate
     boolean reloadable
 
-	TomcatLoader(ClassLoader classLoader) {
+    TomcatLoader(ClassLoader classLoader) {
         // Class loader that only searches the parent
         this.classLoader = new ParentDelegatingClassLoader(classLoader)
-	}
+    }
 
     void addPropertyChangeListener(PropertyChangeListener listener) {}
 
     void addRepository(String repository) {
-          log.warn "Call to addRepository($repository) was ignored."
+        log.warn "Call to addRepository($repository) was ignored."
     }
 
     void backgroundProcess() {}
 
     String[] findRepositories() {
-          log.warn "Call to findRepositories() returned null."
+        log.warn "Call to findRepositories() returned null."
     }
 
     String getInfo() { "MyLoader/1.0" }
@@ -67,23 +68,22 @@ class TomcatLoader extends LifecycleBase implements Loader, Lifecycle {
     void removePropertyChangeListener(PropertyChangeListener listener) {}
 
     @Override protected void initInternal() {
-      URLStreamHandlerFactory streamHandlerFactory = new DirContextURLStreamHandlerFactory()
+        URLStreamHandlerFactory streamHandlerFactory = new DirContextURLStreamHandlerFactory()
 
-      if (first) {
-          first = false
-          try {
-              URL.setURLStreamHandlerFactory(streamHandlerFactory)
-          } catch (Exception e) {
-              // Log and continue anyway, this is not critical
-              log.error("Error registering jndi stream handler", e)
-          } catch (Throwable t) {
-              // This is likely a dual registration
-              log.info("Dual registration of jndi stream handler: "
-                       + t.getMessage())
-          }
-      }
+        if (first) {
+            first = false
+            try {
+                URL.setURLStreamHandlerFactory(streamHandlerFactory)
+            } catch (Exception e) {
+                // Log and continue anyway, this is not critical
+                log.error("Error registering jndi stream handler", e)
+            } catch (Throwable t) {
+                // This is likely a dual registration
+                log.info("Dual registration of jndi stream handler: " + t.getMessage())
+            }
+        }
 
-      DirContextURLStreamHandler.bind(classLoader, container.getResources())
+        DirContextURLStreamHandler.bind(classLoader, container.getResources())
     }
 
     @Override protected void destroyInternal() {

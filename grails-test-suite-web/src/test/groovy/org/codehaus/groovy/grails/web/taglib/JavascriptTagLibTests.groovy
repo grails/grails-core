@@ -26,7 +26,7 @@ class TestController {}
 class TestUrlMappings {
     static mappings = {
         "/$controller/$action?/$id?" {}
-        "/people/details/$var1"(controller: 'person', action: 'show' )
+        "/people/details/$var1"(controller: 'person', action: 'show')
     }
 }
 ''')

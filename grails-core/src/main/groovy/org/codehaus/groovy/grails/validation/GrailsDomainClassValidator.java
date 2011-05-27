@@ -47,8 +47,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
     private static final List<String> EMBEDDED_EXCLUDES = Arrays.asList(
         GrailsDomainClassProperty.IDENTITY,
-        GrailsDomainClassProperty.VERSION
-    );
+        GrailsDomainClassProperty.VERSION);
 
     protected Class<?> targetClass;
     protected GrailsDomainClass domainClass;
@@ -58,7 +57,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
     @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz) {
-        return targetClass.equals( clazz );
+        return targetClass.equals(clazz);
     }
 
     /**
@@ -137,7 +136,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         String propertyName = persistentProperty.getName();
         if (errors.hasFieldErrors(propertyName)) return;
 
-        if (persistentProperty.isManyToOne() || persistentProperty.isOneToOne() || persistentProperty.isEmbedded() ) {
+        if (persistentProperty.isManyToOne() || persistentProperty.isOneToOne() || persistentProperty.isEmbedded()) {
             Object associatedObject = bean.getPropertyValue(propertyName);
             cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
         }

@@ -92,6 +92,6 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
     }
 
     public ProxyHandler getProxyHandler() {
-        return this.proxyHandler;
+        return proxyHandler;
     }
 }

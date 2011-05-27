@@ -19,7 +19,6 @@ import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -56,20 +55,20 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
      * @author Graeme Rocher
      */
     protected abstract static class GrailsMethodExpression {
-    	protected static final String LESS_THAN = "LessThan";
-    	protected static final String LESS_THAN_OR_EQUAL = "LessThanEquals";
-    	protected static final String GREATER_THAN = "GreaterThan";
-    	protected static final String GREATER_THAN_OR_EQUAL = "GreaterThanEquals";
-    	protected static final String LIKE = "Like";
-    	protected static final String ILIKE = "Ilike";
-    	protected static final String RLIKE = "Rlike";
-    	protected static final String BETWEEN = "Between";
-    	protected static final String IN_LIST= "InList";
-    	protected static final String IS_NOT_NULL = "IsNotNull";
-    	protected static final String IS_NULL = "IsNull";
-    	protected static final String NOT = "Not";
-    	protected static final String EQUAL = "Equal";
-    	protected static final String NOT_EQUAL = "NotEqual";
+        protected static final String LESS_THAN = "LessThan";
+        protected static final String LESS_THAN_OR_EQUAL = "LessThanEquals";
+        protected static final String GREATER_THAN = "GreaterThan";
+        protected static final String GREATER_THAN_OR_EQUAL = "GreaterThanEquals";
+        protected static final String LIKE = "Like";
+        protected static final String ILIKE = "Ilike";
+        protected static final String RLIKE = "Rlike";
+        protected static final String BETWEEN = "Between";
+        protected static final String IN_LIST= "InList";
+        protected static final String IS_NOT_NULL = "IsNotNull";
+        protected static final String IS_NULL = "IsNull";
+        protected static final String NOT = "Not";
+        protected static final String EQUAL = "Equal";
+        protected static final String NOT_EQUAL = "NotEqual";
 
         protected String propertyName;
         protected Object[] arguments;
@@ -100,13 +99,15 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         }
 
         public String getPropertyName() {
-        	return propertyName;
+            return propertyName;
         }
-        
+
         public Object[] getArguments() {
-        	return Arrays.copyOf(arguments, arguments.length);
+            Object[] copy = new Object[arguments.length];
+            System.arraycopy(arguments, 0, copy, 0, arguments.length);
+            return copy;
         }
-        
+
         @Override
         public String toString() {
             StringBuilder buf = new StringBuilder("[GrailsMethodExpression] ");
@@ -477,7 +478,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                 arg = Boolean.FALSE;
             }
             GrailsMethodExpression booleanExpression = GrailsMethodExpression.create(
-                    application, clazz, booleanProperty );
+                    application, clazz, booleanProperty);
             booleanExpression.setArguments(new Object[]{arg});
             expressions.add(booleanExpression);
         }
@@ -530,7 +531,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         }
         // otherwise there is only one expression
         if (!containsOperator && querySequence != null) {
-            GrailsMethodExpression solo = GrailsMethodExpression.create(application, clazz,querySequence );
+            GrailsMethodExpression solo = GrailsMethodExpression.create(application, clazz,querySequence);
 
             if (solo.argumentsRequired > arguments.length) {
                 throw new MissingMethodException(methodName,clazz,arguments);

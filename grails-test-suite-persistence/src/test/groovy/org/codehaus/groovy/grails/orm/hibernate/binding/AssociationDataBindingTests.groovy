@@ -375,7 +375,7 @@ class AssociationBindingAuthor {
     void testOneToManyWithIndexedParams() {
         super.buildMockRequest()
 
-        if(notYetImplemented()) return
+        if (notYetImplemented()) return
 
         def Book = ga.getDomainClass("AssociationBindingBook2").clazz
         def Author = ga.getDomainClass("AssociationBindingAuthor").clazz

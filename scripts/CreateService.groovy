@@ -33,7 +33,7 @@ target ('default': "Creates a new service class") {
     def type = "Service"
     promptForName(type: type)
 
-    for ( name in argsMap["params"] ) {
+    for (name in argsMap["params"]) {
         name = purgeRedundantArtifactSuffix(name, type)
         createArtifact(name: name, suffix: type, type: type, path: "grails-app/services")
         createUnitTest(name: name, suffix: type)

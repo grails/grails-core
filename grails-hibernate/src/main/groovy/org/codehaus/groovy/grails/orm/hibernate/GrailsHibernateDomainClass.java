@@ -160,9 +160,9 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     }
 
     private ConstraintsEvaluator getConstraintsEvaluator() {
-        if(application != null && application.getMainContext() != null) {
+        if (application != null && application.getMainContext() != null) {
             final ApplicationContext context = application.getMainContext();
-            if(context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
+            if (context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {
                 return context.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator.class);
             }
         }

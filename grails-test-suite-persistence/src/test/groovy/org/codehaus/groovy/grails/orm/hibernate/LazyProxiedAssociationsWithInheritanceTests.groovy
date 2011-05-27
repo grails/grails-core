@@ -13,13 +13,13 @@ import org.apache.commons.beanutils.PropertyUtils
 class LazyProxiedAssociationsWithInheritanceTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [ContentRevision, 
-         Content, 
-         ArticleRevision, 
-         Article, 
-         LazyProxiedAssociationsWithInheritancePerson, 
-         LazyProxiedAssociationsWithInheritanceAuthor, 
-         LazyProxiedAssociationsWithInheritanceAddress, 
+        [ContentRevision,
+         Content,
+         ArticleRevision,
+         Article,
+         LazyProxiedAssociationsWithInheritancePerson,
+         LazyProxiedAssociationsWithInheritanceAuthor,
+         LazyProxiedAssociationsWithInheritanceAddress,
          LazyProxiedAssociationsWithInheritanceBook]
     }
 

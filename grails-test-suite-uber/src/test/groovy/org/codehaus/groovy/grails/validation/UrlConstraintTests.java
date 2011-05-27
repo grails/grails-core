@@ -20,48 +20,39 @@ public class UrlConstraintTests extends AbstractConstraintTests {
                 getConstraint("testURL", Boolean.TRUE),
                 "wrong_url",
                 new String[]{"testClass.testURL.url.error", "testClass.testURL.url.invalid"},
-                new Object[]{"testURL", TestClass.class, "wrong_url"}
-        );
+                new Object[]{"testURL", TestClass.class, "wrong_url"});
 
         testConstraintPassed(
                 getConstraint("testURL", Boolean.TRUE),
-                "http://www.google.com"
-        );
+                "http://www.google.com");
 
         testConstraintPassed(
                 getConstraint("testURL", Boolean.TRUE),
-                "https://www.google.com/"
-        );
+                "https://www.google.com/");
 
         testConstraintPassed(
                 getConstraint("testURL", Boolean.TRUE),
-                "https://www.google.com/answers.py?test=1&second=2"
-        );
+                "https://www.google.com/answers.py?test=1&second=2");
 
         testConstraintFailed(
                 getConstraint("testURL", Boolean.TRUE),
-                "http://localhost/tau_gwi_00/clif/cb/19"
-        );
+                "http://localhost/tau_gwi_00/clif/cb/19");
 
         testConstraintPassed(
                 getConstraint("testURL", "localhost"),
-                "http://localhost/tau_gwi_00/clif/cb/19"
-        );
+                "http://localhost/tau_gwi_00/clif/cb/19");
 
         testConstraintPassed(
                 getConstraint("testURL", "localhost(:(\\d{1,5}))?"),
-                "http://localhost:8080/tau_gwi_00/clif/cb/19"
-        );
+                "http://localhost:8080/tau_gwi_00/clif/cb/19");
 
         testConstraintPassed(
                 getConstraint("testURL", ".*\\.localdomain"),
-                "http://localhost.localdomain/myApp/?test=1&second=2"
-        );
+                "http://localhost.localdomain/myApp/?test=1&second=2");
 
         testConstraintPassed(
                 getConstraint("testURL", ".*\\.localdomain"),
-                "http://mytest.localdomain/myApp/?test=1&second=2"
-        );
+                "http://mytest.localdomain/myApp/?test=1&second=2");
 
         List regexps = new ArrayList();
         regexps.add("localhost");
@@ -70,43 +61,36 @@ public class UrlConstraintTests extends AbstractConstraintTests {
         // now should pass for 'localhost' and 'my-machine'
         testConstraintPassed(
                 getConstraint("testURL", regexps),
-                "https://localhost/myApp/?test=1&second=2"
-        );
+                "https://localhost/myApp/?test=1&second=2");
 
         testConstraintPassed(
                 getConstraint("testURL", regexps),
-                "https://my-machine/myApp/?test=1&second=2"
-        );
+                "https://my-machine/myApp/?test=1&second=2");
 
         // and fail for 'another-machine'
         testConstraintFailed(
                 getConstraint("testURL", regexps),
-                "https://another-machine/myApp/?test=1&second=2"
-        );
+                "https://another-machine/myApp/?test=1&second=2");
 
         // but still pass for IANA TLD's
         testConstraintPassed(
                 getConstraint("testURL", regexps),
-                "http://www.google.com/"
-        );
+                "http://www.google.com/");
 
         // must always pass when constraint is turned off
         testConstraintPassed(
                 getConstraint("testURL", Boolean.FALSE),
-                "wrong_url"
-        );
+                "wrong_url");
 
         // must always pass on null values
         testConstraintPassed(
                 getConstraint("testURL", Boolean.TRUE),
-                null
-        );
+                null);
 
         testConstraintDefaultMessage(
                 getConstraint("testURL", Boolean.TRUE),
                 "wrong_url",
-                "Property [{0}] of class [{1}] with value [{2}] is not a valid URL"
-        );
+                "Property [{0}] of class [{1}] with value [{2}] is not a valid URL");
     }
 
     public void testCreation() {

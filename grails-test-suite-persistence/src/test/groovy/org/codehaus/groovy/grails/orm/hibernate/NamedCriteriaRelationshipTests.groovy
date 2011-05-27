@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 import org.hibernate.FetchMode
 
 class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
-    
+
     protected getDomainClasses() {
         [NamedCriteriaPlantCategory,
          NamedCriteriaPlant]

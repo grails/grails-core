@@ -18,14 +18,15 @@ import grails.util.Environment;
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.ConfigObject;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.LogLog;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 /**
  * Configures Log4j in WAR deployment using Grails Log4j DSL.
@@ -46,10 +47,10 @@ public class Log4jConfigListener implements ServletContextListener {
                 // create empty app to provide metadata
                 GrailsApplication application = new DefaultGrailsApplication();
                 co = application.getConfig();
-                if(co != null) {
+                if (co != null) {
                     Object o = co.get("log4j");
                     if (o instanceof Closure) {
-                        new Log4jConfig().configure((Closure)o);
+                        new Log4jConfig().configure((Closure<?>)o);
                     }
                     else {
                         new Log4jConfig().configure();

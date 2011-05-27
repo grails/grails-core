@@ -116,7 +116,7 @@ public class ValidatorConstraint extends AbstractConstraint {
                 args[i++] = constraintPropertyName;
                 args[i++] = constraintOwningClass;
                 args[i++] = propertyValue;
-                System.arraycopy( values, 1, args, i, values.length-1 );
+                System.arraycopy(values, 1, args, i, values.length - 1);
             }
             else {
                 throw new IllegalArgumentException("Return value from validation closure [" +
@@ -129,7 +129,8 @@ public class ValidatorConstraint extends AbstractConstraint {
             if (args == null) {
                 args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
             }
-            rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE, errmsg == null ? ConstrainedProperty.VALIDATOR_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX: errmsg, args );
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE,
+                 errmsg == null ? ConstrainedProperty.VALIDATOR_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX: errmsg, args);
         }
     }
 

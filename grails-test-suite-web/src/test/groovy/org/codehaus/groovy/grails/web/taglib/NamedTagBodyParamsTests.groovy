@@ -23,7 +23,7 @@ class NamedTagBodyParamsTests extends AbstractGrailsTagTests {
     }
 
     protected void onInit() {
-        def tagClass = gcl.parseClass( '''
+        def tagClass = gcl.parseClass('''
 class MyTagLib {
     def test1 = { attrs, body ->
         out << body(foo:"bar", one:2)

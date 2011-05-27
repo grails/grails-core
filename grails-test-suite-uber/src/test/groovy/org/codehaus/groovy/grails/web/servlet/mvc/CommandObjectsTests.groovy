@@ -150,14 +150,14 @@ grails.gorm.default.constraints = {
         def codes = result.command.errors.getFieldError('data').codes.toList()
         assertTrue codes.contains("constrainedCommandSubclass.data.size.error")
     }
-    
+
     void testValidationWithSharedConstraints() {
         request.setParameter('name', 'Emerson')
         def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
         def result = testCtrl.action6()
         assertNotNull result.artist
         assertFalse 'the artist should not have had a validation error', result.artist.hasErrors()
-        
+
         def webRequest = GrailsWebUtil.bindMockWebRequest()
         request = webRequest.currentRequest
         request.setParameter('name', 'Hendrix')

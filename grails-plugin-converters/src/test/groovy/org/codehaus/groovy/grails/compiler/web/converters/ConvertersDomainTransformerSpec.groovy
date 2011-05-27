@@ -5,15 +5,7 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 28/03/2011
- * Time: 10:16
- * To change this template use File | Settings | File Templates.
- */
-class ConvertersDomainTransformerSpec extends Specification{
-
+class ConvertersDomainTransformerSpec extends Specification {
 
     void "Test domain type conversion methods added at compile time"() {
        given:

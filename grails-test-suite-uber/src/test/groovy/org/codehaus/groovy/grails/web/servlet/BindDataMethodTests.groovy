@@ -35,7 +35,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer' ]
 
-            method.invoke( mockController, "bindData", [target, src].toArray() )
+            method.invoke(mockController, "bindData", [target, src].toArray())
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -48,7 +48,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def excludes = [exclude:['email']]
 
-            method.invoke( mockController,"bindData", [target, src, excludes].toArray() )
+            method.invoke(mockController,"bindData", [target, src, excludes].toArray())
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -62,7 +62,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def includes = [include:['name']]
 
-            method.invoke( mockController,"bindData", [target, src, includes].toArray() )
+            method.invoke(mockController,"bindData", [target, src, includes].toArray())
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -74,7 +74,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
         runTest() {
             mockController = ga.getControllerClass("BindController")
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dowantthis' ]
-            method.invoke( mockController,"bindData", [target, src, [:]].toArray() )
+            method.invoke(mockController,"bindData", [target, src, [:]].toArray())
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -88,7 +88,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def src = [ 'metaClass' : this.metaClass, 'name' : 'Marc Palmer', 'email' : 'dontwantthis' ]
             def includedAndExcluded = [include:['name','email'], exclude:['email']]
 
-            method.invoke( mockController,"bindData", [target, src, includedAndExcluded].toArray() )
+            method.invoke(mockController,"bindData", [target, src, includedAndExcluded].toArray())
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -102,7 +102,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def src = [ 'metaClass' : this.metaClass, 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis',
                         'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
             def filter = "lee"
-            method.invoke( mockController,"bindData", [target, src, filter].toArray() )
+            method.invoke(mockController,"bindData", [target, src, filter].toArray())
             assertEquals "Lee Butts", target.name
             assertEquals "lee@mail.com", target.email
             assertEquals safeMeta, target.metaClass
@@ -120,7 +120,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
             def excludes = [exclude:['email']]
             def params = new GrailsParameterMap(webRequest.currentRequest)
 
-            method.invoke( mockController,"bindData", [target, params, excludes].toArray() )
+            method.invoke(mockController,"bindData", [target, params, excludes].toArray())
 
             assertEquals "Marc Palmer", target.name
             assertEquals safeMeta, target.metaClass
@@ -136,7 +136,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
                         'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
             def filter = "lee"
             def disallowed = [exclude:["email"]]
-            method.invoke( mockController,"bindData", [target, src, disallowed, filter].toArray() )
+            method.invoke(mockController,"bindData", [target, src, disallowed, filter].toArray())
             assertEquals "Lee Butts", target.name
             assertNull target.email
             assertEquals safeMeta, target.metaClass
@@ -150,7 +150,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
                         'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com']
             def filter = "lee"
             def disallowed = [exclude:"email"]
-            method.invoke( mockController,"bindData", [target, src, disallowed, filter].toArray() )
+            method.invoke(mockController,"bindData", [target, src, disallowed, filter].toArray())
             assertEquals "Lee Butts", target.name
             assertNull target.email
             assertEquals safeMeta, target.metaClass
@@ -162,8 +162,7 @@ class BindDataMethodTests extends AbstractGrailsControllerTests {
 '''
 class BindController {
 }
-'''
-        )
+''')
         method = new BindDynamicMethod()
         target = new CommandObject()
         safeMeta = target.metaClass

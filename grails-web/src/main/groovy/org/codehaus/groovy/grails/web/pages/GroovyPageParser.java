@@ -131,7 +131,7 @@ public class GroovyPageParser implements Tokens {
     private static final String PAGE_DIRECTIVE = "page";
 
     private static final String TAGLIB_DIRECTIVE = "taglib";
-    private String gspEncoding = System.getProperty("file.encoding", "us-ascii");;
+    private String gspEncoding = System.getProperty("file.encoding", "us-ascii");
     private String pluginAnnotation;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
     private Map<String, String> jspTags = new HashMap<String, String>();
@@ -140,7 +140,6 @@ public class GroovyPageParser implements Tokens {
     private boolean sitemeshPreprocessMode=false;
     private String defaultCodecDirectiveValue;
 
-    private String filename;
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
 
@@ -183,11 +182,8 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding) throws IOException {
-        this.filename = filename;
         this.gspEncoding = encoding;
-
 
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
             PluginBuildSettings pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
@@ -216,7 +212,6 @@ public class GroovyPageParser implements Tokens {
         makeSourceName(filename);
     }
 
-    @SuppressWarnings("rawtypes")
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
         this(name, uri, filename, in, "UTF-8");
     }
@@ -227,7 +222,6 @@ public class GroovyPageParser implements Tokens {
             LOG.debug("GSP file encoding set to: " + gspEncoding);
         }
     }
-
 
     private Map<String, String> parseDirectives(String gspSource) {
         Map <String, String> result=new HashMap<String, String>();
@@ -246,7 +240,6 @@ public class GroovyPageParser implements Tokens {
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
     private boolean isSitemeshPreprocessingEnabled(String gspFilePreprocessDirective) {
         if (gspFilePreprocessDirective != null) {
             return BooleanUtils.toBoolean(String.valueOf(gspFilePreprocessDirective).trim());
@@ -275,6 +268,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     public InputStream parse() {
+        @SuppressWarnings("hiding")
         File keepGeneratedDirectory = resolveKeepGeneratedDirectory();
 
         StreamCharBuffer streamBuffer = new StreamCharBuffer(1024);
@@ -361,7 +355,7 @@ public class GroovyPageParser implements Tokens {
         scan = null;
     }
 
-    public void writeHtmlParts(@SuppressWarnings("hiding") File filename) throws IOException {
+    public void writeHtmlParts(File filename) throws IOException {
         DataOutputStream dataOut = null;
         try {
             dataOut = new DataOutputStream(new BufferedOutputStream(
@@ -376,7 +370,7 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    public void writeLineNumbers(@SuppressWarnings("hiding") File filename) throws IOException {
+    public void writeLineNumbers(File filename) throws IOException {
         DataOutputStream dataOut = null;
         try {
             dataOut = new DataOutputStream(new BufferedOutputStream(
@@ -666,7 +660,7 @@ public class GroovyPageParser implements Tokens {
      * find the simple name of this gsp
      * @param filename the fully qualified file name
      */
-    private void makeSourceName(@SuppressWarnings("hiding") String filename) {
+    private void makeSourceName(String filename) {
         if (filename != null) {
             int lastSegmentStart = filename.lastIndexOf('/');
             if (lastSegmentStart == -1) {

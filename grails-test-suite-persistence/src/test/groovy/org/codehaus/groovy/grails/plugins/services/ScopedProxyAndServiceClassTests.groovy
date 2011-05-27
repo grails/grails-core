@@ -21,11 +21,10 @@ class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
                 bean.scope = "session"
 
             }
-            testScopeProxy(org.springframework.aop.scope.ScopedProxyFactoryBean){
+            testScopeProxy(org.springframework.aop.scope.ScopedProxyFactoryBean) {
                 targetBeanName="testService"
                 proxyTargetClass=true
             }
-
         }
 
         def appCtx = bb.createApplicationContext()
@@ -54,7 +53,7 @@ class TestService {
     }
 
 // - This was the workaround for the bug -
-// 
+//
 //    private MetaClass metaClass
 //
 //    TestService() {

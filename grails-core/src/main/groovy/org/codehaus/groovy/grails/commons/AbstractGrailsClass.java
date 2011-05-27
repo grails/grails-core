@@ -169,7 +169,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
 
     public boolean isActionMethod(String methodName) {
         Method m =  ReflectionUtils.findMethod(getClazz(), methodName, new Class[0]);
-        if(m != null) {
+        if (m != null) {
             ReflectionUtils.makeAccessible(m);
         }
         return m != null && m.getAnnotation(Action.class) != null;
@@ -260,7 +260,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
                 if (Modifier.isStatic(modifiers)) {
                     value = metaProperty.getProperty(clazz);
                 }
-                else if (!onlyStatic){
+                else if (!onlyStatic) {
                     value = metaProperty.getProperty(getReferenceInstance());
                 }
             }

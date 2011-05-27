@@ -61,13 +61,13 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         // prefer URI attribute
         if (attrs.get(ATTRIBUTE_URI) != null) {
             final base = handleAbsolute(attrs)
-            if(base != null) {
+            if (base != null) {
                 writer << base
             }
             else {
                 final cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
-                if(cp == null) cp = getContextPath()
-                if(cp != null)
+                if (cp == null) cp = getContextPath()
+                if (cp != null)
                     writer << cp
             }
             final uriPath = attrs.get(ATTRIBUTE_URI).toString()
@@ -112,7 +112,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()
-                    if(attrs.get(ATTRIBUTE_BASE) || cp == null) {
+                    if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
                         writer << handleAbsolute(attrs)
                     }
@@ -139,16 +139,16 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         def absolutePath = handleAbsolute(attrs)
 
         final contextPathAttribute = attrs.contextPath
-        if(absolutePath == null) {
+        if (absolutePath == null) {
             final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
-            if(cp == null) {
+            if (cp == null) {
                 absolutePath = handleAbsolute(absolute:true)
             }
             else {
                 absolutePath = cp
             }
         }
-        StringBuilder url = new StringBuilder( absolutePath ?: '' )
+        StringBuilder url = new StringBuilder(absolutePath ?: '')
         def dir = attrs.dir
         if (attrs.plugin) {
             url << pluginManager?.getPluginPath(attrs.plugin) ?: ''
@@ -178,7 +178,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     }
 
     String getContextPath() {
-        if(contextPath == null) {
+        if (contextPath == null) {
             contextPath = requestStateLookupStrategy.getContextPath()
         }
         return contextPath
@@ -213,13 +213,13 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             // Leave it null if we're in production so we can throw
             final webRequest = GrailsWebRequest.lookup()
             final request = webRequest?.currentRequest
-            if(request != null) {
+            if (request != null) {
                 def port = request.serverPort
                 def scheme = request.scheme
                 def contextPath = request.contextPath
 
                 def url = "${scheme}://${request.serverName}"
-                if((scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
+                if ((scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
                     return contextPath ? "$url:$port$contextPath" : "$url:$port"
                 }
                 else {
@@ -227,7 +227,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 }
             }
             else {
-                if(!Environment.isWarDeployed()) {
+                if (!Environment.isWarDeployed()) {
                     u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
                 }
             }

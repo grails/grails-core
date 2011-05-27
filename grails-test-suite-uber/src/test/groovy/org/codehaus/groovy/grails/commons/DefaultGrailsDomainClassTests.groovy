@@ -181,7 +181,7 @@ class OneToOneTest1 {
         assertTrue(dc.getPropertyByName("parent").getOtherSide().equals(dc.getPropertyByName("children")))
     }
 
-    void testOneToManyRelationships(){
+    void testOneToManyRelationships() {
 
         gcl.parseClass '''
 class RelationshipsTest2 {

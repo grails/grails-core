@@ -12,7 +12,7 @@ class NewLineRenderingTests extends AbstractGrailsTagTests {
         def template = '''username: ${username}
 password: ${password}'''
 
-         assertOutputEquals( '''username: bob
-password: foo''', template, [username:'bob', password:'foo'] )
+         assertOutputEquals('''username: bob
+password: foo''', template, [username:'bob', password:'foo'])
     }
 }

@@ -162,7 +162,7 @@ public class DynamicMethodsExpandoMetaClass extends ExpandoMetaClass {
 
         private void registerDynamicMethodInvocation(String name, Object newValue) {
             if (isStatic) {
-                dynamicMethods.addStaticMethodInvocation( new ClosureInvokingDynamicMethod(name, (Closure<?>)newValue) );
+                dynamicMethods.addStaticMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure<?>)newValue));
             }
             else {
                 dynamicMethods.addDynamicMethodInvocation(new ClosureInvokingDynamicMethod(name, (Closure<?>)newValue));

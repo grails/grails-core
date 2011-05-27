@@ -83,15 +83,13 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         if (GrailsUtil.isDevelopmentEnv()) {
             return createGrailsView(viewName);
         }
-        else {
 
-            View view = VIEW_CACHE.get(viewName);
-            if (view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
-                view = createGrailsView(viewName);
-            }
-            VIEW_CACHE.put(viewName, view);
-            return view;
+        View view = VIEW_CACHE.get(viewName);
+        if (view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
+            view = createGrailsView(viewName);
         }
+        VIEW_CACHE.put(viewName, view);
+        return view;
     }
 
     private View createGrailsView(String viewName) throws Exception {
@@ -102,7 +100,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver
         HttpServletRequest request = webRequest.getCurrentRequest();
         GroovyObject controller = webRequest.getAttributes().getController(request);
 
-        if(grailsApplication == null) {
+        if (grailsApplication == null) {
 
             grailsApplication = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
         }
@@ -118,13 +116,11 @@ public class GrailsViewResolver extends InternalResourceViewResolver
             res = loader.getResource(gspView);
             if (!res.exists()) {
                 View v = lookupBinaryPluginView(webRequest, controller, gspView);
-                if(v != null) {
+                if (v != null) {
                     return v;
                 }
-                else {
-                    gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
-                    res = loader.getResource(gspView);
-                }
+                gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
+                res = loader.getResource(gspView);
             }
         }
 
@@ -133,13 +129,11 @@ public class GrailsViewResolver extends InternalResourceViewResolver
             res = loader.getResource(gspView);
             if (!res.exists()) {
                 View v = lookupBinaryPluginView(webRequest, controller, gspView);
-                if(v != null) {
+                if (v != null) {
                     return v;
                 }
-                else {
-                    gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
-                    res = loader.getResource(gspView);
-                }
+                gspView = resolveViewForController(controller, grailsApplication, viewName, loader);
+                res = loader.getResource(gspView);
             }
         }
 
@@ -155,20 +149,20 @@ public class GrailsViewResolver extends InternalResourceViewResolver
 
     private View lookupBinaryPluginView(GrailsWebRequest webRequest, GroovyObject controller, String gspView) {
         View v = null;
-        if(pluginManager != null && pluginManager.getPluginForInstance(controller) != null) {
+        if (pluginManager != null && pluginManager.getPluginForInstance(controller) != null) {
             final GrailsPlugin plugin = pluginManager.getPluginForInstance(controller);
-            if(plugin instanceof BinaryGrailsPlugin) {
+            if (plugin instanceof BinaryGrailsPlugin) {
                 BinaryGrailsPlugin binaryGrailsPlugin = (BinaryGrailsPlugin) plugin;
-                Class viewClass = binaryGrailsPlugin.resolveView(gspView);
-                if(viewClass != null) {
-                    v= createGroovyPageView(webRequest, gspView, viewClass);
+                Class<?> viewClass = binaryGrailsPlugin.resolveView(gspView);
+                if (viewClass != null) {
+                    v = createGroovyPageView(webRequest, gspView, viewClass);
                 }
             }
         }
         return v;
     }
 
-    private View createGroovyPageView(GrailsWebRequest webRequest, String gspView, Class viewClass) {
+    private View createGroovyPageView(GrailsWebRequest webRequest, String gspView, Class<?> viewClass) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Resolved GSP view at URI [" + gspView + "]");
         }

@@ -17,12 +17,12 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
         return ValidatorConstraint.class;
     }
 
-    private Closure getClosure( String code ) {
-        return (Closure) shell.evaluate( code );
+    private Closure getClosure(String code) {
+        return (Closure) shell.evaluate(code);
     }
 
-    protected Constraint getConstraint( String closure ) {
-        return super.getConstraint( "testString", getClosure(closure) );
+    protected Constraint getConstraint(String closure) {
+        return super.getConstraint("testString", getClosure(closure));
     }
 
     public void testBooleanReturn()  {
@@ -30,40 +30,33 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
                 getConstraint("{val,obj -> return false}"),
                 "test",
                 new String[] { "testClass.testString.validator.error","testClass.testString.validator.invalid"},
-                new Object[] { "testString", TestClass.class, "test" }
-        );
+                new Object[] { "testString", TestClass.class, "test" });
 
         testConstraintPassed(
-                getConstraint( "{val,obj -> return true}" ),
-                "test"
-        );
+                getConstraint("{val,obj -> return true}"),
+                "test");
 
         testConstraintDefaultMessage(
                 getConstraint("{val,obj -> return false}"),
                 "test",
-                "Property [{0}] of class [{1}] with value [{2}] does not pass custom validation"
-        );
+                "Property [{0}] of class [{1}] with value [{2}] does not pass custom validation");
 
         // Test null and blank values.
         testConstraintFailed(
-                getConstraint( "{val,obj -> return val == null}" ),
-                "test"
-        );
+                getConstraint("{val,obj -> return val == null}"),
+                "test");
 
         testConstraintPassed(
-                getConstraint( "{val,obj -> return val == null}" ),
-                null
-        );
+                getConstraint("{val,obj -> return val == null}"),
+                null);
 
         testConstraintFailed(
-                getConstraint( "{val,obj -> return val?.trim() == ''}" ),
-                "test"
-        );
+                getConstraint("{val,obj -> return val?.trim() == ''}"),
+                "test");
 
         testConstraintPassed(
-                getConstraint( "{val,obj -> return val?.trim() == ''}" ),
-                "     "
-        );
+                getConstraint("{val,obj -> return val?.trim() == ''}"),
+                "     ");
     }
 
 
@@ -72,16 +65,14 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
                 getConstraint("{val,obj -> return 'test.message'}"),
                 "test",
                 "testClass.testString.test.message",
-                new Object[] { "testString", TestClass.class, "test" }
-        );
+                new Object[] { "testString", TestClass.class, "test" });
 
         try {
             testConstraintFailed(
                     getConstraint("{val,obj -> return 123L}"),
-                    "test"
-            );
+                    "test");
             fail("Validator constraint must throw an exception about wrong closure return");
-        } catch( IllegalArgumentException iae ) {
+        } catch (IllegalArgumentException iae) {
             // Greate
         }
     }
@@ -91,15 +82,13 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
                 getConstraint("{val,obj -> return ['test.message', 'arg', 123L]}"),
                 "test",
                 "testClass.testString.test.message",
-                new Object[] { "testString", TestClass.class, "test", "arg", new Long(123) }
-        );
+                new Object[] { "testString", TestClass.class, "test", "arg", new Long(123) });
         try {
             testConstraintFailed(
                     getConstraint("{val,obj -> return [123L,'arg1','arg2']}"),
-                    "test"
-            );
+                    "test");
             fail("Validator constraint must throw an exception about wrong closure return");
-        } catch( IllegalArgumentException iae ) {
+        } catch (IllegalArgumentException iae) {
             // Greate
         }
     }
@@ -116,26 +105,25 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
 
     public void testConstraintCreation() {
         Constraint validatorConstraint = new ValidatorConstraint();
-        assertEquals( ConstrainedProperty.VALIDATOR_CONSTRAINT, validatorConstraint.getName() );
-        assertTrue( validatorConstraint.supports( TestClass.class ));
-        assertFalse( validatorConstraint.supports( null ));
+        assertEquals(ConstrainedProperty.VALIDATOR_CONSTRAINT, validatorConstraint.getName());
+        assertTrue(validatorConstraint.supports(TestClass.class));
+        assertFalse(validatorConstraint.supports(null));
 
-        validatorConstraint.setOwningClass( TestClass.class );
-        validatorConstraint.setPropertyName( PROP_NAME );
+        validatorConstraint.setOwningClass(TestClass.class);
+        validatorConstraint.setPropertyName(PROP_NAME);
 
         try {
-            getConstraint( "testString", "Test");
+            getConstraint("testString", "Test");
             fail("ValidatorConstraint must throw an exception for non-closure parameter.");
-        } catch ( IllegalArgumentException iae ) {
+        } catch (IllegalArgumentException iae) {
             // Great since validator constraint only applicable for Closure parameter
         }
 
         try {
-            getConstraint( "{ param1, param2, param3, param4 -> return true}" );
+            getConstraint("{ param1, param2, param3, param4 -> return true}");
             fail("ValidatorConstraint must throw exception about closure with more that 3 params");
-        } catch ( IllegalArgumentException iae ) {
+        } catch (IllegalArgumentException iae) {
             // Great since validator constraint only applicable for Closure's with 1, 2 or 3 params
         }
-
     }
 }

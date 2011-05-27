@@ -96,7 +96,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private GrailsDomainClass domainClass;
     private GrailsApplication grailsApplication;
-    private Boolean attached = null;
 
     /**
      * Create a new GrailsDataBinder instance.
@@ -163,7 +162,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private static void initializeFromWebRequest(GrailsDataBinder binder, GrailsWebRequest webRequest) {
-        if(webRequest != null) {
+        if (webRequest != null) {
             final GrailsApplication grailsApplication = webRequest.getAttributes().getGrailsApplication();
             binder.setGrailsApplication(grailsApplication);
 
@@ -242,7 +241,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if(webRequest != null) {
+        if (webRequest != null) {
             initializeFromWebRequest(binder, webRequest);
             Locale locale = RequestContextUtils.getLocale(webRequest.getCurrentRequest());
             registerCustomEditors(webRequest, binder, locale);
@@ -648,7 +647,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             LOG.warn("Unable to auto-create type, 'create' method not found");
         }
         catch (GroovyRuntimeException gre) {
-            LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(),gre) ;
+            LOG.warn("Unable to auto-create type, Groovy Runtime error: " + gre.getMessage(), gre);
         }
         return created;
     }
@@ -668,7 +667,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isNullAndWritableProperty(ConfigurablePropertyAccessor accessor, String propertyName) {
-        return accessor.isWritableProperty(propertyName) && (accessor.isReadableProperty(propertyName) && accessor.getPropertyValue(propertyName) == null) ;
+        return accessor.isWritableProperty(propertyName) && (accessor.isReadableProperty(propertyName) && accessor.getPropertyValue(propertyName) == null);
     }
 
     /**
@@ -700,35 +699,29 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     else {
                         Class<?> type = getPropertyTypeForPath(propertyName);
 
-
                         final Object persisted = getPersistentInstance(type, pv.getValue());
-
 
                         if (persisted != null) {
                             bean.setPropertyValue(propertyName, persisted);
 
-                            if(domainClass != null ) {
+                            if (domainClass != null) {
                                 GrailsDomainClassProperty property = domainClass.getPersistentProperty(propertyName);
-                                if(property != null) {
+                                if (property != null) {
                                     final GrailsDomainClassProperty otherSide = property.getOtherSide();
-                                    if(otherSide != null && List.class.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
+                                    if (otherSide != null && List.class.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
                                         DeferredBindingActions.addBindingAction(
-                                                new Runnable() {
-                                                    public void run() {
-                                                        if(otherSide.isOneToMany()) {
-                                                            String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
-                                                            GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
-                                                        }
-
+                                            new Runnable() {
+                                                public void run() {
+                                                    if (otherSide.isOneToMany()) {
+                                                        String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
+                                                        GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
                                                     }
                                                 }
+                                            }
                                         );
                                     }
                                 }
                             }
-
-
-
                         }
                     }
                 }
@@ -736,7 +729,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             else {
                 if (isReadableAndPersistent(propertyName)) {
                     Class<?> type = getPropertyTypeForPath(propertyName);
-                    if(type != null) {
+                    if (type != null) {
                         if (Collection.class.isAssignableFrom(type)) {
                             bindCollectionAssociation(mpvs, pv);
                         }
@@ -745,7 +738,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
         }
     }
-
 
     private Class<?> getPropertyTypeForPath(String propertyName) {
         Class<?> type = bean.getPropertyType(propertyName);
@@ -1039,6 +1031,4 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
         return StringUtils.join(pathElements, PATH_SEPARATOR);
     }
-
-
 }

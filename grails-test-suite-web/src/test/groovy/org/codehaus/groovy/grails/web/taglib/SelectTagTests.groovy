@@ -97,7 +97,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertNotNull(doc)
 
         range.each() {
-            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+            assertSelectFieldPresentWithValue(doc, SELECT_TAG_NAME, it.toString())
         }
 
         sw = new StringWriter()
@@ -116,9 +116,9 @@ class SelectTagTests extends AbstractGrailsTagTests {
 
         range.each() {
             if (it != sel) {
-                assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+                assertSelectFieldPresentWithValue(doc, SELECT_TAG_NAME, it.toString())
             } else {
-                assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, it.toString() )
+                assertSelectFieldPresentWithSelectedValue(doc, SELECT_TAG_NAME, it.toString())
             }
         }
     }
@@ -160,9 +160,9 @@ class SelectTagTests extends AbstractGrailsTagTests {
         def doc = parseText(sw.toString())
         assertNotNull(doc)
 
-        assertSelectFieldPresentWithSelectedValue( doc, SELECT_TAG_NAME, '')
+        assertSelectFieldPresentWithSelectedValue(doc, SELECT_TAG_NAME, '')
         range.each() {
-            assertSelectFieldPresentWithValue( doc, SELECT_TAG_NAME, it.toString() )
+            assertSelectFieldPresentWithValue(doc, SELECT_TAG_NAME, it.toString())
         }
     }
 
@@ -188,7 +188,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
 
         // assert select field uses value for both the value as the text (as there is no text found within messages)
         categoryMap.each() { value, text ->
-            assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, value )
+            assertSelectFieldPresentWithValueAndText(doc, SELECT_TAG_NAME, value, value)
         }
 
         // test with messages set
@@ -211,7 +211,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
 
         // assert select field uses value and text
         categoryMap.each() { value, text ->
-            assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, value, text )
+            assertSelectFieldPresentWithValueAndText(doc, SELECT_TAG_NAME, value, text)
         }
     }
 
@@ -268,11 +268,11 @@ class SelectTagTests extends AbstractGrailsTagTests {
         int actualSelected = 0
         categories.each() { cat ->
             if (isSelected.call(cat)) {
-                assertSelectFieldPresentWithSelectedValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
+                assertSelectFieldPresentWithSelectedValueAndText(doc, SELECT_TAG_NAME, cat.code, cat.label)
                 actualSelected++
             }
             else {
-                assertSelectFieldPresentWithValueAndText( doc, SELECT_TAG_NAME, cat.code, cat.label )
+                assertSelectFieldPresentWithValueAndText(doc, SELECT_TAG_NAME, cat.code, cat.label)
             }
         }
 

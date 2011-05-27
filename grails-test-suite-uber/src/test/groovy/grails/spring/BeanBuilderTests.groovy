@@ -87,14 +87,14 @@ class BeanBuilderTests extends GroovyTestCase {
         bb.beans {
             xmlns grailsContext:"http://grails.org/schema/context"
 
-            grailsContext.'component-scan'( 'base-package' :"**" )
+            grailsContext.'component-scan'('base-package' :"**")
         }
 
         def appCtx = bb.createApplicationContext()
 
         def p = appCtx.getBean("person")
 
-        assertTrue( p instanceof AdvisedPerson )
+        assertTrue(p instanceof AdvisedPerson)
         assertNotNull p
     }
 
@@ -112,7 +112,7 @@ class BeanBuilderTests extends GroovyTestCase {
 
             aop {
                 config("proxy-target-class":true) {
-                    aspect( id:"sendBirthdayCard",ref:"birthdayCardSenderAspect" ) {
+                    aspect(id:"sendBirthdayCard",ref:"birthdayCardSenderAspect") {
                         after method:"onBirthday", pointcut: "execution(void grails.spring.AdvisedPerson.birthday()) and this(person)"
                     }
                 }
@@ -122,7 +122,7 @@ class BeanBuilderTests extends GroovyTestCase {
 
         def appCtx = bb.createApplicationContext()
         def fred = appCtx.getBean("fred")
-        assertTrue (fred instanceof SpringProxy )
+        assertTrue (fred instanceof SpringProxy)
 
         fred.birthday()
 
@@ -212,7 +212,7 @@ class BeanBuilderTests extends GroovyTestCase {
             birthdayCardSenderAspect(BirthdayCardSender)
 
             aop.config("proxy-target-class":true) {
-                aspect( id:"sendBirthdayCard",ref:"birthdayCardSenderAspect" ) {
+                aspect(id:"sendBirthdayCard",ref:"birthdayCardSenderAspect") {
                     after method:"onBirthday", pointcut: "execution(void grails.spring.AdvisedPerson.birthday()) and this(person)"
                 }
             }
@@ -220,7 +220,7 @@ class BeanBuilderTests extends GroovyTestCase {
 
         def appCtx = bb.createApplicationContext()
         def fred = appCtx.getBean("fred")
-        assertTrue (fred instanceof SpringProxy )
+        assertTrue (fred instanceof SpringProxy)
 
         fred.birthday()
 

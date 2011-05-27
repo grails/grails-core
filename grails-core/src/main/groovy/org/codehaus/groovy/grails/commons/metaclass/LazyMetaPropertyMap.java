@@ -20,9 +20,18 @@ import groovy.lang.MetaBeanProperty;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import groovy.util.MapEntry;
-import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.util.Assert;
 
 /**
  * A map implementation that reads an objects properties lazily using Groovy's MetaClass.
@@ -214,7 +223,7 @@ public class LazyMetaPropertyMap implements Map {
 
     private boolean isExcluded(MetaProperty mp) {
         if (EXCLUDES.contains(mp.getName())) return true;
-        if((mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null) return true;
+        if ((mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null) return true;
         return false;
     }
 }

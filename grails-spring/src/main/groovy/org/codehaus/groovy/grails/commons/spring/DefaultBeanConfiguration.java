@@ -63,8 +63,8 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
         INIT_METHOD,
         BY_NAME,
         BY_TYPE,
-        BY_CONSTRUCTOR
-    );
+        BY_CONSTRUCTOR);
+
     private String parentName;
 
     @Override
@@ -256,7 +256,7 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
         if ("byName".equals(type)) {
             getBeanDefinition().setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_NAME);
         }
-        else if ("byType".equals(type)){
+        else if ("byType".equals(type)) {
             getBeanDefinition().setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
         }
         return this;

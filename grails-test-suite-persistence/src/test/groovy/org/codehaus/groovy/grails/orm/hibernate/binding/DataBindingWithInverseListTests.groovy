@@ -2,13 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate.binding
 
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 11/05/2011
- * Time: 11:37
- * To change this template use File | Settings | File Templates.
- */
 class DataBindingWithInverseListTests extends AbstractGrailsHibernateTests{
     @Override protected void onSetUp() {
         gcl.parseClass '''

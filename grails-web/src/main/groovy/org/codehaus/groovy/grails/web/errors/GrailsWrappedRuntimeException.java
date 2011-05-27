@@ -115,7 +115,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                             className = m1.group(1);
                             lineNumber = Integer.parseInt(m1.group(2));
                         }
-                        while(m1.find());
+                        while (m1.find());
                     }
                     else {
                         while (m2.find()) {
@@ -197,7 +197,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 }
 
                 if (in != null) {
-                    reader = new LineNumberReader(new InputStreamReader( in ));
+                    reader = new LineNumberReader(new InputStreamReader(in));
                     String currentLine = reader.readLine();
                     StringBuilder buf = new StringBuilder();
                     while (currentLine != null) {

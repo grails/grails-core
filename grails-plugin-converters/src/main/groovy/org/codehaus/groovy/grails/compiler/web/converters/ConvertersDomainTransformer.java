@@ -25,11 +25,10 @@ import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi;
 import java.net.URL;
 
 /**
- * Adds the asType method to domain classes
+ * Adds the asType method to domain classes.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 @AstTransformer
 public class ConvertersDomainTransformer extends AbstractGrailsArtefactTransformer{
@@ -40,12 +39,12 @@ public class ConvertersDomainTransformer extends AbstractGrailsArtefactTransform
     }
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return ConvertersApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;
     }
 

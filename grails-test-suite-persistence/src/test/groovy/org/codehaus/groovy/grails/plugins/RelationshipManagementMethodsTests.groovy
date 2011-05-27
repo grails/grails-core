@@ -191,7 +191,6 @@ class Widget {
 }
 
 class SomeService {}
-'''
-        )
+''')
     }
 }

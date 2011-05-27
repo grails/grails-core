@@ -91,7 +91,7 @@ final class PluginResolveEngine {
 
         def reports = report.getArtifactsReports(null, false)
         def artifactReport = reports.find { it.artifact.attributes.organisation == resolveArgs.group && it.artifact.name == resolveArgs.name && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-        if(artifactReport == null) {
+        if (artifactReport == null) {
             artifactReport = reports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
         }
         if (artifactReport) {

@@ -1,12 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 30/03/2011
- * Time: 15:53
- * To change this template use File | Settings | File Templates.
- */
 class AbstractInheritanceTests extends AbstractGrailsHibernateTests {
     @Override protected void onSetUp() {
         gcl.parseClass('''

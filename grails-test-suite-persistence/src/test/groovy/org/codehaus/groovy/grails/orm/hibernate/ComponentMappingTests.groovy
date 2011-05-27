@@ -10,9 +10,9 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
         p.name = "Homer Simpson"
         def a1 = addressClass.newInstance()
-        a1.number = "22"; a1.postCode = "3345243" ; a1.person = p
+        a1.number = "22"; a1.postCode = "3345243"; a1.person = p;
         def a2 = addressClass.newInstance()
-        a2.number = "454"; a2.postCode = "340854" ; a2.person = p
+        a2.number = "454"; a2.postCode = "340854"; a2.person = p;
 
         p.homeAddress = a1
         p.workAddress = a2
@@ -43,7 +43,7 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
 
         p.name = "Homer Simpson"
         def a1 = addressClass.newInstance()
-        a1.number = "22"; a1.postCode = "3345243" ; a1.person = p
+        a1.number = "22"; a1.postCode = "3345243"; a1.person = p;
 
         p.homeAddress = a1
 
@@ -84,7 +84,7 @@ class ComponentMappingTests extends AbstractGrailsHibernateTests {
         payment = RegularPayment2773.list()[0]
         assertEquals 123, payment.regular.amount.value
     }
-    
+
     protected getDomainClasses() {
         [ComponentMappingPerson, ComponentMappingStoreItem, ComponentMappingPrice, RegularPayment2773, RegularPaymentPart2773, Money2773]
     }

@@ -16,12 +16,13 @@
 
 package org.codehaus.groovy.grails.web.mapping;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Generates links for a Grails application based on URL mapping rules and/or base context settings
+ * Generates links for a Grails application based on URL mapping rules and/or base context settings.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -42,25 +43,24 @@ public interface LinkGenerator {
     String ATTRIBUTE_EVENT = "event";
     String ATTRIBUTE_ELEMENT_ID = "elementId";
 
-    Set<String> LINK_ATTRIBUTES = new HashSet<String>() {{
-       add(ATTRIBUTE_CONTROLLER);
-       add(ATTRIBUTE_ACTION);
-       add(ATTRIBUTE_URI);
-       add(ATTRIBUTE_URL);
-       add(ATTRIBUTE_BASE);
-       add(ATTRIBUTE_ABSOLUTE);
-       add(ATTRIBUTE_ID);
-       add(ATTRIBUTE_FRAGMENT);
-       add(ATTRIBUTE_PARAMS);
-       add(ATTRIBUTE_MAPPING);
-       add(ATTRIBUTE_EVENT);
-       add(ATTRIBUTE_ELEMENT_ID);
-    }};
+    Set<String> LINK_ATTRIBUTES = new HashSet<String>(Arrays.asList(
+       ATTRIBUTE_CONTROLLER,
+       ATTRIBUTE_ACTION,
+       ATTRIBUTE_URI,
+       ATTRIBUTE_URL,
+       ATTRIBUTE_BASE,
+       ATTRIBUTE_ABSOLUTE,
+       ATTRIBUTE_ID,
+       ATTRIBUTE_FRAGMENT,
+       ATTRIBUTE_PARAMS,
+       ATTRIBUTE_MAPPING,
+       ATTRIBUTE_EVENT,
+       ATTRIBUTE_ELEMENT_ID));
+
     /**
      * Generates a link to a static resource for the given named parameters.
      *
      * Possible named parameters include:
-     *
      *
      * <ul>
      *    <li>base - The base path of the URL, typically an absolute server path</li>
@@ -71,12 +71,10 @@ public interface LinkGenerator {
      *    <li>absolute - Whether the link should be absolute or not</li>
      * </ul>
      *
-     *
      * @param params The named parameters
      * @return The link to the static resource
      */
-    public String resource(Map params);
-
+    String resource(@SuppressWarnings("rawtypes") Map params);
 
     /**
      * Generates a link to a controller, action or URI for the given named parameters.
@@ -100,9 +98,7 @@ public interface LinkGenerator {
      * @param params The named parameters
      * @return The generator link
      */
-    public String link(Map params);
-
-
+    String link(@SuppressWarnings("rawtypes") Map params);
 
     /**
      * Generates a link to a controller, action or URI for the given named parameters.
@@ -126,21 +122,19 @@ public interface LinkGenerator {
      * @param encoding The character encoding to use
      * @return The generator link
      */
-    public String link(Map params, String encoding);
-
-
+    String link(@SuppressWarnings("rawtypes") Map params, String encoding);
 
     /**
-     * Obtains the context path from which this link generator is operating
+     * Obtains the context path from which this link generator is operating.
      *
      * @return The base context path
      */
-    public String getContextPath();
+    String getContextPath();
 
     /**
-     * The base URL of the server used for creating absolute links
+     * The base URL of the server used for creating absolute links.
      *
      * @return The base URL of the server
      */
-    public String getServerBaseURL();
+    String getServerBaseURL();
 }

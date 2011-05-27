@@ -32,7 +32,7 @@ class TwoCircularUnidirectionalOneToManyUser {
         addToParents(u)
     }
 
-    String toString(){ return name }
+    String toString() { return name }
 }
 '''
     }

@@ -316,22 +316,21 @@ public class BeanBuilder extends GroovyObjectSupport {
         }
 
         public MetaClass getMetaClass() {
-            return this.metaClass;
+            return metaClass;
         }
 
         public Object getProperty(String property) {
-            if (property.equals("beanName"))
+            if (property.equals("beanName")) {
                 return getBeanName();
-            else if (property.equals("source"))
-                return getSource();
-            else if (this.beanConfig != null) {
-                return new WrappedPropertyValue(property,beanConfig.getPropertyValue(property));
             }
-            else
-                return this.metaClass.getProperty(this, property);
+            if (property.equals("source")) {
+                return getSource();
+            }
+            if (beanConfig != null) {
+                return new WrappedPropertyValue(property, beanConfig.getPropertyValue(property));
+            }
+            return metaClass.getProperty(this, property);
         }
-
-
 
         /**
          * Wraps a BeanConfiguration property an ensures that any RuntimeReference additions to it are
@@ -393,7 +392,7 @@ public class BeanBuilder extends GroovyObjectSupport {
             }
         }
         public Object invokeMethod(String name, Object args) {
-            return this.metaClass.invokeMethod(this, name, args);
+            return metaClass.invokeMethod(this, name, args);
         }
 
         public void setMetaClass(MetaClass metaClass) {
@@ -760,7 +759,7 @@ public class BeanBuilder extends GroovyObjectSupport {
      * @param type The bean type
      * @return The bean definition
      */
-    public AbstractBeanDefinition bean(Class type) {
+    public AbstractBeanDefinition bean(Class<?> type) {
         return springConfig.createSingletonBean(type).getBeanDefinition();
     }
 
@@ -771,26 +770,26 @@ public class BeanBuilder extends GroovyObjectSupport {
      * @param args The constructors arguments and closure configurer
      * @return The bean definition
      */
+    @SuppressWarnings("rawtypes")
     public AbstractBeanDefinition bean(Class type, Object...args) {
         BeanConfiguration current = currentBeanConfig;
         try {
-
             Closure callable = null;
             Collection constructorArgs = null;
-            if(args != null && args.length > 0) {
+            if (args != null && args.length > 0) {
                 int index = args.length;
                 Object lastArg = args[index-1];
 
-                if(lastArg instanceof Closure) {
+                if (lastArg instanceof Closure) {
                     callable = (Closure) lastArg;
                     index--;
                 }
-                if(index > -1) {
+                if (index > -1) {
                     constructorArgs = resolveConstructorArguments(args, 0, index);
                 }
             }
             currentBeanConfig =  constructorArgs != null ? springConfig.createSingletonBean(type,constructorArgs) : springConfig.createSingletonBean(type);
-            if(callable != null) {
+            if (callable != null) {
                 callable.call(new Object[]{currentBeanConfig});
             }
             return currentBeanConfig.getBeanDefinition();

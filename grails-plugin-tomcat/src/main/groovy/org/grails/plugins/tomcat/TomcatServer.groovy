@@ -146,8 +146,7 @@ abstract class TomcatServer implements EmbeddableServer {
             "-storepass", "key",
             "-keystore", keystoreFile.absolutePath,
             "-storepass", keyPassword,
-            "-keypass", keyPassword
-        )
+            "-keypass", keyPassword)
 
         println 'Created SSL Certificate.'
     }

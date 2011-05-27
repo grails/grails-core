@@ -233,7 +233,7 @@
 	private boolean isRequired() {
 		!isOptional()
 	}
-	
+
 	private boolean isOptional() {
 		cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
 	}

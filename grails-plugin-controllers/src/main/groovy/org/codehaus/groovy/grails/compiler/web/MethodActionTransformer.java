@@ -15,12 +15,29 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
-
-import grails.artefact.Artefact;
 import grails.util.BuildSettings;
 import grails.web.Action;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
+
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
@@ -31,11 +48,6 @@ import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Enhances controller classes by converting closures actions to method actions
@@ -48,48 +60,46 @@ import java.util.List;
 class TestController{
 
     //default  scope configurable in Config.groovy
-	static scope = 'singleton'
+    static scope = 'singleton'
 
-	def peterTheFrenchService
+    def peterTheFrenchService
 
     //--------------------------
     //allow use of methods as actions
-	def someAction(){
-        	render 'ata'
-	}
+    def someAction() {
+            render 'ata'
+    }
 
-	/ becomes behind the scene :
-	@Action
-    def someAction(){
-        	render 'ata'
-	}
-	/
+    / becomes behind the scene :
+    @Action
+    def someAction() {
+        render 'ata'
+    }
+    /
 
     //--------------------------
     //Compile time transformed to method
-	def lol2 = {
-        	render 'testxx'
-	}
+    def lol2 = {
+        render 'testxx'
+    }
 
     / becomes behind the scene :
-        @Action def lol2(){  render 'testxx'  }
+        @Action def lol2() {  render 'testxx'  }
     /
 
     //--------------------------
 
     def lol4 = { PeterCommand cmd ->
-            render cmd.a
+        render cmd.a
     }
 
     / becomes behind the scene :
-               @Action(commandObjects={PeterCommand}) def lol4(){
-                 PeterCommand cmd = new PeterCommand(); bindData(cmd, params)
-                 render 'testxx'
-               }
+        @Action(commandObjects={PeterCommand}) def lol4() {
+            PeterCommand cmd = new PeterCommand(); bindData(cmd, params)
+            render 'testxx'
+        }
     /
 }
-
-
 */
 
 @AstTransformer
@@ -122,8 +132,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         for (MethodNode method : classNode.getMethods()) {
             if (!method.isStatic() && method.isPublic() &&
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
-                    method.getLineNumber() >= 0
-                    ) {
+                    method.getLineNumber() >= 0) {
 
                 method.setCode(bodyCode(method.getParameters(), method.getCode()));
                 convertToMethodAction(method);
@@ -176,8 +185,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                         Modifier.PUBLIC, property.getType(),
                         closureAction.getParameters(),
                         EMPTY_CLASS_ARRAY,
-                        bodyCode(closureAction.getParameters(), closureAction.getCode())
-                );
+                        bodyCode(closureAction.getParameters(), closureAction.getCode()));
 
                 convertToMethodAction(actionMethod);
 
@@ -200,8 +208,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
             newCommandCode = new ExpressionStatement(
                     new DeclarationExpression(new VariableExpression(param.getName(), param.getType()),
                             Token.newSymbol(Types.EQUALS, 0, 0),
-                            constructorCallExpression
-                    ));
+                            constructorCallExpression));
 
             wrapper.addStatement(newCommandCode);
 

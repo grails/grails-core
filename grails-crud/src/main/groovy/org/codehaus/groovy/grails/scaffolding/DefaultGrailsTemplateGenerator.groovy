@@ -64,7 +64,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 
     void setGrailsApplication(GrailsApplication ga) {
         this.grailsApplication = ga
-        if(ga != null) {
+        if (ga != null) {
             def suffix = ga.config?.grails?.scaffolding?.templates?.domainSuffix
             if (suffix != [:]) {
                 domainSuffix = suffix
@@ -196,13 +196,12 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                        className: domainClass.shortName,
                        propertyName: domainClass.logicalPropertyName]
 
-        if(canWrite(destFile)) {
-            destFile.parentFile.mkdirs()	
+        if (canWrite(destFile)) {
+            destFile.parentFile.mkdirs()
             destFile.withWriter {
                 t.make(binding).writeTo(it)
             }
         }
-
     }
 
     void generateView(GrailsDomainClass domainClass, String viewName, Writer out) {
@@ -277,7 +276,6 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 if (!templateFile.exists()) {
                     templateFile = new FileSystemResource(new File("${grailsHome}/grails-resources/src/grails/templates/scaffolding/${template}").absoluteFile)
                 }
-
             }
             else {
                 templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")
@@ -310,7 +308,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 LOG.info("Error while loading views from grails-app scaffolding folder", e)
             }
         }
-        
+
         templatesDirPath = "${basedir}/src/grails/templates/scaffolding"
         templatesDir = new FileSystemResource(templatesDirPath)
         if (templatesDir.exists()) {
@@ -321,7 +319,6 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 LOG.info("Error while loading views from the src/grails/templates/scaffolding folder", e)
             }
         }
-        
 
         def grailsHome = BuildSettingsHolder.settings?.grailsHome
         if (grailsHome) {

@@ -34,7 +34,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
     }
 
     void checksums(boolean enable) {
-        if(!enable) {
+        if (!enable) {
             dependencyManager.ivySettings.setVariable("ivy.checksums", "")
         }
     }
@@ -133,6 +133,4 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
             deps.call()
         }
     }
-
 }
-

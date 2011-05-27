@@ -252,7 +252,7 @@ public class ClassPropertyFetcher {
 
     @SuppressWarnings("unchecked")
     private <T> T returnOnlyIfInstanceOf(Object value, Class<T> type) {
-        if ((value != null) && (type==Object.class || GrailsClassUtils.isGroovyAssignableFrom( type, value.getClass()))) {
+        if ((value != null) && (type==Object.class || GrailsClassUtils.isGroovyAssignableFrom(type, value.getClass()))) {
             return (T)value;
         }
 

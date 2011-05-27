@@ -47,7 +47,7 @@ import org.springframework.orm.hibernate3.HibernateCallback;
  * <p>
  * Examples in Groovy: <code>
  *         // retrieve the first account ordered by account number
- *         def a = Account.find("from Account as a order by a.number asc" )
+ *         def a = Account.find("from Account as a order by a.number asc")
  *
  *         // with query parameters
  *         def a  = Account.find("from Account as a where a.number = ? and a.branch = ?", [38479, "London"])
@@ -129,7 +129,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
                             String stringKey = (String) entry.getKey();
                             Object value = entry.getValue();
 
-                            if(GrailsHibernateUtil.ARGUMENT_CACHE.equals(stringKey)) {
+                            if (GrailsHibernateUtil.ARGUMENT_CACHE.equals(stringKey)) {
                                 continue;
                             }
                             else if (value instanceof CharSequence) {

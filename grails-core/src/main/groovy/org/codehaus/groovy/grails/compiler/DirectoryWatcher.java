@@ -16,12 +16,16 @@
 
 package org.codehaus.groovy.grails.compiler;
 
-import org.springframework.util.StringUtils;
-
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.springframework.util.StringUtils;
 
 /**
  * Utility class to watch directories for changes
@@ -29,6 +33,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author Graeme Rocher
  * @since 1.4
  */
+@SuppressWarnings("hiding")
 public class DirectoryWatcher extends Thread {
 
     protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
@@ -38,7 +43,6 @@ public class DirectoryWatcher extends Thread {
     private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
-
 
     public DirectoryWatcher() {
         setDaemon(true);
@@ -67,7 +71,7 @@ public class DirectoryWatcher extends Thread {
      *
      * @param listener The file listener
      */
-    public void addListener(FileChangeListener listener ) {
+    public void addListener(FileChangeListener listener) {
         this.listeners.add(listener);
     }
 
@@ -101,6 +105,7 @@ public class DirectoryWatcher extends Thread {
         extensions.add(extension);
         cacheFilesForDirectory(dir, extensions, false);
     }
+
     /**
      * Interface for FileChangeListeners
      */
@@ -123,19 +128,19 @@ public class DirectoryWatcher extends Thread {
     @Override
     public void run() {
         int count = 0;
-        while(active) {
+        while (active) {
             Set<File> files = lastModifiedMap.keySet();
             for (File file : files) {
                 long currentLastModified = file.lastModified();
                 Long cachedTime = lastModifiedMap.get(file);
-                if(currentLastModified > cachedTime) {
+                if (currentLastModified > cachedTime) {
                     lastModifiedMap.put(file, currentLastModified);
                     fireOnChange(file);
                 }
             }
             try {
                 count++;
-                if(count > 2) {
+                if (count > 2) {
                     count = 0;
                     checkForNewFiles();
                 }
@@ -156,49 +161,45 @@ public class DirectoryWatcher extends Thread {
         for (File directory : directoryWatch.keySet()) {
             final Long currentTimestamp = directoryWatch.get(directory);
 
-            if(currentTimestamp < directory.lastModified()) {
+            if (currentTimestamp < directory.lastModified()) {
                 cacheFilesForDirectory(directory, extensions, true);
             }
-
         }
     }
 
-
     private void cacheFilesForDirectory(File directory, Collection<String> extensions, boolean fireEvent) {
-        addExtension(extensions);
+        addExtensions(extensions);
 
         directoryWatch.put(directory, directory.lastModified());
         File[] files = directory.listFiles();
-        if(files != null) {
-            for (File file : files) {
-                if(isValidFileToMonitor(file.getName(), extensions)) {
-                    if(!lastModifiedMap.containsKey(file) && fireEvent) {
-                        for (FileChangeListener listener : listeners) {
-                            listener.onNew(file);
-                        }
+        if (files == null) {
+            return;
+        }
+
+        for (File file : files) {
+            if (isValidFileToMonitor(file.getName(), extensions)) {
+                if (!lastModifiedMap.containsKey(file) && fireEvent) {
+                    for (FileChangeListener listener : listeners) {
+                        listener.onNew(file);
                     }
-                    lastModifiedMap.put(file, file.lastModified());
                 }
-                else if(file.isDirectory()) {
-                   cacheFilesForDirectory(file, extensions, fireEvent);
-                }
+                lastModifiedMap.put(file, file.lastModified());
+            }
+            else if (file.isDirectory()) {
+               cacheFilesForDirectory(file, extensions, fireEvent);
             }
         }
     }
 
-    private void addExtension(Collection<String> extensions) {
-        for (String extension : extensions) {
-            if(!this.extensions.contains(extension)) {
-                this.extensions.add(extension);
+    private void addExtensions(Collection<String> toAdd) {
+        for (String extension : toAdd) {
+            if (!extensions.contains(extension)) {
+                extensions.add(extension);
             }
         }
     }
 
     private boolean isValidFileToMonitor(String name, Collection<String> extensions) {
-        String ext = StringUtils.getFilenameExtension(name);
-        return extensions.contains(ext);
+        return extensions.contains(StringUtils.getFilenameExtension(name));
     }
-
-
-
 }

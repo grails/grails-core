@@ -239,7 +239,7 @@ public class Metadata extends Properties {
                 store(out, "Grails Metadata file");
             }
             catch (Exception e) {
-                throw new RuntimeException("Error persisting metadata to file ["+metadataFile+"]: " + e.getMessage(),e );
+                throw new RuntimeException("Error persisting metadata to file ["+metadataFile+"]: " + e.getMessage(), e);
             }
             finally {
                 closeQuietly(out);

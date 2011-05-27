@@ -22,17 +22,18 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
         super(context);
     }
 
+    @Override
     protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         getDependencyManager().registerDependency(scope, descriptor);
     }
 
+    @Override
     protected void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export) {
-        if(export != null) {
+        if (export != null) {
             descriptor.setExported(export);
         }
         else {
-            descriptor.setExport( true );
+            descriptor.setExport(true);
         }
     }
-
 }

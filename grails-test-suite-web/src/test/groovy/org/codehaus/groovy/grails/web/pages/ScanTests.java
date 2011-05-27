@@ -17,7 +17,7 @@ public class ScanTests extends TestCase {
 
         GroovyPageScanner s = new GroovyPageScanner(gsp);
         int next;
-        while((next = s.nextToken()) != Tokens.EOF) {
+        while ((next = s.nextToken()) != Tokens.EOF) {
             if (next == Tokens.GSTART_TAG ||
                 next == Tokens.GEND_TAG) {
                 assertEquals("tt", s.getNamespace());
@@ -33,7 +33,7 @@ public class ScanTests extends TestCase {
 
         GroovyPageScanner s = new GroovyPageScanner(gsp);
         int next;
-        while((next = s.nextToken()) != Tokens.EOF) {
+        while ((next = s.nextToken()) != Tokens.EOF) {
             if (next == Tokens.GSTART_TAG ||
                 next == Tokens.GEND_TAG) {
                 assertEquals(GroovyPage.DEFAULT_NAMESPACE, s.getNamespace());

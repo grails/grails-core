@@ -179,12 +179,12 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getTemplateUri(CharSequence templateName, ServletRequest request) {
-        if(templateName == null) throw new IllegalArgumentException("Argument [template] cannot be null");
+        if (templateName == null) throw new IllegalArgumentException("Argument [template] cannot be null");
         return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName.toString());
     }
 
     public String getViewUri(String viewName, HttpServletRequest request) {
-        if(viewName == null) throw new IllegalArgumentException("Argument [view] cannot be null");
+        if (viewName == null) throw new IllegalArgumentException("Argument [view] cannot be null");
         return groovyPagesUriService.getDeployedViewURI(getControllerName(request), viewName);
     }
 

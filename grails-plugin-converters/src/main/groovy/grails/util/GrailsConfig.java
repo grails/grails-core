@@ -86,8 +86,7 @@ public class GrailsConfig extends GroovyObjectSupport {
         if (o != null) {
             if (!type.isAssignableFrom(o.getClass())) {
                 LOG.warn(
-                    String.format("Configuration type mismatch for configuration value %s (%s)", key, type.getName())
-                );
+                    String.format("Configuration type mismatch for configuration value %s (%s)", key, type.getName()));
                 return null;
             }
             return type.cast(o);
@@ -127,11 +126,8 @@ public class GrailsConfig extends GroovyObjectSupport {
     public static <T> T get(String key, T defaultValue, List<T> allowedValues) {
         T v = get(key, defaultValue);
         if (!allowedValues.contains(v)) {
-            LOG.warn(
-                    String.format("Configuration value for key %s is not one of the allowed values (%s)",
-                            key, DefaultGroovyMethods.inspect(allowedValues)
-                    )
-            );
+            LOG.warn(String.format("Configuration value for key %s is not one of the allowed values (%s)",
+                  key, DefaultGroovyMethods.inspect(allowedValues)));
             return defaultValue;
         }
         return v;
@@ -169,10 +165,8 @@ public class GrailsConfig extends GroovyObjectSupport {
         T val = (T)getMandatory(key);
         if (!allowedValues.contains(val)) {
             throw new GrailsConfigurationException(
-                    String.format("Configuration value for key %s is not one of the allowed values (%s)",
-                            key, DefaultGroovyMethods.inspect(allowedValues)
-                    )
-            );
+                String.format("Configuration value for key %s is not one of the allowed values (%s)",
+                     key, DefaultGroovyMethods.inspect(allowedValues)));
         }
         return val;
     }

@@ -35,7 +35,7 @@ public class PluginManagerAwareBeanPostProcessor extends BeanPostProcessorAdapte
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if(bean instanceof PluginManagerAware) {
+        if (bean instanceof PluginManagerAware) {
             ((PluginManagerAware)bean).setPluginManager(pluginManager);
         }
         return bean;

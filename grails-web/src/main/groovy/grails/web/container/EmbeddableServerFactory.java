@@ -16,7 +16,7 @@ package grails.web.container;
 
 /**
  * An interface for server vendors to implement in order to provide the ability to embed a
- * container within Grails' run-app command. 
+ * container within Grails' run-app command.
  *
  * @author Graeme Rocher
  * @since 1.1
@@ -30,7 +30,7 @@ public interface EmbeddableServerFactory {
      * @param webXml The web.xml location
      * @param classLoader The class loader to use
      * @param contextPath The context path of the application
-     * 
+     *
      * @return The EmbeddableServer instance
      */
     EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader);

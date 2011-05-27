@@ -1,7 +1,5 @@
-
 class TestController {
-	 Closure test = {
-		return [ "test" : "123" ]
-	}
+    Closure test = {
+        return [ "test" : "123" ]
+    }
 }
-

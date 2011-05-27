@@ -73,7 +73,7 @@ public interface ArtefactHandler {
      * @param feature Any object that acts as a key
      * @return A matching artefact GrailsClass or null if there is no match for this feature ID
      */
-    GrailsClass getArtefactForFeature( Object feature);
+    GrailsClass getArtefactForFeature(Object feature);
 
     /**
      * <p>Called to check if the specified GrailsClass is one managed by this artefact handler</p>

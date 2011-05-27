@@ -16,7 +16,7 @@ class ControllerTagLibMethodDispatchTests extends AbstractGrailsTagTests {
     }
 
     protected void onInit() {
-        def tagClass = gcl.parseClass( '''
+        def tagClass = gcl.parseClass('''
 class MyTagLib {
     static namespace = "my"
     def test1 = { attrs, body ->

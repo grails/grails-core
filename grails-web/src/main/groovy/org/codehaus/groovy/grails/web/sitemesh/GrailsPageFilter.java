@@ -87,7 +87,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
         final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(fc.getServletContext());
         String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
-        if(encoding != null) {
+        if (encoding != null) {
             defaultEncoding = encoding;
         }
 
@@ -221,7 +221,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
                         }
                         // get the dispatcher for the decorator
                         RequestDispatcher dispatcher = servletContext.getRequestDispatcher(decorator.getPage());
-                        if(response.isCommitted()) {
+                        if (response.isCommitted()) {
                             dispatcher.include(request, response);
                         }
                         else {

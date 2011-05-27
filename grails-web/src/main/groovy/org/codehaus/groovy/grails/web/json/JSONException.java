@@ -6,8 +6,8 @@ package org.codehaus.groovy.grails.web.json;
  * @version 2
  */
 public class JSONException extends RuntimeException {
-	private static final long serialVersionUID = -4009964545824827919L;
-	private Throwable cause;
+    private static final long serialVersionUID = -4009964545824827919L;
+    private Throwable cause;
 
     /**
      * Constructs a JSONException with an explanatory message.
@@ -24,6 +24,6 @@ public class JSONException extends RuntimeException {
 
     @Override
     public Throwable getCause() {
-        return this.cause;
+        return cause;
     }
 }

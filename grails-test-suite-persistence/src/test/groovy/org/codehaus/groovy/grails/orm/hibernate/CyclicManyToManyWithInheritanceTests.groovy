@@ -48,11 +48,11 @@ class CyclicManyToManyWithInheritanceUserGroup extends CyclicManyToManyWithInher
         def Individual = ga.getDomainClass("CyclicManyToManyWithInheritanceIndividual").clazz
         def UserGroup = ga.getDomainClass("CyclicManyToManyWithInheritanceUserGroup").clazz
 
-        def wallace = Individual.newInstance( name: "Wallace" )
-        def gromit = Individual.newInstance( name: "Gromit" )
-        def cheeseLovers = UserGroup.newInstance( name: "Cheese Lovers" )
-        def cooker = Individual.newInstance( name: "Cooker" )
-        def lunaphiles = UserGroup.newInstance( name: "Lunaphiles" )
+        def wallace = Individual.newInstance(name: "Wallace")
+        def gromit = Individual.newInstance(name: "Gromit")
+        def cheeseLovers = UserGroup.newInstance(name: "Cheese Lovers")
+        def cooker = Individual.newInstance(name: "Cooker")
+        def lunaphiles = UserGroup.newInstance(name: "Lunaphiles")
         wallace.addToGroups(cheeseLovers)
         gromit.addToGroups(cheeseLovers)
         cooker.addToGroups(lunaphiles)

@@ -31,7 +31,7 @@ class RepositoryController {
     def index = {
         render "hello world"
     }
-    
+
     def toPortal = {
         redirect(controller: "portal")
     }
@@ -44,11 +44,10 @@ class RepositoryController {
          c.content()
          assertEquals "/repository/index", response.redirectedUrl
      }
-     
+
      void testRedirectToExplicitDefaultAction() {
          def c = ga.getControllerClass("RepositoryController").newInstance()
          c.toPortal()
          assertEquals "/portal/content", response.redirectedUrl
      }
-     
 }

@@ -14,7 +14,13 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import groovy.lang.GroovyResourceLoader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -27,14 +33,6 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * A Groovy compiler injection operation that uses a specified array of ClassInjector instances to
@@ -60,14 +58,14 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     }
 
     public static ClassInjector[] getClassInjectors() {
-        if(classInjectors == null) {
+        if (classInjectors == null) {
             initializeState();
         }
         return classInjectors;
     }
 
     public ClassInjector[] getLocalClassInjectors() {
-        if(localClassInjectors == null) {
+        if (localClassInjectors == null) {
             return getClassInjectors();
         }
         return localClassInjectors;
@@ -83,10 +81,10 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
             List<ClassInjector> classInjectorList = new ArrayList<ClassInjector>();
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            for(String beanName : registry.getBeanDefinitionNames()) {
+            for (String beanName : registry.getBeanDefinitionNames()) {
                 try {
                     Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
-                    if(ClassInjector.class.isAssignableFrom(injectorClass))
+                    if (ClassInjector.class.isAssignableFrom(injectorClass))
                         classInjectorList.add((ClassInjector) injectorClass.newInstance());
                 } catch (ClassNotFoundException e) {
                     // ignore
@@ -97,8 +95,9 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 }
             }
             Collections.sort(classInjectorList, new Comparator<ClassInjector>() {
+                @SuppressWarnings({ "unchecked", "rawtypes" })
                 public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
-                    if(classInjectorA instanceof Comparable) {
+                    if (classInjectorA instanceof Comparable) {
                         return ((Comparable)classInjectorA).compareTo(classInjectorB);
                     }
                     return 0;
@@ -115,19 +114,17 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
         final String filename = source.getName();
         Resource resource = new FileSystemResource(filename);
-        if(resource.exists()) {
+        if (resource.exists()) {
             try {
                 url = resource.getURL();
             } catch (IOException e) {
                 // ignore
-
             }
         }
         for (ClassInjector classInjector : getLocalClassInjectors()) {
             if (classInjector.shouldInject(url)) {
                 classInjector.performInjection(source, context, classNode);
             }
-
         }
     }
 }

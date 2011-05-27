@@ -15,10 +15,18 @@
  */
 package org.codehaus.groovy.grails.compiler.gorm;
 
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.Arrays;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
@@ -32,30 +40,22 @@ import org.grails.datastore.gorm.GormValidationApi;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-
 /**
- * Makes the validate methods statically available via an AST transformation
+ * Makes the validate methods statically available via an AST transformation.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 @AstTransformer
 public class GormValidationTransformer extends AbstractGrailsArtefactTransformer{
 
     public static final String HAS_ERRORS_METHOD = "hasErrors";
-    private static final java.util.List<String> EXCLUDES = new ArrayList<String>() {{
-       add("setErrors"); add("getErrors"); add(HAS_ERRORS_METHOD);
-       add("getBeforeValidateHelper"); add("setBeforeValidateHelper");
-       add("getValidator"); add("setValidator");
-    }};
-    private static final Class[] EMPTY_JAVA_CLASS_ARRAY = new Class[0];
-    private static final Class[] OBJECT_CLASS_ARG = new Class[]{Object.class};
-
-
+    private static final java.util.List<String> EXCLUDES = Arrays.asList(
+       "setErrors", "getErrors", HAS_ERRORS_METHOD,
+       "getBeforeValidateHelper", "setBeforeValidateHelper",
+       "getValidator", "setValidator");
+    private static final Class<?>[] EMPTY_JAVA_CLASS_ARRAY = {};
+    private static final Class<?>[] OBJECT_CLASS_ARG = { Object.class };
 
     @Override
     protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
@@ -84,12 +84,12 @@ public class GormValidationTransformer extends AbstractGrailsArtefactTransformer
     }
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return GormValidationApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;  // no static API
     }
 
@@ -105,8 +105,7 @@ public class GormValidationTransformer extends AbstractGrailsArtefactTransformer
     @Override
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         final PropertyNode errorsProperty = classNode.getProperty(GrailsDomainClassProperty.ERRORS);
-        if(errorsProperty == null) {
-
+        if (errorsProperty == null) {
             addErrorsProperty(classNode);
         }
     }

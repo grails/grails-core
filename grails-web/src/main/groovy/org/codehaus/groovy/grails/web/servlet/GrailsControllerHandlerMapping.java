@@ -112,7 +112,7 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
      */
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
-        String[] webRequestInterceptors = webContext.getBeanNamesForType( WebRequestInterceptor.class);
+        String[] webRequestInterceptors = webContext.getBeanNamesForType(WebRequestInterceptor.class);
         HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 
         // Merge the handler and web request interceptors into a single

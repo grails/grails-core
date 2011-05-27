@@ -46,7 +46,6 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
         setApplicationContext(applicationContext);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (shouldPostProcessController(bean, beanName)) {
@@ -60,6 +59,7 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
         return super.postProcessBeforeInitialization(bean, beanName);
     }
 
+    @SuppressWarnings("unchecked")
     private void scanClosureActions(GroovyObject controller) {
         Map<String, Object> props = (Map<String, Object>) controller.getProperty("properties");
         for (String propName : props.keySet()) {
@@ -76,10 +76,10 @@ public class CommandObjectEnablingPostProcessor extends BeanPostProcessorAdapter
     private void scanMethodActions(GroovyObject controller) {
         Method[] methods = ReflectionUtils.getAllDeclaredMethods(controller.getClass());
         Action actionAnn = null;
-        for(Method method : methods){
+        for (Method method : methods) {
             actionAnn = method.getAnnotation(Action.class);
-            Class[] commandObjectClasses = actionAnn != null ? actionAnn.commandObjects() : null;
-            if(commandObjectClasses != null && commandObjectClasses.length > 0){
+            Class<?>[] commandObjectClasses = actionAnn != null ? actionAnn.commandObjects() : null;
+            if (commandObjectClasses != null && commandObjectClasses.length > 0) {
                 WebMetaUtils.prepareCommandObjectBindingAction(method, commandObjectClasses, applicationContext);
             }
         }

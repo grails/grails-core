@@ -24,11 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Binding operations that are deferred until either validate() or save() are called
+ * Binding operations that are deferred until either validate() or save() are called.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public class DeferredBindingActions {
 
@@ -42,7 +41,7 @@ public class DeferredBindingActions {
 
     private static List<Runnable> getDeferredBindingActions() {
         List<Runnable> runnables = deferredBindingActions.get();
-        if(runnables == null) {
+        if (runnables == null) {
             runnables = new ArrayList<Runnable>();
             deferredBindingActions.set(runnables);
         }
@@ -51,10 +50,10 @@ public class DeferredBindingActions {
 
     public static void runActions() {
         List<Runnable> runnables = deferredBindingActions.get();
-        if(runnables != null) {
+        if (runnables != null) {
             try {
                 for (Runnable runnable : getDeferredBindingActions()) {
-                    if(runnable != null) {
+                    if (runnable != null) {
                         try {
                             runnable.run();
                         } catch (Exception e) {

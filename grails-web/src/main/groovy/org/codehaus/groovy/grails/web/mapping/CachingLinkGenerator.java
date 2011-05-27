@@ -16,19 +16,19 @@
 
 package org.codehaus.groovy.grails.web.mapping;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-
-import java.util.Collection;
 import java.util.Map;
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+
 /**
- * A link generator that uses a LRU cache to cache generated links
+ * A link generator that uses a LRU cache to cache generated links.
  *
  * @since 1.4
  * @author Graeme Rocher
  */
+@SuppressWarnings("rawtypes")
 public class CachingLinkGenerator extends DefaultLinkGenerator {
 
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
@@ -45,8 +45,6 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     private static final String URI_ATTRIBUTE = "uri";
 
     private Map<String, Object> linkCache;
-
-
 
     public CachingLinkGenerator(String serverBaseURL, String contextPath) {
         super(serverBaseURL, contextPath);
@@ -69,33 +67,30 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     }
 
     @Override
-    public String link(Map attrs, String encoding)
-    {
-        if(!isCacheable(attrs)) {
+    public String link(Map attrs, String encoding) {
+        if (!isCacheable(attrs)) {
             return super.link(attrs, encoding);
         }
-        else {
-            final String key = LINK_PREFIX + createKey(attrs);
-            Object resourceLink = linkCache.get(key);
-            if(resourceLink == null) {
-                resourceLink = super.link(attrs, encoding);
-                linkCache.put(key, resourceLink);
-            }
-            return resourceLink.toString();
+
+        final String key = LINK_PREFIX + createKey(attrs);
+        Object resourceLink = linkCache.get(key);
+        if (resourceLink == null) {
+            resourceLink = super.link(attrs, encoding);
+            linkCache.put(key, resourceLink);
         }
+        return resourceLink.toString();
     }
 
     private boolean isCacheable(Map attrs) {
         Object urlAttr = attrs.get(URL_ATTRIBUTE);
-        if(urlAttr instanceof Map) {
+        if (urlAttr instanceof Map) {
             return isCacheable((Map) urlAttr);
         }
-        else {
-            return attrs.get(UrlMapping.CONTROLLER) != null ||
-                    attrs.get(UrlMapping.ACTION) != null ||
-                    urlAttr != null ||
-                    attrs.get(URI_ATTRIBUTE) != null;
-        }
+
+        return attrs.get(UrlMapping.CONTROLLER) != null ||
+                attrs.get(UrlMapping.ACTION) != null ||
+                urlAttr != null ||
+                attrs.get(URI_ATTRIBUTE) != null;
     }
 
     // Based on DGM toMapString, but with StringBuilder instead of StringBuffer
@@ -103,15 +98,16 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         if (map.isEmpty()) {
             return EMPTY_MAP_STRING;
         }
+
         StringBuilder buffer = new StringBuilder(OPENING_BRACKET);
         boolean first = true;
         for (Object o : map.entrySet()) {
             Map.Entry entry = (Map.Entry) o;
             Object value = entry.getValue();
-            if(value == null) continue;
+            if (value == null) continue;
             first = appendCommaIfNotFirst(buffer, first);
             Object key = entry.getKey();
-            if(UrlMapping.ACTION.equals(key) && map.get(UrlMapping.CONTROLLER) == null) {
+            if (UrlMapping.ACTION.equals(key) && map.get(UrlMapping.CONTROLLER) == null) {
                 appendKeyValue(buffer, map, UrlMapping.CONTROLLER, getRequestStateLookupStrategy().getControllerName());
                 appendCommaIfNotFirst(buffer, false);
             }
@@ -134,7 +130,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
         buffer.append(key)
               .append(KEY_VALUE_SEPARATOR);
         if (value == map) {
-            buffer.append(THIS_MAP  );
+            buffer.append(THIS_MAP);
         } else {
             buffer.append(DefaultGroovyMethods.toString(value));
         }
@@ -144,7 +140,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     public String resource(Map attrs) {
         final String key = RESOURCE_PREFIX + attrs;
         Object resourceLink = linkCache.get(key);
-        if(resourceLink == null) {
+        if (resourceLink == null) {
             resourceLink = super.resource(attrs);
             linkCache.put(key, resourceLink);
         }
@@ -156,5 +152,4 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
                                 .maximumWeightedCapacity(DEFAULT_MAX_WEIGHTED_CAPACITY)
                                 .build();
     }
-
 }

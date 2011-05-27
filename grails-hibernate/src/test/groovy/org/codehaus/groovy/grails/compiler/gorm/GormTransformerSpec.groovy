@@ -9,13 +9,6 @@ import org.springframework.validation.Errors
 import spock.lang.Specification
 import org.grails.datastore.gorm.GormValidationApi
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 28/03/2011
- * Time: 16:28
- * To change this template use File | Settings | File Templates.
- */
 class GormTransformerSpec extends Specification {
 
     void "Test that GORM static methods are available on transformation"() {

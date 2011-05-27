@@ -59,7 +59,7 @@ class BooleanVersion {
     Boolean version
     String name
 }
-        
+
 class DateVersion {
     Long id
     Date version

@@ -5,7 +5,6 @@ import org.hibernate.SessionFactory;
 
 public class FindOrSaveByPersistentMethod extends FindOrCreateByPersistentMethod {
 
-
     private static final String METHOD_PATTERN = "(findOrSaveBy)([A-Z]\\w*)";
 
     /**
@@ -17,9 +16,9 @@ public class FindOrSaveByPersistentMethod extends FindOrCreateByPersistentMethod
     public FindOrSaveByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
         super(application,sessionFactory, classLoader, METHOD_PATTERN);
     }
-    
+
     @Override
     protected boolean shouldSaveOnCreate() {
-    	return true;
+        return true;
     }
 }

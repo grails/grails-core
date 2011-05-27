@@ -15,8 +15,6 @@
 package org.codehaus.groovy.grails.resolve.config;
 
 import groovy.lang.Closure;
-import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,6 +23,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
+
+@SuppressWarnings("unchecked")
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile("([a-zA-Z0-9\\-/\\._+=]*?):([a-zA-Z0-9\\-/\\._+=]+?):([a-zA-Z0-9\\-/\\._+=]+)");
@@ -32,19 +34,20 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     public AbstractDependenciesConfigurer(DependencyConfigurationContext context) {
         super(context);
     }
-    
+
+    @Override
     public Object invokeMethod(String name, Object args) {
         if (args == null) {
             System.out.println("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
             return null;
         }
-        
+
         List<Object> argsList = Arrays.asList((Object[])args);
         if (argsList.size() == 0) {
             System.out.println("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
             return null;
         }
-        
+
         if (isOnlyStrings(argsList)) {
             addDependencyStrings(name, argsList, null, null);
 
@@ -52,18 +55,17 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             addDependencyMaps(name, argsList, null);
 
         } else if (isStringsAndConfigurer(argsList)) {
-            addDependencyStrings(name, argsList.subList(0, argsList.size() - 1), null, (Closure)argsList.get(argsList.size() - 1));
+            addDependencyStrings(name, argsList.subList(0, argsList.size() - 1), null, (Closure<?>)argsList.get(argsList.size() - 1));
 
         } else if (isPropertiesAndConfigurer(argsList)) {
-            addDependencyMaps(name, argsList.subList(0, argsList.size() - 1), (Closure)argsList.get(argsList.size() - 1));
-
+            addDependencyMaps(name, argsList.subList(0, argsList.size() - 1), (Closure<?>)argsList.get(argsList.size() - 1));
         } else if (isStringsAndProperties(argsList)) {
             addDependencyStrings(name, argsList.subList(0, argsList.size() - 1), (Map<Object, Object>)argsList.get(argsList.size() - 1), null);
 
         } else {
             System.out.println("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
         }
-        
+
         return null;
     }
 
@@ -79,17 +81,15 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     private boolean isStringsAndConfigurer(List<Object> args) {
         if (args.size() == 1) {
             return false;
-        } else {
-            return isOnlyStrings(args.subList(0, args.size() - 1)) && args.get(args.size() - 1) instanceof Closure;
         }
+        return isOnlyStrings(args.subList(0, args.size() - 1)) && args.get(args.size() - 1) instanceof Closure;
     }
 
     private boolean isStringsAndProperties(List<Object> args) {
         if (args.size() == 1) {
             return false;
-        } else {
-            return isOnlyStrings(args.subList(0, args.size() - 1)) && args.get(args.size() - 1) instanceof Map;
         }
+        return isOnlyStrings(args.subList(0, args.size() - 1)) && args.get(args.size() - 1) instanceof Map;
     }
 
     private boolean isProperties(List<Object> args) {
@@ -104,9 +104,8 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     private boolean isPropertiesAndConfigurer(List<Object> args) {
         if (args.size() == 1) {
             return false;
-        } else {
-            return isProperties(args.subList(0, args.size() - 1)) && args.get(args.size() - 1) instanceof Closure;
         }
+        return isProperties(args.subList(0, args.size() - 1)) && args.get(args.size() - 1) instanceof Closure;
     }
 
     private Map<Object, Object> extractDependencyProperties(String scope, String dependency) {
@@ -117,13 +116,12 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             properties.put("group", matcher.group(1));
             properties.put("version", matcher.group(3));
             return properties;
-        } else {
-            System.out.println("WARNING: Specified dependency definition " + scope + "(" + dependency + ") is invalid! Skipping..");
-            return null;
         }
+        System.out.println("WARNING: Specified dependency definition " + scope + "(" + dependency + ") is invalid! Skipping..");
+        return null;
     }
 
-    private void addDependencyStrings(String scope, List<Object> dependencies, Map<Object, Object> overrides, Closure configurer) {
+    private void addDependencyStrings(String scope, List<Object> dependencies, Map<Object, Object> overrides, Closure<?> configurer) {
         for (Object dependency : dependencies) {
             Map<Object, Object> dependencyProperties = extractDependencyProperties(scope, dependency.toString());
             if (dependencyProperties == null) {
@@ -140,7 +138,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
     }
 
-    private void addDependencyMaps(String scope, List<Object> dependencies, Closure configurer) {
+    private void addDependencyMaps(String scope, List<Object> dependencies, Closure<?> configurer) {
         for (Object dependency : dependencies) {
             addDependency(scope, (Map<Object, Object>)dependency, configurer);
         }
@@ -149,12 +147,11 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     private String nullSafeToString(Object value) {
         if (value == null) {
             return null;
-        } else {
-            return value.toString();
         }
+        return value.toString();
     }
-    
-    private void addDependency(String scope, Map<Object, Object> dependency, Closure configurer) {
+
+    private void addDependency(String scope, Map<Object, Object> dependency, Closure<?> configurer) {
         preprocessDependencyProperties(dependency);
 
         String name = nullSafeToString(dependency.get("name"));
@@ -162,16 +159,14 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         String version = nullSafeToString(dependency.get("version"));
         String classifier = nullSafeToString(dependency.get("classifier"));
         String branch = nullSafeToString(dependency.get("branch"));
-        
+
         boolean transitive = getBooleanValueOrDefault(dependency, "transitive", true);
         Boolean export = getExportSetting(dependency);
 
-
-        
-        boolean isExcluded = context.pluginName != null ? 
-                context.dependencyManager.isExcludedFromPlugin(context.pluginName, name) : 
+        boolean isExcluded = context.pluginName != null ?
+                context.dependencyManager.isExcludedFromPlugin(context.pluginName, name) :
                 context.dependencyManager.isExcluded(name);
-                
+
         if (isExcluded) {
             return;
         }
@@ -194,11 +189,11 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
 
         boolean inherited = context.inherited || context.dependencyManager.getInheritsAll() || context.pluginName != null;
         dependencyDescriptor.setInherited(inherited);
-        
+
         if (context.pluginName != null) {
             dependencyDescriptor.setPlugin(context.pluginName);
         }
-        
+
         if (configurer != null) {
             dependencyDescriptor.configure(configurer);
         }
@@ -213,13 +208,12 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     private boolean getBooleanValueOrDefault(Map<Object, Object> properties, String propertyName, boolean defaultValue) {
         return properties.containsKey(propertyName) ? Boolean.valueOf(properties.get(propertyName).toString()) : defaultValue;
     }
-        
-    protected void preprocessDependencyProperties(Map<Object, Object> dependency) {
+
+    protected void preprocessDependencyProperties(@SuppressWarnings("unused") Map<Object, Object> dependency) {
         // used in plugin subclass to populate default group id
     }
-    
+
     abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor);
 
     abstract protected void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
-    
 }
