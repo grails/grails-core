@@ -145,16 +145,18 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     public void testApplicationIsAvailableInResources() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader();
         gcl.parseClass("class Holder { def value }");
-        /*Class<?> resourcesClass =*/ gcl.parseClass("beans = { b(Holder, value: application) }", "resources.groovy");
+        /*Class<?> resourcesClass =*/ gcl.parseClass("beans = { b(Holder, value: application); b2(Holder, value: grailsApplication) }", "resources.groovy");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
         GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, app);
 
-        assertTrue(springConfig.containsBean("b"));
-        BeanConfiguration beanConfig = springConfig.getBeanConfig("b");
-        assertTrue(beanConfig.hasProperty("value"));
-        assertEquals(app, beanConfig.getPropertyValue("value"));
+        for (String bean : new String[] { "b", "b2" }) {
+            assertTrue(springConfig.containsBean(bean));
+            BeanConfiguration beanConfig = springConfig.getBeanConfig(bean);
+            assertTrue(beanConfig.hasProperty("value"));
+            assertEquals(app, beanConfig.getPropertyValue("value"));
+        }
     }
 
     @SuppressWarnings("unchecked")
