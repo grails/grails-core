@@ -15,24 +15,33 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.DecoratorMapper;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
-import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import grails.util.Environment;
 import grails.util.Metadata;
 import groovy.lang.GroovyObject;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.*;
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
@@ -44,30 +53,33 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.DecoratorMapper;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
+import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts.
  *
  * @author Graeme Rocher
+ * @author Lari Hotari
  */
 public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper implements DecoratorMapper {
-
     private static final String DEFAULT_DECORATOR_PATH = GrailsApplicationAttributes.PATH_TO_VIEWS + "/layouts";
     private static final String DEFAULT_VIEW_TYPE = ".gsp";
     private static final Log LOG = LogFactory.getLog( GrailsLayoutDecoratorMapper.class );
+    private static final long LAYOUT_CACHE_EXPIRATION_MILLIS =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
 
-    private Map<String, Decorator> decoratorMap = new ConcurrentHashMap<String, Decorator>();
+    private Map<String, DecoratorCacheValue> decoratorCache = new ConcurrentHashMap<String, DecoratorCacheValue>();
+    private Map<LayoutCacheKey, DecoratorCacheValue> layoutDecoratorCache = new ConcurrentHashMap<LayoutCacheKey, DecoratorCacheValue>();
     private ServletContext servletContext;
     private WebApplicationContext applicationContext;
     private GrailsPluginManager pluginManager;
     private String defaultDecoratorName;
+    private boolean gspReloadEnabled;
+    private boolean cacheEnabled;
 
     @Override
     public void init(Config c, Properties properties, DecoratorMapper parentMapper) throws InstantiationException {
@@ -80,7 +92,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
             GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
-            Map conf = grailsApplication.getFlatConfig();
+            @SuppressWarnings("rawtypes")
+			Map conf = grailsApplication.getFlatConfig();
             if (conf != null && conf.containsKey("grails.sitemesh.default.layout")) {
                 defaultDecoratorName = conf.get("grails.sitemesh.default.layout").toString();
             }
@@ -88,6 +101,10 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                 defaultDecoratorName = "application";
             }
         }
+        if (applicationContext.containsBean("groovyPagesTemplateEngine")) {
+        	gspReloadEnabled = ((GroovyPagesTemplateEngine)applicationContext.getBean("groovyPagesTemplateEngine")).isReloadEnabled();
+        }
+        cacheEnabled = (Environment.getCurrent() != Environment.DEVELOPMENT);
     }
 
     @Override
@@ -97,10 +114,11 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         }
         String layoutName = page.getProperty("meta.layout");
 
+        Decorator d = null;
+        
         if (StringUtils.isBlank(layoutName)) {
             GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
             if (controller != null) {
-
                 String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
                 String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
 
@@ -109,63 +127,70 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
                             controllerName + "] and action [" + actionUri + "]");
                 }
 
-                Decorator d = null;
-
-                Object layoutProperty = GrailsClassUtils.getStaticPropertyValue(controller.getClass(), "layout");
-                if (layoutProperty instanceof String) {
-                    LOG.debug("layout property found in controller, looking for template named " + layoutProperty);
-                    d = getNamedDecorator(request, (String) layoutProperty);
+                LayoutCacheKey cacheKey = null;
+                boolean cachedIsNull = false;
+                
+                if (cacheEnabled) {
+                	cacheKey=new LayoutCacheKey(controllerName, actionUri);
+                	DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
+                	if(cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
+                		d = cacheValue.getDecorator();
+                		if(d==null) {
+                			cachedIsNull=true;
+                		}
+                	}
                 }
-
-                if (d == null) {
-                    d = getNamedDecorator(request, actionUri.substring(1));
+                
+                if(d==null && !cachedIsNull) {
+                	d = resolveDecorator(request, controller, controllerName, actionUri);
+                	if(cacheEnabled) {
+                		layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
+                	}
                 }
-
-                if (d != null) {
-                    return d;
-                }
-
-                if (!StringUtils.isBlank(controllerName)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Action layout not found, trying controller");
-                    }
-
-                    d = getNamedDecorator(request, controllerName);
-                    if (d != null) {
-                        return d;
-                    }
-
-                    d = getApplicationDefaultDecorator(request);
-                    if (d != null) {
-                        return d;
-                    }
-                    return parent != null ? super.getDecorator(request, page) : null;
-                }
+            } else {
+                d = getApplicationDefaultDecorator(request);
             }
-            else {
-                Decorator d = getApplicationDefaultDecorator(request);
-                if (d != null) {
-                    return d;
-                }
-                return parent != null ? super.getDecorator(request, page) : null;
-            }
+        } else {
+        	d = getNamedDecorator(request, layoutName);
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Evaluated layout for page: " + layoutName);
-        }
-
-        Decorator d = getNamedDecorator(request, layoutName);
         if (d != null) {
             return d;
         }
-
         return parent != null ? super.getDecorator(request, page) : null;
     }
 
-    @SuppressWarnings("rawtypes")
-    protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
+	private Decorator resolveDecorator(HttpServletRequest request,
+			GroovyObject controller, String controllerName, String actionUri) {
+		Decorator d = null;
 
+		Object layoutProperty = GrailsClassUtils.getStaticPropertyValue(controller.getClass(), "layout");
+		if (layoutProperty instanceof CharSequence) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("layout property found in controller, looking for template named " + layoutProperty);
+			}
+		    d = getNamedDecorator(request, layoutProperty.toString());
+		} else {
+			if (d == null && !StringUtils.isBlank(actionUri)) {
+			    d = getNamedDecorator(request, actionUri.substring(1));
+			}
+	
+			if (d == null && !StringUtils.isBlank(controllerName)) {
+			    if (LOG.isDebugEnabled()) {
+			        LOG.debug("Action layout not found, trying controller");
+			    }
+			    d = getNamedDecorator(request, controllerName);
+			}
+
+		    if (d == null) {
+		    	d = getApplicationDefaultDecorator(request);
+		    }
+		}
+
+		return d;
+	}
+
+    protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
         return getNamedDecorator(request, defaultDecoratorName);
     }
 
@@ -173,8 +198,11 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     public Decorator getNamedDecorator(HttpServletRequest request, String name) {
         if (StringUtils.isBlank(name)) return null;
 
-        if (Environment.getCurrent()!= Environment.DEVELOPMENT && decoratorMap.containsKey(name)) {
-            return decoratorMap.get(name);
+        if (cacheEnabled) {
+        	DecoratorCacheValue cacheValue = decoratorCache.get(name);
+        	if(cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
+        		return cacheValue.getDecorator();
+        	}
         }
 
         String decoratorName = name;
@@ -194,7 +222,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
             res = pathToView != null ? resourceLoader.getResource(pathToView) : null;
             if (res != null && res.exists()) {
                 decoratorPage = pathToView;
-                d = useExistingDecorator(request, decoratorName, decoratorPage);
+                d = createDecorator(decoratorName, decoratorPage);
             }
             else {
                 // scan /WEB-INF/plugins/*/grails-app/views/layouts/[NAME].gsp for first matching
@@ -206,14 +234,18 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 
                 if(pluginViewLocation != null) {
                    decoratorPage = pluginViewLocation;
-                   d = useExistingDecorator(request, decoratorName, decoratorPage);
+                   d = createDecorator(decoratorName, decoratorPage);
                 }
 
             }
         }
         else {
-            d = useExistingDecorator(request, decoratorName, decoratorPage);
+            d = createDecorator(decoratorName, decoratorPage);
         }
+        
+        if (cacheEnabled) {
+        	decoratorCache.put(name, new DecoratorCacheValue(d));
+        }       
         return d;
     }
 
@@ -296,14 +328,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         return null;
     }
 
-    private Decorator useExistingDecorator(HttpServletRequest request, String decoratorName, String decoratorPage) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Using decorator " + decoratorPage);
-        }
-
-        Decorator d =  new DefaultDecorator(decoratorName,decoratorPage,request.getRequestURI(), Collections.EMPTY_MAP);
-        decoratorMap.put(decoratorName,d);
-        return d;
+    private Decorator createDecorator(String decoratorName, String decoratorPage) {
+        return new DefaultDecorator(decoratorName, decoratorPage, Collections.EMPTY_MAP);
     }
 
     private ResourceLoader establishResourceLoader() {
@@ -323,4 +349,67 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
 
         return ctx;
     }
+    
+    private static class LayoutCacheKey {
+    	private String controllerName;
+    	private String actionUri;
+    	    	
+		public LayoutCacheKey(String controllerName, String actionUri) {
+			this.controllerName = controllerName;
+			this.actionUri = actionUri;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((actionUri == null) ? 0 : actionUri.hashCode());
+			result = prime
+					* result
+					+ ((controllerName == null) ? 0 : controllerName.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			LayoutCacheKey other = (LayoutCacheKey) obj;
+			if (actionUri == null) {
+				if (other.actionUri != null)
+					return false;
+			} else if (!actionUri.equals(other.actionUri))
+				return false;
+			if (controllerName == null) {
+				if (other.controllerName != null)
+					return false;
+			} else if (!controllerName.equals(other.controllerName))
+				return false;
+			return true;
+		}
+		
+    }
+    
+    private static class DecoratorCacheValue {
+    	Decorator decorator;
+    	long createTimestamp=System.currentTimeMillis();
+    	
+    	public DecoratorCacheValue(Decorator decorator) {
+    		this.decorator=decorator;
+    	}
+    	
+    	public Decorator getDecorator() {
+    		return decorator;
+    	}
+    	
+	    public boolean isExpired() {
+	        return System.currentTimeMillis() - createTimestamp > LAYOUT_CACHE_EXPIRATION_MILLIS;
+	    }
+    }
+    
 }
