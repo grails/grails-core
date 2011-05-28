@@ -1,5 +1,4 @@
-<%=packageName ? "package ${packageName}\n\n" : ''%>import grails.converters.JSON
-import org.springframework.dao.DataIntegrityViolationException
+<%=packageName ? "package ${packageName}\n\n" : ''%>import org.springframework.dao.DataIntegrityViolationException
 
 class ${className}Controller {
 
