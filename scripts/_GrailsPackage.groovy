@@ -178,6 +178,7 @@ target(packageApp : "Implementation of package target") {
 }
 
 target(configureServerContextPath: "Configuring server context path") {
+    depends(createConfig)
     // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
     //    System properties
     //    application.properties
