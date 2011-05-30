@@ -51,7 +51,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     private UrlMappingData urlData;
     private Object viewName;
     private ServletContext servletContext;
-    private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.web.disable.multipart";
+    private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.disableCommonsMultipart";
     private boolean parsingRequest;
     private Object uri;
 
