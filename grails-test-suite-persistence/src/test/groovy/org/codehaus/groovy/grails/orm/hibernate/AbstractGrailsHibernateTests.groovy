@@ -3,11 +3,13 @@ package org.codehaus.groovy.grails.orm.hibernate
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
@@ -28,7 +30,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.Log4jConfigurer
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.plugins.*
 
 /**
  * @author Graeme Rocher
@@ -64,65 +65,25 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
 
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
 
-        gcl.parseClass('''
-dataSource {
-    pooled = true
-    driverClassName = "org.h2.Driver"
-    username = "sa"
-    password = ""
-    dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-    url = "jdbc:h2:mem:grailsIntTestDB"
-}
-hibernate {
-    cache.use_second_level_cache=true
-    cache.use_query_cache=true
-    cache.provider_class='net.sf.ehcache.hibernate.EhCacheProvider'
-}
-''', "DataSource")
+        configureDataSource()
 
         ctx = new MockApplicationContext()
+
         onSetUp()
+
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
         grailsApplication = ga
-        mockManager = new MockGrailsPluginManager(ga)
 
-        ctx.registerMockBean("pluginManager", mockManager)
-
-        def dependantPluginClasses = []
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
-        dependantPluginClasses << MockHibernateGrailsPlugin
-
-        def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga)}
-
-        dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
-        mockManager.doArtefactConfiguration()
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
+        def dependentPlugins = configurePlugins()
 
         afterPluginInitialization()
 
-        ga.initialise()
-        onApplicationCreated()
-        domainClasses?.each { dc ->
-            ga.addArtefact 'Domain', dc
-        }
-        ga.setApplicationContext(ctx)
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+        initializeApplication()
+
         ctx.registerMockBean("messageSource", new StaticMessageSource())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx, gcl)
-          doWithRuntimeConfiguration dependentPlugins, springConfig
+        doWithRuntimeConfiguration dependentPlugins, springConfig
 
         ga.setMainContext(springConfig.getUnrefreshedApplicationContext())
         appCtx = springConfig.getApplicationContext()
@@ -132,12 +93,25 @@ hibernate {
         mockManager.applicationContext = appCtx
         mockManager.doDynamicMethods()
 
-        sessionFactory = appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)
+        registerHibernateSession()
+    }
 
-        if (!TransactionSynchronizationManager.hasResource(sessionFactory)) {
-            session = sessionFactory.openSession()
-            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
-        }
+     protected void configureDataSource() {
+        gcl.parseClass('''
+dataSource {
+    pooled = true
+    driverClassName = "org.h2.Driver"
+    username = "sa"
+    password = ""
+    dbCreate = "create-drop"
+    url = "jdbc:h2:mem:grailsIntTestDB"
+}
+hibernate {
+    cache.use_second_level_cache=true
+    cache.use_query_cache=true
+    cache.provider_class='net.sf.ehcache.hibernate.EhCacheProvider'
+}
+''', "DataSource")
     }
 
     protected setCurrentController(controller) {
@@ -230,7 +204,55 @@ hibernate {
     protected void onTearDown() {
     }
 
+    protected List configurePlugins() {
+        mockManager = new MockGrailsPluginManager(ga)
+        
+        ctx.registerMockBean("pluginManager", mockManager)
+        PluginManagerHolder.setPluginManager(mockManager)
+
+        def dependantPluginClasses = []
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ServletsGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
+        dependantPluginClasses << MockHibernateGrailsPlugin
+
+        def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, ga) }
+
+        dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
+        mockManager.doArtefactConfiguration()
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
+
+        dependentPlugins
+    }
+
     protected void afterPluginInitialization() {
+    }
+
+    protected void initializeApplication() {
+        ga.initialise()
+        onApplicationCreated()
+        domainClasses?.each { dc -> ga.addArtefact 'Domain', dc }
+        ga.setApplicationContext(ctx)
+        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
+    }
+
+    protected void registerHibernateSession() {
+        sessionFactory = appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)
+
+        if (!TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            session = sessionFactory.openSession()
+            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
+        }
     }
 }
 
