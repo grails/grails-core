@@ -7,7 +7,7 @@ class @plugin.name@GrailsPlugin {
     def dependsOn = [:]
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
-            "grails-app/views/error.gsp"
+        "grails-app/views/error.gsp"
     ]
 
     // TODO Fill in these fields
@@ -22,7 +22,7 @@ Brief summary/description of the plugin.
     def documentation = "http://grails.org/plugin/@plugin.short.name@"
 
     // Extra (optional) plugin metadata
-    //
+
     // License: one of 'APACHE', 'GPL2', 'GPL3'
 //    def license = "APACHE"
 
@@ -37,7 +37,6 @@ Brief summary/description of the plugin.
 
     // Online location of the plugin's browseable source code.
 //    def scm = [ url: "http://svn.grails-plugins.codehaus.org/browse/grails-plugins/" ]
-
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before
@@ -64,5 +63,9 @@ Brief summary/description of the plugin.
     def onConfigChange = { event ->
         // TODO Implement code that is executed when the project configuration changes.
         // The event is the same as for 'onChange'.
+    }
+
+    def onShutdown = { event ->
+        // TODO Implement code that is executed when the application shuts down (optional)
     }
 }
