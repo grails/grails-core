@@ -23,7 +23,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.grails.datastore.gorm.finders.FinderMethod
-import org.hibernate.SessionFactory
 import org.hibernate.criterion.CriteriaSpecification
 
 /**
@@ -39,14 +38,10 @@ class HibernateNamedQueriesBuilder {
 
     /**
      * @param domainClass the GrailsDomainClass defining the named queries
-     * @param grailsApplication a GrailsApplication instance
-     * @param ctx the main spring application context
+     * @param finders dynamic finders
      */
-    HibernateNamedQueriesBuilder(domainClass, grailsApplication, SessionFactory sessionFactory, List<FinderMethod> finders) {
+    HibernateNamedQueriesBuilder(domainClass, List<FinderMethod> finders) {
         this.domainClass = domainClass
-
-        def classLoader = grailsApplication.classLoader
-
         dynamicMethods = finders
     }
 

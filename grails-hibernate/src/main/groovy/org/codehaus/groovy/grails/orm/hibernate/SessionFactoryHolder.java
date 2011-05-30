@@ -18,15 +18,17 @@ package org.codehaus.groovy.grails.orm.hibernate;
 import org.hibernate.SessionFactory;
 
 /**
- * Holds a reference to the SessionFactory, used to allow proxying of the session factory in development mode
+ * Holds a reference to the SessionFactory, used to allow proxying of the
+ * session factory in development mode.
  *
  * @since 1.4
  * @author Graeme Rocher
  */
 public class SessionFactoryHolder {
 
-    private SessionFactory sessionFactory;
     public static final String BEAN_ID = "org.grails.internal.SESSION_FACTORY_HOLDER";
+
+    private SessionFactory sessionFactory;
 
     public SessionFactory getSessionFactory() {
         return sessionFactory;

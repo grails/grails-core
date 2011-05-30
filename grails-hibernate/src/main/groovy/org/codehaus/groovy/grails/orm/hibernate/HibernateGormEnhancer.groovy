@@ -44,7 +44,7 @@ import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
 
- /**
+/**
  * Extended GORM Enhancer that fills out the remaining GORM for Hibernate methods
  * and implements string-based query support via HQL.
  *
@@ -65,7 +65,8 @@ class HibernateGormEnhancer extends GormEnhancer {
 
         def sessionFactory = datastore.sessionFactory
 
-        finders = Collections.unmodifiableList([new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+        finders = Collections.unmodifiableList([
+            new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindOrSaveByPersistentMethod(grailsApplication, sessionFactory, classLoader),
@@ -100,13 +101,13 @@ class HibernateGormEnhancer extends GormEnhancer {
 
     @Override
     protected void registerNamedQueries(PersistentEntity entity, Object namedQueries) {
-        if (grailsApplication != null) {
-            SessionFactory sessionFactory = datastore.sessionFactory
-            def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.name)
-            if (domainClass != null) {
-                def builder = new HibernateNamedQueriesBuilder(domainClass, grailsApplication, sessionFactory, finders)
-                builder.evaluate((Closure)namedQueries)
-            }
+        if (grailsApplication == null) {
+            return
+        }
+
+        def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.name)
+        if (domainClass != null) {
+            new HibernateNamedQueriesBuilder(domainClass, finders).evaluate((Closure)namedQueries)
         }
     }
 }

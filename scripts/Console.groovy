@@ -15,7 +15,7 @@
  */
 
 /**
- * Gant script that loads the Grails console
+ * Gant script that loads the Grails console.
  *
  * @author Graeme Rocher
  *
@@ -25,6 +25,7 @@
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 
+import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.support.*
 
 includeTargets << grailsScript("_GrailsBootstrap")
@@ -38,9 +39,8 @@ target(console:"The console implementation target") {
     depends(loadApp, configureApp)
 
     try {
-        def console = createConsole()
-        console.run()
-        def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
+        createConsole().run()
+        def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
         watcher.start()
         // keep the console running
         while (true) {

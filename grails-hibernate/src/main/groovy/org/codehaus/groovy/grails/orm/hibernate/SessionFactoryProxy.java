@@ -69,7 +69,7 @@ import java.util.Set;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean{
+public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean {
 
     private static final long serialVersionUID = 1;
 
@@ -114,7 +114,6 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
     public Session openSession() throws HibernateException {
         return getCurrentSessionFactory().openSession();
     }
-
 
     public Session openSession(Interceptor interceptor) throws HibernateException {
         return getCurrentSessionFactory().openSession(interceptor);
