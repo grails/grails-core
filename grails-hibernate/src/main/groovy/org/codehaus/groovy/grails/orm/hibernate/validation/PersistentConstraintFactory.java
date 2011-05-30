@@ -21,7 +21,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
 /**
- * A factory that creates PersistentConstraint instances ensuring that dependencies are provided.
+ * Creates PersistentConstraint instances ensuring that dependencies are provided.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -30,21 +30,32 @@ public class PersistentConstraintFactory implements ConstraintFactory {
 
     private Class<?> constraintClass;
     private ApplicationContext applicationContext;
+    private String sessionFactoryBeanName;
 
     public PersistentConstraintFactory(ApplicationContext applicationContext, Class<?> persistentConstraint) {
+        this(applicationContext, persistentConstraint, "sessionFactory");
+    }
+
+    public PersistentConstraintFactory(ApplicationContext applicationContext,
+            Class<?> persistentConstraint, String sessionFactoryBeanName) {
+
         Assert.notNull(applicationContext, "Argument [applicationContext] cannot be null");
+
         if (persistentConstraint == null || !PersistentConstraint.class.isAssignableFrom(persistentConstraint)) {
-            throw new IllegalArgumentException("Argument [persistentConstraint] must be an instance of " + PersistentConstraint.class);
+            throw new IllegalArgumentException(
+                    "Argument [persistentConstraint] must be an instance of " + PersistentConstraint.class.getName());
         }
 
         this.applicationContext = applicationContext;
         this.constraintClass = persistentConstraint;
+        this.sessionFactoryBeanName = sessionFactoryBeanName;
     }
 
     public Constraint newInstance() {
         try {
             PersistentConstraint instance = (PersistentConstraint)constraintClass.newInstance();
             instance.setApplicationContext(applicationContext);
+            instance.setSessionFactoryBeanName(sessionFactoryBeanName);
             return instance;
         }
         catch (InstantiationException e) {

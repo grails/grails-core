@@ -19,6 +19,7 @@ import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener;
@@ -51,16 +52,17 @@ public class ConfigurableLocalSessionFactoryBean extends
         LocalSessionFactoryBean implements ApplicationContextAware {
 
     private static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
-    protected ClassLoader classLoader = null;
+    protected ClassLoader classLoader;
     protected GrailsApplication grailsApplication;
     protected Class<?> configClass;
     protected Class<?> currentSessionContextClass;
     protected HibernateEventListeners hibernateEventListeners;
     protected ApplicationContext applicationContext;
     protected boolean proxyIfReloadEnabled = true;
+    private String sessionFactoryBeanName = "sessionFactory";
+    private String dataSourceName = GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
 
     /**
-     *
      * @param proxyIfReloadEnabled Sets whether a proxy should be created if reload is enabled
      */
     public void setProxyIfReloadEnabled(boolean proxyIfReloadEnabled) {
@@ -68,7 +70,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     /**
-     * Sets class to be used for the Hibernate CurrentSessionContext
+     * Sets class to be used for the Hibernate CurrentSessionContext.
      *
      * @param currentSessionContextClass An implementation of the CurrentSessionContext interface
      */
@@ -77,7 +79,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     /**
-     * Sets the class to be used for Hibernate Configuration
+     * Sets the class to be used for Hibernate Configuration.
      * @param configClass A subclass of the Hibernate Configuration class
      */
     public void setConfigClass(Class<?> configClass) {
@@ -103,7 +105,7 @@ public class ConfigurableLocalSessionFactoryBean extends
      */
      @Override
     protected Configuration newConfiguration() {
-        ClassLoader cl = this.classLoader != null ? this.classLoader : Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         if (configClass == null) {
             try {
                 configClass = cl.loadClass("org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsAnnotationConfiguration");
@@ -115,7 +117,10 @@ public class ConfigurableLocalSessionFactoryBean extends
         }
         Object config = BeanUtils.instantiateClass(configClass);
         if (config instanceof GrailsDomainConfiguration) {
-            ((GrailsDomainConfiguration)config).setGrailsApplication(grailsApplication);
+            GrailsDomainConfiguration grailsConfig = (GrailsDomainConfiguration)config;
+            grailsConfig.setGrailsApplication(grailsApplication);
+            grailsConfig.setSessionFactoryBeanName(sessionFactoryBeanName);
+            grailsConfig.setDataSourceName(dataSourceName);
         }
         if (currentSessionContextClass != null) {
             ((Configuration)config).setProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, currentSessionContextClass.getName());
@@ -133,18 +138,21 @@ public class ConfigurableLocalSessionFactoryBean extends
     protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
         try {
             SessionFactory sf = super.newSessionFactory(config);
-            // if reloading is enabled in this environment then we need to use a SessionFactoryProxy instance
-            if (grails.util.Environment.getCurrent().isReloadEnabled() && proxyIfReloadEnabled) {
-                SessionFactoryProxy sfp = new SessionFactoryProxy();
-                SessionFactoryHolder sessionFactoryHolder = applicationContext.getBean(SessionFactoryHolder.class);
-                sessionFactoryHolder.setSessionFactory(sf);
-                sfp.setApplicationContext(applicationContext);
-                sfp.setCurrentSessionContextClass(currentSessionContextClass);
-                sfp.setTargetBean(SessionFactoryHolder.BEAN_ID);
-                sfp.afterPropertiesSet();
-                return sfp;
+            if (!grails.util.Environment.getCurrent().isReloadEnabled() || !proxyIfReloadEnabled) {
+                return sf;
             }
-            return sf;
+
+            // if reloading is enabled in this environment then we need to use a SessionFactoryProxy instance
+            SessionFactoryProxy sfp = new SessionFactoryProxy();
+            String suffix = dataSourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE ? "" : '_' + dataSourceName;
+            SessionFactoryHolder sessionFactoryHolder = applicationContext.getBean(
+                    SessionFactoryHolder.BEAN_ID + suffix, SessionFactoryHolder.class);
+            sessionFactoryHolder.setSessionFactory(sf);
+            sfp.setApplicationContext(applicationContext);
+            sfp.setCurrentSessionContextClass(currentSessionContextClass);
+            sfp.setTargetBean(SessionFactoryHolder.BEAN_ID + suffix);
+            sfp.afterPropertiesSet();
+            return sfp;
         }
         catch (HibernateException e) {
             Throwable cause = e.getCause();
@@ -292,5 +300,13 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     public void setHibernateEventListeners(final HibernateEventListeners listeners) {
         hibernateEventListeners = listeners;
+    }
+
+    public void setSessionFactoryBeanName(String name) {
+        sessionFactoryBeanName = name;
+    }
+
+    public void setDataSourceName(String name) {
+        dataSourceName = name;
     }
 }

@@ -24,9 +24,6 @@ import org.hibernate.classic.Session;
 import org.hibernate.collection.PersistentCollection;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.validation.Errors;
 
 /**
@@ -36,10 +33,8 @@ import org.springframework.validation.Errors;
  * @author Graeme Rocher
  * @since 0.5
  */
-public class HibernateDomainClassValidator extends GrailsDomainClassValidator implements ApplicationContextAware {
+public class HibernateDomainClassValidator extends GrailsDomainClassValidator {
 
-
-    private ApplicationContext applicationContext;
     private SessionFactory sessionFactory;
 
     @Override
@@ -99,19 +94,7 @@ public class HibernateDomainClassValidator extends GrailsDomainClassValidator im
         }
     }
 
-
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        if (applicationContext == null) {
-            return;
-        }
-
-        try {
-            sessionFactory = applicationContext.getBean("sessionFactory", SessionFactory.class);
-        }
-        catch (BeansException e) {
-            // no session factory, continue
-        }
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 }

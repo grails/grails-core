@@ -3,10 +3,9 @@ package org.codehaus.groovy.grails.commons
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException
-
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.beans.propertyeditors.ClassEditor
-import org.springframework.context.support.GenericApplicationContext
+import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 import org.springframework.web.servlet.i18n.CookieLocaleResolver
 
@@ -194,6 +193,7 @@ hibernate {
 
     void testShutdownCalled() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin] as Class[], ga)
+        manager.applicationContext = [getBeansOfType: { Class c -> [:] } ] as ApplicationContext
 
         manager.loadPlugins()
 

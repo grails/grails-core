@@ -14,21 +14,27 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.ArtefactHandler;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
 import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.engine.FilterDefinition;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Allows configuring Grails' hibernate support to work in conjuntion with Hibernate's annotation
@@ -37,7 +43,7 @@ import java.util.Set;
  * @author Graeme Rocher
  * @since 18-Feb-2006
  */
-public class GrailsAnnotationConfiguration extends AnnotationConfiguration implements GrailsDomainConfiguration{
+public class GrailsAnnotationConfiguration extends Configuration implements GrailsDomainConfiguration {
 
     private static final Log LOG = LogFactory.getLog(GrailsAnnotationConfiguration.class);
 
@@ -45,6 +51,8 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
     private GrailsApplication grailsApplication;
     private Set<GrailsDomainClass> domainClasses = new HashSet<GrailsDomainClass>();
     private boolean configLocked;
+    private String sessionFactoryBeanName = "sessionFactory";
+    private String dataSourceName = GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#addDomainClass(org.codehaus.groovy.grails.commons.GrailsDomainClass)
@@ -58,14 +66,15 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
     }
 
     private boolean shouldMapWithGorm(GrailsDomainClass domainClass) {
-        return !AnnotationDomainClassArtefactHandler.isJPADomainClass(domainClass.getClazz()) && domainClass.getMappingStrategy().equalsIgnoreCase(GrailsDomainClass.GORM);
+        return !AnnotationDomainClassArtefactHandler.isJPADomainClass(domainClass.getClazz()) &&
+               domainClass.getMappingStrategy().equalsIgnoreCase(GrailsDomainClass.GORM);
     }
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#setGrailsApplication(org.codehaus.groovy.grails.commons.GrailsApplication)
      */
     public void setGrailsApplication(GrailsApplication application) {
-        this.grailsApplication = application;
+        grailsApplication = application;
         if (grailsApplication == null) {
             return;
         }
@@ -97,6 +106,14 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
         }
     }
 
+    public void setSessionFactoryBeanName(String name) {
+        sessionFactoryBeanName = name;
+    }
+
+    public void setDataSourceName(String name) {
+        dataSourceName = name;
+    }
+
     /* (non-Javadoc)
      * @see org.hibernate.cfg.Configuration#buildSessionFactory()
      */
@@ -111,7 +128,7 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
         }
 
         // work around for HHH-2624
-        addFilterDefinition(new FilterDefinition("dynamicFilterEnabler","1=1", Collections.emptyMap()));
+        addFilterDefinition(new FilterDefinition("dynamicFilterEnabler", "1=1", Collections.emptyMap()));
 
         SessionFactory sessionFactory = super.buildSessionFactory();
 
@@ -131,14 +148,18 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
         final ClassLoader originalContextLoader = currentThread.getContextClassLoader();
         if (!configLocked) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("[GrailsAnnotationConfiguration] [" + domainClasses.size() + "] Grails domain classes to bind to persistence runtime");
+                LOG.debug("[GrailsAnnotationConfiguration] [" + domainClasses.size() +
+                          "] Grails domain classes to bind to persistence runtime");
             }
 
             // do Grails class configuration
-            DefaultGrailsDomainConfiguration.configureDomainBinder(grailsApplication,domainClasses);
+            DefaultGrailsDomainConfiguration.configureDomainBinder(grailsApplication, domainClasses);
 
-            // do Grails class configuration
             for (GrailsDomainClass domainClass : domainClasses) {
+                if (!domainClass.usesDataSource(dataSourceName)) {
+                    continue;
+                }
+
                 final String fullClassName = domainClass.getFullName();
 
                 String hibernateConfig = fullClassName.replace('.', '/') + ".hbm.xml";
@@ -151,19 +172,18 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
                 }
                 final Mappings mappings = super.createMappings();
                 Mapping m = GrailsDomainBinder.getMapping(domainClass);
-                mappings.setAutoImport(m== null || m.getAutoImport());
-                GrailsDomainBinder.bindClass(domainClass, mappings);
+                mappings.setAutoImport(m == null || m.getAutoImport());
+                GrailsDomainBinder.bindClass(domainClass, mappings, sessionFactoryBeanName);
             }
         }
-
 
         try {
             currentThread.setContextClassLoader(grailsApplication.getClassLoader());
             super.secondPassCompile();
         } finally {
             currentThread.setContextClassLoader(originalContextLoader);
-
         }
+
         configLocked = true;
     }
 
@@ -179,7 +199,7 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
                 namingStrategyClass = (Class<?>)customStrategy;
             } else  {
                 try {
-                    namingStrategyClass = this.grailsApplication.getClassLoader().loadClass(customStrategy.toString());
+                    namingStrategyClass = grailsApplication.getClassLoader().loadClass(customStrategy.toString());
                 } catch (ClassNotFoundException e) {
                     // ignore
                 }
@@ -202,5 +222,4 @@ public class GrailsAnnotationConfiguration extends AnnotationConfiguration imple
 
         setNamingStrategy(strategy);
     }
-
 }

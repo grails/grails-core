@@ -18,10 +18,13 @@ package org.codehaus.groovy.grails.plugins.datasource
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
+
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
+
 import javax.sql.DataSource
+
 import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
@@ -32,7 +35,7 @@ import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.util.ClassUtils
 
- /**
+/**
  * Handles the configuration of a DataSource within Grails.
  *
  * @author Graeme Rocher
@@ -48,93 +51,80 @@ class DataSourceGrailsPlugin {
     def doWithSpring = {
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
-        if (parentCtx?.containsBean("dataSource")) {
-            return
+        def dsConfigs = [dataSource: application.config.dataSource]
+        application.config.each { name, value ->
+            if (name.startsWith('dataSource_') && value instanceof ConfigObject) {
+                dsConfigs[name] = value
+            }
         }
 
-        def ds = application.config.dataSource
-        if (!ds && application.domainClasses.size() == 0) {
-            log.info "No data source or domain classes found. Data source configuration skipped"
+        createDatasource.delegate = delegate
+        dsConfigs.each { name, ds -> createDatasource name, ds }
+    }
+
+    def createDatasource = { String datasourceName, ds ->
+        boolean isDefault = datasourceName == 'dataSource'
+        String suffix = isDefault ? '' : datasourceName[10..-1]
+        String unproxiedName = "dataSourceUnproxied$suffix"
+
+        if (parentCtx?.containsBean(datasourceName)) {
             return
         }
 
         if (ds.jndiName) {
-            dataSourceUnproxied(JndiObjectFactoryBean) {
+            "$unproxiedName"(JndiObjectFactoryBean) {
                 jndiName = ds.jndiName
                 expectedType = DataSource
             }
-            dataSource(TransactionAwareDataSourceProxy, dataSourceUnproxied)
+            "$datasourceName"(TransactionAwareDataSourceProxy, ref(unproxiedName))
             return
         }
 
-        abstractGrailsDataSourceBean {
-            def driver = ds?.driverClassName ? ds.driverClassName : "org.h2.Driver"
-            final hsqldbDriver = "org.hsqldb.jdbcDriver"
-            if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
-                throw new GrailsConfigurationException("Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 1.4 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy    or add HSQLDB as a dependency of your application.")
-            }
+        boolean readOnly = Boolean.TRUE.equals(ds.readOnly)
+        boolean pooled = !Boolean.FALSE.equals(ds.pooled)
+
+        String driver = ds.driverClassName ?: "org.h2.Driver"
+
+        final String hsqldbDriver = "org.hsqldb.jdbcDriver"
+        if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
+            throw new GrailsConfigurationException("Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 1.4 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy or add HSQLDB as a dependency of your application.")
+        }
+
+        boolean defaultDriver = (driver == "org.h2.Driver")
+
+        String pwd
+        boolean passwordSet = false
+        if (ds.password)  {
+            pwd = resolvePassword(ds, application)
+            passwordSet = true
+        }
+        else if (defaultDriver) {
+            pwd = ''
+            passwordSet = true
+        }
+
+        "abstractGrailsDataSourceBean$suffix" {
             driverClassName = driver
-            url = ds?.url ? ds.url : "jdbc:h2:mem:grailsDB"
-            boolean defaultDriver = (driver == "org.h2.Driver")
-            String theUsername = ds?.username ?: (defaultDriver ? "sa" : null)
+
+            if (pooled) {
+                defaultReadOnly = readOnly
+            }
+
+            url = ds.url ?: "jdbc:h2:mem:grailsDB"
+
+            String theUsername = ds.username ?: (defaultDriver ? "sa" : null)
             if (theUsername != null) {
                 username = theUsername
             }
-            if (ds?.password)  {
-                def thePassword = ds.password
-                if (ds?.passwordEncryptionCodec) {
-                    def encryptionCodec = ds?.passwordEncryptionCodec
-                    if (encryptionCodec instanceof Class) {
-                        try {
-                            password = encryptionCodec.decode(thePassword)
-                        }
-                        catch (Exception e) {
-                            throw new GrailsConfigurationException(
-                                "Error decoding dataSource password with codec [$encryptionCodec]: ${e.message}", e)
-                        }
-                    }
-                    else {
-                        encryptionCodec = encryptionCodec.toString()
-                        def codecClass = application.codecClasses.find { it.name?.equalsIgnoreCase(encryptionCodec) || it.fullName == encryptionCodec}?.clazz
-                        try {
-                            if (!codecClass) {
-                                codecClass = Class.forName(encryptionCodec, true, application.classLoader)
-                            }
-                            if (codecClass) {
-                               password = codecClass.decode(thePassword)
-                            }
-                            else {
-                                throw new GrailsConfigurationException(
-                                      "Error decoding dataSource password. Codec class not found for name [$encryptionCodec]")
-                            }
-                        }
-                        catch (ClassNotFoundException e) {
-                            throw new GrailsConfigurationException(
-                                  "Error decoding dataSource password. Codec class not found for name [$encryptionCodec]: ${e.message}", e)
-                        }
-                        catch(Exception e) {
-                            throw new GrailsConfigurationException(
-                                  "Error decoding dataSource password with codec [$encryptionCodec]: ${e.message}", e)
-                        }
-                    }
-                }
-                else {
-                    password = ds.password
-                }
-            }
-            else {
-                String thePassword = defaultDriver ? "" : null
-                if (thePassword != null) {
-                    password = thePassword
-                }
-            }
+
+            if (passwordSet) password = pwd
 
             // support for setting custom properties (for example maxActive) on the dataSource bean
             def dataSourceProperties = ds.properties
             if (dataSourceProperties != null) {
                 if (dataSourceProperties instanceof Map) {
                     for (entry in dataSourceProperties) {
-                        log.debug("Setting property on dataSource bean ${entry.key} -> ${entry.value}")
+                        log.debug("Setting property on dataSource bean $entry.key -> $entry.value")
                         delegate."${entry.key}" = entry.value
                     }
                 }
@@ -145,26 +135,65 @@ class DataSourceGrailsPlugin {
         }
 
         def parentConfig = { dsBean ->
-            dsBean.parent = 'abstractGrailsDataSourceBean'
+            dsBean.parent = 'abstractGrailsDataSourceBean' + suffix
         }
-        if (ds) {
-            log.info("[RuntimeConfiguration] Configuring data source for environment: ${Environment.current}")
 
-            if (ds.pooled) {
-                def bean = dataSourceUnproxied(BasicDataSource, parentConfig)
-                bean.destroyMethod = "close"
-            }
-            else {
-                dataSourceUnproxied(DriverManagerDataSource, parentConfig)
-            }
+        String desc = isDefault ? 'data source' : "data source '$datasourceName'"
+        log.info "[RuntimeConfiguration] Configuring $desc for environment: $Environment.current"
 
-        }
-        else {
-            def bean = dataSourceUnproxied(BasicDataSource, parentConfig)
+        Class dsClass = pooled ? BasicDataSource :
+                readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
+
+        def bean = "$unproxiedName"(dsClass, parentConfig)
+        if (pooled) {
             bean.destroyMethod = "close"
         }
 
-        dataSource(TransactionAwareDataSourceProxy, dataSourceUnproxied)
+        "$datasourceName"(TransactionAwareDataSourceProxy, ref(unproxiedName))
+    }
+
+    String resolvePassword(ds, application) {
+
+        if (!ds.passwordEncryptionCodec) {
+            return ds.password
+        }
+
+        def encryptionCodec = ds.passwordEncryptionCodec
+        if (encryptionCodec instanceof Class) {
+            try {
+                return encryptionCodec.decode(ds.password)
+            }
+            catch (e) {
+                throw new GrailsConfigurationException(
+                    "Error decoding dataSource password with codec [$encryptionCodec.name]: $e.message", e)
+            }
+        }
+
+        encryptionCodec = encryptionCodec.toString()
+        def codecClass = application.codecClasses.find {
+            it.name.equalsIgnoreCase(encryptionCodec) || it.fullName == encryptionCodec
+        }?.clazz
+
+        try {
+            if (!codecClass) {
+                codecClass = Class.forName(encryptionCodec, true, application.classLoader)
+            }
+            if (codecClass) {
+                return codecClass.decode(ds.password)
+            }
+            else {
+                throw new GrailsConfigurationException(
+                    "Error decoding dataSource password. Codec class not found for name [$encryptionCodec]")
+            }
+        }
+        catch (ClassNotFoundException e) {
+            throw new GrailsConfigurationException(
+                "Error decoding dataSource password. Codec class not found for name [$encryptionCodec]: $e.message", e)
+        }
+        catch (e) {
+            throw new GrailsConfigurationException(
+                "Error decoding dataSource password with codec [$encryptionCodec]: $e.message", e)
+        }
     }
 
     def doWithWebDescriptor = { xml ->
@@ -201,35 +230,25 @@ class DataSourceGrailsPlugin {
     }
 
     def onChange = { event ->
-        if (event.source) {
-            final application = event.application
-            final slurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application)
-
-            final newConfig = slurper.parse(event.source)
-            application.config.merge(newConfig)
-
-            // TODO: Handle reloading of the dataSource bean
+        if (!event.source) {
+            return
         }
 
+        final application = event.application
+        final slurper = ConfigurationHelper.getConfigSlurper(Environment.current.name, application)
+
+        final newConfig = slurper.parse(event.source)
+        application.config.merge(newConfig)
+
+        // TODO: Handle reloading of the dataSource bean
     }
 
     def onShutdown = { event ->
 
         ApplicationContext appCtx = event.ctx
 
-        if (appCtx?.containsBean("dataSource")) {
-            DataSource dataSource = appCtx.dataSource
-            Connection connection
-            try {
-                connection = dataSource.getConnection()
-                def dbName = connection.metaData.databaseProductName
-                if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
-                    connection.createStatement().executeUpdate('SHUTDOWN')
-                }
-            }
-            finally {
-                try { connection?.close() } catch (ignored) {}
-            }
+        for (bean in appCtx.getBeansOfType(DataSource).values()) {
+            shutdownDatasource bean
         }
 
         if (Metadata.current.isWarDeployed()) {
@@ -237,11 +256,29 @@ class DataSourceGrailsPlugin {
         }
     }
 
+    void shutdownDatasource(DataSource dataSource) {
+        Connection connection
+        try {
+            connection = dataSource.getConnection()
+            def dbName = connection.metaData.databaseProductName
+            if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
+                connection.createStatement().executeUpdate('SHUTDOWN')
+            }
+        }
+        catch (e) {
+            log.error "Error shutting down datasource: $e.message", e
+        }
+        finally {
+            try { connection?.close() } catch (ignored) {}
+        }
+    }
+
     private void deregisterJDBCDrivers() {
-        DriverManager.drivers.each { Driver driver ->
+        for (Driver driver in DriverManager.drivers) {
             try {
                 DriverManager.deregisterDriver(driver)
-            } catch (e) {
+            }
+            catch (e) {
                 log.error "Error deregistering JDBC driver [$driver]: $e.message", e
             }
         }

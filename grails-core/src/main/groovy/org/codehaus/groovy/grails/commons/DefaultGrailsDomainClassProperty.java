@@ -681,10 +681,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public void refreshConstraints() {
-            GrailsDomainClassProperty[] props = getPersistentProperties();
-            constraints = GrailsDomainConfigurationUtil.evaluateConstraints(
-                    getClazz(),
-                    props);
+            constraints = new DefaultConstraintEvaluator().evaluate(getClazz(), getPersistentProperties());
         }
 
         public boolean hasSubClasses() {
@@ -705,6 +702,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
         public void setMappingStrategy(String strategy) {
             // do nothing
+        }
+
+        public List<String> getDataSources() {
+            return Collections.singletonList(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE);
+        }
+
+        public boolean usesDataSource(@SuppressWarnings("hiding") String name) {
+            return true;
         }
     }
 }

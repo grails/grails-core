@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -222,7 +223,9 @@ public class GrailsDomainBinderTests extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        GrailsDomainBinder.namingStrategy = ImprovedNamingStrategy.INSTANCE;
+        GrailsDomainBinder.NAMING_STRATEGIES.clear();
+        GrailsDomainBinder.NAMING_STRATEGIES.put(
+              GrailsDomainClassProperty.DEFAULT_DATA_SOURCE, ImprovedNamingStrategy.INSTANCE);
         PluginManagerHolder.setPluginManager(null);
     }
 

@@ -24,6 +24,7 @@ public class DefaultGrailsServiceClass extends AbstractInjectableGrailsClass imp
     private static final String TRANSACTIONAL = "transactional";
 
     private boolean transactional = true;
+    private String dataSourceName;
 
     public DefaultGrailsServiceClass(Class<?> clazz) {
         super(clazz, SERVICE);
@@ -34,5 +35,26 @@ public class DefaultGrailsServiceClass extends AbstractInjectableGrailsClass imp
 
     public boolean isTransactional() {
         return transactional;
+    }
+
+    public String getDataSource() {
+        if (dataSourceName == null) {
+            if (isTransactional()) {
+                CharSequence name = getStaticPropertyValue(DATA_SOURCE, CharSequence.class);
+                dataSourceName = name == null ? null : name.toString();
+                if (dataSourceName == null) {
+                    dataSourceName = DEFAULT_DATA_SOURCE;
+                }
+            }
+            else {
+                dataSourceName = "";
+            }
+        }
+
+        return dataSourceName;
+    }
+
+    public boolean usesDataSource(final String name) {
+        return getDataSource().equals(name);
     }
 }

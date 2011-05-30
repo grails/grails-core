@@ -15,6 +15,18 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+
+import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
@@ -23,9 +35,6 @@ import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Validator;
-
-import java.beans.PropertyDescriptor;
-import java.util.*;
 
 /**
  * @author Graeme Rocher
@@ -51,6 +60,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private Collection<String> embedded;
     private Map<String, Object> defaultConstraints;
     private List<GrailsDomainClass> components = new ArrayList<GrailsDomainClass>();
+    private List<String> dataSources;
 
     /**
      * Constructor.
@@ -121,7 +131,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     public boolean hasSubClasses() {
-        return getSubClasses().size() > 0;
+        return !getSubClasses().isEmpty();
     }
 
     /**
@@ -811,5 +821,32 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
     public List<GrailsDomainClass> getComponents() {
         return Collections.unmodifiableList(components);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getDataSources() {
+        if (dataSources == null) {
+            dataSources = getStaticPropertyValue(GrailsDomainClassProperty.DATA_SOURCES, List.class);
+            if (dataSources == null) {
+                dataSources = Collections.singletonList(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE);
+            }
+        }
+
+        return dataSources;
+    }
+
+    public boolean usesDataSource(final String name) {
+
+        // TODO handle subclassing
+
+        if (getDataSources().contains(name)) {
+            return true;
+        }
+
+        if (getDataSources().contains(GrailsDomainClassProperty.ALL_DATA_SOURCES)) {
+            return true;
+        }
+
+        return false;
     }
 }

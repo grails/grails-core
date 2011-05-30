@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Mappings;
@@ -41,6 +42,8 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
     private GrailsApplication grailsApplication;
     private Set<GrailsDomainClass> domainClasses = new HashSet<GrailsDomainClass>();
     private boolean configLocked;
+    private String sessionFactoryBeanName = "sessionFactory";
+    private String dataSourceName = GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration#addDomainClass(org.codehaus.groovy.grails.commons.GrailsDomainClass)
@@ -68,6 +71,14 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         }
     }
 
+    public void setSessionFactoryBeanName(String name) {
+        sessionFactoryBeanName = name;
+    }
+
+    public void setDataSourceName(String name) {
+        dataSourceName = name;
+    }
+
     /**
      * Overrides the default behaviour to including binding of Grails domain classes.
      */
@@ -85,10 +96,14 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
         configureDomainBinder(grailsApplication,domainClasses);
 
         for (GrailsDomainClass domainClass : domainClasses) {
+            if (!domainClass.usesDataSource(dataSourceName)) {
+                continue;
+            }
+
             final Mappings mappings = super.createMappings();
             Mapping m = GrailsDomainBinder.getMapping(domainClass);
             mappings.setAutoImport(m == null || m.getAutoImport());
-            GrailsDomainBinder.bindClass(domainClass, mappings);
+            GrailsDomainBinder.bindClass(domainClass, mappings, sessionFactoryBeanName);
         }
 
         super.secondPassCompile();

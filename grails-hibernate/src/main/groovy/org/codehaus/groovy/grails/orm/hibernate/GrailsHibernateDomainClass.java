@@ -14,6 +14,14 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -34,8 +42,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.core.type.StandardAnnotationMetadata;
 import org.springframework.validation.Validator;
-
-import java.util.*;
 
 /**
  * An implementation of the GrailsDomainClass interface that allows Classes
@@ -298,5 +304,13 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     public Map getAssociationMap() {
         return Collections.emptyMap();
+    }
+
+    public List<String> getDataSources() {
+        return Collections.singletonList(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE);
+    }
+
+    public boolean usesDataSource(String name) {
+        return GrailsDomainClassProperty.DEFAULT_DATA_SOURCE.equals(name);
     }
 }

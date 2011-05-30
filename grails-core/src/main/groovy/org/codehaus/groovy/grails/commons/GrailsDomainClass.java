@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.commons;
 
 import org.springframework.validation.Validator;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -215,5 +216,15 @@ public interface GrailsDomainClass extends GrailsClass {
      */
     void setMappingStrategy(String strategy);
 
+    /**
+     * Get the datasource names that this domain class works with.
+     * @return the datasource names
+     */
+    List<String> getDataSources();
 
+    /**
+     * Check if the domain class can use the named DataSource.
+     * @param name the name
+     */
+    boolean usesDataSource(String name);
 }

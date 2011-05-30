@@ -29,9 +29,16 @@ import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 class GrailsUnitTestCaseTests extends GroovyTestCase {
 
     @Override
-    protected void tearDown() throws Exception {
-        ApplicationHolder.setApplication null
+    protected void setUp() {
+        ConfigurationHolder.setConfig null
     }
+
+    @Override
+    protected void tearDown() {
+        ApplicationHolder.setApplication null
+        ConfigurationHolder.setConfig null
+    }
+
     void testMockConfig() {
         def testCase = new TestUnitTestCase()
         def d = new GrailsUnitTestClass()

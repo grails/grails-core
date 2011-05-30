@@ -61,7 +61,15 @@ class ServicesGrailsPlugin {
             def hasDataSource = (application.config?.dataSource || application.domainClasses)
             if (hasDataSource && shouldCreateTransactionalProxy(serviceClass)) {
                 def props = new Properties()
-                props."*" = "PROPAGATION_REQUIRED"
+
+                String attributes = 'PROPAGATION_REQUIRED'
+                String dataSourceName = serviceClass.dataSource
+                String suffix = dataSourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$dataSourceName"
+                if (application.config["dataSource$suffix"].readOnly) {
+                    attributes += ',readOnly'
+                }
+                props."*" = attributes
+
                 "${serviceClass.propertyName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
                     if (scope) bean.scope = scope
                     bean.lazyInit = true
@@ -74,7 +82,7 @@ class ServicesGrailsPlugin {
                     }
                     proxyTargetClass = true
                     transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-                    transactionManager = ref("transactionManager")
+                    transactionManager = ref("transactionManager$suffix")
                 }
             }
             else {
@@ -89,7 +97,7 @@ class ServicesGrailsPlugin {
         }
     }
 
-    def shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
+    boolean shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
         Class javaClass = serviceClass.clazz
 
         try {
@@ -102,6 +110,7 @@ class ServicesGrailsPlugin {
         }
     }
 
+    // TODO support multiple datasources
     def onChange = { event ->
         if (!event.source || !event.ctx) {
             return

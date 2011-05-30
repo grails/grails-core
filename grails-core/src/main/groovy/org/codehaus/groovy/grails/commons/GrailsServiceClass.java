@@ -20,10 +20,26 @@ package org.codehaus.groovy.grails.commons;
  */
 public interface GrailsServiceClass extends InjectableGrailsClass {
 
+    String DATA_SOURCE = "dataSource";
+    String DEFAULT_DATA_SOURCE = "DEFAULT";
+    String ALL_DATA_SOURCES = "ALL";
+
     /**
      * Service should be configured with transaction demarcation.
      *
      * @return configure with transaction demarcation
      */
     boolean isTransactional();
+
+    /**
+     * Get the datasource name that this service class works with.
+     * @return the name
+     */
+    String getDataSource();
+
+    /**
+     * Check if the service class can use the named DataSource.
+     * @param name the name
+     */
+    boolean usesDataSource(String name);
 }

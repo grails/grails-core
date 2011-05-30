@@ -43,6 +43,9 @@ public interface GrailsDomainClassProperty {
     String SORT = "sort";
     String EMBEDDED = "embedded";
     String ERRORS = "errors";
+    String DATA_SOURCES = "dataSources";
+    String DEFAULT_DATA_SOURCE = "DEFAULT";
+    String ALL_DATA_SOURCES = "ALL";
     int FETCH_EAGER = 1;
     int FETCH_LAZY = 0;
 
@@ -240,7 +243,7 @@ public interface GrailsDomainClassProperty {
 
     boolean isHasOne();
 
-    public abstract void setDerived(boolean derived);
+    void setDerived(boolean derived);
 
-    public abstract boolean isDerived();
+    boolean isDerived();
 }

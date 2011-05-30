@@ -34,4 +34,16 @@ public interface GrailsDomainConfiguration {
      * @param application The grails application to use or null if none.
      */
     void setGrailsApplication(GrailsApplication application);
+
+    /**
+     * The Spring bean name of the SessionFactory.
+     * @param name the name
+     */
+    void setSessionFactoryBeanName(String name);
+
+    /**
+     * The Spring bean name of the DataSource.
+     * @param name the name
+     */
+    void setDataSourceName(String name);
 }

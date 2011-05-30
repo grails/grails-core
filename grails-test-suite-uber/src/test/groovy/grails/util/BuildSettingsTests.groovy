@@ -124,7 +124,7 @@ class BuildSettingsTests extends GroovyTestCase {
             assertEquals new File("$defaultWorkPath/global-plugins"), settings.globalPluginsDir
         }
         finally {
-            grailsHome.delete()
+            grailsHome.deleteDir()
         }
     }
 

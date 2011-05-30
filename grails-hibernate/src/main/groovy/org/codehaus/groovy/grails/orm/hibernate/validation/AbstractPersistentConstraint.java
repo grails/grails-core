@@ -19,8 +19,6 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.util.Assert;
-import org.springframework.validation.Errors;
 
 /**
  * Constraints that require access to the HibernateTemplate should subclass this class.
@@ -31,26 +29,19 @@ import org.springframework.validation.Errors;
 abstract class AbstractPersistentConstraint extends AbstractConstraint implements PersistentConstraint {
 
     protected ApplicationContext applicationContext;
+    protected SessionFactory sessionFactory;
+    protected String sessionFactoryBeanName;
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    public HibernateTemplate getHibernateTemplate() {
-        Assert.state(applicationContext != null, "AbstractPersistentConstraint requires an instance of ApplicationContext, but it was null");
-
-        if (applicationContext.containsBean("sessionFactory")) {
-            return new HibernateTemplate((SessionFactory) applicationContext.getBean("sessionFactory"), true);
-        }
-        return null;
+    public void setSessionFactoryBeanName(String name) {
+        sessionFactoryBeanName = name;
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.validation.ConstrainedProperty.AbstractConstraint#validate(java.lang.Object, org.springframework.validation.Errors)
-     */
-    @Override
-    public void validate(Object target, Object propertyValue, Errors errors) {
-        Assert.state(getHibernateTemplate() != null, "PersistentConstraint requires an instance of HibernateTemplate.");
-        super.validate(target, propertyValue, errors);
+    public HibernateTemplate getHibernateTemplate() {
+        return new HibernateTemplate(
+            applicationContext.getBean(sessionFactoryBeanName, SessionFactory.class), true);
     }
 }

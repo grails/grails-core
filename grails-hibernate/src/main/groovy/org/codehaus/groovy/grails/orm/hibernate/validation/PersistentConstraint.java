@@ -19,7 +19,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
- * Interface that defines a persistent constraint that evaluates the database.
+ * Defines a persistent constraint that evaluates the database.
  *
  * @author Graeme Rocher
  * @since 10-Nov-2005
@@ -27,9 +27,11 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 public interface PersistentConstraint extends Constraint, ApplicationContextAware {
 
     /**
-     * Obtains the HibernateTemplate
+     * Obtains the HibernateTemplate.
      *
-     * @return The HibernateTemplate instance
+     * @return the template
      */
     HibernateTemplate getHibernateTemplate();
+
+    void setSessionFactoryBeanName(String name);
 }

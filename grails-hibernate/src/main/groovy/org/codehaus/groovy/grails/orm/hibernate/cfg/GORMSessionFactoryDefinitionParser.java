@@ -166,6 +166,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
             validatorDef.setBeanClass(HibernateDomainClassValidator.class);
             validatorDef.getPropertyValues().addPropertyValue("messageSource", new RuntimeBeanReference(messageSourceRef));
             validatorDef.getPropertyValues().addPropertyValue("domainClass", new RuntimeBeanReference(domainRef));
+            validatorDef.getPropertyValues().addPropertyValue("sessionFactory", new RuntimeBeanReference("sessionFactory"));
             targetRegistry.registerBeanDefinition(entityClass.getName()+"Validator",validatorDef);
         }
 

@@ -15,24 +15,26 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.artefact.Enhanced
 import grails.util.ClosureToMapPopulator
 import grails.util.GrailsUtil
+
+import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.domain.GormApiSupport
+import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.springframework.beans.BeanUtils
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
+import org.springframework.datastore.mapping.model.MappingContext
+import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import grails.artefact.Enhanced
-import org.codehaus.groovy.grails.domain.GormApiSupport
-import org.springframework.datastore.mapping.model.MappingContext
 import org.springframework.validation.Validator
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -58,8 +60,7 @@ class DomainClassGrailsPlugin {
              defaultConstraints = defaultConstraintsMap
         }
 
-        grailsDomainClassMappingContext(org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext,application)
-
+        grailsDomainClassMappingContext(GrailsDomainClassMappingContext, application)
 
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!

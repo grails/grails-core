@@ -19,6 +19,8 @@ import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -234,18 +236,17 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     // Support for Serialization, not sure if Hibernate really requires Serialization support for Interceptors
 
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+    private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeBoolean(failOnError);
         out.writeObject(failOnErrorPackages);
     }
 
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         failOnError = in.readBoolean();
         failOnErrorPackages = (List)in.readObject();
         eventListeners = new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
         cachedShouldTrigger = new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
     }
-
 
     /*
      * TODO: This is a horrible hack due to a bug in Hibernate's post-insert event processing (HHH-3904)

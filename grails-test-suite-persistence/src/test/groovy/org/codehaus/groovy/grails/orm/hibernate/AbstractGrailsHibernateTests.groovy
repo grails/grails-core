@@ -153,6 +153,7 @@ hibernate {
             TransactionSynchronizationManager.unbindResource(sessionFactory)
             SessionFactoryUtils.releaseSession(s, sessionFactory)
         }
+
         def classMetadata = sessionFactory.allClassMetadata
         for (entry in classMetadata) {
             ClassMetadata metadata = entry.value
@@ -182,9 +183,9 @@ hibernate {
         ctx = null
         appCtx = null
 
-
         ExpandoMetaClass.disableGlobally()
         RequestContextHolder.setRequestAttributes(null)
+        PluginManagerHolder.setPluginManager(null)
 
         originalHandler = null
 
@@ -206,7 +207,7 @@ hibernate {
 
     protected List configurePlugins() {
         mockManager = new MockGrailsPluginManager(ga)
-        
+
         ctx.registerMockBean("pluginManager", mockManager)
         PluginManagerHolder.setPluginManager(mockManager)
 
