@@ -65,12 +65,10 @@ class ControllersGrailsPlugin {
 
         grailsControllerHelper(MixedGrailsControllerHelper) { bean->
             grailsApplication = ref('grailsApplication')
-            bean.scope = 'prototype'
         }
 
         mainSimpleController(SimpleGrailsController) { bean ->
             grailsControllerHelper = ref('grailsControllerHelper')
-			bean.scope = 'prototype'
         }
 
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
