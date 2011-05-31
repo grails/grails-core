@@ -68,8 +68,9 @@ class ControllersGrailsPlugin {
             bean.scope = 'prototype'
         }
 
-        mainSimpleController(SimpleGrailsController) {
+        mainSimpleController(SimpleGrailsController) { bean ->
             grailsControllerHelper = ref('grailsControllerHelper')
+			bean.scope = 'prototype'
         }
 
         def handlerInterceptors = springConfig.containsBean("localeChangeInterceptor") ? [ref("localeChangeInterceptor")] : []
