@@ -197,8 +197,8 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             String viewName, GrailsWebRequest webRequest, Map params) {
         // Step 5a: Check if there is a before interceptor if there is execute it
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        HttpServletResponse response = webRequest.getResponse();
-        HttpServletRequest request = webRequest.getRequest();
+        HttpServletResponse response = webRequest.getCurrentResponse();
+        HttpServletRequest request = webRequest.getCurrentRequest();
         try {
             // Step 6: get action from implementation
             Object action = retrieveAction(controller, actionName, response);

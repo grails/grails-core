@@ -177,7 +177,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
 
     private boolean getMultipartDisabled() {
         GrailsApplication app = WebUtils.lookupApplication(servletContext);
-        Object disableMultipart = app.getConfig().flatten().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
+        Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
         boolean disabled = false;
         if (disableMultipart instanceof Boolean) {
             disabled = ((Boolean) disableMultipart).booleanValue();
