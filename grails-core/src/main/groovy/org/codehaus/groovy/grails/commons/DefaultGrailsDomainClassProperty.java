@@ -565,8 +565,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
             List<DefaultGrailsDomainClassProperty> props = new ArrayList<DefaultGrailsDomainClassProperty>();
             Collection<String> embeddedNames = getEmbeddedList();
-            for (int i = 0; i < descriptors.length; i++) {
-                PropertyDescriptor descriptor = descriptors[i];
+            for (PropertyDescriptor descriptor : descriptors) {
                 if (isPersistentProperty(descriptor)) {
                     DefaultGrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(
                             this, descriptor);

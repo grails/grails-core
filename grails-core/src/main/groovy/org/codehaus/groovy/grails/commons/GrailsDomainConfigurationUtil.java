@@ -15,6 +15,10 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.GroovyObject;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import org.springframework.validation.Errors;
 
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
@@ -28,20 +32,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
-
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import java.util.*;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration.
@@ -294,7 +285,8 @@ public class GrailsDomainConfigurationUtil {
      */
     public static boolean isNotConfigurational(PropertyDescriptor descriptor) {
         final String name = descriptor.getName();
-        return !name.equals(GrailsDomainClassProperty.META_CLASS) &&
+        return !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
+               !name.equals(GrailsDomainClassProperty.META_CLASS) &&
                !name.equals(GrailsDomainClassProperty.CLASS) &&
                !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
                !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
