@@ -99,6 +99,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected Resource[] resources;
     protected boolean initialised = false;
     protected ConfigObject config;
+    protected Map flatConfig;
 
     /**
      * Creates a new empty Grails application.
@@ -370,17 +371,23 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         if (this.config == null) {
             config = ConfigurationHelper.loadConfigFromClasspath(this);
+
+            if(config !=null)
+                flatConfig = config.flatten();
         }
         return config;
     }
 
     public void setConfig(ConfigObject config) {
         this.config = config;
+
+        if(config != null)
+            this.flatConfig = config.flatten();
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> getFlatConfig() {
-        return config != null ? config.flatten() : Collections.<String, String>emptyMap();
+        return flatConfig != null ? flatConfig : Collections.<String, String>emptyMap();
     }
 
     /**
