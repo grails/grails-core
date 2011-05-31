@@ -99,7 +99,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected Resource[] resources;
     protected boolean initialised = false;
     protected ConfigObject config;
-    protected Map flatConfig;
+    protected Map flatConfig = Collections.emptyMap();
 
     /**
      * Creates a new empty Grails application.
@@ -368,26 +368,24 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     public ConfigObject getConfig() {
-
         if (this.config == null) {
-            config = ConfigurationHelper.loadConfigFromClasspath(this);
-
-            if(config !=null)
-                flatConfig = config.flatten();
+            setConfig(ConfigurationHelper.loadConfigFromClasspath(this));
         }
         return config;
     }
 
     public void setConfig(ConfigObject config) {
         this.config = config;
-
-        if(config != null)
+        if(config != null) {
             this.flatConfig = config.flatten();
+        } else {
+        	this.flatConfig = Collections.emptyMap();
+        }
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> getFlatConfig() {
-        return flatConfig != null ? flatConfig : Collections.<String, String>emptyMap();
+        return flatConfig;
     }
 
     /**
@@ -867,6 +865,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public void configChanged() {
         ConfigObject co = getConfig();
+        // not thread safe
+        this.flatConfig = co.flatten();
         final ArtefactHandler[] handlers = getArtefactHandlers();
         for (ArtefactHandler handler : handlers) {
             if (handler instanceof GrailsConfigurationAware) {
