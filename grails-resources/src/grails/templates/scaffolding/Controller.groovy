@@ -24,14 +24,14 @@ class ${className}Controller {
             return
         }
 
-        flash.message = lookupMessage('default.created.message', ${propertyName}.id)
+		flash.message = message(code: 'default.created.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
         redirect(action: "show", id: ${propertyName}.id)
     }
 
     def show = {
         def ${propertyName} = ${className}.get(params.id)
         if (!${propertyName}) {
-            flash.message = lookupNotFoundMessage(params.id)
+			flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
             redirect(action: "list")
             return
         }
@@ -42,7 +42,7 @@ class ${className}Controller {
     def edit = {
         def ${propertyName} = ${className}.get(params.id)
         if (!${propertyName}) {
-            flash.message = lookupNotFoundMessage(params.id)
+            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
             redirect(action: "list")
             return
         }
@@ -53,7 +53,7 @@ class ${className}Controller {
     def update = {
         def ${propertyName} = ${className}.get(params.id)
         if (!${propertyName}) {
-            flash.message = lookupNotFoundMessage(params.id)
+            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
             redirect(action: "list")
             return
         }
@@ -76,34 +76,26 @@ class ${className}Controller {
             return
         }
 
-        flash.message = lookupMessage('default.updated.message', ${propertyName}.id)
+		flash.message = message(code: 'default.updated.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
         redirect(action: "show", id: ${propertyName}.id)
     }
 
     def delete = {
         def ${propertyName} = ${className}.get(params.id)
         if (!${propertyName}) {
-            flash.message = lookupNotFoundMessage(params.id)
+			flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
             redirect(action: "list")
             return
         }
 
         try {
             ${propertyName}.delete(flush: true)
-            flash.message = lookupMessage('default.deleted.message', params.id)
+			flash.message = message(code: 'default.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
             redirect(action: "list")
         }
         catch (DataIntegrityViolationException e) {
-            flash.message = lookupMessage('default.not.deleted.message', params.id)
+			flash.message = message(code: 'default.not.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
             redirect(action: "show", id: params.id)
         }
-    }
-
-    private String lookupMessage(String code, id) {
-        message(code: code, args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
-    }
-
-    private String lookupNotFoundMessage(id) {
-        lookupMessage('default.not.found.message', id)
     }
 }
