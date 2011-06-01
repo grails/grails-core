@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import org.springframework.orm.hibernate3.SessionFactoryUtils
-import org.springframework.orm.hibernate3.SessionHolder
-import org.springframework.transaction.support.TransactionSynchronizationManager
-
 includeTargets << grailsScript('_GrailsBootstrap')
 
 /*
@@ -35,20 +31,20 @@ target(runScript: 'Main implementation that executes the specified script(s) aft
         System.exit 1
     }
 
-    configureHibernateSession()
-
-    for (scriptFile in argsMap.params) {
-        event('StatusUpdate', ["Running script $scriptFile ..."])
-        executeScript scriptFile, classLoader
-        event('StatusUpdate', ["Script $scriptFile complete!"])
+    def persistenceInterceptor = appCtx.containsBean('persistenceInterceptor') ? appCtx.persistenceInterceptor : null
+    persistenceInterceptor?.init()
+    try {
+        for (scriptFile in argsMap.params) {
+            event('StatusUpdate', ["Running script $scriptFile ..."])
+            executeScript scriptFile, classLoader
+            event('StatusUpdate', ["Script $scriptFile complete!"])
+        }
+    } finally {
+        persistenceInterceptor?.flush()
+        persistenceInterceptor?.destroy()
     }
 }
 
-def configureHibernateSession() {
-    // bind a Hibernate Session to avoid lazy initialization exceptions
-    TransactionSynchronizationManager.bindResource(appCtx.sessionFactory,
-        new SessionHolder(SessionFactoryUtils.getSession(appCtx.sessionFactory, true)))
-}
 
 def executeScript(scriptFile, classLoader) {
     File script = new File(scriptFile)
