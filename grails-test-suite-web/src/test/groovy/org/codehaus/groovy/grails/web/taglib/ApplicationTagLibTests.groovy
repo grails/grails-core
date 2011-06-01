@@ -4,12 +4,15 @@ import grails.util.GrailsUtil
 
 import javax.servlet.http.Cookie
 
+import groovy.mock.interceptor.StubFor
+
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.springframework.mock.web.MockHttpServletResponse
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
@@ -49,6 +52,43 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
         template = '${resource(dir:"images",file:"foo.jpg")}'
         assertOutputEquals '/test/images/foo.jpg', template
+    }
+
+    def replaceMetaClass(Class c) {
+        def old = c.metaClass
+
+        // Create a new EMC for the class and attach it.
+        def emc = new ExpandoMetaClass(c, true, true)
+        emc.initialize()
+        GroovySystem.metaClassRegistry.setMetaClass(c, emc)
+        
+        return old
+    }
+    
+    void testResourceTagDirOnly() {
+        request.contextPath = '/test'
+        def template = '${resource(dir:"jquery")}'
+        assertOutputEquals '/test/jquery', template
+    }
+
+    void testResourceTagDirOnlyWithResourcesHooks() {
+        request.contextPath = '/test'
+        def template = '${resource(dir:"jquery")}'
+
+        def oldMC = replaceMetaClass(ApplicationTagLib)
+
+        // Dummy r.resource impl
+        def mockRes = [
+            resource: { attrs -> "WRONG"}
+        ]
+        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, "g:resource")
+        tagLibrary.clazz.metaClass.getR = { -> mockRes }
+        tagLibrary.clazz.metaClass.getResourceService = { -> [something:'value'] }
+        try {
+            assertOutputEquals '/test/jquery', template
+        } finally {
+            ApplicationTagLib.metaClass = oldMC
+        }
     }
 
     void testUseJessionIdWithCreateLink() {

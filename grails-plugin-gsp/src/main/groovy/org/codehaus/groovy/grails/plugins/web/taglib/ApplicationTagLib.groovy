@@ -136,7 +136,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (pageScope.pluginContextPath) {
             attrs.pluginContextPath = pageScope.pluginContextPath
         }
-        out << (resourceService ? r.resource(attrs) : linkGenerator.resource(attrs))
+        // Use resources plugin if present, but only if file is specified - resources require files
+        // But users often need to link to a folder just using dir
+        out << ((resourceService && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
     }
 
     /**
