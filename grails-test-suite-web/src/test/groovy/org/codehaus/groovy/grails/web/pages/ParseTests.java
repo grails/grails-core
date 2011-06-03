@@ -66,7 +66,7 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
+            "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
@@ -82,9 +82,9 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
+            "registerSitemeshPreprocessMode()\n" +
 
-            "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,null)\n" +
+            "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,-1)\n" +
             "}\n" + GSP_FOOTER;
 
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
@@ -125,7 +125,7 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
+            "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
@@ -162,7 +162,7 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
+            "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output.generatedGsp));
@@ -209,7 +209,7 @@ public class ParseTests extends TestCase {
                  "  <tt:form />\n" +
                  "</tbody>").generatedGsp;
          System.out.println("output = " + output);
-         assertTrue("should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',2,[:],null)") > -1);
+         assertTrue("should have call to tag with 'tt' namespace", output.indexOf("invokeTag('form','tt',2,[:],-1)") > -1);
      }
 
      public void testParseWithWhitespaceNotEaten() throws Exception {
@@ -220,9 +220,9 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
+            "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
-            "codecOut.print(evaluate('uri', 3, it) { return uri })\n" +
+            GroovyPage.CODEC_OUT_STATEMENT + ".print(evaluate('uri', 3, it) { return uri })\n" +
             "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
 
@@ -248,9 +248,9 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
-            "body1 = createClosureForHtmlPart(0)\n" +
-            "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }] as GroovyPageAttributes,body1)\n" +
+            "registerSitemeshPreprocessMode()\n" +
+            "createClosureForHtmlPart(0, 1)\n" +
+            "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }] as GroovyPageAttributes,1)\n" +
             "}\n" + GSP_FOOTER;
          assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
          assertEquals("text", result.htmlParts[0]);
@@ -280,12 +280,12 @@ public class ParseTests extends TestCase {
             "public Object run() {\n" +
             "def out = getOut()\n" +
             "def codecOut = getCodecOut()\n"+
-            "registerSitemeshPreprocessMode(request)\n" +
+            "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
-            "createTagBody('body1', { bodyit1 -> \n" +
-            "invokeTag('captureMeta','sitemesh',1,['gsp_sm_xmlClosingForEmptyTag':evaluate('\"/\"', 1, it) { return \"/\" },'name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }] as GroovyPageAttributes,null)\n" +
+            "createTagBody(1, { bodyit1 -> \n" +
+            "invokeTag('captureMeta','sitemesh',1,['gsp_sm_xmlClosingForEmptyTag':evaluate('\"/\"', 1, it) { return \"/\" },'name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }] as GroovyPageAttributes,-1)\n" +
             "})\n" +
-            "invokeTag('captureHead','sitemesh',1,[:],body1)\n" +
+            "invokeTag('captureHead','sitemesh',1,[:],1)\n" +
             "printHtmlPart(1)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));

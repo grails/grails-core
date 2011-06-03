@@ -36,10 +36,12 @@ class Test2TagLib {
 class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
     String getGroovyPageFileName() { "test" }
     def run() {
-        invokeTag("tag1", [attr1:"test"]) {
+        setBodyClosure(1) {
             out << "foo"
             ""
         }
+        invokeTag("tag1", 'g', -1, [attr1:"test"], 1)
+        
         def tagResult=tag3([:], new GroovyPage.ConstantClosure('TEST'))?.toString()
         if (tagResult != 'TEST') {
                 out << '<ERROR in tag3 output>' << tagResult

@@ -485,9 +485,9 @@ public class GroovyPageParser implements Tokens {
         String text = scan.getToken().trim();
         text = getExpressionText(text);
         if (text != null && text.length() > 2 && text.startsWith("(") && text.endsWith(")")) {
-            out.printlnToResponse(GroovyPage.CODEC_OUT, text.substring(1,text.length()-1));
+            out.printlnToResponse(GroovyPage.CODEC_OUT_STATEMENT, text.substring(1,text.length()-1));
         } else {
-            out.printlnToResponse(GroovyPage.CODEC_OUT, text);
+            out.printlnToResponse(GroovyPage.CODEC_OUT_STATEMENT, text);
         }
     }
 
@@ -722,7 +722,7 @@ public class GroovyPageParser implements Tokens {
             out.println("def out = getOut()");
             out.println("def codecOut = getCodecOut()");
             if (sitemeshPreprocessMode) {
-                out.println("registerSitemeshPreprocessMode(request)");
+                out.println("registerSitemeshPreprocessMode()");
             }
         }
 
@@ -931,9 +931,9 @@ public class GroovyPageParser implements Tokens {
             }
         }
         else {
-            String bodyTagClosureName = "null";
+            int bodyTagIndex = -1;
             if (!tm.emptyTag && !tm.bufferMode) {
-                bodyTagClosureName = "body" + tagIndex;
+            	bodyTagIndex = tagIndex;
                 out.println("})");
                 closureLevel--;
             }
@@ -943,8 +943,8 @@ public class GroovyPageParser implements Tokens {
                     //out.print("def ");
                     bodyVarsDefined.add(tm.tagIndex);
                 }
-                out.println("body" + tm.tagIndex + " = createClosureForHtmlPart(" + tm.bufferPartNumber + ")");
-                bodyTagClosureName = "body" + tm.tagIndex;
+                out.println("createClosureForHtmlPart(" + tm.bufferPartNumber + ", " + tm.tagIndex + ")");
+                bodyTagIndex = tm.tagIndex;
                 tm.bufferMode = false;
             }
 
@@ -954,18 +954,23 @@ public class GroovyPageParser implements Tokens {
                         uri + "')?.getTag('" + tagName + "')");
                 out.println("if (!jspTag) throw new GrailsTagException('Unknown JSP tag " +
                         ns + ":" + tagName + "')");
-                out.println("jspTag.doTag(out," + attrsVarsMapDefinition.get(tagIndex) + ", " +
-                        bodyTagClosureName + ")");
+                out.print("jspTag.doTag(out," + attrsVarsMapDefinition.get(tagIndex) + ",");
+                if(bodyTagIndex > -1) {
+                	out.print("getBodyClosure(" + bodyTagIndex + ")");
+                } else {
+                	out.print("null");
+                }
+                out.println(")");
             }
             else {
                 if (tm.hasAttributes) {
                     out.println("invokeTag('" + tagName + "','" + ns + "'," +
                             getCurrentOutputLineNumber() + "," + attrsVarsMapDefinition.get(tagIndex) +
-                            "," + bodyTagClosureName + ")");
+                            "," + bodyTagIndex + ")");
                 }
                 else {
                     out.println("invokeTag('" + tagName + "','" + ns + "'," +
-                            getCurrentOutputLineNumber() + ",[:]," + bodyTagClosureName + ")");
+                            getCurrentOutputLineNumber() + ",[:]," + bodyTagIndex + ")");
                 }
             }
         }
@@ -1108,7 +1113,7 @@ public class GroovyPageParser implements Tokens {
                 //out.print("def ");
                 bodyVarsDefined.add(tm.tagIndex);
             }
-            out.println("createTagBody('body" + tm.tagIndex + "', { bodyit" + tm.tagIndex +" -> ");
+            out.println("createTagBody(" + tm.tagIndex + ", { bodyit" + tm.tagIndex +" -> ");
             closureLevel++;
         }
     }

@@ -21,6 +21,10 @@ class OutScopeTagLib {
     def local = { attrs, body ->
         out << body(attrs.vars)
     }
+    
+    def ittest = { attrs, body ->
+		out << body('hello')
+    }
 }
         '''
     }
@@ -40,8 +44,11 @@ class OutScopeTagLib {
 
     // test for GRAILS-2675
     void testRestoreOuterVariableNamesWithBodyArguments() {
-        def template = '<g:set var="counter" value="${1}"/><g:threeTimes var="counter">${counter++}</g:threeTimes>${counter}'
-        assertOutputEquals '0121', template
+        def template = '<g:set var="counter" value="${9}"/><g:threeTimes var="counter">${counter++}</g:threeTimes>${counter}'
+        assertOutputEquals '0129', template
+		
+		template = '<g:set var="counter" value="${1}"/><g:threeTimes var="counter">${counter}</g:threeTimes>${counter}'
+		assertOutputEquals '0121', template
     }
 
     // test for GRAILS-7306
@@ -49,4 +56,10 @@ class OutScopeTagLib {
         def template = '''<g:set var="foo" value="parentFooVal"/><g:set var="bar" value="${null}"/><g:local vars="[foo:'innerFooVal', bar:'nonNullVal']" someValue="nonNull" var="counter">inner foo: ${foo}, inner bar: ${bar}</g:local> outer foo: ${foo}, outer bar: ${bar}'''
         assertOutputEquals 'inner foo: innerFooVal, inner bar: nonNullVal outer foo: parentFooVal, outer bar: ', template
     }
+	
+	void testBodyIt() {
+		def template = '''<g:set var="it" value=" world"/><g:ittest>${it}</g:ittest>${it}'''
+		assertOutputEquals 'hello world', template
+	}
+
 }

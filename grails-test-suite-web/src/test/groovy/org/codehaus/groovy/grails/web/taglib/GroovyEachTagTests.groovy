@@ -16,7 +16,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test?.each { it ->"+System.getProperty("line.separator"), sw.toString())
+        assertEquals("test?.each { "+System.getProperty("line.separator"), sw.toString())
     }
 
     void testSimpleEach() {
@@ -32,7 +32,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test.each { it ->"+ System.getProperty("line.separator"),sw.toString())
+        assertEquals("test.each { "+ System.getProperty("line.separator"),sw.toString())
     }
 
     void testEachWithVar() {

@@ -16,7 +16,7 @@ public String getGroovyPageFileName() { "myTest" }
 public Object run() {
 def out = getOut()
 def codecOut = getCodecOut()
-registerSitemeshPreprocessMode(request)
+registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
 evaluate('"blah"', 2, it) { return "blah" }.each { t ->
@@ -38,7 +38,7 @@ public String getGroovyPageFileName() { "myTest" }
 public Object run() {
 def out = getOut()
 def codecOut = getCodecOut()
-registerSitemeshPreprocessMode(request)
+registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
 evaluate('"blah"', 1, it) { return "blah" }.each { t ->
@@ -60,7 +60,7 @@ public String getGroovyPageFileName() { "myTest2" }
 public Object run() {
 def out = getOut()
 def codecOut = getCodecOut()
-registerSitemeshPreprocessMode(request)
+registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
 evaluate('"blah"', 2, it) { return "blah" }.eachWithIndex { t,i ->

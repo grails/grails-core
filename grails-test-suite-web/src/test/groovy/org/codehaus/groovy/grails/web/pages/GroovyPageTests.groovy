@@ -96,8 +96,8 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
-                "body1 = { out.print('Boo!') }\n"+
-                "invokeTag('isaid',[:],body1)\n"+
+                "setBodyClosure(1) { out.print('Boo!') }\n"+
+                "invokeTag('isaid', 'g', -1, [:], 1)\n"+
                 "}\n"+
                 "}"
 
@@ -115,8 +115,8 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
                 "def out = getOut()\n"+
-                "body1 = { out.print('Boo!') }\n"+
-                "invokeTag('Person','foaf',[a:'b',c:'d'],body1)\n"+
+                "setBodyClosure(1) { out.print('Boo!') }\n"+
+                "invokeTag('Person','foaf', -1, [a:'b',c:'d'], 1)\n"+
                 "}\n"+
                 "}"
 

@@ -172,6 +172,7 @@ class GroovyPageWritable implements Writable {
 				throw new GroovyPagesException("Problem instantiating page class", e);
 			}
             page.setBinding(binding);
+            binding.setOwner(page);
             page.setJspTags(metaInfo.getJspTags());
             page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
             page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
@@ -199,6 +200,7 @@ class GroovyPageWritable implements Writable {
             }
             finally {
                 page.cleanup();
+                request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
             }
             if (debugTemplates) {
                 out.write("<!-- GSP #");
@@ -209,10 +211,7 @@ class GroovyPageWritable implements Writable {
                 out.write(String.valueOf(System.currentTimeMillis() - debugStartTimeMs));
                 out.write(" ms -->");
             }
-            if(parentBinding instanceof GroovyPageBinding) {
-            	request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
-            }
-        }
+  	    }
         return out;
     }
 
@@ -230,10 +229,7 @@ class GroovyPageWritable implements Writable {
         binding.setParent(parent);
         binding.setVariable("it", null);        
         if(additionalBinding != null) {
-        	for(Iterator<Map.Entry> i=additionalBinding.entrySet().iterator();i.hasNext();) {
-        		Map.Entry entry=i.next();
-        		binding.setVariable(String.valueOf(entry.getKey()), entry.getValue());
-        	}
+        	binding.addMap(additionalBinding);
         }
         binding.setPluginContextPath(metaInfo.getPluginPath());
         binding.setPagePlugin(metaInfo.getPagePlugin());
