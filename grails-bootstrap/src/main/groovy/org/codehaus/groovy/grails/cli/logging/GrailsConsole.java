@@ -208,6 +208,10 @@ public class GrailsConsole {
      * @param msg The message
      */
     public void updateStatus(String msg) {
+        outputMessage(msg, 1);
+    }
+
+    private void outputMessage(String msg, int replaceCount) {
         if (hasNewLines(msg)) {
             printMessageOnNewLine(msg);
             lastMessage = "";
@@ -218,7 +222,7 @@ public class GrailsConsole {
                 lastStatus = outputCategory(erasePreviousLine(categoryName), categoryName)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);
-                cursorMove = 1;
+                cursorMove = replaceCount;
             } else {
                 out.print(categoryName + msg);
             }
@@ -232,23 +236,7 @@ public class GrailsConsole {
      * @param msg The message
      */
     public void addStatus(String msg) {
-        cursorMove = 0;
-        if (hasNewLines(msg)) {
-            printMessageOnNewLine(msg);
-            lastMessage = "";
-        } else {
-            final String categoryName = category.toString();
-            if (Ansi.isEnabled()) {
-
-                lastStatus = outputCategory(ansi(), categoryName)
-                        .fg(Color.DEFAULT).a(msg).reset();
-                out.println(lastStatus);
-
-            } else {
-                out.print(categoryName + msg);
-            }
-            lastMessage = msg;
-        }
+        outputMessage(msg, 0);
     }
 
     private Ansi outputCategory(Ansi ansi, String categoryName) {
