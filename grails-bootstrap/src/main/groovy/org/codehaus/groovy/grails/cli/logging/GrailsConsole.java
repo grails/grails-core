@@ -36,7 +36,7 @@ import static org.fusesource.jansi.Ansi.Erase.FORWARD;
 import static org.fusesource.jansi.Ansi.ansi;
 
 /**
- * Utility class for delivery console output
+ * Utility class for delivering console output in a nicely formatted way
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -122,6 +122,10 @@ public class GrailsConsole {
 
     public String getLastMessage() {
         return lastMessage;
+    }
+
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
     }
 
     public ConsoleReader getReader() {
@@ -304,9 +308,11 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(String msg, Throwable error) {
-       error(error.getMessage());
-       StackTraceUtils.deepSanitize(error);
-       error.printStackTrace();
+       if(verbose) {
+           error(error.getMessage());
+           StackTraceUtils.deepSanitize(error);
+           error.printStackTrace();
+       }
        error(msg);
     }
 
@@ -323,27 +329,47 @@ public class GrailsConsole {
         }
     }
 
+    public void verbose(String msg) {
+        if(verbose) {
+            if (hasNewLines(msg)) {
+                out.println(msg);
+                out.println();
+                cursorMove = 0;
+                //updateStatus();
+            } else {
+                out.println(msg);
+                out.println();
+                cursorMove = 0;
+            }
+        }
+    }
+
     private void printMessageOnNewLine(String msg) {
         out.println(outputCategory(ansi(), category.toString())
                 .newline()
                 .fg(DEFAULT).a(msg).reset());
     }
 
+    /**
+     * Replays the last status message
+     */
     public void echoStatus() {
         if (lastStatus != null) {
             updateStatus(lastStatus.toString());
         }
     }
 
-    boolean hasNewLines(String msg) {
+    private boolean hasNewLines(String msg) {
         return msg.contains(LINE_SEPARATOR);
     }
 
     /**
-     * Prompts for user input
-     *
-     * @param msg The message for the prompt
-     * @return The input value
+     * Replacement for AntBuilder.input() to eliminate dependency of
+     * GrailsScriptRunner on the Ant libraries. Prints a message and
+     * returns whatever the user enters (once they press &lt;return&gt;).
+     * @param msg The message/question to display.
+     * @return The line of text entered by the user. May be a blank
+     * string.
      */
     public String userInput(String msg) {
         updateStatus(msg);
@@ -355,6 +381,21 @@ public class GrailsConsole {
         }
     }
 
+    /**
+     * Replacement for AntBuilder.input() to eliminate dependency of
+     * GrailsScriptRunner on the Ant libraries. Prints a message and
+     * list of valid responses, then returns whatever the user enters
+     * (once they press &lt;return&gt;). If the user enters something
+     * that is not in the array of valid responses, the message is
+     * displayed again and the method waits for more input. It will
+     * display the message a maximum of three times before it gives up
+     * and returns <code>null</code>.
+     * @param message The message/question to display.
+     * @param validResponses An array of responses that the user is
+     * allowed to enter. Displayed after the message.
+     * @return The line of text entered by the user, or <code>null</code>
+     * if the user never entered a valid string.
+     */
     public String userInput(String message, String[] validResponses) {
         if (validResponses == null) {
             return userInput(message);

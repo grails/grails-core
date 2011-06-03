@@ -175,8 +175,6 @@ target(allTests: "Runs the project's tests.") {
 
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
-
-            event("StatusUpdate", ["Starting $phase test phase"])
             event("TestPhaseStart", [phase])
 
             "${phase}TestPhasePreparation"()
@@ -272,12 +270,12 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def result = type.run(testEventPublisher)
             def end = new Date()
 
-            console.addStatus "Completed $testCount $type.name tests, ${result.failCount} failed in ${end.time - start.time}ms"
+            console.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
+			console.lastMessage = ""
 
             if (result.failCount > 0) testsFailed = true
             event("TestSuiteEnd", [type.name])
 
-			console.addStatus "Test phase $type.name complete."
         }
         catch (Exception e) {
 			console.error "Error running $type.name tests: ${e.toString()}", e
