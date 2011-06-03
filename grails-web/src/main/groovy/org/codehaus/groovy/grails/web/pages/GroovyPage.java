@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
@@ -45,7 +45,6 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-import org.springframework.context.ApplicationContext;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -84,7 +83,7 @@ public abstract class GroovyPage extends Script {
     public static final String SUFFIX = ".gsp";
     public static final String ACTION_NAME = "actionName";
 
-    public static final Collection<String> RESERVED_NAMES = Arrays.asList(
+    public static final Collection<String> RESERVED_NAMES = new HashSet<String>(Arrays.asList(
             REQUEST,
             SERVLET_CONTEXT,
             RESPONSE,
@@ -97,7 +96,7 @@ public abstract class GroovyPage extends Script {
             PARAMS,
             FLASH,
             PLUGIN_CONTEXT_PATH,
-            PAGE_SCOPE);
+            PAGE_SCOPE));
 
     private static final String BINDING = "binding";
     private static final String BLANK_STRING = "";
@@ -165,26 +164,12 @@ public abstract class GroovyPage extends Script {
     }
 
     @SuppressWarnings("rawtypes")
-    public void initRun(Writer target, GrailsWebRequest grailsWebRequest, Class codecClass) {
+    public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GrailsApplication grailsApplication, Class codecClass) {
         outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         out = outputStack.getProxyWriter();
         this.webRequest = grailsWebRequest;
-        final Map map = getBinding().getVariables();
-        GrailsApplication grailsApplication = null;
-
-        if (map.containsKey(APPLICATION_CONTEXT)) {
-            final ApplicationContext applicationContext = (ApplicationContext) map.get(APPLICATION_CONTEXT);
-            if (applicationContext != null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
-                final GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
-                pluginContextPath = pluginManager.getPluginPathForInstance(this);
-                grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-            }
-        }
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
-            if (grailsApplication == null) {
-                grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
-            }
         }
         getBinding().setVariable(OUT, out);
         if (codecClass != null) {
@@ -199,7 +184,11 @@ public abstract class GroovyPage extends Script {
         return pluginContextPath != null ? pluginContextPath : BLANK_STRING;
     }
 
-    public void cleanup() {
+    public void setPluginContextPath(String pluginContextPath) {
+		this.pluginContextPath = pluginContextPath;
+	}
+
+	public void cleanup() {
         outputStack.pop(true);
     }
 
@@ -262,17 +251,17 @@ public abstract class GroovyPage extends Script {
         // with the Groovy Truth
         if (BINDING.equals(property)) return getBinding();
 
-        Object value = getBinding().getVariables().get(property);
+        Object value = getBinding().getVariable(property);
         if (value != null) {
             return value;
         }
-
+        
         if (value == null) {
             MetaProperty mp = getMetaClass().getMetaProperty(property);
             if (mp != null) {
                 return mp.getProperty(this);
             }
-        }
+        }        
 
         if (value == null) {
             value = gspTagLibraryLookup!=null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
@@ -289,7 +278,7 @@ public abstract class GroovyPage extends Script {
                 getBinding().setVariable(property, value);
             }
         }
-
+        
         return value;
     }
 
@@ -479,7 +468,16 @@ public abstract class GroovyPage extends Script {
     @Override
     public Object invokeMethod(final String methodName, Object args) {
         if (methodName.equals("invokeTag")) return super.invokeMethod(methodName, args);
-
+        
+        if (methodName.equals("printHtmlPart") && args instanceof Object[]) {
+        	printHtmlPart((Integer)((Object[])args)[0]);
+        	return null;
+        }
+        if (methodName.equals("createTagBody") && args instanceof Object[]) {
+        	Object[] argArray = (Object[])args;
+        	createTagBody((String)argArray[0], (Closure)argArray[1]);
+        }
+        
         Map attrs = null;
         Object body = null;
         GroovyObject tagLib = getTagLibForDefaultNamespace(methodName);
@@ -659,9 +657,16 @@ public abstract class GroovyPage extends Script {
     }
 
     public void registerSitemeshPreprocessMode(HttpServletRequest request) {
-        GSPSitemeshPage page=(GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
-        if (page != null) {
-            page.setUsed(true);
-        }
+    	if(request != null) {
+	        GSPSitemeshPage page=(GSPSitemeshPage)request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+	        if (page != null) {
+	            page.setUsed(true);
+	        }
+    	}
+    }
+    
+    public void createTagBody(String variableName, Closure bodyClosure) {
+    	GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
+    	getBinding().setVariable(variableName, tagBody);
     }
 }

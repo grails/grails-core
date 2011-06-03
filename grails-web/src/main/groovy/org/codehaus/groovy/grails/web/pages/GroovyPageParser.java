@@ -86,7 +86,7 @@ public class GroovyPageParser implements Tokens {
 
     Set<Integer> bodyVarsDefined=new HashSet<Integer>();
     Map<Integer, String> attrsVarsMapDefinition=new HashMap<Integer, String>();
-
+    
     int closureLevel=0;
 
     /*
@@ -713,12 +713,14 @@ public class GroovyPageParser implements Tokens {
             out.println("public String getGroovyPageFileName() { \"" +
                     pageName.replaceAll("\\\\", "/") + "\" }");
             out.println("public Object run() {");
+            /*
             out.println("def params = binding.params");
             out.println("def request = binding.request");
             out.println("def flash = binding.flash");
             out.println("def response = binding.response");
-            out.println("def out = binding.out");
-            out.println("def codecOut = binding.codecOut");
+            */
+            out.println("def out = getOut()");
+            out.println("def codecOut = getCodecOut()");
             if (sitemeshPreprocessMode) {
                 out.println("registerSitemeshPreprocessMode(request)");
             }
@@ -969,6 +971,7 @@ public class GroovyPageParser implements Tokens {
         }
 
         tm.bufferMode = false;
+        
         tagIndex--;
     }
 
@@ -1061,6 +1064,7 @@ public class GroovyPageParser implements Tokens {
             }
 
             tag.doStartTag();
+            
             tm.instance = tag;
         }
         else {
@@ -1104,7 +1108,7 @@ public class GroovyPageParser implements Tokens {
                 //out.print("def ");
                 bodyVarsDefined.add(tm.tagIndex);
             }
-            out.println("body" + tm.tagIndex + " = new GroovyPageTagBody(this,binding.webRequest, {");
+            out.println("createTagBody('body" + tm.tagIndex + "', {");
             closureLevel++;
         }
     }
