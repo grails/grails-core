@@ -137,7 +137,6 @@ public class GrailsScriptRunner {
         }
         catch (Throwable t) {
             String msg = "Error executing script " + script.name + ": " + t.getMessage();
-            console.error(msg);
             sanitizeStacktrace(t);
             t.printStackTrace(System.out);
             exitWithError(msg);

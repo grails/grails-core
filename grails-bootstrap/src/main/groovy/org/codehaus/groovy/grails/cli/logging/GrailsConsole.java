@@ -34,7 +34,7 @@ import static org.fusesource.jansi.Ansi.Color.*;
 import static org.fusesource.jansi.Ansi.Erase.FORWARD;
 import static org.fusesource.jansi.Ansi.ansi;
 
- /**
+/**
  * Utility class for delivery console output
  *
  * @author Graeme Rocher
@@ -45,11 +45,12 @@ public class GrailsConsole {
 
     private static GrailsConsole instance;
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-     public static final String CATEGORY_SEPARATOR = " > ";
-     private StringBuilder maxIndicatorString;
+    public static final String CATEGORY_SEPARATOR = " > ";
+    private StringBuilder maxIndicatorString;
+    private int cursorMove;
 
-     public static GrailsConsole getInstance() {
-        if(instance == null) {
+    public static GrailsConsole getInstance() {
+        if (instance == null) {
             try {
                 instance = new GrailsConsole();
             } catch (IOException e) {
@@ -62,17 +63,17 @@ public class GrailsConsole {
     /**
      * The progress indicator to use
      */
-	String indicator = ".";
+    String indicator = ".";
     /**
      * The last message that was printed
      */
-	String lastMessage = "";
+    String lastMessage = "";
 
     Ansi lastStatus = null;
     /**
      * The reader to read info from the console
      */
-	ConsoleReader reader;
+    ConsoleReader reader;
 
     Terminal terminal;
 
@@ -81,17 +82,17 @@ public class GrailsConsole {
     /**
      * The category of the current output
      */
-	Stack<String> category = new Stack<String>() {
-		public String toString() {
-			if(size() == 1) return peek() + CATEGORY_SEPARATOR;
-			else {
-				return DefaultGroovyMethods.join(this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
-			}
-		}
-	};
+    Stack<String> category = new Stack<String>() {
+        public String toString() {
+            if (size() == 1) return peek() + CATEGORY_SEPARATOR;
+            else {
+                return DefaultGroovyMethods.join(this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
+            }
+        }
+    };
 
-	private GrailsConsole() throws IOException {
-
+    private GrailsConsole() throws IOException {
+        this.cursorMove = 1;
         this.out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
         System.setOut(new GrailsJConsolePrintStream(this.out));
@@ -102,108 +103,153 @@ public class GrailsConsole {
         // bit of a WTF this, but see no other way to allow a customization indicator
         this.maxIndicatorString = new StringBuilder().append(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
-		out.println();
-	}
+        out.println();
+    }
 
-     public InputStream getInput() {
-            return reader.getInput();
-     }
+    public InputStream getInput() {
+        return reader.getInput();
+    }
 
-     public String getLastMessage() {
-         return lastMessage;
-     }
+    public String getLastMessage() {
+        return lastMessage;
+    }
 
-     public ConsoleReader getReader() {
-         return reader;
-     }
+    public ConsoleReader getReader() {
+        return reader;
+    }
 
-     public Terminal getTerminal() {
-         return terminal;
-     }
+    public Terminal getTerminal() {
+        return terminal;
+    }
 
-     public PrintStream getOut() {
-         return out;
-     }
+    public PrintStream getOut() {
+        return out;
+    }
 
-     public Stack<String> getCategory() {
-         return category;
-     }
+    public Stack<String> getCategory() {
+        return category;
+    }
 
-     /**
+    /**
      * Indicates progresss with the default progress indicator
      */
-	void indicateProgress() {
-        if(StringUtils.hasText(lastMessage)) {
-            if(!lastMessage.contains(maxIndicatorString))
+    void indicateProgress() {
+        if (StringUtils.hasText(lastMessage)) {
+            if (!lastMessage.contains(maxIndicatorString))
                 updateStatus(lastMessage + indicator);
         }
-	}
+    }
 
     /**
      * Indicate progress for a number and total
      *
      * @param number The current number
-     * @param total The total number
+     * @param total  The total number
      */
-	public void indicateProgress(int number, int total) {
-		String currMsg = lastMessage;
-		try {
-			updateStatus(new StringBuilder(currMsg).append(' ').append(number).append(" of ").append(total).toString());
-		}
-		finally {
-			lastMessage = currMsg;
-		}
+    public void indicateProgress(int number, int total) {
+        String currMsg = lastMessage;
+        try {
+            updateStatus(new StringBuilder(currMsg).append(' ').append(number).append(" of ").append(total).toString());
+        } finally {
+            lastMessage = currMsg;
+        }
 
-	}
+    }
+
     /**
      * Indicates progress as a precentage for the given number and total
      *
      * @param number The number
-     * @param total The total
+     * @param total  The total
      */
-	public void indicateProgressPercentage(long number, long total) {
-		String currMsg = lastMessage;
-		try {
+    public void indicateProgressPercentage(long number, long total) {
+        String currMsg = lastMessage;
+        try {
             int percentage = Math.round(NumberMath.multiply(NumberMath.divide(number, total), 100).floatValue());
             String message = new StringBuilder(currMsg).append(' ').append(percentage).append('%').toString();
             updateStatus(message);
-		}
-		finally {
-			lastMessage = currMsg;
-		}
-	}
+        } finally {
+            lastMessage = currMsg;
+        }
+    }
+
     /**
      * Indicates progress by number
      *
      * @param number The number
      */
-	public void indicateProgress(int number) {
-		String currMsg = lastMessage;
-		try {
-			updateStatus(new StringBuilder(currMsg).append(' ').append(number).toString());
-		}
-		finally {
-			lastMessage = currMsg;
-		}
+    public void indicateProgress(int number) {
+        String currMsg = lastMessage;
+        try {
+            updateStatus(new StringBuilder(currMsg).append(' ').append(number).toString());
+        } finally {
+            lastMessage = currMsg;
+        }
 
-	}
+    }
+
     /**
      * Updates the current state message
      *
      * @param msg The message
      */
-	public void updateStatus(String msg) {
-        if(hasNewLines(msg)) {
+    public void updateStatus(String msg) {
+        if (hasNewLines(msg)) {
             printMessageOnNewLine(msg);
             lastMessage = "";
-        }
-        else {
+        } else {
             final String categoryName = category.toString();
-            lastStatus = ansi().cursorUp(1).cursorLeft(categoryName.length() + lastMessage.length()).eraseLine(FORWARD).fg(YELLOW).a(categoryName).fg(Color.DEFAULT).a(msg).reset();
-            out.println(lastStatus);
+            if (Ansi.isEnabled()) {
+
+                lastStatus = outputCategory(erasePreviousLine(categoryName), categoryName)
+                        .fg(Color.DEFAULT).a(msg).reset();
+                out.println(lastStatus);
+                cursorMove = 1;
+            } else {
+                out.print(categoryName + msg);
+            }
             lastMessage = msg;
         }
-	}
+    }
+
+    /**
+     * Keeps doesn't replace the status message
+     *
+     * @param msg The message
+     */
+    public void addStatus(String msg) {
+        if (hasNewLines(msg)) {
+            printMessageOnNewLine(msg);
+            lastMessage = "";
+        } else {
+            final String categoryName = category.toString();
+            if (Ansi.isEnabled()) {
+
+                lastStatus = outputCategory(ansi().newline(), categoryName)
+                        .fg(Color.DEFAULT).a(msg).reset();
+                out.println(lastStatus);
+                cursorMove = 1;
+            } else {
+                out.print(categoryName + msg);
+            }
+            lastMessage = msg;
+        }
+    }
+
+    private Ansi outputCategory(Ansi ansi, String categoryName) {
+        return ansi
+                .a(Ansi.Attribute.INTENSITY_BOLD)
+                .fg(YELLOW)
+                .a(categoryName)
+                .a(Ansi.Attribute.INTENSITY_BOLD_OFF);
+    }
+
+    private Ansi erasePreviousLine(String categoryName) {
+        return ansi()
+                .cursorUp(cursorMove)
+                .cursorLeft(categoryName.length() + lastMessage.length())
+                .eraseLine(FORWARD);
+    }
 
     /**
      * Prints an error message
@@ -211,51 +257,90 @@ public class GrailsConsole {
      * @param msg The error message
      */
     public void error(String msg) {
-        if(hasNewLines(msg)) {
-            out.println( ansi().fg(RED).a(category.toString()).reset());
-            out.println();
-            out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
-            out.println();
+        if (hasNewLines(msg)) {
+            if (Ansi.isEnabled()) {
+                out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).reset());
+                out.println();
+                out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
+                out.println();
+            } else {
+                out.println(category);
+                out.println();
+                out.println(msg);
+                out.println();
+            }
             //updateStatus();
-        }
-        else {
-            out.println( ansi().fg(RED).a(category.toString()).fg(Color.DEFAULT).a(msg).reset() );
+        } else {
+            if (Ansi.isEnabled()) {
+                out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).fg(Color.DEFAULT).a(msg).reset());
+            } else {
+                out.print(category.toString());
+                out.println(msg);
+            }
         }
 
-	}
+    }
 
     public void log(String msg) {
-        if(hasNewLines(msg)) {
+        if (hasNewLines(msg)) {
             out.println(msg);
             //updateStatus();
-        }
-        else {
+        } else {
             out.println(msg);
             //updateStatus();
         }
     }
 
-     private void printMessageOnNewLine(String msg) {
-         out.println(ansi().fg(YELLOW).a(category.toString()).newline().fg(DEFAULT).a(msg).reset());
-     }
+    private void printMessageOnNewLine(String msg) {
+        out.println(outputCategory(ansi(), category.toString())
+                .newline()
+                .fg(DEFAULT).a(msg).reset());
+    }
 
-     public void echoStatus() {
-         if(lastStatus != null) {
-             updateStatus(lastStatus.toString());
-         }
-     }
+    public void echoStatus() {
+        if (lastStatus != null) {
+            updateStatus(lastStatus.toString());
+        }
+    }
 
-     boolean hasNewLines(String msg) {
+    boolean hasNewLines(String msg) {
         return msg.contains(LINE_SEPARATOR);
     }
 
     /**
      * Prompts for user input
+     *
      * @param msg The message for the prompt
      * @return The input value
      */
-	public String userInput(String msg) throws IOException {
-		updateStatus(msg);
-		return reader.readLine("> ");
-	}
+    public String userInput(String msg) {
+        updateStatus(msg);
+        try {
+            cursorMove += 1;
+            return reader.readLine("> ");
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading input: " + e.getMessage());
+        }
+    }
+
+    public String userInput(String message, String[] validResponses) {
+        if (validResponses == null) {
+            return userInput(message);
+        } else {
+            String question = createQuestion(message, validResponses);
+            String response = userInput(question);
+            for (String validResponse : validResponses) {
+                if (response != null && response.equalsIgnoreCase(validResponse)) {
+                    return response;
+                }
+            }
+            cursorMove += 2;
+            return userInput("Invalid input. Must be one of ", validResponses);
+        }
+
+    }
+
+    private String createQuestion(String message, String[] validResponses) {
+        return new StringBuilder(message).append("[").append(DefaultGroovyMethods.join(validResponses, ",")).append("] ").toString();
+    }
 }
