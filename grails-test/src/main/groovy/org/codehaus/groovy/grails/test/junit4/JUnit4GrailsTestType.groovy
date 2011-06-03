@@ -15,22 +15,18 @@
  */
 package org.codehaus.groovy.grails.test.junit4
 
-import org.codehaus.groovy.grails.test.junit4.listener.SuiteRunListener
-import org.codehaus.groovy.grails.test.junit4.runner.GrailsTestCaseRunnerBuilder
-import org.codehaus.groovy.grails.test.junit4.result.JUnit4ResultGrailsTestTypeResultAdapter
-
-import org.codehaus.groovy.grails.test.GrailsTestTypeResult
-import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
-import org.codehaus.groovy.grails.test.support.GrailsTestTypeSupport
-import org.codehaus.groovy.grails.test.support.GrailsTestMode
-import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
-import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
-
-import org.junit.runners.Suite
-import org.junit.runner.Result
-import org.junit.runner.notification.RunNotifier
-
 import java.lang.reflect.Modifier
+import org.codehaus.groovy.grails.test.GrailsTestTypeResult
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
+import org.codehaus.groovy.grails.test.junit4.listener.SuiteRunListener
+import org.codehaus.groovy.grails.test.junit4.result.JUnit4ResultGrailsTestTypeResultAdapter
+import org.codehaus.groovy.grails.test.junit4.runner.GrailsTestCaseRunnerBuilder
+import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
+import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.codehaus.groovy.grails.test.support.GrailsTestTypeSupport
+import org.junit.runner.Result
+import org.junit.runners.Suite
 
 /**
  * An {@code GrailsTestType} for JUnit4 tests.
@@ -97,7 +93,8 @@ class JUnit4GrailsTestType extends GrailsTestTypeSupport {
     }
 
     protected createNotifier(eventPublisher) {
-        def notifier = new RunNotifier()
+        int total = suite.children.collect { it.children.size()}.sum()
+        def notifier = new GrailsTestRunNotifier(total)
         notifier.addListener(createListener(eventPublisher))
         notifier
     }
@@ -106,6 +103,7 @@ class JUnit4GrailsTestType extends GrailsTestTypeSupport {
         def notifier = createNotifier(eventPublisher)
         def result = new Result()
         notifier.addListener(result.createListener())
+
         suite.run(notifier)
 
         notifier.fireTestRunFinished(result)

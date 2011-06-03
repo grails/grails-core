@@ -26,5 +26,5 @@ target(default: "Clears a proxy configuration") {
 
     settingsFile.withWriter { w -> config.writeTo(w) }
 
-    println "Cleared proxy settings."
+    console.updateStatus "Cleared proxy settings."
 }

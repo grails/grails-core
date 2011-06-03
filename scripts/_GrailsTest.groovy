@@ -63,9 +63,6 @@ targetPhasesAndTypes = [:]
 // Passed to the test runners to facilitate event publishing
 testEventPublisher = new GrailsTestEventPublisher(event)
 
-// Add a listener to write test status updates to the console
-eventListener.addGrailsBuildListener(new GrailsTestEventConsoleReporter(System.out))
-
 // Add a listener to generate our JUnit reports.
 eventListener.addGrailsBuildListener(new JUnitReportProcessor())
 
@@ -178,7 +175,6 @@ target(allTests: "Runs the project's tests.") {
 
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
-            println()
 
             event("StatusUpdate", ["Starting $phase test phase"])
             event("TestPhaseStart", [phase])
@@ -265,9 +261,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
     if (testCount) {
         try {
             event("TestSuiteStart", [type.name])
-            println ""
-            println "-------------------------------------------------------"
-            println "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
+            console.updateStatus "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
 
             def start = new Date()
             def result = type.run(testEventPublisher)
@@ -277,10 +271,12 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
 
             if (result.failCount > 0) testsFailed = true
 
-            println "-------------------------------------------------------"
-            println "Tests passed: ${result.passCount}"
-            println "Tests failed: ${result.failCount}"
-            println "-------------------------------------------------------"
+            println """
+-------------------------------------------------------
+Tests passed: ${result.passCount}
+Tests failed: ${result.failCount}
+-------------------------------------------------------
+"""
             event("TestSuiteEnd", [type.name])
         }
         catch (Exception e) {

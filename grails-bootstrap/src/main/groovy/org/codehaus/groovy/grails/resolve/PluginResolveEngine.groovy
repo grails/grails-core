@@ -16,14 +16,14 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
-import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.report.ResolveReport
+import groovy.util.slurpersupport.GPathResult
 import org.apache.ivy.core.cache.ArtifactOrigin
-import org.apache.ivy.plugins.resolver.DependencyResolver
-import org.apache.ivy.plugins.resolver.RepositoryResolver
+import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.Repository
 import org.apache.ivy.plugins.repository.Resource
-import groovy.util.slurpersupport.GPathResult
+import org.apache.ivy.plugins.resolver.DependencyResolver
+import org.apache.ivy.plugins.resolver.RepositoryResolver
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 
 /**
  * Utility methods for resolving plugin zips and information
@@ -36,7 +36,7 @@ final class PluginResolveEngine {
 
     IvyDependencyManager dependencyManager
     BuildSettings settings
-    Closure messageReporter = { it ? println(it) : println() }
+    Closure messageReporter = { if(it) GrailsConsole.instance.updateStatus(it)  }
 
     PluginResolveEngine(IvyDependencyManager dependencyManager, BuildSettings settings) {
         this.dependencyManager = dependencyManager

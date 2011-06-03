@@ -31,7 +31,7 @@ class GrailsProjectPackager {
 
     GrailsProjectCompiler projectCompiler
     BuildSettings buildSettings
-    AntBuilder ant
+    private AntBuilder ant
 
     GrailsProjectPackager(GrailsProjectCompiler compiler) {
         this.projectCompiler = compiler
@@ -39,6 +39,12 @@ class GrailsProjectPackager {
         ant = compiler.ant
     }
 
+    AntBuilder getAnt() {
+       if(this.ant == null) {
+           this.ant = new AntBuilder()
+       }
+       return ant
+    }
     /**
      * Packages any config files such as Hibernate config, XML files etc.
      * to the projects resources directory
@@ -46,7 +52,6 @@ class GrailsProjectPackager {
      * @param from Where to package from
      */
     void packageConfigFiles(String from) {
-        def ant = new AntBuilder()
         def targetPath = buildSettings.resourcesDir.path
         def dir = new File(from, "grails-app/conf")
         if (dir.exists()) {

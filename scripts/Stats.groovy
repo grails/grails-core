@@ -80,15 +80,18 @@ target (default: "Generates basic stats for a Grails project") {
 
     def totalFiles = 0
     def totalLOC = 0
-
-    println '''
+	
+	def sw = new StringWriter()
+	def output = new PrintWriter(sw)
+	
+    output.println '''
     +----------------------+-------+-------+
     | Name                 | Files |  LOC  |
     +----------------------+-------+-------+'''
 
     pathToInfo.each { info ->
         if (info.filecount) {
-            println "    | " +
+            output.println "    | " +
                 info.name.padRight(20," ") + " | " +
                 info.filecount.toString().padLeft(5, " ") + " | " +
                 info.loc.toString().padLeft(5," ") + " | "
@@ -97,7 +100,9 @@ target (default: "Generates basic stats for a Grails project") {
         }
     }
 
-    println "    +----------------------+-------+-------+"
-    println "    | Totals               | " + totalFiles.toString().padLeft(5, " ") + " | " + totalLOC.toString().padLeft(5, " ") + " | "
-    println "    +----------------------+-------+-------+\n"
+    output.println "    +----------------------+-------+-------+"
+    output.println "    | Totals               | " + totalFiles.toString().padLeft(5, " ") + " | " + totalLOC.toString().padLeft(5, " ") + " | "
+    output.println "    +----------------------+-------+-------+\n"
+
+	println sw.toString()
 }

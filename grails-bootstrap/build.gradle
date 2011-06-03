@@ -29,6 +29,9 @@ dependencies {
     }
 
     // Ant
+    compile 'org.fusesource.jansi:jansi:1.2.1',
+            'jline:jline:0.9.94'
+
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
             "org.apache.ant:ant-junit:${antVersion}",
@@ -36,9 +39,8 @@ dependencies {
             "org.apache.ivy:ivy:${ivyVersion}",
             "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
 
-    runtime 'org.coconut.forkjoin:jsr166y:070108', // Dependency for parallel execution in Gpars
-            'org.fusesource.jansi:jansi:1.2.1',
-            'jline:jline:0.9.94'
+    runtime 'org.coconut.forkjoin:jsr166y:070108' // Dependency for parallel execution in Gpars
+
 }
 
 processResources{

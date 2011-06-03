@@ -61,10 +61,6 @@ For further info visit http://grails.org/Plugins
 }
 
 private printInstalledPlugins() {
-    println '''
-Plug-ins you currently have installed are listed below:
--------------------------------------------------------------
-'''
 
     def installedPlugins = []
     def pluginInfos = pluginSettings.getPluginInfos()
@@ -74,7 +70,12 @@ Plug-ins you currently have installed are listed below:
 
     if (installedPlugins) {
         installedPlugins.sort()
-        installedPlugins.each { println it }
+		    println """
+Plug-ins you currently have installed are listed below:
+-------------------------------------------------------------
+${installedPlugins.join(System.getProperty("line.separator"))}
+"""
+
     }
     else {
         println "You do not have any plugins installed."
@@ -82,10 +83,7 @@ Plug-ins you currently have installed are listed below:
 }
 
 private printRemotePluginList(name) {
-    println """
-Plugins available in the $name repository are listed below:
--------------------------------------------------------------
-"""
+
     def plugins = []
     use(DOMCategory) {
         pluginsList?.'plugin'.each {plugin ->
@@ -118,11 +116,15 @@ Plugins available in the $name repository are listed below:
     // Sort plugin descriptions
     if (plugins) {
         plugins.sort()
-        plugins.each {println it}
-        println ""
+		println """
+Plugins available in the $name repository are listed below:
+-------------------------------------------------------------
+${plugins.join(System.getProperty("line.separator"))}
+		"""
+
     }
     else {
-        println "No plugins found in repository: ${name}. This may be because the repository is behind an HTTP proxy."
+        console.error "No plugins found in repository: ${name}. This may be because the repository is behind an HTTP proxy."
     }
 }
 

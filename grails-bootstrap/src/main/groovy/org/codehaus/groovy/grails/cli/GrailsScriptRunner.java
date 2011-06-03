@@ -16,47 +16,17 @@
 package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
-import grails.util.CosineSimilarity;
-import grails.util.Environment;
-import grails.util.GrailsNameUtils;
+import grails.util.*;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
-
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.LogLevel;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
@@ -65,6 +35,19 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.util.ReflectionUtils;
+
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -108,7 +91,12 @@ public class GrailsScriptRunner {
             allArgs.append(" ").append(arg);
         }
 
+        GrailsConsole console = GrailsConsole.getInstance();
+        console.updateStatus("Initializing");
+
         ScriptAndArgs script = processArgumentsAndReturnScriptName(allArgs.toString().trim());
+
+        console.getCategory().push(script.inputName);
 
         // Get hold of the GRAILS_HOME environment variable if it is available.
         String grailsHome = System.getProperty("grails.home");
@@ -119,7 +107,7 @@ public class GrailsScriptRunner {
             build = new BuildSettings(new File(grailsHome));
         }
         catch (Exception e) {
-            System.err.println("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
+            console.error("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
             System.exit(1);
         }
 
@@ -129,20 +117,15 @@ public class GrailsScriptRunner {
             exitWithError("Grails' installation directory not found: " + build.getGrailsHome());
         }
 
-        // Show a nice header in the console when running commands.
-        System.out.println(
-"Welcome to Grails " + build.getGrailsVersion() + " - http://grails.org/" + '\n' +
-"Licensed under Apache Standard License 2.0" + '\n' +
-"Grails home is " + (grailsHome == null ? "not set" : "set to: " + grailsHome) + '\n');
 
         // If there aren't any arguments, then we don't have a command
         // to execute. So we have to exit.
         if (script.name == null) {
-            System.out.println("No script name specified. Use 'grails help' for more info or 'grails interactive' to enter interactive mode");
+            console.error("No script name specified. Use 'grails help' for more info or 'grails interactive' to enter interactive mode");
             System.exit(0);
         }
 
-        System.out.println("Base Directory: " + build.getBaseDir().getPath());
+        console.updateStatus("Base Directory: " + build.getBaseDir().getPath());
 
         try {
             int exitCode = new GrailsScriptRunner(build).executeCommand(
@@ -150,11 +133,11 @@ public class GrailsScriptRunner {
             System.exit(exitCode);
         }
         catch (ScriptNotFoundException ex) {
-            System.out.println("Script not found: " + ex.getScriptName());
+            console.error("Script not found: " + ex.getScriptName());
         }
         catch (Throwable t) {
             String msg = "Error executing script " + script.name + ": " + t.getMessage();
-            System.out.println(msg);
+            console.error(msg);
             sanitizeStacktrace(t);
             t.printStackTrace(System.out);
             exitWithError(msg);
@@ -162,7 +145,7 @@ public class GrailsScriptRunner {
     }
 
     private static void exitWithError(String error) {
-        System.out.println(error);
+        GrailsConsole.getInstance().error(error);
         System.exit(1);
     }
 
@@ -194,6 +177,7 @@ public class GrailsScriptRunner {
         if (paramName.charAt(0) == '-') {
             paramName = paramName.substring(1);
         }
+        info.inputName = paramName;
         info.name = GrailsNameUtils.getNameFromScript(paramName);
 
         if (currentParamIndex < splitArgs.length) {
@@ -288,11 +272,13 @@ public class GrailsScriptRunner {
             System.setProperty("grails.cli.args", "");
         }
 
+        GrailsConsole console = GrailsConsole.getInstance();
         // Load the BuildSettings file for this project if it exists. Note
         // that this does not load any environment-specific settings.
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
+            console.updateStatus("Loading build config");
             settings.loadConfig();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode", settings.getClassesDir().getAbsolutePath() + ',' + settings.getPluginClassesDir().getAbsolutePath());
@@ -419,6 +405,9 @@ public class GrailsScriptRunner {
         // The directory where scripts are cached.
         File scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
 
+        GrailsConsole console = GrailsConsole.getInstance();
+
+        console.updateStatus("Configuring classpath");
         // The class loader we will use to run Gant. It's the root
         // loader plus all the application's compiled classes.
         URLClassLoader classLoader;
@@ -522,7 +511,7 @@ public class GrailsScriptRunner {
                     out.println("Run 'grails help' for a complete list of available scripts.");
                     return -1;
                 }
-                out.println("Running script " + scriptFile.getFilename());
+
                 // We can now safely set the default environment
                 String scriptFileName = getScriptNameFromFile(scriptFile);
                 setRunningEnvironment(scriptFileName, env);
@@ -535,7 +524,7 @@ public class GrailsScriptRunner {
                 try {
                     gant.loadScript(scriptFile.getURL());
                 } catch (IOException e) {
-                    out.println("I/O exception loading script ["+e.getMessage()+"]: " + e.getMessage());
+                    console.error("I/O exception loading script [" + e.getMessage() + "]: " + e.getMessage());
                     return 1;
                 }
 
@@ -751,6 +740,7 @@ public class GrailsScriptRunner {
         Closure<?> c = settings.getGrailsScriptClosure();
         c.setDelegate(binding);
         binding.setVariable("grailsScript", c);
+        binding.setVariable("console", GrailsConsole.getInstance());
         binding.setVariable("grailsSettings", settings);
 
         // Add other binding variables, such as Grails version and environment.
@@ -801,7 +791,7 @@ public class GrailsScriptRunner {
         // TODO Remove this after 1.1 is released. Plugins should be
         // able to safely switch to "ant" by then (few people should
         // still be on 1.0.3 or earlier).
-        binding.setVariable("Ant", binding.getVariable("ant"));
+        setUIListener(binding);
 
         // Create binding variables that contain the locations of each of the
         // plugins loaded by the application. The name of each variable is of
@@ -839,6 +829,19 @@ public class GrailsScriptRunner {
         }
 
         return binding;
+    }
+
+    private void setUIListener(GantBinding binding) {
+        AntBuilder ant = (AntBuilder) binding.getVariable("ant");
+        binding.setVariable("Ant", ant);
+        Project project = ant.getProject();
+        project.addBuildListener(new GrailsConsoleBuildListener(GrailsConsole.getInstance()));
+        Vector buildListeners = project.getBuildListeners();
+        for (Object buildListener : buildListeners) {
+            if(buildListener instanceof BuildLogger) {
+                ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
+            }
+        }
     }
 
     protected void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
@@ -1140,6 +1143,7 @@ public class GrailsScriptRunner {
      * and the arguments to the command.
      */
     private static class ScriptAndArgs {
+        public String inputName;
         public String name;
         public String env;
         public String args;

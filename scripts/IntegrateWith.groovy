@@ -51,7 +51,7 @@ target(integrateWith:"Integrates ") {
                 "integrate${name}"()
             }
             catch (e) {
-                println "Error: failed to integrate [${key}] with Grails: ${e.message}"
+                console.error "Error: failed to integrate [${key}] with Grails: ${e.message}"
                 exit 1
             }
         }
@@ -67,7 +67,7 @@ target(integrateAnt:"Integrates Ant with Grails") {
         fileset(dir:integrationFiles, includes:"*.xml")
    }
     replaceTokens(["build.xml", "ivy.xml", "ivysettings.xml"])
-    println "Created Ant and Ivy builds files."
+    console.updateStatus "Created Ant and Ivy builds files."
 }
 
 target(integrateTextmate:"Integrates Textmate with Grails") {
@@ -79,7 +79,7 @@ target(integrateTextmate:"Integrates Textmate with Grails") {
     ant.move(file: "${basedir}/project.tmproj", tofile: "${basedir}/${grailsAppName}.tmproj", overwrite: true)
 
     replaceTokens(["*.tmproj"])
-    println "Created Textmate project files."
+    console.updateStatus "Created Textmate project files."
 }
 
 target(integrateEclipse:"Integrates Eclipse STS with Grails") {
@@ -90,7 +90,7 @@ target(integrateEclipse:"Integrates Eclipse STS with Grails") {
     }
 
     replaceTokens([".classpath", ".project"])
-    println "Created Eclipse project files."
+    console.updateStatus "Created Eclipse project files."
 }
 
 target(integrateIntellij:"Integrates Intellij with Grails") {
@@ -104,7 +104,7 @@ target(integrateIntellij:"Integrates Intellij with Grails") {
     ant.move(file: "${basedir}/ideaGrailsProject.iws", tofile: "${basedir}/${grailsAppName}.iws", overwrite: true)
 
     replaceTokens(["*.iml", "*.ipr"])
-    println "Created IntelliJ project files."
+    console.updateStatus "Created IntelliJ project files."
 }
 
 target(integrateGit:"Integrates Git with Grails") {
@@ -115,7 +115,7 @@ target(integrateGit:"Integrates Git with Grails") {
     ant.move(file: "${basedir}/grailsProject.gitignore", tofile: "${basedir}/.gitignore", overwrite: true)
 
     replaceTokens([".gitignore"])
-    println "Created Git project files."
+    console.updateStatus "Created Git project files."
 }
 
 target(unpackSupportFiles:"Unpacks the support files") {

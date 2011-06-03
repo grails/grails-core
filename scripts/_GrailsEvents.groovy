@@ -15,7 +15,7 @@
  */
 
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-
+import org.codehaus.groovy.grails.cli.logging.*
 /**
  * Gant script containing the Grails build event system.
  *
@@ -37,11 +37,12 @@ eventsClassLoader = new GroovyClassLoader(classLoader)
 // and application Events scripts are put in here.
 
 eventListener = new GrailsBuildEventListener(eventsClassLoader, binding, grailsSettings)
+def console = GrailsConsole.instance
 eventListener.globalEventHooks = [
-    StatusFinal: [ {message -> println message } ],
-    StatusUpdate: [ {message -> println message + ' ...' } ],
-    StatusError: [ {message -> System.err.println message } ],
-    CreatedArtefact: [ {artefactType, artefactName -> println "Created $artefactType for $artefactName" } ]
+    StatusFinal: [ {message -> console.updateStatus message } ],
+    StatusUpdate: [ {message -> console.updateStatus message } ],
+    StatusError: [ {message -> console.error message } ],
+    CreatedArtefact: [ {artefactType, artefactName -> console.updateStatus "Created $artefactType for $artefactName" } ]
 ]
 
 hooksLoaded = false

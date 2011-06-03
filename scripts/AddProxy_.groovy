@@ -24,7 +24,7 @@ target(default:"Adds a proxy configuration") {
     depends(parseArguments)
 
     if (!argsMap.params) {
-        println msg()
+        console.error msg()
         exit 1
     }
 
@@ -39,7 +39,7 @@ target(default:"Adds a proxy configuration") {
 
         settingsFile.withWriter { w -> config.writeTo(w) }
 
-        println "Added proxy ${argsMap.params[0]} to ${settingsFile}"
+        console.updateStatus "Added proxy ${argsMap.params[0]} to ${settingsFile}"
     }
     else {
         println msg()

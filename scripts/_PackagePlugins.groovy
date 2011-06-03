@@ -27,7 +27,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
  */
 
 packageFiles = { String from ->
-    def ant = new AntBuilder()
+	console.updateStatus "Packaging plugins"
+    def ant = new AntBuilder(ant.project)
     def targetPath = grailsSettings.resourcesDir.path
     def dir = new File(from, "grails-app/conf")
     if (dir.exists()) {
@@ -84,7 +85,7 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
                         }
                     }
                     catch (Exception e) {
-                        println "Error packaging plugin [${info.name}] : ${e.message}"
+                        console.error "Error packaging plugin [${info.name}] : ${e.message}"
                         exit 1
                     }
                 }
@@ -112,7 +113,7 @@ packagePluginsForWar = { targetDir ->
         }
         catch (Exception e) {
             e.printStackTrace(System.out)
-            println "Error packaging plugin [${info.name}] : ${e.message}"
+            console.error "Error packaging plugin [${info.name}] : ${e.message}"
         }
     }
 }

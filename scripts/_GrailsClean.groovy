@@ -31,6 +31,7 @@ includeTargets << grailsScript("_GrailsEvents")
 target (cleanAll: "Cleans a Grails project") {
     clean()
     cleanTestReports()
+	console.updateStatus "Application cleaned."
 }
 
 target (clean: "Implementation of clean") {

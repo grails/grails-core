@@ -257,11 +257,16 @@ readAllPluginXmlMetadata = {->
  */
 runPluginScript = { File scriptFile, fullPluginName, msg ->
     if (scriptFile.exists()) {
-        event("StatusUpdate", ["Executing ${fullPluginName} plugin $msg"])
         // instrumenting plugin scripts adding 'pluginBasedir' variable
-        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
-        // we are using text form of script here to prevent Gant caching
-        includeTargets << instrumentedInstallScript
+		try {
+	        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
+	        // we are using text form of script here to prevent Gant caching
+	        includeTargets << instrumentedInstallScript			
+		}
+		catch(e) {
+			console.error "Error executing plugin $fullPluginName script: $scriptFile"
+			exit 1
+		}		
     }
 }
 

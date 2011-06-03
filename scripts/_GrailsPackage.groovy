@@ -45,7 +45,7 @@ target(createConfig: "Creates the configuration object") {
             configClass = classLoader.loadClass("Config")
         }
         catch (ClassNotFoundException cnfe) {
-            println "WARNING: No config found for the application."
+            console.error "WARNING: No config found for the application."
         }
         if (configClass) {
             try {
@@ -66,7 +66,7 @@ target(createConfig: "Creates the configuration object") {
             config.merge(dataSourceConfig)
         }
         catch(ClassNotFoundException e) {
-            println "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
+            console.error "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
         }
         catch(Exception e) {
             logError("Error loading DataSource.groovy",e)
@@ -79,6 +79,8 @@ target(createConfig: "Creates the configuration object") {
 
 target(packageApp : "Implementation of package target") {
     depends(createStructure, packagePlugins, packageTlds)
+
+	console.updateStatus "Packaging Grails application"
 
     try {
         profile("compile") {
@@ -114,7 +116,7 @@ target(packageApp : "Implementation of package target") {
     if (nativeascii) {
         Thread.start {
             profile("converting native message bundles to ascii") {
-                def ant = new AntBuilder()
+                def ant = new AntBuilder(ant.project)
                 ant.native2ascii(src:"${basedir}/grails-app/i18n",
                                  dest:i18nDir,
                                  includes:"**/*.properties",
@@ -134,7 +136,7 @@ target(packageApp : "Implementation of package target") {
                                     def pluginDirName = pluginDir.name
                                     def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
                                     try {
-                                        def localAnt = new AntBuilder()
+                                        def localAnt = new AntBuilder(ant.project)
                                         localAnt.project.defaultInputStream = System.in
                                         localAnt.mkdir(dir:destDir)
                                         localAnt.native2ascii(src:file,
@@ -143,7 +145,7 @@ target(packageApp : "Implementation of package target") {
                                                          encoding:"UTF-8")
                                     }
                                     catch (e) {
-                                        println "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                                        console.error "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
                                     }
                                 }
                             }
@@ -269,51 +271,6 @@ target(packageTlds:"packages tld definitions for the correct servlet version") {
     copyGrailsResources("${basedir}/web-app/WEB-INF/tld", "web-app/WEB-INF/tld/${servletVersion}/*", false)
 }
 
-// Checks whether the project's sources have changed since the last
-// compilation, and then performs a recompilation if this is the case.
-// Returns the updated 'lastModified' value.
 recompileCheck = { lastModified, callback ->
-    try {
-        def ant = new AntBuilder()
-        ant.project.defaultInputStream = System.in
-
-        def classpathId = "grails.compile.classpath"
-        ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
-        ant.path(id:classpathId,compileClasspath)
-
-        ant.groovyc(destdir:classesDirPath,
-                    classpathref:classpathId,
-                    encoding:"UTF-8",
-                    verbose: grailsSettings.verboseCompile,
-                    listfiles: grailsSettings.verboseCompile,
-                    excludes: '**/package-info.java') {
-            src(path:"${grailsSettings.sourceDir}/groovy")
-            src(path:"${basedir}/grails-app/domain")
-            src(path:"${basedir}/grails-app/utils")
-            src(path:"${grailsSettings.sourceDir}/java")
-            javac(classpathref:classpathId, debug:"yes")
-        }
-        ant = null
-    }
-    catch(Exception e) {
-        compilationError = true
-        logError("Error automatically restarting container",e)
-    }
-
-    def tmp = classesDir.lastModified()
-    if (lastModified < tmp) {
-
-        // run another compile JIT
-        try {
-            callback()
-        }
-        catch(Exception e) {
-            logError("Error automatically restarting container",e)
-        }
-        finally {
-            lastModified = classesDir.lastModified()
-        }
-    }
-
-    return lastModified
+ // do nothing, here for compatibility
 }

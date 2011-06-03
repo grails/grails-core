@@ -71,7 +71,7 @@ target(createPlugin: "The implementation target")  {
     // Rename the plugin descriptor.
     pluginName = GrailsNameUtils.getNameFromScript(grailsAppName)
     if (!(pluginName ==~ /[a-zA-Z][a-zA-Z0-9-]+/)) {
-        println "Error: Specified plugin name [$grailsAppName] is invalid. Plugin names can only contain word characters and numbers separated by hyphens."
+        console.error "Error: Specified plugin name [$grailsAppName] is invalid. Plugin names can only contain word characters and numbers separated by hyphens."
         exit 1
     }
 

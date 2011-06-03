@@ -84,7 +84,7 @@ h2. Description
 And provide a detailed description
         '''
 
-        println "Example documentation created in ${basedir}/src/docs. Use 'grails doc' to publish."
+        console.updateStatus "Example documentation created in ${basedir}/src/docs. Use 'grails doc' to publish."
     }
     else {
         docsInternal()
@@ -178,7 +178,7 @@ target(refdocs:"Generates Grails style reference documentation") {
                 ant.mkdir(dir:refDir)
                 def refFile = new File("${refDir}/${m.name}.gdoc")
                 if (!refFile.exists()) {
-                    println "Generating documentation ${refFile}"
+                    console.updateStatus "Generating documentation ${refFile}"
                     refFile.write """
 h1. ${m.name}
 
@@ -226,7 +226,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
         createdManual = true
 
-        println "Built user manual at ${refDocsDir}/index.html"
+        console.updateStatus "Built user manual at ${refDocsDir}/index.html"
     }
 }
 

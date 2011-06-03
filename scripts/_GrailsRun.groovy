@@ -93,7 +93,7 @@ private EmbeddableServerFactory loadServerFactory() {
     }
     catch (ClassNotFoundException cnfe) {
         if (containerClass == defaultServer) {
-            println "WARNING: No default container found, installing Tomcat.."
+            console.error "WARNING: No default container found, installing Tomcat.."
             doInstallPlugin "tomcat", GrailsUtil.grailsVersion
             pluginSettings.clearCache()
             compilePlugins()
@@ -135,7 +135,7 @@ private runWar(scheme, host, httpPort, httpsPort) {
  */
 runServer = { Map args ->
     try {
-        println "Running Grails application.."
+        event("StatusUpdate", ["Running Grails application"])
         def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
 
         EmbeddableServer server = args["server"]
@@ -251,7 +251,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         // functional tests so that we can stop the servers that are
         // started.
         if (killFile.exists()) {
-            println "Stopping server..."
+            console.updateStatus "Stopping server..."
             grailsServer.stop()
             killFile.delete()
             keepRunning = false
@@ -267,7 +267,7 @@ target(stopServer: "Stops the Grails servlet container") {
         catch (Throwable e) {
             GrailsUtil.deepSanitize(e)
             e.printStackTrace()
-            println "Error stopping server: ${e.message}"
+            console.error "Error stopping server: ${e.message}"
         }
 
         try {
@@ -276,7 +276,7 @@ target(stopServer: "Stops the Grails servlet container") {
         catch (Throwable e) {
             GrailsUtil.deepSanitize(e)
             e.printStackTrace()
-            println "Error stopping plugin change scanner: ${e.message}"
+            console.error "Error stopping plugin change scanner: ${e.message}"
         }
     }
     event("StatusFinal", ["Server stopped"])

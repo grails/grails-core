@@ -51,7 +51,7 @@ target (createHibernateCfgXml: 'Creates a hibernate.cfg.xml file') {
     copyGrailsResource cfgFile.path, templateFile
 
     event 'CreatedFile', [cfgFile.path]
-    println "Created $cfgFile.path"
+    console.updateStatus "Created $cfgFile.path"
 }
 
 setDefaultTarget 'createHibernateCfgXml'

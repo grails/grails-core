@@ -80,7 +80,7 @@ if (!System.getProperty("grails.env.set")) {
         System.setProperty(Environment.KEY, grailsEnv)
         System.setProperty(Environment.DEFAULT, "")
     }
-    println "Environment set to ${grailsEnv}"
+	org.codehaus.groovy.grails.cli.logging.GrailsConsole.instance.category << grailsEnv
     System.setProperty("grails.env.set", "true")
 }
 
@@ -150,7 +150,7 @@ exit = {
  */
 confirmInput = {String message, code="confirm.message" ->
     if (!isInteractive) {
-        println("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
+        console.error("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }
     ant.input(message: message, addproperty: code, validargs: "y,Y,n,N")

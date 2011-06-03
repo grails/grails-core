@@ -84,7 +84,7 @@ target(packagePlugin: "Implementation target") {
         supportsAtLeastVersion = GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")
     }
     catch (e) {
-        println "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
+        console.error "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
         exit 1
     }
 

@@ -62,10 +62,10 @@ target(main:"Install a JAR dependency into a project") {
             compile dep
         }
 
-        println "Installing dependency '${dep}'. Please wait.."
+        console.updateStatus "Installing dependency '${dep}'. Please wait.."
         def report = manager.resolveDependencies()
         if (report.hasError()) {
-            println """
+            console.error """
 There was an error resolving the dependency '${dep}'.
 This could be because you have passed an invalid dependency name or because the dependency was not found in one of the default repositories.
 Try passing a valid Maven repository with the --repository argument."""
@@ -75,10 +75,10 @@ Try passing a valid Maven repository with the --repository argument."""
         for (File file in report.allArtifactsReports.localFile) {
             if (argsMap.dir) {
                 ant.copy(file:file, todir:argsMap.dir)
-                println "Installed dependency '${dep}' to location '${argsMap.dir}'"
+                console.updateStatus "Installed dependency '${dep}' to location '${argsMap.dir}'"
             }
             else {
-                println "Installed dependency '${dep}'."
+                console.updateStatus "Installed dependency '${dep}'."
             }
         }
     }

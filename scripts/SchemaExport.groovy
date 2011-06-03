@@ -51,7 +51,6 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
         .setDelimiter(';')
 
     String action = export ? "Exporting" : "Generating script to ${file.path}"
-    println "$action in environment '$grailsEnv'"
 
     if (export) {
         // 1st drop, warning exceptions

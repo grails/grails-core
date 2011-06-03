@@ -30,8 +30,9 @@ import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 
- /**
+/**
  * Manages the installation and uninstallation of plugins from a Grails project.
  *
  * @author Graeme Rocher
@@ -42,12 +43,12 @@ class PluginInstallEngine {
     static final CORE_PLUGINS = ['core', 'i18n','converters','mimeTypes', 'controllers','webflow', 'dataSource', 'domainClass', 'filters','logging', 'groovyPages']
 
     Closure errorHandler = { String msg -> throw new ScriptExitException(msg) }
-    Closure eventHandler = { String name, String msg -> println msg }
+    Closure eventHandler = { String name, String msg -> GrailsConsole.instance.updateStatus msg }
     Closure pluginScriptRunner
     Closure postInstallEvent
     Closure postUninstallEvent
     /**
-     * plugins that were installed in the last execution of installPlugin
+     * plugins that were installed in the last  execution of installPlugin
      */
     List installedPlugins = []
     def pluginDirVariableStore = [:]
@@ -114,7 +115,7 @@ class PluginInstallEngine {
         }
         if (changingPlugins) {
             def noChangingPlugins = changingPlugins.size()
-            eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for remote updates, please wait"
+            eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for updates"
             installPlugins(existingPlugins)
             eventHandler "StatusFinal", "Changing plugin checking complete"
         }
@@ -222,7 +223,7 @@ class PluginInstallEngine {
             return
         }
 
-        eventHandler "StatusUpdate", "Installing zip ${pluginZip}..."
+        eventHandler "StatusUpdate", "Installing zip ${pluginZip.name}..."
 
         installedPlugins << pluginInstallPath
 
@@ -230,7 +231,7 @@ class PluginInstallEngine {
             ant.delete(dir: pluginInstallPath, failonerror: false)
             ant.mkdir(dir: pluginInstallPath)
             ant.unzip(dest: pluginInstallPath, src: pluginZip)
-            eventHandler "StatusUpdate", "Installed plugin ${fullPluginName} to location ${pluginInstallPath}."
+            eventHandler "StatusUpdate", "Installed plugin ${fullPluginName}"
         }
         else {
             errorHandler "Cannot install plugin. Plugin install would override inline plugin configuration which is not allowed."
@@ -268,7 +269,6 @@ class PluginInstallEngine {
 
             registerPluginWithMetadata(pluginName, pluginVersion)
 
-            displayNewScripts(fullPluginName, pluginInstallPath)
 
             postInstall(pluginInstallPath)
             eventHandler("PluginInstalled", fullPluginName)
@@ -343,19 +343,6 @@ class PluginInstallEngine {
             errorHandler("""\
 Plugin [$name] is aliased as [grails.plugin.location.$name] to the location [$pluginReference] in grails-app/conf/BuildConfig.groovy.
 You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove the configuration to continue.""");
-        }
-    }
-
-    protected void displayNewScripts(pluginName, installPath) {
-        def providedScripts = new File("${installPath}/scripts").listFiles().findAll { !it.name.startsWith('_') && it.name.endsWith(".groovy")}
-        eventHandler("StatusFinal", "Plugin ${pluginName} installed")
-        if (providedScripts) {
-            println "Plugin provides the following new scripts:"
-            println "------------------------------------------"
-            providedScripts.each { File file ->
-                def scriptName = GrailsNameUtils.getScriptName(file.name)
-                println "grails ${scriptName}"
-            }
         }
     }
 
@@ -491,7 +478,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
         }
         catch (e) {
-            e.printStackTrace()
             errorHandler("An error occured installing the plugin [$name${version ? '-' + version : ''}]: ${e.message}")
         }
     }

@@ -15,11 +15,13 @@
  */
 package org.grails.plugins.tomcat
 
-import grails.util.*
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
+import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
-/**
+ /**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
  * @see IsolatedWarTomcatServer
@@ -37,15 +39,12 @@ abstract class TomcatServer implements EmbeddableServer {
     protected final File keystoreFile
     protected final String keyPassword
 
-    protected final AntBuilder ant
 
     // These are set from the outside in _GrailsRun
     def grailsConfig
     def eventListener
 
     TomcatServer() {
-        ant = new AntBuilder()
-
         buildSettings = BuildSettingsHolder.getSettings()
         pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
 
@@ -65,7 +64,7 @@ abstract class TomcatServer implements EmbeddableServer {
 
         System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
 
-        ant.delete(dir: tomcatDir.absolutePath, failonerror: false)
+        tomcatDir.deleteDir()
     }
 
     /**

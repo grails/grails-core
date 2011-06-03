@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.compiler;
 import org.codehaus.groovy.ant.Groovyc;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
 
 import java.io.File;
@@ -74,6 +75,7 @@ public class Grailsc extends Groovyc {
     @Override
     protected void compile() {
         if (compileList.length > 0) {
+           GrailsConsole.getInstance().updateStatus("Compiling "+compileList.length+" source files");
            super.compile();
         }
     }

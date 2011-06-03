@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.resolve.PluginResolveEngine
 includeTargets << grailsScript("_GrailsPlugins")
 
 def displayHeader = {
-    println '''
+     '''
 --------------------------------------------------------------------------
 Information about Grails plugin
 --------------------------------------------------------------------------\
@@ -53,38 +53,43 @@ def displayPluginInfo = { pluginName, version ->
 
     def line = "Name: ${pluginName}"
     line += "\t| Latest release: ${plugin.@version}"
-    println line
-    println '--------------------------------------------------------------------------'
+	def sw = new StringWriter()
+	def output = new PrintWriter(sw)
+	output.println displayHeader()
+	output.println line
+    output.println '--------------------------------------------------------------------------'
     def release = pluginXml
     if (release) {
         if (release.'title'.text()) {
-            println "${release.'title'.text()}"
+            output.println "${release.'title'.text()}"
         }
         else {
-            println "No info about this plugin available"
+            output.println "No info about this plugin available"
         }
-        println '--------------------------------------------------------------------------'
+        output.println '--------------------------------------------------------------------------'
         if (release.'author'.text()) {
-            println "Author: ${release.'author'.text()}"
-            println '--------------------------------------------------------------------------'
+            output.println "Author: ${release.'author'.text()}"
+            output.println '--------------------------------------------------------------------------'
         }
         if (release.'authorEmail'.text()) {
-            println "Author's e-mail: ${release.'authorEmail'.text()}"
-            println '--------------------------------------------------------------------------'
+            output.println "Author's e-mail: ${release.'authorEmail'.text()}"
+            output.println '--------------------------------------------------------------------------'
         }
         if (release.'documentation'.text()) {
-            println "Find more info here: ${release.'documentation'.text()}"
-            println '--------------------------------------------------------------------------'
+            output.println "Find more info here: ${release.'documentation'.text()}"
+            output.println '--------------------------------------------------------------------------'
         }
         if (release.'description'.text()) {
-            println "${release.'description'.text()}"
-            println '--------------------------------------------------------------------------'
+            output.println "${release.'description'.text()}"
+            output.println '--------------------------------------------------------------------------'
         }
     }
     else {
-        println "<release ${releaseVersion} not found for this plugin>"
-        println '--------------------------------------------------------------------------'
+        output.println "<release ${releaseVersion} not found for this plugin>"
+        output.println '--------------------------------------------------------------------------'
     }
+
+	println sw.toString()
 }
 
 def displayFooter = {
