@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.cli.logging;
 import jline.ConsoleReader;
 import jline.Terminal;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
@@ -160,10 +161,12 @@ public class GrailsConsole {
      * @param number The number
      * @param total The total
      */
-	public void indicateProgressPercentage(int number, int total) {
+	public void indicateProgressPercentage(long number, long total) {
 		String currMsg = lastMessage;
 		try {
-			updateStatus(new StringBuilder(currMsg).append(' ').append(Math.round((number/total)*100)).toString());
+            int percentage = Math.round(NumberMath.multiply(NumberMath.divide(number, total), 100).floatValue());
+            String message = new StringBuilder(currMsg).append(' ').append(percentage).append('%').toString();
+            updateStatus(message);
 		}
 		finally {
 			lastMessage = currMsg;
