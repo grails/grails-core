@@ -192,12 +192,17 @@ target(allTests: "Runs the project's tests.") {
         }
     }
     finally {
-        String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
+        String msg = testsFailed ? "Tests FAILED" : "Tests PASSED"
         if (createTestReports) {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}"
         }
-        event("StatusFinal", [msg])
+		if(testsFailed) {
+			console.error(msg)
+		}
+		else {
+			console.addStatus(msg)
+		}
         event("TestPhasesEnd", [])
     }
 
@@ -267,22 +272,15 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def result = type.run(testEventPublisher)
             def end = new Date()
 
-            event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
+            console.addStatus "Completed $testCount $type.name tests, ${result.failCount} failed in ${end.time - start.time}ms"
 
             if (result.failCount > 0) testsFailed = true
-
-            println """
--------------------------------------------------------
-Tests passed: ${result.passCount}
-Tests failed: ${result.failCount}
--------------------------------------------------------
-"""
             event("TestSuiteEnd", [type.name])
+
+			console.addStatus "Test phase $type.name complete."
         }
         catch (Exception e) {
-            event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
-            GrailsUtil.deepSanitize(e)
-            e.printStackTrace()
+			console.error "Error running $type.name tests: ${e.toString()}", e
             testsFailed = true
         }
         finally {

@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.cli.logging;
 import jline.ConsoleReader;
 import jline.Terminal;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -49,16 +50,10 @@ public class GrailsConsole {
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
-    public static GrailsConsole getInstance() {
-        if (instance == null) {
-            try {
-                instance = new GrailsConsole();
-            } catch (IOException e) {
-                throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
-            }
-        }
-        return instance;
-    }
+    /**
+     * Whether to enable verbose mode
+     */
+    private boolean verbose;
 
     /**
      * The progress indicator to use
@@ -104,6 +99,21 @@ public class GrailsConsole {
         this.maxIndicatorString = new StringBuilder().append(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
         out.println();
+    }
+
+    public static synchronized GrailsConsole getInstance() {
+        if (instance == null) {
+            try {
+                instance = new GrailsConsole();
+            } catch (IOException e) {
+                throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
+            }
+        }
+        return instance;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     public InputStream getInput() {
@@ -218,6 +228,7 @@ public class GrailsConsole {
      * @param msg The message
      */
     public void addStatus(String msg) {
+        cursorMove = 0;
         if (hasNewLines(msg)) {
             printMessageOnNewLine(msg);
             lastMessage = "";
@@ -225,10 +236,10 @@ public class GrailsConsole {
             final String categoryName = category.toString();
             if (Ansi.isEnabled()) {
 
-                lastStatus = outputCategory(ansi().newline(), categoryName)
+                lastStatus = outputCategory(ansi(), categoryName)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);
-                cursorMove = 1;
+
             } else {
                 out.print(categoryName + msg);
             }
@@ -245,10 +256,14 @@ public class GrailsConsole {
     }
 
     private Ansi erasePreviousLine(String categoryName) {
-        return ansi()
-                .cursorUp(cursorMove)
-                .cursorLeft(categoryName.length() + lastMessage.length())
-                .eraseLine(FORWARD);
+        if(cursorMove > 0) {
+            return ansi()
+                    .cursorUp(cursorMove)
+                    .cursorLeft(categoryName.length() + lastMessage.length())
+                    .eraseLine(FORWARD);
+
+        }
+        return ansi();
     }
 
     /**
@@ -257,6 +272,7 @@ public class GrailsConsole {
      * @param msg The error message
      */
     public void error(String msg) {
+        cursorMove = 0;
         if (hasNewLines(msg)) {
             if (Ansi.isEnabled()) {
                 out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).reset());
@@ -281,13 +297,29 @@ public class GrailsConsole {
 
     }
 
+    /**
+     * Use to log an error
+     *
+     * @param msg The message
+     * @param error The error
+     */
+    public void error(String msg, Throwable error) {
+       error(error.getMessage());
+       StackTraceUtils.deepSanitize(error);
+       error.printStackTrace();
+       error(msg);
+    }
+
     public void log(String msg) {
-        if (hasNewLines(msg)) {
+         if (hasNewLines(msg)) {
             out.println(msg);
+            out.println();
+            cursorMove = 0;
             //updateStatus();
         } else {
             out.println(msg);
-            //updateStatus();
+            out.println();
+            cursorMove = 0;
         }
     }
 
