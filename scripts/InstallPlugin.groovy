@@ -52,6 +52,8 @@ target(installPlugin:"Installs a plug-in for the given URL or name and version")
                 // (if provided) is the plugin version.
                 doInstallPlugin(pluginArgs[0], pluginArgs[1])
             }
+
+			event("StatusFinal", ["Plugin installed."])
         }
         else {
             event("StatusError", [ ERROR_MESSAGE])

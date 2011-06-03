@@ -42,7 +42,7 @@ eventListener.globalEventHooks = [
     StatusFinal: [ {message -> console.updateStatus message } ],
     StatusUpdate: [ {message -> console.updateStatus message } ],
     StatusError: [ {message -> console.error message } ],
-    CreatedArtefact: [ {artefactType, artefactName -> console.updateStatus "Created $artefactType for $artefactName" } ]
+    CreatedFile: [ {file -> console.addStatus "Created file $file" } ]
 ]
 
 hooksLoaded = false

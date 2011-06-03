@@ -175,8 +175,6 @@ target(allTests: "Runs the project's tests.") {
 
             // Add a blank line before the start of this phase so that it
             // is easier to distinguish
-
-            event("StatusUpdate", ["Starting $phase test phase"])
             event("TestPhaseStart", [phase])
 
             "${phase}TestPhasePreparation"()
@@ -192,12 +190,17 @@ target(allTests: "Runs the project's tests.") {
         }
     }
     finally {
-        String msg = testsFailed ? "\nTests FAILED" : "\nTests PASSED"
+        String msg = testsFailed ? "Tests FAILED" : "Tests PASSED"
         if (createTestReports) {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}"
         }
-        event("StatusFinal", [msg])
+		if(testsFailed) {
+			console.error(msg)
+		}
+		else {
+			console.addStatus(msg)
+		}
         event("TestPhasesEnd", [])
     }
 
@@ -267,22 +270,15 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def result = type.run(testEventPublisher)
             def end = new Date()
 
-            event("StatusUpdate", ["Tests Completed in ${end.time - start.time}ms"])
+            console.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
+			console.lastMessage = ""
 
             if (result.failCount > 0) testsFailed = true
-
-            println """
--------------------------------------------------------
-Tests passed: ${result.passCount}
-Tests failed: ${result.failCount}
--------------------------------------------------------
-"""
             event("TestSuiteEnd", [type.name])
+
         }
         catch (Exception e) {
-            event("StatusFinal", ["Error running $type.name tests: ${e.toString()}"])
-            GrailsUtil.deepSanitize(e)
-            e.printStackTrace()
+			console.error "Error running $type.name tests: ${e.toString()}", e
             testsFailed = true
         }
         finally {

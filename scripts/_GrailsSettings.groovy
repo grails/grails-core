@@ -153,16 +153,15 @@ confirmInput = {String message, code="confirm.message" ->
         console.error("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }
-    ant.input(message: message, addproperty: code, validargs: "y,Y,n,N")
-    def result = ant.antProject.properties[code]
-    'y'.equalsIgnoreCase(result)
+	else {
+		return console.userInput(message, ["y","n"] as String[])
+	}
 }
 
 // Note: the following only work if you also include _GrailsEvents.
 logError = { String message, Throwable t ->
     GrailsUtil.deepSanitize(t)
-    t.printStackTrace()
-    event("StatusError", ["$message: ${t.message}"])
+	console.error(message, t)
 }
 
 logErrorAndExit = { String message, Throwable t ->

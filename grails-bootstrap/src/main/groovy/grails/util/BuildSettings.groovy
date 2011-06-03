@@ -25,8 +25,9 @@ import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.runtime.StackTraceUtils
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 
- /**
+/**
  * <p>Represents the project paths and other build settings
  * that the user can change when running the Grails commands. Defaults
  * are provided for all settings, but the user can override those by
@@ -899,13 +900,13 @@ class BuildSettings extends AbstractBuildSettings {
         dependencyManager = new IvyDependencyManager(appName,
                 appVersion, this, metadata)
 
+        def console = GrailsConsole.instance
         dependencyManager.transferListener = { TransferEvent e ->
             switch(e.eventType) {
                 case TransferEvent.TRANSFER_STARTED:
-                    println "Downloading: ${e.resource.name} ..."
-                break
-                case TransferEvent.TRANSFER_COMPLETED:
-                    println "Download complete."
+                    def resourceName = e.resource.name
+                    resourceName = resourceName[resourceName.lastIndexOf('/')+1..-1]
+                    console.updateStatus "Downloading: ${resourceName}"
                 break
             }
         } as TransferListener

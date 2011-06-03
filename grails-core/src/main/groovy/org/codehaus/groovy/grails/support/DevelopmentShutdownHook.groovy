@@ -33,9 +33,9 @@ class DevelopmentShutdownHook implements ApplicationContextAware {
         }
 
         Runtime.runtime.addShutdownHook {
-            console.updateStatus "Application context shutting down..."
+            console.verbose "Application context shutting down..."
             applicationContext.close()
-            console.updateStatus "Application context shutdown."
+            console.verbose "Application context shutdown."
         }
         System.setProperty("grails.shutdown.hook.installed", "true")
     }

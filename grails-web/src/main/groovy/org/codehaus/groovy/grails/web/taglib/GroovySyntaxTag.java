@@ -147,8 +147,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.print(methodName); // method name
         out.print(" { "); // start closure
 
-        if (hasVar || hasStatus) {
-        	out.print(hasVar ? var : "it"); // var name
+        if(hasVar) {
+        	out.print(var);
         }
         
         // if eachWithIndex add status

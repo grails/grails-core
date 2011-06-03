@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+
 class GroovyEachTagTests extends GroovyTestCase {
 
     void testEachWithSafeDereference() {
