@@ -20,7 +20,7 @@ class GroovyGrepTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test.grep(~/regex/).each { "+ System.getProperty("line.separator"),sw.toString())
+        assertEquals("test.grep(~/regex/).each { it ->"+ System.getProperty("line.separator"),sw.toString())
     }
 
     void testWithStatus() {

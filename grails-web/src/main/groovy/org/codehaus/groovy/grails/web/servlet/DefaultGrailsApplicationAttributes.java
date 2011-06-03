@@ -201,9 +201,10 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         if (pagesTemplateEngine != null) {
             return pagesTemplateEngine;
         }
-
-        throw new GroovyPagesException("No bean named [" + GroovyPagesTemplateEngine.BEAN_ID +
-                "] defined in Spring application context!");
+        if(LOG.isWarnEnabled()) {
+        	LOG.warn("No bean named [" + GroovyPagesTemplateEngine.BEAN_ID + "] defined in Spring application context!");
+        }
+        return null;
     }
 
     public GrailsApplication getGrailsApplication() {

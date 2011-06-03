@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.Environment;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
@@ -23,7 +24,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
@@ -51,6 +54,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,6 +74,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Lari Hotari
  *
  * @since 0.1
+ */
+/**
+ * @author lari
+ *
  */
 public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
@@ -94,6 +102,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
     private static File dumpLineNumbersTo;
     private GrailsApplication grailsApplication;
+    private Map<String, Class<?>> cachedDomainsWithoutPackage;
 
     static {
         String dirPath = System.getProperty("grails.dump.gsp.line.numbers.to.dir");
@@ -120,6 +129,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             classLoader = initGroovyClassLoader(Thread.currentThread().getContextClassLoader());
         }else if (!classLoader.getClass().equals(GroovyPageClassLoader.class)) {
             classLoader = new GroovyPageClassLoader(classLoader);
+        }
+        if(!Environment.isDevelopmentMode()) {
+        	cachedDomainsWithoutPackage = createDomainClassMap();
         }
     }
 
@@ -353,6 +365,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         meta.setGrailsApplication(grailsApplication);
         meta.setJspTagLibraryResolver(jspTagLibraryResolver);
         meta.setTagLibraryLookup(tagLibraryLookup);
+        meta.initialize();
         return meta;
     }
 
@@ -675,7 +688,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         // Compile the script into an object
         Class<?> scriptClass;
         try {
-            scriptClass = groovyClassLoader.parseClass(DefaultGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING), name);
+        	String groovySource = DefaultGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
+        	//System.out.println(groovySource);
+            scriptClass = groovyClassLoader.parseClass(groovySource, name);
         }
         catch (CompilationFailedException e) {
             LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
@@ -718,7 +733,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setJspTags(parse.getJspTags());
         pageMeta.setCodecName(parse.getDefaultCodecDirectiveValue());
-        pageMeta.initCodec();
+        pageMeta.initialize();
         // just return groovy and don't compile if asked
         if (GrailsUtil.isDevelopmentEnv()) {
             pageMeta.setGroovySource(in);
@@ -870,6 +885,31 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         this.cacheResources = cacheResources;
     }
 
-
-
+    public Map<String, Class<?>> getDomainClassMap() {
+    	if(cachedDomainsWithoutPackage != null) {
+    		return cachedDomainsWithoutPackage;
+    	} else {
+    		return createDomainClassMap();
+    	}
+    }
+    	
+    /**
+     * The domainClassMap is used in GSP binding to "auto-import" domain classes in packages without package prefix.
+     * real imports aren't used, instead each class is added to the binding
+     * 
+     * This feature has existed earlier, the code has just been refactored and moved to GroovyPagesTemplateEngine
+     * to prevent using the static cache that was used previously.
+     * 
+     */
+    private Map<String, Class<?>> createDomainClassMap() {	
+        Map<String, Class<?>> domainsWithoutPackage = new HashMap<String, Class<?>>();
+        if(grailsApplication != null) {
+	        GrailsClass[] domainClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
+	        for (GrailsClass domainClass : domainClasses) {
+	            final Class<?> theClass = domainClass.getClazz();
+	            domainsWithoutPackage.put(theClass.getName(), theClass);
+	        }
+        }
+        return domainsWithoutPackage;
+    }
 }

@@ -16,7 +16,6 @@ package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.Environment;
 import groovy.lang.Binding;
-import groovy.lang.GroovyObject;
 import groovy.lang.Writable;
 
 import java.io.BufferedReader;
@@ -27,26 +26,20 @@ import java.io.Reader;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
@@ -54,6 +47,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * writer, typically the response writer.
  *
  * @author Graeme Rocher
+ * @author Lari Hotari
  * @since 0.5
  */
 class GroovyPageWritable implements Writable {
@@ -68,23 +62,16 @@ class GroovyPageWritable implements Writable {
     private AtomicInteger debugTemplatesIdCounter;
     private GrailsWebRequest webRequest;
 
-    private ServletContext context;
     @SuppressWarnings("rawtypes")
     private Map additionalBinding = new HashMap();
     private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
-    private GrailsPluginManager pluginManager;
 
     public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
+        this.metaInfo = metaInfo;
         webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        final ApplicationContext applicationContext = webRequest.getApplicationContext();
-        if (applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
-            pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
-        }
         request = webRequest.getCurrentRequest();
         HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
         response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
-        context = webRequest.getServletContext();
-        this.metaInfo = metaInfo;
         showSource = shouldShowGroovySource();
         debugTemplates = shouldDebugTemplates();
         if (debugTemplates) {
@@ -145,45 +132,53 @@ class GroovyPageWritable implements Writable {
                 throw metaInfo.getCompilationException();
             }
 
-            boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
-            if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
-                LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
-            }
-            if (!contentTypeAlreadySet) {
-                response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
-            }
-
             // Set up the script context
-            GroovyPageBinding binding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-            GroovyPageBinding oldBinding = null;
+            Binding parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+            if(parentBinding == null) {
+            	if(webRequest != null) {
+	            	GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
+	            	parentBinding = pageRequestBinding;
+	            	if(webRequest.getAttributes().getPagesTemplateEngine() != null) {
+	            		pageRequestBinding.setCachedDomainsWithoutPackage(webRequest.getAttributes().getPagesTemplateEngine().getDomainClassMap());
+	            	}
+            	}
 
-            if (binding == null) {
-                binding = createBinding(metaInfo.getPageClass());
-                formulateBinding(request, response, binding, out);
+            	// only try to set content type when evaluating top level GSP
+	            boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+	            if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
+	                LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+	            }
+	            if (!contentTypeAlreadySet) {
+	                response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+	            }
             }
-            else {
-                // if the Binding already exists then we're a template being included/rendered as part of a larger template
-                // in this case we need our own Binding and the old Binding needs to be restored after rendering
-                oldBinding = binding;
-                binding = createBinding(metaInfo.getPageClass());
-                binding.setPluginContextPath(oldBinding.getPluginContextPath());
-                formulateBinding(request, response, binding, out);
-            }
-
+            
+            GroovyPageBinding binding = createBinding(parentBinding);
+            request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
             if (metaInfo.getCodecClass() != null) {
                 request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
                 binding.setVariable(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
-            }
-            else {
+            } else {
                 binding.setVariable(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
             }
-
-            GroovyPage page = (GroovyPage) InvokerHelper.createScript(metaInfo.getPageClass(), binding);
+            binding.setVariable(GroovyPage.RESPONSE, response);
+            binding.setVariable(GroovyPage.REQUEST, request);
+            // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
+            
+            GroovyPage page=null;
+			try {
+				page = (GroovyPage)metaInfo.getPageClass().newInstance();
+			} catch (Exception e) {
+				throw new GroovyPagesException("Problem instantiating page class", e);
+			}
+            page.setBinding(binding);
             page.setJspTags(metaInfo.getJspTags());
             page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
             page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
             page.setHtmlParts(metaInfo.getHtmlParts());
-            page.initRun(out, webRequest, metaInfo.getCodecClass());
+            page.setPluginContextPath(metaInfo.getPluginPath());
+            page.initRun(out, webRequest, metaInfo.getGrailsApplication(), metaInfo.getCodecClass());
+            
             int debugId=0;
             long debugStartTimeMs=0;
             if (debugTemplates) {
@@ -214,7 +209,9 @@ class GroovyPageWritable implements Writable {
                 out.write(String.valueOf(System.currentTimeMillis() - debugStartTimeMs));
                 out.write(" ms -->");
             }
-            request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, oldBinding);
+            if(parentBinding instanceof GroovyPageBinding) {
+            	request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
+            }
         }
         return out;
     }
@@ -228,32 +225,24 @@ class GroovyPageWritable implements Writable {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected void copyBinding(Binding binding, Binding oldBinding, Writer out) {
-        formulateBindingFromWebRequest(binding, request, response, out,
-                (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER));
-        binding.getVariables().putAll(oldBinding.getVariables());
-        for (Object o : additionalBinding.keySet()) {
-            String key = (String) o;
-            if (!GroovyPage.isReservedName(key)) {
-                binding.setVariable(key, additionalBinding.get(key));
-            }
-            else {
-                LOG.debug("Variable [" + key + "] cannot be placed within the GSP model, the name used is a reserved name.");
-            }
+    private GroovyPageBinding createBinding(Binding parent) {
+        GroovyPageBinding binding = new GroovyPageBinding();
+        binding.setParent(parent);
+        binding.setVariable("it", null);        
+        if(additionalBinding != null) {
+        	for(Iterator<Map.Entry> i=additionalBinding.entrySet().iterator();i.hasNext();) {
+        		Map.Entry entry=i.next();
+        		binding.setVariable(String.valueOf(entry.getKey()), entry.getValue());
+        	}
         }
-    }
-
-    private GroovyPageBinding createBinding(Class<?> pageClass) {
-        GroovyPageBinding binding = pluginManager != null ?
-                new GroovyPageBinding(pluginManager.getPluginPathForClass(pageClass)) :
-                new GroovyPageBinding();
-
-        if (pluginManager != null) {
-            binding.setPagePlugin(pluginManager.getPluginForClass(pageClass));
-        }
-        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
-        binding.setVariable(GroovyPage.PAGE_SCOPE, binding);
+        binding.setPluginContextPath(metaInfo.getPluginPath());
+        binding.setPagePlugin(metaInfo.getPagePlugin());
+		if(parent instanceof GroovyPageBinding) {
+			String parentContextPath = ((GroovyPageBinding)parent).getPluginContextPath();
+			if(parentContextPath != null) {
+				binding.setPluginContextPath(parentContextPath);
+			}
+		}
         return binding;
     }
 
@@ -342,93 +331,5 @@ class GroovyPageWritable implements Writable {
             out.close();
             in.close();
         }
-    }
-
-    /**
-     * Prepare Bindings before instantiating page.
-     * @param request The HttpServletRequest instance
-     * @param response The HttpServletResponse instance
-     * @param out The response out
-     * @throws java.io.IOException Thrown when an IO error occurs creating the binding
-     */
-    protected void formulateBinding(HttpServletRequest req, HttpServletResponse res, Binding binding, Writer out) {
-        formulateBindingFromWebRequest(binding, req, res, out, (GroovyObject) req.getAttribute(GrailsApplicationAttributes.CONTROLLER));
-        populateViewModel(req, binding);
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected void populateViewModel(HttpServletRequest req, Binding binding) {
-        // Go through request attributes and add them to the binding as the model
-        final Map variables = binding.getVariables();
-        for (Enumeration attributeEnum = req.getAttributeNames(); attributeEnum.hasMoreElements();) {
-            String key = (String) attributeEnum.nextElement();
-            if (!GroovyPage.isReservedName(key)) {
-                if (!variables.containsKey(key)) {
-                    binding.setVariable(key, req.getAttribute(key));
-                }
-            }
-            else {
-                LOG.debug("Variable [" + key + "] cannot be placed within the GSP model, the name used is a reserved name.");
-            }
-        }
-        for (Object o : additionalBinding.keySet()) {
-            String key = (String) o;
-            if (!GroovyPage.isReservedName(key)) {
-                binding.setVariable(key, additionalBinding.get(key));
-            }
-            else {
-                LOG.debug("Variable [" + key + "] cannot be placed within the GSP model, the name used is a reserved name.");
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void formulateBindingFromWebRequest(Binding binding, HttpServletRequest req,
-            HttpServletResponse res, Writer out, GroovyObject controller) {
-        // if there is no controller in the request configure using existing attributes, creating objects where necessary
-        GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req);
-        binding.setVariable(GroovyPage.WEB_REQUEST, grailsWebRequest);
-        binding.setVariable(GroovyPage.REQUEST, req);
-        binding.setVariable(GroovyPage.RESPONSE, res);
-        binding.setVariable(GroovyPage.FLASH, grailsWebRequest.getFlashScope());
-        binding.setVariable(GroovyPage.SERVLET_CONTEXT, context);
-
-        ApplicationContext appCtx = grailsWebRequest.getAttributes().getApplicationContext();
-        binding.setVariable(GroovyPage.APPLICATION_CONTEXT, appCtx);
-        if (appCtx != null) {
-            GrailsApplication app = appCtx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-            binding.setVariable(GrailsApplication.APPLICATION_ID, app);
-            Map<String, Class<?>> domainClassesWithoutPackage = getDomainClassMap(app);
-            binding.getVariables().putAll(domainClassesWithoutPackage);
-        }
-        binding.setVariable(GroovyPage.SESSION, grailsWebRequest.getSession());
-        binding.setVariable(GroovyPage.PARAMS, grailsWebRequest.getParams());
-        binding.setVariable(GroovyPage.ACTION_NAME, grailsWebRequest.getActionName());
-        binding.setVariable(GroovyPage.CONTROLLER_NAME, grailsWebRequest.getControllerName());
-        if (controller != null) {
-            binding.setVariable(GrailsApplicationAttributes.CONTROLLER, controller);
-        }
-
-        binding.setVariable(GroovyPage.OUT, out);
-    }
-
-    private static Map<String, Class<?>> cachedDomainsWithoutPackage;
-
-    private static synchronized Map<String, Class<?>> getDomainClassMap(GrailsApplication application) {
-        Map<String, Class<?>> domainsWithoutPackage = (cachedDomainsWithoutPackage != null) ?
-                cachedDomainsWithoutPackage : new HashMap<String, Class<?>>();
-        GrailsClass[] domainClasses = application.getArtefacts(DomainClassArtefactHandler.TYPE);
-        if (domainClasses.length!=domainsWithoutPackage.size()) {
-            domainsWithoutPackage.clear();
-            for (GrailsClass domainClass : domainClasses) {
-                final Class<?> theClass = domainClass.getClazz();
-                domainsWithoutPackage.put(theClass.getName(), theClass);
-            }
-            if (!Environment.isDevelopmentMode()) {
-                // don't cache in development mode
-                cachedDomainsWithoutPackage = domainsWithoutPackage;
-            }
-        }
-        return domainsWithoutPackage;
     }
 }

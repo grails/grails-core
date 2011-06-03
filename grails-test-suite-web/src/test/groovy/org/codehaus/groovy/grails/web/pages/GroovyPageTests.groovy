@@ -54,7 +54,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         "class test_index_gsp extends GroovyPage {\n"+
         "String getGroovyPageFileName() { \"test\" }\n"+
         "public Object run() {\n"+
-        "def out=binding.out\n"+
+        "def out=getOut()\n"+
         "out.print('<div>RunPage test</div>')\n"+
         "}\n"+
         "}"
@@ -74,7 +74,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
 
             GroovyPage gspScript = parseGroovyPage(pageCode)
             gspScript.binding = getBinding(pw)
-            gspScript.initRun(pw, webRequest, null)
+            gspScript.initRun(pw, webRequest, ga, null)
             gspScript.run()
             result =  sw.toString()
         }
@@ -114,7 +114,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
                 "public Object run() {\n"+
-                "def out=binding.out\n"+
+                "def out = getOut()\n"+
                 "body1 = { out.print('Boo!') }\n"+
                 "invokeTag('Person','foaf',[a:'b',c:'d'],body1)\n"+
                 "}\n"+

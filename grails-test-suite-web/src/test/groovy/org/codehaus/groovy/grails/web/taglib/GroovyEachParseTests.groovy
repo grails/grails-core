@@ -14,12 +14,8 @@ class GroovyEachParseTests extends ParseTests {
 class myTest extends GroovyPage {
 public String getGroovyPageFileName() { "myTest" }
 public Object run() {
-def params = binding.params
-def request = binding.request
-def flash = binding.flash
-def response = binding.response
-def out = binding.out
-def codecOut = binding.codecOut
+def out = getOut()
+def codecOut = getCodecOut()
 registerSitemeshPreprocessMode(request)
 
 printHtmlPart(0)
@@ -40,12 +36,8 @@ printHtmlPart(0)
 class myTest extends GroovyPage {
 public String getGroovyPageFileName() { "myTest" }
 public Object run() {
-def params = binding.params
-def request = binding.request
-def flash = binding.flash
-def response = binding.response
-def out = binding.out
-def codecOut = binding.codecOut
+def out = getOut()
+def codecOut = getCodecOut()
 registerSitemeshPreprocessMode(request)
 
 printHtmlPart(0)
@@ -66,12 +58,8 @@ evaluate('"blah"', 1, it) { return "blah" }.each { t ->
 class myTest2 extends GroovyPage {
 public String getGroovyPageFileName() { "myTest2" }
 public Object run() {
-def params = binding.params
-def request = binding.request
-def flash = binding.flash
-def response = binding.response
-def out = binding.out
-def codecOut = binding.codecOut
+def out = getOut()
+def codecOut = getCodecOut()
 registerSitemeshPreprocessMode(request)
 
 printHtmlPart(0)
