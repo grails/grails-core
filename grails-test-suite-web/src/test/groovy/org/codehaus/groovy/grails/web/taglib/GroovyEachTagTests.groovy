@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+
 class GroovyEachTagTests extends GroovyTestCase {
 
     void testEachWithSafeDereference() {
@@ -16,7 +18,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test?.each { it ->"+System.getProperty("line.separator"), sw.toString())
+        assertEquals("test?.each { "+System.getProperty("line.separator"), sw.toString())
     }
 
     void testSimpleEach() {
@@ -32,7 +34,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test.each { it ->"+ System.getProperty("line.separator"),sw.toString())
+        assertEquals("test.each { "+ System.getProperty("line.separator"),sw.toString())
     }
 
     void testEachWithVar() {
