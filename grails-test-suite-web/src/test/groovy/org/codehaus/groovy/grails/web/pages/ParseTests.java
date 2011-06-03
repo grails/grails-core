@@ -282,7 +282,7 @@ public class ParseTests extends TestCase {
             "def codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode(request)\n" +
             "printHtmlPart(0)\n" +
-            "createTagBody('body1', {\n" +
+            "createTagBody('body1', { bodyit1 -> \n" +
             "invokeTag('captureMeta','sitemesh',1,['gsp_sm_xmlClosingForEmptyTag':evaluate('\"/\"', 1, it) { return \"/\" },'name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }] as GroovyPageAttributes,null)\n" +
             "})\n" +
             "invokeTag('captureHead','sitemesh',1,[:],body1)\n" +

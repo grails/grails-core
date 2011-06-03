@@ -1108,7 +1108,7 @@ public class GroovyPageParser implements Tokens {
                 //out.print("def ");
                 bodyVarsDefined.add(tm.tagIndex);
             }
-            out.println("createTagBody('body" + tm.tagIndex + "', {");
+            out.println("createTagBody('body" + tm.tagIndex + "', { bodyit" + tm.tagIndex +" -> ");
             closureLevel++;
         }
     }
