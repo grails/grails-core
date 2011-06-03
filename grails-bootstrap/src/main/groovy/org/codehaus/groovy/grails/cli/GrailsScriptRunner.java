@@ -165,13 +165,19 @@ public class GrailsScriptRunner {
             info.env = ENV_ARGS.get(env);
         }
 
-        if (currentParamIndex >= splitArgs.length) {
-            System.out.println("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
-            System.exit(0);
-        }
+        abortIfOutOfBounds(splitArgs, currentParamIndex);
 
         // use current argument as script name and step further
         String paramName = splitArgs[currentParamIndex++];
+
+        if(paramName.equals("-verbose")) {
+            GrailsConsole.getInstance().setVerbose(true);
+            abortIfOutOfBounds(splitArgs, currentParamIndex);
+            paramName = splitArgs[currentParamIndex++];
+
+        }
+
+
 
         if (paramName.charAt(0) == '-') {
             paramName = paramName.substring(1);
@@ -188,6 +194,13 @@ public class GrailsScriptRunner {
             info.args = b.toString();
         }
         return info;
+    }
+
+    private static void abortIfOutOfBounds(String[] splitArgs, int currentParamIndex) {
+        if (currentParamIndex >= splitArgs.length) {
+            System.out.println("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
+            System.exit(0);
+        }
     }
 
     private static String processSystemArguments(String allArgs) {

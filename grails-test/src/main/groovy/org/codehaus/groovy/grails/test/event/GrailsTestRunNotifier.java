@@ -16,11 +16,17 @@
 package org.codehaus.groovy.grails.test.event;
 
 import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A RunNotifier that logs the the GrailsConsole
@@ -30,7 +36,7 @@ import org.junit.runner.notification.StoppedByUserException;
  */
 public class GrailsTestRunNotifier extends RunNotifier{
 
-    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    public static final boolean FULL_STACKTRACE = Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue();
     int progress = 0;
     int total;
     private GrailsConsole console = GrailsConsole.getInstance();
@@ -53,7 +59,42 @@ public class GrailsTestRunNotifier extends RunNotifier{
     @Override
     public void fireTestFailure(Failure failure) {
         console.error("FAILURE: " + failure.getDescription().getDisplayName());
-        console.error(failure.getMessage());
+        Throwable exception = failure.getException();
+        if(exception != null) {
+            StackTraceUtils.deepSanitize(exception);
+            deepSanitize(exception);
+            StringWriter sw = new StringWriter();
+            PrintWriter ps = new PrintWriter(sw);
+            exception.printStackTrace(ps);
+
+            console.error(sw.toString());
+        }
+        else {
+            console.error(failure.getMessage());
+        }
         super.fireTestFailure(failure);
+    }
+
+    private void deepSanitize(Throwable exception) {
+        if (!FULL_STACKTRACE) {
+            StackTraceElement[] stackTrace = exception.getStackTrace();
+            List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                if(stackTraceElement.getClassName().startsWith("org.junit")) {
+                    break;
+                }
+                else {
+                    newTrace.add(stackTraceElement);
+                }
+            }
+
+            if (newTrace.size() > 0) {
+                // We don't want to lose anything, so log it
+                StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
+                newTrace.toArray(clean);
+                exception.setStackTrace(clean);
+            }
+        }
+
     }
 }

@@ -26,9 +26,7 @@ import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.util.Stack;
 
 import static org.fusesource.jansi.Ansi.Color.*;
@@ -296,13 +294,32 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(String msg, Throwable error) {
-       if(verbose) {
-           error(error.getMessage());
+       if(verbose && error != null) {
            StackTraceUtils.deepSanitize(error);
-           error.printStackTrace();
+           StringWriter sw = new StringWriter();
+           PrintWriter ps = new PrintWriter(sw);
+           ps.println(msg);
+           error.printStackTrace(ps);
+           error(sw.toString());
        }
-       error(msg);
+       else {
+           error(msg);
+       }
     }
+
+    /**
+     * Use to log an error
+     *
+     * @param error The error
+     */
+    public void error(Throwable error) {
+       StringWriter sw = new StringWriter();
+       PrintWriter ps = new PrintWriter(sw);
+       ps.println(error.getMessage());
+       error.printStackTrace(ps);
+       error(sw.toString());
+    }
+
 
     public void log(String msg) {
          if (hasNewLines(msg)) {
