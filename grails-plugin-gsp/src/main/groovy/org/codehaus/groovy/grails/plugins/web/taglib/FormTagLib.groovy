@@ -254,8 +254,8 @@ class FormTagLib {
     /**
      * General linking to controllers, actions etc. Examples:<br/>
      *
-     * &lt;g:form action="myaction"&gt;...&lt;/gr:form&gt;<br/>
-     * &lt;g:form controller="myctrl" action="myaction"&gt;...&lt;/gr:form&gt;<br/>
+     * &lt;g:form action="myaction"&gt;...&lt;/g:form&gt;<br/>
+     * &lt;g:form controller="myctrl" action="myaction"&gt;...&lt;/g:form&gt;<br/>
      *
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
      * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
