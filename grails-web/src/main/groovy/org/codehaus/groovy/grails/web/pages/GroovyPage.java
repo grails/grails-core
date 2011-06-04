@@ -170,7 +170,7 @@ public abstract class GroovyPage extends Script {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GrailsApplication grailsApplication, Class codecClass) {
         outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         out = outputStack.getProxyWriter();
@@ -179,13 +179,13 @@ public abstract class GroovyPage extends Script {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
         }
-        getBinding().setVariable(OUT, out);
+        getBinding().getVariables().put(OUT, out);
         if (codecClass != null) {
             codecOut=new CodecPrintWriter(grailsApplication, out, codecClass);
         } else {
             codecOut=out;
         }
-        getBinding().setVariable(CODEC_OUT, codecOut);
+        getBinding().getVariables().put(CODEC_OUT, codecOut);
     }
 
     public String getPluginContextPath() {
@@ -265,7 +265,8 @@ public abstract class GroovyPage extends Script {
 
     public abstract String getGroovyPageFileName();
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public Object getProperty(String property) {
         if (OUT.equals(property)) return out;
         if (CODEC_OUT.equals(property)) return codecOut;
@@ -298,7 +299,7 @@ public abstract class GroovyPage extends Script {
             }
             if (value != null) {
                 // cache lookup for next execution
-                getBinding().setVariable(property, value);
+                getBinding().getVariables().put(property, value);
             }
         }
         

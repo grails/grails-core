@@ -44,8 +44,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.ReflectionUtils;
 
-import com.sun.syndication.io.impl.PluginManager;
-
 /**
  * Encapsulates the information necessary to describe a GSP.
  *
@@ -143,8 +141,8 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
             if (applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
             	GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
             	pluginPath = pluginManager.getPluginPathForClass(pageClass);
+            	if(pluginPath==null) pluginPath="";
             	pagePlugin = pluginManager.getPluginForClass(pageClass);
-            	
             }
         }
 	}

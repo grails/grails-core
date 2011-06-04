@@ -36,8 +36,6 @@ import java.util.Set;
  */
 public class GroovyPageBinding extends Binding {
 	private static final Log log = LogFactory.getLog(GroovyPageBinding.class);
-    private String pluginContextPath;
-    private GrailsPlugin plugin;
     private Binding parent;
     private GroovyPage owner;
     private Set<String> cachedParentVariableNames=new HashSet<String>();
@@ -69,6 +67,7 @@ public class GroovyPageBinding extends Binding {
         return getVariable(property);
     }
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Object getVariable(String name) {
 		Object val = getVariables().get(name);
@@ -82,7 +81,8 @@ public class GroovyPageBinding extends Binding {
 					cachedParentVariableNames.add(name);
 				}
 			}
-			if(val==null) {
+			// stackover flow if pluginContextPath or pagePlugin is checked by MetaProperty
+			if(val==null && !name.equals(GroovyPage.PLUGIN_CONTEXT_PATH) && !name.equals("pagePlugin")) {
 				MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
 				if(metaProperty != null) {
 					val = metaProperty.getProperty(this);
@@ -122,7 +122,13 @@ public class GroovyPageBinding extends Binding {
 	public void setVariable(String name, Object value) {
 		internalSetVariable(null, name, value);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public void setVariableDirectly(String name, Object value) {
+		getVariables().put(name, value);
+	}
 
+	@SuppressWarnings("unchecked")
 	private void internalSetVariable(Binding bindingToUse, String name, Object value) {
 		if(!GroovyPage.isReservedName(name)) {
 			if(bindingToUse == null) {
@@ -144,21 +150,21 @@ public class GroovyPageBinding extends Binding {
 	}    
     
     public String getPluginContextPath() {
-        return pluginContextPath;
+        return (String)getVariable(GroovyPage.PLUGIN_CONTEXT_PATH);
     }
 
-    public void setPluginContextPath(String pluginContextPath) {
-        this.pluginContextPath = pluginContextPath;
-        setVariable("pluginContextPath", pluginContextPath);
+    @SuppressWarnings("unchecked")
+	public void setPluginContextPath(String pluginContextPath) {
+    	getVariables().put(GroovyPage.PLUGIN_CONTEXT_PATH, pluginContextPath);
     }
 
+    @SuppressWarnings("unchecked")
     public void setPagePlugin(GrailsPlugin plugin) {
-        this.plugin = plugin;
-        setVariable("pagePlugin", plugin);
+    	getVariables().put("pagePlugin", plugin);
     }
 
     public GrailsPlugin getPagePlugin() {
-        return plugin;
+        return (GrailsPlugin)getVariable("pagePlugin");
     }
 
 	public Binding getParent() {
@@ -169,6 +175,7 @@ public class GroovyPageBinding extends Binding {
 		this.parent = parent;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addMap(Map additionalBinding) {
     	for(Iterator<Map.Entry> i=additionalBinding.entrySet().iterator();i.hasNext();) {
     		Map.Entry entry=i.next();
