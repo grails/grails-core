@@ -134,7 +134,11 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
             codecClass = codecGrailsClass.getClazz();
         }
         
-        if (grailsApplication != null) {
+        initializePluginPath();
+    }
+
+	private void initializePluginPath() {
+		if (grailsApplication != null && pageClass != null) {
             final ApplicationContext applicationContext = grailsApplication.getMainContext();
             if (applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
             	GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
@@ -143,7 +147,7 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
             	
             }
         }
-    }
+	}
 
     /**
      * Reads the static html parts from a file stored in a separate file in the same package as the precompiled GSP class
@@ -228,6 +232,7 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
 
     public void setPageClass(Class<?> pageClass) {
         this.pageClass = pageClass;
+        initializePluginPath();
     }
 
     public long getLastModified() {
