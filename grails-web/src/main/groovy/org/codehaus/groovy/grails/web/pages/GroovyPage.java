@@ -281,13 +281,6 @@ public abstract class GroovyPage extends Script {
         }
         
         if (value == null) {
-            MetaProperty mp = getMetaClass().getMetaProperty(property);
-            if (mp != null) {
-                return mp.getProperty(this);
-            }
-        }        
-
-        if (value == null) {
             value = gspTagLibraryLookup!=null ? gspTagLibraryLookup.lookupNamespaceDispatcher(property) : null;
             if (value == null && jspTags.containsKey(property)) {
                 TagLibraryResolver tagResolver = getTagLibraryResolver();
@@ -302,6 +295,13 @@ public abstract class GroovyPage extends Script {
                 getBinding().getVariables().put(property, value);
             }
         }
+
+         if (value == null) {
+            MetaProperty mp = getMetaClass().getMetaProperty(property);
+            if (mp != null) {
+                return mp.getProperty(this);
+            }
+        }   
         
         return value;
     }

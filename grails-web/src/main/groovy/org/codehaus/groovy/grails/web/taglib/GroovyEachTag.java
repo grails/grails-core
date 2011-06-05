@@ -34,6 +34,12 @@ public class GroovyEachTag extends GroovySyntaxTag {
     }
 
     public void doEndTag() {
+        String status = attributes.get(ATTRIBUTES_STATUS);
+        boolean hasStatus = !StringUtils.isBlank(status);
+
+        if (hasStatus) {
+            out.println(status +"++" );
+        }
         out.println("}");
     }
 

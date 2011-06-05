@@ -47,7 +47,7 @@
 	<g:if test="${exception}">
 	    <h2>Stack Trace</h2>
 	    <div class="stack">
-	      <pre><g:each in="${exception.stackTraceLines}">${it.encodeAsHTML()}<br/></g:each></pre>
+	      <pre><g:each var="line" in="${exception.stackTraceLines}">${line.encodeAsHTML()}<br/></g:each></pre>
 	    </div>
 	</g:if>
   </body>

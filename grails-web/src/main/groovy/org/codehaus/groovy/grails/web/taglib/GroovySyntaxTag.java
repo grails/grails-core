@@ -36,8 +36,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  */
 public abstract class GroovySyntaxTag implements GrailsTag {
 
-    private static final String METHOD_EACH_WITH_INDEX = "eachWithIndex";
-    private static final String METHOD_EACH = "each";
     private static final String ERROR_NO_VAR_WITH_STATUS = "When using <g:each> with a [status] attribute, you must also define a [var]. eg. <g:each var=\"myVar\">";
     protected static final String ATTRIBUTE_IN = "in";
     protected static final String ATTRIBUTE_VAR = "var";
@@ -135,29 +133,21 @@ public abstract class GroovySyntaxTag implements GrailsTag {
             throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
         }
 
-        String methodName = hasStatus ? METHOD_EACH_WITH_INDEX : METHOD_EACH;
-
         if (var.equals(status) && (hasStatus)) {
             throw new GrailsTagException("Attribute [" + ATTRIBUTE_VAR +
                     "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]");
         }
 
+        if (hasStatus) {
+            out.println("int "+ status +"= 0" );
+        }
+        out.print("for(" + (hasVar ? var : "it"));
+        out.print(" in "); // dot de-reference
         out.print(parser != null ? parser.getExpressionText(in) : in);  // object
-        out.print('.'); // dot de-reference
-        out.print(methodName); // method name
+        out.print(" )"); // dot de-reference
         out.print(" { "); // start closure
 
-        if(hasVar) {
-        	out.print(var);
 
-            // if eachWithIndex add status
-            if (hasStatus) {
-                out.print(",");
-                out.print(status);
-            }
-            out.print(" ->");
-        }
-        
         out.println();
     }
 
