@@ -145,7 +145,7 @@ public class GroovyPageTagBody extends Closure {
 				changeBinding(originalBinding);
 			}
 			if(itChanged) {
-				currentBinding.setVariable("it", originalIt);
+				currentBinding.getVariables().put("it", originalIt);
 			}
 			popCapturedOut();
 		}

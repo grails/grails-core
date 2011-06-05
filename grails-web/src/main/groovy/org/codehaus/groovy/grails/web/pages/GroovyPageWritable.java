@@ -27,7 +27,6 @@ import java.io.Writer;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -138,8 +137,9 @@ class GroovyPageWritable implements Writable {
             	if(webRequest != null) {
 	            	GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
 	            	parentBinding = pageRequestBinding;
-	            	if(webRequest.getAttributes().getPagesTemplateEngine() != null) {
-	            		pageRequestBinding.setCachedDomainsWithoutPackage(webRequest.getAttributes().getPagesTemplateEngine().getDomainClassMap());
+	            	GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
+	            	if(templateEngine != null) {
+	            		pageRequestBinding.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
 	            	}
             	}
 
@@ -157,12 +157,12 @@ class GroovyPageWritable implements Writable {
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
             if (metaInfo.getCodecClass() != null) {
                 request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
-                binding.setVariable(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
+                binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             } else {
-                binding.setVariable(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
+                binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
             }
-            binding.setVariable(GroovyPage.RESPONSE, response);
-            binding.setVariable(GroovyPage.REQUEST, request);
+            binding.setVariableDirectly(GroovyPage.RESPONSE, response);
+            binding.setVariableDirectly(GroovyPage.REQUEST, request);
             // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
             
             GroovyPage page=null;
@@ -227,18 +227,17 @@ class GroovyPageWritable implements Writable {
     private GroovyPageBinding createBinding(Binding parent) {
         GroovyPageBinding binding = new GroovyPageBinding();
         binding.setParent(parent);
-        binding.setVariable("it", null);        
+        binding.setVariableDirectly("it", null);        
         if(additionalBinding != null) {
         	binding.addMap(additionalBinding);
         }
-        binding.setPluginContextPath(metaInfo.getPluginPath());
+        // set plugin context path for top level rendering, this means actual view + layout
+        // view is top level when parent is GroovyPageRequestBinding
+        // pluginContextPath is also resetted when a plugin template is overrided by an application view
+        if(parent==null || parent instanceof GroovyPageRequestBinding || "".equals(metaInfo.getPluginPath())) {
+        	binding.setPluginContextPath(metaInfo.getPluginPath());
+        }
         binding.setPagePlugin(metaInfo.getPagePlugin());
-		if(parent instanceof GroovyPageBinding) {
-			String parentContextPath = ((GroovyPageBinding)parent).getPluginContextPath();
-			if(parentContextPath != null) {
-				binding.setPluginContextPath(parentContextPath);
-			}
-		}
         return binding;
     }
 

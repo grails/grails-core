@@ -44,8 +44,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.ReflectionUtils;
 
-import com.sun.syndication.io.impl.PluginManager;
-
 /**
  * Encapsulates the information necessary to describe a GSP.
  *
@@ -134,16 +132,20 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
             codecClass = codecGrailsClass.getClazz();
         }
         
-        if (grailsApplication != null) {
+        initializePluginPath();
+    }
+
+	private void initializePluginPath() {
+		if (grailsApplication != null && pageClass != null) {
             final ApplicationContext applicationContext = grailsApplication.getMainContext();
             if (applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
             	GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
             	pluginPath = pluginManager.getPluginPathForClass(pageClass);
+            	if(pluginPath==null) pluginPath="";
             	pagePlugin = pluginManager.getPluginForClass(pageClass);
-            	
             }
         }
-    }
+	}
 
     /**
      * Reads the static html parts from a file stored in a separate file in the same package as the precompiled GSP class
@@ -228,6 +230,7 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
 
     public void setPageClass(Class<?> pageClass) {
         this.pageClass = pageClass;
+        initializePluginPath();
     }
 
     public long getLastModified() {

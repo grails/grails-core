@@ -115,26 +115,28 @@ public class GroovyPageRequestBinding extends Binding {
 
 	@Override
 	public Object getVariable(String name) {
-		Object val = webRequest.getCurrentRequest().getAttribute(name);
-
-		if (val == null) {
-			LazyRequestBasedValue lazyValue = lazyRequestBasedValuesMap.get(name);
-			if (lazyValue != null) {
-				val = lazyValue.evaluate(webRequest, response);
+		Object val = getVariables().get(name);
+		if(val == null && !getVariables().containsKey(name)) {
+			val = webRequest.getCurrentRequest().getAttribute(name);
+	
+			if (val == null) {
+				LazyRequestBasedValue lazyValue = lazyRequestBasedValuesMap.get(name);
+				if (lazyValue != null) {
+					val = lazyValue.evaluate(webRequest, response);
+				}
+			}
+			
+			if (val == null && cachedDomainsWithoutPackage != null) {
+				val = cachedDomainsWithoutPackage.get(name);
+			}
+			
+			// warn about missing variables in development mode
+			if(val == null && Environment.isDevelopmentMode()) {
+				if(log.isWarnEnabled()) {
+					log.warn("Variable '" + name + "' not found in binding or the value is null.");
+				}
 			}
 		}
-		
-		if (val == null && cachedDomainsWithoutPackage != null) {
-			val = cachedDomainsWithoutPackage.get(name);
-		}
-		
-		// warn about missing variables in development mode
-		if(val == null && Environment.isDevelopmentMode()) {
-			if(log.isWarnEnabled()) {
-				log.warn("Variable '" + name + "' not found in binding or the value is null.");
-			}
-		}
-		
 		return val;
 	}
 
