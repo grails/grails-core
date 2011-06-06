@@ -84,7 +84,7 @@ public class GrailsConsole {
         }
     };
 
-    private GrailsConsole() throws IOException {
+    protected GrailsConsole() throws IOException {
         this.cursorMove = 1;
         this.out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
@@ -381,9 +381,10 @@ public class GrailsConsole {
      * string.
      */
     public String userInput(String msg) {
-        updateStatus(msg);
+        addStatus(msg);
+        lastMessage = "";
         try {
-            cursorMove += 1;
+            cursorMove = 0;
             return reader.readLine("> ");
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
@@ -416,7 +417,7 @@ public class GrailsConsole {
                     return response;
                 }
             }
-            cursorMove += 2;
+            cursorMove = 0;
             return userInput("Invalid input. Must be one of ", validResponses);
         }
 
