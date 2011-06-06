@@ -51,10 +51,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     public static final String CONTROLLER = "Controller";
 
-    public static final String RESOLVE_ACTION_KEY = "grails.controllers.actions.resolveStrategy";
-    public static final String RESOLVE_METHOD = "method";
-    public static final String RESOLVE_CLOSURE = "closure";
-
     private static final String SLASH = "/";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
     private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";

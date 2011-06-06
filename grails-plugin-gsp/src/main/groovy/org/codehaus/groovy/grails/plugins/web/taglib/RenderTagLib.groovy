@@ -540,7 +540,7 @@ class RenderTagLib implements RequestConstants {
             throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         }
 
-        if (!attrs.template) {
+        if (attrs.template != null) {
             throwTagError("Tag [render] is missing required attribute [template]")
         }
 
@@ -550,7 +550,7 @@ class RenderTagLib implements RequestConstants {
 
         Template t
 
-        def contextPath = attrs.contextPath ? attrs.contextPath : null
+        def contextPath = attrs.contextPath
         def pluginName = attrs.plugin
         def pluginContextFromPagescope = false
         def pm = pluginManager
@@ -562,7 +562,7 @@ class RenderTagLib implements RequestConstants {
                 contextPath = ''
             }
             else {
-                contextPath = pageScope.pluginContextPath ?: ''
+                contextPath = pageScope.pluginContextPath != null? pageScope.pluginContextPath  : ''
                 pluginContextFromPagescope = true
             }
         }

@@ -148,8 +148,6 @@ public abstract class GroovyPage extends Script {
 
     protected static final Closure<?> EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
 
-    private static final String REQUEST_TAGLIB_CACHE = GroovyPage.class.getName() + ".TAGLIBCACHE";
-
     public GroovyPage() {
         init();
     }
@@ -296,13 +294,6 @@ public abstract class GroovyPage extends Script {
             }
         }
 
-         if (value == null) {
-            MetaProperty mp = getMetaClass().getMetaProperty(property);
-            if (mp != null) {
-                return mp.getProperty(this);
-            }
-        }   
-        
         return value;
     }
 
@@ -573,27 +564,6 @@ public abstract class GroovyPage extends Script {
     @SuppressWarnings("unchecked")
     private final static GroovyObject lookupCachedTagLib(GrailsWebRequest webRequest,
             TagLibraryLookup gspTagLibraryLookup, String namespace, String tagName) {
-
-        if (webRequest != null) {
-            // caches the taglibs in request context. is this a good idea or not?
-            String tagKey = namespace + ":" + tagName;
-            Map<String, GroovyObject> tagLibCache = (Map<String, GroovyObject>)webRequest.getCurrentRequest().getAttribute(REQUEST_TAGLIB_CACHE);
-            GroovyObject tagLib = null;
-            if (tagLibCache == null) {
-                tagLibCache = new HashMap<String, GroovyObject>();
-                webRequest.getCurrentRequest().setAttribute(REQUEST_TAGLIB_CACHE, tagLibCache);
-            }
-            else {
-                tagLib = tagLibCache.get(tagKey);
-            }
-            if (tagLib == null) {
-                tagLib = gspTagLibraryLookup.lookupTagLibrary(namespace, tagName);
-                if (tagLib != null) {
-                    tagLibCache.put(tagKey, tagLib);
-                }
-            }
-            return tagLib;
-        }
 
         return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupTagLibrary(namespace, tagName) : null;
     }
