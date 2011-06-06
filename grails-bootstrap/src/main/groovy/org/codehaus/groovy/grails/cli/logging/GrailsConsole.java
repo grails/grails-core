@@ -114,6 +114,10 @@ public class GrailsConsole {
         this.verbose = verbose;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
     public InputStream getInput() {
         return reader.getInput();
     }

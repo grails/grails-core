@@ -15,8 +15,8 @@
  */
 package org.codehaus.groovy.grails.test.event;
 
+import grails.util.GrailsUtil;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
-import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -61,7 +61,7 @@ public class GrailsTestRunNotifier extends RunNotifier{
         console.error("FAILURE: " + failure.getDescription().getDisplayName());
         Throwable exception = failure.getException();
         if(exception != null) {
-            StackTraceUtils.deepSanitize(exception);
+            GrailsUtil.deepSanitize(exception);
             deepSanitize(exception);
             StringWriter sw = new StringWriter();
             PrintWriter ps = new PrintWriter(sw);

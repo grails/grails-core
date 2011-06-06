@@ -20,6 +20,7 @@ import grails.util.*;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
 import groovy.util.AntBuilder;
+import org.apache.commons.cli.*;
 import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.LogLevel;
@@ -35,6 +36,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -48,6 +50,8 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.cli.OptionBuilder.*;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -76,7 +80,10 @@ public class GrailsScriptRunner {
 
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
     private static final Pattern pluginDescriptorPattern = Pattern.compile("^(\\S+)GrailsPlugin.groovy$");
-    public static final String AGENT_FLAG = "-agent";
+    public static final String VERBOSE_ARGUMENT = "verbose";
+    public static final String AGENT_ARGUMENT = "agent";
+    public static final String VERSION_ARGUMENT = "version";
+    public static final String HELP_ARGUMENT = "help";
     private InputStream orignalIn;
 
     /**
@@ -86,17 +93,37 @@ public class GrailsScriptRunner {
      * @param args
      */
     public static void main(String[] args) {
-        StringBuilder allArgs = new StringBuilder("");
-        for (String arg : args) {
-            allArgs.append(" ").append(arg);
+		CommandLineParser parser = new GnuParser();
+        args = splitAndTrimArgs(args);
+
+
+		Options options = new Options();
+        options.addOption( new Option(VERBOSE_ARGUMENT, "Enable verbose output"));
+        options.addOption( new Option(AGENT_ARGUMENT, "Enable the reloading agent"));
+        options.addOption( new Option(HELP_ARGUMENT, "Command line help"));
+        options.addOption( new Option(VERSION_ARGUMENT, "Current Grails version"));
+
+        options.addOption( withArgName("property=value")
+		                         .hasArgs(2)
+		                         .withValueSeparator()
+		                         .withDescription( "Used to specify System properties" )
+		                         .create( "D" ) );
+        GrailsConsole console = GrailsConsole.getInstance();
+        CommandLine commandLine;
+
+        try {
+            commandLine = parser.parse(options, args);
+        } catch (ParseException e) {
+            console.error("Error processing command line arguments: " + e.getMessage());
+            System.exit(1);
+            return;
         }
 
-        GrailsConsole console = GrailsConsole.getInstance();
         console.updateStatus("Initializing");
 
-        ScriptAndArgs script = processArgumentsAndReturnScriptName(allArgs.toString().trim());
+        ScriptAndArgs script = processArgumentsAndReturnScriptName(commandLine);
 
-        console.getCategory().push(script.inputName);
+
 
         // Get hold of the GRAILS_HOME environment variable if it is available.
         String grailsHome = System.getProperty("grails.home");
@@ -117,6 +144,18 @@ public class GrailsScriptRunner {
             exitWithError("Grails' installation directory not found: " + build.getGrailsHome());
         }
 
+        if(commandLine.hasOption(VERSION_ARGUMENT)) {
+            console.log("Grails version: " + build.getGrailsVersion());
+            System.exit(0);
+        }
+
+        if(commandLine.hasOption(HELP_ARGUMENT)) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("grails [options] [command]",options);
+            System.exit(0);
+        }
+
+
 
         // If there aren't any arguments, then we don't have a command
         // to execute. So we have to exit.
@@ -125,6 +164,7 @@ public class GrailsScriptRunner {
             System.exit(0);
         }
 
+        console.getCategory().push(script.inputName);
         console.updateStatus("Base Directory: " + build.getBaseDir().getPath());
 
         try {
@@ -143,40 +183,52 @@ public class GrailsScriptRunner {
         }
     }
 
+    private static String[] splitAndTrimArgs(String[] args) {
+        StringBuilder allArgs = new StringBuilder("");
+        for (String arg : args) {
+            arg = arg.trim();
+            if(arg.length()>0) {
+                allArgs.append(" ").append(arg);
+            }
+        }
+
+        return allArgs.toString().trim().split(" ");
+    }
+
     private static void exitWithError(String error) {
         GrailsConsole.getInstance().error(error);
         System.exit(1);
     }
 
-    private static ScriptAndArgs processArgumentsAndReturnScriptName(String allArgs) {
+    private static ScriptAndArgs processArgumentsAndReturnScriptName(CommandLine commandLine) {
+
+        if(commandLine.hasOption(VERBOSE_ARGUMENT)) {
+            GrailsConsole.getInstance().setVerbose(true);
+        }
+        processSystemArguments(commandLine);
+        String[] arguments = commandLine.getArgs();
+
+        if(arguments.length > 0) {
+            return processAndReturnArguments(arguments);
+        }
+        return new ScriptAndArgs();
+    }
+
+    private static ScriptAndArgs processAndReturnArguments(String[] arguments) {
         ScriptAndArgs info = new ScriptAndArgs();
-
-        // Check that we actually have some arguments to process.
-        if (allArgs == null || allArgs.length() == 0) return info;
-
-        String[] splitArgs = processSystemArguments(allArgs).trim().split(" ");
         int currentParamIndex = 0;
         if (Environment.isSystemSet()) {
             info.env = Environment.getCurrent().getName();
         }
-        else if (isEnvironmentArgs(splitArgs[currentParamIndex])) {
+        else if (isEnvironmentArgs(arguments[currentParamIndex])) {
             // use first argument as environment name and step further
-            String env = splitArgs[currentParamIndex++];
+            String env = arguments[currentParamIndex++];
             info.env = ENV_ARGS.get(env);
         }
 
-        abortIfOutOfBounds(splitArgs, currentParamIndex);
-
+        abortIfOutOfBounds(arguments, currentParamIndex);
         // use current argument as script name and step further
-        String paramName = splitArgs[currentParamIndex++];
-
-        if(paramName.equals("-verbose")) {
-            GrailsConsole.getInstance().setVerbose(true);
-            abortIfOutOfBounds(splitArgs, currentParamIndex);
-            paramName = splitArgs[currentParamIndex++];
-
-        }
-
+        String paramName = arguments[currentParamIndex++];
 
 
         if (paramName.charAt(0) == '-') {
@@ -185,11 +237,11 @@ public class GrailsScriptRunner {
         info.inputName = paramName;
         info.name = GrailsNameUtils.getNameFromScript(paramName);
 
-        if (currentParamIndex < splitArgs.length) {
+        if (currentParamIndex < arguments.length) {
             // if we have additional params provided - store it in system property
-            StringBuilder b = new StringBuilder(splitArgs[currentParamIndex]);
-            for (int i = currentParamIndex + 1; i < splitArgs.length; i++) {
-                b.append(' ').append(splitArgs[i]);
+            StringBuilder b = new StringBuilder(arguments[currentParamIndex]);
+            for (int i = currentParamIndex + 1; i < arguments.length; i++) {
+                b.append(' ').append(arguments[i]);
             }
             info.args = b.toString();
         }
@@ -203,24 +255,13 @@ public class GrailsScriptRunner {
         }
     }
 
-    private static String processSystemArguments(String allArgs) {
-        String lastMatch = null;
-        Pattern sysPropPattern = Pattern.compile("-D(.+?)=(.+?)\\s+?");
-
-        Matcher m = sysPropPattern.matcher(allArgs);
-        while (m.find()) {
-            System.setProperty(m.group(1).trim(), m.group(2).trim());
-            lastMatch = m.group();
+    private static void processSystemArguments(CommandLine allArgs) {
+        Properties systemProps = allArgs.getOptionProperties("D");
+        if(systemProps != null) {
+            for (Map.Entry<Object, Object> entry : systemProps.entrySet()) {
+                System.setProperty(entry.getKey().toString(), entry.getValue().toString());
+            }
         }
-
-        if (lastMatch != null) {
-            int i = allArgs.lastIndexOf(lastMatch) + lastMatch.length();
-            allArgs = allArgs.substring(i);
-        }
-        if (allArgs.contains(AGENT_FLAG)) {
-            allArgs = allArgs.replace(AGENT_FLAG, "");
-        }
-        return allArgs;
     }
 
     private static boolean isEnvironmentArgs(String env) {
@@ -366,7 +407,7 @@ public class GrailsScriptRunner {
             String enteredName = helper.userInput(prompt);
 
             if (enteredName != null && enteredName.trim().length() > 0) {
-                script = processArgumentsAndReturnScriptName(enteredName);
+                script = processAndReturnArguments(enteredName.split(" "));
 
                 // Update the relevant system property, otherwise the
                 // arguments will be "remembered" from the previous run.
@@ -847,13 +888,18 @@ public class GrailsScriptRunner {
         AntBuilder ant = (AntBuilder) binding.getVariable("ant");
         binding.setVariable("Ant", ant);
         Project project = ant.getProject();
-        project.addBuildListener(new GrailsConsoleBuildListener(GrailsConsole.getInstance()));
-        Vector buildListeners = project.getBuildListeners();
-        for (Object buildListener : buildListeners) {
-            if(buildListener instanceof BuildLogger) {
-                ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
+        GrailsConsole instance = GrailsConsole.getInstance();
+        project.addBuildListener(new GrailsConsoleBuildListener(instance));
+
+        if(!instance.isVerbose()) {
+            Vector buildListeners = project.getBuildListeners();
+            for (Object buildListener : buildListeners) {
+                if(buildListener instanceof BuildLogger) {
+                    ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
+                }
             }
         }
+
     }
 
     protected void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {

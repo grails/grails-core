@@ -24,6 +24,9 @@ springWebflowVersion= "2.0.8.RELEASE"
 ivyVersion = "2.2.0"
 gantVersion = "1.9.5"
 groovyVersion = "1.8.0"
+jansiVersion = "1.2.1"
+jlineVersion = "0.9.94"
+commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
 commonsBeanUtilsVersion = "1.8.0"
 commonsIOVersion = "1.4"
@@ -232,6 +235,9 @@ task installResources << {
         into "conf"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
+        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
+        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
         filter(ReplaceTokens, tokens: ['ant.version': antVersion])
         filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
         filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
