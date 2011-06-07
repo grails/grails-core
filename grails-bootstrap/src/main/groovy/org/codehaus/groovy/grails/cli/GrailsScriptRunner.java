@@ -220,7 +220,7 @@ public class GrailsScriptRunner {
         for (String arg : args) {
             arg = arg.trim();
             if(arg.length()>0) {
-                allArgs.append(" ").append(arg.replace("-", ""));
+                allArgs.append(" ").append(arg);
             }
         }
 

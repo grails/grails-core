@@ -349,7 +349,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                 }
             }
             catch (Exception ex) {
-                GrailsUtil.deepSanitize(ex);
                 LOG.error("[RuntimeConfiguration] Unable to load beans from resources.groovy", ex);
             }
         }

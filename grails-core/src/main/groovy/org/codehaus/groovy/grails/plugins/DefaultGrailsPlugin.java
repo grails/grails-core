@@ -683,7 +683,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             try {
                 initialisePlugin(gcl.parseClass(descriptor.getFile()));
             } catch (Exception e) {
-                GrailsUtil.deepSanitize(e);
                 LOG.error("Error refreshing plugin: " + e.getMessage(), e);
             }
         }

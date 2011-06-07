@@ -209,7 +209,6 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
                 returnValue = handleAction(controller,action,request,response,params);
             }
             catch (Throwable t) {
-                GrailsUtil.deepSanitize(t);
                 String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());
                 pluginName = pluginName != null ? "in plugin ["+pluginName+"]" : "";
                 throw new ControllerExecutionException("Executing action [" + actionName +

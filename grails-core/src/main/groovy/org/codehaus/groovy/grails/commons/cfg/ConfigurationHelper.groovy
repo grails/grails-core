@@ -15,11 +15,8 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import grails.util.Environment
-import grails.util.GrailsUtil
 import grails.util.Metadata
-
 import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -99,7 +96,6 @@ class ConfigurationHelper {
                 }
             }
             catch (Throwable t) {
-                GrailsUtil.deepSanitize(t)
                 LOG.error("Error loading application Config: $t.message", t)
                 throw t
             }

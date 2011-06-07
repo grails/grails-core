@@ -270,14 +270,10 @@ public class GrailsConsole {
         if (hasNewLines(msg)) {
             if (Ansi.isEnabled()) {
                 out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).reset());
-                out.println();
                 out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
-                out.println();
             } else {
                 out.println(category);
-                out.println();
                 out.println(msg);
-                out.println();
             }
             //updateStatus();
         } else {

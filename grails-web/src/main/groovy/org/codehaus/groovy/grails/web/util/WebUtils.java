@@ -377,7 +377,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             }
         }
         catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
             throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
         }
     }

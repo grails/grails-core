@@ -76,6 +76,7 @@ public class GrailsUtil {
         "org.hibernate.",
         "javax.servlet."
     };
+    public static final String SANITIZING_STACKTRACE = "Sanitizing stacktrace:";
 
     static {
         Package p = GrailsUtil.class.getPackage();
@@ -247,8 +248,7 @@ public class GrailsUtil {
         if (!Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue()) {
             StackTraceElement[] trace = t.getStackTrace();
             List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
-            for (int i = 0; i < trace.length; i++) {
-                StackTraceElement stackTraceElement = trace[i];
+            for (StackTraceElement stackTraceElement : trace) {
                 if (isApplicationClass(stackTraceElement.getClassName())) {
                     newTrace.add(stackTraceElement);
                 }
@@ -258,7 +258,7 @@ public class GrailsUtil {
             // if not we will just skip sanitizing and leave it as is
             if (newTrace.size() > 0) {
                 // We don't want to lose anything, so log it
-                STACK_LOG.error("Sanitizing stacktrace:", t);
+                STACK_LOG.error(SANITIZING_STACKTRACE, t);
                 StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
                 newTrace.toArray(clean);
                 t.setStackTrace(clean);
@@ -271,8 +271,7 @@ public class GrailsUtil {
         t = sanitize(t);
 
         StackTraceElement[] trace = t.getStackTrace();
-        for (int i = 0; i < trace.length; i++) {
-            StackTraceElement stackTraceElement = trace[i];
+        for (StackTraceElement stackTraceElement : trace) {
             p.println("at " + stackTraceElement.getClassName() +
                     "(" + stackTraceElement.getMethodName() +
                     ":" + stackTraceElement.getLineNumber() + ")");
@@ -284,8 +283,7 @@ public class GrailsUtil {
     }
 
     public static boolean isApplicationClass(String className) {
-        for (int i = 0; i < GRAILS_PACKAGES.length; i++) {
-            String grailsPackage = GRAILS_PACKAGES[i];
+        for (String grailsPackage : GRAILS_PACKAGES) {
             if (className.startsWith(grailsPackage)) {
                 return false;
             }

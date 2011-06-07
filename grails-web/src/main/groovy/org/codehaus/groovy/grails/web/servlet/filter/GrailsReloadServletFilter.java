@@ -83,7 +83,6 @@ public class GrailsReloadServletFilter extends OncePerRequestFilter {
             }
         }
         catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
             LOG.error("Error occured reloading application: " + e.getMessage(),e);
 
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
