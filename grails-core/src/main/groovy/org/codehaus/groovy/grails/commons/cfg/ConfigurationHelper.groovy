@@ -77,8 +77,10 @@ class ConfigurationHelper {
             ConfigSlurper configSlurper = getConfigSlurper(environment, application)
             try {
                 try {
+                    application?.config = new ConfigObject() // set empty config to avoid stack overflow
                     Class scriptClass = classLoader.loadClass(GrailsApplication.CONFIG_CLASS)
                     co = configSlurper.parse(scriptClass)
+                    application?.config = co
                 }
                 catch (ClassNotFoundException e) {
                     LOG.debug "Could not find config class [" + GrailsApplication.CONFIG_CLASS + "]. This is probably " +
