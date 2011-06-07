@@ -98,13 +98,9 @@ class JavascriptTagLib  {
             }
         }
         else {
-            if (resourceService) {
-                r.script([disposition:'head'], body)
-            } else {
-                out.println '<script type="text/javascript">'
-                out.println body()
-                out.println '</script>'
-            }
+            out.println '<script type="text/javascript">'
+            out.println body()
+            out.println '</script>'
         }
     }
 
