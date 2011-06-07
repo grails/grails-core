@@ -393,6 +393,13 @@ public class GrailsScriptRunner {
 
     }
 
+    public int executeScriptWithCaching(String scriptName, String env, String args) throws IOException {
+        if(args != null) {
+            System.setProperty("grails.cli.args", args.replace(' ', '\n'));
+        }
+        return executeScriptWithCaching(scriptName, env);
+    }
+
     public int executeScriptWithCaching(String scriptName, String env) throws IOException {
         List<Resource> potentialScripts;
         List<Resource> allScripts = getAvailableScripts();

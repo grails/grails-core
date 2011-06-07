@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.cli.logging;
 
 import jline.ConsoleReader;
 import jline.Terminal;
+import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
@@ -92,6 +93,7 @@ public class GrailsConsole {
 
         terminal = Terminal.setupTerminal();
         reader = new ConsoleReader();
+        reader.setCompletionHandler(new CandidateListCompletionHandler());
         category.add("grails");
         // bit of a WTF this, but see no other way to allow a customization indicator
         this.maxIndicatorString = new StringBuilder().append(indicator).append(indicator).append(indicator).append(indicator).append(indicator);

@@ -18,12 +18,12 @@ package org.codehaus.groovy.grails.cli.interactive
 import grails.util.BuildSettings
 import grails.util.Environment
 import grails.util.GrailsNameUtils
-import jline.SimpleCompletor
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
+import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 
 /**
- *
+ * Provides the implementation of interactive mode in Grails
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -43,23 +43,29 @@ class InteractiveMode {
 
     void run() {
 
-        console.reader.addCompletor(new ScriptNameCompletor(scriptRunner.availableScripts))
+        console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         active = true
 
         while(active) {
             def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
-            scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName), Environment.current.name)
+            try {
+                if(scriptName.trim()) {
+                    if(scriptName.contains(" ")) {
+                        def i = scriptName.indexOf(" ")
+                        def args = scriptName[i..-1]
+                        scriptName = scriptName[0..i]
+                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName), Environment.current.name, args )
+                    }
+                    else {
+                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName), Environment.current.name)
+                    }
+                }
+                else {
+                    error "Not script name specified"
+                }
+            } catch (ScriptNotFoundException e) {
+                error "Script not found for name $scriptName"
+            }
         }
-    }
-}
-
-class ScriptNameCompletor extends SimpleCompletor {
-
-    ScriptNameCompletor(List scriptResources) {
-        super(getScriptNames(scriptResources))
-    }
-
-    static String[] getScriptNames(scriptResources) {
-        scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) } as String[]
     }
 }
