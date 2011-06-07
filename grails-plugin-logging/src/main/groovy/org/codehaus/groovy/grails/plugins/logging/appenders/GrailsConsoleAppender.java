@@ -45,11 +45,13 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
 
     private String buildMessage(LoggingEvent event) {
         StringBuilder b = new StringBuilder(this.layout.format(event));
-        b.append(Layout.LINE_SEP);
 
         String[] throwableStrRep = event.getThrowableStrRep();
-        for (String line : throwableStrRep) {
-            b.append(line).append(Layout.LINE_SEP);
+        if(throwableStrRep != null) {
+            b.append(Layout.LINE_SEP);
+            for (String line : throwableStrRep) {
+                b.append(line).append(Layout.LINE_SEP);
+            }
         }
         return b.toString();
     }
