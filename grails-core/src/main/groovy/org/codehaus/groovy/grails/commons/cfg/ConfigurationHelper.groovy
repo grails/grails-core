@@ -123,7 +123,9 @@ class ConfigurationHelper {
         if (application) {
             binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME))
             binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION))
+            binding.put(GrailsApplication.APPLICATION_ID, application);
         }
+
 
         configSlurper.setBinding(binding)
         return configSlurper
