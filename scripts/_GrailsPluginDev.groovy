@@ -56,9 +56,12 @@ target(packagePlugin: "Implementation target") {
 
     def descriptor = pluginSettings.getBasePluginDescriptor()
     plugin = generatePluginXml(descriptor.file, true)
-
     def pluginBaseDir = pluginFile.parentFile.absolutePath
     pluginInfo = pluginSettings.getPluginInfo(pluginBaseDir)
+
+    if(plugin?.hasProperty('pluginExcludes')) {
+        pluginInfo.pluginExcludes = plugin.pluginExcludes
+    }
 
     def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
 
