@@ -97,7 +97,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
             return this;
         }
 
-        throw new JSONException("Value out of sequence.");
+        throw new JSONException("Value out of sequence: expected mode to be OBJECT or ARRAY when writing '" + s + "' but was " + this.mode);
     }
 
     @Override
@@ -158,6 +158,6 @@ public class PrettyPrintJSONWriter extends JSONWriter {
                 throw new JSONException(e);
             }
         }
-        throw new JSONException("Misplaced key.");
+        throw new JSONException("Misplaced key: expected mode of KEY but was " + this.mode);
     }
 }

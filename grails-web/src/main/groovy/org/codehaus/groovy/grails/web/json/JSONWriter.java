@@ -115,7 +115,7 @@ public class JSONWriter {
             this.comma = true;
             return this;
         }
-        throw new JSONException("Value out of sequence.");
+        throw new JSONException("Value out of sequence: expected mode to be OBJECT or ARRAY when writing '" + s + "' but was " + this.mode);
     }
 
     protected void comma() {
@@ -140,7 +140,7 @@ public class JSONWriter {
             this.comma = false;
             return this;
         }
-        throw new JSONException("Misplaced array.");
+        throw new JSONException("Misplaced array: expected mode of INIT, OBJECT or ARRAY but was " + this.mode);
     }
 
     /**
@@ -210,7 +210,7 @@ public class JSONWriter {
                 throw new JSONException(e);
             }
         }
-        throw new JSONException("Misplaced key.");
+        throw new JSONException("Misplaced key: expected mode of KEY but was " + this.mode);
     }
 
 
@@ -231,7 +231,7 @@ public class JSONWriter {
             this.comma = false;
             return this;
         }
-        throw new JSONException("Misplaced object.");
+        throw new JSONException("Misplaced object: expected mode of INIT, OBJECT or ARRAY but was " + this.mode);
 
     }
 
