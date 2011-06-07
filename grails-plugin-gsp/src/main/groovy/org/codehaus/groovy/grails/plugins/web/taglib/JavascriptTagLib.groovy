@@ -137,6 +137,8 @@ class JavascriptTagLib  {
     /**
      * Creates a remote function call.
      *
+     * @emptyTag
+     * 
      * @attr before The javascript function to call before the remote function call
      * @attr after The javascript function to call after the remote function call
      * @attr update Either a map containing the elements to update for 'success' or 'failure' states, or a string with the element to update in which cause failure events would be ignored
@@ -242,6 +244,8 @@ class JavascriptTagLib  {
     /**
      * A field that sends its value to a remote link.
      *
+     * @emptyTag
+     * 
      * @attr name REQUIRED the name of the field
      * @attr value The initial value of the field
      * @attr paramName The name of the parameter send to the server

@@ -68,6 +68,8 @@ class ValidationTagLib {
      *
      * eg. &lt;g:fieldValue bean="${book}" field="title" /&gt;
      *
+     * @emptyTag
+     * 
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
      */
@@ -218,6 +220,8 @@ class ValidationTagLib {
     /**
      * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported).
      *
+     * @emptyTag
+     * 
      * @attr bean REQUIRED The bean to check for errors
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
@@ -255,6 +259,8 @@ class ValidationTagLib {
     /**
      * Resolves a message code for a given error or code from the resource bundle.
      *
+     * @emptyTag
+     * 
      * @attr error The error to resolve the message for. Used for built-in Grails messages.
      * @attr message The object to resolve the message for. Objects must implement org.springframework.context.MessageSourceResolvable.
      * @attr code The code to resolve the message for. Used for custom application messages.

@@ -282,6 +282,9 @@ class CountryTagLib {
 
     /**
      * Display a country selection combo box.
+     *
+     * @emptyTag
+     * 
      * @attr from list of country codes or none for full list. Order is honoured
      * @attr valueMessagePrefix code prefix to use, if you want names of countries to come from message bundle
      * @attr value currently selected country code - ISO3166_3 (3 character, lowercase) form
@@ -311,6 +314,9 @@ class CountryTagLib {
     /**
      * Take a country code and output the country name, from the internal data.<br/>
      * Note: to use message bundle to resolve name, use g:message tag
+     * 
+     * @emptyTag
+     * 
      * @attr code REQUIRED the ISO3166_3 country code
      */
     def country = { attrs ->
