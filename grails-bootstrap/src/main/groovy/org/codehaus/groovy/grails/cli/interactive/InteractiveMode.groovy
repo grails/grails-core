@@ -50,7 +50,15 @@ class InteractiveMode {
             def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
             try {
                 if(scriptName.trim()) {
-                    if(scriptName.contains(" ")) {
+                    if(scriptName.startsWith("!")) {
+                        try {
+                            def process=new ProcessBuilder(scriptName[1..-1].split(" ")).redirectErrorStream(true).start()
+                            log process.inputStream.text
+                        } catch (e) {
+                            error "Error occurred executing process: ${e.message}"
+                        }
+                    }
+                    else if(scriptName.contains(" ")) {
                         def i = scriptName.indexOf(" ")
                         def args = scriptName[i..-1]
                         scriptName = scriptName[0..i]
