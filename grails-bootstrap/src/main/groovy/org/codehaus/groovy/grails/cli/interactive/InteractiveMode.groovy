@@ -61,7 +61,10 @@ class InteractiveMode {
             def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
             try {
                 def trimmed = scriptName.trim()
-                if(trimmed.trim()) {
+                if(trimmed) {
+                    if("quit".equals(trimmed)) {
+                        break
+                    }
                     if("exit".equals(trimmed)) {
                         if(grailsServer) {
                            try {
@@ -76,7 +79,7 @@ class InteractiveMode {
 
                         }
                         else {
-                            error "Grails server is not running, cannot stop."
+                            break
                         }
                     }
                     else if(scriptName.startsWith("!")) {
