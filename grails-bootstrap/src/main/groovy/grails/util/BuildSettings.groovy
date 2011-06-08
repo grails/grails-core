@@ -1051,7 +1051,8 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!convertClosuresArtefactsSet) {
-            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  '').toBoolean()
+            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  'false').toBoolean()
+            System.setProperty(CONVERT_CLOSURES_KEY, "$convertClosuresArtefacts")
         }
 
         if (!projectWarOsgiHeadersSet) {
