@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-
+import org.codehaus.groovy.grails.compiler.*
 import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
@@ -317,6 +317,13 @@ integrationTestPhasePreparation = {
 
     initPersistenceContext()
 
+	if(org.codehaus.groovy.grails.cli.interactive.InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent()) {
+		// if interactive mode is running start the project change watcher
+		if(!GrailsProjectWatcher.isActive()) {
+			def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
+		    watcher.start()			
+		}
+	}
     GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
 }
@@ -325,8 +332,10 @@ integrationTestPhasePreparation = {
  * Shuts down the bootstrapped Grails application.
  */
 integrationTestPhaseCleanUp = {
-    destroyPersistenceContext()
-    appCtx?.close()
+	if(!(org.codehaus.groovy.grails.cli.interactive.InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
+	    destroyPersistenceContext()
+	    appCtx?.close()		
+	}
 }
 
 /**
