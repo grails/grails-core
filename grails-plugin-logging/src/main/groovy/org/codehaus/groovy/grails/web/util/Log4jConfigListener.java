@@ -19,6 +19,9 @@ import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.ConfigObject;
 
+import java.util.Collection;
+import java.util.Map;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -51,6 +54,12 @@ public class Log4jConfigListener implements ServletContextListener {
                     Object o = co.get("log4j");
                     if (o instanceof Closure) {
                         new Log4jConfig().configure((Closure<?>)o);
+                    }
+                    else if (o instanceof Collection) {
+                        new Log4jConfig().configure((Collection)o);
+                    }
+                    else if (o instanceof Map) {
+                        new Log4jConfig().configure((Map)o);
                     }
                     else {
                         new Log4jConfig().configure();
