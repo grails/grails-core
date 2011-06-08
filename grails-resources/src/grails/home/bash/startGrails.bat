@@ -93,7 +93,7 @@ if "%CURR_ARG:~0,2%" == "-D" (
 			shift
 			goto win9xME_args_slurp
 		) else (
-			if "x%~1" == "x-agent" (
+			if "x%~1" == "x-reloading" (
 				set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
 				shift
 				shift

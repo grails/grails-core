@@ -61,7 +61,7 @@ while true; do
     break
   fi
 
-  if [ "$1" = "-agent" ]; then
+  if [ "$1" = "-reloading" ]; then
     AGENT=$AGENT_STRING
     shift
     break
