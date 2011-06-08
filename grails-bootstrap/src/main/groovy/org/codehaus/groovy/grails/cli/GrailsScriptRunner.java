@@ -19,6 +19,7 @@ import gant.Gant;
 import grails.util.*;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
+import groovy.lang.GroovyObject;
 import groovy.util.AntBuilder;
 import org.apache.commons.cli.*;
 import org.apache.tools.ant.Project;
@@ -89,6 +90,9 @@ public class GrailsScriptRunner {
     private URLClassLoader classLoader;
     private GrailsConsole console = GrailsConsole.getInstance();
     private File scriptCacheDir;
+
+    private final Map<String, CachedScript> scriptCache = new HashMap<String, CachedScript>();
+    private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
 
     public GrailsScriptRunner() {
         this(new BuildSettings());
@@ -382,8 +386,6 @@ public class GrailsScriptRunner {
     }
 
 
-    private final Map<String, CachedScript> scriptCache = new HashMap<String, CachedScript>();
-    private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private int callPluginOrGrailsScript(String scriptName, String env) throws IOException {
@@ -407,8 +409,15 @@ public class GrailsScriptRunner {
         if (scriptCache.get(scriptName) != null) {
             CachedScript cachedScript = scriptCache.get(scriptName);
             potentialScripts = cachedScript.potentialScripts;
-            binding = cachedScript.binding;
-            setDefaultInputStream(binding);
+            GantBinding originalBinding = cachedScript.binding;
+            binding = new GantBinding();
+            Map variables = originalBinding.getVariables();
+            if(variables.get("applicationLoaded") != null) {
+                binding.setVariable("applicationLoaded", Boolean.TRUE);
+                binding.setVariable("grailsApp", variables.get("grailsApp"));
+                binding.setVariable("appCtx", variables.get("appCtx"));
+                setDefaultInputStream(binding);
+            }
         }
         else {
             binding = new GantBinding();
@@ -438,7 +447,7 @@ public class GrailsScriptRunner {
                 CachedScript cachedScript = new CachedScript();
                 cachedScript.binding = binding;
                 cachedScript.potentialScripts = potentialScripts;
-                scriptCache.put("scriptName", cachedScript);
+                scriptCache.put(scriptName, cachedScript);
             }
         }
 
@@ -565,7 +574,7 @@ public class GrailsScriptRunner {
 
         try {
             System.setIn(orignalIn);
-            p.setInputHandler(new CommandLineInputHandler(orignalIn, System.out));
+            p.setInputHandler(new CommandLineInputHandler());
             p.setDefaultInputStream(orignalIn);
         }
         catch (NoSuchMethodError nsme) {

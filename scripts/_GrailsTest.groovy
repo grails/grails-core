@@ -307,7 +307,7 @@ unitTestPhaseCleanUp = {}
  */
 integrationTestPhasePreparation = {
     packageTests()
-    bootstrap()
+    bootstrapOnce()
 
     // Get the Grails application instance created by the bootstrap process.
     def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
