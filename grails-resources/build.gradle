@@ -57,6 +57,7 @@ for (jarTask in allJarFileTasks) {
 jar.from("src/war") {
     into "src/war"
     include "WEB-INF/**"
+    exclude 'WEB-INF/tld/grails.tld', 'WEB-INF/tld/spring.tld'
 }
 jar.from("src/grails/templates") {
     into "src/grails/templates"
