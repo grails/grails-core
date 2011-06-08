@@ -21,6 +21,7 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.logging.GrailsConsole
+import grails.util.BuildSettingsHolder
 
 /**
  * Provides the implementation of interactive mode in Grails
@@ -30,18 +31,28 @@ import org.codehaus.groovy.grails.cli.logging.GrailsConsole
  */
 class InteractiveMode {
 
+    static InteractiveMode current
+
     @Delegate GrailsConsole console = GrailsConsole.getInstance()
 
     GrailsScriptRunner scriptRunner
     BuildSettings settings
     boolean active = false
+    def grailsServer
 
     InteractiveMode(BuildSettings settings, GrailsScriptRunner scriptRunner) {
         this.scriptRunner = scriptRunner
         this.settings = settings;
+        BuildSettingsHolder.settings = settings
+    }
+
+    void setGrailsServer(grailsServer) {
+        addStatus "Application loaded in interactive mode. Type 'exit' to shutdown."
+        this.grailsServer = grailsServer
     }
 
     void run() {
+        current = this
 
         console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         active = true
@@ -49,8 +60,26 @@ class InteractiveMode {
         while(active) {
             def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
             try {
-                if(scriptName.trim()) {
-                    if(scriptName.startsWith("!")) {
+                def trimmed = scriptName.trim()
+                if(trimmed.trim()) {
+                    if("exit".equals(trimmed)) {
+                        if(grailsServer) {
+                           try {
+                               updateStatus "Stopping Grails server"
+                               grailsServer.stop()
+                           } catch (e) {
+                               error "Error stopping server: ${e.message}", e
+                           }
+                           finally {
+                               grailsServer = null
+                           }
+
+                        }
+                        else {
+                            error "Grails server is not running, cannot stop."
+                        }
+                    }
+                    else if(scriptName.startsWith("!")) {
                         try {
                             def process=new ProcessBuilder(scriptName[1..-1].split(" ")).redirectErrorStream(true).start()
                             log process.inputStream.text
@@ -73,7 +102,10 @@ class InteractiveMode {
                 }
             } catch (ScriptNotFoundException e) {
                 error "Script not found for name $scriptName"
+            } catch (Exception e) {
+                error "Error running script $scriptName: ${e.message}", e
             }
+
         }
     }
 }
