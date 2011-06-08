@@ -59,6 +59,6 @@ public class GroovyCollectTagTests extends TestCase {
         tag.setAttributes(attrs);
         assertFalse(tag.attributes.isEmpty());
         tag.doStartTag();
-        assertEquals("myObj.collect {it.name}.each { "+ System.getProperty("line.separator"),sw.toString());
+        assertEquals("for( it in myObj.collect {it.name} ) {"+ System.getProperty("line.separator"),sw.toString());
     }
 }

@@ -41,7 +41,7 @@ class GroovyFindAllTagTests extends GroovyTestCase {
         tag.attributes = ['"expr"': " \${it.age > 19}", '"in"': "myObj"]
         tag.doStartTag()
 
-        assertEquals("myObj.findAll {it.age > 19}.each { "+ System.getProperty("line.separator"),sw.toString())
+        assertEquals("for( it in myObj.findAll {it.age > 19} ) {"+System.getProperty("line.separator"), sw.toString())
     }
 
     void testDoEndTag() {

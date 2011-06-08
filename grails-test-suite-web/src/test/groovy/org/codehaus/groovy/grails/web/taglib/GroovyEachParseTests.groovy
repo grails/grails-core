@@ -19,7 +19,7 @@ def codecOut = getCodecOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
-evaluate('"blah"', 2, it) { return "blah" }.each { t ->
+for( t in evaluate('"blah"', 2, it) { return "blah" } ) {
 printHtmlPart(0)
 }
 printHtmlPart(0)
@@ -41,7 +41,7 @@ def codecOut = getCodecOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
-evaluate('"blah"', 1, it) { return "blah" }.each { t ->
+for( t in evaluate('"blah"', 1, it) { return "blah" } ) {
 }
 }""" + GSP_FOOTER
 ),trimAndRemoveCR(output.toString()))
@@ -63,8 +63,12 @@ def codecOut = getCodecOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
-evaluate('"blah"', 2, it) { return "blah" }.eachWithIndex { t,i ->
+FOR:{
+int i = 0
+for( t in evaluate('"blah"', 2, it) { return "blah" } ) {
 printHtmlPart(0)
+i++
+}
 }
 printHtmlPart(0)
 }""" + GSP_FOOTER

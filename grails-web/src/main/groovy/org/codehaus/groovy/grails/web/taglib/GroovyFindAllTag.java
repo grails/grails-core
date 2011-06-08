@@ -64,7 +64,7 @@ public class GroovyFindAllTag extends GroovySyntaxTag {
     }
 
     public void doEndTag() {
-        out.println("}");
+        endEachMethod();
     }
 
     public String getName() {

@@ -139,16 +139,29 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         }
 
         if (hasStatus) {
-            out.println("int "+ status +"= 0" );
+            out.println("FOR:{");
+            out.println("int "+ status +" = 0" );
         }
-        out.print("for(" + (hasVar ? var : "it"));
+        out.print("for( " + (hasVar ? var : "it"));
         out.print(" in "); // dot de-reference
-        out.print(parser != null ? parser.getExpressionText(in) : in);  // object
+        out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
         out.print(" )"); // dot de-reference
-        out.print(" { "); // start closure
+        out.print(" {"); // start closure
 
 
         out.println();
+    }
+
+    protected void endEachMethod(){
+        String status = attributes.get(ATTRIBUTES_STATUS);
+        status = extractAttributeValue(status);
+        boolean hasStatus = !StringUtils.isBlank(status);
+
+        if (hasStatus) {
+            out.println(status +"++" );
+            out.println("}");
+        }
+        out.println("}");
     }
 
     private String extractAttributeValue(String attr) {
@@ -157,6 +170,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         }
         if (attr.startsWith("\"") && attr.endsWith("\"") && attr.length() > 1) {
             attr = attr.substring(1,attr.length()-1);
+        }
+         if (attr.endsWith("?") && attr.length() > 1) {
+            attr = attr.substring(0,attr.length()-1);
         }
         return attr;
     }

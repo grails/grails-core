@@ -540,7 +540,7 @@ class RenderTagLib implements RequestConstants {
             throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         }
 
-        if (attrs.template != null) {
+        if (attrs.template == null) {
             throwTagError("Tag [render] is missing required attribute [template]")
         }
 
