@@ -1152,7 +1152,6 @@ public final class GrailsDomainBinder {
                 return m;
             }
         } catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
             throw new GrailsDomainException("Error evaluating ORM mappings block for domain ["+domainClass.getFullName()+"]:  " + e.getMessage(), e);
         }
         return null;

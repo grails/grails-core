@@ -755,7 +755,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                     plugin.doWithDynamicMethods(applicationContext);
                 }
                 catch (Throwable t) {
-                    GrailsUtil.deepSanitize(t);
                     LOG.error("Error configuring dynamic methods for plugin " + plugin + ": " + t.getMessage(), t);
                 }
             }

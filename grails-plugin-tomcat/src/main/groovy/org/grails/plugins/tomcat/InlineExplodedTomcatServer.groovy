@@ -107,6 +107,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     void stop() {
         tomcat.stop()
+        tomcat.destroy()
     }
 
     private loadInstance(String name) {

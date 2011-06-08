@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.cli.logging;
 
 import jline.ConsoleReader;
 import jline.Terminal;
+import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
@@ -84,7 +85,7 @@ public class GrailsConsole {
         }
     };
 
-    private GrailsConsole() throws IOException {
+    protected GrailsConsole() throws IOException {
         this.cursorMove = 1;
         this.out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
@@ -92,6 +93,7 @@ public class GrailsConsole {
 
         terminal = Terminal.setupTerminal();
         reader = new ConsoleReader();
+        reader.setCompletionHandler(new CandidateListCompletionHandler());
         category.add("grails");
         // bit of a WTF this, but see no other way to allow a customization indicator
         this.maxIndicatorString = new StringBuilder().append(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
@@ -112,6 +114,10 @@ public class GrailsConsole {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
     }
 
     public InputStream getInput() {
@@ -266,14 +272,10 @@ public class GrailsConsole {
         if (hasNewLines(msg)) {
             if (Ansi.isEnabled()) {
                 out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).reset());
-                out.println();
                 out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
-                out.println();
             } else {
                 out.println(category);
-                out.println();
                 out.println(msg);
-                out.println();
             }
             //updateStatus();
         } else {
@@ -377,9 +379,10 @@ public class GrailsConsole {
      * string.
      */
     public String userInput(String msg) {
-        updateStatus(msg);
+        addStatus(msg);
+        lastMessage = "";
         try {
-            cursorMove += 1;
+            cursorMove = 0;
             return reader.readLine("> ");
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
@@ -412,7 +415,7 @@ public class GrailsConsole {
                     return response;
                 }
             }
-            cursorMove += 2;
+            cursorMove = 0;
             return userInput("Invalid input. Must be one of ", validResponses);
         }
 

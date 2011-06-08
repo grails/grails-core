@@ -96,7 +96,7 @@ class CoreGrailsPlugin {
         }
 
         // add shutdown hook if not running in war deployed mode
-        if (!Metadata.getCurrent().isWarDeployed() || Environment.currentEnvironment == Environment.DEVELOPMENT) {
+        if (!Metadata.getCurrent().isWarDeployed() && Environment.currentEnvironment == Environment.DEVELOPMENT) {
             shutdownHook(DevelopmentShutdownHook)
         }
 

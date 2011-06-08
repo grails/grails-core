@@ -178,7 +178,6 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             @SuppressWarnings("unused") HttpServletRequest request,
             @SuppressWarnings("unused") HttpServletResponse response)  {
 
-        GrailsUtil.deepSanitize(exception);
         LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);
         if (exception instanceof GroovyPagesException) {
             throw (GroovyPagesException) exception;

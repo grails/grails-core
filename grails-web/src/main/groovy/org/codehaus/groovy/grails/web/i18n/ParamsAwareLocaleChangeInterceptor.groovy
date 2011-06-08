@@ -1,19 +1,14 @@
 package org.codehaus.groovy.grails.web.i18n
 
-import grails.util.GrailsUtil
-
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
 import org.apache.commons.logging.LogFactory
-
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-
 import org.springframework.beans.propertyeditors.LocaleEditor
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor
 import org.springframework.web.servlet.support.RequestContextUtils
 
-/**
+ /**
  * A LocaleChangeInterceptor instance that is aware of the Grails params object.
  *
  * @author Graeme Rocher
@@ -54,7 +49,6 @@ class ParamsAwareLocaleChangeInterceptor extends LocaleChangeInterceptor {
             return true
         }
         catch (Exception e) {
-            GrailsUtil.deepSanitize(e)
             LOG.error("Error intercepting locale change: ${e.message}", e)
             return true
         }

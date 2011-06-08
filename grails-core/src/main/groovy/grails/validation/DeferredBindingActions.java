@@ -57,7 +57,6 @@ public class DeferredBindingActions {
                         try {
                             runnable.run();
                         } catch (Exception e) {
-                            GrailsUtil.deepSanitize(e);
                             LOG.error("Error running deferred data binding: " + e.getMessage(), e);
                         }
                     }

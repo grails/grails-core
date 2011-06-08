@@ -83,7 +83,6 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
                         viewCode = generateViewSource(viewFileName, domainClass);
                     }
                     catch (Exception e) {
-                        GrailsUtil.deepSanitize(e);
                         LOG.error("Error generating scaffolded view [" + viewName + "]: " + e.getMessage(),e);
                         return resolvedView;
                     }
