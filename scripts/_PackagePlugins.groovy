@@ -16,6 +16,7 @@
 
 import groovyx.gpars.Parallelizer
 
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**
@@ -27,7 +28,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
  */
 
 packageFiles = { String from ->
-	console.updateStatus "Packaging plugins"
+    GrailsConsole.instance.updateStatus "Packaging plugins"
     def ant = new AntBuilder(ant.project)
     def targetPath = grailsSettings.resourcesDir.path
     def dir = new File(from, "grails-app/conf")
@@ -85,7 +86,7 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
                         }
                     }
                     catch (Exception e) {
-                        console.error "Error packaging plugin [${info.name}] : ${e.message}"
+                        GrailsConsole.instance.error "Error packaging plugin [${info.name}] : ${e.message}"
                         exit 1
                     }
                 }
@@ -113,7 +114,7 @@ packagePluginsForWar = { targetDir ->
         }
         catch (Exception e) {
             e.printStackTrace(System.out)
-            console.error "Error packaging plugin [${info.name}] : ${e.message}"
+            GrailsConsole.instance.error "Error packaging plugin [${info.name}] : ${e.message}"
         }
     }
 }

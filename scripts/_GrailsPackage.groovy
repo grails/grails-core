@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
+import grails.util.PluginBuildSettings
+import groovyx.gpars.Asynchronizer
+
 import org.apache.log4j.LogManager
+import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-
-import grails.util.PluginBuildSettings
-import groovyx.gpars.Asynchronizer
 
 /**
  * Gant script that packages a Grails application (note: does not create WAR)
@@ -39,6 +40,9 @@ includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
 target(createConfig: "Creates the configuration object") {
+
+    GrailsConsole console = GrailsConsole.instance
+
     if (configFile.exists()) {
         def configClass
         try {
@@ -80,7 +84,9 @@ target(createConfig: "Creates the configuration object") {
 target(packageApp : "Implementation of package target") {
     depends(createStructure, packagePlugins, packageTlds)
 
-	console.updateStatus "Packaging Grails application"
+    GrailsConsole console = GrailsConsole.instance
+
+    console.updateStatus "Packaging Grails application"
 
     try {
         profile("compile") {
