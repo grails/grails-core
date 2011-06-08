@@ -267,7 +267,7 @@ class Log4jDslTests extends GroovyTestCase {
         }])
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
 
-        assertEquals hibernateLogger.level, Level.WARN
+        assertEquals Level.WARN, hibernateLogger.level
     }
 
     void testConfigFromMap() {
@@ -284,7 +284,7 @@ class Log4jDslTests extends GroovyTestCase {
         config.configure(configData)
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
 
-        assertEquals hibernateLogger.level, Level.WARN
+        assertEquals Level.WARN, hibernateLogger.level
     }
 
 
