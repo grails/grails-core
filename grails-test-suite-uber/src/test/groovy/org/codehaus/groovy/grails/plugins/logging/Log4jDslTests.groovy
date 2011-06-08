@@ -254,4 +254,38 @@ class Log4jDslTests extends GroovyTestCase {
         def rootLogger = Logger.rootLogger
         assertEquals Level.DEBUG, rootLogger.level
     }
+    
+    void testConfigFromCollection() {
+        LogManager.resetConfiguration()
+
+        Log4jConfig config = new Log4jConfig()
+        config.configure([{
+            debug 'org.hibernate.SQL'
+        },
+        {
+            warn 'org.hibernate.SQL'
+        }])
+        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
+
+        assertEquals Level.WARN, hibernateLogger.level
+    }
+
+    void testConfigFromMap() {
+        LogManager.resetConfiguration()
+
+        Log4jConfig config = new Log4jConfig()
+        LinkedHashMap configData = [:]
+        configData.main = {
+            debug 'org.hibernate.SQL'
+        }
+        configData.secondary = {
+            warn 'org.hibernate.SQL'
+        }
+        config.configure(configData)
+        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
+
+        assertEquals Level.WARN, hibernateLogger.level
+    }
+
+
 }

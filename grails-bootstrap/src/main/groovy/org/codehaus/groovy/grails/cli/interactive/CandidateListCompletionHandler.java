@@ -37,7 +37,6 @@ public class CandidateListCompletionHandler implements CompletionHandler {
         this.eagerNewlines = eagerNewlines;
     }
 
-    @Override
     public boolean complete(ConsoleReader reader, List candidates, int pos) throws IOException {
         CursorBuffer buf = reader.getCursorBuffer();
 

@@ -55,12 +55,10 @@ public class StaticLoggerBinder implements LoggerFactoryBinder {
         this.loggerFactory = new GrailsSlf4jLoggerFactory();
     }
 
-    @Override
     public ILoggerFactory getLoggerFactory() {
         return loggerFactory;
     }
 
-    @Override
     public String getLoggerFactoryClassStr() {
         return GrailsSlf4jLoggerFactory.class.getName();
     }
