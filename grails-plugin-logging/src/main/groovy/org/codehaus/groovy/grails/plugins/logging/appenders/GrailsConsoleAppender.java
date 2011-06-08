@@ -56,12 +56,10 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
         return b.toString();
     }
 
-    @Override
     public void close() {
         // do nothing
     }
 
-    @Override
     public boolean requiresLayout() {
         return true;
     }

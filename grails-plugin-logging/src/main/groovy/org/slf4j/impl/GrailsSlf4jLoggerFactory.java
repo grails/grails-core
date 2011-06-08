@@ -33,7 +33,6 @@ public class GrailsSlf4jLoggerFactory implements ILoggerFactory {
 
     Map<String, Logger> loggers = new ConcurrentHashMap<String, Logger>();
 
-    @Override
     public Logger getLogger(String name) {
         Logger logger = loggers.get(name);
         if (logger == null) {
