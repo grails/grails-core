@@ -15,7 +15,8 @@
  */
 
 import grails.util.PluginBuildSettings
-import groovyx.gpars.Asynchronizer
+import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 
 import org.apache.log4j.LogManager
 import org.codehaus.groovy.grails.cli.logging.GrailsConsole
@@ -131,8 +132,9 @@ target(packageApp : "Implementation of package target") {
                 PluginBuildSettings settings = pluginSettings
                 def i18nPluginDirs = settings.pluginI18nDirectories
                 if (i18nPluginDirs) {
-                    Asynchronizer.doParallel(5) {
-                        i18nPluginDirs.eachParallel { Resource srcDir ->
+                    ExecutorService pool = Executors.newFixedThreadPool(5)
+                    for (Resource r in i18nPluginDirs) {
+                        pool.execute({ Resource srcDir ->
                             if (srcDir.exists()) {
                                 def file = srcDir.file
                                 def pluginDir = file.parentFile.parentFile
@@ -155,7 +157,7 @@ target(packageApp : "Implementation of package target") {
                                     }
                                 }
                             }
-                        }
+                        }.curry(r))
                     }
                 }
             }

@@ -20,7 +20,6 @@ import grails.util.GrailsUtil
 import grails.util.PluginBuildSettings
 
 import groovy.xml.MarkupBuilder
-import groovyx.gpars.Parallelizer;
 
 import org.codehaus.groovy.grails.compiler.support.*
 import org.apache.commons.io.FilenameUtils
@@ -41,6 +40,7 @@ import org.codehaus.groovy.grails.plugins.ProfilingGrailsPluginManager
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -118,14 +118,13 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
     // Work out what the name of the plugin is from the name of the descriptor file.
     pluginName = GrailsNameUtils.getPluginName(descriptor.name)
 
-
     // Remove the existing 'plugin.xml' if there is one.
     def pluginXml = new File(pluginBaseDir, "plugin.xml")
     pluginXml.delete()
 
     // Use MarkupBuilder with indenting to generate the file.
     pluginXml.withWriter { writer ->
-        def generator = new org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator(pluginName, resourceList)
+        def generator = new PluginDescriptorGenerator(pluginName, resourceList)
 
         pluginProps["type"] = descriptor.name - '.groovy'
         generator.generatePluginXml(pluginProps, writer)

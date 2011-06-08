@@ -40,7 +40,6 @@ import org.codehaus.groovy.grails.cli.support.GrailsRootLoader;
  *       &lt;fileset dir="${grails.home}/lib"&gt;
  *          &lt;include name="groovy-all*.jar"/&gt;
  *          &lt;include name="ivy*.jar"/&gt;
- *          &lt;include name="gpars*.jar"/&gt;
  *          &lt;include name="gant_groovy*.jar"/&gt;
  *       &lt;/fileset&gt;
  *    &lt;/path&gt;
@@ -147,7 +146,7 @@ public class GrailsTask extends Task {
             File[] files = new File(home, "lib").listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     return name.startsWith("gant_") || name.startsWith("groovy-all") ||
-                           name.startsWith("ivy") || name.startsWith("gpars");
+                           name.startsWith("ivy");
                 }
             });
 

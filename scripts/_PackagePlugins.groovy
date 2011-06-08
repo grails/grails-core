@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import groovyx.gpars.Parallelizer
+import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 
 import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
@@ -76,8 +77,9 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
     profile("Packaging plugin static files") {
         Thread.start {
             def pluginInfos = pluginSettings.getSupportedPluginInfos()
-            Parallelizer.withParallelizer {
-                pluginInfos.eachParallel{ GrailsPluginInfo info ->
+            ExecutorService pool = Executors.newFixedThreadPool(5)
+            for (GrailsPluginInfo gpi in pluginInfos) {
+                pool.execute({ GrailsPluginInfo info ->
                     try {
                         def pluginDir = info.pluginDir
                         if (pluginDir) {
@@ -89,7 +91,7 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
                         GrailsConsole.instance.error "Error packaging plugin [${info.name}] : ${e.message}"
                         exit 1
                     }
-                }
+                }.curry(gpi))
             }
         }
     }

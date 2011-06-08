@@ -148,8 +148,6 @@ public class GrailsCoreDependencies {
 
                         String springDatastoreMappingVersion = "1.0.0.M6";
                         ModuleRevisionId[] compileDependencies = {
-                            ModuleRevisionId.newInstance("org.coconut.forkjoin", "jsr166y", "070108"),
-                            ModuleRevisionId.newInstance("org.codehaus.gpars", "gpars", "0.9"),
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5"),
                             ModuleRevisionId.newInstance("commons-codec", "commons-codec", "1.4"),
