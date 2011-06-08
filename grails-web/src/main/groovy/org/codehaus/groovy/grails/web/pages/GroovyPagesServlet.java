@@ -225,7 +225,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     }
 
     private void defaultExceptionHandling(Exception exception, Writer out, GroovyPagesTemplateEngine engine) {
-        GrailsUtil.deepSanitize(exception);
         if (LOG.isErrorEnabled()) {
             LOG.error("Error processing GSP: " + exception.getMessage(), exception);
         }

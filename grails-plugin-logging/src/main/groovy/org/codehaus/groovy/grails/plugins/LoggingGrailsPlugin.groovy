@@ -54,6 +54,18 @@ class LoggingGrailsPlugin {
         }
     }
 
+    def doWithWebDescriptor = { webXml ->
+
+        def mappingElement = webXml.'listener'
+        mappingElement = mappingElement[mappingElement.size() - 1]
+
+        mappingElement + {
+            'listener' {
+                'listener-class'(org.codehaus.groovy.grails.web.util.Log4jConfigListener.name)
+            }
+        }
+    }
+
     def addLogMethod(artefactClass, handler) {
         // Formulate a name of the form grails.<artefactType>.classname
         // Do it here so not calculated in every getLog call :)

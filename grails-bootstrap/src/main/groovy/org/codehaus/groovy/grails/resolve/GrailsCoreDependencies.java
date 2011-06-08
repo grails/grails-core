@@ -110,7 +110,6 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-resources", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion),
-                            ModuleRevisionId.newInstance("org.slf4j", "slf4j-log4j12", slf4jVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-test", springVersion),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5")
                         };
@@ -237,8 +236,7 @@ public class GrailsCoreDependencies {
                         ModuleRevisionId[] loggingDependencies = {
                             ModuleRevisionId.newInstance("log4j", "log4j", "1.2.16"),
                             ModuleRevisionId.newInstance("org.slf4j", "jcl-over-slf4j", slf4jVersion),
-                            ModuleRevisionId.newInstance("org.slf4j", "jul-to-slf4j", slf4jVersion),
-                            ModuleRevisionId.newInstance("org.slf4j", "slf4j-log4j12", slf4jVersion)
+                            ModuleRevisionId.newInstance("org.slf4j", "jul-to-slf4j", slf4jVersion)
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "mail", "jms", "jmxtools", "jmxri");
 

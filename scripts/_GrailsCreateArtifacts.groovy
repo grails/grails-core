@@ -69,7 +69,7 @@ createArtifact = { Map args = [:] ->
     artifactFile = "${basedir}/${artifactPath}/${pkgPath}${className}${suffix}.groovy"
 
     if (new File(artifactFile).exists()) {
-        if (!confirmInput("${type} ${className}${suffix}.groovy already exists. Overwrite? [y/n]","${name}.${suffix}.overwrite")) {
+        if (!confirmInput("${type} ${className}${suffix}.groovy already exists. Overwrite?","${name}.${suffix}.overwrite")) {
             return
         }
     }
@@ -130,8 +130,7 @@ createUnitTest = { Map args = [:] ->
 
 promptForName = { Map args = [:] ->
     if (!argsMap["params"]) {
-        ant.input(addProperty: "artifact.name", message: "${args["type"]} name not specified. Please enter:")
-        argsMap["params"] << ant.antProject.properties."artifact.name"
+        argsMap["params"] << console.userInput("${args["type"]} name not specified. Please enter:")
     }
 }
 

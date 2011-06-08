@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
-import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -140,7 +139,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 backupParameters = new HashMap(webRequest.getParams());
             }
             catch (Exception e) {
-                GrailsUtil.deepSanitize(e);
                 LOG.error("Error creating params object: " + e.getMessage(), e);
                 backupParameters = Collections.EMPTY_MAP;
             }
@@ -168,7 +166,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         }
                     }
                     catch (Exception e) {
-                        GrailsUtil.deepSanitize(e);
                         if (e instanceof MultipartException) {
                             throw ((MultipartException)e);
                         }
@@ -296,7 +293,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 }
             }
             catch (Exception e) {
-                GrailsUtil.deepSanitize(e);
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
                     try {
                         handlerInterceptor.afterCompletion(request, response, this, e);

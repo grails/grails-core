@@ -15,11 +15,8 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import grails.util.Environment
-import grails.util.GrailsUtil
 import grails.util.Metadata
-
 import java.util.concurrent.ConcurrentHashMap
-
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -77,8 +74,10 @@ class ConfigurationHelper {
             ConfigSlurper configSlurper = getConfigSlurper(environment, application)
             try {
                 try {
+                    application?.config = new ConfigObject() // set empty config to avoid stack overflow
                     Class scriptClass = classLoader.loadClass(GrailsApplication.CONFIG_CLASS)
                     co = configSlurper.parse(scriptClass)
+                    application?.config = co
                 }
                 catch (ClassNotFoundException e) {
                     LOG.debug "Could not find config class [" + GrailsApplication.CONFIG_CLASS + "]. This is probably " +
@@ -97,7 +96,6 @@ class ConfigurationHelper {
                 }
             }
             catch (Throwable t) {
-                GrailsUtil.deepSanitize(t)
                 LOG.error("Error loading application Config: $t.message", t)
                 throw t
             }
@@ -123,7 +121,9 @@ class ConfigurationHelper {
         if (application) {
             binding.put(CONFIG_BINDING_APP_NAME, application.getMetadata().get(Metadata.APPLICATION_NAME))
             binding.put(CONFIG_BINDING_APP_VERSION, application.getMetadata().get(Metadata.APPLICATION_VERSION))
+            binding.put(GrailsApplication.APPLICATION_ID, application);
         }
+
 
         configSlurper.setBinding(binding)
         return configSlurper
