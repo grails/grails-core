@@ -39,7 +39,7 @@ eventsClassLoader = new GroovyClassLoader(classLoader)
 eventListener = new GrailsBuildEventListener(eventsClassLoader, binding, grailsSettings)
 def console = GrailsConsole.instance
 eventListener.globalEventHooks = [
-    StatusFinal: [ {message -> console.updateStatus message } ],
+    StatusFinal: [ {message -> console.addStatus message } ],
     StatusUpdate: [ {message -> console.updateStatus message } ],
     StatusError: [ {message -> console.error message } ],
     CreatedFile: [ {file -> console.addStatus "Created file $file" } ]
