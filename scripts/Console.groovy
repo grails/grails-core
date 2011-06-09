@@ -31,8 +31,7 @@ import org.codehaus.groovy.grails.support.*
 includeTargets << grailsScript("_GrailsBootstrap")
 
 target ('default': "Load the Grails interactive Swing console") {
-    depends(checkVersion, configureProxy, packageApp, classpath)
-    console()
+    depends(checkVersion, configureProxy, packageApp, classpath, console)
 }
 
 target(console:"The console implementation target") {
