@@ -1,5 +1,9 @@
 package org.codehaus.groovy.grails.web.converters
 
+import java.util.Collection;
+
+import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
@@ -24,12 +28,45 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       json: 'application/json'
                     ]
         """, "Config")
+    }
 
-        gcl.parseClass '''
+    protected void tearDown() {
+        super.tearDown()
+        MimeType.reset()
+    }
 
-import grails.persistence.*
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [TestBookController]
+    }
+    
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [AutoParamsJSONMarshallingBook, AutoParamsJSONMarshallingAuthor]
+    }
+    
+    void testJSONMarshallingIntoParamsObject() {
+            def controller = ga.getControllerClass(TestBookController.name).newInstance()
 
-class TestController {
+            controller.request.contentType = "application/json"
+            controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
+
+            webRequest.informParameterCreationListeners()
+            def model = controller.create()
+
+            assert model
+            assert model.book
+            assertEquals "The Stand", model.book.title
+            assertEquals 1, model.book.author.id
+            assertEquals 'Stephen King', model.book.author.name
+
+            // "id" should not bind because we are binding to a domain class.
+            assertNull model.book.id
+
+    }
+}
+
+class TestBookController {
     def create = {
         [book:new AutoParamsJSONMarshallingBook(params['book'])]
     }
@@ -51,31 +88,4 @@ class AutoParamsJSONMarshallingAuthor {
         new AutoParamsJSONMarshallingAuthor(id:id.toLong())
     }
 }
-'''
-    }
 
-    protected void tearDown() {
-        super.tearDown()
-        MimeType.reset()
-    }
-
-    void testJSONMarshallingIntoParamsObject() {
-            def controller = ga.getControllerClass("TestController").newInstance()
-
-            controller.request.contentType = "application/json"
-            controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
-
-            webRequest.informParameterCreationListeners()
-            def model = controller.create()
-
-            assert model
-            assert model.book
-            assertEquals "The Stand", model.book.title
-            assertEquals 1, model.book.author.id
-            assertEquals 'Stephen King', model.book.author.name
-
-            // "id" should not bind because we are binding to a domain class.
-            assertNull model.book.id
-
-    }
-}

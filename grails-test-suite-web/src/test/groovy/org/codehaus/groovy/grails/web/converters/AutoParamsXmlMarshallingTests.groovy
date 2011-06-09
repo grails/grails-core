@@ -1,9 +1,13 @@
 package org.codehaus.groovy.grails.web.converters
 
+import java.util.Collection;
+
+import grails.persistence.Entity
+
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 
 /**
  * @author Graeme Rocher
@@ -31,30 +35,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
 
         gcl.parseClass '''
 import grails.persistence.*
-
-class TestController {
-    def create = {
-        [book:new AutoParamsXmlMarshallingBook(params['book'])]
-    }
-}
-
-@Entity
-class AutoParamsXmlMarshallingBook {
-    String title
-    Date releaseDate
-
-    static belongsTo = [author:AutoParamsXmlMarshallingAuthor]
-}
-
-@Entity
-class AutoParamsXmlMarshallingAuthor {
-    String name
-
-    // mocked get method
-    static get(Serializable id) {
-        new AutoParamsXmlMarshallingAuthor(id:id.toLong())
-    }
-}
 '''
     }
 
@@ -63,8 +43,18 @@ class AutoParamsXmlMarshallingAuthor {
         MimeType.reset()
     }
 
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [TestConverterController]
+    }
+    
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [AutoParamsXmlMarshallingAuthor, AutoParamsXmlMarshallingBook]
+    }
+    
     void testXmlMarshallingIntoParamsObject() {
-        def controller = ga.getControllerClass("TestController").newInstance()
+        def controller = ga.getControllerClass(TestConverterController.name).newInstance()
 
         controller.request.contentType = "text/xml"
         controller.request.content = '''<?xml version="1.0" encoding="ISO-8859-1"?>
@@ -90,3 +80,29 @@ class AutoParamsXmlMarshallingAuthor {
         assertNull model.book.id
     }
 }
+
+
+class TestConverterController {
+    def create = {
+        [book:new AutoParamsXmlMarshallingBook(params['book'])]
+    }
+}
+
+@Entity
+class AutoParamsXmlMarshallingBook {
+    String title
+    Date releaseDate
+
+    static belongsTo = [author:AutoParamsXmlMarshallingAuthor]
+}
+
+@Entity
+class AutoParamsXmlMarshallingAuthor {
+    String name
+
+    // mocked get method
+    static get(Serializable id) {
+        new AutoParamsXmlMarshallingAuthor(id:id.toLong())
+    }
+}
+

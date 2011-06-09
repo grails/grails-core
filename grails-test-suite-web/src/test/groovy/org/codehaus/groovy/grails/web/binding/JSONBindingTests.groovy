@@ -1,7 +1,11 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import java.util.Collection;
+
+import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
 /**
@@ -27,9 +31,64 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       json: 'application/json'
                     ]
         """, 'Config')
+    }
+    
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [SiteController]
+    }
+    
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [Site, SiteMode]
+    }
 
-        gcl.parseClass('''
-import grails.persistence.*
+    protected void tearDown() {
+        super.tearDown()
+        MimeType.reset()
+    }
+
+    void testSimpleJSONBinding() {
+        def controller = new SiteController()
+
+        controller.request.contentType = "application/json"
+        controller.request.content = '''\
+ {"foo": { "bar": "baz" } }
+'''.bytes
+
+        webRequest.informParameterCreationListeners()
+
+        controller.simple()
+
+        assertEquals "baz", controller.params.foo.bar
+        assertEquals "baz", controller.params['foo.bar']
+    }
+
+    void testJSONBindingWithAssociation() {
+        def controller = new SiteController()
+
+        controller.request.contentType = "application/json"
+        controller.request.content = '''\
+{"class":"Site",
+ "id":1,
+ "activated":new Date(1252073561495),
+ "description":"asite",
+ "mode":{"class":"SiteMode","code":"blah"},
+ "unwanted1":"blah2",
+ "unwanted2":"blah1"}
+'''.bytes
+
+        webRequest.informParameterCreationListeners()
+
+        def site = controller.put()
+        assertFalse site.hasErrors()
+
+        assertEquals "asite", site.description
+        assertEquals "blah", site.mode.code
+        assertEquals "blah2", site.unwanted1
+    }
+}
+
 
 @Entity
 class Site {
@@ -58,52 +117,4 @@ class SiteController {
     }
 
     def simple = {}
-}
-''')
-    }
-
-    protected void tearDown() {
-        super.tearDown()
-        MimeType.reset()
-    }
-
-    void testSimpleJSONBinding() {
-        def controller = ga.getControllerClass("SiteController").newInstance()
-
-        controller.request.contentType = "application/json"
-        controller.request.content = '''\
- {"foo": { "bar": "baz" } }
-'''.bytes
-
-        webRequest.informParameterCreationListeners()
-
-        controller.simple()
-
-        assertEquals "baz", controller.params.foo.bar
-        assertEquals "baz", controller.params['foo.bar']
-    }
-
-    void testJSONBindingWithAssociation() {
-        def controller = ga.getControllerClass("SiteController").newInstance()
-
-        controller.request.contentType = "application/json"
-        controller.request.content = '''\
-{"class":"Site",
- "id":1,
- "activated":new Date(1252073561495),
- "description":"asite",
- "mode":{"class":"SiteMode","code":"blah"},
- "unwanted1":"blah2",
- "unwanted2":"blah1"}
-'''.bytes
-
-        webRequest.informParameterCreationListeners()
-
-        def site = controller.put()
-        assertFalse site.hasErrors()
-
-        assertEquals "asite", site.description
-        assertEquals "blah", site.mode.code
-        assertEquals "blah2", site.unwanted1
-    }
 }
