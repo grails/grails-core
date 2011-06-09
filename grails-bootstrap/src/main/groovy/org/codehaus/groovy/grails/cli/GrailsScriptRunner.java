@@ -200,7 +200,11 @@ public class GrailsScriptRunner {
 
             build.loadConfig();
             scriptRunner.initializeState();
-            new InteractiveMode(build, scriptRunner).run();
+            try {
+                new InteractiveMode(build, scriptRunner).run();
+            } catch (Throwable e) {
+                console.error("Interactive mode exited with error: " + e.getMessage(), e);
+            }
         }
         else {
             console.getCategory().push(script.inputName);

@@ -37,7 +37,7 @@ class InteractiveMode {
 
     GrailsScriptRunner scriptRunner
     BuildSettings settings
-    boolean active = false
+    boolean interactiveModeActive = false
     def grailsServer
 
     InteractiveMode(BuildSettings settings, GrailsScriptRunner scriptRunner) {
@@ -52,16 +52,17 @@ class InteractiveMode {
     }
 
     static boolean isActive() {
-        getCurrent() != null && getCurrent().active
+        getCurrent() != null && getCurrent().interactiveModeActive
     }
 
     void run() {
         current = this
+        System.setProperty("grails.disable.exit", "true") // you can't exit completely in interactive mode from a script
 
         console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
-        active = true
+        interactiveModeActive = true
 
-        while(active) {
+        while(interactiveModeActive) {
             def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
             try {
                 def trimmed = scriptName.trim()
@@ -109,7 +110,7 @@ class InteractiveMode {
                 }
             } catch (ScriptNotFoundException e) {
                 error "Script not found for name $scriptName"
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 error "Error running script $scriptName: ${e.message}", e
             }
 
