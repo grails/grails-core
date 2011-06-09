@@ -485,7 +485,7 @@ public class GrailsScriptRunner {
             loadScriptClass(gant, scriptName);
         }
         catch (ScriptNotFoundException e) {
-            if (isInteractive) {
+            if (isInteractive && !InteractiveMode.isActive()) {
                 scriptName = fixScriptName(scriptName, allScripts);
                 if (scriptName == null) {
                     throw e;

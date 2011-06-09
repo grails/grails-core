@@ -51,6 +51,10 @@ class InteractiveMode {
         this.grailsServer = grailsServer
     }
 
+    static boolean isActive() {
+        getCurrent() != null && getCurrent().active
+    }
+
     void run() {
         current = this
 
