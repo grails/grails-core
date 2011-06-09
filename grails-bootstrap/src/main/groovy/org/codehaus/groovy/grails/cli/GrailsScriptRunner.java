@@ -73,14 +73,14 @@ public class GrailsScriptRunner {
     public static final String AGENT_ARGUMENT = "reloading";
     public static final String VERSION_ARGUMENT = "version";
     public static final String HELP_ARGUMENT = "help";
-    public static final String NON_INTERACTIVE_ARGUMENT = "noninteractive";
+    public static final String NON_INTERACTIVE_ARGUMENT = "nonInteractive";
     public static final Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
         private static final long serialVersionUID = 1L;
         @Override public Object call(Object arguments) { return null; }
         @Override public Object call() { return null; }
         @Override public Object call(Object... args) { return null; }
     };
-    public static final String NOANSII_ARGUMENT = "noansii";
+    public static final String NOANSI_ARGUMENT = "plainOutput";
     private InputStream orignalIn;
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
@@ -129,7 +129,7 @@ public class GrailsScriptRunner {
         options.addOption( new Option(NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input"));
         options.addOption( new Option(HELP_ARGUMENT, "Command line help"));
         options.addOption( new Option(VERSION_ARGUMENT, "Current Grails version"));
-        options.addOption( new Option(NOANSII_ARGUMENT, "Disables ANSII output"));
+        options.addOption( new Option(NOANSI_ARGUMENT, "Disables ANSI output"));
 
         options.addOption( withArgName("property=value")
 		                         .hasArgs(2)
@@ -141,7 +141,7 @@ public class GrailsScriptRunner {
 
         try {
             commandLine = parser.parse(options, args);
-            if(commandLine.hasOption(NOANSII_ARGUMENT)) {
+            if(commandLine.hasOption(NOANSI_ARGUMENT)) {
                 console.setAnsiEnabled(false);
             }
         } catch (ParseException e) {
