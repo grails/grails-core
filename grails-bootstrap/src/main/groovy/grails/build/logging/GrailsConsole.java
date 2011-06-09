@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.cli.logging;
+package grails.build.logging;
 
 import jline.ConsoleReader;
 import jline.Terminal;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.groovy.runtime.typehandling.NumberMath;
@@ -85,11 +86,16 @@ public class GrailsConsole {
         }
     };
 
+    /**
+     * Whether ANSI should be enabled for output
+     */
+    private boolean ansiEnabled = true;
+
     protected GrailsConsole() throws IOException {
         this.cursorMove = 1;
         this.out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
-        System.setOut(new GrailsJConsolePrintStream(this.out));
+        System.setOut(new GrailsConsolePrintStream(this.out));
 
         terminal = Terminal.setupTerminal();
         reader = new ConsoleReader();
@@ -112,18 +118,37 @@ public class GrailsConsole {
         return instance;
     }
 
+    public void setAnsiEnabled(boolean ansiEnabled) {
+        this.ansiEnabled = ansiEnabled;
+    }
+
+    /**
+     *
+     * @param verbose Sets whether verbose output should be used
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     *
+     * @return Whether verbose output is being used
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * @return The input stream being read from
+     */
     public InputStream getInput() {
         return reader.getInput();
     }
 
+    /**
+     *
+     * @return The last message logged
+     */
     public String getLastMessage() {
         return lastMessage;
     }
@@ -151,10 +176,16 @@ public class GrailsConsole {
     /**
      * Indicates progresss with the default progress indicator
      */
-    void indicateProgress() {
-        if (StringUtils.hasText(lastMessage)) {
-            if (!lastMessage.contains(maxIndicatorString))
-                updateStatus(lastMessage + indicator);
+    public void indicateProgress() {
+        if(isAnsiEnabled()) {
+            if (StringUtils.hasText(lastMessage)) {
+                if (!lastMessage.contains(maxIndicatorString))
+                    updateStatus(lastMessage + indicator);
+            }
+
+        }
+        else {
+            out.print(indicator);
         }
     }
 
@@ -184,8 +215,15 @@ public class GrailsConsole {
         String currMsg = lastMessage;
         try {
             int percentage = Math.round(NumberMath.multiply(NumberMath.divide(number, total), 100).floatValue());
-            String message = new StringBuilder(currMsg).append(' ').append(percentage).append('%').toString();
-            updateStatus(message);
+
+            if(!isAnsiEnabled()) {
+                out.print("..");
+                out.print(percentage+'%');
+            }
+            else {
+                String message = new StringBuilder(currMsg).append(' ').append(percentage).append('%').toString();
+                updateStatus(message);
+            }
         } finally {
             lastMessage = currMsg;
         }
@@ -199,7 +237,13 @@ public class GrailsConsole {
     public void indicateProgress(int number) {
         String currMsg = lastMessage;
         try {
-            updateStatus(new StringBuilder(currMsg).append(' ').append(number).toString());
+            if(isAnsiEnabled()) {
+                updateStatus(new StringBuilder(currMsg).append(' ').append(number).toString());
+            }
+            else {
+                out.print("..");
+                out.print(number);
+            }
         } finally {
             lastMessage = currMsg;
         }
@@ -221,14 +265,14 @@ public class GrailsConsole {
             lastMessage = "";
         } else {
             final String categoryName = category.toString();
-            if (Ansi.isEnabled()) {
+            if (isAnsiEnabled()) {
 
                 lastStatus = outputCategory(erasePreviousLine(categoryName), categoryName)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);
                 cursorMove = replaceCount;
             } else {
-                out.print(categoryName + msg);
+                out.println(categoryName + msg);
             }
             lastMessage = msg;
         }
@@ -243,24 +287,7 @@ public class GrailsConsole {
         outputMessage(msg, 0);
     }
 
-    private Ansi outputCategory(Ansi ansi, String categoryName) {
-        return ansi
-                .a(Ansi.Attribute.INTENSITY_BOLD)
-                .fg(YELLOW)
-                .a(categoryName)
-                .a(Ansi.Attribute.INTENSITY_BOLD_OFF);
-    }
 
-    private Ansi erasePreviousLine(String categoryName) {
-        if(cursorMove > 0) {
-            return ansi()
-                    .cursorUp(cursorMove)
-                    .cursorLeft(categoryName.length() + lastMessage.length())
-                    .eraseLine(FORWARD);
-
-        }
-        return ansi();
-    }
 
     /**
      * Prints an error message
@@ -270,7 +297,7 @@ public class GrailsConsole {
     public void error(String msg) {
         cursorMove = 0;
         if (hasNewLines(msg)) {
-            if (Ansi.isEnabled()) {
+            if (isAnsiEnabled()) {
                 out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).reset());
                 out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
             } else {
@@ -279,7 +306,7 @@ public class GrailsConsole {
             }
             //updateStatus();
         } else {
-            if (Ansi.isEnabled()) {
+            if (isAnsiEnabled()) {
                 out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).fg(Color.DEFAULT).a(msg).reset());
             } else {
                 out.print(category.toString());
@@ -287,6 +314,10 @@ public class GrailsConsole {
             }
         }
 
+    }
+
+    public boolean isAnsiEnabled() {
+        return Ansi.isEnabled() && terminal.isANSISupported() && ansiEnabled;
     }
 
     /**
@@ -298,11 +329,7 @@ public class GrailsConsole {
     public void error(String msg, Throwable error) {
        if(verbose && error != null) {
            StackTraceUtils.deepSanitize(error);
-           StringWriter sw = new StringWriter();
-           PrintWriter ps = new PrintWriter(sw);
-           ps.println(msg);
-           error.printStackTrace(ps);
-           error(sw.toString());
+           printStackTrace(msg, error);
        }
        else {
            error(msg);
@@ -315,14 +342,28 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(Throwable error) {
-       StringWriter sw = new StringWriter();
-       PrintWriter ps = new PrintWriter(sw);
-       ps.println(error.getMessage());
-       error.printStackTrace(ps);
-       error(sw.toString());
+        printStackTrace(null, error);
+    }
+
+    private void printStackTrace(String message, Throwable error) {
+        StringWriter sw = new StringWriter();
+        PrintWriter ps = new PrintWriter(sw);
+        if(message != null) {
+            ps.println(message);
+        }
+        else {
+            ps.println(error.getMessage());
+        }
+        error.printStackTrace(ps);
+        error(sw.toString());
     }
 
 
+    /**
+     * Logs a message below the current status message
+     *
+     * @param msg The message to log
+     */
     public void log(String msg) {
          if (hasNewLines(msg)) {
             out.println(msg);
@@ -340,22 +381,15 @@ public class GrailsConsole {
         if(verbose) {
             if (hasNewLines(msg)) {
                 out.println(msg);
-                out.println();
                 cursorMove = 0;
                 //updateStatus();
             } else {
                 out.println(msg);
-                out.println();
                 cursorMove = 0;
             }
         }
     }
 
-    private void printMessageOnNewLine(String msg) {
-        out.println(outputCategory(ansi(), category.toString())
-                .newline()
-                .fg(DEFAULT).a(msg).reset());
-    }
 
     /**
      * Replays the last status message
@@ -366,9 +400,6 @@ public class GrailsConsole {
         }
     }
 
-    private boolean hasNewLines(String msg) {
-        return msg.contains(LINE_SEPARATOR);
-    }
 
     /**
      * Replacement for AntBuilder.input() to eliminate dependency of
@@ -423,5 +454,35 @@ public class GrailsConsole {
 
     private String createQuestion(String message, String[] validResponses) {
         return new StringBuilder(message).append("[").append(DefaultGroovyMethods.join(validResponses, ",")).append("] ").toString();
+    }
+
+
+    private void printMessageOnNewLine(String msg) {
+        out.println(outputCategory(ansi(), category.toString())
+                .newline()
+                .fg(DEFAULT).a(msg).reset());
+    }
+
+    private boolean hasNewLines(String msg) {
+        return msg.contains(LINE_SEPARATOR);
+    }
+
+    private Ansi outputCategory(Ansi ansi, String categoryName) {
+        return ansi
+                .a(Ansi.Attribute.INTENSITY_BOLD)
+                .fg(YELLOW)
+                .a(categoryName)
+                .a(Ansi.Attribute.INTENSITY_BOLD_OFF);
+    }
+
+    private Ansi erasePreviousLine(String categoryName) {
+        if(cursorMove > 0) {
+            return ansi()
+                    .cursorUp(cursorMove)
+                    .cursorLeft(categoryName.length() + lastMessage.length())
+                    .eraseLine(FORWARD);
+
+        }
+        return ansi();
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
+import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
@@ -24,7 +25,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.LogLevel;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.springframework.util.ReflectionUtils;
@@ -173,8 +174,11 @@ public class ScriptBindingInitializer {
 
      private void setUIListener(GantBinding binding) {
          AntBuilder ant = (AntBuilder) binding.getVariable("ant");
-         binding.setVariable("Ant", ant);
+
          Project project = ant.getProject();
+         project.getBuildListeners().clear();
+         GrailsConsoleAntBuilder.addGrailsConsoleBuildListener(project);
+
          GrailsConsole instance = GrailsConsole.getInstance();
          project.addBuildListener(new GrailsConsoleBuildListener(instance));
 

@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.test.event;
 
 import grails.util.GrailsUtil;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
+import grails.build.logging.GrailsConsole;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;

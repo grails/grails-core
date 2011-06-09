@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.cli.logging;
 
+import grails.build.logging.GrailsConsole;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 
@@ -24,10 +26,10 @@ import java.io.PrintStream;
  * @author Graeme Rocher
  * @since 1.4
  */
-class GrailsJConsolePrintStream extends PrintStream {
+public class GrailsConsolePrintStream extends PrintStream {
 
 
-    GrailsJConsolePrintStream(OutputStream out) {
+    public GrailsConsolePrintStream(OutputStream out) {
         super(out);
     }
 

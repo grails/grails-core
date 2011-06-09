@@ -20,7 +20,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.input.InputHandler;
 import org.apache.tools.ant.input.InputRequest;
 import org.apache.tools.ant.input.MultipleChoiceInputRequest;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
+import grails.build.logging.GrailsConsole;
 
 import java.util.Vector;
 

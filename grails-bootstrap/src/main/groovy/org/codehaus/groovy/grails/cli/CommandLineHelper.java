@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.cli;
 
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
+import grails.build.logging.GrailsConsole;
 
 import java.io.InputStream;
 import java.io.PrintStream;

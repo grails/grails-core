@@ -15,7 +15,8 @@
  */
 package org.grails.plugins.tomcat
 
-import org.codehaus.groovy.grails.cli.logging.SilentAntBuilder
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
+import grails.build.logging.GrailsConsole
 
 /**
  * Serves a packaged war, in a forked JVM.
@@ -27,7 +28,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
     protected final File warDir
     protected final String contextPath
-    protected ant = new SilentAntBuilder()
+    protected ant = new GrailsConsoleAntBuilder()
     IsolatedWarTomcatServer(String warPath, String contextPath) {
         super()
 
@@ -110,7 +111,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
             throw new RuntimeException("Tomcat failed to start the app in $timeoutSecs seconds (see output in $outFile.path)")
         }
 
-        org.codehaus.groovy.grails.cli.logging.GrailsConsole.instance.log "Tomcat Server running WAR (output written to: $outFile)"
+        GrailsConsole.instance.log "Tomcat Server running WAR (output written to: $outFile)"
 
     }
 

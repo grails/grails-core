@@ -16,11 +16,11 @@
 
 package org.codehaus.groovy.grails.plugins.logging.appenders;
 
+import grails.build.logging.GrailsConsole;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
 
 /**
  * A Log4j appender that appends to the GrailsConsole instance. Not for use in production/WAR deployed scenarios!

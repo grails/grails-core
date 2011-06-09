@@ -23,7 +23,7 @@ import org.apache.ivy.plugins.repository.Repository
 import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.resolver.DependencyResolver
 import org.apache.ivy.plugins.resolver.RepositoryResolver
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
+import grails.build.logging.GrailsConsole
 
 /**
  * Utility methods for resolving plugin zips and information

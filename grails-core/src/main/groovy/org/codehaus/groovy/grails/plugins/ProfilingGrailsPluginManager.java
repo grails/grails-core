@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import grails.build.logging.GrailsConsole;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -54,7 +54,7 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
         long time = System.currentTimeMillis();
         console.addStatus("Loading plugins started");
         super.loadPlugins();
-        console.addStatus("Loading plugins took " + (System.currentTimeMillis()-time));
+        console.addStatus("Loading plugins took " + (System.currentTimeMillis() - time));
     }
 
     @Override
@@ -76,7 +76,7 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
 
                     plugin.doWithDynamicMethods(applicationContext);
 
-                    console.addStatus("doWithDynamicMethods for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
+                    console.addStatus("doWithDynamicMethods for plugin [" + plugin.getName() + "] took " + (System.currentTimeMillis() - pluginTime));
                 }
                 catch (Throwable t) {
                     console.error(t);
@@ -84,7 +84,7 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
                 }
             }
         }
-        console.addStatus("doWithDynamicMethods took " + (System.currentTimeMillis()-time));
+        console.addStatus("doWithDynamicMethods took " + (System.currentTimeMillis() - time));
     }
 
     @Override
@@ -97,12 +97,12 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 long pluginTime = System.currentTimeMillis();
-                console.addStatus("doWithSpring for plugin ["+plugin.getName()+"] started");
+                console.addStatus("doWithSpring for plugin [" + plugin.getName() + "] started");
                 plugin.doWithRuntimeConfiguration(springConfig);
-                console.addStatus("doWithSpring for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
+                console.addStatus("doWithSpring for plugin [" + plugin.getName() + "] took " + (System.currentTimeMillis() - pluginTime));
             }
         }
-        console.addStatus("doWithSpring took " + (System.currentTimeMillis()-time));
+        console.addStatus("doWithSpring took " + (System.currentTimeMillis() - time));
     }
 
     @Override
@@ -114,12 +114,12 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 long pluginTime = System.currentTimeMillis();
-                console.addStatus("doWithApplicationContext for plugin ["+plugin.getName()+"] started");
+                console.addStatus("doWithApplicationContext for plugin [" + plugin.getName() + "] started");
                 plugin.doWithApplicationContext(ctx);
-                console.addStatus("doWithApplicationContext for plugin ["+plugin.getName()+"] took "+ (System.currentTimeMillis()-pluginTime));
+                console.addStatus("doWithApplicationContext for plugin [" + plugin.getName() + "] took " + (System.currentTimeMillis() - pluginTime));
             }
         }
-        console.addStatus("doWithApplicationContext took " + (System.currentTimeMillis()-time));
+        console.addStatus("doWithApplicationContext took " + (System.currentTimeMillis() - time));
     }
 
     @Override
@@ -128,6 +128,6 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
         long time = System.currentTimeMillis();
         console.addStatus("doArtefactConfiguration started");
         super.doArtefactConfiguration();
-        console.addStatus("doArtefactConfiguration took " + (System.currentTimeMillis()-time));
+        console.addStatus("doArtefactConfiguration took " + (System.currentTimeMillis() - time));
     }
 }

@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
+import grails.build.logging.GrailsConsole
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.

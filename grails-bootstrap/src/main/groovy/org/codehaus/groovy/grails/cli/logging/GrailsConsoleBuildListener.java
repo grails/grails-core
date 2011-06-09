@@ -1,10 +1,11 @@
 package org.codehaus.groovy.grails.cli.logging;
 
+import grails.build.logging.GrailsConsole;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 
 /**
- * Mainly silences a lot of redundant Ant outpu
+ * Mainly silences a lot of redundant Ant output
  *
  */
 public class GrailsConsoleBuildListener implements BuildListener {

@@ -15,8 +15,8 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
+import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 import java.io.File;

@@ -20,7 +20,7 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettingsHolder
 
 /**

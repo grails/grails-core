@@ -25,7 +25,7 @@ import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.runtime.StackTraceUtils
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
+import grails.build.logging.GrailsConsole
 
 /**
  * <p>Represents the project paths and other build settings

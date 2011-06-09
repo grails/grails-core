@@ -16,16 +16,15 @@
 package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
+import grails.build.logging.GrailsConsole;
 import grails.util.*;
 import groovy.lang.Closure;
 import groovy.lang.ExpandoMetaClass;
-import groovy.lang.GroovyObject;
 import groovy.util.AntBuilder;
 import org.apache.commons.cli.*;
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole;
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer;
 import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport;
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer;
@@ -81,6 +80,7 @@ public class GrailsScriptRunner {
         @Override public Object call() { return null; }
         @Override public Object call(Object... args) { return null; }
     };
+    public static final String NOANSII_ARGUMENT = "noansii";
     private InputStream orignalIn;
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
@@ -129,6 +129,7 @@ public class GrailsScriptRunner {
         options.addOption( new Option(NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input"));
         options.addOption( new Option(HELP_ARGUMENT, "Command line help"));
         options.addOption( new Option(VERSION_ARGUMENT, "Current Grails version"));
+        options.addOption( new Option(NOANSII_ARGUMENT, "Disables ANSII output"));
 
         options.addOption( withArgName("property=value")
 		                         .hasArgs(2)
@@ -140,6 +141,9 @@ public class GrailsScriptRunner {
 
         try {
             commandLine = parser.parse(options, args);
+            if(commandLine.hasOption(NOANSII_ARGUMENT)) {
+                console.setAnsiEnabled(false);
+            }
         } catch (ParseException e) {
             console.error("Error processing command line arguments: " + e.getMessage());
             System.exit(1);
