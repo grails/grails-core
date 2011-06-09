@@ -204,7 +204,7 @@ public class GrailsScriptRunner {
         }
         else {
             console.getCategory().push(script.inputName);
-            console.updateStatus("Base Directory: " + build.getBaseDir().getPath());
+            console.verbose("Base Directory: " + build.getBaseDir().getPath());
 
             try {
                 int exitCode = scriptRunner.executeCommand(
