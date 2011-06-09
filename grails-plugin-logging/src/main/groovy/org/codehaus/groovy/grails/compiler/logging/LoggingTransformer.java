@@ -25,7 +25,6 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AllArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 
@@ -47,11 +46,11 @@ public class LoggingTransformer implements AllArtefactClassInjector{
     public static final String FILTERS_ARTEFACT_TYPE = "filters";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        final FieldNode existingField = classNode.getField(LOG_PROPERTY);
+        final FieldNode existingField = classNode.getDeclaredField(LOG_PROPERTY);
         if (existingField == null && !classNode.isInterface()) {
             final String path = source.getName();
 
-            String artefactType = path != null ? GrailsResourceUtils.getArtefactDirectory(path) : null;
+            String artefactType = path != null ? org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getArtefactDirectory(path) : null;
 
             // little bit of a hack, since filters aren't kept in a grails-app/filters directory as they probably should be
             if (artefactType != null && CONF_DIR.equals(artefactType) && classNode.getName().endsWith(FILTERS_ARTEFACT_TYPE_SUFFIX)) {
