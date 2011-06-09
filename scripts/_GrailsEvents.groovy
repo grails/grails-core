@@ -37,7 +37,6 @@ eventsClassLoader = new GroovyClassLoader(classLoader)
 // and application Events scripts are put in here.
 
 eventListener = new GrailsBuildEventListener(eventsClassLoader, binding, grailsSettings)
-def console = GrailsConsole.instance
 eventListener.globalEventHooks = [
     StatusFinal: [ {message -> console.addStatus message } ],
     StatusUpdate: [ {message -> console.updateStatus message } ],

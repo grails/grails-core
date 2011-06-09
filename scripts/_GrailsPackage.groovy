@@ -19,7 +19,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
 
 import org.apache.log4j.LogManager
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
@@ -42,7 +41,6 @@ includeTargets << grailsScript("_PackagePlugins")
 
 target(createConfig: "Creates the configuration object") {
 
-    GrailsConsole console = GrailsConsole.instance
 
     if (configFile.exists()) {
         def configClass
@@ -84,8 +82,6 @@ target(createConfig: "Creates the configuration object") {
 
 target(packageApp : "Implementation of package target") {
     depends(createStructure, packagePlugins, packageTlds)
-
-    GrailsConsole console = GrailsConsole.instance
 
     console.updateStatus "Packaging Grails application"
 

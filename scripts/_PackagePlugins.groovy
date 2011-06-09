@@ -17,7 +17,6 @@
 import java.util.concurrent.Executors
 import java.util.concurrent.ExecutorService
 
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**
@@ -29,7 +28,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
  */
 
 packageFiles = { String from ->
-    GrailsConsole.instance.updateStatus "Packaging plugins"
+    console.updateStatus "Packaging plugins"
     def ant = new AntBuilder(ant.project)
     def targetPath = grailsSettings.resourcesDir.path
     def dir = new File(from, "grails-app/conf")
@@ -88,7 +87,7 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
                         }
                     }
                     catch (Exception e) {
-                        GrailsConsole.instance.error "Error packaging plugin [${info.name}] : ${e.message}"
+                        console.error "Error packaging plugin [${info.name}] : ${e.message}"
                         exit 1
                     }
                 }.curry(gpi))
@@ -115,8 +114,7 @@ packagePluginsForWar = { targetDir ->
             }
         }
         catch (Exception e) {
-            e.printStackTrace(System.out)
-            GrailsConsole.instance.error "Error packaging plugin [${info.name}] : ${e.message}"
+            console.error "Error packaging plugin [${info.name}] : ${e.message}", e
         }
     }
 }

@@ -109,6 +109,8 @@ target(packagePlugin: "Implementation target") {
     // Package plugin's zip distribution
     pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
 
+	console.addStatus "Plugin packaged ${new File(pluginZip).name}"
+
     event("PackagePluginEnd", [pluginInfo.name])
 }
 
