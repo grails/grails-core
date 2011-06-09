@@ -116,7 +116,7 @@ class PluginInstallEngine {
         if (changingPlugins) {
             def noChangingPlugins = changingPlugins.size()
             eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for updates"
-            installPlugins(existingPlugins)
+            installPlugins(changingPlugins)
             eventHandler "StatusUpdate", "Changing plugin checking complete"
         }
 
