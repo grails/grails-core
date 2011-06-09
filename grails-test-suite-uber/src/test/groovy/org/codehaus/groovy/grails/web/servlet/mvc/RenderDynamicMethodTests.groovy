@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import java.util.Collection;
+
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
     private testCtrl
@@ -11,68 +13,22 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         gcl.parseClass("grails.json.legacy.builder=false", "Config")
-
-        gcl.parseClass """
-        class TestController {
-           def renderText = {
-                render "text"
-           }
-
-           def renderStreamCharBuffer = {
-                def writer = new org.codehaus.groovy.grails.web.pages.FastStringWriter()
-                writer.write("text")
-                render writer.buffer
-           }
-
-           def renderGString = {
-                render "${'te' + 'xt'}"
-           }
-
-           def renderTextWithContentType = {
-                render(text:"<foo>bar</foo>",contentType:"text/xml", encoding:"utf-16")
-           }
-
-           def renderXml = {
-                render(contentType:"text/xml") {
-                    foo {
-                        bar("hello")
-                    }
-                }
-            }
-
-            def renderJSON = {
-                render(contentType:"application/json") {
-                    foo = [ { bar = "hello" } ]
-                }
-            }
-            def renderView ={
-                render(view:'foo')
-            }
-            def renderXmlView = {
-                render(view:'foo', contentType:'text/xml')
-            }
-            def renderXmlUtf16View = {
-                render(view:'foo', contentType:'text/xml', encoding:'utf-16')
-            }
-            def renderStatusAndText = {
-                render(status: 503, text: 'five oh three')
-            }
-            def renderStatusOnly = {
-                render(status: 404)
-            }
-        }
-        """
+    }
+    
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [RenderDynamicMethodTestController]
     }
 
     protected void setUp() {
         super.setUp()
-        testCtrl = ga.getControllerClass("TestController").newInstance()
+        testCtrl = ga.getControllerClass(RenderDynamicMethodTestController.name).newInstance()
     }
 
     void testRenderView() {
         testCtrl.renderView()
 
-        assertEquals '/test/foo', testCtrl.modelAndView.viewName
+        assertEquals '/renderDynamicMethodTest/foo', testCtrl.modelAndView.viewName
         assertEquals 'text/html;charset=utf-8', response.contentType
     }
 
@@ -124,3 +80,52 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals 404, response.status
     }
 }
+
+class RenderDynamicMethodTestController {
+    def renderText = {
+         render "text"
+    }
+
+    def renderStreamCharBuffer = {
+         def writer = new org.codehaus.groovy.grails.web.pages.FastStringWriter()
+         writer.write("text")
+         render writer.buffer
+    }
+
+    def renderGString = {
+         render "${'te' + 'xt'}"
+    }
+
+    def renderTextWithContentType = {
+         render(text:"<foo>bar</foo>",contentType:"text/xml", encoding:"utf-16")
+    }
+
+    def renderXml = {
+         render(contentType:"text/xml") {
+             foo {
+                 bar("hello")
+             }
+         }
+     }
+
+     def renderJSON = {
+         render(contentType:"application/json") {
+             foo = [ { bar = "hello" } ]
+         }
+     }
+     def renderView ={
+         render(view:'foo')
+     }
+     def renderXmlView = {
+         render(view:'foo', contentType:'text/xml')
+     }
+     def renderXmlUtf16View = {
+         render(view:'foo', contentType:'text/xml', encoding:'utf-16')
+     }
+     def renderStatusAndText = {
+         render(status: 503, text: 'five oh three')
+     }
+     def renderStatusOnly = {
+         render(status: 404)
+     }
+ }

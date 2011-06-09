@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet
 
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
@@ -8,8 +10,28 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  */
 class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
+
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [MultipleRenderController]
+    }
+    
+    void testLastContentTypeWins() {
+        def controller = new MultipleRenderController()
+
+        controller.test()
+
+        assertEquals "application/json;charset=utf-8", response.contentType
+    }
+
+   void testPriorSetContentTypeWins() {
+        def controller = new MultipleRenderController()
+
+        controller.test2()
+
+        assertEquals "text/xml", response.contentType
+    }
+}
 class MultipleRenderController {
     def test = {
         render(text:"foo",contentType:"text/xml")
@@ -20,24 +42,5 @@ class MultipleRenderController {
         response.contentType = "text/xml"
 
         render(text:"bar")
-    }
-}
-'''
-    }
-
-    void testLastContentTypeWins() {
-        def controller = ga.getControllerClass("MultipleRenderController").newInstance()
-
-        controller.test()
-
-        assertEquals "application/json;charset=utf-8", response.contentType
-    }
-
-   void testPriorSetContentTypeWins() {
-        def controller = ga.getControllerClass("MultipleRenderController").newInstance()
-
-        controller.test2()
-
-        assertEquals "text/xml", response.contentType
     }
 }
