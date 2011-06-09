@@ -65,15 +65,4 @@ class LoggingGrailsPlugin {
             }
         }
     }
-
-    def addLogMethod(artefactClass, handler) {
-        // Formulate a name of the form grails.<artefactType>.classname
-        // Do it here so not calculated in every getLog call :)
-        def type = GrailsNameUtils.getPropertyNameRepresentation(handler.type)
-        def logName = "grails.app.${type}.${artefactClass.name}".toString()
-
-        def log = LogFactory.getLog(logName)
-
-        artefactClass.metaClass.getLog << { -> log}
-    }
 }
