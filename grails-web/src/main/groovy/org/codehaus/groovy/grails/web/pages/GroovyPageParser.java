@@ -519,7 +519,6 @@ public class GroovyPageParser implements Tokens {
 
     public String getExpressionText(String text, boolean _safeDereference) {
         boolean safeDereference = false;
-        System.out.println("test "+_safeDereference);
         if (text.endsWith("?")) {
             text = text.substring(0, text.length() - 1);
             safeDereference = _safeDereference;

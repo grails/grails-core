@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
+import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.PluginBuildSettings;
 import groovy.util.slurpersupport.GPathResult;
@@ -70,19 +71,14 @@ public class UaaIntegration {
             // prompt for UAA choice
             if (privacyLevel.equals(UaaClient.Privacy.PrivacyLevel.UNDECIDED_TOU)) {
                 while (true) {
-                    System.out.print(MESSAGE);
-                    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-                    try {
-                        String selection = br.readLine().trim();
-                        if ("y".equalsIgnoreCase(selection)) {
-                            uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA);
-                            break;
-                        }
-                        else if ("n".equalsIgnoreCase(selection)) {
-                            uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.DECLINE_TOU);
-                            break;
-                        }
-                    } catch (IOException e) {
+                    GrailsConsole console = GrailsConsole.getInstance();
+                    String selection = console.userInput(MESSAGE, new String[]{"y", "n"});
+                    if ("y".equalsIgnoreCase(selection)) {
+                        uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA);
+                        break;
+                    }
+                    else if ("n".equalsIgnoreCase(selection)) {
+                        uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.DECLINE_TOU);
                         break;
                     }
 

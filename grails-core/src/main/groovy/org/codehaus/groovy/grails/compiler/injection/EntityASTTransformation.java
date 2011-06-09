@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -69,8 +70,7 @@ public class EntityASTTransformation implements ASTTransformation {
             try {
                 injector.performInjection(sourceUnit, cNode);
             } catch (RuntimeException e) {
-                e.printStackTrace();
-                System.out.println("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage());
+                GrailsConsole.getInstance().error("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage(), e);
                 throw e;
             }
         }

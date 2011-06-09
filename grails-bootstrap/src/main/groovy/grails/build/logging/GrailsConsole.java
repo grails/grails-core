@@ -367,12 +367,10 @@ public class GrailsConsole {
     public void log(String msg) {
          if (hasNewLines(msg)) {
             out.println(msg);
-            out.println();
             cursorMove = 0;
             //updateStatus();
         } else {
             out.println(msg);
-            out.println();
             cursorMove = 0;
         }
     }

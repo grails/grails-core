@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.compiler.web.pages;
 
+import grails.build.logging.GrailsConsole;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -28,8 +29,7 @@ public class GroovyPageInjectionOperation extends GrailsAwareInjectionOperation 
             try {
                 classInjector.performInjection(source, context, classNode);
             } catch (RuntimeException e) {
-                e.printStackTrace();
-                System.out.println("Error occurred calling AST injector [" + classInjector.getClass() + "]: " + e.getMessage());
+                GrailsConsole.getInstance().error("Error occurred calling AST injector [" + classInjector.getClass() + "]: " + e.getMessage(), e);
                 throw e;
             }
         }

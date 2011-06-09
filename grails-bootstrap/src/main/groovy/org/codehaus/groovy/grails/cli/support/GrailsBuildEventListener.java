@@ -15,29 +15,21 @@
 package org.codehaus.groovy.grails.cli.support;
 
 import grails.build.GrailsBuildListener;
+import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.PluginBuildSettings;
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Script;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import groovy.lang.*;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.springframework.core.io.Resource;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Graeme Rocher
@@ -114,10 +106,11 @@ public class GrailsBuildEventListener implements BuildListener{
             return;
         }
 
+        GrailsConsole console = GrailsConsole.getInstance();
         try {
             Class<?> scriptClass = classLoader.parseClass(eventScript);
             if (scriptClass == null) {
-               System.err.println("Could not load event script (script may be empty): " + eventScript);
+                console.error("Could not load event script (script may be empty): " + eventScript);
                return;
             }
 
@@ -143,8 +136,7 @@ public class GrailsBuildEventListener implements BuildListener{
         }
         catch (Throwable e) {
             StackTraceUtils.deepSanitize(e);
-            e.printStackTrace();
-            System.out.println("Error loading event script from file [" + eventScript + "] " + e.getMessage());
+            console.error("Error loading event script from file [" + eventScript + "] " + e.getMessage(), e);
         }
     }
 

@@ -14,7 +14,10 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import grails.build.logging.GrailsConsole;
 import groovy.lang.Closure;
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,9 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 @SuppressWarnings("unchecked")
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
@@ -38,13 +38,13 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     @Override
     public Object invokeMethod(String name, Object args) {
         if (args == null) {
-            System.out.println("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
+            GrailsConsole.getInstance().error("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
             return null;
         }
 
         List<Object> argsList = Arrays.asList((Object[])args);
         if (argsList.size() == 0) {
-            System.out.println("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
+            GrailsConsole.getInstance().error("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
             return null;
         }
 
@@ -63,7 +63,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             addDependencyStrings(name, argsList.subList(0, argsList.size() - 1), (Map<Object, Object>)argsList.get(argsList.size() - 1), null);
 
         } else {
-            System.out.println("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
+            GrailsConsole.getInstance().error("WARNING: Configurational method [" + name + "] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..");
         }
 
         return null;
@@ -117,7 +117,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
             properties.put("version", matcher.group(3));
             return properties;
         }
-        System.out.println("WARNING: Specified dependency definition " + scope + "(" + dependency + ") is invalid! Skipping..");
+        GrailsConsole.getInstance().error("WARNING: Specified dependency definition " + scope + "(" + dependency + ") is invalid! Skipping..");
         return null;
     }
 

@@ -297,7 +297,7 @@ public class GrailsScriptRunner {
 
     private static void abortIfOutOfBounds(String[] splitArgs, int currentParamIndex) {
         if (currentParamIndex >= splitArgs.length) {
-            System.out.println("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
+            GrailsConsole.getInstance().error("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
             System.exit(0);
         }
     }
@@ -638,17 +638,17 @@ public class GrailsScriptRunner {
     }
 
     private String askUserForBestMatch(String scriptName, List<String> topMatches) throws IOException {
-        System.out.println("Script '" + scriptName + "' not found, did you mean:");
+        GrailsConsole console = GrailsConsole.getInstance();
+        console.addStatus("Script '" + scriptName + "' not found, did you mean:");
         int i = 0;
         for (String s : topMatches) {
-            System.out.println("   " + ++i + ") " + s);
+            console.log("   " + ++i + ") " + s);
         }
 
         int attempts = 0;
         while (true) {
-            System.out.print("Please make a selection or enter Q to quit: ");
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            String selection = br.readLine().trim();
+            String selection = console.userInput("Please make a selection or enter Q to quit: ");
+
             if ("Q".equalsIgnoreCase(selection)) {
                 System.exit(0);
             }

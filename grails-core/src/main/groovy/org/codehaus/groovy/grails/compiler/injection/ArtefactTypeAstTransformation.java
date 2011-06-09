@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Artefact;
+import grails.build.logging.GrailsConsole;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -76,8 +77,7 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
                     return;
                 }
             } catch (RuntimeException e) {
-                e.printStackTrace();
-                System.out.println("Error occurred calling AST injector: " + e.getMessage());
+                GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
                 throw e;
             }
         }

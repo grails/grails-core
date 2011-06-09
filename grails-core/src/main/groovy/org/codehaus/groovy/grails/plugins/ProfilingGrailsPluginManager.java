@@ -60,14 +60,14 @@ public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
     @Override
     public void doDynamicMethods() {
         long time = System.currentTimeMillis();
-        System.out.println("doWithDynamicMethods started");
+        GrailsConsole console = GrailsConsole.getInstance();
+        console.addStatus("doWithDynamicMethods started");
         checkInitialised();
         // remove common meta classes just to be sure
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         for (Class<?> COMMON_CLASS : COMMON_CLASSES) {
             registry.removeMetaClass(COMMON_CLASS);
         }
-        GrailsConsole console = GrailsConsole.getInstance();
         for (GrailsPlugin plugin : pluginList) {
             if (plugin.supportsCurrentScopeAndEnvironment()) {
                 try {
