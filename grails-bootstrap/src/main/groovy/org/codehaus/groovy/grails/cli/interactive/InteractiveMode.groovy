@@ -118,10 +118,13 @@ class InteractiveMode {
                 error "Error running script $scriptName: ${e.message}", e
             }
             finally {
-                try {
-                    registryCleaner.clean()
-                } catch (e) {
-                    // ignore
+                if(grailsServer == null) {
+                    try {
+                        registryCleaner.clean()
+                    } catch (e) {
+                        // ignore
+                    }
+
                 }
             }
 

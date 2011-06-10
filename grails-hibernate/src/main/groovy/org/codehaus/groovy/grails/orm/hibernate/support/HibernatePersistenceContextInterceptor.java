@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.support;
 import grails.validation.DeferredBindingActions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.FlushMode;
@@ -36,14 +37,23 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
     private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
     private SessionFactory sessionFactory;
 
-    private ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
+    static {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                participate.remove();
+                nestingCount.remove();
+            }
+        });
+    }
+
+    private static ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return Boolean.FALSE;
         }
     };
 
-    private ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>() {
+    private static ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>() {
         @Override
         protected Integer initialValue() {
             return Integer.valueOf(0);

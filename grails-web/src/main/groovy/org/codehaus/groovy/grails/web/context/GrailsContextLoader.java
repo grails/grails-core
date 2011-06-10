@@ -24,12 +24,9 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ApplicationContext;
@@ -73,6 +70,37 @@ public class GrailsContextLoader extends ContextLoader {
             }
 
             application = ctx.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+
+            final WebApplicationContext finalCtx = ctx;
+            ShutdownOperations.addOperation(new Runnable() {
+                public void run() {
+                    if (application != null) {
+                        ClassLoader classLoader = application.getClassLoader();
+                        if (classLoader instanceof GroovyClassLoader) {
+                            MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+                            Class<?>[] loadedClasses = ((GroovyClassLoader)classLoader).getLoadedClasses();
+                            for (Class<?> loadedClass : loadedClasses) {
+                                metaClassRegistry.removeMetaClass(loadedClass);
+                            }
+                        }
+                    }
+
+                    GrailsPluginManager pluginManager = null;
+                    if (finalCtx.containsBean(GrailsPluginManager.BEAN_NAME)) {
+                        pluginManager = finalCtx.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+                    }
+
+                    if (pluginManager != null) {
+                        try {
+                            pluginManager.shutdown();
+                        }
+                        catch (Exception e) {
+                            GrailsUtil.sanitize(e);
+                            LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
+                        }
+                    }
+                }
+            });
             ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         }
@@ -98,42 +126,19 @@ public class GrailsContextLoader extends ContextLoader {
             return;
         }
 
-        if (application != null) {
-            ClassLoader classLoader = application.getClassLoader();
-            if (classLoader instanceof GroovyClassLoader) {
-                MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-                Class<?>[] loadedClasses = ((GroovyClassLoader)classLoader).getLoadedClasses();
-                for (Class<?> loadedClass : loadedClasses) {
-                    metaClassRegistry.removeMetaClass(loadedClass);
-                }
-            }
-        }
-
         WebApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-        GrailsPluginManager pluginManager = null;
-        if (ctx.containsBean(GrailsPluginManager.BEAN_NAME)) {
-            pluginManager = ctx.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
-        }
-
-        if (pluginManager != null) {
-            try {
-                pluginManager.shutdown();
-            }
-            catch (Exception e) {
-                GrailsUtil.sanitize(e);
-                LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
-            }
-        }
-
         ConfigurableApplicationContext parent = ctx != null ? (ConfigurableApplicationContext) ctx.getParent() : null;
 
-        super.closeWebApplicationContext(servletContext);
+        try {
+            super.closeWebApplicationContext(servletContext);
+        } finally {
+            ShutdownOperations.runOperations();
+        }
 
         if (parent != null) {
             LOG.info("Destroying Spring parent WebApplicationContext " + parent.getDisplayName());
             parent.close();
         }
-
         try {
             Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
         }
@@ -141,11 +146,6 @@ public class GrailsContextLoader extends ContextLoader {
             // container doesn't allow, probably related to WAR deployment on AppEngine. proceed.
         }
 
-        PluginManagerHolder.setPluginManager(null);
-        ConfigurationHolder.setConfig(null);
-        ConfigurationHelper.clearCachedConfigs();
-        ExpandoMetaClass.disableGlobally();
-        MimeType.reset();
         application = null;
     }
 }

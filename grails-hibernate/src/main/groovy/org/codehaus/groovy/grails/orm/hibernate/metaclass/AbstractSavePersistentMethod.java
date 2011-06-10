@@ -21,6 +21,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
@@ -62,6 +63,14 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * flushed when a domain instance is saved without validation.
      */
     private static ThreadLocal<Object> disableAutoValidationFor = new ThreadLocal<Object>();
+
+    static {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                disableAutoValidationFor.remove();
+            }
+        });
+    }
 
     public static boolean isAutoValidationDisabled(Object obj) {
         return obj != null && obj == disableAutoValidationFor.get();

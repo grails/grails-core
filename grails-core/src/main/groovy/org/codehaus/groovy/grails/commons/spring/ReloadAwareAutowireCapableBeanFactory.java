@@ -16,22 +16,11 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
-
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.springframework.beans.BeanInstantiationException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.*;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
@@ -41,6 +30,12 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.util.ClassUtils;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A BeanFactory that can deal with class cast exceptions that may occur due to class reload events
@@ -57,6 +52,13 @@ import org.springframework.util.ClassUtils;
  */
 public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFactory {
 
+    static {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                autowiringBeanPropertiesFlag.remove();
+            }
+        });
+    }
     ConcurrentHashMap<Class<?>, Set<String>> autowiringByNameCacheForClass =
         new ConcurrentHashMap<Class<?>, Set<String>>();
 
@@ -141,7 +143,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
         return super.isExcludedFromDependencyCheck(pd) || pd.getName().indexOf('$') > -1;
     }
 
-    ThreadLocal<Boolean> autowiringBeanPropertiesFlag = new ThreadLocal<Boolean>() {
+    private static ThreadLocal<Boolean> autowiringBeanPropertiesFlag = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return Boolean.FALSE;
