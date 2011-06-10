@@ -18,16 +18,17 @@ package org.codehaus.groovy.grails.cli;
 import gant.Gant;
 import grails.build.logging.GrailsConsole;
 import grails.util.*;
-import groovy.lang.Closure;
-import groovy.lang.ExpandoMetaClass;
+import groovy.lang.*;
 import groovy.util.AntBuilder;
 import org.apache.commons.cli.*;
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
+import org.codehaus.gant.GantMetaClass;
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode;
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer;
 import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport;
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -35,6 +36,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -81,7 +83,9 @@ public class GrailsScriptRunner {
         @Override public Object call(Object... args) { return null; }
     };
     public static final String NOANSI_ARGUMENT = "plainOutput";
-    private InputStream orignalIn;
+    private static InputStream originalIn;
+    private static PrintStream originalOut;
+
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
     private PrintStream out = System.out;
@@ -103,6 +107,10 @@ public class GrailsScriptRunner {
     }
 
     public GrailsScriptRunner(BuildSettings settings) {
+        if(originalIn == null) {
+            originalIn = System.in;
+            originalOut = System.out;
+        }
         this.settings = settings;
         this.pluginPathSupport = new PluginPathDiscoverySupport(settings);
     }
@@ -119,6 +127,9 @@ public class GrailsScriptRunner {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
+        originalIn = System.in;
+        originalOut = System.out;
+
 		CommandLineParser parser = new GnuParser();
         args = splitAndTrimArgs(args);
 
@@ -413,50 +424,27 @@ public class GrailsScriptRunner {
     public int executeScriptWithCaching(String scriptName, String env) throws IOException {
         List<Resource> potentialScripts;
         List<Resource> allScripts = getAvailableScripts();
-        GantBinding binding;
-        if (scriptCache.get(scriptName) != null) {
-            CachedScript cachedScript = scriptCache.get(scriptName);
-            potentialScripts = cachedScript.potentialScripts;
-            GantBinding originalBinding = cachedScript.binding;
-            binding = new GantBinding();
-            Map variables = originalBinding.getVariables();
-            if(variables.get("applicationLoaded") != null) {
-                binding.setVariable("applicationLoaded", Boolean.TRUE);
-                binding.setVariable("grailsApp", variables.get("grailsApp"));
-                binding.setVariable("appCtx", variables.get("appCtx"));
-                setDefaultInputStream(binding);
-            }
-        }
-        else {
-            binding = new GantBinding();
-            setDefaultInputStream(binding);
+        GantBinding binding = new GantBinding();
+        setDefaultInputStream(binding);
 
 
-            // Now find what scripts match the one requested by the user.
-            boolean exactMatchFound = false;
-            potentialScripts = new ArrayList<Resource>();
-            for (Resource scriptPath : allScripts) {
-                String scriptFileName = scriptPath.getFilename().substring(0,scriptPath.getFilename().length()-7); // trim .groovy extension
-                if (scriptFileName.endsWith("_")) {
-                    scriptsAllowedOutsideOfProject.add(scriptPath);
-                    scriptFileName = scriptFileName.substring(0, scriptFileName.length()-1);
-                }
-
-                if (scriptFileName.equals(scriptName)) {
-                    potentialScripts.add(scriptPath);
-                    exactMatchFound = true;
-                    continue;
-                }
-
-                if (!exactMatchFound && ScriptNameResolver.resolvesTo(scriptName, scriptFileName)) potentialScripts.add(scriptPath);
+        // Now find what scripts match the one requested by the user.
+        boolean exactMatchFound = false;
+        potentialScripts = new ArrayList<Resource>();
+        for (Resource scriptPath : allScripts) {
+            String scriptFileName = scriptPath.getFilename().substring(0,scriptPath.getFilename().length()-7); // trim .groovy extension
+            if (scriptFileName.endsWith("_")) {
+                scriptsAllowedOutsideOfProject.add(scriptPath);
+                scriptFileName = scriptFileName.substring(0, scriptFileName.length()-1);
             }
 
-            if (!potentialScripts.isEmpty()) {
-                CachedScript cachedScript = new CachedScript();
-                cachedScript.binding = binding;
-                cachedScript.potentialScripts = potentialScripts;
-                scriptCache.put(scriptName, cachedScript);
+            if (scriptFileName.equals(scriptName)) {
+                potentialScripts.add(scriptPath);
+                exactMatchFound = true;
+                continue;
             }
+
+            if (!exactMatchFound && ScriptNameResolver.resolvesTo(scriptName, scriptFileName)) potentialScripts.add(scriptPath);
         }
 
         // First try to load the script from its file. If there is no
@@ -501,7 +489,7 @@ public class GrailsScriptRunner {
             }
         }
 
-        return executeWithGantInstance(gant, DO_NOTHING_CLOSURE);
+        return executeWithGantInstance(gant, DO_NOTHING_CLOSURE).exitCode;
     }
 
     private int executeScriptFile(String scriptName, String env, GantBinding binding, Resource scriptFile) throws IOException {
@@ -515,13 +503,47 @@ public class GrailsScriptRunner {
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
         gant.setUseCache(true);
         gant.setCacheDirectory(scriptCacheDir);
+        GantResult result = null;
         try {
             gant.loadScript(scriptFile.getURL());
-            return executeWithGantInstance(gant, DO_NOTHING_CLOSURE);
+            result = executeWithGantInstance(gant, DO_NOTHING_CLOSURE);
+            return result.exitCode;
         } catch (IOException e) {
             console.error("I/O exception loading script [" + e.getMessage() + "]: " + e.getMessage());
             return 1;
         }
+        finally {
+            cleanup(gant,result, binding);
+
+        }
+    }
+
+    private void cleanup(Gant gant, GantResult result, GantBinding binding) {
+        if(result != null) {
+            Class cls = GantMetaClass.class;
+            try {
+                Field methodsInvoked = cls.getDeclaredField("methodsInvoked");
+                methodsInvoked.setAccessible(true);
+                Set methodsInvokedSet = (Set) methodsInvoked.get(cls);
+                if(methodsInvokedSet != null) {
+                    methodsInvokedSet.clear();
+                }
+            } catch (NoSuchFieldException e) {
+                // ignore
+            } catch (IllegalAccessException e) {
+                // ignore
+            }
+        }
+        System.setIn(originalIn);
+        System.setOut(originalOut);
+        GrailsPluginUtils.clearCaches();
+        Map variables = binding.getVariables();
+        Object pluginsSettingsObject = variables.get("pluginsSettings");
+        if(pluginsSettingsObject instanceof PluginBuildSettings) {
+            ((PluginBuildSettings)pluginsSettingsObject).clearCache();
+        }
+        GroovySystem.getMetaClassRegistry().removeMetaClass(GantBinding.class);
+        GroovySystem.getMetaClassRegistry().removeMetaClass(Gant.class);
     }
 
     public void initializeState() {
@@ -572,18 +594,15 @@ public class GrailsScriptRunner {
 
     private void setDefaultInputStream(GantBinding binding) {
 
-        if (this.orignalIn == null) {
-            this.orignalIn = System.in;
-        }
         // Gant does not initialise the default input stream for
         // the Ant project, so we manually do it here.
         AntBuilder antBuilder = (AntBuilder) binding.getVariable("ant");
         Project p = antBuilder.getAntProject();
 
         try {
-            System.setIn(orignalIn);
+            System.setIn(originalIn);
             p.setInputHandler(new CommandLineInputHandler());
-            p.setDefaultInputStream(orignalIn);
+            p.setDefaultInputStream(originalIn);
         }
         catch (NoSuchMethodError nsme) {
             // will only happen due to a bug in JRockit
@@ -592,7 +611,7 @@ public class GrailsScriptRunner {
                 if ("setDefaultInputStream".equals(m.getName()) && m.getParameterTypes().length == 1 &&
                         InputStream.class.equals(m.getParameterTypes()[0])) {
                     try {
-                        m.invoke(p, orignalIn);
+                        m.invoke(p, originalIn);
                         break;
                     }
                     catch (Exception e) {
@@ -674,12 +693,19 @@ public class GrailsScriptRunner {
         }
     }
 
-    private int executeWithGantInstance(Gant gant, final Closure<?> doNothingClosure) {
-        gant.prepareTargets();
+    private GantResult executeWithGantInstance(Gant gant, final Closure<?> doNothingClosure) {
+        GantResult result = new GantResult();
+        result.script = gant.prepareTargets();
         gant.setAllPerTargetPostHooks(doNothingClosure);
         gant.setAllPerTargetPreHooks(doNothingClosure);
         // Invoke the default target.
-        return gant.executeTargets().intValue();
+        result.exitCode = gant.executeTargets();
+        return result;
+    }
+
+    class GantResult {
+        int exitCode;
+        GroovyObject script;
     }
 
     private boolean isGrailsProject() {

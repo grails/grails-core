@@ -115,6 +115,10 @@ public class GrailsConsole {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
         }
+
+        if(!(System.out instanceof GrailsConsolePrintStream)) {
+            System.setOut(new GrailsConsolePrintStream(instance.out));
+        }
         return instance;
     }
 

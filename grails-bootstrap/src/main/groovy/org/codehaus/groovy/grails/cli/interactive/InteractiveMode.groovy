@@ -15,13 +15,14 @@
  */
 package org.codehaus.groovy.grails.cli.interactive
 
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
-import grails.build.logging.GrailsConsole
-import grails.util.BuildSettingsHolder
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * Provides the implementation of interactive mode in Grails
@@ -40,10 +41,13 @@ class InteractiveMode {
     boolean interactiveModeActive = false
     def grailsServer
 
+    private MetaClassRegistryCleaner registryCleaner = new MetaClassRegistryCleaner();
+
     InteractiveMode(BuildSettings settings, GrailsScriptRunner scriptRunner) {
         this.scriptRunner = scriptRunner
         this.settings = settings;
         BuildSettingsHolder.settings = settings
+        GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(registryCleaner)
     }
 
     void setGrailsServer(grailsServer) {
@@ -112,6 +116,13 @@ class InteractiveMode {
                 error "Script not found for name $scriptName"
             } catch (Throwable e) {
                 error "Error running script $scriptName: ${e.message}", e
+            }
+            finally {
+                try {
+                    registryCleaner.clean()
+                } catch (e) {
+                    // ignore
+                }
             }
 
         }
