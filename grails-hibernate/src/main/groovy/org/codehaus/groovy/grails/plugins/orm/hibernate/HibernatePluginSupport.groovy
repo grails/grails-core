@@ -16,7 +16,8 @@
 package org.codehaus.groovy.grails.plugins.orm.hibernate
 
 import grails.artefact.Enhanced
-import java.util.concurrent.ConcurrentHashMap
+import grails.util.GrailsNameUtils
+
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
@@ -27,15 +28,19 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.orm.hibernate.*
+import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.hibernate.EmptyInterceptor
 import org.hibernate.FlushMode
 import org.hibernate.Session
@@ -45,7 +50,6 @@ import org.hibernate.cfg.ImprovedNamingStrategy
 import org.hibernate.proxy.HibernateProxy
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
-import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
@@ -57,9 +61,6 @@ import org.springframework.orm.hibernate3.HibernateAccessor
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
-import org.codehaus.groovy.grails.orm.hibernate.*
-import org.codehaus.groovy.grails.orm.hibernate.support.*
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -124,7 +125,7 @@ class HibernatePluginSupport {
             String prefix = isDefault ? '' : datasourceName + '_'
 
             for (GrailsDomainClass dc in application.domainClasses) {
-                if (!dc.abstract && dc.usesDataSource(datasourceName)) {
+                if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                     "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
                         messageSource = ref("messageSource")
                         domainClass = ref("${dc.fullName}DomainClass")
@@ -263,10 +264,6 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
             }
 
             "transactionManager$suffix"(GrailsHibernateTransactionManager) {
-                sessionFactory = ref("sessionFactory$suffix")
-            }
-
-            persistenceInterceptor(HibernatePersistenceContextInterceptor) {
                 sessionFactory = ref("sessionFactory$suffix")
             }
 
@@ -413,14 +410,6 @@ String suffix = ''
         proxy.metaClass = GroovySystem.metaClassRegistry.getMetaClass(proxy.getClass())
     }
 
-    private static DOMAIN_INITIALIZERS = new ConcurrentHashMap()
-    static initializeDomain(Class c) {
-        synchronized(c) {
-             // enhance domain class only once, initializer is removed after calling
-             DOMAIN_INITIALIZERS.remove(c)?.call()
-        }
-    }
-
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
         enhanceSessionFactory(sessionFactory, application, ctx, '')
     }
@@ -436,17 +425,47 @@ String suffix = ''
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)
         for (PersistentEntity entity in mappingContext.getPersistentEntities()) {
             GrailsDomainClass dc = application.getDomainClass(entity.javaClass.name)
-            if (!dc.usesDataSource(datasourceName)) {
+            if (!GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                 continue
             }
 
-            if (entity.javaClass.getAnnotation(Enhanced) == null) {
-                enhancer.enhance entity
+            if (!datasourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE)) {
+                LOG.debug "Registering namespace methods for $dc.clazz.name in DataSource '$datasourceName'"
+                registerNamespaceMethods dc, datastore, datasourceName, transactionManager, application
             }
-            else {
-                enhancer.enhance entity, true
+
+            if (datasourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE) ||
+                    datasourceName.equals(GrailsHibernateUtil.getDefaultDataSource(dc))) {
+                if (entity.javaClass.getAnnotation(Enhanced) == null) {
+                    enhancer.enhance entity
+                }
+                else {
+                    enhancer.enhance entity, true
+                }
             }
         }
+    }
+
+    private static void registerNamespaceMethods(GrailsDomainClass dc, HibernateDatastore datastore,
+            String datasourceName, HibernateTransactionManager transactionManager,
+            GrailsApplication application) {
+
+        String getter = GrailsNameUtils.getGetterName(datasourceName)
+        if (dc.metaClass.methods.any { it.name == getter && it.parameterTypes.size() == 0 }) {
+            LOG.warn "The $dc.clazz.name domain class has a method '$getter' - unable to add namespaced methods for datasource '$datasourceName'"
+            return
+        }
+
+        def classLoader = application.classLoader
+
+        def finders = HibernateGormEnhancer.createPersistentMethods(application,
+                datastore.sessionFactory, classLoader)
+        def staticApi = new HibernateGormStaticApi(dc.clazz, datastore, finders, classLoader, transactionManager)
+        dc.metaClass.static."$getter" = { -> staticApi }
+
+        def validateApi = new HibernateGormValidationApi(dc.clazz, datastore, classLoader)
+        def instanceApi = new HibernateGormInstanceApi(dc.clazz, datastore, classLoader)
+        dc.metaClass."$getter" = { -> new InstanceProxy(delegate, instanceApi, validateApi) }
     }
 
     static final LAZY_PROPERTY_HANDLER = { String propertyName ->
@@ -577,5 +596,51 @@ String suffix = ''
             return springConfig.getBeanDefinition("dataSource")
         }
         return null
+    }
+}
+
+class InstanceProxy {
+    private instance
+    private HibernateGormValidationApi validateApi
+    private HibernateGormInstanceApi instanceApi
+
+    private final Set<String> validateMethods
+
+    InstanceProxy(instance, HibernateGormInstanceApi instanceApi, HibernateGormValidationApi validateApi) {
+        this.instance = instance
+        this.instanceApi = instanceApi
+        this.validateApi = validateApi
+        validateMethods = validateApi.methods*.name
+        validateMethods.remove 'getValidator'
+        validateMethods.remove 'setValidator'
+        validateMethods.remove 'getBeforeValidateHelper'
+        validateMethods.remove 'setBeforeValidateHelper'
+        validateMethods.remove 'getValidateMethod'
+        validateMethods.remove 'setValidateMethod'
+    }
+
+    def invokeMethod(String name, args) {
+        if (validateMethods.contains(name)) {
+            validateApi."$name"(instance, *args)
+        }
+        else {
+            instanceApi."$name"(instance, *args)
+        }
+    }
+
+    void setProperty(String name, val) {
+        instanceApi."$name" = val
+    }
+
+    def getProperty(String name) {
+        instanceApi."$name"
+    }
+
+    void putAt(String name, val) {
+        instanceApi."$name" = val
+    }
+
+    def getAt(String name) {
+        instanceApi."$name"
     }
 }

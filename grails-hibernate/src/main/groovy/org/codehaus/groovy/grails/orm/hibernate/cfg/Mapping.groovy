@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+
 /**
  * Models the mapping from GORM classes to the db.
  *
@@ -31,7 +33,7 @@ class Mapping {
     /**
      * Return a type name of the known custom user types
      */
-    String getTypeName (Class theClass) {
+    String getTypeName(Class theClass) {
         def type = userTypes[theClass]
         if (type != null) {
             return type instanceof Class ? type.name : type.toString()
@@ -135,4 +137,10 @@ class Mapping {
      * Whether to use dynamically created insert queries, at the cost of some performance
      */
     boolean dynamicInsert = false
+
+    /**
+     * Get the datasource names that this domain class works with.
+     * @return the datasource names
+     */
+    List<String> datasources = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
 }

@@ -1,17 +1,17 @@
 /* Copyright (C) 2011 SpringSource
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.codehaus.groovy.grails.orm.hibernate
 
@@ -20,6 +20,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.metaclass.StaticMethodInvocation
+import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
@@ -61,11 +62,14 @@ class HibernateGormEnhancer extends GormEnhancer {
             GrailsApplication grailsApplication) {
         super(datastore, transactionManager);
         this.grailsApplication = grailsApplication
-        this.classLoader = grailsApplication.classLoader
+        classLoader = grailsApplication.classLoader
+        finders = createPersistentMethods(grailsApplication, datastore.sessionFactory, classLoader)
+    }
 
-        def sessionFactory = datastore.sessionFactory
+    static List createPersistentMethods(GrailsApplication grailsApplication,
+                SessionFactory sessionFactory, ClassLoader classLoader) {
 
-        finders = Collections.unmodifiableList([
+        Collections.unmodifiableList([
             new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
@@ -78,25 +82,19 @@ class HibernateGormEnhancer extends GormEnhancer {
 
     @SuppressWarnings("unchecked")
     protected GormValidationApi getValidationApi(Class cls) {
-        def validateApi = new HibernateGormValidationApi(cls, datastore)
-        validateApi.classLoader = classLoader
-        return validateApi
+        new HibernateGormValidationApi(cls, datastore, classLoader)
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected GormStaticApi getStaticApi(Class cls) {
-        def staticApi = new HibernateGormStaticApi(cls, datastore, finders)
-        staticApi.classLoader = classLoader
-        return staticApi
+        new HibernateGormStaticApi(cls, datastore, finders, classLoader, transactionManager)
     }
 
     @Override
     @SuppressWarnings("unchecked")
     protected GormInstanceApi getInstanceApi(Class cls) {
-        def instanceApi = new HibernateGormInstanceApi(cls, datastore)
-        instanceApi.classLoader = classLoader
-        return instanceApi
+        new HibernateGormInstanceApi(cls, datastore, classLoader)
     }
 
     @Override
@@ -131,10 +129,14 @@ class HibernateGormStaticApi extends GormStaticApi {
     private ExecuteQueryPersistentMethod executeQueryMethod
     private ExecuteUpdatePersistentMethod executeUpdateMethod
     private MergePersistentMethod mergeMethod
-    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
+    private ClassLoader classLoader
 
-    HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders) {
-        super(persistentClass, datastore, finders);
+    HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders,
+                ClassLoader classLoader, PlatformTransactionManager transactionManager) {
+        super(persistentClass, datastore, finders)
+
+        super.transactionManager = transactionManager
+        this.classLoader = classLoader
         this.sessionFactory = datastore.getSessionFactory()
         this.hibernateTemplate = new HibernateTemplate(sessionFactory)
         this.conversionService = datastore.mappingContext.conversionService
@@ -146,8 +148,8 @@ class HibernateGormStaticApi extends GormStaticApi {
         identityType = persistentEntity.identity.type
 
         def mappingContext = datastore.mappingContext
-        if (mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
-            org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
+        if (mappingContext instanceof GrailsDomainClassMappingContext) {
+            GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
             def grailsApplication = domainClassMappingContext.getGrailsApplication()
 
             findAllMethod.grailsApplication = grailsApplication
@@ -172,7 +174,7 @@ class HibernateGormStaticApi extends GormStaticApi {
 
     private convertIdentifier(Serializable id) {
         final idType = identityType
-        if (id != null && !idType.isAssignableFrom(id.class)) {
+        if (id != null && !idType.isAssignableFrom(id.getClass())) {
             try {
                 if (id instanceof Number && Long.equals(idType)) {
                     id = id.toLong()
@@ -625,23 +627,24 @@ class HibernateGormStaticApi extends GormStaticApi {
 
 class HibernateGormValidationApi extends GormValidationApi {
 
-    ValidatePersistentMethod validateMethod
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
+    private ClassLoader classLoader
 
-    HibernateGormValidationApi(Class persistentClass, HibernateDatastore datastore) {
+    ValidatePersistentMethod validateMethod
+
+    HibernateGormValidationApi(Class persistentClass, HibernateDatastore datastore, ClassLoader classLoader) {
         super(persistentClass, datastore);
+
+        this.classLoader = classLoader
 
         def sessionFactory = datastore.getSessionFactory()
 
         def mappingContext = datastore.mappingContext
-        if (mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
-            org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
+        if (mappingContext instanceof GrailsDomainClassMappingContext) {
+            GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
             def grailsApplication = domainClassMappingContext.getGrailsApplication()
             def validator = mappingContext.getEntityValidator(mappingContext.getPersistentEntity(persistentClass.name))
             this.validateMethod = new ValidatePersistentMethod(sessionFactory,
-                                                               classLoader,
-                                                               grailsApplication,
-                                                               validator)
+                    classLoader, grailsApplication, validator)
         }
     }
 
@@ -679,7 +682,7 @@ class HibernateGormValidationApi extends GormValidationApi {
 }
 
 /**
- * The implementation of the GORM instance API contract for Hibernate
+ * The implementation of the GORM instance API contract for Hibernate.
  *
  * @author Graeme Rocher
  * @since 1.0
@@ -691,20 +694,20 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     private MergePersistentMethod mergeMethod
     private HibernateTemplate hibernateTemplate
     private SessionFactory sessionFactory
-    private ClassLoader classLoader = Thread.currentThread().getContextClassLoader()
+    private ClassLoader classLoader
 
     private config = Collections.emptyMap()
 
-    HibernateGormInstanceApi(Class persistentClass, HibernateDatastore datastore) {
-        super(persistentClass, datastore);
+    HibernateGormInstanceApi(Class persistentClass, HibernateDatastore datastore, ClassLoader classLoader) {
+        super(persistentClass, datastore)
 
+        this.classLoader = classLoader
         sessionFactory = datastore.getSessionFactory()
-
         hibernateTemplate = new HibernateTemplate(sessionFactory)
 
         def mappingContext = datastore.mappingContext
-        if (mappingContext instanceof org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext) {
-            org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
+        if (mappingContext instanceof GrailsDomainClassMappingContext) {
+            GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
             def grailsApplication = domainClassMappingContext.getGrailsApplication()
             def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
             this.config = grailsApplication.config?.grails?.gorm

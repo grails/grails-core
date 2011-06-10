@@ -15,21 +15,21 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
-import org.apache.commons.logging.LogFactory
-import org.hibernate.InvalidMappingException
-import org.hibernate.FetchMode
 import org.apache.commons.beanutils.BeanUtils
+import org.apache.commons.logging.LogFactory
+import org.hibernate.FetchMode
+import org.hibernate.InvalidMappingException
 
 /**
- * A builder that implements the ORM mapping DSL constructing a model that can be evaluated by the
- * GrailsDomainBinder class which maps GORM classes onto the database
+ * Implements the ORM mapping DSL constructing a model that can be evaluated by the
+ * GrailsDomainBinder class which maps GORM classes onto the database.
  *
  * @author Graeme Rocher
  * @since 1.0
  */
 class HibernateMappingBuilder {
 
-    static final LOG = LogFactory.getLog(HibernateMappingBuilder.class)
+    static final LOG = LogFactory.getLog(this)
 
     Mapping mapping
     String className
@@ -514,6 +514,14 @@ class HibernateMappingBuilder {
         callable.resolveStrategy = Closure.DELEGATE_ONLY
         callable.delegate = [invokeMethod:handleMethodMissing] as GroovyObjectSupport
         callable.call()
+    }
+
+    void datasource(String name) {
+        mapping.datasources = [name]
+    }
+
+    void datasources(List<String> names) {
+        mapping.datasources = names
     }
 
     void methodMissing(String name, args) {

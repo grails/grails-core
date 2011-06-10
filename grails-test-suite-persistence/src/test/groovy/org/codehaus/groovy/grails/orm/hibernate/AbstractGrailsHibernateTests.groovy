@@ -115,7 +115,8 @@ hibernate {
     }
 
     protected setCurrentController(controller) {
-        RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
+        RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(
+            controller.class.name, "Controller")
     }
 
     void onApplicationCreated() {}
@@ -147,18 +148,8 @@ hibernate {
 
     protected void tearDown() {
 
-        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
-            SessionHolder holder = (SessionHolder) TransactionSynchronizationManager.getResource(sessionFactory)
-            Session s = holder.session
-            TransactionSynchronizationManager.unbindResource(sessionFactory)
-            SessionFactoryUtils.releaseSession(s, sessionFactory)
-        }
-
-        def classMetadata = sessionFactory.allClassMetadata
-        for (entry in classMetadata) {
-            ClassMetadata metadata = entry.value
-            GroovySystem.getMetaClassRegistry().removeMetaClass(metadata.getMappedClass(EntityMode.POJO))
-        }
+        unbindSessionFactory sessionFactory
+        sessionFactory = null
 
         GroovySystem.stopThreadedReferenceManager()
 
@@ -192,6 +183,22 @@ hibernate {
         onTearDown()
 
         super.tearDown()
+    }
+
+    protected void unregisterHibernateSession() {
+        unbindSessionFactory sessionFactory
+    }
+
+    protected void unbindSessionFactory(SessionFactory sessionFactory) {
+        if (TransactionSynchronizationManager.hasResource(sessionFactory)) {
+            Session s = TransactionSynchronizationManager.getResource(sessionFactory).session
+            TransactionSynchronizationManager.unbindResource sessionFactory
+            SessionFactoryUtils.releaseSession s, sessionFactory
+        }
+
+        for (ClassMetadata metadata in sessionFactory.allClassMetadata.values()) {
+            GroovySystem.getMetaClassRegistry().removeMetaClass metadata.getMappedClass(EntityMode.POJO)
+        }
     }
 
     protected MockApplicationContext createMockApplicationContext() {
@@ -249,10 +256,14 @@ hibernate {
 
     protected void registerHibernateSession() {
         sessionFactory = appCtx.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)
+        bindSessionFactory sessionFactory
+        session = sessionFactory.currentSession
+    }
 
+    protected void bindSessionFactory(SessionFactory sessionFactory) {
         if (!TransactionSynchronizationManager.hasResource(sessionFactory)) {
-            session = sessionFactory.openSession()
-            TransactionSynchronizationManager.bindResource(sessionFactory, new SessionHolder(session))
+            TransactionSynchronizationManager.bindResource(sessionFactory,
+                new SessionHolder(sessionFactory.openSession()))
         }
     }
 }
