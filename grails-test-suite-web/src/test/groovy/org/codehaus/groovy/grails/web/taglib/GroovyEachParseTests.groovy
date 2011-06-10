@@ -14,8 +14,8 @@ class GroovyEachParseTests extends ParseTests {
 class myTest extends GroovyPage {
 public String getGroovyPageFileName() { "myTest" }
 public Object run() {
-def out = getOut()
-def codecOut = getCodecOut()
+Writer out = getOut()
+Writer codecOut = getCodecOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
@@ -36,8 +36,8 @@ printHtmlPart(0)
 class myTest extends GroovyPage {
 public String getGroovyPageFileName() { "myTest" }
 public Object run() {
-def out = getOut()
-def codecOut = getCodecOut()
+Writer out = getOut()
+Writer codecOut = getCodecOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
@@ -58,8 +58,8 @@ for( t in evaluate('"blah"', 1, it) { return "blah" } ) {
 class myTest2 extends GroovyPage {
 public String getGroovyPageFileName() { "myTest2" }
 public Object run() {
-def out = getOut()
-def codecOut = getCodecOut()
+Writer out = getOut()
+Writer codecOut = getCodecOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
