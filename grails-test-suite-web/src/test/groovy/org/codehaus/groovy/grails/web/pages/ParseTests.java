@@ -64,8 +64,8 @@ public class ParseTests extends TestCase {
             "class myTest1 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest1\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -80,8 +80,8 @@ public class ParseTests extends TestCase {
             "class myTest2 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest2\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
 
             "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,-1)\n" +
@@ -123,8 +123,8 @@ public class ParseTests extends TestCase {
             "class myTest4 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest4\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -160,8 +160,8 @@ public class ParseTests extends TestCase {
             "class myTest5 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest5\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -218,8 +218,8 @@ public class ParseTests extends TestCase {
             "class myTest7 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest7\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             GroovyPage.CODEC_OUT_STATEMENT + ".print(evaluate('uri', 3, it) { return uri })\n" +
@@ -246,8 +246,8 @@ public class ParseTests extends TestCase {
             "class GRAILS5598 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"GRAILS5598\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "createClosureForHtmlPart(0, 1)\n" +
             "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }] as GroovyPageAttributes,1)\n" +
@@ -263,8 +263,8 @@ public class ParseTests extends TestCase {
             "class SITEMESH_PREPROCESS_TEST extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"SITEMESH_PREPROCESS_TEST\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
@@ -278,8 +278,8 @@ public class ParseTests extends TestCase {
             "class GRAILS5605 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"GRAILS5605\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "createTagBody(1, {\n" +

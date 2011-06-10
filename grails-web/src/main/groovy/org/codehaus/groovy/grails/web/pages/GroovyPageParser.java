@@ -738,8 +738,9 @@ public class GroovyPageParser implements Tokens {
             out.println("def flash = binding.flash");
             out.println("def response = binding.response");
             */
-            out.println("def out = getOut()");
-            out.println("def codecOut = getCodecOut()");
+            out.println("Writer out = getOut()");
+            out.println("Writer codecOut = getCodecOut()");
+            //out.println("JspTagLib jspTag");
             if (sitemeshPreprocessMode) {
                 out.println("registerSitemeshPreprocessMode()");
             }
@@ -969,8 +970,7 @@ public class GroovyPageParser implements Tokens {
 
             if (jspTags.containsKey(ns)) {
                 String uri = jspTags.get(ns);
-                out.println("jspTag = tagLibraryResolver?.resolveTagLibrary('" +
-                        uri + "')?.getTag('" + tagName + "')");
+                out.println("jspTag = getJspTag('" + uri + "', '" + tagName + "')");
                 out.println("if (!jspTag) throw new GrailsTagException('Unknown JSP tag " +
                         ns + ":" + tagName + "')");
                 out.print("jspTag.doTag(out," + attrsVarsMapDefinition.get(tagIndex) + ",");
