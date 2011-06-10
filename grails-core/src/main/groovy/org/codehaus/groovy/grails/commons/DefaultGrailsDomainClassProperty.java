@@ -15,6 +15,16 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsNameUtils;
+
+import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -22,9 +32,6 @@ import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-
-import java.beans.PropertyDescriptor;
-import java.util.*;
 
 /**
  * Represents a property of a domain class and contains meta information about the
@@ -702,14 +709,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
         public void setMappingStrategy(String strategy) {
             // do nothing
-        }
-
-        public List<String> getDataSources() {
-            return Collections.singletonList(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE);
-        }
-
-        public boolean usesDataSource(@SuppressWarnings("hiding") String name) {
-            return true;
         }
     }
 }

@@ -63,8 +63,8 @@ class ServicesGrailsPlugin {
                 def props = new Properties()
 
                 String attributes = 'PROPAGATION_REQUIRED'
-                String dataSourceName = serviceClass.dataSource
-                String suffix = dataSourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$dataSourceName"
+                String datasourceName = serviceClass.datasource
+                String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
                 if (application.config["dataSource$suffix"].readOnly) {
                     attributes += ',readOnly'
                 }

@@ -20,7 +20,7 @@ package org.codehaus.groovy.grails.commons;
  */
 public interface GrailsServiceClass extends InjectableGrailsClass {
 
-    String DATA_SOURCE = "dataSource";
+    String DATA_SOURCE = "datasource";
     String DEFAULT_DATA_SOURCE = "DEFAULT";
     String ALL_DATA_SOURCES = "ALL";
 
@@ -35,11 +35,11 @@ public interface GrailsServiceClass extends InjectableGrailsClass {
      * Get the datasource name that this service class works with.
      * @return the name
      */
-    String getDataSource();
+    String getDatasource();
 
     /**
      * Check if the service class can use the named DataSource.
      * @param name the name
      */
-    boolean usesDataSource(String name);
+    boolean usesDatasource(String name);
 }

@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.HibernateException
-import org.springframework.transaction.NoTransactionException
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import org.hibernate.SessionFactory
 
 // TODO test Library + readonly datasource once H2 supports per-connection read-only (planned for 1.3)
 
@@ -22,7 +23,9 @@ class MdsPerson {
 class MdsLibrary {
     String name
     static hasMany = [visits: MdsVisit]
-    static dataSources = ['ds2']
+    static mapping = {
+        datasource 'ds2'
+    }
 }
 
 @Entity
@@ -30,13 +33,33 @@ class MdsVisit {
     String person
     Date visitDate
     static belongsTo = [library: MdsLibrary]
-    static dataSources = ['ds2']
+    static mapping = {
+        datasource 'ds2'
+    }
 }
 
 @Entity
 class MdsZipCode {
     String code
-    static dataSources = ['ds3']
+    static mapping = {
+        datasource 'ds3'
+    }
+}
+
+@Entity
+class MdsTwoDatasources {
+    String name
+    static mapping = {
+        datasources(['ds2', 'ds3'])
+    }
+}
+
+@Entity
+class MdsAllDatasources {
+    String name
+    static mapping = {
+        datasource 'ALL'
+    }
 }
 
 class MdsService {
@@ -63,7 +86,7 @@ class MdsService {
 
 class MdsDs2Service {
 
-    static dataSource = 'ds2'
+    static datasource = 'ds2'
 
     MdsPerson createPerson() {
         new MdsPerson(name: 'person').save(flush: true)
@@ -87,7 +110,7 @@ class MdsDs2Service {
 
 class MdsDs3Service {
 
-    static dataSource = 'ds3'
+    static datasource = 'ds3'
 
     MdsPerson createPerson() {
         new MdsPerson(name: 'person').save(flush: true)
@@ -147,6 +170,7 @@ dataSource {
 }
 
 dataSource_ds2 {
+    pooled = true
     driverClassName = 'org.h2.Driver'
     url = 'jdbc:h2:mem:testDb2'
     username = 'sa'
@@ -155,11 +179,20 @@ dataSource_ds2 {
 }
 
 dataSource_ds3 {
+    pooled = true
     driverClassName = 'org.h2.Driver'
     url = 'jdbc:h2:mem:testDb3'
     username = 'sa'
     password = ''
     readOnly = true
+}
+
+dataSource_ds4 {
+    pooled = true
+    driverClassName = 'org.h2.Driver'
+    url = 'jdbc:h2:mem:testDb4'
+    username = 'sa'
+    password = ''
 }
 
 hibernate {
@@ -168,6 +201,28 @@ hibernate {
     cache.provider_class='net.sf.ehcache.hibernate.EhCacheProvider'
 }
 ''', 'DataSource')
+    }
+
+    @Override
+    protected void registerHibernateSession() {
+        super.registerHibernateSession()
+
+        appCtx.getBeansOfType(SessionFactory).each { name, bean ->
+            if (!GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN.equals(name)) {
+                bindSessionFactory bean
+            }
+        }
+    }
+
+    @Override
+    protected void unregisterHibernateSession() {
+        super.unregisterHibernateSession()
+
+        appCtx.getBeansOfType(SessionFactory).each { name, bean ->
+            if (!GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN.equals(name)) {
+                unbindSessionFactory sessionFactory
+            }
+        }
     }
 
     void testBeans() {
@@ -338,6 +393,135 @@ hibernate {
         assertEquals 'Should have rolled back', zipCodeCount, ZipCode.count()
 
         assertTrue service.transactionIsReadOnly()
+    }
+
+    void testNamespaces_Two() {
+
+        def TwoDatasourcesDomainClass = ga.getDomainClass('MdsTwoDatasources')
+        assertEquals(['ds2', 'ds3'], GrailsHibernateUtil.getDatasourceNames(TwoDatasourcesDomainClass))
+        assertEquals 'ds2', GrailsHibernateUtil.getDefaultDataSource(TwoDatasourcesDomainClass)
+
+        def TwoDatasources = TwoDatasourcesDomainClass.clazz
+        def instance = TwoDatasources.newInstance()
+
+        assertFalse instance.validate()
+        assertFalse instance.ds2.validate()
+        assertFalse instance.ds3.validate()
+        shouldFail(MissingPropertyException) {
+            println instance.ds4.validate()
+        }
+
+        instance.name = 'two!'
+
+        assertTrue instance.validate()
+        assertTrue instance.ds2.validate()
+        assertTrue instance.ds3.validate()
+        assertEquals 0, TwoDatasources.count()
+        assertEquals 0, TwoDatasources.ds2.count()
+        assertEquals 0, TwoDatasources.ds3.count()
+
+        assertNotNull instance.save(flush: true)
+        appCtx.sessionFactory.currentSession.clear()
+        def session2 = appCtx.sessionFactory_ds2.currentSession
+        session2.clear()
+
+        assertEquals 1, TwoDatasources.count()
+        assertEquals 1, TwoDatasources.ds2.count()
+        assertEquals 0, TwoDatasources.ds3.count()
+
+        instance.name += 'updated'
+        assertNotNull instance.ds2.save(flush: true)
+
+        session2.clear()
+        assertEquals 'two!updated', TwoDatasources.get(instance.id).name
+
+        // need these 2 lines otherwise it looks like it's already persistent and you'll get an opt lock exception
+        instance.id = null
+        instance.version = null
+        assertNotNull instance.ds3.save(flush: true)
+        appCtx.sessionFactory_ds3.currentSession.clear()
+
+        assertEquals 1, TwoDatasources.count()
+        assertEquals 1, TwoDatasources.ds2.count()
+        assertEquals 1, TwoDatasources.ds3.count()
+
+        assertEquals 1, TwoDatasources.findAllByName(instance.name).size()
+        assertEquals 1, TwoDatasources.ds2.findAllByName(instance.name).size()
+        assertEquals 1, TwoDatasources.ds3.findAllByName(instance.name).size()
+    }
+
+    void testNamespaces_All() {
+
+        def AllDatasourcesDomainClass = ga.getDomainClass('MdsAllDatasources')
+        assertEquals(['ALL'], GrailsHibernateUtil.getDatasourceNames(AllDatasourcesDomainClass))
+        assertEquals 'DEFAULT', GrailsHibernateUtil.getDefaultDataSource(AllDatasourcesDomainClass)
+
+        def AllDatasources = AllDatasourcesDomainClass.clazz
+
+        def instance = AllDatasources.newInstance()
+
+        assertFalse instance.validate()
+        assertFalse instance.ds2.validate()
+        assertFalse instance.ds3.validate()
+        assertFalse instance.ds4.validate()
+        shouldFail(MissingPropertyException) {
+            println instance.ds5.validate()
+        }
+
+        instance.name = 'all!'
+
+        assertTrue instance.validate()
+        assertTrue instance.ds2.validate()
+        assertTrue instance.ds3.validate()
+        assertTrue instance.ds4.validate()
+        assertEquals 0, AllDatasources.count()
+        assertEquals 0, AllDatasources.ds2.count()
+        assertEquals 0, AllDatasources.ds3.count()
+        assertEquals 0, AllDatasources.ds4.count()
+
+        assertNotNull instance.save(flush: true)
+        appCtx.sessionFactory.currentSession.clear()
+
+        assertEquals 1, AllDatasources.count()
+        assertEquals 0, AllDatasources.ds2.count()
+        assertEquals 0, AllDatasources.ds3.count()
+        assertEquals 0, AllDatasources.ds4.count()
+
+        // need these 2 lines otherwise it looks like it's already persistent and you'll get an opt lock exception
+        instance.id = null
+        instance.version = null
+        assertNotNull instance.ds2.save(flush: true)
+        appCtx.sessionFactory_ds2.currentSession.clear()
+
+        assertEquals 1, AllDatasources.count()
+        assertEquals 1, AllDatasources.ds2.count()
+        assertEquals 0, AllDatasources.ds3.count()
+        assertEquals 0, AllDatasources.ds4.count()
+
+        instance.id = null
+        instance.version = null
+        assertNotNull instance.ds3.save(flush: true)
+        appCtx.sessionFactory_ds3.currentSession.clear()
+
+        assertEquals 1, AllDatasources.count()
+        assertEquals 1, AllDatasources.ds2.count()
+        assertEquals 1, AllDatasources.ds3.count()
+        assertEquals 0, AllDatasources.ds4.count()
+
+        instance.id = null
+        instance.version = null
+        assertNotNull instance.ds4.save(flush: true)
+        appCtx.sessionFactory_ds4.currentSession.clear()
+
+        assertEquals 1, AllDatasources.count()
+        assertEquals 1, AllDatasources.ds2.count()
+        assertEquals 1, AllDatasources.ds3.count()
+        assertEquals 1, AllDatasources.ds4.count()
+
+        assertEquals 1, AllDatasources.findAllByName(instance.name).size()
+        assertEquals 1, AllDatasources.ds2.findAllByName(instance.name).size()
+        assertEquals 1, AllDatasources.ds3.findAllByName(instance.name).size()
+        assertEquals 1, AllDatasources.ds4.findAllByName(instance.name).size()
     }
 }
 

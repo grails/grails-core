@@ -93,13 +93,12 @@ public class DefaultGrailsDomainConfiguration extends Configuration implements G
             Thread.currentThread().setContextClassLoader(grailsApplication.getClassLoader());
         }
 
-        configureDomainBinder(grailsApplication,domainClasses);
+        configureDomainBinder(grailsApplication, domainClasses);
 
         for (GrailsDomainClass domainClass : domainClasses) {
-            if (!domainClass.usesDataSource(dataSourceName)) {
+            if (!GrailsHibernateUtil.usesDatasource(domainClass, dataSourceName)) {
                 continue;
             }
-
             final Mappings mappings = super.createMappings();
             Mapping m = GrailsDomainBinder.getMapping(domainClass);
             mappings.setAutoImport(m == null || m.getAutoImport());
