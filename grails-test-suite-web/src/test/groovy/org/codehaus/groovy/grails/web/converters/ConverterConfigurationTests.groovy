@@ -87,11 +87,11 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
     void testDomainWithVersionConfiguration() {
 
         JSON.createNamedConfig("with-version") {
-            it.registerObjectMarshaller(new JsonClassMarshaller(true))
+            it.registerObjectMarshaller(new JsonClassMarshaller(true, ga))
         }
 
         XML.createNamedConfig("with-version") {
-            it.registerObjectMarshaller(new XmlClassMarshaller(true))
+            it.registerObjectMarshaller(new XmlClassMarshaller(true, ga))
         }
 
         JSON.use("with-version") {

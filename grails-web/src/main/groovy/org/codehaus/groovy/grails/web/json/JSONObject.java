@@ -1217,10 +1217,4 @@ public class JSONObject implements JSONElement,Map {
     public int hashCode() {
         return (myHashMap != null ? myHashMap.hashCode() : 0);
     }
-
-//    public Object asType(Class targetClass) {
-//        if(ConverterUtil.isDomainClass(targetClass)) {
-//
-//        }
-//    }
 }

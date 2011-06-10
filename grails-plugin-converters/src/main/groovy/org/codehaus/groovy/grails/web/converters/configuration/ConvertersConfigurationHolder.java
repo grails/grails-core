@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.converters.configuration;
 
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.converters.Converter;
-import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
@@ -40,7 +39,6 @@ public class ConvertersConfigurationHolder {
         ShutdownOperations.addOperation(new Runnable() {
             public void run() {
                 clear();
-                ConverterUtil.setGrailsApplication(null);
             }
         });
     }

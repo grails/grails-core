@@ -21,11 +21,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -43,11 +39,13 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ConverterUtil {
 
-    private static ConverterUtil INSTANCE;
-
     private static final String PERSISTENCE_BEAN_WRAPPER_CLASS = "org.codehaus.groovy.grails.orm.hibernate.support.HibernateBeanWrapper";
 
-    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    private static final Object[] EMPTY_OBJECT_ARRAY = {};
+
+    private ConverterUtil() {
+       // static only
+    }
 
     public static BeanWrapper createBeanWrapper(Object o) {
         BeanWrapper beanWrapper;
@@ -93,13 +91,7 @@ public class ConverterUtil {
         }
     }
 
-    public static GrailsDomainClass getDomainClass(String name) {
-        // deal with proxies
-        name = trimProxySuffix(name);
-        return (GrailsDomainClass) getGrailsApplication().getArtefact(DomainClassArtefactHandler.TYPE, name);
-    }
-
-    private static String trimProxySuffix(String name) {
+    public static String trimProxySuffix(String name) {
         int i = name.indexOf("$$");
         if (i > -1) {
             name = name.substring(0, i);
@@ -110,43 +102,8 @@ public class ConverterUtil {
         return name;
     }
 
-    private static GrailsApplication getGrailsApplication() {
-        return getInstance().grailsApplication;
-    }
-
-    protected static ConverterUtil getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new ConverterUtil();
-        }
-        return INSTANCE;
-    }
-
-    public static void clearInstance() {
-        INSTANCE = null;
-    }
-
     public static boolean isConverterClass(Class<?> clazz) {
         return Converter.class.isAssignableFrom(clazz);
-    }
-
-    public static boolean isDomainClass(Class<?> clazz) {
-        String name = trimProxySuffix(clazz.getName());
-        return getGrailsApplication() != null && getGrailsApplication().isArtefactOfType(DomainClassArtefactHandler.TYPE, name);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Set<String> getDomainClassNames() {
-        return getGrailsApplication().getArtefactInfo(DomainClassArtefactHandler.TYPE).getClassesByName().keySet();
-    }
-
-    public static void setGrailsApplication(GrailsApplication grailsApp) {
-        getInstance().grailsApplication = grailsApp;
-    }
-
-    private GrailsApplication grailsApplication;
-
-    protected ConverterUtil() {
-        // static only
     }
 
     @SuppressWarnings("rawtypes")

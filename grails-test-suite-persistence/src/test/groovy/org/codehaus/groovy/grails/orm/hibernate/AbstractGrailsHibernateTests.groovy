@@ -12,7 +12,6 @@ import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.EntityMode
@@ -48,8 +47,7 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
     SessionFactory sessionFactory
     Session session
 
-    protected void onSetUp() {
-    }
+    protected void onSetUp() {}
 
     protected void setUp() {
         super.setUp()
@@ -170,7 +168,6 @@ hibernate {
         ga = null
         mockManager = null
         appCtx.close()
-        ConverterUtil.clearInstance()
         ctx = null
         appCtx = null
 
