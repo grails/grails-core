@@ -254,7 +254,7 @@ class Log4jDslTests extends GroovyTestCase {
         def rootLogger = Logger.rootLogger
         assertEquals Level.DEBUG, rootLogger.level
     }
-    
+
     void testConfigFromCollection() {
         LogManager.resetConfiguration()
 

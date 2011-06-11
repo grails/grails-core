@@ -15,14 +15,14 @@
  */
 package org.codehaus.groovy.grails.compiler.web.converters;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi;
-
 import java.net.URL;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi;
 
 /**
  *
@@ -32,8 +32,10 @@ import java.util.regex.Pattern;
  * @since 1.4
  */
 @AstTransformer
-public class ConvertersControllersTransformer extends AbstractGrailsArtefactTransformer{
-    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/"+ GrailsResourceUtils.GRAILS_APP_DIR+"/controllers/(.+)Controller\\.groovy");
+public class ConvertersControllersTransformer extends AbstractGrailsArtefactTransformer {
+
+    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
+         GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
 
     @Override
     public String getArtefactType() {

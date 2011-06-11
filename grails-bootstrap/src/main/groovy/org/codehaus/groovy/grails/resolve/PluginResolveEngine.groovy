@@ -36,7 +36,7 @@ final class PluginResolveEngine {
 
     IvyDependencyManager dependencyManager
     BuildSettings settings
-    Closure messageReporter = { if(it) GrailsConsole.instance.updateStatus(it)  }
+    Closure messageReporter = { if (it) GrailsConsole.instance.updateStatus(it)  }
 
     PluginResolveEngine(IvyDependencyManager dependencyManager, BuildSettings settings) {
         this.dependencyManager = dependencyManager

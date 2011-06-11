@@ -37,7 +37,7 @@ public class CandidateListCompletionHandler implements CompletionHandler {
         this.eagerNewlines = eagerNewlines;
     }
 
-    public boolean complete(ConsoleReader reader, List candidates, int pos) throws IOException {
+    public boolean complete(ConsoleReader reader, @SuppressWarnings("rawtypes") List candidates, int pos) throws IOException {
         CursorBuffer buf = reader.getCursorBuffer();
 
         // if there is only one completion, then fill in the buffer
@@ -52,14 +52,17 @@ public class CandidateListCompletionHandler implements CompletionHandler {
             jline.CandidateListCompletionHandler.setBuffer(reader, value, pos);
 
             return true;
-        } else if (candidates.size() > 1) {
+        }
+
+        if (candidates.size() > 1) {
             String value = getUnambiguousCompletions(candidates);
 
             jline.CandidateListCompletionHandler.setBuffer(reader, value, pos);
         }
 
-        if (eagerNewlines)
+        if (eagerNewlines) {
             reader.printNewline();
+        }
         jline.CandidateListCompletionHandler.printCandidates(reader, candidates, eagerNewlines);
 
         // redraw the current console buffer
@@ -68,7 +71,6 @@ public class CandidateListCompletionHandler implements CompletionHandler {
         return true;
     }
 
-
     /**
      * Returns a root that matches all the {@link String} elements
      * of the specified {@link List}, or null if there are
@@ -76,19 +78,18 @@ public class CandidateListCompletionHandler implements CompletionHandler {
      * <i>foobar</i>, <i>foobaz</i>, <i>foobuz</i>, the
      * method will return <i>foob</i>.
      */
-    private final String getUnambiguousCompletions(final List candidates) {
-        if ((candidates == null) || (candidates.size() == 0)) {
+    private final String getUnambiguousCompletions(final List<?> candidates) {
+        if (candidates == null || candidates.isEmpty()) {
             return null;
         }
 
         // convert to an array for speed
-        String[] strings =
-                (String[]) candidates.toArray(new String[candidates.size()]);
+        String[] strings = candidates.toArray(new String[candidates.size()]);
 
         String first = strings[0];
-        StringBuffer candidate = new StringBuffer();
+        StringBuilder candidate = new StringBuilder();
 
-        for (int i = 0; i < first.length(); i++) {
+        for (int i = 0, count = first.length(); i < count; i++) {
             if (startsWith(first.substring(0, i + 1), strings)) {
                 candidate.append(first.charAt(i));
             } else {
@@ -103,8 +104,7 @@ public class CandidateListCompletionHandler implements CompletionHandler {
      * @return true is all the elements of <i>candidates</i>
      *         start with <i>starts</i>
      */
-    private final boolean startsWith(final String starts,
-                                     final String[] candidates) {
+    private final boolean startsWith(final String starts, final String[] candidates) {
         for (int i = 0; i < candidates.length; i++) {
             if (!candidates[i].startsWith(starts)) {
                 return false;

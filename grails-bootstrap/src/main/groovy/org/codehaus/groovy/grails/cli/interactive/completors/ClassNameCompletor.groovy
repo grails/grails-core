@@ -25,7 +25,7 @@ import org.springframework.core.io.Resource
 /**
  * A completor that completes
  */
-abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettingsAware{
+abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettingsAware {
 
     ClassNameCompletor() {
         super("")
@@ -43,7 +43,7 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
         final resources = pluginSettings.getArtefactResourcesForOne(settings.baseDir.absolutePath)
         def classNames = []
         resources.each { Resource r ->
-            if(shouldInclude(r)) {
+            if (shouldInclude(r)) {
                 classNames << "${commandName} ${GrailsResourceUtils.getClassName(r)}"
             }
         }

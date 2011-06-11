@@ -138,6 +138,7 @@ target(loadPluginsAsync:"Asynchronously loads plugins") {
         loadPlugins()
     }
 }
+
 target(loadPlugins:"Loads Grails' plugins") {
     if (!PluginManagerHolder.pluginManager) { // plugin manager already loaded?
         PluginManagerHolder.inCreation = true
@@ -255,17 +256,19 @@ readAllPluginXmlMetadata = {->
  * Runs a script contained within a plugin
  */
 runPluginScript = { File scriptFile, fullPluginName, msg ->
-    if (scriptFile.exists()) {
-        // instrumenting plugin scripts adding 'pluginBasedir' variable
-		try {
-	        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
-	        // we are using text form of script here to prevent Gant caching
-	        includeTargets << instrumentedInstallScript			
-		}
-		catch(e) {
-			console.error "Error executing plugin $fullPluginName script: $scriptFile"
-			exit 1
-		}		
+    if (!scriptFile.exists()) {
+        return
+    }
+
+    // instrumenting plugin scripts adding 'pluginBasedir' variable
+    try {
+        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
+        // we are using text form of script here to prevent Gant caching
+        includeTargets << instrumentedInstallScript
+    }
+    catch(e) {
+        console.error "Error executing plugin $fullPluginName script: $scriptFile"
+        exit 1
     }
 }
 
@@ -280,8 +283,8 @@ readMetadataFromZip = { String zipLocation, pluginFile=zipLocation ->
 uninstallPluginForName = { name, version=null ->
     def pluginInstallEngine = createPluginInstallEngine()
     pluginInstallEngine.uninstallPlugin name, version
-
 }
+
 /**
  * Installs a plugin for the given name and optional version
  */

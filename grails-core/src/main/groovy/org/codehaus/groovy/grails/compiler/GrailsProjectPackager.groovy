@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.compiler
 import grails.util.BuildSettings
 
 /**
- * Encapsulates the logic to package a project ready for execution
+ * Encapsulates the logic to package a project ready for execution.
  *
  * TODO: This class is a work-in-progress port from the code in the script _GrailsPackage.groovy
  *
@@ -28,19 +28,18 @@ import grails.util.BuildSettings
  */
 class GrailsProjectPackager {
 
-
     GrailsProjectCompiler projectCompiler
     BuildSettings buildSettings
     private AntBuilder ant
 
     GrailsProjectPackager(GrailsProjectCompiler compiler) {
-        this.projectCompiler = compiler
+        projectCompiler = compiler
         buildSettings = compiler.buildSettings
         ant = compiler.ant
     }
 
     AntBuilder getAnt() {
-       if(this.ant == null) {
+       if (this.ant == null) {
            this.ant = new AntBuilder()
        }
        return ant

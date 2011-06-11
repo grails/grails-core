@@ -29,12 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A RunNotifier that logs the the GrailsConsole
+ * A RunNotifier that logs the the GrailsConsole.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-public class GrailsTestRunNotifier extends RunNotifier{
+public class GrailsTestRunNotifier extends RunNotifier {
 
     public static final boolean FULL_STACKTRACE = Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue();
     int progress = 0;
@@ -60,7 +60,7 @@ public class GrailsTestRunNotifier extends RunNotifier{
     public void fireTestFailure(Failure failure) {
         console.error("FAILURE: " + failure.getDescription().getDisplayName());
         Throwable exception = failure.getException();
-        if(exception != null) {
+        if (exception != null) {
             GrailsUtil.deepSanitize(exception);
             deepSanitize(exception);
             StringWriter sw = new StringWriter();
@@ -76,25 +76,26 @@ public class GrailsTestRunNotifier extends RunNotifier{
     }
 
     private void deepSanitize(Throwable exception) {
-        if (!FULL_STACKTRACE) {
-            StackTraceElement[] stackTrace = exception.getStackTrace();
-            List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
-            for (StackTraceElement stackTraceElement : stackTrace) {
-                if(stackTraceElement.getClassName().startsWith("org.junit")) {
-                    break;
-                }
-                else {
-                    newTrace.add(stackTraceElement);
-                }
-            }
-
-            if (newTrace.size() > 0) {
-                // We don't want to lose anything, so log it
-                StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
-                newTrace.toArray(clean);
-                exception.setStackTrace(clean);
-            }
+        if (FULL_STACKTRACE) {
+            return;
         }
 
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            if (stackTraceElement.getClassName().startsWith("org.junit")) {
+                break;
+            }
+            newTrace.add(stackTraceElement);
+        }
+
+        if (newTrace.isEmpty()) {
+            return;
+        }
+
+        // We don't want to lose anything, so log it
+        StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
+        newTrace.toArray(clean);
+        exception.setStackTrace(clean);
     }
 }

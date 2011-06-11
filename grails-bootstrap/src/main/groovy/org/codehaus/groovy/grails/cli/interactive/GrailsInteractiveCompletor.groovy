@@ -22,7 +22,7 @@ import jline.SimpleCompletor
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 
  /**
- * A JLine completor for Grails' interactive mode
+ * A JLine completor for Grails' interactive mode.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -40,19 +40,19 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     @Override
     int complete(String buffer, int cursor, List clist) {
         final trimmedBuffer = buffer.trim()
-        if(trimmedBuffer) {
-            if(trimmedBuffer.contains(' ')) {
+        if (trimmedBuffer) {
+            if (trimmedBuffer.contains(' ')) {
                 trimmedBuffer = trimmedBuffer.split(' ')[0]
             }
             def completor = completorCache.get(trimmedBuffer)
-            if(completor == null) {
+            if (completor == null) {
                 def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
                 className = "grails.build.interactive.completors.$className"
 
                 try {
                     def completorClass = getClass().classLoader.loadClass(className)
                     completor = completorClass.newInstance()
-                    if(completor instanceof BuildSettingsAware) {
+                    if (completor instanceof BuildSettingsAware) {
                         completor.buildSettings = settings
                     }
                     completorCache.put(trimmedBuffer, completor)

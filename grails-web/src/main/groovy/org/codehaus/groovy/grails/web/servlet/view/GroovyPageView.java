@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
-import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
 import org.apache.commons.logging.Log;

@@ -39,7 +39,6 @@ import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
  */
 public class Log4jConfigListener implements ServletContextListener {
 
-
     public void contextInitialized(ServletContextEvent event) {
         try {
             GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(event.getServletContext());
@@ -56,10 +55,10 @@ public class Log4jConfigListener implements ServletContextListener {
                         new Log4jConfig().configure((Closure<?>)o);
                     }
                     else if (o instanceof Collection) {
-                        new Log4jConfig().configure((Collection)o);
+                        new Log4jConfig().configure((Collection<?>)o);
                     }
                     else if (o instanceof Map) {
-                        new Log4jConfig().configure((Map)o);
+                        new Log4jConfig().configure((Map<?, ?>)o);
                     }
                     else {
                         new Log4jConfig().configure();

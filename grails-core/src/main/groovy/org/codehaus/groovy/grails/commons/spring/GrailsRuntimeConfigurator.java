@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
-import grails.util.GrailsUtil;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
@@ -338,8 +337,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                 }
                 if (groovySpringResourcesClass != null) {
                     springGroovyResourcesBeanBuilder = new BeanBuilder(null, config,Thread.currentThread().getContextClassLoader());
-                    springGroovyResourcesBeanBuilder.setBinding(new Binding(new HashMap() {{ 
-                        put("application", application); 
+                    springGroovyResourcesBeanBuilder.setBinding(new Binding(new HashMap() {{
+                        put("application", application);
                         put("grailsApplication", application); // GRAILS-7550
                     }}));
                     Script script = (Script) groovySpringResourcesClass.newInstance();

@@ -161,8 +161,8 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                 Resource metadata = getRepository().getResource(metadataLocation);
                 if (metadata.exists()) {
                     metadataStream = metadata.openStream();
-                    final StringBuffer timestamp = new StringBuffer();
-                    final StringBuffer buildNumer = new StringBuffer();
+                    final StringBuilder timestamp = new StringBuilder();
+                    final StringBuilder buildNumer = new StringBuilder();
                     XMLHelper.parse(metadataStream, null, new ContextualSAXHandler() {
                         @Override
                         public void endElement(String uri, String localName, String qName)

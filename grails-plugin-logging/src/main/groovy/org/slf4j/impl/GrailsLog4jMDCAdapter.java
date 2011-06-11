@@ -15,55 +15,57 @@
  */
 package org.slf4j.impl;
 
-import org.apache.log4j.MDC;
-import org.slf4j.spi.MDCAdapter;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.log4j.MDC;
+import org.slf4j.spi.MDCAdapter;
 
 /**
  * @author Graeme Rocher
  * @since 1.4
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class GrailsLog4jMDCAdapter implements MDCAdapter {
-  public void clear() {
-    Map map = org.apache.log4j.MDC.getContext();
-    if (map != null) {
-      map.clear();
-    }
-  }
 
-  public String get(String key) {
-    return (String) org.apache.log4j.MDC.get(key);
-  }
-
-  public void put(String key, String val) {
-    org.apache.log4j.MDC.put(key, val);
-  }
-
-  public void remove(String key) {
-    org.apache.log4j.MDC.remove(key);
-  }
-
-  public Map getCopyOfContextMap() {
-    Map old = org.apache.log4j.MDC.getContext();
-    if(old != null) {
-      return new HashMap(old);
-    } else {
-      return null;
-    }
-  }
-
-  public void setContextMap(Map contextMap) {
-    Map old = org.apache.log4j.MDC.getContext();
-    if(old == null) {
-        for (Object o : contextMap.entrySet()) {
-            Map.Entry mapEntry = (Map.Entry) o;
-            MDC.put((String) mapEntry.getKey(), mapEntry.getValue());
+    public void clear() {
+        Map map = MDC.getContext();
+        if (map != null) {
+            map.clear();
         }
-    } else {
-      old.clear();
-      old.putAll(contextMap);
     }
-  }
+
+    public String get(String key) {
+        return (String)MDC.get(key);
+    }
+
+    public void put(String key, String val) {
+        MDC.put(key, val);
+    }
+
+    public void remove(String key) {
+        MDC.remove(key);
+    }
+
+    public Map getCopyOfContextMap() {
+        Map old = MDC.getContext();
+        if (old == null) {
+            return null;
+        }
+        return new HashMap(old);
+    }
+
+    public void setContextMap(Map contextMap) {
+        Map old = MDC.getContext();
+        if (old == null) {
+            for (Object o : contextMap.entrySet()) {
+                Map.Entry mapEntry = (Map.Entry)o;
+                MDC.put((String)mapEntry.getKey(), mapEntry.getValue());
+            }
+        }
+        else {
+            old.clear();
+            old.putAll(contextMap);
+        }
+    }
 }

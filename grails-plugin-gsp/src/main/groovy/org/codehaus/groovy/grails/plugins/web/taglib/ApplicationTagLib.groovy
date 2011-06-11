@@ -67,7 +67,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Obtains the value of a cookie.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the cookie name
      */
     def cookie = { attrs ->
@@ -81,7 +81,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Renders the specified request header value.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the header name
      */
     def header = { attrs ->
@@ -118,9 +118,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Creates a link to a resource, generally used as a method rather than a tag.<br/>
      *
      * eg. &lt;link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" /&gt;
-     * 
+     *
      * @emptyTag
-     * 
      */
     def createLinkTo = { attrs ->
         GrailsUtil.deprecated "Tag [createLinkTo] is deprecated please use [resource] instead"
@@ -133,7 +132,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * eg. &lt;link type="text/css" href="${resource(dir:'css',file:'main.css')}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.x≈
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
      * @attr dir the name of the directory within the grails app to link to
@@ -305,7 +304,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * &lt;a href="${createLink(action:'list')}"&gt;List&lt;/a&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr controller The name of the controller to use in the link, if not specified the current controller will be linked
      * @attr action The name of the action to use in the link, if not specified the default action will be linked
      * @attr uri relative URI
@@ -377,7 +376,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * in this collection with the given separator.
      *
      * @emptyTag
-     * 
+     *
      * @attr REQUIRED in The collection to iterate over
      * @attr delimiter The value of the delimiter to use during the join. If no delimiter is specified then ", " (a comma followed by a space) will be used as the delimiter.
      */
@@ -395,7 +394,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Output application metadata that is loaded from application.properties.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the metadata key
      */
     def meta = { attrs ->

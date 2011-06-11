@@ -379,7 +379,7 @@ public class GrailsDomainBinderTests extends TestCase {
         assertEquals("Tables created", 1, getTableCount(config));
         List expectedKeyColumns1 = Arrays.asList(new Column[]{new Column("camel_cased"),new Column("group"),new Column("login")});
         List expectedKeyColumns2 = Arrays.asList(new Column[]{new Column("camel_cased"),new Column("group")});
-        Table mapping = (Table) config.getTableMappings().next();
+        Table mapping = config.getTableMappings().next();
         int cnt = 0;
         boolean found1 = false, found2 = false;
         for (Iterator<?> i = mapping.getUniqueKeyIterator(); i.hasNext();) {

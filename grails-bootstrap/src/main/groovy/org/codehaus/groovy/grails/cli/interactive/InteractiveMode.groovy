@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
- * Provides the implementation of interactive mode in Grails
+ * Provides the implementation of interactive mode in Grails.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -70,12 +70,12 @@ class InteractiveMode {
             def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
             try {
                 def trimmed = scriptName.trim()
-                if(trimmed) {
-                    if("quit".equals(trimmed)) {
+                if (trimmed) {
+                    if ("quit".equals(trimmed)) {
                         break
                     }
-                    if("exit".equals(trimmed)) {
-                        if(grailsServer) {
+                    if ("exit".equals(trimmed)) {
+                        if (grailsServer) {
                            try {
                                updateStatus "Stopping Grails server"
                                grailsServer.stop()
@@ -85,13 +85,12 @@ class InteractiveMode {
                            finally {
                                grailsServer = null
                            }
-
                         }
                         else {
                             break
                         }
                     }
-                    else if(scriptName.startsWith("!")) {
+                    else if (scriptName.startsWith("!")) {
                         try {
                             def process=new ProcessBuilder(scriptName[1..-1].split(" ")).redirectErrorStream(true).start()
                             log process.inputStream.text
@@ -99,14 +98,16 @@ class InteractiveMode {
                             error "Error occurred executing process: ${e.message}"
                         }
                     }
-                    else if(scriptName.contains(" ")) {
+                    else if (scriptName.contains(" ")) {
                         def i = scriptName.indexOf(" ")
                         def args = scriptName[i..-1]
                         scriptName = scriptName[0..i]
-                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName), Environment.current.name, args )
+                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName),
+                            Environment.current.name, args)
                     }
                     else {
-                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName), Environment.current.name)
+                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName),
+                            Environment.current.name)
                     }
                 }
                 else {
@@ -118,16 +119,14 @@ class InteractiveMode {
                 error "Error running script $scriptName: ${e.message}", e
             }
             finally {
-                if(grailsServer == null) {
+                if (grailsServer == null) {
                     try {
                         registryCleaner.clean()
                     } catch (e) {
                         // ignore
                     }
-
                 }
             }
-
         }
     }
 }

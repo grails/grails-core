@@ -53,10 +53,10 @@ def displayPluginInfo = { pluginName, version ->
 
     def line = "Name: ${pluginName}"
     line += "\t| Latest release: ${plugin.@version}"
-	def sw = new StringWriter()
-	def output = new PrintWriter(sw)
-	output.println displayHeader()
-	output.println line
+    def sw = new StringWriter()
+    def output = new PrintWriter(sw)
+    output.println displayHeader()
+    output.println line
     output.println '--------------------------------------------------------------------------'
     def release = pluginXml
     if (release) {
@@ -89,7 +89,7 @@ def displayPluginInfo = { pluginName, version ->
         output.println '--------------------------------------------------------------------------'
     }
 
-	println sw.toString()
+    println sw.toString()
 }
 
 def displayFooter = {

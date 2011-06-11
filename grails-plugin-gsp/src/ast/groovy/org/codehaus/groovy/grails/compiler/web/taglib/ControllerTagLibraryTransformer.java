@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi;
-
 import java.net.URL;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi;
 
 /**
  * Enhances controller classes with a method missing implementation for tags.

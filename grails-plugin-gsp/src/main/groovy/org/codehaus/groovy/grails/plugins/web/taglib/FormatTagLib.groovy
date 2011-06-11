@@ -73,7 +73,7 @@ class FormatTagLib {
      * &lt;g:formatBoolean boolean="${myBoolean}" true="True!" false="False!" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr boolean REQUIRED the boolean to output
      * @attr true text label for boolean true value
      * @attr false text label for boolean false value
@@ -112,7 +112,7 @@ class FormatTagLib {
      * @see java.text.SimpleDateFormat
      *
      * @emptyTag
-     * 
+     *
      * @attr date the date object to display; defaults to now if not specified
      * @attr format The formatting pattern to use for the date, see SimpleDateFormat
      * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/*.properties file) with this key. If format and formatName are empty, format is looked up with 'default.date.format' key. If the key is missing, 'yyyy-MM-dd HH:mm:ss z' formatting pattern is used.
@@ -209,7 +209,7 @@ class FormatTagLib {
      * @see java.text.DecimalFormat
      *
      * @emptyTag
-     * 
+     *
      * @attr number REQUIRED the number to display
      * @attr format The formatting pattern to use for the number, see DecimalFormat
      * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key.Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key. If format and formatName are empty, format is looked up with 'default.number.format' key. If the key is missing, '0' formatting pattern is used.

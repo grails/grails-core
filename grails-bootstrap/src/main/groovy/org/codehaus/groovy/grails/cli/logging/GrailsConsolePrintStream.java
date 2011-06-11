@@ -21,13 +21,12 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
- * Used to replace default System.out with one that routes calls through GrailsConsole
+ * Used to replace default System.out with one that routes calls through GrailsConsole.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 public class GrailsConsolePrintStream extends PrintStream {
-
 
     public GrailsConsolePrintStream(OutputStream out) {
         super(out);
@@ -39,8 +38,9 @@ public class GrailsConsolePrintStream extends PrintStream {
 
     @Override
     public void print(Object o) {
-        if(o != null)
+        if (o != null) {
             GrailsConsole.getInstance().log(o.toString());
+        }
     }
 
     @Override
@@ -55,9 +55,8 @@ public class GrailsConsolePrintStream extends PrintStream {
 
     @Override
     public void println(Object o) {
-        if(o != null)
+        if (o != null) {
             GrailsConsole.getInstance().log(o.toString());
+        }
     }
-
-
 }

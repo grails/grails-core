@@ -51,9 +51,9 @@ import org.springframework.util.ReflectionUtils;
  * @author Lari Hotari
  * @since 0.5
  */
-class GroovyPageMetaInfo implements GrailsApplicationAware{
+class GroovyPageMetaInfo implements GrailsApplicationAware {
 
-    private static final Log LOG=LogFactory.getLog(GroovyPageMetaInfo.class);
+    private static final Log LOG = LogFactory.getLog(GroovyPageMetaInfo.class);
     private TagLibraryLookup tagLibraryLookup;
     private TagLibraryResolver jspTagLibraryResolver;
 
@@ -77,9 +77,9 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
     public static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
     private static final long LASTMODIFIED_CHECK_GRANULARITY =  Long.getLong("grails.gsp.reload.granularity", 2000).longValue();
     private GrailsApplication grailsApplication;
-    
-	private String pluginPath;
-	private GrailsPlugin pagePlugin;
+
+    private String pluginPath;
+    private GrailsPlugin pagePlugin;
 
     public GroovyPageMetaInfo() {
         latestLastModifiedCheck=System.currentTimeMillis();
@@ -131,21 +131,25 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
         if (codecGrailsClass!=null) {
             codecClass = codecGrailsClass.getClazz();
         }
-        
+
         initializePluginPath();
     }
 
-	private void initializePluginPath() {
-		if (grailsApplication != null && pageClass != null) {
-            final ApplicationContext applicationContext = grailsApplication.getMainContext();
-            if (applicationContext!=null && applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
-            	GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
-            	pluginPath = pluginManager.getPluginPathForClass(pageClass);
-            	if(pluginPath==null) pluginPath="";
-            	pagePlugin = pluginManager.getPluginForClass(pageClass);
-            }
+    private void initializePluginPath() {
+        if (grailsApplication == null || pageClass == null) {
+            return;
         }
-	}
+
+        final ApplicationContext applicationContext = grailsApplication.getMainContext();
+        if (applicationContext ==null || !applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
+            return;
+        }
+
+        GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+        pluginPath = pluginManager.getPluginPathForClass(pageClass);
+        if (pluginPath == null) pluginPath="";
+        pagePlugin = pluginManager.getPluginForClass(pageClass);
+    }
 
     /**
      * Reads the static html parts from a file stored in a separate file in the same package as the precompiled GSP class
@@ -408,18 +412,18 @@ class GroovyPageMetaInfo implements GrailsApplicationAware{
     }
 
     public GrailsApplication getGrailsApplication() {
-		return grailsApplication;
-	}
+        return grailsApplication;
+    }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
-    
-    public String getPluginPath() {
-		return pluginPath;
-	}
 
-	public GrailsPlugin getPagePlugin() {
-		return pagePlugin;
-	}
+    public String getPluginPath() {
+        return pluginPath;
+    }
+
+    public GrailsPlugin getPagePlugin() {
+        return pagePlugin;
+    }
 }

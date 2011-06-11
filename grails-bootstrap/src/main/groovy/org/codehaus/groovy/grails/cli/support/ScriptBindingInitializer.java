@@ -20,15 +20,6 @@ import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.util.AntBuilder;
-import org.apache.tools.ant.BuildLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.LogLevel;
-import org.codehaus.gant.GantBinding;
-import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
-import org.codehaus.groovy.runtime.MethodClosure;
-import org.springframework.util.ReflectionUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -38,9 +29,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.tools.ant.BuildLogger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.LogLevel;
+import org.codehaus.gant.GantBinding;
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
+import org.codehaus.groovy.runtime.MethodClosure;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Configures the binding used when running Grails scripts
@@ -182,15 +182,13 @@ public class ScriptBindingInitializer {
          GrailsConsole instance = GrailsConsole.getInstance();
          project.addBuildListener(new GrailsConsoleBuildListener(instance));
 
-         if(!instance.isVerbose()) {
-             Vector buildListeners = project.getBuildListeners();
-             for (Object buildListener : buildListeners) {
-                 if(buildListener instanceof BuildLogger) {
+         if (!instance.isVerbose()) {
+             for (Object buildListener : project.getBuildListeners()) {
+                 if (buildListener instanceof BuildLogger) {
                      ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
                  }
              }
          }
-
      }
 
      protected void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
@@ -230,5 +228,4 @@ public class ScriptBindingInitializer {
              return false;
          }
      }
-
 }

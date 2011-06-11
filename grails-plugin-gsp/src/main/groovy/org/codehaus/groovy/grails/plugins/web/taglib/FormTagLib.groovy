@@ -48,7 +48,7 @@ class FormTagLib {
      * Creates a new text field.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the field name
      * @attr value the field value
      */
@@ -62,7 +62,7 @@ class FormTagLib {
      * Creates a new password field.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the field name
      * @attr value the field value
      */
@@ -92,7 +92,7 @@ class FormTagLib {
      * Creates a submit button.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the field name
      * @attr value the button text
      * @attr type input type; defaults to 'submit'
@@ -131,7 +131,7 @@ class FormTagLib {
      * A helper tag for creating checkboxes.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the name of the checkbox
      * @attr value  the value of the checkbox
      * @attr checked if evaluates to true sets to checkbox to checked
@@ -343,7 +343,7 @@ class FormTagLib {
      * &lt;g:actionSubmit action="Edit" value="Some label for editing" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
      */
@@ -382,7 +382,7 @@ class FormTagLib {
      * &lt;g:actionSubmitImage src="/images/submitButton.gif" action="Edit" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
      * @attr src The source of the image to use
@@ -418,7 +418,7 @@ class FormTagLib {
      * e.g. &lt;g:datePicker name="myDate" value="${new Date()}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED The name of the date picker field set
      * @attr value The current value of the date picker; defaults to now if not specified
      * @attr precision The desired granularity of the date to be rendered
@@ -609,7 +609,7 @@ class FormTagLib {
      * eg. &lt;g:timeZoneSelect name="myTimeZone" value="${tz}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED The name of the select
      * @attr value An instance of java.util.TimeZone. Defaults to the time zone for the current Locale if not specified
      */
@@ -641,7 +641,7 @@ class FormTagLib {
      * eg. &lt;g:localeSelect name="myLocale" value="${locale}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED The name of the select
      * @attr value The set locale, defaults to the current request locale if not specified
      */
@@ -661,7 +661,7 @@ class FormTagLib {
      * A helper tag for creating currency selects.<br/>
      *
      * eg. &lt;g:currencySelect name="myCurrency" value="${currency}" /&gt;
-     * 
+     *
      * @emptyTag
      *
      * @attr from The currency symbols to select from, defaults to the major ones if not specified
@@ -690,7 +690,7 @@ class FormTagLib {
      * &lt;g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the select name
      * @attr id the DOM element id - uses the name attribute if not specified
      * @attr from REQUIRED The list or range to select from
@@ -854,7 +854,7 @@ class FormTagLib {
      * A helper tag for creating radio buttons.
      *
      * @emptyTag
-     * 
+     *
      * @attr value REQUIRED The value of the radio button
      * @attr name REQUIRED The name of the radio button
      * @attr checked boolean to indicate that the radio button should be checked

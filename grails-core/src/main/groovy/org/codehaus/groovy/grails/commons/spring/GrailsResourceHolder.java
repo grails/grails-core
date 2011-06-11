@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
 
 /**

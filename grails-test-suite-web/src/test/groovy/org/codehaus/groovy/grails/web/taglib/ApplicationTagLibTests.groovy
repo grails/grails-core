@@ -61,10 +61,10 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def emc = new ExpandoMetaClass(c, true, true)
         emc.initialize()
         GroovySystem.metaClassRegistry.setMetaClass(c, emc)
-        
+
         return old
     }
-    
+
     void testResourceTagDirOnly() {
         request.contextPath = '/test'
         def template = '${resource(dir:"jquery")}'

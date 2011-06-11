@@ -19,35 +19,7 @@ import grails.util.GrailsUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.text.Template;
 import groovy.util.ConfigObject;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
-import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.io.*;
-import org.springframework.util.Assert;
-import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.support.ServletContextResourceLoader;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +30,40 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.UrlResource;
+import org.springframework.util.Assert;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.support.ServletContextResourceLoader;
 
 /**
  * Based on (but not extending) the existing TemplateEngine implementations
@@ -130,8 +136,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         }else if (!classLoader.getClass().equals(GroovyPageClassLoader.class)) {
             classLoader = new GroovyPageClassLoader(classLoader);
         }
-        if(!Environment.isDevelopmentMode()) {
-        	cachedDomainsWithoutPackage = createDomainClassMap();
+        if (!Environment.isDevelopmentMode()) {
+            cachedDomainsWithoutPackage = createDomainClassMap();
         }
     }
 
@@ -688,8 +694,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         // Compile the script into an object
         Class<?> scriptClass;
         try {
-        	String groovySource = DefaultGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
-        	//System.out.println(groovySource);
+            String groovySource = DefaultGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
+            //System.out.println(groovySource);
             scriptClass = groovyClassLoader.parseClass(groovySource, name);
         }
         catch (CompilationFailedException e) {
@@ -886,29 +892,27 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     }
 
     public Map<String, Class<?>> getDomainClassMap() {
-    	if(cachedDomainsWithoutPackage != null) {
-    		return cachedDomainsWithoutPackage;
-    	} else {
-    		return createDomainClassMap();
-    	}
+        if (cachedDomainsWithoutPackage != null) {
+            return cachedDomainsWithoutPackage;
+        }
+        return createDomainClassMap();
     }
-    	
+
     /**
      * The domainClassMap is used in GSP binding to "auto-import" domain classes in packages without package prefix.
      * real imports aren't used, instead each class is added to the binding
-     * 
+     *
      * This feature has existed earlier, the code has just been refactored and moved to GroovyPagesTemplateEngine
      * to prevent using the static cache that was used previously.
-     * 
      */
-    private Map<String, Class<?>> createDomainClassMap() {	
+    private Map<String, Class<?>> createDomainClassMap() {
         Map<String, Class<?>> domainsWithoutPackage = new HashMap<String, Class<?>>();
-        if(grailsApplication != null) {
-	        GrailsClass[] domainClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
-	        for (GrailsClass domainClass : domainClasses) {
-	            final Class<?> theClass = domainClass.getClazz();
-	            domainsWithoutPackage.put(theClass.getName(), theClass);
-	        }
+        if (grailsApplication != null) {
+            GrailsClass[] domainClasses = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE);
+            for (GrailsClass domainClass : domainClasses) {
+                final Class<?> theClass = domainClass.getClazz();
+                domainsWithoutPackage.put(theClass.getName(), theClass);
+            }
         }
         return domainsWithoutPackage;
     }

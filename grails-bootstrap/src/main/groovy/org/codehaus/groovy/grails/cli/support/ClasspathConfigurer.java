@@ -17,17 +17,22 @@ package org.codehaus.groovy.grails.cli.support;
 
 import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 /**
- *
  * Support class that configures the Grails classpath when executing command line scripts
  *
  * @since 1.4
@@ -38,7 +43,6 @@ public class ClasspathConfigurer {
     private BuildSettings settings;
     private boolean skipPlugins;
     private PluginPathDiscoverySupport pluginPathSupport;
-
 
     public ClasspathConfigurer(PluginPathDiscoverySupport pluginPathSupport, BuildSettings settings, boolean skipPlugins) {
         this.settings = settings;
@@ -76,12 +80,13 @@ public class ClasspathConfigurer {
         return classLoader;
     }
 
-
     /**
      * Creates a new root loader with the Grails libraries and the
      * application's plugin libraries on the classpath.
      */
-    protected URL[] getClassLoaderUrls(BuildSettings settings, File cacheDir, Set<String> excludes, boolean skipPlugins) throws MalformedURLException {
+    protected URL[] getClassLoaderUrls(@SuppressWarnings("hiding") BuildSettings settings,
+               File cacheDir, Set<String> excludes,
+               @SuppressWarnings("hiding") boolean skipPlugins) throws MalformedURLException {
         List<URL> urls = new ArrayList<URL>();
 
         // If 'grailsHome' is set, make sure the script cache directory takes precedence
@@ -137,15 +142,14 @@ public class ClasspathConfigurer {
         }
     }
 
-
-
     /**
      * Adds all the libraries in a plugin to the given list of URLs.
      * @param pluginDir The directory containing the plugin.
      * @param urls The list of URLs to add the plugin JARs to.
      * @param settings
      */
-    protected void addPluginLibs(File pluginDir, List<URL> urls, BuildSettings settings) throws MalformedURLException {
+    protected void addPluginLibs(File pluginDir, List<URL> urls,
+                @SuppressWarnings("hiding") BuildSettings settings) throws MalformedURLException {
         if (!pluginDir.exists()) return;
 
         // otherwise just add them
@@ -212,6 +216,4 @@ public class ClasspathConfigurer {
                     " RootLoader or a sub-class.");
         }
     }
-
-
 }

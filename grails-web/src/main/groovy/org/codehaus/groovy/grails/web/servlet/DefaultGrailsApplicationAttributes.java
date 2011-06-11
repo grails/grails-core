@@ -15,6 +15,15 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
+
+import java.io.Writer;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -26,19 +35,11 @@ import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.Writer;
 
 /**
  * Holds knowledge about how to obtain certain attributes from either the ServletContext
@@ -201,8 +202,8 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         if (pagesTemplateEngine != null) {
             return pagesTemplateEngine;
         }
-        if(LOG.isWarnEnabled()) {
-        	LOG.warn("No bean named [" + GroovyPagesTemplateEngine.BEAN_ID + "] defined in Spring application context!");
+        if (LOG.isWarnEnabled()) {
+            LOG.warn("No bean named [" + GroovyPagesTemplateEngine.BEAN_ID + "] defined in Spring application context!");
         }
         return null;
     }

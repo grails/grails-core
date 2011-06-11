@@ -14,18 +14,17 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
-import com.opensymphony.module.sitemesh.Factory
-import com.opensymphony.module.sitemesh.RequestConstants
 import grails.artefact.Artefact
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.text.Template
+
 import java.util.concurrent.ConcurrentHashMap
+
 import javax.servlet.ServletConfig
+
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
@@ -41,6 +40,10 @@ import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.RequestConstants
 
 /**
  * Tags to help rendering of views and layouts.
@@ -71,7 +74,7 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:include controller="foo" action="test"&gt;&lt;/g:include&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr controller The name of the controller
      * @attr action The name of the action
      * @attr id The identifier
@@ -187,7 +190,7 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:pageProperty default="defaultValue" name="body.onload" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr REQUIRED name the property name
      * @attr default the default value to use if the property is null
      * @attr writeEntireProperty if true, writes the property in the form 'foo = "bar"', otherwise renders 'bar'
@@ -275,7 +278,7 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:layoutTitle default="The Default title" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr default the value to use if the title isn't specified in the GSP
      */
     def layoutTitle = { attrs ->
@@ -290,7 +293,6 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:layoutBody /&gt;
      *
      * @emptyTag
-     * 
      */
     def layoutBody = { attrs ->
         getPage().writeBody(out)
@@ -300,9 +302,8 @@ class RenderTagLib implements RequestConstants {
      * Used in layouts to render the head of a SiteMesh layout.<br/>
      *
      * &lt;g:layoutHead /&gt;
-     * 
+     *
      * @emptyTag
-     * 
      */
     def layoutHead = { attrs ->
         getPage().writeHead(out)
@@ -314,7 +315,7 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:paginate total="${Account.count()}" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr total REQUIRED The total number of results to paginate
      * @attr action the name of the action to use in the link, if not specified the default action will be linked
      * @attr controller the name of the controller to use in the link, if not specified the current controller will be linked
@@ -451,7 +452,7 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:sortableColumn property="releaseDate" defaultOrder="desc" title="Release Date" titleKey="book.releaseDate" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr property - name of the property relating to the field
      * @attr defaultOrder default order for the property; choose between asc (default if not provided) and desc
      * @attr title title caption for the column

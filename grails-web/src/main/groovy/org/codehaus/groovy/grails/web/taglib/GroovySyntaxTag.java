@@ -140,14 +140,13 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 
         if (hasStatus) {
             out.println("FOR:{");
-            out.println("int "+ status +" = 0" );
+            out.println("int "+ status +" = 0");
         }
         out.print("for( " + (hasVar ? var : "it"));
         out.print(" in "); // dot de-reference
         out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
         out.print(" )"); // dot de-reference
         out.print(" {"); // start closure
-
 
         out.println();
     }
@@ -158,7 +157,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         boolean hasStatus = !StringUtils.isBlank(status);
 
         if (hasStatus) {
-            out.println(status +"++" );
+            out.println(status +"++");
             out.println("}");
         }
         out.println("}");

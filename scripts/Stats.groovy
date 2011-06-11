@@ -80,10 +80,10 @@ target (default: "Generates basic stats for a Grails project") {
 
     def totalFiles = 0
     def totalLOC = 0
-	
-	def sw = new StringWriter()
-	def output = new PrintWriter(sw)
-	
+
+    def sw = new StringWriter()
+    def output = new PrintWriter(sw)
+
     output.println '''
     +----------------------+-------+-------+
     | Name                 | Files |  LOC  |
@@ -104,5 +104,5 @@ target (default: "Generates basic stats for a Grails project") {
     output.println "    | Totals               | " + totalFiles.toString().padLeft(5, " ") + " | " + totalLOC.toString().padLeft(5, " ") + " | "
     output.println "    +----------------------+-------+-------+\n"
 
-	println sw.toString()
+    println sw.toString()
 }

@@ -3,7 +3,13 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsWebUtil;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import junit.framework.TestCase;
+
 import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -13,11 +19,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
 
 /**
  * Tests the GSP parser.  This can detect issues caused by improper
@@ -49,9 +50,9 @@ public class ParseTests extends TestCase {
             + "public static final String DEFAULT_CODEC = null\n" + "}\n";
 
     protected String makeImports() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < GroovyPageParser.DEFAULT_IMPORTS.length; i++) {
-            result.append("import " + GroovyPageParser.DEFAULT_IMPORTS[i]+"\n");
+            result.append("import ").append(GroovyPageParser.DEFAULT_IMPORTS[i]).append("\n");
         }
         return result.toString();
     }
@@ -147,14 +148,12 @@ public class ParseTests extends TestCase {
 
     public void testParseWithLocalEncoding() throws IOException {
         String src = "This is just plain ASCII to make sure test works on all platforms";
-        // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
-        // on many OSes
+        // Sanity check the string loaded OK as unicode - it won't look right if you output it,
+        // default stdout is not UTF-8 on many OSes
         assertEquals(src.indexOf('?'), -1);
 
-        ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"\"");
-
         ParsedResult output = null;
-            output = parseCode("myTest5", src);
+        output = parseCode("myTest5", src);
         String expected = makeImports() +
             "\n" +
             "class myTest5 extends GroovyPage {\n" +
@@ -177,7 +176,7 @@ public class ParseTests extends TestCase {
      */
     public String trimAndRemoveCR(String s) {
         int index;
-        StringBuffer sb = new StringBuffer(s.trim());
+        StringBuilder sb = new StringBuilder(s.trim());
         while (((index = sb.toString().indexOf('\r')) != -1) || ((index = sb.toString().indexOf('\n')) != -1)) {
             sb.deleteCharAt(index);
         }
@@ -186,8 +185,7 @@ public class ParseTests extends TestCase {
 
     public ParsedResult parseCode(String uri, String gsp) throws IOException {
         // Simulate what the parser does so we get it in the encoding expected
-        final Map config = GrailsWebUtil.currentFlatConfiguration();
-        Object enc = config.get("grails.views.gsp.encoding");
+        Object enc = GrailsWebUtil.currentFlatConfiguration().get("grails.views.gsp.encoding");
         if ((enc == null) || (enc.toString().trim().length() == 0)) {
             enc = System.getProperty("file.encoding", "us-ascii");
         }

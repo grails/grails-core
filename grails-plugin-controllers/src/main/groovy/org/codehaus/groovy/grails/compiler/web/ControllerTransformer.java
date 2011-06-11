@@ -15,13 +15,13 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
-
 import java.net.URL;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
 
 /**
  * Enhances controller classes with the appropriate API at compile time.

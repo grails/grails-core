@@ -19,6 +19,11 @@ import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.PluginBuildSettings;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.File;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver;
@@ -29,15 +34,8 @@ import org.springframework.uaa.client.VersionHelper;
 import org.springframework.uaa.client.protobuf.UaaClient;
 import org.springframework.util.ClassUtils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Date;
-import java.util.List;
-
 /**
- * Integrates UAA usage tracking with Grails
+ * Integrates UAA usage tracking with Grails.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -57,7 +55,6 @@ public class UaaIntegration {
            + "##########################################################.\n"
            + "Enter Y or N:";
     public static final int ONE_MINUTE = 180000;
-
 
     public static boolean isAvailable() {
         return ClassUtils.isPresent("org.springframework.uaa.client.UaaServiceFactory", UaaIntegration.class.getClassLoader());

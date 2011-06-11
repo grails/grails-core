@@ -16,8 +16,22 @@
 
 package grails.build.logging;
 
+import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.Ansi.Color.DEFAULT;
+import static org.fusesource.jansi.Ansi.Color.RED;
+import static org.fusesource.jansi.Ansi.Color.YELLOW;
+import static org.fusesource.jansi.Ansi.Erase.FORWARD;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Stack;
+
 import jline.ConsoleReader;
 import jline.Terminal;
+
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -28,20 +42,12 @@ import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
-import java.util.Stack;
-
-import static org.fusesource.jansi.Ansi.Color.*;
-import static org.fusesource.jansi.Ansi.Erase.FORWARD;
-import static org.fusesource.jansi.Ansi.ansi;
-
 /**
- * Utility class for delivering console output in a nicely formatted way
+ * Utility class for delivering console output in a nicely formatted way.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-
 public class GrailsConsole {
 
     private static GrailsConsole instance;
@@ -77,12 +83,12 @@ public class GrailsConsole {
     /**
      * The category of the current output
      */
+    @SuppressWarnings("serial")
     Stack<String> category = new Stack<String>() {
+        @Override
         public String toString() {
             if (size() == 1) return peek() + CATEGORY_SEPARATOR;
-            else {
-                return DefaultGroovyMethods.join(this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
-            }
+            return DefaultGroovyMethods.join(this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
         }
     };
 
@@ -116,7 +122,7 @@ public class GrailsConsole {
             }
         }
 
-        if(!(System.out instanceof GrailsConsolePrintStream)) {
+        if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
         }
         return instance;
@@ -127,7 +133,6 @@ public class GrailsConsole {
     }
 
     /**
-     *
      * @param verbose Sets whether verbose output should be used
      */
     public void setVerbose(boolean verbose) {
@@ -135,7 +140,6 @@ public class GrailsConsole {
     }
 
     /**
-     *
      * @return Whether verbose output is being used
      */
     public boolean isVerbose() {
@@ -150,7 +154,6 @@ public class GrailsConsole {
     }
 
     /**
-     *
      * @return The last message logged
      */
     public String getLastMessage() {
@@ -181,12 +184,11 @@ public class GrailsConsole {
      * Indicates progresss with the default progress indicator
      */
     public void indicateProgress() {
-        if(isAnsiEnabled()) {
+        if (isAnsiEnabled()) {
             if (StringUtils.hasText(lastMessage)) {
                 if (!lastMessage.contains(maxIndicatorString))
                     updateStatus(lastMessage + indicator);
             }
-
         }
         else {
             out.print(indicator);
@@ -206,7 +208,6 @@ public class GrailsConsole {
         } finally {
             lastMessage = currMsg;
         }
-
     }
 
     /**
@@ -220,7 +221,7 @@ public class GrailsConsole {
         try {
             int percentage = Math.round(NumberMath.multiply(NumberMath.divide(number, total), 100).floatValue());
 
-            if(!isAnsiEnabled()) {
+            if (!isAnsiEnabled()) {
                 out.print("..");
                 out.print(percentage+'%');
             }
@@ -241,7 +242,7 @@ public class GrailsConsole {
     public void indicateProgress(int number) {
         String currMsg = lastMessage;
         try {
-            if(isAnsiEnabled()) {
+            if (isAnsiEnabled()) {
                 updateStatus(new StringBuilder(currMsg).append(' ').append(number).toString());
             }
             else {
@@ -251,7 +252,6 @@ public class GrailsConsole {
         } finally {
             lastMessage = currMsg;
         }
-
     }
 
     /**
@@ -291,8 +291,6 @@ public class GrailsConsole {
         outputMessage(msg, 0);
     }
 
-
-
     /**
      * Prints an error message
      *
@@ -331,7 +329,7 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(String msg, Throwable error) {
-       if(verbose && error != null) {
+       if (verbose && error != null) {
            StackTraceUtils.deepSanitize(error);
            printStackTrace(msg, error);
        }
@@ -352,7 +350,7 @@ public class GrailsConsole {
     private void printStackTrace(String message, Throwable error) {
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
-        if(message != null) {
+        if (message != null) {
             ps.println(message);
         }
         else {
@@ -361,7 +359,6 @@ public class GrailsConsole {
         error.printStackTrace(ps);
         error(sw.toString());
     }
-
 
     /**
      * Logs a message below the current status message
@@ -380,7 +377,7 @@ public class GrailsConsole {
     }
 
     public void verbose(String msg) {
-        if(verbose) {
+        if (verbose) {
             if (hasNewLines(msg)) {
                 out.println(msg);
                 cursorMove = 0;
@@ -392,7 +389,6 @@ public class GrailsConsole {
         }
     }
 
-
     /**
      * Replays the last status message
      */
@@ -401,7 +397,6 @@ public class GrailsConsole {
             updateStatus(lastStatus.toString());
         }
     }
-
 
     /**
      * Replacement for AntBuilder.input() to eliminate dependency of
@@ -440,24 +435,22 @@ public class GrailsConsole {
     public String userInput(String message, String[] validResponses) {
         if (validResponses == null) {
             return userInput(message);
-        } else {
-            String question = createQuestion(message, validResponses);
-            String response = userInput(question);
-            for (String validResponse : validResponses) {
-                if (response != null && response.equalsIgnoreCase(validResponse)) {
-                    return response;
-                }
-            }
-            cursorMove = 0;
-            return userInput("Invalid input. Must be one of ", validResponses);
         }
 
+        String question = createQuestion(message, validResponses);
+        String response = userInput(question);
+        for (String validResponse : validResponses) {
+            if (response != null && response.equalsIgnoreCase(validResponse)) {
+                return response;
+            }
+        }
+        cursorMove = 0;
+        return userInput("Invalid input. Must be one of ", validResponses);
     }
 
     private String createQuestion(String message, String[] validResponses) {
         return new StringBuilder(message).append("[").append(DefaultGroovyMethods.join(validResponses, ",")).append("] ").toString();
     }
-
 
     private void printMessageOnNewLine(String msg) {
         out.println(outputCategory(ansi(), category.toString())
@@ -478,7 +471,7 @@ public class GrailsConsole {
     }
 
     private Ansi erasePreviousLine(String categoryName) {
-        if(cursorMove > 0) {
+        if (cursorMove > 0) {
             return ansi()
                     .cursorUp(cursorMove)
                     .cursorLeft(categoryName.length() + lastMessage.length())

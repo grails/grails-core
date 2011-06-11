@@ -11,9 +11,9 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
         [AutoFlushBand]
     }
 
-   protected void onTearDown() {
+    protected void onTearDown() {
         ConfigurationHolder.config = null
-   }
+    }
 
     void testFlushIsDisabledByDefault() {
         def flushCount = 0
@@ -28,8 +28,8 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
     void testFlushPropertyTrue() {
         ga.config.grails.gorm.autoFlush = true
-		ga.configChanged()
-		
+        ga.configChanged()
+
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
         session.listeners.flushEventListeners = listener as FlushEventListener[]
@@ -44,7 +44,7 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
     void testFlushPropertyFalse() {
         ga.config.grails.gorm.autoFlush = false
-		ga.configChanged()
+        ga.configChanged()
 
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
@@ -58,7 +58,7 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
     void testTrueFlushArgumentOverridesFalsePropertySetting() {
         ga.config.grails.gorm.autoFlush = true
-		ga.configChanged()
+        ga.configChanged()
 
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
@@ -74,7 +74,7 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
     void testFalseFlushArgumentOverridesTruePropertySetting() {
         ga.config.grails.gorm.autoFlush = true
-		ga.configChanged()
+        ga.configChanged()
 
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
@@ -88,7 +88,7 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
     void testMapWithoutFlushEntryRespectsTruePropertySetting() {
         ga.config.grails.gorm.autoFlush = true
-		ga.configChanged()
+        ga.configChanged()
 
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
@@ -104,7 +104,7 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
 
     void testMapWithoutFlushEntryRespectsFalsePropertySetting() {
         ga.config.grails.gorm.autoFlush = false
-		ga.configChanged()
+        ga.configChanged()
 
         def flushCount = 0
         def listener = { flushEvent -> ++flushCount } as FlushEventListener
@@ -124,9 +124,7 @@ class AutoFlushPropertyTests extends AbstractGrailsHibernateTests {
     }
 }
 
-
 @Entity
 class AutoFlushBand {
     String name
 }
-

@@ -17,8 +17,20 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.MetaProperty;
 import groovy.lang.Script;
+
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -36,10 +48,6 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.Writer;
-import java.util.*;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -206,9 +214,8 @@ public abstract class GroovyPage extends Script {
     public final Closure<?> getBodyClosure(int index) {
         if (index >= 0) {
             return bodyClosures.get(index);
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -294,7 +301,7 @@ public abstract class GroovyPage extends Script {
                 return mp.getProperty(this);
             }
         }   */
-        
+
         return value;
     }
 
@@ -305,13 +312,13 @@ public abstract class GroovyPage extends Script {
      * @return resolved tag if any
      */
     public JspTag getJspTag(String uri, String name){
-        if(jspTagLibraryResolver != null){
-            JspTagLib tagLib = jspTagLibraryResolver.resolveTagLibrary(uri);
-            return tagLib != null ? tagLib.getTag(name) : null;
+        if (jspTagLibraryResolver == null) {
+            return null;
         }
-        return null;
-    }
 
+        JspTagLib tagLib = jspTagLibraryResolver.resolveTagLibrary(uri);
+        return tagLib != null ? tagLib.getTag(name) : null;
+    }
 
     /**
      * Attempts to invokes a dynamic tag
@@ -461,7 +468,7 @@ public abstract class GroovyPage extends Script {
     }
 
     private GroovyObject getTagLib(String namespace, String tagName) {
-        return lookupCachedTagLib(webRequest, gspTagLibraryLookup, namespace, tagName);
+        return lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
     }
 
     /**
@@ -510,7 +517,7 @@ public abstract class GroovyPage extends Script {
         if (!(attrs instanceof GroovyPageAttributes)) {
             attrs = new GroovyPageAttributes(attrs);
         }
-        GroovyObject tagLib = lookupCachedTagLib(webRequest, gspTagLibraryLookup, namespace, tagName);
+        GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
         boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(namespace, tagName);
         Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest, preferSubChunkWhenWritingToOtherBuffer);
@@ -565,9 +572,8 @@ public abstract class GroovyPage extends Script {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private final static GroovyObject lookupCachedTagLib(GrailsWebRequest webRequest,
-                                                         TagLibraryLookup gspTagLibraryLookup, String namespace, String tagName) {
+    private final static GroovyObject lookupCachedTagLib(TagLibraryLookup gspTagLibraryLookup,
+               String namespace, String tagName) {
 
         return gspTagLibraryLookup != null ? gspTagLibraryLookup.lookupTagLibrary(namespace, tagName) : null;
     }
@@ -636,15 +642,17 @@ public abstract class GroovyPage extends Script {
     }
 
     public final void registerSitemeshPreprocessMode() {
-        if (request != null) {
-            GSPSitemeshPage page = (GSPSitemeshPage) request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
-            if (page != null) {
-                page.setUsed(true);
-            }
+        if (request == null) {
+            return;
+        }
+
+        GSPSitemeshPage page = (GSPSitemeshPage) request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
+        if (page != null) {
+            page.setUsed(true);
         }
     }
 
-    public final void createTagBody(int bodyClosureIndex, Closure bodyClosure) {
+    public final void createTagBody(int bodyClosureIndex, Closure<?> bodyClosure) {
         GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
         setBodyClosure(bodyClosureIndex, tagBody);
     }

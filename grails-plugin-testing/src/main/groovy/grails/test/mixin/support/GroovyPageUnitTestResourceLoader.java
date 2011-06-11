@@ -2,17 +2,18 @@ package grails.test.mixin.support;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
 /**
  * A {@link org.springframework.core.io.ResourceLoader} implementation

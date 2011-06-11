@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 /**
- * Implements action invokation throught Closure
+ * Implements action invocation through Closure.
  *
  * @author Stephane Maldini
  * @since 1.4
@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
 public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper {
 
     @Override
-    protected Object retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+    protected Object retrieveAction(GroovyObject controller, String actionName,
                  HttpServletResponse response) {
         Method mAction = ReflectionUtils.findMethod(controller.getClass(), actionName, MethodGrailsControllerHelper.NOARGS);
         if (mAction != null) {

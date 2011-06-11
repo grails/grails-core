@@ -27,13 +27,13 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AllArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
 
 /**
- *
- * Adds a log method to all artifacts
+ * Adds a log method to all artifacts.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -50,7 +50,7 @@ public class LoggingTransformer implements AllArtefactClassInjector{
         if (existingField == null && !classNode.isInterface()) {
             final String path = source.getName();
 
-            String artefactType = path != null ? org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getArtefactDirectory(path) : null;
+            String artefactType = path != null ? GrailsResourceUtils.getArtefactDirectory(path) : null;
 
             // little bit of a hack, since filters aren't kept in a grails-app/filters directory as they probably should be
             if (artefactType != null && CONF_DIR.equals(artefactType) && classNode.getName().endsWith(FILTERS_ARTEFACT_TYPE_SUFFIX)) {

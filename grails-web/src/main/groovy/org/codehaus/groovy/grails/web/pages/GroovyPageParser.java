@@ -53,8 +53,7 @@ import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
- * NOTE: Based on work done by the GSP standalone project
- * (https://gsp.dev.java.net/)
+ * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
  *
  * Parsing implementation for GSP files
  *
@@ -103,7 +102,7 @@ public class GroovyPageParser implements Tokens {
 
     Set<Integer> bodyVarsDefined=new HashSet<Integer>();
     Map<Integer, String> attrsVarsMapDefinition=new HashMap<Integer, String>();
-    
+
     int closureLevel=0;
 
     /*
@@ -188,7 +187,7 @@ public class GroovyPageParser implements Tokens {
         boolean hasAttributes;
         int lineNumber;
         boolean emptyTag;
-        int tagIndex;
+        @SuppressWarnings("hiding") int tagIndex;
         boolean bufferMode=false;
         int bufferPartNumber = -1;
 
@@ -284,7 +283,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     public InputStream parse() {
-        File keepGeneratedDirectory = resolveKeepGeneratedDirectory();
+        resolveKeepGeneratedDirectory();
 
         StreamCharBuffer streamBuffer = new StreamCharBuffer(1024);
         StreamByteBuffer byteOutputBuffer = new StreamByteBuffer(1024,
@@ -335,23 +334,20 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    private File resolveKeepGeneratedDirectory() {
-
-
+    private void resolveKeepGeneratedDirectory() {
         if (keepGeneratedDirectory != null && !keepGeneratedDirectory.isDirectory()) {
             LOG.warn("The directory specified with " + CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR +
                     " config parameter doesn't exist or isn't a readable directory. Absolute path: '" +
                     keepGeneratedDirectory.getAbsolutePath() + "' Keepgenerated will be disabled.");
             keepGeneratedDirectory = null;
         }
-        return keepGeneratedDirectory;
     }
 
     public void generateGsp(Writer target) {
         generateGsp(target, true);
     }
 
-    public void generateGsp(Writer target, boolean precompileMode) {
+    public void generateGsp(Writer target, @SuppressWarnings("hiding") boolean precompileMode) {
         this.precompileMode = precompileMode;
 
         out = new GSPWriter(target, this);
@@ -953,7 +949,7 @@ public class GroovyPageParser implements Tokens {
         else {
             int bodyTagIndex = -1;
             if (!tm.emptyTag && !tm.bufferMode) {
-            	bodyTagIndex = tagIndex;
+                bodyTagIndex = tagIndex;
                 out.println("})");
                 closureLevel--;
             }
@@ -974,10 +970,10 @@ public class GroovyPageParser implements Tokens {
                 out.println("if (!jspTag) throw new GrailsTagException('Unknown JSP tag " +
                         ns + ":" + tagName + "')");
                 out.print("jspTag.doTag(out," + attrsVarsMapDefinition.get(tagIndex) + ",");
-                if(bodyTagIndex > -1) {
-                	out.print("getBodyClosure(" + bodyTagIndex + ")");
+                if (bodyTagIndex > -1) {
+                    out.print("getBodyClosure(" + bodyTagIndex + ")");
                 } else {
-                	out.print("null");
+                    out.print("null");
                 }
                 out.println(")");
             }
@@ -995,7 +991,7 @@ public class GroovyPageParser implements Tokens {
         }
 
         tm.bufferMode = false;
-        
+
         tagIndex--;
     }
 
@@ -1088,7 +1084,7 @@ public class GroovyPageParser implements Tokens {
             }
 
             tag.doStartTag();
-            
+
             tm.instance = tag;
         }
         else {

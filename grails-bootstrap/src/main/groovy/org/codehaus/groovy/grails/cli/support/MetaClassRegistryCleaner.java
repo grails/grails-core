@@ -24,14 +24,16 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Allows clean-up of changes made to the MetaClassRegistry
+ * Allows clean-up of changes made to the MetaClassRegistry.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
+@SuppressWarnings("rawtypes")
 public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
 
     private Collection<Class> alteredClasses = new ConcurrentLinkedQueue<Class>();
+
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
         alteredClasses.add(cmcu.getClassToUpdate());
     }

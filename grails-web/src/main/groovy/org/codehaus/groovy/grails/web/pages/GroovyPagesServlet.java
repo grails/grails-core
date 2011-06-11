@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
 import org.apache.commons.lang.StringUtils;

@@ -14,7 +14,13 @@
  */
 package org.codehaus.groovy.grails.scaffolding.view;
 
-import grails.util.GrailsUtil;
+import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -25,13 +31,6 @@ import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.View;
-
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Overrides the default Grails view resolver and resolves scaffolded views at runtime.

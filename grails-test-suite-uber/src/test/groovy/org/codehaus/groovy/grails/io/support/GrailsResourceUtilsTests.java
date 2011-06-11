@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.io.support;
 
 import junit.framework.TestCase;
 import org.springframework.core.io.Resource;

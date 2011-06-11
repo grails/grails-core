@@ -23,23 +23,24 @@ import org.slf4j.spi.MDCAdapter;
  */
 public class StaticMDCBinder {
 
-  /**
-   * The unique instance of this class.
-   */
-  public static final StaticMDCBinder SINGLETON = new StaticMDCBinder();
+    /**
+     * The unique instance of this class.
+     */
+    public static final StaticMDCBinder SINGLETON = new StaticMDCBinder();
 
-  private StaticMDCBinder() {
-  }
+    private StaticMDCBinder() {
+        // singleton
+    }
 
-  /**
-   * Currently this method always returns an instance of
-   * {@link StaticMDCBinder}.
-   */
-  public MDCAdapter getMDCA() {
-     return new GrailsLog4jMDCAdapter();
-  }
+    /**
+     * Currently this method always returns an instance of
+     * {@link StaticMDCBinder}.
+     */
+    public MDCAdapter getMDCA() {
+        return new GrailsLog4jMDCAdapter();
+    }
 
-  public String  getMDCAdapterClassStr() {
-    return GrailsLog4jMDCAdapter.class.getName();
-  }
+    public String getMDCAdapterClassStr() {
+        return GrailsLog4jMDCAdapter.class.getName();
+    }
 }

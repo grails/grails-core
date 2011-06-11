@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
  * @since 0.2
  * @deprecated  Use org.codehaus.groovy.grails.io.support.GrailsResourceUtils instead
  */
+@Deprecated
 public class GrailsResourceUtils {
 
     /**

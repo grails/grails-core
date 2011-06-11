@@ -22,7 +22,7 @@ import org.apache.tools.ant.input.InputRequest;
 import org.apache.tools.ant.input.MultipleChoiceInputRequest;
 import grails.build.logging.GrailsConsole;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Custom input handler mechanism for Ant that ignores case of input.
@@ -32,18 +32,15 @@ import java.util.Vector;
  */
 public class CommandLineInputHandler implements InputHandler {
 
-    public CommandLineInputHandler() {
-    }
-
     public void handleInput(InputRequest inputRequest) throws BuildException {
        String[] validInputs = null;
        if (inputRequest instanceof MultipleChoiceInputRequest) {
            @SuppressWarnings("unchecked")
-           Vector<String> choices = ((MultipleChoiceInputRequest) inputRequest).getChoices();
+           List<String> choices = ((MultipleChoiceInputRequest) inputRequest).getChoices();
            validInputs = choices.toArray(new String[choices.size()]);
        }
        String result = GrailsConsole.getInstance().userInput(inputRequest.getPrompt(), validInputs);
-       if(result == null || result.length() == 0) {
+       if (result == null || result.length() == 0) {
            result = inputRequest.getDefaultValue();
        }
        inputRequest.setInput(result);

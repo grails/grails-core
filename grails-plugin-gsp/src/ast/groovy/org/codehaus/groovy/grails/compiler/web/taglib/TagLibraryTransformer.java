@@ -16,20 +16,6 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
 import groovy.lang.Closure;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -38,6 +24,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
+import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.springframework.web.context.request.RequestContextHolder;
+
 /**
  * Enhances tag library classes with the appropriate API at compile time
  *
@@ -45,8 +54,11 @@ import java.util.regex.Pattern;
  * @since 1.4
  */
 @AstTransformer
-public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer{
-    public static Pattern TAGLIB_PATTERN = Pattern.compile(".+/"+ GrailsResourceUtils.GRAILS_APP_DIR+"/taglib/(.+)TagLib\\.groovy");
+public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
+
+    public static Pattern TAGLIB_PATTERN = Pattern.compile(".+/" +
+            GrailsResourceUtils.GRAILS_APP_DIR + "/taglib/(.+)TagLib\\.groovy");
+
     private static final String ATTRS_ARGUMENT = "attrs";
     private static final String BODY_ARGUMENT = "body";
     private static final Parameter[] MAP_CLOSURE_PARAMETERS = new Parameter[]{ new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };

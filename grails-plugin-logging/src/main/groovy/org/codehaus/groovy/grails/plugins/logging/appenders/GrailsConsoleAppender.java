@@ -23,19 +23,21 @@ import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 
 /**
- * A Log4j appender that appends to the GrailsConsole instance. Not for use in production/WAR deployed scenarios!
+ * A Log4j appender that appends to the GrailsConsole instance.
+ * Not for use in production/WAR deployed scenarios!
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 public class GrailsConsoleAppender extends AppenderSkeleton {
+
     GrailsConsole console = GrailsConsole.getInstance();
 
     @Override
     protected void append(LoggingEvent event) {
         Level level = event.getLevel();
         String message = buildMessage(event);
-        if((level == Level.ERROR)||(level == Level.FATAL)) {
+        if (level == Level.ERROR || level == Level.FATAL) {
             console.error(message);
         }
         else {
@@ -44,10 +46,10 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     }
 
     private String buildMessage(LoggingEvent event) {
-        StringBuilder b = new StringBuilder(this.layout.format(event));
+        StringBuilder b = new StringBuilder(layout.format(event));
 
         String[] throwableStrRep = event.getThrowableStrRep();
-        if(throwableStrRep != null) {
+        if (throwableStrRep != null) {
             b.append(Layout.LINE_SEP);
             for (String line : throwableStrRep) {
                 b.append(line).append(Layout.LINE_SEP);

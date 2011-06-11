@@ -128,8 +128,4 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
         return expression.getObjectExpression().getText().equals(THIS_RECEIVER)
                 && !groovyPageClassNode.getMethods(expression.getMethodAsString()).isEmpty();
     }
-
-    private boolean isVariableFromGroovyPageClass(VariableExpression expression) {
-        return false;
-    }
 }

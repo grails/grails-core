@@ -15,13 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
-import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.util.Proxy;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.map.CompositeMap;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -178,7 +176,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         return returnModelAndView ? mv : null;
     }
 
-    protected abstract Object retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+    protected abstract Object retrieveAction(GroovyObject controller, String actionName,
             HttpServletResponse response);
 
     /**

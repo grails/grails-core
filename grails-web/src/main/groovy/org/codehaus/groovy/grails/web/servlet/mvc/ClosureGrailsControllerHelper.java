@@ -34,7 +34,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 public class ClosureGrailsControllerHelper extends AbstractGrailsControllerHelper {
 
     @Override
-    protected Closure<?> retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+    protected Closure<?> retrieveAction(GroovyObject controller, String actionName,
                  HttpServletResponse response) {
         Closure<?> action;
         try {

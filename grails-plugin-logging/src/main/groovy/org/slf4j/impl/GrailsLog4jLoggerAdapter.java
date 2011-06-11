@@ -15,14 +15,18 @@
  */
 package org.slf4j.impl;
 
+import static org.apache.log4j.Level.DEBUG;
+import static org.apache.log4j.Level.ERROR;
+import static org.apache.log4j.Level.INFO;
+import static org.apache.log4j.Level.TRACE;
+import static org.apache.log4j.Level.WARN;
 import grails.util.GrailsUtil;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
-
-import static org.apache.log4j.Level.*;
 
 /**
  * A Log4j adapter that produces cleaner, more informative stack traces
@@ -30,9 +34,10 @@ import static org.apache.log4j.Level.*;
  * @author Graeme Rocher
  * @since 1.4
  */
+@SuppressWarnings("serial")
 public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.slf4j.Logger {
 
-    final static String FQCN = GrailsLog4jLoggerAdapter.class.getName();
+    static final String FQCN = GrailsLog4jLoggerAdapter.class.getName();
 
     private Logger log4jLogger;
     private String name;
@@ -95,7 +100,6 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
         logMessage(DEBUG, msg, t);
     }
 
-
     public boolean isInfoEnabled() {
         return log4jLogger.isInfoEnabled();
     }
@@ -119,7 +123,6 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
     public void info(String msg, Throwable t) {
         logMessage(INFO, msg, t);
     }
-
 
     public boolean isWarnEnabled() {
         return log4jLogger.isEnabledFor(WARN);
@@ -192,12 +195,8 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
     }
 
     private void logMessage(Level level, String msg, Throwable t) {
-        Throwable filteredTrace= !msg.startsWith(GrailsUtil.SANITIZING_STACKTRACE) ? cleanIfException(t) : t;
+        Throwable filteredTrace = msg.startsWith(GrailsUtil.SANITIZING_STACKTRACE) ? t : cleanIfException(t);
 
         log4jLogger.log(FQCN, level, msg, filteredTrace);
     }
-
-
-
-
 }

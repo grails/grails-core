@@ -1,33 +1,37 @@
 /*
-* Copyright 2011 SpringSource
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright 2011 SpringSource
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.cli.logging;
 
 import grails.build.logging.GrailsConsole;
 import groovy.util.AntBuilder;
-import org.apache.tools.ant.*;
+
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildLogger;
+import org.apache.tools.ant.DefaultLogger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.util.StringUtils;
 
 /**
- * Silences ant builder output
+ * Silences ant builder output.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
 public class GrailsConsoleAntBuilder extends AntBuilder {
-
 
     public GrailsConsoleAntBuilder() {
         super(createAntProject());
@@ -36,6 +40,7 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
     /**
      * @return Factory method to create new Project instances
      */
+    @SuppressWarnings("unchecked")
     protected static Project createAntProject() {
         final Project project = new Project();
 
@@ -72,18 +77,13 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
         protected GrailsConsole console = GrailsConsole.getInstance();
 
         /**
-         * Sole constructor.
-         */
-        public GrailsConsoleLogger() {
-        }
-
-        /**
          * Notes the name of the target so it can be logged
          * if it generates any messages.
          *
          * @param event A BuildEvent containing target information.
          *              Must not be <code>null</code>.
          */
+        @Override
         public void targetStarted(BuildEvent event) {
             targetName = event.getTarget().getName();
         }
@@ -93,6 +93,7 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
          *
          * @param event Ignored in this implementation.
          */
+        @Override
         public void targetFinished(BuildEvent event) {
             targetName = null;
         }
@@ -106,10 +107,11 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
          * @param event A BuildEvent containing message information.
          *              Must not be <code>null</code>.
          */
+        @Override
         public void messageLogged(BuildEvent event) {
-            if (event.getPriority() > msgOutputLevel
-                    || null == event.getMessage()
-                    || "".equals(event.getMessage().trim())) {
+            if (event.getPriority() > msgOutputLevel ||
+                    null == event.getMessage() ||
+                    "".equals(event.getMessage().trim())) {
                 return;
             }
 
