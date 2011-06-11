@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
-import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import grails.util.GrailsUtil
-
-import grails.web.container.EmbeddableServerFactory
+import grails.util.Metadata
 import grails.web.container.EmbeddableServer
+import grails.web.container.EmbeddableServerFactory
+
+import java.net.ServerSocket
+
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 
 /**
  * Gant script that executes Grails using an embedded server
@@ -85,7 +87,6 @@ target (runWarHttps : "Main implementation that executes a Grails application WA
 private EmbeddableServerFactory loadServerFactory() {
     def load = { name -> classLoader.loadClass(name).newInstance() }
 
-
     String defaultServer = "org.grails.plugins.tomcat.TomcatServerFactory"
     def containerClass = getPropertyValue("grails.server.factory", defaultServer)
     EmbeddableServerFactory serverFactory
@@ -121,9 +122,8 @@ private runWar(scheme, host, httpPort, httpsPort) {
     EmbeddableServerFactory serverFactory = loadServerFactory()
     grailsServer = serverFactory.createForWAR(warName, serverContextPath)
 
-    grails.util.Metadata.getCurrent().put(grails.util.Metadata.WAR_DEPLOYED, "true")
+    Metadata.getCurrent().put(Metadata.WAR_DEPLOYED, "true")
     runServer server:grailsServer, host:host, httpPort:httpPort, httpsPort: httpsPort, scheme: scheme
-
 }
 
 /**
@@ -147,7 +147,21 @@ runServer = { Map args ->
         }
 
         profile("start server") {
+
+            try { new ServerSocket(args.httpPort).close() }
+            catch (IOException e) {
+                event("StatusFinal", ["Server failed to start for port $args.httpPort: $e.message"])
+                exit(1)
+            }
+
             if (args.scheme == 'https') {
+
+                try { new ServerSocket(args.httpsPort).close() }
+                catch (IOException e) {
+                    event("StatusFinal", ["Server failed to start for port $args.httpsPort: $e.message"])
+                    exit(1)
+                }
+
                 usingSecureServer = true
                 server.startSecure args.host, args.httpPort, args.httpsPort
 
@@ -192,11 +206,11 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
     depends(classpath)
 
     if (InteractiveMode.current) {
-		Thread.start {
-			def im = InteractiveMode.current
-			im.grailsServer = grailsServer
-			im.run()
-		}
+        Thread.start {
+            def im = InteractiveMode.current
+            im.grailsServer = grailsServer
+            im.run()
+        }
     }
 
     keepServerAlive()
