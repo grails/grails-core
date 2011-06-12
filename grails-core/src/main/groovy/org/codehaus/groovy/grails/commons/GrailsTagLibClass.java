@@ -25,21 +25,9 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
 
     String DEFAULT_NAMESPACE = "g";
 
-    /**
-     * The name of the application (ie global) tag library appropriate for all controller classes.
-     */
-    String SUPPORTS_CONTROLLER = "supportsController";
-
     String NAMESPACE_FIELD_NAME = "namespace";
 
     String RETURN_OBJECT_FOR_TAGS_FIELD_NAME = "returnObjectForTags";
-
-    /**
-     * Whether this tag library supports the specified controller.
-     * @param controllerClass The controllerClass to check
-     * @return True if the controller is supported
-     */
-    boolean supportsController(GrailsControllerClass controllerClass);
 
     /**
      * @param tagName The name of the tag
