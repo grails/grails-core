@@ -19,9 +19,13 @@ import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
 import grails.util.GrailsNameUtils
+import grails.validation.DeferredBindingActions
+import junit.framework.AssertionFailedError
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
@@ -31,10 +35,6 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
-import junit.framework.AssertionFailedError
-import grails.validation.DeferredBindingActions
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -87,8 +87,6 @@ class GrailsUnitTestMixin {
     @After
     void resetGrailsApplication() {
         grailsApplication?.clear()
-        ShutdownOperations.runOperations()
-        DeferredBindingActions.clear()
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
@@ -208,6 +206,9 @@ class GrailsUnitTestMixin {
         if (applicationContext.isActive()) {
             applicationContext.close()
         }
+        ShutdownOperations.runOperations()
+        DeferredBindingActions.clear()
+
         applicationContext = null
         grailsApplication = null
     }
