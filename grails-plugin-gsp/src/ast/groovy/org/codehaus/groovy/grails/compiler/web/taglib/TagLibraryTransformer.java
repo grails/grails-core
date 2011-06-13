@@ -170,11 +170,11 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                 if (initialExpression instanceof ClosureExpression) {
                     ClosureExpression ce = (ClosureExpression) initialExpression;
                     Parameter[] parameters = ce.getParameters();
-                    //if (parameters.length > 0) {
+                    if (parameters.length > 0) {
                         tags.add(property);
                         //force Closure type for DefaultGrailsTagLibClass
-                        property.setType(CLOSURE_CLASS_NODE);
-                    //}
+                        //property.setType(CLOSURE_CLASS_NODE);
+                    }
                 }
             }
         }

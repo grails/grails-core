@@ -298,7 +298,7 @@ class CountryTagLib {
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
      */
-    Closure countrySelect = { attrs ->
+    def countrySelect = { attrs ->
         if (!attrs.from) {
             attrs.from = COUNTRY_CODES_BY_NAME_ORDER
         }
@@ -319,7 +319,7 @@ class CountryTagLib {
      *
      * @attr code REQUIRED the ISO3166_3 country code
      */
-    Closure country = { attrs ->
+    def country = { attrs ->
         if (!attrs.code) {
             throwTagError "[country] requires [code] attribute to specify the country code"
         }

@@ -79,7 +79,7 @@ class FormatTagLib {
      * @attr false text label for boolean false value
      * @attr locale Force the locale for formatting.
      */
-    Closure formatBoolean = { attrs ->
+    def formatBoolean = { attrs ->
         if (!attrs.containsKey("boolean")) {
             throwTagError("Tag [formatBoolean] is missing required attribute [boolean]")
         }
@@ -123,7 +123,7 @@ class FormatTagLib {
      * @attr dateStyle Set separate style for the date part.
      * @attr timeStyle Set separate style for the time part.
      */
-    Closure formatDate = { attrs ->
+    def formatDate = { attrs ->
 
         def date
         if (attrs.containsKey('date')) {
@@ -224,7 +224,7 @@ class FormatTagLib {
      * @attr currencySymbol Force the currency symbol to some symbol, recommended way is to use currencyCode attribute instead (takes symbol information from java.util.Currency)
      * @attr roundingMode Sets the RoundingMode used in this DecimalFormat. Usual values: HALF_UP, HALF_DOWN. If roundingMode is UNNECESSARY and ArithemeticException raises, the original number formatted with default number formatting will be returned.
      */
-    Closure formatNumber = { attrs ->
+    def formatNumber = { attrs ->
         if (!attrs.containsKey('number')) {
             throwTagError("Tag [formatNumber] is missing required attribute [number]")
         }
@@ -346,7 +346,7 @@ class FormatTagLib {
      *
      * @attr codec REQUIRED the codec name
      */
-    Closure encodeAs = { attrs, body ->
+    def encodeAs = { attrs, body ->
         if (!attrs.codec) {
             throwTagError("Tag [encodeAs] requires a codec name in the [codec] attribute")
         }

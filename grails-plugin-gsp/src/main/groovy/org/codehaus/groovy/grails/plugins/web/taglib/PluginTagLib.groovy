@@ -37,7 +37,7 @@ class PluginTagLib {
      *
      * @attr name REQUIRED the plugin name
      */
-    Closure path = { attrs, body ->
+    def path = { attrs, body ->
         out << pluginManager.getPluginPath(attrs.name)
     }
 
@@ -49,7 +49,7 @@ class PluginTagLib {
      * @attr name REQUIRED the plugin name
      * @attr version REQUIRED the plugin version
      */
-    Closure isAvailable = { attrs, body ->
+    def isAvailable = { attrs, body ->
         if (checkPluginExists(attrs.version, attrs.name)) {
             out << body()
         }
@@ -63,7 +63,7 @@ class PluginTagLib {
      * @attr name REQUIRED the plugin name
      * @attr version REQUIRED the plugin version
      */
-    Closure isNotAvailable = { attrs, body ->
+    def isNotAvailable = { attrs, body ->
         if (!checkPluginExists(attrs.version, attrs.name)) {
             out << body()
         }
