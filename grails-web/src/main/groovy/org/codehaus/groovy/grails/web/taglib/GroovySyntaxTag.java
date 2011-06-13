@@ -46,6 +46,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     protected Map<String, String> attributes = new HashMap<String, String>();
     protected GroovyPageParser parser;
 
+    protected String foreachRenamedIt = null;
+
     @SuppressWarnings("rawtypes")
     public void init(Map context) {
         tagContext = context;
@@ -138,11 +140,16 @@ public abstract class GroovySyntaxTag implements GrailsTag {
                     "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]");
         }
 
-        if (hasStatus) {
-            out.println("FOR:{");
+        if (hasStatus){
+            out.println("loop:{");
             out.println("int "+ status +" = 0");
         }
-        out.print("for( " + (hasVar ? var : "it"));
+        if (!hasVar){
+            var = "_it"+System.currentTimeMillis();
+            foreachRenamedIt = var;
+        }
+
+        out.print("for( " + var);
         out.print(" in "); // dot de-reference
         out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
         out.print(" )"); // dot de-reference
@@ -156,7 +163,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         status = extractAttributeValue(status);
         boolean hasStatus = !StringUtils.isBlank(status);
 
-        if (hasStatus) {
+        if (hasStatus){
             out.println(status +"++");
             out.println("}");
         }
@@ -175,4 +182,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         }
         return attr;
     }
+
+    public String getForeachRenamedIt() {
+        return foreachRenamedIt;
+    }
+
 }
