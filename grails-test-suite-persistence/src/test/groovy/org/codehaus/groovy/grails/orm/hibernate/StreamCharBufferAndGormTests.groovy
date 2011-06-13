@@ -23,7 +23,7 @@ class StreamCharMe {
 
         gcl.parseClass '''
 class StreamCharTagLib {
-    def callMe = { attrs, body ->
+    Closure callMe = { attrs, body ->
         out << "hello"
     }
 }
