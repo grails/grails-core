@@ -39,18 +39,20 @@ public class ShutdownOperations {
     private static final Collection<Runnable> shutdownOperations = new ConcurrentLinkedQueue<Runnable>();
 
 
+    public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
+
+        public void run() {
+            PluginManagerHolder.setPluginManager(null);
+            ApplicationHolder.setApplication(null);
+            ConfigurationHelper.clearCachedConfigs();
+            ExpandoMetaClass.disableGlobally();
+            ClassPropertyFetcher.clearClassPropertyFetcherCache();
+        }
+    };
+
     static {
         // default operations
-        shutdownOperations.add(new Runnable() {
-
-            public void run() {
-                PluginManagerHolder.setPluginManager(null);
-                ApplicationHolder.setApplication(null);
-                ConfigurationHelper.clearCachedConfigs();
-                ExpandoMetaClass.disableGlobally();
-                ClassPropertyFetcher.clearClassPropertyFetcherCache();
-            }
-        });
+        shutdownOperations.add(DEFAULT_SHUTDOWN_OPERATION);
     }
 
     /**
@@ -67,6 +69,7 @@ public class ShutdownOperations {
             }
         } finally {
             shutdownOperations.clear();
+            shutdownOperations.add(DEFAULT_SHUTDOWN_OPERATION);
         }
 
 

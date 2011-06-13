@@ -56,7 +56,11 @@ class HibernateMappingBuilder {
         }
         mappingClosure.resolveStrategy = Closure.DELEGATE_ONLY
         mappingClosure.delegate = this
-        mappingClosure.call()
+        try {
+            mappingClosure.call()
+        } finally {
+            mappingClosure.delegate = null
+        }
         mapping
     }
 
@@ -67,7 +71,11 @@ class HibernateMappingBuilder {
         if (callable) {
             callable.resolveStrategy = Closure.DELEGATE_ONLY
             callable.delegate = this
-            callable.call()
+            try {
+                callable.call()
+            } finally {
+                callable.delegate = null
+            }
         }
     }
 

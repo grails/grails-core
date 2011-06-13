@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.context.support.StaticMessageSource
 import junit.framework.AssertionFailedError
 import grails.validation.DeferredBindingActions
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
@@ -85,7 +87,10 @@ class GrailsUnitTestMixin {
     @After
     void resetGrailsApplication() {
         grailsApplication?.clear()
+        ShutdownOperations.runOperations()
         DeferredBindingActions.clear()
+        MockUtils.TEST_INSTANCES.clear()
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
 
     /**
