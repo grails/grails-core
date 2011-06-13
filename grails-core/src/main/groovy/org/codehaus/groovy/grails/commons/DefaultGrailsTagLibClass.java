@@ -52,11 +52,14 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
             }
 
             Class<?> type = prop.getPropertyType();
-            if (!Closure.class.isAssignableFrom(type)) {
+            if (type != Object.class && !Closure.class.isAssignableFrom(type)) {
                 continue;
             }
 
-            tags.add(prop.getName());
+            Object value = getPropertyValue(prop.getName(), Closure.class);
+            if (value != null && Closure.class.isAssignableFrom(value.getClass())) {
+                tags.add(prop.getName());
+            }
         }
 
         String ns = getStaticPropertyValue(NAMESPACE_FIELD_NAME, String.class);

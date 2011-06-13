@@ -50,7 +50,7 @@ class ValidationTagLib {
      * @attr encodeAs The name of a codec to apply, i.e. HTML, JavaScript, URL etc
      * @attr locale override locale to use instead of the one detected
      */
-    Closure fieldError = { attrs, body ->
+    def fieldError = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field
 
@@ -73,7 +73,7 @@ class ValidationTagLib {
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
      */
-    Closure fieldValue = { attrs, body ->
+    def fieldValue = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field?.toString()
         if (bean && field) {
@@ -162,7 +162,7 @@ class ValidationTagLib {
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
-    Closure hasErrors = { attrs, body ->
+    def hasErrors = { attrs, body ->
         def errorsList = extractErrors(attrs)
         if (errorsList) {
             out << body()
@@ -176,7 +176,7 @@ class ValidationTagLib {
      * @attr field REQUIRED The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
-    Closure eachError = { attrs, body ->
+    def eachError = { attrs, body ->
         eachErrorInternal(attrs, body, true)
     }
 
@@ -226,7 +226,7 @@ class ValidationTagLib {
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
-    Closure renderErrors = { attrs, body ->
+    def renderErrors = { attrs, body ->
         def renderAs = attrs.remove('as')
         if (!renderAs) renderAs = 'list'
 
@@ -269,7 +269,7 @@ class ValidationTagLib {
      * @attr encodeAs The name of a codec to apply, i.e. HTML, JavaScript, URL etc
      * @attr locale override locale to use instead of the one detected
      */
-    Closure message = { attrs ->
+    def message = { attrs ->
         messageImpl(attrs)
     }
 
@@ -338,7 +338,7 @@ class ValidationTagLib {
      * @attr form REQUIRED the HTML form name
      * @attr againstClass REQUIRED the domain class name
      */
-    Closure validate = { attrs, body ->
+    def validate = { attrs, body ->
         def form = attrs.form
         if (!form) {
             throwTagError("Tag [validate] is missing required attribute [form]")

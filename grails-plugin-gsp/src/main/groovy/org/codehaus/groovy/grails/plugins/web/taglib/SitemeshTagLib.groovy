@@ -96,7 +96,7 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the &lt;head&gt; tag.
      */
-    Closure captureHead = { attrs, body ->
+    def captureHead = { attrs, body ->
         def content = captureTagContent(out, 'head', attrs, body)
 
         if (content != null) {
@@ -112,7 +112,7 @@ class SitemeshTagLib implements RequestConstants {
      *
      * &lt;sitemesh:parameter name="foo" value="bar" /&gt;
      */
-    Closure parameter = { attrs, body ->
+    def parameter = { attrs, body ->
         GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
         def name = attrs.name?.toString()
         def val = attrs.value?.toString()
@@ -124,7 +124,7 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the &lt;body&gt; tag.
      */
-    Closure captureBody = { attrs, body ->
+    def captureBody = { attrs, body ->
         def content = captureTagContent(out, 'body', attrs, body)
         if (content != null) {
             GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
@@ -142,7 +142,7 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the individual &lt;content&gt; tags.
      */
-    Closure captureContent = { attrs, body ->
+    def captureContent = { attrs, body ->
         if (body != null) {
             GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
             if (smpage && attrs.tag) {
@@ -154,7 +154,7 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the individual &lt;meta&gt; tags.
      */
-    Closure captureMeta = { attrs, body ->
+    def captureMeta = { attrs, body ->
         def content = captureTagContent(out, 'meta', attrs, body)
         GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
         def val = attrs.content?.toString()
@@ -174,7 +174,7 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the &lt;title&gt; tag.
      */
-    Closure captureTitle = { attrs, body ->
+    def captureTitle = { attrs, body ->
         GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
         def content = captureTagContent(out, 'title', attrs, body)
         if (smpage && content != null) {
