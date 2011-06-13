@@ -71,6 +71,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
     private static final MethodCallExpression CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL = new MethodCallExpression(new ClassExpression(new ClassNode(RequestContextHolder.class)), "currentRequestAttributes", ZERO_ARGS);
     private static final Expression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String NAMESPACE_PROPERTY = "namespace";
+    private static final ClassNode CLOSURE_CLASS_NODE = new ClassNode(Closure.class);
 
     @Override
     public Class<?> getInstanceImplementation() {
@@ -171,6 +172,8 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                     Parameter[] parameters = ce.getParameters();
                     if (parameters.length > 0) {
                         tags.add(property);
+                        //force Closure type for DefaultGrailsTagLibClass
+                        property.setType(CLOSURE_CLASS_NODE);
                     }
                 }
             }
