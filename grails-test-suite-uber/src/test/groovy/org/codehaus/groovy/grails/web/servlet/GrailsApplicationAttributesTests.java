@@ -52,11 +52,11 @@ public class GrailsApplicationAttributesTests extends TestCase {
                                                     "}\n" +
                                                     "}\n" +
                          "class FirstTagLib {\n" +
-                                      "def firstTag = {\n" +
+                                      "Closure firstTag = {\n" +
                                       "}\n" +
                          "}\n" +
                          "class SecondTagLib {\n" +
-                             "def secondTag = {\n" +
+                             "Closure secondTag = {\n" +
                          "}\n" +
                 "}");
 
