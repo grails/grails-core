@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import java.util.Collection;
+
 /**
  * @author Graeme Rocher
  * @since 1.1
@@ -18,36 +20,36 @@ class UrlMappings {
     }
 }
 
-class PortalController {
-
-    static defaultAction = 'content'
-
-    def content = {
-        redirect(controller:'repository')
-    }
-}
-
-class RepositoryController {
-    def index = {
-        render "hello world"
-    }
-
-    def toPortal = {
-        redirect(controller: "portal")
-    }
-}
 ''')
+    }
+    
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [PortalController, RepositoryController]
     }
 
      void testRedirect() {
-         def c = ga.getControllerClass("PortalController").newInstance()
+         def c = ga.getControllerClass(PortalController.name).newInstance()
          c.content()
          assertEquals "/repository/index", response.redirectedUrl
      }
 
      void testRedirectToExplicitDefaultAction() {
-         def c = ga.getControllerClass("RepositoryController").newInstance()
+         def c = ga.getControllerClass(RepositoryController.name).newInstance()
          c.toPortal()
          assertEquals "/portal/content", response.redirectedUrl
      }
 }
+class PortalController {
+
+    static defaultAction = 'content'
+
+    def content = { redirect(controller:'repository') }
+}
+
+class RepositoryController {
+    def index = { render "hello world" }
+
+    def toPortal = { redirect(controller: "portal") }
+}
+    

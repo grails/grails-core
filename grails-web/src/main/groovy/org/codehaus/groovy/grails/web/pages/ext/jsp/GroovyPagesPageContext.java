@@ -354,7 +354,7 @@ public class GroovyPagesPageContext extends PageContext {
         return 0;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings("rawtypes")
     @Override
     public Enumeration getAttributeNamesInScope(int scope) {
         switch (scope) {

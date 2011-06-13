@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2011 SpringSource
  *
@@ -14,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.cli.logging;
+package grails.build.interactive.completors
 
-import groovy.util.AntBuilder;
-import org.apache.tools.ant.BuildLogger;
-import org.apache.tools.ant.types.LogLevel;
-
-import java.util.Vector;
+import org.codehaus.groovy.grails.cli.interactive.completors.ClassNameCompletor
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
+import org.springframework.core.io.Resource
 
 /**
- * Silences ant builder output
+ * Completor for the generate-views command
  *
- * @since 1.4
  * @author Graeme Rocher
+ * @since 1.4
+ *
  */
-public class SilentAntBuilder extends AntBuilder {
+class GenerateViews extends ClassNameCompletor{
+    @Override
+    String getCommandName() { "generate-views" }
 
-    public SilentAntBuilder() {
-        super();
-
-        Vector buildListeners = getProject().getBuildListeners();
-        for (Object buildListener : buildListeners) {
-            if(buildListener instanceof BuildLogger) {
-                ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
-            }
-        }
+    @Override
+    boolean shouldInclude(Resource res) {
+        GrailsResourceUtils.isDomainClass(res.getURL())
     }
+
+
 }

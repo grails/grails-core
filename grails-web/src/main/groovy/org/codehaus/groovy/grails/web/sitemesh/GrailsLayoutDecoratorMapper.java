@@ -33,7 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;

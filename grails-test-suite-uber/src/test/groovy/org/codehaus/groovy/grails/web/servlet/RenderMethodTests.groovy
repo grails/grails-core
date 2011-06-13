@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet
 
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 
@@ -25,8 +27,13 @@ import org.codehaus.groovy.grails.support.MockStringResourceLoader
  */
 class RenderMethodTests extends AbstractGrailsControllerTests {
 
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [RenderController]
+    }
+    
     void testRenderMethodWithStatus() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
         mockController.renderMessageWithStatus.call()
 
         def response = mockController.response
@@ -37,14 +44,14 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     // bug GRAILS-3393
     void testMissingNamedArgumentKey() {
 
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
         shouldFail(MissingMethodException) {
             mockController.renderBug.call()
         }
     }
 
     void testRenderObject() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
         mockController.renderObject.call()
 
         def response = mockController.response
@@ -52,7 +59,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderList() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
         mockController.renderList.call()
 
         def response = mockController.response
@@ -60,7 +67,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderMap() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
         mockController.renderMap.call()
 
         def response = mockController.response
@@ -69,7 +76,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 
     void testRenderGString() {
         runTest {
-            def mockController = ga.getControllerClass("RenderController").newInstance()
+            def mockController = new RenderController()
             mockController.renderGString.call()
 
             def request = mockController.request
@@ -84,7 +91,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 
     void testRenderText() {
         runTest {
-            def mockController = ga.getControllerClass("RenderController").newInstance()
+            def mockController = new RenderController()
             mockController.renderText.call()
 
             def request = mockController.request
@@ -99,7 +106,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 
     void testRenderXml() {
         runTest {
-            def mockController = ga.getControllerClass("RenderController").newInstance()
+            def mockController = new RenderController()
 
             mockController.renderXML.call()
 
@@ -115,7 +122,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderView() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
 
         mockController.renderView.call()
 
@@ -125,7 +132,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderViewWithContentType() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
 
         mockController.renderXmlView.call()
 
@@ -136,7 +143,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderTemplate() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
 
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
@@ -152,7 +159,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderTemplateWithCollectionUsingImplicitITVariable() {
-        def mockController = ga.getControllerClass('RenderController').newInstance()
+        def mockController = new RenderController()
 
         request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
         def resourceLoader = new MockStringResourceLoader()
@@ -166,7 +173,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderTemplateWithCollectionUsingExplicitVariableName() {
-        def mockController = ga.getControllerClass('RenderController').newInstance()
+        def mockController = new RenderController()
 
         request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
         def resourceLoader = new MockStringResourceLoader()
@@ -180,7 +187,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     }
 
     void testRenderTemplateWithContentType() {
-        def mockController = ga.getControllerClass("RenderController").newInstance()
+        def mockController = new RenderController()
 
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
@@ -194,19 +201,14 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assertEquals "<hello>world</hello>", response.contentAsString
         assertEquals "text/xml;charset=utf-8", response.contentType
     }
-
-    protected void onSetUp() {
-        gcl.parseClass(
-'''
+}
 class RenderController {
 
     def renderBug = {
-      render(view:'login', [foo:"bar"])
+        render(view:'login', [foo:"bar"])
     }
 
-    def renderView = {
-        render(view:'testView')
-    }
+    def renderView = { render(view:'testView') }
     def renderXmlView = {
         render(view:'xmlView', contentType:'text/xml')
     }
@@ -217,33 +219,35 @@ class RenderController {
         render text:"test", status:500
     }
     def renderList = {
-        render([1,2,3])
+        render([1, 2, 3])
     }
     def renderMap = {
         render([a:1, b:2])
     }
-    def renderText = {
-        render "test render"
-    }
+    def renderText = { render "test render" }
     def renderGString = {
         def foo = 'render'
         render "test $foo"
     }
     def renderXML = {
-        render(contentType:"text/xml") {
-            hello("world")
-        }
+        render(contentType:"text/xml") { hello("world") }
     }
     def renderTemplate = {
         render(template:"testTemplate", model:[hello:"world"])
     }
     def renderTemplateWithCollection = {
-        def people = [[firstName: 'Jacob', middleName: 'Ray'], [firstName: 'Zachary', middleName: 'Scott']]
-           render(template:"peopleTemplate", collection: people)
-       }
+        def people = [
+            [firstName: 'Jacob', middleName: 'Ray'],
+            [firstName: 'Zachary', middleName: 'Scott']
+        ]
+        render(template:"peopleTemplate", collection: people)
+    }
     def renderTemplateWithCollectionAndExplicitVarName = {
-            def people = [[firstName: 'Jacob', middleName: 'Ray'], [firstName: 'Zachary', middleName: 'Scott']]
-               render(var: 'person', template:"peopleTemplate", collection: people)
+        def people = [
+            [firstName: 'Jacob', middleName: 'Ray'],
+            [firstName: 'Zachary', middleName: 'Scott']
+        ]
+        render(var: 'person', template:"peopleTemplate", collection: people)
     }
     def renderXmlTemplate = {
         render(template:"xmlTemplate",contentType:"text/xml")
@@ -254,6 +258,4 @@ class RenderTest {
 
     String toString() { foo }
 }
-''')
-    }
-}
+    

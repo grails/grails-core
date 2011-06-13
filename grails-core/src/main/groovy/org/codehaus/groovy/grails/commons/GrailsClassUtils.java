@@ -946,7 +946,7 @@ public class GrailsClassUtils {
     public static MetaClass getExpandoMetaClass(Class clazz) {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
         Assert.isTrue(registry.getMetaClassCreationHandler() instanceof ExpandoMetaClassCreationHandle,
-                "Grails requires an instance of [ExpandoMetaClassCreationHandle] to be set in Groovy's MetaClassRegistry!");
+                "Grails requires an instance of [ExpandoMetaClassCreationHandle] to be set in Groovy's MetaClassRegistry! (current is : "+registry.getMetaClassCreationHandler()+")");
 
         MetaClass mc = registry.getMetaClass(clazz);
         AdaptingMetaClass adapter = null;

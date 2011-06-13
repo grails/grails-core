@@ -1,55 +1,18 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import grails.web.Action
+
+import java.util.Collection
+
 import org.springframework.web.context.request.RequestContextHolder
 
 class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
-    protected void onSetUp() {
-        gcl.parseClass """
-        class TestController {
-           def list = {}
-
-           def afterInterceptor = {
-                it.put("after", "value")
-           }
-        }
-        """
-
-        gcl.parseClass """
-        import grails.web.Action
-        class Test2Controller {
-           @Action def list(){}
-
-           def afterInterceptor = { model ->
-                model.put("after", "value")
-                return "not a boolean"
-           }
-        }
-        """
-
-        gcl.parseClass """
-        import grails.web.Action
-        class Test3Controller {
-           @Action def list(){}
-
-           def afterInterceptor = { model, modelAndView ->
-                model.put("after", modelAndView.getViewName())
-                return true
-           }
-        }
-        """
-
-        gcl.parseClass """
-        class Test4Controller {
-           def list = {}
-
-           def afterInterceptor = { model, modelAndView ->
-                return false
-           }
-        }
-        """
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [Test1Controller, Test2Controller, Test3Controller, Test4Controller]
     }
-
+    
     void testConstructHelper() {
         runTest {
             def webRequest = RequestContextHolder.currentRequestAttributes()
@@ -60,7 +23,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
     void testCallsAfterInterceptorWithModel() {
         runTest {
             def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
-            def mv = helper.handleURI("/test/list", webRequest)
+            def mv = helper.handleURI("/test1/list", webRequest)
             assert mv.getModel()["after"] == "value"
         }
     }
@@ -89,3 +52,38 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
         }
     }
 }
+
+class Test1Controller {
+    def list = {}
+ 
+    def afterInterceptor = {
+         it.put("after", "value")
+    }
+ }
+ 
+ class Test2Controller {
+    @Action def list(){}
+ 
+    def afterInterceptor = { model ->
+         model.put("after", "value")
+         return "not a boolean"
+    }
+ }
+ 
+ class Test3Controller {
+    @Action def list(){}
+ 
+    def afterInterceptor = { model, modelAndView ->
+         model.put("after", modelAndView.getViewName())
+         return true
+    }
+ }
+ 
+ class Test4Controller {
+    def list = {}
+ 
+    def afterInterceptor = { model, modelAndView ->
+         return false
+    }
+ }
+ 

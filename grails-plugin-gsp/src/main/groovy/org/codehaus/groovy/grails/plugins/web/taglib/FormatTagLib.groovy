@@ -73,13 +73,13 @@ class FormatTagLib {
      * &lt;g:formatBoolean boolean="${myBoolean}" true="True!" false="False!" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr boolean REQUIRED the boolean to output
      * @attr true text label for boolean true value
      * @attr false text label for boolean false value
      * @attr locale Force the locale for formatting.
      */
-    def formatBoolean = { attrs ->
+    Closure formatBoolean = { attrs ->
         if (!attrs.containsKey("boolean")) {
             throwTagError("Tag [formatBoolean] is missing required attribute [boolean]")
         }
@@ -112,7 +112,7 @@ class FormatTagLib {
      * @see java.text.SimpleDateFormat
      *
      * @emptyTag
-     * 
+     *
      * @attr date the date object to display; defaults to now if not specified
      * @attr format The formatting pattern to use for the date, see SimpleDateFormat
      * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/*.properties file) with this key. If format and formatName are empty, format is looked up with 'default.date.format' key. If the key is missing, 'yyyy-MM-dd HH:mm:ss z' formatting pattern is used.
@@ -123,7 +123,7 @@ class FormatTagLib {
      * @attr dateStyle Set separate style for the date part.
      * @attr timeStyle Set separate style for the time part.
      */
-    def formatDate = { attrs ->
+    Closure formatDate = { attrs ->
 
         def date
         if (attrs.containsKey('date')) {
@@ -209,7 +209,7 @@ class FormatTagLib {
      * @see java.text.DecimalFormat
      *
      * @emptyTag
-     * 
+     *
      * @attr number REQUIRED the number to display
      * @attr format The formatting pattern to use for the number, see DecimalFormat
      * @attr formatName Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key.Look up format from the default MessageSource / ResourceBundle (i18n/.properties file) with this key. If format and formatName are empty, format is looked up with 'default.number.format' key. If the key is missing, '0' formatting pattern is used.
@@ -224,7 +224,7 @@ class FormatTagLib {
      * @attr currencySymbol Force the currency symbol to some symbol, recommended way is to use currencyCode attribute instead (takes symbol information from java.util.Currency)
      * @attr roundingMode Sets the RoundingMode used in this DecimalFormat. Usual values: HALF_UP, HALF_DOWN. If roundingMode is UNNECESSARY and ArithemeticException raises, the original number formatted with default number formatting will be returned.
      */
-    def formatNumber = { attrs ->
+    Closure formatNumber = { attrs ->
         if (!attrs.containsKey('number')) {
             throwTagError("Tag [formatNumber] is missing required attribute [number]")
         }
@@ -346,7 +346,7 @@ class FormatTagLib {
      *
      * @attr codec REQUIRED the codec name
      */
-    def encodeAs = { attrs, body ->
+    Closure encodeAs = { attrs, body ->
         if (!attrs.codec) {
             throwTagError("Tag [encodeAs] requires a codec name in the [codec] attribute")
         }

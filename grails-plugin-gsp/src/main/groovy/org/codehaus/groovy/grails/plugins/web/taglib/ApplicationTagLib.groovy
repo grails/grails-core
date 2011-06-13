@@ -67,10 +67,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Obtains the value of a cookie.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the cookie name
      */
-    def cookie = { attrs ->
+    Closure cookie = { attrs ->
         def cke = request.cookies.find { it.name == attrs.name }
         if (cke) {
             out << cke.value
@@ -81,10 +81,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Renders the specified request header value.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the header name
      */
-    def header = { attrs ->
+    Closure header = { attrs ->
         if (attrs.name) {
             def hdr = request.getHeader(attrs.name)
             if (hdr) out << hdr
@@ -98,7 +98,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr value the variable value; if not specified uses the rendered body
      * @attr scope the scope name; defaults to pageScope
      */
-    def set = { attrs, body ->
+    Closure set = { attrs, body ->
         def var = attrs.var
         if (!var) throw new IllegalArgumentException("[var] attribute must be specified to for <g:set>!")
 
@@ -118,11 +118,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Creates a link to a resource, generally used as a method rather than a tag.<br/>
      *
      * eg. &lt;link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" /&gt;
-     * 
+     *
      * @emptyTag
-     * 
      */
-    def createLinkTo = { attrs ->
+    Closure createLinkTo = { attrs ->
         GrailsUtil.deprecated "Tag [createLinkTo] is deprecated please use [resource] instead"
         out << resource(attrs)
     }
@@ -133,7 +132,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * eg. &lt;link type="text/css" href="${resource(dir:'css',file:'main.css')}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr base Sets the prefix to be added to the link target address, typically an absolute server URL. This overrides the behaviour of the absolute property, if both are specified.x≈
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
      * @attr dir the name of the directory within the grails app to link to
@@ -141,7 +140,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr absolute If set to "true" will prefix the link target address with the value of the grails.serverURL property from Config, or http://localhost:&lt;port&gt; if no value in Config and not running in production.
      * @attr plugin The plugin to look for the resource in
      */
-    def resource = { attrs ->
+    Closure resource = { attrs ->
         if (pageScope.pluginContextPath) {
             attrs.pluginContextPath = pageScope.pluginContextPath
         }
@@ -157,7 +156,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr plugin Optional the name of the grails plugin if the resource is not part of the application
      * @attr uri Optional app-relative URI path of the resource if not using dir/file attributes - only if Resources plugin is in use
      */
-    def img = { attrs ->
+    Closure img = { attrs ->
         if (!attrs.uri && !attrs.dir) {
             attrs.dir = "images"
         }
@@ -191,7 +190,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr event Webflow _eventId parameter
      * @attr elementId DOM element id
      */
-    def link = { attrs, body ->
+    Closure link = { attrs, body ->
 
         def writer = getOut()
         def elementId = attrs.remove('elementId')
@@ -263,7 +262,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr plugin
      * @attr type
      */
-    def external = { attrs ->
+    Closure external = { attrs ->
         if (!attrs.uri) {
             attrs.uri = g.resource(attrs).toString()
         }
@@ -305,7 +304,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * &lt;a href="${createLink(action:'list')}"&gt;List&lt;/a&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr controller The name of the controller to use in the link, if not specified the current controller will be linked
      * @attr action The name of the action to use in the link, if not specified the default action will be linked
      * @attr uri relative URI
@@ -318,7 +317,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr mapping The named URL mapping to use to rewrite the link
      * @attr event Webflow _eventId parameter
      */
-    def createLink = { attrs ->
+    Closure createLink = { attrs ->
         def urlAttrs = attrs
         if (attrs.url instanceof Map) {
            urlAttrs = attrs.url
@@ -353,7 +352,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr name REQUIRED the tag name
      * @attr attrs tag attributes
      */
-    def withTag = { attrs, body ->
+    Closure withTag = { attrs, body ->
         def writer = out
         writer << "<${attrs.name}"
         attrs.attrs.each { k,v ->
@@ -377,11 +376,11 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * in this collection with the given separator.
      *
      * @emptyTag
-     * 
+     *
      * @attr REQUIRED in The collection to iterate over
      * @attr delimiter The value of the delimiter to use during the join. If no delimiter is specified then ", " (a comma followed by a space) will be used as the delimiter.
      */
-    def join = { attrs ->
+    Closure join = { attrs ->
         def collection = attrs.'in'
         if (collection == null) {
             throwTagError('Tag ["join"] missing required attribute ["in"]')
@@ -395,10 +394,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * Output application metadata that is loaded from application.properties.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the metadata key
      */
-    def meta = { attrs ->
+    Closure meta = { attrs ->
         if (!attrs.name) {
             throwTagError('Tag ["meta"] missing required attribute ["name"]')
         }

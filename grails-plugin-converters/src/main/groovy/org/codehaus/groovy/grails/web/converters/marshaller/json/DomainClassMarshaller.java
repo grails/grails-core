@@ -28,6 +28,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -49,14 +51,16 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
 
     private boolean includeVersion = false;
     private ProxyHandler proxyHandler;
+    private GrailsApplication application;
 
-    public DomainClassMarshaller(boolean includeVersion) {
-        this(includeVersion, new DefaultProxyHandler());
+    public DomainClassMarshaller(boolean includeVersion, GrailsApplication application) {
+        this(includeVersion, new DefaultProxyHandler(), application);
     }
 
-    public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler) {
+    public DomainClassMarshaller(boolean includeVersion, ProxyHandler proxyHandler, GrailsApplication application) {
         this.includeVersion = includeVersion;
         this.proxyHandler = proxyHandler;
+        this.application = application;
     }
 
     public boolean isIncludeVersion() {
@@ -68,7 +72,8 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
     }
 
     public boolean supports(Object object) {
-        return ConverterUtil.isDomainClass(object.getClass());
+        String name = ConverterUtil.trimProxySuffix(object.getClass().getName());
+        return application.isArtefactOfType(DomainClassArtefactHandler.TYPE, name);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -76,7 +81,9 @@ public class DomainClassMarshaller implements ObjectMarshaller<JSON> {
         JSONWriter writer = json.getWriter();
         value = proxyHandler.unwrapIfProxy(value);
         Class<?> clazz = value.getClass();
-        GrailsDomainClass domainClass = ConverterUtil.getDomainClass(clazz.getName());
+
+        GrailsDomainClass domainClass = (GrailsDomainClass)application.getArtefact(
+              DomainClassArtefactHandler.TYPE, ConverterUtil.trimProxySuffix(clazz.getName()));
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         writer.object();

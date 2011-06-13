@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
+import grails.util.PluginBuildSettings
+import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
+
 import org.apache.log4j.LogManager
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-
-import grails.util.PluginBuildSettings
-import groovyx.gpars.Asynchronizer
 
 /**
  * Gant script that packages a Grails application (note: does not create WAR)
@@ -39,6 +40,8 @@ includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
 target(createConfig: "Creates the configuration object") {
+
+
     if (configFile.exists()) {
         def configClass
         try {
@@ -80,7 +83,7 @@ target(createConfig: "Creates the configuration object") {
 target(packageApp : "Implementation of package target") {
     depends(createStructure, packagePlugins, packageTlds)
 
-	console.updateStatus "Packaging Grails application"
+    console.updateStatus "Packaging Grails application"
 
     try {
         profile("compile") {
@@ -125,8 +128,9 @@ target(packageApp : "Implementation of package target") {
                 PluginBuildSettings settings = pluginSettings
                 def i18nPluginDirs = settings.pluginI18nDirectories
                 if (i18nPluginDirs) {
-                    Asynchronizer.doParallel(5) {
-                        i18nPluginDirs.eachParallel { Resource srcDir ->
+                    ExecutorService pool = Executors.newFixedThreadPool(5)
+                    for (Resource r in i18nPluginDirs) {
+                        pool.execute({ Resource srcDir ->
                             if (srcDir.exists()) {
                                 def file = srcDir.file
                                 def pluginDir = file.parentFile.parentFile
@@ -149,7 +153,7 @@ target(packageApp : "Implementation of package target") {
                                     }
                                 }
                             }
-                        }
+                        }.curry(r))
                     }
                 }
             }

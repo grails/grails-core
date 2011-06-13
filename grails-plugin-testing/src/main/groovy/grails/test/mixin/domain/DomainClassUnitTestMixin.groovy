@@ -18,7 +18,6 @@ package grails.test.mixin.domain
 
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
-
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -40,7 +39,7 @@ import org.springframework.datastore.mapping.model.PersistentEntity
 import org.springframework.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
 
-/**
+ /**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support
  * to a users test classes. Can be used in combination with {@link grails.test.mixin.web.ControllerUnitTestMixin}
  * to fully test controller interaction with domains without needing a database</p>

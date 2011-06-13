@@ -1,11 +1,14 @@
 package org.codehaus.groovy.grails.web.converters
 
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import grails.converters.XML
 
  /**
  * Tests for the XML converter.
@@ -15,8 +18,18 @@ import org.springframework.validation.Errors
  */
 class XMLConverterTests extends AbstractGrailsControllerTests {
 
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [RestController]
+    }
+    
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [XmlConverterTestBook, XmlConverterTestPublisher]
+    }
+    
     void testXMLConverter() {
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new RestController()
         c.test()
 
         // @todo this test is fragile and depends on runtime environment because
@@ -25,7 +38,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
     }
 
     void testConvertErrors() {
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new RestController()
         c.testErrors()
 
         // @todo this test is fragile and depends on runtime environment because
@@ -36,16 +49,16 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         def xml = new XmlSlurper().parseText(response.contentAsString)
 
         def titleError = xml.error.find { it.@field == 'title' }
-        assertEquals 'Property [title] of class [class XmlConverterTestBook] cannot be null', titleError.message.text()
+        assertEquals "Property [title] of class [class ${XmlConverterTestBook.name}] cannot be null", titleError.message.text()
         def authorError = xml.error.find { it.@field == 'author' }
-        assertEquals 'Property [author] of class [class XmlConverterTestBook] cannot be null', authorError.message.text()
+        assertEquals "Property [author] of class [class ${XmlConverterTestBook.name}] cannot be null", authorError.message.text()
     }
 
     void testProxiedDomainClassWithXMLConverter() {
-        def obj = ga.getDomainClass("XmlConverterTestBook").newInstance()
+        def obj = new XmlConverterTestBook()
         obj.title = "The Stand"
         obj.author = "Stephen King"
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new RestController()
 
         def hibernateInitializer = [getImplementation:{obj}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
@@ -63,19 +76,19 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
     void testMarshalProxiedAssociations() {
 
-        def obj = ga.getDomainClass("XmlConverterTestPublisher").newInstance()
+        def obj = new XmlConverterTestPublisher()
         obj.name = "Apress"
         obj.id = 1L
 
         def hibernateInitializer = [getImplementation:{obj},getPersistentClass:{obj.getClass()}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
 
-        def book = ga.getDomainClass("XmlConverterTestBook").newInstance()
+        def book = new XmlConverterTestBook()
         book.title = "The Stand"
         book.author = "Stephen King"
         book.publisher = obj
 
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new RestController()
         c.params.b = book
         c.testProxyAssociations()
 
@@ -85,49 +98,42 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
         GroovySystem.metaClassRegistry.removeMetaClass BeanPropertyBindingResult
-
-        gcl.parseClass '''
-import grails.converters.*
+    }
+}
 
 @grails.artefact.Artefact("Controller")
 class RestController {
-  def test = {
-     def b = new XmlConverterTestBook(title:'The Stand', author:'Stephen King')
-     render b as XML
-  }
+    def test = {
+        def b = new XmlConverterTestBook(title:'The Stand', author:'Stephen King')
+        render b as XML
+    }
 
-  def testProxy = {
-     render params.b as XML
-  }
+    def testProxy = { render params.b as XML }
 
-  def testProxyAssociations = {
-        render params.b as XML
-  }
+    def testProxyAssociations = { render params.b as XML }
 
-  def testErrors = {
-     def b = new XmlConverterTestBook()
-     b.validate()
-     render b.errors as XML
-  }
+    def testErrors = {
+        def b = new XmlConverterTestBook()
+        b.validate()
+        render b.errors as XML
+    }
 
 }
 
 @grails.persistence.Entity
 class XmlConverterTestBook {
- Long id
- Long version
- String title
- String author
+    Long id
+    Long version
+    String title
+    String author
 
- XmlConverterTestPublisher publisher
+    XmlConverterTestPublisher publisher
 
 }
 @grails.persistence.Entity
 class XmlConverterTestPublisher {
- Long id
- Long version
- String name
+    Long id
+    Long version
+    String name
 }
-'''
-    }
-}
+

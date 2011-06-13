@@ -51,7 +51,7 @@ class TagLibTestController {
 
         gcl.parseClass """
 class FormTagLib {
-    def form = {  attrs, body ->
+    Closure form = {  attrs, body ->
         out << 'dummy form tag'
     }
 }

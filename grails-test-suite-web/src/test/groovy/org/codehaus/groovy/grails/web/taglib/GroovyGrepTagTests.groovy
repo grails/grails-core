@@ -20,7 +20,7 @@ class GroovyGrepTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test.grep(~/regex/).each { "+ System.getProperty("line.separator"),sw.toString())
+        assertEquals("for( "+tag.getForeachRenamedIt()+" in test.grep(~/regex/) ) {"+System.getProperty("line.separator"), sw.toString())
     }
 
     void testWithStatus() {
@@ -33,6 +33,6 @@ class GroovyGrepTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("test.grep(~/regex/).eachWithIndex { t,i ->"+System.getProperty("line.separator"), sw.toString())
+        assertEquals("loop:{\nint i = 0\nfor( t in test.grep(~/regex/) ) {"+System.getProperty("line.separator"), sw.toString())
     }
 }

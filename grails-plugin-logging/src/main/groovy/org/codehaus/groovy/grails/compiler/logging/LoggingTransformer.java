@@ -25,16 +25,15 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AllArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
 
 /**
- *
- * Adds a log method to all artifacts
+ * Adds a log method to all artifacts.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -47,7 +46,7 @@ public class LoggingTransformer implements AllArtefactClassInjector{
     public static final String FILTERS_ARTEFACT_TYPE = "filters";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        final FieldNode existingField = classNode.getField(LOG_PROPERTY);
+        final FieldNode existingField = classNode.getDeclaredField(LOG_PROPERTY);
         if (existingField == null && !classNode.isInterface()) {
             final String path = source.getName();
 

@@ -103,7 +103,7 @@ public class GroovyPageParser implements Tokens {
 
     Set<Integer> bodyVarsDefined=new HashSet<Integer>();
     Map<Integer, String> attrsVarsMapDefinition=new HashMap<Integer, String>();
-    
+
     int closureLevel=0;
 
     /*
@@ -186,6 +186,7 @@ public class GroovyPageParser implements Tokens {
         Object instance;
         boolean isDynamic;
         boolean hasAttributes;
+        String foreachRenamedIt = null;
         int lineNumber;
         boolean emptyTag;
         int tagIndex;
@@ -514,10 +515,24 @@ public class GroovyPageParser implements Tokens {
      * @return An expression text
      */
     public String getExpressionText(String text) {
+        return getExpressionText(text,true);
+    }
+
+    public String getExpressionText(String text, boolean _safeDereference) {
         boolean safeDereference = false;
         if (text.endsWith("?")) {
             text = text.substring(0, text.length() - 1);
-            safeDereference = true;
+            safeDereference = _safeDereference;
+        }
+        if(!tagMetaStack.empty()){
+            String renamedIt = tagMetaStack.peek().foreachRenamedIt;
+            if(renamedIt != null){
+               if(text.equals("it"))
+                   text = renamedIt;
+               text = text.replaceAll("([^\\w_$])(it)([^\\w_$])","$1"+renamedIt+"$3");
+               text = text.replaceAll("^(it)([^\\w_$])+",renamedIt+"$2");
+               text = text.replaceAll("([^\\w_$])+(it)$","$1"+renamedIt);
+            }
         }
         if (!precompileMode &&
                 (environment == Environment.DEVELOPMENT || environment == Environment.TEST)) {
@@ -734,8 +749,9 @@ public class GroovyPageParser implements Tokens {
             out.println("def flash = binding.flash");
             out.println("def response = binding.response");
             */
-            out.println("def out = getOut()");
-            out.println("def codecOut = getCodecOut()");
+            out.println("Writer out = getOut()");
+            out.println("Writer codecOut = getCodecOut()");
+            //out.println("JspTagLib jspTag");
             if (sitemeshPreprocessMode) {
                 out.println("registerSitemeshPreprocessMode()");
             }
@@ -965,8 +981,7 @@ public class GroovyPageParser implements Tokens {
 
             if (jspTags.containsKey(ns)) {
                 String uri = jspTags.get(ns);
-                out.println("jspTag = tagLibraryResolver?.resolveTagLibrary('" +
-                        uri + "')?.getTag('" + tagName + "')");
+                out.println("jspTag = getJspTag('" + uri + "', '" + tagName + "')");
                 out.println("if (!jspTag) throw new GrailsTagException('Unknown JSP tag " +
                         ns + ":" + tagName + "')");
                 out.print("jspTag.doTag(out," + attrsVarsMapDefinition.get(tagIndex) + ",");
@@ -991,7 +1006,7 @@ public class GroovyPageParser implements Tokens {
         }
 
         tm.bufferMode = false;
-        
+
         tagIndex--;
     }
 
@@ -1084,8 +1099,9 @@ public class GroovyPageParser implements Tokens {
             }
 
             tag.doStartTag();
-            
+
             tm.instance = tag;
+            tm.foreachRenamedIt = tag.getForeachRenamedIt();
         }
         else {
             // Custom taglibs have to always flush the whitespace, there's no

@@ -14,24 +14,21 @@
  */
 package grails.test
 
-import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
+import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.commons.DefaultArtefactInfo
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
+import grails.converters.JSON
+import grails.converters.XML
+import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
-
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
-import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
-
-import grails.converters.XML
-import grails.converters.JSON
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.*
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -42,8 +39,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
     Set loadedCodecs
     def applicationContext
-    Map savedMetaClasses
     Map errorsMap
+    private MetaClassRegistryCleaner registryCleaner = new MetaClassRegistryCleaner()
 
     /**
      * Keeps track of the domain classes mocked within a single test so
@@ -55,9 +52,10 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
+
         loadedCodecs = []
         applicationContext = new MockApplicationContext()
-        savedMetaClasses = [:]
         domainClassesInfo = new DefaultArtefactInfo()
         errorsMap = new IdentityHashMap()
 
@@ -78,17 +76,12 @@ class GrailsUnitTestCase extends GroovyTestCase {
     protected void tearDown() {
         super.tearDown()
 
-        // Restore all the saved meta classes.
-        savedMetaClasses.each { clazz, metaClass ->
-            GroovySystem.metaClassRegistry.removeMetaClass(clazz)
-            GroovySystem.metaClassRegistry.setMetaClass(clazz, metaClass)
-        }
-
+        registryCleaner.clean()
+        ShutdownOperations.runOperations()
+        MockUtils.TEST_INSTANCES.clear()
         ConfigurationHolder.config = previousConfig
-
         MockUtils.resetIds()
-
-        PluginManagerHolder.pluginManager = null
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
 
     /**
@@ -98,12 +91,6 @@ class GrailsUnitTestCase extends GroovyTestCase {
      * @param clazz The class to register.
      */
     protected void registerMetaClass(Class clazz) {
-        // If the class has already been registered, then there's nothing to do.
-        if (savedMetaClasses.containsKey(clazz)) return
-
-        // Save the class's current meta class.
-        savedMetaClasses[clazz] = clazz.metaClass
-
         // Create a new EMC for the class and attach it.
         def emc = new ExpandoMetaClass(clazz, true, true)
         emc.initialize()

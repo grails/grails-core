@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
-import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
 import org.apache.commons.logging.Log;
@@ -178,7 +177,6 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             @SuppressWarnings("unused") HttpServletRequest request,
             @SuppressWarnings("unused") HttpServletResponse response)  {
 
-        GrailsUtil.deepSanitize(exception);
         LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);
         if (exception instanceof GroovyPagesException) {
             throw (GroovyPagesException) exception;

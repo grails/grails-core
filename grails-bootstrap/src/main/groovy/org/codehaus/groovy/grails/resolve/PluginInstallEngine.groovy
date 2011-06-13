@@ -15,6 +15,7 @@
 */
 package org.codehaus.groovy.grails.resolve
 
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
@@ -25,14 +26,12 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
-import org.codehaus.groovy.grails.cli.CommandLineHelper
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 
-/**
+ /**
  * Manages the installation and uninstallation of plugins from a Grails project.
  *
  * @author Graeme Rocher
@@ -53,7 +52,6 @@ class PluginInstallEngine {
     List installedPlugins = []
     def pluginDirVariableStore = [:]
     boolean isInteractive = true
-    CommandLineHelper commandLineHelper = new CommandLineHelper(System.out)
 
     protected Metadata metadata
     protected PluginBuildSettings pluginSettings
@@ -116,8 +114,8 @@ class PluginInstallEngine {
         if (changingPlugins) {
             def noChangingPlugins = changingPlugins.size()
             eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for updates"
-            installPlugins(existingPlugins)
-            eventHandler "StatusFinal", "Changing plugin checking complete"
+            installPlugins(changingPlugins)
+            eventHandler "StatusUpdate", "Changing plugin checking complete"
         }
 
         checkPluginsToUninstall(pluginDescriptors)
@@ -562,7 +560,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
     }
 
     private boolean confirmInput(String msg) {
-        commandLineHelper.userInput(msg, ['y','n'] as String[]) == 'y'
+        GrailsConsole.getInstance().userInput(msg, ['y','n'] as String[]) == 'y'
     }
 
     protected void checkPluginsToUninstall(Collection<EnhancedDefaultDependencyDescriptor> pluginDeps) {

@@ -284,6 +284,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      *
      * @deprecated Plugins themselves no longer check for changes
      */
+    @Deprecated
     boolean checkForChanges();
 
     /**

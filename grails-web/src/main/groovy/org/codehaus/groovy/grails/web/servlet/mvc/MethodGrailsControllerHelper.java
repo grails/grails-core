@@ -37,7 +37,7 @@ public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper
     public static final Class<?>[] NOARGS = {};
 
     @Override
-    protected Method retrieveAction(GroovyObject controller, @SuppressWarnings("hiding") String actionName,
+    protected Method retrieveAction(GroovyObject controller, String actionName,
              HttpServletResponse response) {
         Method action = ReflectionUtils.findMethod(controller.getClass(), actionName, NOARGS);
         if (action != null) {

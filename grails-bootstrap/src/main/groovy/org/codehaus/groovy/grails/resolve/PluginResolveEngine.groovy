@@ -23,7 +23,7 @@ import org.apache.ivy.plugins.repository.Repository
 import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.resolver.DependencyResolver
 import org.apache.ivy.plugins.resolver.RepositoryResolver
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
+import grails.build.logging.GrailsConsole
 
 /**
  * Utility methods for resolving plugin zips and information
@@ -36,7 +36,7 @@ final class PluginResolveEngine {
 
     IvyDependencyManager dependencyManager
     BuildSettings settings
-    Closure messageReporter = { if(it) GrailsConsole.instance.updateStatus(it)  }
+    Closure messageReporter = { if (it) GrailsConsole.instance.updateStatus(it)  }
 
     PluginResolveEngine(IvyDependencyManager dependencyManager, BuildSettings settings) {
         this.dependencyManager = dependencyManager

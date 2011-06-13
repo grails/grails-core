@@ -3,7 +3,13 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.GrailsWebUtil;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import junit.framework.TestCase;
+
 import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -13,11 +19,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
 
 /**
  * Tests the GSP parser.  This can detect issues caused by improper
@@ -49,9 +50,9 @@ public class ParseTests extends TestCase {
             + "public static final String DEFAULT_CODEC = null\n" + "}\n";
 
     protected String makeImports() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for (int i = 0; i < GroovyPageParser.DEFAULT_IMPORTS.length; i++) {
-            result.append("import " + GroovyPageParser.DEFAULT_IMPORTS[i]+"\n");
+            result.append("import ").append(GroovyPageParser.DEFAULT_IMPORTS[i]).append("\n");
         }
         return result.toString();
     }
@@ -64,8 +65,8 @@ public class ParseTests extends TestCase {
             "class myTest1 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest1\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -80,8 +81,8 @@ public class ParseTests extends TestCase {
             "class myTest2 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest2\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
 
             "invokeTag('message','g',1,['code':evaluate('\"[\"', 1, it) { return \"[\" }] as GroovyPageAttributes,-1)\n" +
@@ -123,8 +124,8 @@ public class ParseTests extends TestCase {
             "class myTest4 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest4\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -147,21 +148,19 @@ public class ParseTests extends TestCase {
 
     public void testParseWithLocalEncoding() throws IOException {
         String src = "This is just plain ASCII to make sure test works on all platforms";
-        // Sanity check the string loaded OK as unicode - it won't look right if you output it, default stdout is not UTF-8
-        // on many OSes
+        // Sanity check the string loaded OK as unicode - it won't look right if you output it,
+        // default stdout is not UTF-8 on many OSes
         assertEquals(src.indexOf('?'), -1);
 
-        ConfigObject config = new ConfigSlurper().parse("grails.views.gsp.encoding = \"\"");
-
         ParsedResult output = null;
-            output = parseCode("myTest5", src);
+        output = parseCode("myTest5", src);
         String expected = makeImports() +
             "\n" +
             "class myTest5 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest5\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
@@ -177,7 +176,7 @@ public class ParseTests extends TestCase {
      */
     public String trimAndRemoveCR(String s) {
         int index;
-        StringBuffer sb = new StringBuffer(s.trim());
+        StringBuilder sb = new StringBuilder(s.trim());
         while (((index = sb.toString().indexOf('\r')) != -1) || ((index = sb.toString().indexOf('\n')) != -1)) {
             sb.deleteCharAt(index);
         }
@@ -186,8 +185,7 @@ public class ParseTests extends TestCase {
 
     public ParsedResult parseCode(String uri, String gsp) throws IOException {
         // Simulate what the parser does so we get it in the encoding expected
-        final Map config = GrailsWebUtil.currentFlatConfiguration();
-        Object enc = config.get("grails.views.gsp.encoding");
+        Object enc = GrailsWebUtil.currentFlatConfiguration().get("grails.views.gsp.encoding");
         if ((enc == null) || (enc.toString().trim().length() == 0)) {
             enc = System.getProperty("file.encoding", "us-ascii");
         }
@@ -218,8 +216,8 @@ public class ParseTests extends TestCase {
             "class myTest7 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"myTest7\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             GroovyPage.CODEC_OUT_STATEMENT + ".print(evaluate('uri', 3, it) { return uri })\n" +
@@ -246,8 +244,8 @@ public class ParseTests extends TestCase {
             "class GRAILS5598 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"GRAILS5598\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "createClosureForHtmlPart(0, 1)\n" +
             "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }] as GroovyPageAttributes,1)\n" +
@@ -263,8 +261,8 @@ public class ParseTests extends TestCase {
             "class SITEMESH_PREPROCESS_TEST extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"SITEMESH_PREPROCESS_TEST\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "printHtmlPart(0)\n" +
             "}\n" + GSP_FOOTER;
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
@@ -278,8 +276,8 @@ public class ParseTests extends TestCase {
             "class GRAILS5605 extends GroovyPage {\n" +
             "public String getGroovyPageFileName() { \"GRAILS5605\" }\n" +
             "public Object run() {\n" +
-            "def out = getOut()\n" +
-            "def codecOut = getCodecOut()\n"+
+            "Writer out = getOut()\n" +
+            "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "createTagBody(1, {\n" +

@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.cli.api;
 
+import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
@@ -166,7 +167,7 @@ public class BaseSettingsApi {
         return enableProfile;
     }
 
-    public boolean isInteractive() {
+    public boolean getIsInteractive() {
         return isInteractive;
     }
 
@@ -263,11 +264,12 @@ public class BaseSettingsApi {
     public void profile(String name, Closure<?> callable) {
         if (enableProfile) {
             long now = System.currentTimeMillis();
-            System.out.println("Profiling ["+name+"] start");
+            GrailsConsole console = GrailsConsole.getInstance();
+            console.addStatus("Profiling ["+name+"] start");
 
             callable.call();
             long then = System.currentTimeMillis() - now;
-            System.out.println("Profiling ["+name+"] finish. Took "+then+" ms");
+            console.addStatus("Profiling ["+name+"] finish. Took "+then+" ms");
         }
         else {
             callable.call();

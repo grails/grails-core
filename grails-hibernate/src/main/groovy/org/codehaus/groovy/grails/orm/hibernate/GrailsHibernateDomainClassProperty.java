@@ -226,6 +226,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public void setDerived(boolean derived) {
+        // ignored
     }
 
     public boolean isDerived() {

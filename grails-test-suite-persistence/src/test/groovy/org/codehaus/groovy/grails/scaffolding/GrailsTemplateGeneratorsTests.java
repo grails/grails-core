@@ -100,11 +100,9 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
     }
 
     public void testGenerateViews() throws Exception {
-        DefaultGrailsTemplateGenerator generator;
-
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
-        generator = new DefaultGrailsTemplateGenerator();
+        DefaultGrailsTemplateGenerator generator = new DefaultGrailsTemplateGenerator();
         generator.setBasedir("../grails-resources");
 
         Class dc = gcl.parseClass(
@@ -119,11 +117,23 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
                 "\n Date age  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
 
+        File show = new File("test/grails-app/views/test/show.gsp");
+        show.deleteOnExit();
+        File list = new File("test/grails-app/views/test/list.gsp");
+        list.deleteOnExit();
+        File edit = new File("test/grails-app/views/test/edit.gsp");
+        edit.deleteOnExit();
+        File create = new File("test/grails-app/views/test/create.gsp");
+        create.deleteOnExit();
+        File form = new File("test/grails-app/views/test/_form.gsp");
+        form.deleteOnExit();
+
         generator.generateViews(domainClass,"test");
 
-        assertTrue(new File("test/grails-app/views/test/show.gsp").exists());
-        assertTrue(new File("test/grails-app/views/test/list.gsp").exists());
-        assertTrue(new File("test/grails-app/views/test/edit.gsp").exists());
-        assertTrue(new File("test/grails-app/views/test/create.gsp").exists());
+        assertTrue(show.exists());
+        assertTrue(list.exists());
+        assertTrue(edit.exists());
+        assertTrue(create.exists());
+        assertTrue(form.exists());
     }
 }

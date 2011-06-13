@@ -15,19 +15,20 @@
  */
 package org.codehaus.groovy.grails.cli.logging;
 
+import grails.build.logging.GrailsConsole;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
- * Used to replace default System.out with one that routes calls through GrailsConsole
+ * Used to replace default System.out with one that routes calls through GrailsConsole.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-class GrailsJConsolePrintStream extends PrintStream {
+public class GrailsConsolePrintStream extends PrintStream {
 
-
-    GrailsJConsolePrintStream(OutputStream out) {
+    public GrailsConsolePrintStream(OutputStream out) {
         super(out);
     }
 
@@ -37,8 +38,9 @@ class GrailsJConsolePrintStream extends PrintStream {
 
     @Override
     public void print(Object o) {
-        if(o != null)
+        if (o != null) {
             GrailsConsole.getInstance().log(o.toString());
+        }
     }
 
     @Override
@@ -53,9 +55,8 @@ class GrailsJConsolePrintStream extends PrintStream {
 
     @Override
     public void println(Object o) {
-        if(o != null)
+        if (o != null) {
             GrailsConsole.getInstance().log(o.toString());
+        }
     }
-
-
 }

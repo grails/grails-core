@@ -16,11 +16,12 @@
 
 import grails.util.GrailsUtil
 
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-
+import org.codehaus.groovy.grails.compiler.*
 import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
@@ -195,12 +196,12 @@ target(allTests: "Runs the project's tests.") {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}"
         }
-		if(testsFailed) {
-			console.error(msg)
-		}
-		else {
-			console.addStatus(msg)
-		}
+        if (testsFailed) {
+            console.error(msg)
+        }
+        else {
+            console.addStatus(msg)
+        }
         event("TestPhasesEnd", [])
     }
 
@@ -271,14 +272,14 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def end = new Date()
 
             console.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
-			console.lastMessage = ""
+            console.lastMessage = ""
 
             if (result.failCount > 0) testsFailed = true
             event("TestSuiteEnd", [type.name])
 
         }
         catch (Exception e) {
-			console.error "Error running $type.name tests: ${e.toString()}", e
+            console.error "Error running $type.name tests: ${e.toString()}", e
             testsFailed = true
         }
         finally {
@@ -307,7 +308,7 @@ unitTestPhaseCleanUp = {}
  */
 integrationTestPhasePreparation = {
     packageTests()
-    bootstrap()
+    bootstrapOnce()
 
     // Get the Grails application instance created by the bootstrap process.
     def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
@@ -317,6 +318,13 @@ integrationTestPhasePreparation = {
 
     initPersistenceContext()
 
+    if (InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent()) {
+        // if interactive mode is running start the project change watcher
+        if (!GrailsProjectWatcher.isActive()) {
+            def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
+            watcher.start()
+        }
+    }
     GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
 }
@@ -325,8 +333,10 @@ integrationTestPhasePreparation = {
  * Shuts down the bootstrapped Grails application.
  */
 integrationTestPhaseCleanUp = {
-    destroyPersistenceContext()
-    appCtx?.close()
+    if (!(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
+        destroyPersistenceContext()
+        appCtx?.close()
+    }
 }
 
 /**

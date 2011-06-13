@@ -207,8 +207,8 @@ public abstract class AbstractIvyDependencyManager {
         Set<DependencyDescriptor> descriptors = getPluginDependencyDescriptors();
         Set<DependencyDescriptor> declaredDescriptors = new HashSet<DependencyDescriptor>();
         for (DependencyDescriptor descriptor : descriptors) {
-            if(descriptor instanceof EnhancedDefaultDependencyDescriptor) {
-                if(!((EnhancedDefaultDependencyDescriptor)descriptor).isTransitivelyIncluded()) {
+            if (descriptor instanceof EnhancedDefaultDependencyDescriptor) {
+                if (!((EnhancedDefaultDependencyDescriptor)descriptor).isTransitivelyIncluded()) {
                     declaredDescriptors.add(descriptor);
                 }
             }

@@ -14,20 +14,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.Script;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-
-import javax.persistence.Entity;
-
+import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -36,6 +23,13 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+
+import javax.persistence.Entity;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Default implementation of the {@link ConstraintsEvaluator} interface.
@@ -97,8 +91,9 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             }
 
             if (c != null) {
-                c.setDelegate(delegate);
-                c.call();
+                    c = (Closure<?>) c.clone();
+                    c.setDelegate(delegate);
+                    c.call();
             }
             else {
                 LOG.debug("User-defined constraints not found on class [" + clazz + "], applying default constraints");

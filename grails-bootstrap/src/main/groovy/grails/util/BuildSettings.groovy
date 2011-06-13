@@ -15,6 +15,7 @@
  */
 package grails.util
 
+import grails.build.logging.GrailsConsole
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import org.apache.ivy.plugins.repository.TransferEvent
@@ -22,12 +23,12 @@ import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.util.ChecksumHelper
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
-import org.codehaus.groovy.grails.cli.logging.GrailsConsole
 
-/**
+ /**
  * <p>Represents the project paths and other build settings
  * that the user can change when running the Grails commands. Defaults
  * are provided for all settings, but the user can override those by
@@ -249,7 +250,26 @@ class BuildSettings extends AbstractBuildSettings {
     File proxySettingsFile;
 
     /** Implementation of the "grailsScript()" method used in Grails scripts. */
-    Closure grailsScriptClosure
+    Closure getGrailsScriptClosure() {
+        return new OwnerlessClosure() {
+            Object doCall(String name) {
+                def potentialScript = new File("${grailsHome}/scripts/${name}.groovy")
+                potentialScript = potentialScript.exists() ? potentialScript : new File("${grailsHome}/scripts/${name}_.groovy")
+                if (potentialScript.exists()) {
+                    return potentialScript
+                }
+                else {
+                    try {
+                        return classLoader.loadClass("${name}_")
+                    }
+                    catch (e) {
+                        return classLoader.loadClass(name)
+                    }
+                }
+            }
+
+        }
+    }
 
     /**
      * A Set of plugin names that represent the default set of plugins installed when creating Grails applications
@@ -426,7 +446,7 @@ class BuildSettings extends AbstractBuildSettings {
     /** List containing the runtime dependencies of the app as File instances. */
     List<File> getBuildDependencies() {
         if (!defaultBuildDepsAdded) {
-            buildDependencies += defaultDuildDependencies
+            buildDependencies += defaultBuildDependencies
             defaultBuildDepsAdded = true
         }
         return buildDependencies
@@ -441,7 +461,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * List containing the dependencies required for the build system only
      */
-    @Lazy List<File> defaultDuildDependencies = {
+    @Lazy List<File> defaultBuildDependencies = {
         if (dependenciesExternallyConfigured) {
             return []
         }
@@ -533,21 +553,6 @@ class BuildSettings extends AbstractBuildSettings {
         // The "grailsScript" closure definition. Returns the location
         // of the corresponding script file if GRAILS_HOME is set,
         // otherwise it loads the script class using the Gant classloader.
-        grailsScriptClosure = {String name ->
-            def potentialScript = new File("${grailsHome}/scripts/${name}.groovy")
-            potentialScript = potentialScript.exists() ? potentialScript : new File("${grailsHome}/scripts/${name}_.groovy")
-            if (potentialScript.exists()) {
-                return potentialScript
-            }
-            else {
-                try {
-                    return classLoader.loadClass("${name}_")
-                }
-                catch (e) {
-                    return classLoader.loadClass(name)
-                }
-            }
-        }
     }
 
     private storeCache() {
@@ -1051,7 +1056,8 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!convertClosuresArtefactsSet) {
-            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  '').toBoolean()
+            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  'false').toBoolean()
+            System.setProperty(CONVERT_CLOSURES_KEY, "$convertClosuresArtefacts")
         }
 
         if (!projectWarOsgiHeadersSet) {

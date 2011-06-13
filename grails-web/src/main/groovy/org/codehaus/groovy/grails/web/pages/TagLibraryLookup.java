@@ -41,7 +41,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
 
     protected ApplicationContext applicationContext;
     protected GrailsApplication grailsApplication;
-    protected Map<String, String> tagLibraries = new HashMap<String, String>();
+    protected Map<String, Object> tagLibraries = new HashMap<String, Object>();
     protected Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
     protected Set<String> tagsThatReturnObject = new HashSet<String>();
 
@@ -103,13 +103,17 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
         for (String tagName : taglib.getTagNames()) {
             String nameKey=tagNameKey(namespace, tagName);
-            tagLibraries.put(nameKey, taglib.getFullName());
+            putTagLib(nameKey, taglib);
             tagsThatReturnObject.remove(nameKey);
         }
         for (String tagName : taglib.getTagNamesThatReturnObject()) {
             String nameKey = tagNameKey(namespace, tagName);
             tagsThatReturnObject.add(nameKey);
         }
+    }
+
+    protected void putTagLib(String nameKey, GrailsTagLibClass taglib){
+        tagLibraries.put(nameKey, applicationContext.getBean(taglib.getFullName()));
     }
 
     /**
@@ -120,12 +124,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      * @return The tag library or null if it wasn't found
      */
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
-        String fullName = tagLibraries.get(tagNameKey(namespace, tagName));
-        if (fullName != null) {
-            return (GroovyObject) applicationContext.getBean(fullName);
-        }
-
-        return null;
+        return (GroovyObject)tagLibraries.get(tagNameKey(namespace, tagName));
     }
 
     protected String tagNameKey(String namespace, String tagName) {

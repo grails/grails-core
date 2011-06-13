@@ -50,9 +50,4 @@ target(parseArguments: "Parse the arguments passed on the command line") {
             }
         }
     }
-
-    if (argsMap.containsKey('non-interactive')) {
-        println "Setting non-interactive mode"
-        isInteractive = !(argsMap.'non-interactive')
-    }
 }

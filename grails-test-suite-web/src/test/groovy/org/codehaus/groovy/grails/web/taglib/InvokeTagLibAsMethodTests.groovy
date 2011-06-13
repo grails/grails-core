@@ -5,7 +5,7 @@ class InvokeTagLibAsMethodTests extends AbstractGrailsTagTests {
     void onSetUp() {
         gcl.parseClass('''
 class TestTagLib {
-    def testTypeConversion = { attrs ->
+    Closure testTypeConversion = { attrs ->
         out << "Number Is: ${attrs.int('number')}"
     }
 }

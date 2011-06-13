@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
 import grails.test.mixin.web.GroovyPageUnitTestMixin
 
 /**
@@ -18,7 +19,7 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testRenderView() {
-       views['/foo/bar.gsp'] = 'Hello <g:createLink controller="bar" />'
+        views['/foo/bar.gsp'] = 'Hello <g:createLink controller="bar" />'
 
         def result = render(view:"/foo/bar")
 
@@ -35,10 +36,11 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
     }
 }
 
+@Artefact("TagLibrary")
 class FooTagLib {
     static namespace = "foo"
 
-    def bar = {attrs ->
+    def bar = { attrs ->
         out << "tag contents ${attrs.one}"
     }
 }

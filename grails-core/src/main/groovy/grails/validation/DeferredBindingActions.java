@@ -16,9 +16,9 @@
 
 package grails.validation;
 
-import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,14 @@ public class DeferredBindingActions {
 
     private static ThreadLocal<List<Runnable>> deferredBindingActions = new ThreadLocal<List<Runnable>>();
     private static Log LOG = LogFactory.getLog(DeferredBindingActions.class);
+
+    static {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                deferredBindingActions.remove();
+            }
+        });
+    }
 
     public static void addBindingAction(Runnable runnable) {
         List<Runnable> bindingActions = getDeferredBindingActions();
@@ -57,7 +65,6 @@ public class DeferredBindingActions {
                         try {
                             runnable.run();
                         } catch (Exception e) {
-                            GrailsUtil.deepSanitize(e);
                             LOG.error("Error running deferred data binding: " + e.getMessage(), e);
                         }
                     }

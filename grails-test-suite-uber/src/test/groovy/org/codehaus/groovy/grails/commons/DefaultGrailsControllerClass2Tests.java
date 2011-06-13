@@ -81,7 +81,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue(grailsClass.isInterceptedBefore(controller,"list"));
         assertFalse(grailsClass.isInterceptedAfter(controller,"list"));
 
-        Closure bi = grailsClass.getBeforeInterceptor(controller);
+        Closure<?> bi = grailsClass.getBeforeInterceptor(controller);
         assertNotNull(bi);
         assertEquals("success", bi.call());
         assertNull(grailsClass.getAfterInterceptor(controller));

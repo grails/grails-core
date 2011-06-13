@@ -3,8 +3,8 @@
          xmlns="http://java.sun.com/xml/ns/j2ee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
-    <display-name>/@grails.project.key@</display-name>
 
+    <display-name>/@grails.project.key@</display-name>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
@@ -19,8 +19,6 @@
     <filter>
         <filter-name>sitemesh</filter-name>
         <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>ERROR</dispatcher>
     </filter>
 
     <filter>
@@ -44,11 +42,9 @@
     <filter-mapping>
         <filter-name>sitemesh</filter-name>
         <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ERROR</dispatcher>
     </filter-mapping>
-
-    <listener>
-        <listener-class>org.codehaus.groovy.grails.web.util.Log4jConfigListener</listener-class>
-    </listener>
 
     <listener>
         <listener-class>org.codehaus.groovy.grails.web.context.GrailsContextLoaderListener</listener-class>

@@ -1,17 +1,18 @@
 package org.codehaus.groovy.grails.cli.logging;
 
+import grails.build.logging.GrailsConsole;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 
 /**
- * Mainly silences a lot of redundant Ant outpu
- *
+ * Mainly silences a lot of redundant Ant output.
  */
 public class GrailsConsoleBuildListener implements BuildListener {
+
     private GrailsConsole ui;
 
     public GrailsConsoleBuildListener() {
-        ui = GrailsConsole.getInstance();
+        this(GrailsConsole.getInstance());
     }
 
     public GrailsConsoleBuildListener(GrailsConsole ui) {
@@ -26,6 +27,7 @@ public class GrailsConsoleBuildListener implements BuildListener {
      *              Must not be <code>null</code>.
      */
     public final void buildStarted(final BuildEvent start) {
+        // ignore
     }
 
     /**
@@ -38,6 +40,7 @@ public class GrailsConsoleBuildListener implements BuildListener {
      * @see BuildEvent#getException()
      */
     public final void buildFinished(final BuildEvent finish) {
+        // ignore
     }
 
     /**
@@ -49,6 +52,7 @@ public class GrailsConsoleBuildListener implements BuildListener {
      * @see BuildEvent#getTarget()
      */
     public final void targetStarted(final BuildEvent start) {
+        // ignore
     }
 
     /**
@@ -61,6 +65,7 @@ public class GrailsConsoleBuildListener implements BuildListener {
      * @see BuildEvent#getException()
      */
     public final void targetFinished(final BuildEvent finish) {
+        // ignore
     }
 
     /**
@@ -72,9 +77,8 @@ public class GrailsConsoleBuildListener implements BuildListener {
      * @see BuildEvent#getTask()
      */
     public final void taskStarted(final BuildEvent start) {
-
+        // ignore
     }
-
 
     /**
      * <p>Signals that a task has finished. This event will still

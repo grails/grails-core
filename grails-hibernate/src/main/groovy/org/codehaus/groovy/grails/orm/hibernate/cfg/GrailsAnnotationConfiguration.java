@@ -156,9 +156,6 @@ public class GrailsAnnotationConfiguration extends Configuration implements Grai
             DefaultGrailsDomainConfiguration.configureDomainBinder(grailsApplication, domainClasses);
 
             for (GrailsDomainClass domainClass : domainClasses) {
-                if (!domainClass.usesDataSource(dataSourceName)) {
-                    continue;
-                }
 
                 final String fullClassName = domainClass.getFullName();
 
@@ -167,10 +164,15 @@ public class GrailsAnnotationConfiguration extends Configuration implements Grai
                 // don't configure Hibernate mapped classes
                 if (loader.getResource(hibernateConfig) != null) continue;
 
+                final Mappings mappings = super.createMappings();
+                if (!GrailsHibernateUtil.usesDatasource(domainClass, dataSourceName)) {
+                    continue;
+                }
+
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[GrailsAnnotationConfiguration] Binding persistent class [" + fullClassName + "]");
                 }
-                final Mappings mappings = super.createMappings();
+
                 Mapping m = GrailsDomainBinder.getMapping(domainClass);
                 mappings.setAutoImport(m == null || m.getAutoImport());
                 GrailsDomainBinder.bindClass(domainClass, mappings, sessionFactoryBeanName);

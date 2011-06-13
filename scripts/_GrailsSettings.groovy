@@ -80,7 +80,7 @@ if (!System.getProperty("grails.env.set")) {
         System.setProperty(Environment.KEY, grailsEnv)
         System.setProperty(Environment.DEFAULT, "")
     }
-	org.codehaus.groovy.grails.cli.logging.GrailsConsole.instance.category << grailsEnv
+    console.category << grailsEnv
     System.setProperty("grails.env.set", "true")
 }
 
@@ -153,15 +153,13 @@ confirmInput = {String message, code="confirm.message" ->
         console.error("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }
-	else {
-		return console.userInput(message, ["y","n"] as String[])
-	}
+    return console.userInput(message, ["y","n"] as String[])
 }
 
 // Note: the following only work if you also include _GrailsEvents.
 logError = { String message, Throwable t ->
     GrailsUtil.deepSanitize(t)
-	console.error(message, t)
+    console.error(message, t)
 }
 
 logErrorAndExit = { String message, Throwable t ->

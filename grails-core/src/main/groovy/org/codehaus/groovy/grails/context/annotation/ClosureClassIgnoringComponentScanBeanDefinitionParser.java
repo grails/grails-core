@@ -35,8 +35,7 @@ import java.util.regex.Pattern;
  * @author Lari Hotari
  * @since 1.2
  */
-public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends ComponentScanBeanDefinitionParser{
-
+public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends ComponentScanBeanDefinitionParser {
 
     private static final String DOLLAR_CONTAINING_PATTERN = ".+\\\\$.+";
 
@@ -47,7 +46,6 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
         if (pluginManager != null) {
             List<TypeFilter> typeFilters = pluginManager.getTypeFilters();
             spec.includeFilters(typeFilters.toArray(new TypeFilter[typeFilters.size()]));
-
         }
 
         spec.excludeFilters(new RegexPatternTypeFilter(Pattern.compile(DOLLAR_CONTAINING_PATTERN)));

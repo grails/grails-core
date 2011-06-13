@@ -16,12 +16,17 @@
 package org.codehaus.groovy.grails.web.mime
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 
- /**
+/**
  * @author Graeme Rocher
  * @since 1.0
  */
 class MimeType {
+
+    static {
+        ShutdownOperations.addOperation( { reset() } as Runnable )
+    }
 
     /**
      * The bean name used to store the mime type definitions

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 
 /**
@@ -25,16 +26,16 @@ import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
  */
 public class DeepDomainClassMarshaller extends DomainClassMarshaller {
 
-    public DeepDomainClassMarshaller(boolean includeVersion) {
-        super(includeVersion);
+    public DeepDomainClassMarshaller(boolean includeVersion, GrailsApplication application) {
+        super(includeVersion, application);
     }
 
-    public DeepDomainClassMarshaller() {
-        super();
+    public DeepDomainClassMarshaller(GrailsApplication application) {
+        super(application);
     }
 
-    public DeepDomainClassMarshaller(boolean includeDomainVersion, ProxyHandler proxyHandler) {
-        super(includeDomainVersion,proxyHandler);
+    public DeepDomainClassMarshaller(boolean includeDomainVersion, ProxyHandler proxyHandler, GrailsApplication application) {
+        super(includeDomainVersion, proxyHandler, application);
     }
 
     @Override

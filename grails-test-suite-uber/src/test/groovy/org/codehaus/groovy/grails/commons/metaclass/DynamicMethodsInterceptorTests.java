@@ -146,7 +146,7 @@ public class DynamicMethodsInterceptorTests extends TestCase {
             }
 
             public void beforeSet(Object object, String property, Object newValue, InvocationCallback callback) {
-                // TODO Auto-generated method stub
+                // ignored
             }
 
             public Object beforeInvoke(Object object, String methodName, Object[] arguments, InvocationCallback callback) {

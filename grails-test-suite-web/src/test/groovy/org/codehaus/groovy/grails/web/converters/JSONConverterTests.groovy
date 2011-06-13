@@ -1,13 +1,16 @@
 package org.codehaus.groovy.grails.web.converters
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import java.util.Collection;
 
-import org.springframework.core.JdkVersion
-import org.springframework.validation.Errors
-import org.springframework.validation.BeanPropertyBindingResult
-import org.hibernate.proxy.LazyInitializer
-import org.hibernate.proxy.HibernateProxy
+import grails.artefact.Artefact
 import grails.converters.JSON
+
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.hibernate.proxy.HibernateProxy
+import org.hibernate.proxy.LazyInitializer
+import org.springframework.core.JdkVersion
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 
 /**
  * Tests for the JSON converter.
@@ -17,24 +20,34 @@ import grails.converters.JSON
  */
 class JSONConverterTests extends AbstractGrailsControllerTests {
 
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [Book]
+    }
+    
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [JSONConverterController]
+    }
+    
     void testNullJSONValues() {
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new JSONConverterController()
         c.testNullValues()
 
         assertEquals('{}', response.contentAsString)
     }
 
     void testJSONConverter() {
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new JSONConverterController()
         c.test()
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals('''{"class":"Book","id":null,"author":"Stephen King","title":"The Stand"}''', response.contentAsString)
+        assertEquals("""{"class":"${Book.name}","id":null,"author":"Stephen King","title":"The Stand"}""", response.contentAsString)
     }
 
     void testConvertErrors() {
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new JSONConverterController()
         c.testErrors()
 
         // @todo this test is fragile and depends on runtime environment because
@@ -42,17 +55,17 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         def json = JSON.parse(response.contentAsString)
         def titleError = json.errors.find { it.field == 'title' }
 
-        assertEquals "Property [title] of class [class Book] cannot be null", titleError.message
+        assertEquals "Property [title] of class [class ${Book.name}] cannot be null", titleError.message
         def authorError = json.errors.find { it.field == 'author' }
-        assertEquals "Property [author] of class [class Book] cannot be null", authorError.message
+        assertEquals "Property [author] of class [class ${Book.name}] cannot be null", authorError.message
     }
 
     void testProxiedDomainClassWithJSONConverter() {
 
-        def obj = ga.getDomainClass("Book").newInstance()
+        def obj = new Book()
         obj.title = "The Stand"
         obj.author = "Stephen King"
-        def c = ga.getControllerClass("RestController").newInstance()
+        def c = new JSONConverterController()
 
         def hibernateInitializer = [getImplementation:{obj}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
@@ -62,7 +75,7 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
-        assertEquals('''{"class":"Book","id":null,"author":"Stephen King","title":"The Stand"}''', response.contentAsString)
+        assertEquals("""{"class":"${Book.name}","id":null,"author":"Stephen King","title":"The Stand"}""", response.contentAsString)
     }
 
     void testJSONEnumConverting() {
@@ -76,7 +89,7 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
             }
 
             def enumInstance = enumClass.HEAD
-            def c = ga.getControllerClass("RestController").newInstance()
+            def c = new JSONConverterController()
             c.params.e = enumInstance
             c.testEnum()
 
@@ -90,12 +103,16 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
         GroovySystem.metaClassRegistry.removeMetaClass BeanPropertyBindingResult
 
-        gcl.parseClass '''
-import grails.converters.*
-import grails.artefact.*
+        if (JdkVersion.isAtLeastJava15()) {
+            gcl.parseClass '''
+enum Role { HEAD, DISPATCHER, ADMIN }
+'''
+        }
+    }
+}
 
 @Artefact("Controller")
-class RestController {
+class JSONConverterController {
     def test = {
        def b = new Book(title:'The Stand', author:'Stephen King')
        render b as JSON
@@ -129,13 +146,4 @@ class Book {
    String title
    String author
 
-}
-'''
-
-        if (JdkVersion.isAtLeastJava15()) {
-            gcl.parseClass '''
-enum Role { HEAD, DISPATCHER, ADMIN }
-'''
-        }
-    }
 }

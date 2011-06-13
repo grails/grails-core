@@ -926,8 +926,13 @@ class MockUtils {
             def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
 
             if (c) {
+                c = c.clone()
                 c.delegate = constraintsBuilder
-                c.call()
+                try {
+                    c.call()
+                } finally {
+                    c.delegate = null
+                }
             }
         }
 

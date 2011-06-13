@@ -52,13 +52,15 @@ jar.dependsOn resourceJarFiles
 
 for (jarTask in allJarFileTasks) {
     jar.from(jarTask.archivePath)
-    jar.from("src/war") {
-        into "web-app"
-        include "WEB-INF/**"
-    }
-    jar.from("src/grails/templates") {
-        into "src/grails/templates"
-    }
+}
+
+jar.from("src/war") {
+    into "src/war"
+    include "WEB-INF/**"
+    exclude 'WEB-INF/tld/grails.tld', 'WEB-INF/tld/spring.tld'
+}
+jar.from("src/grails/templates") {
+    into "src/grails/templates"
 }
 
 jar.appendix = 'resources'

@@ -15,6 +15,8 @@
 
 package org.codehaus.groovy.grails.web.servlet
 
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.mock.web.MockHttpServletRequest
 import grails.util.GrailsWebUtil
@@ -24,22 +26,13 @@ import grails.util.GrailsWebUtil
 */
 class FlashScopeWithErrorsTests extends AbstractGrailsControllerTests {
 
-    void onSetUp() {
-        gcl.parseClass('''
-class TestController {
-    def index = {}
-}
-class Book {
-    Long id
-    Long version
-    String title
-    URL site
-}
-        ''')
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [Book]
     }
 
     void testFlashScopeWithErrors() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = new Book()
 
 
         b.validate()
@@ -56,4 +49,11 @@ class Book {
         assert flash.book.hasErrors()
 
     }
+}
+
+class Book {
+    Long id
+    Long version
+    String title
+    URL site
 }

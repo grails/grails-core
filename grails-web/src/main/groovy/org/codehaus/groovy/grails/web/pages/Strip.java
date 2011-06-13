@@ -30,10 +30,11 @@ class Strip {
     private static Pattern stripTag = Pattern.compile("\\^([a-zA-Z]+)%\\{([^}]|\\}[^%])*\\}%");
     private static Pattern anyTag = Pattern.compile("((\\^[a-zA-Z])?%\\{([^}]|\\}[^%])*\\}%|[$@]\\{[^}]*\\})");
 
-    private StringBuffer text;
+    // not thread-safe but only used in the GroovyPageScanner constructor
+    private StringBuilder text;
 
     Strip(CharSequence text) {
-        this.text = new StringBuffer(text.toString());
+        this.text = new StringBuilder(text.toString());
     }
 
     void strip(int index) {

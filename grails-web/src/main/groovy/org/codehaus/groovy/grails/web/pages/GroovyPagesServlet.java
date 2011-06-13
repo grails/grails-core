@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.GrailsUtil;
 import groovy.lang.Writable;
 import groovy.text.Template;
 import org.apache.commons.lang.StringUtils;
@@ -225,7 +224,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     }
 
     private void defaultExceptionHandling(Exception exception, Writer out, GroovyPagesTemplateEngine engine) {
-        GrailsUtil.deepSanitize(exception);
         if (LOG.isErrorEnabled()) {
             LOG.error("Error processing GSP: " + exception.getMessage(), exception);
         }

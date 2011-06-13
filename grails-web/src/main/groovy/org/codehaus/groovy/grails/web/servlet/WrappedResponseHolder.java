@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -24,6 +26,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class WrappedResponseHolder {
 
+    static {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                wrappedResponseHolder.remove();
+            }
+        });
+    }
     private static final ThreadLocal<HttpServletResponse> wrappedResponseHolder =
         new ThreadLocal<HttpServletResponse>();
 

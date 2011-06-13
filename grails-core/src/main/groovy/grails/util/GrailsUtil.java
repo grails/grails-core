@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.support.MockResourceLoader;
 import org.springframework.context.ApplicationContext;
@@ -39,8 +40,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
@@ -53,29 +52,9 @@ import java.util.jar.Manifest;
 public class GrailsUtil {
 
     private static final Log LOG = LogFactory.getLog(GrailsUtil.class);
-    private static final Log STACK_LOG = LogFactory.getLog("StackTrace");
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
-    private static final String[] GRAILS_PACKAGES = new String[] {
-        "org.codehaus.groovy.grails.",
-        "gant.",
-        "org.codehaus.groovy.runtime.",
-        "org.codehaus.groovy.reflection.",
-        "org.codehaus.groovy.ast.",
-        "org.codehaus.gant.",
-        "groovy.",
-        "org.mortbay.",
-        "org.apache.catalina.",
-        "org.apache.coyote.",
-        "org.apache.tomcat.",
-        "sun.",
-        "java.lang.reflect.",
-        "org.springframework.",
-        "com.springsource.loaded.",
-        "com.opensymphony.",
-        "org.hibernate.",
-        "javax.servlet."
-    };
+    private static final StackTraceFilterer stackFilterer = new StackTraceFilterer();
 
     static {
         Package p = GrailsUtil.class.getPackage();
@@ -239,40 +218,20 @@ public class GrailsUtil {
     /**
      * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
      * <p>This modifies the original instance and returns it, it does not clone</p>
-     * @param t
+     * @param t The exception
      * @return The exception passed in, after cleaning the stack trace
+     *
+     * @deprecated Use {@link StackTraceFilterer} instead
      */
     public static Throwable sanitize(Throwable t) {
-        // Note that this getProperty access may well be synced...
-        if (!Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue()) {
-            StackTraceElement[] trace = t.getStackTrace();
-            List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
-            for (int i = 0; i < trace.length; i++) {
-                StackTraceElement stackTraceElement = trace[i];
-                if (isApplicationClass(stackTraceElement.getClassName())) {
-                    newTrace.add(stackTraceElement);
-                }
-            }
-
-            // Only trim the trace if there was some application trace on the stack
-            // if not we will just skip sanitizing and leave it as is
-            if (newTrace.size() > 0) {
-                // We don't want to lose anything, so log it
-                STACK_LOG.error("Sanitizing stacktrace:", t);
-                StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
-                newTrace.toArray(clean);
-                t.setStackTrace(clean);
-            }
-        }
-        return t;
+        return stackFilterer.filter(t);
     }
 
     public static void printSanitizedStackTrace(Throwable t, PrintWriter p) {
-        t = sanitize(t);
+        t = stackFilterer.filter(t);
 
         StackTraceElement[] trace = t.getStackTrace();
-        for (int i = 0; i < trace.length; i++) {
-            StackTraceElement stackTraceElement = trace[i];
+        for (StackTraceElement stackTraceElement : trace) {
             p.println("at " + stackTraceElement.getClassName() +
                     "(" + stackTraceElement.getMethodName() +
                     ":" + stackTraceElement.getLineNumber() + ")");
@@ -281,16 +240,6 @@ public class GrailsUtil {
 
     public static void printSanitizedStackTrace(Throwable t) {
         printSanitizedStackTrace(t, new PrintWriter(System.err));
-    }
-
-    public static boolean isApplicationClass(String className) {
-        for (int i = 0; i < GRAILS_PACKAGES.length; i++) {
-            String grailsPackage = GRAILS_PACKAGES[i];
-            if (className.startsWith(grailsPackage)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -313,7 +262,7 @@ public class GrailsUtil {
      * @return The root cause exception instance, with its stace trace modified to filter out grails runtime classes
      */
     public static Throwable sanitizeRootCause(Throwable t) {
-        return sanitize(extractRootCause(t));
+        return stackFilterer.filter(extractRootCause(t));
     }
 
     /**
@@ -323,11 +272,7 @@ public class GrailsUtil {
      * @return The root cause exception instances, with stack trace modified to filter out grails runtime classes
      */
     public static Throwable deepSanitize(Throwable t) {
-        Throwable current = t;
-        while (current.getCause() != null) {
-            current = sanitize(current.getCause());
-        }
-        return sanitize(t);
+        return stackFilterer.filter(t, true);
     }
 
     /**

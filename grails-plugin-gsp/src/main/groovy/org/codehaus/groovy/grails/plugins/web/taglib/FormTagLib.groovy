@@ -48,11 +48,11 @@ class FormTagLib {
      * Creates a new text field.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the field name
      * @attr value the field value
      */
-    def textField = { attrs ->
+    Closure textField = { attrs ->
         attrs.type = "text"
         attrs.tagName = "textField"
         fieldImpl(out, attrs)
@@ -62,11 +62,11 @@ class FormTagLib {
      * Creates a new password field.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the field name
      * @attr value the field value
      */
-    def passwordField = { attrs ->
+    Closure passwordField = { attrs ->
         attrs.type = "password"
         attrs.tagName = "passwordField"
         fieldImpl(out, attrs)
@@ -78,7 +78,7 @@ class FormTagLib {
      * @attr name REQUIRED the field name
      * @attr value the field value
      */
-    def hiddenField = { attrs ->
+    Closure hiddenField = { attrs ->
         hiddenFieldImpl(out, attrs)
     }
 
@@ -92,13 +92,13 @@ class FormTagLib {
      * Creates a submit button.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the field name
      * @attr value the button text
      * @attr type input type; defaults to 'submit'
      * @attr event the webflow event id
      */
-    def submitButton = { attrs ->
+    Closure submitButton = { attrs ->
         attrs.type = attrs.type ?: "submit"
         attrs.tagName = "submitButton"
         if (request.flowExecutionKey) {
@@ -115,7 +115,7 @@ class FormTagLib {
      *
      * @attr type REQUIRED the input type
      */
-    def field = { attrs ->
+    Closure field = { attrs ->
         fieldImpl(out, attrs)
     }
 
@@ -131,14 +131,14 @@ class FormTagLib {
      * A helper tag for creating checkboxes.
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the name of the checkbox
      * @attr value  the value of the checkbox
      * @attr checked if evaluates to true sets to checkbox to checked
      * @attr disabled if evaluates to true sets to checkbox to disabled
      * @attr id DOM element id; defaults to name
      */
-    def checkBox = { attrs ->
+    Closure checkBox = { attrs ->
         attrs.id = attrs.id ?: attrs.name
         def value = attrs.remove('value')
         def name = attrs.remove('name')
@@ -191,7 +191,7 @@ class FormTagLib {
      * @attr escapeHtml if true escapes the text as HTML
      * @attr id DOM element id; defaults to name
      */
-    def textArea = { attrs, body ->
+    Closure textArea = { attrs, body ->
         resolveAttributes(attrs)
         attrs.id = attrs.id ?: attrs.name
         // Pull out the value to use as content not attrib
@@ -254,7 +254,7 @@ class FormTagLib {
      * @attr useToken Set whether to send a token in the request to handle duplicate form submissions. See Handling Duplicate Form Submissions
      * @attr method the form method to use, either 'POST' or 'GET'; defaults to 'POST'
      */
-    def uploadForm = { attrs, body ->
+    Closure uploadForm = { attrs, body ->
         attrs.enctype = "multipart/form-data"
         out << form(attrs, body)
     }
@@ -273,7 +273,7 @@ class FormTagLib {
      * @attr useToken Set whether to send a token in the request to handle duplicate form submissions. See Handling Duplicate Form Submissions
      * @attr method the form method to use, either 'POST' or 'GET'; defaults to 'POST'
      */
-    def form = { attrs, body ->
+    Closure form = { attrs, body ->
 
         def useToken = attrs.remove('useToken')
         def writer = getOut()
@@ -343,11 +343,11 @@ class FormTagLib {
      * &lt;g:actionSubmit action="Edit" value="Some label for editing" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
      */
-    def actionSubmit = { attrs ->
+    Closure actionSubmit = { attrs ->
         if (!attrs.value) {
             throwTagError("Tag [actionSubmit] is missing required attribute [value]")
         }
@@ -382,12 +382,12 @@ class FormTagLib {
      * &lt;g:actionSubmitImage src="/images/submitButton.gif" action="Edit" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
      * @attr src The source of the image to use
      */
-    def actionSubmitImage = { attrs ->
+    Closure actionSubmitImage = { attrs ->
         attrs.tagName = "actionSubmitImage"
 
         if (!attrs.value) {
@@ -418,7 +418,7 @@ class FormTagLib {
      * e.g. &lt;g:datePicker name="myDate" value="${new Date()}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED The name of the date picker field set
      * @attr value The current value of the date picker; defaults to now if not specified
      * @attr precision The desired granularity of the date to be rendered
@@ -426,7 +426,7 @@ class FormTagLib {
      * @attr years A list or range of years to display, in the order specified. i.e. specify 2007..1900 for a reverse order list going back to 1900. If this attribute is not specified, a range of years from the current year - 100 to current year + 100 will be shown.
      * @attr id the DOM element id
      */
-    def datePicker = { attrs ->
+    Closure datePicker = { attrs ->
         def out = out // let x = x ?
         def xdefault = attrs['default']
         if (xdefault == null) {
@@ -595,7 +595,7 @@ class FormTagLib {
         }
     }
 
-    def renderNoSelectionOption = {noSelectionKey, noSelectionValue, value ->
+    Closure renderNoSelectionOption = {noSelectionKey, noSelectionValue, value ->
         renderNoSelectionOptionImpl(out, noSelectionKey, noSelectionValue, value)
     }
 
@@ -609,11 +609,11 @@ class FormTagLib {
      * eg. &lt;g:timeZoneSelect name="myTimeZone" value="${tz}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED The name of the select
      * @attr value An instance of java.util.TimeZone. Defaults to the time zone for the current Locale if not specified
      */
-    def timeZoneSelect = { attrs ->
+    Closure timeZoneSelect = { attrs ->
         attrs.from = TimeZone.getAvailableIDs()
         attrs.value = (attrs.value ? attrs.value.ID : TimeZone.getDefault().ID)
         def date = new Date()
@@ -641,11 +641,11 @@ class FormTagLib {
      * eg. &lt;g:localeSelect name="myLocale" value="${locale}" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED The name of the select
      * @attr value The set locale, defaults to the current request locale if not specified
      */
-    def localeSelect = { attrs ->
+    Closure localeSelect = { attrs ->
         attrs.from = Locale.getAvailableLocales()
         attrs.value = (attrs.value ?: RCU.getLocale(request))?.toString()
         // set the key as a closure that formats the locale
@@ -661,13 +661,13 @@ class FormTagLib {
      * A helper tag for creating currency selects.<br/>
      *
      * eg. &lt;g:currencySelect name="myCurrency" value="${currency}" /&gt;
-     * 
+     *
      * @emptyTag
      *
      * @attr from The currency symbols to select from, defaults to the major ones if not specified
      * @attr value The currency value as the currency code. Defaults to the currency for the current Locale if not specified
      */
-    def currencySelect = { attrs, body ->
+    Closure currencySelect = { attrs, body ->
         if (!attrs.from) {
             attrs.from = DEFAULT_CURRENCY_CODES
         }
@@ -690,7 +690,7 @@ class FormTagLib {
      * &lt;g:select name="user.company.id" from="${Company.list()}" value="${user?.company.id}" optionKey="id" /&gt;<br/>
      *
      * @emptyTag
-     * 
+     *
      * @attr name REQUIRED the select name
      * @attr id the DOM element id - uses the name attribute if not specified
      * @attr from REQUIRED The list or range to select from
@@ -703,7 +703,7 @@ class FormTagLib {
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
      */
-    def select = { attrs ->
+    Closure select = { attrs ->
         if (!attrs.name) {
             throwTagError("Tag [select] is missing required attribute [name]")
         }
@@ -854,14 +854,14 @@ class FormTagLib {
      * A helper tag for creating radio buttons.
      *
      * @emptyTag
-     * 
+     *
      * @attr value REQUIRED The value of the radio button
      * @attr name REQUIRED The name of the radio button
      * @attr checked boolean to indicate that the radio button should be checked
      * @attr disabled boolean to indicate that the radio button should be disabled
      * @attr id the DOM element id
      */
-    def radio = { attrs ->
+    Closure radio = { attrs ->
         def value = attrs.remove('value')
         attrs.id = attrs.id ?: attrs.name
         def name = attrs.remove('name')
@@ -886,7 +886,7 @@ class FormTagLib {
      * @attr value The current selected value
      * @attr labels Labels for each value contained in the values list. If this is ommitted the label property on the iterator variable (see below) will default to 'Radio ' + value.
      */
-    def radioGroup = { attrs, body ->
+    Closure radioGroup = { attrs, body ->
         def value = attrs.remove('value')
         def values = attrs.remove('values')
         def labels = attrs.remove('labels')

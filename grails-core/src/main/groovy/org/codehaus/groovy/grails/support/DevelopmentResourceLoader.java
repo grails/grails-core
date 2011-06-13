@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 

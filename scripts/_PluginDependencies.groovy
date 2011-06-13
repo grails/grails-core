@@ -20,7 +20,6 @@ import grails.util.GrailsUtil
 import grails.util.PluginBuildSettings
 
 import groovy.xml.MarkupBuilder
-import groovyx.gpars.Parallelizer;
 
 import org.codehaus.groovy.grails.compiler.support.*
 import org.apache.commons.io.FilenameUtils
@@ -41,6 +40,7 @@ import org.codehaus.groovy.grails.plugins.ProfilingGrailsPluginManager
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -118,14 +118,13 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
     // Work out what the name of the plugin is from the name of the descriptor file.
     pluginName = GrailsNameUtils.getPluginName(descriptor.name)
 
-
     // Remove the existing 'plugin.xml' if there is one.
     def pluginXml = new File(pluginBaseDir, "plugin.xml")
     pluginXml.delete()
 
     // Use MarkupBuilder with indenting to generate the file.
     pluginXml.withWriter { writer ->
-        def generator = new org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator(pluginName, resourceList)
+        def generator = new PluginDescriptorGenerator(pluginName, resourceList)
 
         pluginProps["type"] = descriptor.name - '.groovy'
         generator.generatePluginXml(pluginProps, writer)
@@ -139,6 +138,7 @@ target(loadPluginsAsync:"Asynchronously loads plugins") {
         loadPlugins()
     }
 }
+
 target(loadPlugins:"Loads Grails' plugins") {
     if (!PluginManagerHolder.pluginManager) { // plugin manager already loaded?
         PluginManagerHolder.inCreation = true
@@ -256,17 +256,19 @@ readAllPluginXmlMetadata = {->
  * Runs a script contained within a plugin
  */
 runPluginScript = { File scriptFile, fullPluginName, msg ->
-    if (scriptFile.exists()) {
-        // instrumenting plugin scripts adding 'pluginBasedir' variable
-		try {
-	        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
-	        // we are using text form of script here to prevent Gant caching
-	        includeTargets << instrumentedInstallScript			
-		}
-		catch(e) {
-			console.error "Error executing plugin $fullPluginName script: $scriptFile"
-			exit 1
-		}		
+    if (!scriptFile.exists()) {
+        return
+    }
+
+    // instrumenting plugin scripts adding 'pluginBasedir' variable
+    try {
+        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
+        // we are using text form of script here to prevent Gant caching
+        includeTargets << instrumentedInstallScript
+    }
+    catch(e) {
+        console.error "Error executing plugin $fullPluginName script: $scriptFile"
+        exit 1
     }
 }
 
@@ -281,8 +283,8 @@ readMetadataFromZip = { String zipLocation, pluginFile=zipLocation ->
 uninstallPluginForName = { name, version=null ->
     def pluginInstallEngine = createPluginInstallEngine()
     pluginInstallEngine.uninstallPlugin name, version
-
 }
+
 /**
  * Installs a plugin for the given name and optional version
  */

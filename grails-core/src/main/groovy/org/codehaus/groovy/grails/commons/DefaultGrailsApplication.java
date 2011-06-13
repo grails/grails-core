@@ -99,6 +99,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected Resource[] resources;
     protected boolean initialised = false;
     protected ConfigObject config;
+    @SuppressWarnings("rawtypes")
     protected Map flatConfig = Collections.emptyMap();
 
     /**
@@ -182,7 +183,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                         c = cl.loadClass(resourceHolder.getClassName(resources[i]));
                     }
                     catch (ClassNotFoundException e) {
-                        GrailsUtil.deepSanitize(e);
                         log.error("Class not found attempting to load class " + e.getMessage(), e);
                     }
 
@@ -376,10 +376,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public void setConfig(ConfigObject config) {
         this.config = config;
-        if(config != null) {
+        if (config != null) {
             this.flatConfig = config.flatten();
         } else {
-        	this.flatConfig = Collections.emptyMap();
+            this.flatConfig = Collections.emptyMap();
         }
     }
 

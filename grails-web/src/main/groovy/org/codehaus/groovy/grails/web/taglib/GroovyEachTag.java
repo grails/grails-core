@@ -34,7 +34,7 @@ public class GroovyEachTag extends GroovySyntaxTag {
     }
 
     public void doEndTag() {
-        out.println("}");
+        endEachMethod();
     }
 
     public String getName() {

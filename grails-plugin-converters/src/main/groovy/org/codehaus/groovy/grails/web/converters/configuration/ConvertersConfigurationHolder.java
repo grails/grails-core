@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
@@ -33,6 +34,14 @@ import java.util.Map;
 public class ConvertersConfigurationHolder {
 
     public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";
+
+    static {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                clear();
+            }
+        });
+    }
 
     private static ConvertersConfigurationHolder INSTANCE = new ConvertersConfigurationHolder();
 

@@ -24,10 +24,6 @@ dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile 'commons-cli:commons-cli:1.2'
 
-    compile('org.codehaus.gpars:gpars:0.9') {
-        exclude module:'netty'
-    }
-
     // Ant
     compile 'org.fusesource.jansi:jansi:1.2.1',
             'jline:jline:0.9.94'
@@ -38,12 +34,9 @@ dependencies {
             "org.apache.ant:ant-trax:${antTraxVersion}",
             "org.apache.ivy:ivy:${ivyVersion}",
             "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
-
-    runtime 'org.coconut.forkjoin:jsr166y:070108' // Dependency for parallel execution in Gpars
-
 }
 
-processResources{
+processResources {
    inputs.property "version", version
    filter(ReplaceTokens, tokens:[version:version])
 }

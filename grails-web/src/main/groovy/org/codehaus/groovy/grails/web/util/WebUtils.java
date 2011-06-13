@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import grails.util.GrailsUtil;
 import grails.util.GrailsWebUtil;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -377,7 +376,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             }
         }
         catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
             throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
         }
     }

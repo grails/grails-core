@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import groovyx.gpars.Parallelizer
+import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
@@ -27,7 +28,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
  */
 
 packageFiles = { String from ->
-	console.updateStatus "Packaging plugins"
+    console.updateStatus "Packaging plugins"
     def ant = new AntBuilder(ant.project)
     def targetPath = grailsSettings.resourcesDir.path
     def dir = new File(from, "grails-app/conf")
@@ -75,8 +76,9 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
     profile("Packaging plugin static files") {
         Thread.start {
             def pluginInfos = pluginSettings.getSupportedPluginInfos()
-            Parallelizer.withParallelizer {
-                pluginInfos.eachParallel{ GrailsPluginInfo info ->
+            ExecutorService pool = Executors.newFixedThreadPool(5)
+            for (GrailsPluginInfo gpi in pluginInfos) {
+                pool.execute({ GrailsPluginInfo info ->
                     try {
                         def pluginDir = info.pluginDir
                         if (pluginDir) {
@@ -88,7 +90,7 @@ target(packagePlugins : "Packages any Grails plugins that are installed for this
                         console.error "Error packaging plugin [${info.name}] : ${e.message}"
                         exit 1
                     }
-                }
+                }.curry(gpi))
             }
         }
     }
@@ -112,8 +114,7 @@ packagePluginsForWar = { targetDir ->
             }
         }
         catch (Exception e) {
-            e.printStackTrace(System.out)
-            console.error "Error packaging plugin [${info.name}] : ${e.message}"
+            console.error "Error packaging plugin [${info.name}] : ${e.message}", e
         }
     }
 }

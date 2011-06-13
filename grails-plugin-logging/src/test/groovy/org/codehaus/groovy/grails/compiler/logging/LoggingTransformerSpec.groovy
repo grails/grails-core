@@ -7,6 +7,31 @@ import spock.lang.Specification
 
 class LoggingTransformerSpec extends Specification {
 
+    def "Test log field with inheritance"() {
+        given:
+            def gcl = new GrailsAwareClassLoader()
+            def transformer = new LoggingTransformer()
+            gcl.classInjectors = [transformer] as ClassInjector[]
+
+        when:
+            gcl.parseClass('''
+class BaseController {}
+''')
+            def cls = gcl.parseClass('''
+
+class LoggingController extends BaseController{
+    def index() {
+        log.debug "message"
+        return log
+    }
+}
+''', "foo/grails-app/controllers/LoggingController.groovy")
+            def controller = cls.newInstance()
+            Log log = controller.index()
+
+        then:
+            log instanceof Log
+    }
     def "Test added log field"() {
         given:
             def gcl = new GrailsAwareClassLoader()

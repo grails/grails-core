@@ -50,7 +50,7 @@ class ValidationTagLib {
      * @attr encodeAs The name of a codec to apply, i.e. HTML, JavaScript, URL etc
      * @attr locale override locale to use instead of the one detected
      */
-    def fieldError = { attrs, body ->
+    Closure fieldError = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field
 
@@ -69,11 +69,11 @@ class ValidationTagLib {
      * eg. &lt;g:fieldValue bean="${book}" field="title" /&gt;
      *
      * @emptyTag
-     * 
+     *
      * @attr bean REQUIRED The bean to check for errors
      * @attr field REQUIRED The field of the bean or model reference to check
      */
-    def fieldValue = { attrs, body ->
+    Closure fieldValue = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field?.toString()
         if (bean && field) {
@@ -162,7 +162,7 @@ class ValidationTagLib {
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
-    def hasErrors = { attrs, body ->
+    Closure hasErrors = { attrs, body ->
         def errorsList = extractErrors(attrs)
         if (errorsList) {
             out << body()
@@ -176,7 +176,7 @@ class ValidationTagLib {
      * @attr field REQUIRED The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
-    def eachError = { attrs, body ->
+    Closure eachError = { attrs, body ->
         eachErrorInternal(attrs, body, true)
     }
 
@@ -221,12 +221,12 @@ class ValidationTagLib {
      * Loops through each error and renders it using one of the supported mechanisms (defaults to "list" if unsupported).
      *
      * @emptyTag
-     * 
+     *
      * @attr bean REQUIRED The bean to check for errors
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
-    def renderErrors = { attrs, body ->
+    Closure renderErrors = { attrs, body ->
         def renderAs = attrs.remove('as')
         if (!renderAs) renderAs = 'list'
 
@@ -260,7 +260,7 @@ class ValidationTagLib {
      * Resolves a message code for a given error or code from the resource bundle.
      *
      * @emptyTag
-     * 
+     *
      * @attr error The error to resolve the message for. Used for built-in Grails messages.
      * @attr message The object to resolve the message for. Objects must implement org.springframework.context.MessageSourceResolvable.
      * @attr code The code to resolve the message for. Used for custom application messages.
@@ -269,7 +269,7 @@ class ValidationTagLib {
      * @attr encodeAs The name of a codec to apply, i.e. HTML, JavaScript, URL etc
      * @attr locale override locale to use instead of the one detected
      */
-    def message = { attrs ->
+    Closure message = { attrs ->
         messageImpl(attrs)
     }
 
@@ -338,7 +338,7 @@ class ValidationTagLib {
      * @attr form REQUIRED the HTML form name
      * @attr againstClass REQUIRED the domain class name
      */
-    def validate = { attrs, body ->
+    Closure validate = { attrs, body ->
         def form = attrs.form
         if (!form) {
             throwTagError("Tag [validate] is missing required attribute [form]")

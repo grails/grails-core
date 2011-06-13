@@ -20,10 +20,9 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.input.InputHandler;
 import org.apache.tools.ant.input.InputRequest;
 import org.apache.tools.ant.input.MultipleChoiceInputRequest;
+import grails.build.logging.GrailsConsole;
 
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Custom input handler mechanism for Ant that ignores case of input.
@@ -32,24 +31,18 @@ import java.util.Vector;
  * @since 1.4
  */
 public class CommandLineInputHandler implements InputHandler {
-    private CommandLineHelper commandLineHelper;
-
-    public CommandLineInputHandler() {
-        this.commandLineHelper = new CommandLineHelper(System.out);
-    }
-
-    public CommandLineInputHandler(InputStream input, PrintStream out) {
-        this.commandLineHelper = new CommandLineHelper(input, out);
-    }
 
     public void handleInput(InputRequest inputRequest) throws BuildException {
        String[] validInputs = null;
        if (inputRequest instanceof MultipleChoiceInputRequest) {
            @SuppressWarnings("unchecked")
-           Vector<String> choices = ((MultipleChoiceInputRequest) inputRequest).getChoices();
+           List<String> choices = ((MultipleChoiceInputRequest) inputRequest).getChoices();
            validInputs = choices.toArray(new String[choices.size()]);
        }
-        String result = commandLineHelper.userInput(inputRequest.getPrompt(), validInputs);
-        inputRequest.setInput(result);
+       String result = GrailsConsole.getInstance().userInput(inputRequest.getPrompt(), validInputs);
+       if (result == null || result.length() == 0) {
+           result = inputRequest.getDefaultValue();
+       }
+       inputRequest.setInput(result);
     }
 }

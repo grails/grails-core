@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.validation;
 
-import groovy.lang.Closure;
 import groovy.lang.GroovyShell;
 
 /**
@@ -17,12 +16,8 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
         return ValidatorConstraint.class;
     }
 
-    private Closure getClosure(String code) {
-        return (Closure) shell.evaluate(code);
-    }
-
     protected Constraint getConstraint(String closure) {
-        return super.getConstraint("testString", getClosure(closure));
+        return super.getConstraint("testString", shell.evaluate(closure));
     }
 
     public void testBooleanReturn()  {

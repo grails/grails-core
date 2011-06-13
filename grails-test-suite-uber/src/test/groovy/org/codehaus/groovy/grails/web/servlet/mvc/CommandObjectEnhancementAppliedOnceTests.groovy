@@ -12,18 +12,18 @@ class CommandObjectEnhancementAppliedOnceTests extends GroovyTestCase{
     void testThatCommandObjectEnhancementIsOnlyAppliedOnce() {
         def ctx = new MockApplicationContext()
 
-        def t = new TestController()
+        def t = new CommandObjectEnhancementTestController()
         ctx.registerMockBean TestController.name, t
         def action = t.index
 
         assert WebMetaUtils.isCommandObjectAction(action) == true
         WebMetaUtils.createAndPrepareCommandObjectAction(t, action, "index", ctx)
 
-        def fresh = new TestController()
+        def fresh = new CommandObjectEnhancementTestController()
         assert WebMetaUtils.isCommandObjectAction(fresh.index) == false
     }
 
-    static class TestController {
+    static class CommandObjectEnhancementTestController {
         def index = {TestCommand cmd ->}
     }
     static class TestCommand {

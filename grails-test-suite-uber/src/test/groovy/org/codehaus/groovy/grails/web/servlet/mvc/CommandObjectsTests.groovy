@@ -10,59 +10,16 @@ grails.gorm.default.constraints = {
         isProg inList: ['Emerson', 'Lake', 'Palmer']
 }
         ''', 'Config'
-        gcl.parseClass '''
-        class TestController {
-           def someProperty
-
-           def action1 = {
-                someProperty
-           }
-           def action2 = { Command command ->
-                [command:command, someProperty:someProperty]
-           }
-           def action3 = { Command command, ConstrainedCommand command2 ->
-                [command:command, command2:command2, someProperty:someProperty]
-           }
-           def action4 = { AutoWireCapableCommand c ->
-                [command:c]
-            }
-           def action5 = { ConstrainedCommandSubclass co ->
-              [command: co]
-           }
-           def action6 = { Artist artistCommandObject ->
-               [artist: artistCommandObject]
-           }
-        }
-        class Command {
-            String name
-        }
-        class AutoWireCapableCommand {
-            def groovyPagesTemplateEngine
-        }
-        class ConstrainedCommand {
-            String data
-            static constraints = {
-                data(size:5..10)
-            }
-        }
-        class ConstrainedCommandSubclass extends ConstrainedCommand {
-            Integer age
-            static constraints = {
-                age range: 10..50
-            }
-        }
-        class Artist {
-            String name
-            static constraints = {
-                name shared: 'isProg'
-            }
-        }
-        '''
     }
 
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [CommandObjectTestController]
+    }
+    
     void testCommandObjectAutoWiring() {
         // no command objects
-        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def testCtrl = new CommandObjectTestController()
         def result = testCtrl.action4()
 
         assert result.command.groovyPagesTemplateEngine
@@ -70,7 +27,7 @@ grails.gorm.default.constraints = {
 
     void testBinding() {
         // no command objects
-        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def testCtrl = new CommandObjectTestController()
         testCtrl.someProperty = "text"
         def result = testCtrl.action1()
         assertEquals "text", result
@@ -113,7 +70,7 @@ grails.gorm.default.constraints = {
     }
 
     void testValidation() {
-        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def testCtrl = new CommandObjectTestController()
         // command objects validation should pass
         request.setParameter('name', 'Sergey')
         request.setParameter('data', 'Some data')
@@ -143,7 +100,7 @@ grails.gorm.default.constraints = {
         // command objects validation should pass
         request.setParameter('age', '9')
         request.setParameter('data', 'Some')
-        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def testCtrl = new CommandObjectTestController()
         def result = testCtrl.action5()
         assertNotNull result.command
         assert result.command.hasErrors()
@@ -153,7 +110,7 @@ grails.gorm.default.constraints = {
 
     void testValidationWithSharedConstraints() {
         request.setParameter('name', 'Emerson')
-        def testCtrl = ga.getControllerClass("TestController").clazz.newInstance()
+        def testCtrl = new CommandObjectTestController()
         def result = testCtrl.action6()
         assertNotNull result.artist
         assertFalse 'the artist should not have had a validation error', result.artist.hasErrors()
@@ -166,5 +123,52 @@ grails.gorm.default.constraints = {
         assertTrue 'the artist should have had a validation error', result.artist.hasErrors()
         def codes = result.artist.errors.getFieldError('name').codes.toList()
         assertTrue codes.contains("artist.name.inList.error")
+    }
+}
+
+class CommandObjectTestController {
+    def someProperty
+    
+    def action1 = {
+         someProperty
+    }
+    def action2 = { Command command ->
+         [command:command, someProperty:someProperty]
+    }
+    def action3 = { Command command, ConstrainedCommand command2 ->
+         [command:command, command2:command2, someProperty:someProperty]
+    }
+    def action4 = { AutoWireCapableCommand c ->
+         [command:c]
+     }
+    def action5 = { ConstrainedCommandSubclass co ->
+       [command: co]
+    }
+    def action6 = { Artist artistCommandObject ->
+        [artist: artistCommandObject]
+    }
+}
+class Command {
+    String name
+}
+class AutoWireCapableCommand {
+    def groovyPagesTemplateEngine
+}
+class ConstrainedCommand {
+    String data
+    static constraints = {
+        data(size:5..10)
+    }
+}
+class ConstrainedCommandSubclass extends ConstrainedCommand {
+    Integer age
+    static constraints = {
+        age range: 10..50
+    }
+}
+class Artist {
+    String name
+    static constraints = {
+        name shared: 'isProg'
     }
 }

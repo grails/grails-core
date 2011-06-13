@@ -16,6 +16,13 @@ package grails.util;
 
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
+
+import java.util.Collections;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -28,11 +35,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Utility methods for clients using the web framework.
@@ -47,21 +49,22 @@ public class GrailsWebUtil {
     private static final String CHARSET_ATTRIBUTE = ";charset=";
 
     /**
-     * Looks up a GrailsApplication instance from the ServletContext
+     * Looks up a GrailsApplication instance from the ServletContext.
      *
      * @param servletContext The ServletContext
      * @return A GrailsApplication or null if there isn't one
      */
     public static GrailsApplication lookupApplication(ServletContext servletContext) {
-        if (servletContext != null) {
-            final WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-            if (context != null) {
-                if (context.containsBean(GrailsApplication.APPLICATION_ID)) {
-                    return context.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-                }
-            }
+        if (servletContext == null) {
+            return null;
         }
-        return null;
+
+        final WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        if (context == null || !context.containsBean(GrailsApplication.APPLICATION_ID)) {
+            return null;
+        }
+
+        return context.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
     }
 
     /**
@@ -70,11 +73,11 @@ public class GrailsWebUtil {
      */
     public static GrailsApplication currentApplication() {
         final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes instanceof GrailsWebRequest) {
-            GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
-            return webRequest.getAttributes().getGrailsApplication();
+        if (!(requestAttributes instanceof GrailsWebRequest)) {
+            return null;
         }
-        return null;
+
+        return ((GrailsWebRequest)requestAttributes).getAttributes().getGrailsApplication();
     }
 
     /**
@@ -83,10 +86,7 @@ public class GrailsWebUtil {
      */
     public static Map currentConfiguration() {
         GrailsApplication application = currentApplication();
-        if (application != null) {
-            return application.getConfig();
-        }
-        return new ConfigObject();
+        return application == null ? new ConfigObject() : application.getConfig();
     }
 
     /**
@@ -95,10 +95,7 @@ public class GrailsWebUtil {
      */
     public static Map currentFlatConfiguration() {
         GrailsApplication application = currentApplication();
-        if (application != null) {
-            return application.getFlatConfig();
-        }
-        return Collections.emptyMap();
+        return application == null ? Collections.emptyMap() : application.getFlatConfig();
     }
 
     /**
@@ -114,9 +111,7 @@ public class GrailsWebUtil {
      * @return The GrailsWebRequest instance
      */
     public static GrailsWebRequest bindMockWebRequest(WebApplicationContext ctx) {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        return bindMockWebRequest(ctx, request, response);
+        return bindMockWebRequest(ctx, new MockHttpServletRequest(), new MockHttpServletResponse());
     }
 
     /**
@@ -134,16 +129,10 @@ public class GrailsWebUtil {
      * @return The GrailsWebRequest instance
      */
     public static GrailsWebRequest bindMockWebRequest(WebApplicationContext ctx, MockHttpServletRequest request, MockHttpServletResponse response) {
-        GrailsWebRequest webRequest = new GrailsWebRequest(
-                request,
-                response,
-                ctx.getServletContext(),
-                ctx);
+        GrailsWebRequest webRequest = new GrailsWebRequest(request, response, ctx.getServletContext(), ctx);
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
-        String[] paramListenerBeans = ctx.getBeanNamesForType(ParameterCreationListener.class);
-        for (String paramListenerBean : paramListenerBeans) {
-            ParameterCreationListener creationListenerBean = (ParameterCreationListener) ctx.getBean(paramListenerBean);
-            webRequest.addParameterListener(creationListenerBean);
+        for (ParameterCreationListener listener: ctx.getBeansOfType(ParameterCreationListener.class).values()) {
+            webRequest.addParameterListener(listener);
         }
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
@@ -161,10 +150,8 @@ public class GrailsWebUtil {
      */
     public static GrailsWebRequest bindMockWebRequest() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        GrailsWebRequest webRequest = new GrailsWebRequest(
-                request,
-                new MockHttpServletResponse(),
-                new MockServletContext());
+        GrailsWebRequest webRequest = new GrailsWebRequest(request,
+                new MockHttpServletResponse(), new MockServletContext());
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
@@ -178,11 +165,7 @@ public class GrailsWebUtil {
      */
     public static String getUriFromRequest(HttpServletRequest request) {
         Object includeUri = request.getAttribute("javax.servlet.include.request_uri");
-        if (includeUri != null) {
-            return (String)includeUri;
-        }
-
-        return request.getRequestURI();
+        return includeUri == null ? request.getRequestURI() : (String)includeUri;
     }
 
     /**

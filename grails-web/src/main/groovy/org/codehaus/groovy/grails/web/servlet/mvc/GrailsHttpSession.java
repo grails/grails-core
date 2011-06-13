@@ -225,7 +225,7 @@ public class GrailsHttpSession implements HttpSession {
     @Override
     public String toString() {
         createSessionIfNecessary();
-        StringBuffer sb = new StringBuffer("Session Content:\n");
+        StringBuilder sb = new StringBuilder("Session Content:\n");
         Enumeration e = adaptee.getAttributeNames();
         while (e.hasMoreElements()) {
             String name = (String) e.nextElement();

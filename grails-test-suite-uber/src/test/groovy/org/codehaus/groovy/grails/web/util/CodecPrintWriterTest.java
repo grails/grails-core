@@ -1,25 +1,25 @@
 package org.codehaus.groovy.grails.web.util;
 
+import static org.junit.Assert.assertEquals;
 import grails.util.Metadata;
 import groovy.util.ConfigObject;
-import org.codehaus.groovy.grails.commons.*;
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
-import org.junit.Test;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import org.codehaus.groovy.grails.commons.ArtefactHandler;
+import org.codehaus.groovy.grails.commons.ArtefactInfo;
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
 
 public class CodecPrintWriterTest {
-
-    private static GrailsApplication initialGrailsApplication = null;
-
 
     @Test
     public void testPrintString() {
@@ -58,19 +58,21 @@ public class CodecPrintWriterTest {
     }
 }
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 class MockGrailsApplication implements GrailsApplication {
 
-    private Map<String, DefaultGrailsCodecClass> mockCodecArtefacts = new HashMap<String, DefaultGrailsCodecClass>() {{
-        put(HTMLCodec.class.getName(), new DefaultGrailsCodecClass(HTMLCodec.class));
-        put(CodecWithClosureProperties.class.getName(), new DefaultGrailsCodecClass(CodecWithClosureProperties.class));
-    }};
+    private Map<String, DefaultGrailsCodecClass> mockCodecArtefacts = new HashMap<String, DefaultGrailsCodecClass>();
+
+    MockGrailsApplication() {
+        mockCodecArtefacts.put(HTMLCodec.class.getName(), new DefaultGrailsCodecClass(HTMLCodec.class));
+        mockCodecArtefacts.put(CodecWithClosureProperties.class.getName(), new DefaultGrailsCodecClass(CodecWithClosureProperties.class));
+    }
 
     public GrailsClass getArtefact(String artefactType, String name) {
         return mockCodecArtefacts.get(name);
     }
 
-    public void setApplicationContext(ApplicationContext arg0)
-            throws BeansException {
+    public void setApplicationContext(ApplicationContext ctx) {
         throw new UnsupportedOperationException();
     }
 
@@ -150,8 +152,7 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass getArtefactForFeature(String artefactType,
-            Object featureID) {
+    public GrailsClass getArtefactForFeature(String artefactType, Object featureID) {
         throw new UnsupportedOperationException();
     }
 
@@ -159,8 +160,7 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass addArtefact(String artefactType,
-            GrailsClass artefactGrailsClass) {
+    public GrailsClass addArtefact(String artefactType, GrailsClass gc) {
         throw new UnsupportedOperationException();
     }
 
@@ -188,8 +188,7 @@ class MockGrailsApplication implements GrailsApplication {
         throw new UnsupportedOperationException();
     }
 
-    public GrailsClass getArtefactByLogicalPropertyName(String type,
-            String logicalName) {
+    public GrailsClass getArtefactByLogicalPropertyName(String type, String logicalName) {
         throw new UnsupportedOperationException();
     }
 

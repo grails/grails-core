@@ -65,6 +65,7 @@ public class SessionFactoryAdapter implements SessionFactory {
         // do nothing
     }
 
+    @SuppressWarnings("unchecked")
     public Map getAllClassMetadata() {
         return null;
     }
@@ -98,11 +99,11 @@ public class SessionFactoryAdapter implements SessionFactory {
     }
 
     public boolean containsFetchProfileDefinition(String name) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 
     public TypeHelper getTypeHelper() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public Statistics getStatistics() {
@@ -114,7 +115,7 @@ public class SessionFactoryAdapter implements SessionFactory {
     }
 
     public Cache getCache() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public Session openSession() {

@@ -32,6 +32,7 @@ import java.util.Map;
  * @since 1.1
  * @deprecated Use {@link org.codehaus.groovy.grails.commons.cfg.GrailsConfig instead}
  */
+@Deprecated
 @SuppressWarnings("rawtypes")
 public class GrailsConfig extends GroovyObjectSupport {
 

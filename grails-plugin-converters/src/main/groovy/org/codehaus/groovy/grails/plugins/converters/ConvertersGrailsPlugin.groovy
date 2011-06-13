@@ -22,7 +22,6 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec
 import org.codehaus.groovy.grails.plugins.converters.codecs.XMLCodec
-import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -79,8 +78,6 @@ class ConvertersGrailsPlugin {
     }
 
     def doWithDynamicMethods = {applicationContext ->
-        // TODO: Get rid of this evil static singleton code
-        ConverterUtil.setGrailsApplication(application)
 
         applicationContext.convertersConfigurationInitializer.initialize(application)
 

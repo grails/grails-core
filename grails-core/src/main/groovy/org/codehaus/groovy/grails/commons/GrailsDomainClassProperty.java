@@ -43,7 +43,6 @@ public interface GrailsDomainClassProperty {
     String SORT = "sort";
     String EMBEDDED = "embedded";
     String ERRORS = "errors";
-    String DATA_SOURCES = "dataSources";
     String DEFAULT_DATA_SOURCE = "DEFAULT";
     String ALL_DATA_SOURCES = "ALL";
     int FETCH_EAGER = 1;

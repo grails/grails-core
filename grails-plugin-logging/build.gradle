@@ -2,7 +2,6 @@ dependencies {
     compile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
     compile 'log4j:log4j:1.2.16'
 
-    runtime "org.slf4j:slf4j-log4j12:$slf4jVersion"
     compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
 
     compile project(":grails-core"),

@@ -133,26 +133,26 @@ class GroovyPageWritable implements Writable {
 
             // Set up the script context
             Binding parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-            if(parentBinding == null) {
-            	if(webRequest != null) {
-	            	GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
-	            	parentBinding = pageRequestBinding;
-	            	GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
-	            	if(templateEngine != null) {
-	            		pageRequestBinding.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
-	            	}
-            	}
+            if (parentBinding == null) {
+                if (webRequest != null) {
+                    GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
+                    parentBinding = pageRequestBinding;
+                    GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
+                    if (templateEngine != null) {
+                        pageRequestBinding.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
+                    }
+                }
 
-            	// only try to set content type when evaluating top level GSP
-	            boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
-	            if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
-	                LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
-	            }
-	            if (!contentTypeAlreadySet) {
-	                response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
-	            }
+                // only try to set content type when evaluating top level GSP
+                boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+                if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
+                    LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+                }
+                if (!contentTypeAlreadySet) {
+                    response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+                }
             }
-            
+
             GroovyPageBinding binding = createBinding(parentBinding);
             request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
             if (metaInfo.getCodecClass() != null) {
@@ -164,13 +164,13 @@ class GroovyPageWritable implements Writable {
             binding.setVariableDirectly(GroovyPage.RESPONSE, response);
             binding.setVariableDirectly(GroovyPage.REQUEST, request);
             // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
-            
+
             GroovyPage page=null;
-			try {
-				page = (GroovyPage)metaInfo.getPageClass().newInstance();
-			} catch (Exception e) {
-				throw new GroovyPagesException("Problem instantiating page class", e);
-			}
+            try {
+                page = (GroovyPage)metaInfo.getPageClass().newInstance();
+            } catch (Exception e) {
+                throw new GroovyPagesException("Problem instantiating page class", e);
+            }
             page.setBinding(binding);
             binding.setOwner(page);
             page.setJspTags(metaInfo.getJspTags());
@@ -179,7 +179,7 @@ class GroovyPageWritable implements Writable {
             page.setHtmlParts(metaInfo.getHtmlParts());
             page.setPluginContextPath(metaInfo.getPluginPath());
             page.initRun(out, webRequest, metaInfo.getGrailsApplication(), metaInfo.getCodecClass());
-            
+
             int debugId=0;
             long debugStartTimeMs=0;
             if (debugTemplates) {
@@ -211,7 +211,7 @@ class GroovyPageWritable implements Writable {
                 out.write(String.valueOf(System.currentTimeMillis() - debugStartTimeMs));
                 out.write(" ms -->");
             }
-  	    }
+        }
         return out;
     }
 
@@ -227,15 +227,15 @@ class GroovyPageWritable implements Writable {
     private GroovyPageBinding createBinding(Binding parent) {
         GroovyPageBinding binding = new GroovyPageBinding();
         binding.setParent(parent);
-        binding.setVariableDirectly("it", null);        
-        if(additionalBinding != null) {
-        	binding.addMap(additionalBinding);
+        binding.setVariableDirectly("it", null);
+        if (additionalBinding != null) {
+            binding.addMap(additionalBinding);
         }
         // set plugin context path for top level rendering, this means actual view + layout
         // view is top level when parent is GroovyPageRequestBinding
         // pluginContextPath is also resetted when a plugin template is overrided by an application view
-        if(parent==null || parent instanceof GroovyPageRequestBinding || "".equals(metaInfo.getPluginPath())) {
-        	binding.setPluginContextPath(metaInfo.getPluginPath());
+        if (parent==null || parent instanceof GroovyPageRequestBinding || "".equals(metaInfo.getPluginPath())) {
+            binding.setPluginContextPath(metaInfo.getPluginPath());
         }
         binding.setPagePlugin(metaInfo.getPagePlugin());
         return binding;
@@ -293,7 +293,7 @@ class GroovyPageWritable implements Writable {
 
             // Prepare the buffer containing the whitespace padding.
             // The padding is used to right-align the line numbers.
-            StringBuffer paddingBuffer = new StringBuffer(maxPaddingSize);
+            StringBuilder paddingBuffer = new StringBuilder(maxPaddingSize);
             for (int i = 0; i < maxPaddingSize; i++) {
                 paddingBuffer.append(' ');
             }

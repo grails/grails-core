@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -304,13 +303,5 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
 
     public Map getAssociationMap() {
         return Collections.emptyMap();
-    }
-
-    public List<String> getDataSources() {
-        return Collections.singletonList(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE);
-    }
-
-    public boolean usesDataSource(String name) {
-        return GrailsDomainClassProperty.DEFAULT_DATA_SOURCE.equals(name);
     }
 }

@@ -21,8 +21,10 @@ import groovy.lang.MetaClass;
 
 import java.lang.reflect.Modifier;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -452,20 +454,18 @@ public class GrailsHibernateUtil {
         return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
     }
 
-    @SuppressWarnings("serial")
     public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
         GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();
 
-        Set<Class<?>> proxyInterfaces = new HashSet<Class<?>>() {{
-            add(HibernateProxy.class);
-        }};
+        @SuppressWarnings("unchecked")
+        Set<Class<?>> proxyInterfaces = new HashSet<Class<?>>(Arrays.asList(HibernateProxy.class));
 
         final Class<?> javaClass = persistentClass.getMappedClass();
         final Property identifierProperty = persistentClass.getIdentifierProperty();
         final Getter idGetter = identifierProperty!=null?  identifierProperty.getGetter(javaClass) : null;
-        final Setter idSetter =identifierProperty!=null? identifierProperty.getSetter(javaClass) : null;
+        final Setter idSetter = identifierProperty!=null? identifierProperty.getSetter(javaClass) : null;
 
-        if (idGetter == null ||  idSetter==null) return null;
+        if (idGetter == null || idSetter == null) return null;
 
         try {
             proxyFactory.postInstantiate(persistentClass.getEntityName(), javaClass, proxyInterfaces,
@@ -484,5 +484,37 @@ public class GrailsHibernateUtil {
 
     public static Object unwrapIfProxy(Object instance) {
         return proxyHandler.unwrapIfProxy(instance);
+    }
+
+    public static boolean usesDatasource(GrailsDomainClass domainClass, String dataSourceName) {
+        // TODO handle subclassing
+        List<String> names = getDatasourceNames(domainClass);
+        return names.contains(dataSourceName) ||
+               names.contains(GrailsDomainClassProperty.ALL_DATA_SOURCES);
+    }
+
+    /**
+     * If a domain class uses more than one datasource, we need to know which one to use
+     * when calling a method without a namespace qualifier.
+     *
+     * @param domainClass the domain class
+     * @return the default datasource name
+     */
+    public static String getDefaultDataSource(GrailsDomainClass domainClass) {
+        List<String> names = getDatasourceNames(domainClass);
+        if (names.size() == 1 && GrailsDomainClassProperty.ALL_DATA_SOURCES.equals(names.get(0))) {
+            return GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
+        }
+        return names.get(0);
+    }
+
+    public static List<String> getDatasourceNames(GrailsDomainClass domainClass) {
+        // Mappings won't have been built yet when this is called from
+        // HibernatePluginSupport.doWithSpring  so do a temporary evaluation but don't cache it
+        Mapping mapping = GrailsDomainBinder.evaluateMapping(domainClass, null, false);
+        if (mapping == null) {
+            mapping = new Mapping();
+        }
+        return mapping.getDatasources();
     }
 }

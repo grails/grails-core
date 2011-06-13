@@ -21,8 +21,9 @@ import org.apache.tools.ant.taskdefs.MatchingTask
 import org.apache.tools.ant.types.Path
 import org.apache.tools.ant.types.Reference
 import org.codehaus.groovy.control.CompilerConfiguration
+import grails.build.logging.GrailsConsole
 
- /**
+/**
  * An Ant task used for compiling GSP sources. Example:
  *
  * <pre><code>
@@ -96,7 +97,7 @@ class GroovyPageCompilerTask extends MatchingTask {
 
         int gspCount = gspFiles?.size()
         if (gspCount) {
-            org.codehaus.groovy.grails.cli.logging.GrailsConsole.getInstance().updateStatus("Compiling ${gspCount} GSP file${gspCount>1?'s':''} for package [${packagename}]")
+            GrailsConsole.getInstance().updateStatus("Compiling ${gspCount} GSP file${gspCount>1?'s':''} for package [${packagename}]")
         }
 
         if (tmpdir) {

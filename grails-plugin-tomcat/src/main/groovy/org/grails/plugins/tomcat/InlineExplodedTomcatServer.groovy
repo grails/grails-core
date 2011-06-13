@@ -19,7 +19,9 @@ import grails.util.GrailsNameUtils
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.startup.Tomcat
 import org.apache.coyote.http11.Http11NioProtocol
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
@@ -107,6 +109,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     void stop() {
         tomcat.stop()
+        tomcat.destroy()
+        ShutdownOperations.runOperations()
+        GrailsPluginUtils.clearCaches()
     }
 
     private loadInstance(String name) {

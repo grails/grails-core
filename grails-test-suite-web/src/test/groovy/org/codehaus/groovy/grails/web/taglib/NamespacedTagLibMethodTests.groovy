@@ -50,11 +50,11 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
         def tagClass = gcl.parseClass('''
 class MyTagLib {
     static namespace = "my"
-    def test1 = { attrs, body ->
+    Closure test1 = { attrs, body ->
         out << body(foo:"bar", one:2)
     }
 
-    def test2 = { attrs, body ->
+    Closure test2 = { attrs, body ->
         out << "hello! ${attrs.foo}"
     }
 }
@@ -63,7 +63,7 @@ class MyTagLib {
 class SecondTagLib {
    static namespace = "two"
 
-   def test1 = { attrs, body ->
+   Closure test1 = { attrs, body ->
         out << my.test2(foo:"bar3")
    }
 
@@ -71,11 +71,11 @@ class SecondTagLib {
        ''')
        def tagClass3 = gcl.parseClass('''
 class HasErrorTagLib {
-    def tag = { attr, body ->
+    Closure tag = { attr, body ->
         out << hasErrors('bean': attr.bean, field: 'bar', 'errors')
     }
     // by declaring a tag called my we can test if the namespace of the tag is available via property access
-    def my = { attrs, body ->
+    Closure my = { attrs, body ->
 
     }
 }
@@ -84,15 +84,15 @@ class HasErrorTagLib {
 class AlternateTagLib {
     static namespace = "alt"
 
-    def showme = { attrs, body ->
+    Closure showme = { attrs, body ->
         out << createLink(controller:'test',action:'foo')
     }
 
-    def showmeToo = { attrs, body ->
+    Closure showmeToo = { attrs, body ->
         out << g.createLink(controller:'test',action:'foo')
     }
 
-    def showmeThree = { attrs, body ->
+    Closure showmeThree = { attrs, body ->
        out << my.test2(foo:"bar")
     }
 }

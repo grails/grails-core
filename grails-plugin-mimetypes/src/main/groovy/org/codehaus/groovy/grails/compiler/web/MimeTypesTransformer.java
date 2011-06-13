@@ -17,6 +17,11 @@
 package org.codehaus.groovy.grails.compiler.web;
 
 import groovy.lang.Closure;
+
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -30,14 +35,10 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsResourceUtils;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
-
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.regex.Pattern;
 
 /**
  * Adds the withFormat and other mime related methods to controllers at compile time
@@ -46,8 +47,11 @@ import java.util.regex.Pattern;
  * @since 1.4
  */
 @AstTransformer
-public class MimeTypesTransformer implements GrailsArtefactClassInjector{
-    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/"+ GrailsResourceUtils.GRAILS_APP_DIR+"/controllers/(.+)Controller\\.groovy");
+public class MimeTypesTransformer implements GrailsArtefactClassInjector {
+
+    public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
+              GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
+
     public static final String FIELD_MIME_TYPES_API = "mimeTypesApi";
     public static final Parameter[] CLOSURE_PARAMETER = new Parameter[]{ new Parameter(new ClassNode(Closure.class), "callable")};
     public static final String WITH_FORMAT_METHOD = "withFormat";

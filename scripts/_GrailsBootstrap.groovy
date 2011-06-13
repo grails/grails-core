@@ -103,6 +103,7 @@ target(configureApp:"Configures the Grails application and builds an Application
         servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
     }
+    applicationLoaded = true
     event("AppCfgEnd", ["Configuring Grails Application"])
 }
 
@@ -118,36 +119,18 @@ monitorRecompileCallback = {}
 
 target(monitorApp:"Monitors an application for changes using the PluginManager and reloads changes") {
     depends(classpath)
-
-    long lastModified = classesDir.lastModified()
-    while (keepMonitoring) {
-        sleep(10000)
-        try {
-            pluginManager.checkForChanges()
-
-            lastModified = recompileCheck(lastModified) {
-                compile()
-                ClassLoader contextLoader = Thread.currentThread().getContextClassLoader()
-                classLoader = new URLClassLoader([classesDir.toURI().toURL()]as URL[], contextLoader.rootLoader)
-                Thread.currentThread().setContextClassLoader(classLoader)
-                // reload plugins
-                loadPlugins()
-                loadApp()
-                configureApp()
-                monitorRecompileCallback()
-            }
-        }
-        catch (Exception e) {
-            logError("Error recompiling application",e)
-        }
-        finally {
-            monitorCheckCallback()
-        }
-    }
+    // do nothing. Deprecated, purely here for compatibility
 }
 
 target(bootstrap: "Loads and configures a Grails instance") {
     packageApp()
     loadApp()
     configureApp()
+}
+
+target(bootstrapOnce:"Loads and configures a Grails instance only if it is not already loaded and configured") {
+    if (!binding.variables.applicationLoaded) {
+        loadApp()
+        configureApp()
+    }
 }

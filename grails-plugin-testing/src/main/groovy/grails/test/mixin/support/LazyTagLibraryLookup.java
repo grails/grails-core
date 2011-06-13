@@ -115,6 +115,11 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
     }
 
     @Override
+    protected void putTagLib(String nameKey, GrailsTagLibClass taglib){
+        tagLibraries.put(nameKey, taglib.getFullName());
+    }
+
+    @Override
     public void registerTagLib(GrailsTagLibClass taglib) {
 
         super.registerTagLib(taglib);

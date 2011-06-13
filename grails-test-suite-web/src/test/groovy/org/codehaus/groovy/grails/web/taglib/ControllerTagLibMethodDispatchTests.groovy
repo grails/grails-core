@@ -19,11 +19,11 @@ class ControllerTagLibMethodDispatchTests extends AbstractGrailsTagTests {
         def tagClass = gcl.parseClass('''
 class MyTagLib {
     static namespace = "my"
-    def test1 = { attrs, body ->
+    Closure test1 = { attrs, body ->
         out << body(foo:"bar", one:2)
     }
 
-    def test2 = { attrs, body ->
+    Closure test2 = { attrs, body ->
         out << "hello! ${attrs.foo}"
     }
 }
@@ -32,7 +32,7 @@ class MyTagLib {
 class SecondTagLib {
    static namespace = "two"
 
-   def test1 = { attrs, body ->
+   Closure test1 = { attrs, body ->
         out << my.test2(foo:"bar3")
    }
 

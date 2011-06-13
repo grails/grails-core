@@ -18,23 +18,13 @@ package org.codehaus.groovy.grails.plugins.logging
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
-import grails.util.GrailsUtil
-
 import org.apache.commons.beanutils.BeanUtils
-import org.apache.log4j.Appender
-import org.apache.log4j.ConsoleAppender
-import org.apache.log4j.FileAppender
-import org.apache.log4j.HTMLLayout
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
-import org.apache.log4j.PatternLayout
-import org.apache.log4j.RollingFileAppender
-import org.apache.log4j.SimpleLayout
 import org.apache.log4j.helpers.LogLog
 import org.apache.log4j.jdbc.JDBCAppender
-import org.apache.log4j.net.SMTPAppender
 import org.apache.log4j.varia.NullAppender
 import org.apache.log4j.xml.XMLLayout
+import org.codehaus.groovy.grails.plugins.logging.appenders.GrailsConsoleAppender
+import org.apache.log4j.*
 
 /**
  * Encapsulates the configuration of Log4j.
@@ -120,6 +110,41 @@ class Log4jConfig {
         }
     }
 
+    /**
+     * Configure Log4J from a map whose values are DSL closures.  This simply
+     * calls the closures in the order they come out of the map's iterator.
+     * This is to allow configuration like:
+     * <pre>
+     * log4j.main = {
+     *     // main Log4J configuration in Config.groovy
+     * }
+     *
+     * log4j.extra = {
+     *     // additional Log4J configuration in an external config file
+     * }
+     * </pre>
+     * In this situation, <code>config.log4j</code> is a ConfigObject, which is
+     * an extension of LinkedHashMap, and thus returns its sub-keys in order of
+     * definition.
+     */
+    def configure(Map callables) {
+        configure(callables.values())
+    }
+
+    /**
+     * Configure Log4J from a <i>collection</i> of DSL closures by calling the
+     * closures one after another in sequence.
+     */
+    def configure(Collection callables) {
+        return configure { root ->
+            for (c in callables) {
+                c.delegate = delegate
+                c.resolveStrategy = resolveStrategy
+                c.call(root)
+            }
+        }
+    }
+
     def configure(Closure callable) {
 
         Logger root = Logger.getRootLogger()
@@ -153,7 +178,9 @@ class Log4jConfig {
     }
 
     private createConsoleAppender() {
-        def consoleAppender = new ConsoleAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stdout")
+        def consoleAppender = grails.util.Environment.isWarDeployed() ?
+                                new ConsoleAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stdout") :
+                                new GrailsConsoleAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stdout")
         consoleAppender.activateOptions()
         appenders.console = consoleAppender
         return consoleAppender

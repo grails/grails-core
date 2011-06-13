@@ -70,7 +70,7 @@ private printInstalledPlugins() {
 
     if (installedPlugins) {
         installedPlugins.sort()
-		    println """
+        println """
 Plug-ins you currently have installed are listed below:
 -------------------------------------------------------------
 ${installedPlugins.join(System.getProperty("line.separator"))}
@@ -116,11 +116,11 @@ private printRemotePluginList(name) {
     // Sort plugin descriptions
     if (plugins) {
         plugins.sort()
-		println """
+        println """
 Plugins available in the $name repository are listed below:
 -------------------------------------------------------------
 ${plugins.join(System.getProperty("line.separator"))}
-		"""
+"""
 
     }
     else {

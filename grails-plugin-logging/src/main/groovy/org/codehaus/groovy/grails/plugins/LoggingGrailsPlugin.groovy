@@ -48,20 +48,21 @@ class LoggingGrailsPlugin {
 
     def onConfigChange = {event ->
         def log4jConfig = event.source.log4j
-        if (log4jConfig instanceof Closure) {
+        if (log4jConfig instanceof Closure || log4jConfig instanceof Collection || log4jConfig instanceof Map) {
             LogManager.resetConfiguration()
             new Log4jConfig().configure(log4jConfig)
         }
     }
 
-    def addLogMethod(artefactClass, handler) {
-        // Formulate a name of the form grails.<artefactType>.classname
-        // Do it here so not calculated in every getLog call :)
-        def type = GrailsNameUtils.getPropertyNameRepresentation(handler.type)
-        def logName = "grails.app.${type}.${artefactClass.name}".toString()
+    def doWithWebDescriptor = { webXml ->
 
-        def log = LogFactory.getLog(logName)
+        def mappingElement = webXml.'listener'
+        mappingElement = mappingElement[mappingElement.size() - 1]
 
-        artefactClass.metaClass.getLog << { -> log}
+        mappingElement + {
+            'listener' {
+                'listener-class'(org.codehaus.groovy.grails.web.util.Log4jConfigListener.name)
+            }
+        }
     }
 }

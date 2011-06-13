@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
-import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
@@ -1135,6 +1134,10 @@ public final class GrailsDomainBinder {
     }
 
     public static Mapping evaluateMapping(GrailsDomainClass domainClass, Closure<?> defaultMapping) {
+        return evaluateMapping(domainClass, defaultMapping, true);
+    }
+
+    public static Mapping evaluateMapping(GrailsDomainClass domainClass, Closure<?> defaultMapping, boolean cache) {
        try {
             Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.MAPPING);
             if (o != null || defaultMapping != null) {
@@ -1148,14 +1151,16 @@ public final class GrailsDomainBinder {
                     m = builder.evaluate((Closure<?>) o);
                 }
 
-                MAPPING_CACHE.put(domainClass.getClazz(), m);
+                if (cache) {
+                    MAPPING_CACHE.put(domainClass.getClazz(), m);
+                }
                 return m;
             }
+            return null;
         } catch (Exception e) {
-            GrailsUtil.deepSanitize(e);
-            throw new GrailsDomainException("Error evaluating ORM mappings block for domain ["+domainClass.getFullName()+"]:  " + e.getMessage(), e);
+            throw new GrailsDomainException("Error evaluating ORM mappings block for domain [" +
+                    domainClass.getFullName() + "]:  " + e.getMessage(), e);
         }
-        return null;
     }
 
     /**

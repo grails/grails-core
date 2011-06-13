@@ -129,7 +129,7 @@ class GrailsProjectCompiler {
         ant.path(id: "grails.runtime.classpath", runtimeClasspath)
 
         def grailsDir = new File("${basedir}/grails-app").listFiles()
-        StringBuffer cpath = new StringBuffer("")
+        StringBuilder cpath = new StringBuilder()
 
         def jarFiles = getJarFiles()
 
@@ -139,7 +139,7 @@ class GrailsProjectCompiler {
             // root loader returns old class before the grails GCL attempts to recompile it
             // rootLoader?.addURL(dir.URL)
         }
-        cpath << targetClassesDir.absolutePath<< File.pathSeparator
+        cpath << targetClassesDir.absolutePath << File.pathSeparator
         cpath << targetPluginClassesDir.absolutePath << File.pathSeparator
 
         cpath << "${basedir}/web-app/WEB-INF" << File.pathSeparator
