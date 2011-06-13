@@ -15,18 +15,15 @@
  */
 package org.slf4j.impl;
 
-import static org.apache.log4j.Level.DEBUG;
-import static org.apache.log4j.Level.ERROR;
-import static org.apache.log4j.Level.INFO;
-import static org.apache.log4j.Level.TRACE;
-import static org.apache.log4j.Level.WARN;
 import grails.util.GrailsUtil;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
+
+import static org.apache.log4j.Level.*;
 
 /**
  * A Log4j adapter that produces cleaner, more informative stack traces
@@ -195,7 +192,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
     }
 
     private void logMessage(Level level, String msg, Throwable t) {
-        Throwable filteredTrace = msg.startsWith(GrailsUtil.SANITIZING_STACKTRACE) ? t : cleanIfException(t);
+        Throwable filteredTrace = msg.startsWith(StackTraceFilterer.FULL_STACK_TRACE_MESSAGE) ? t : cleanIfException(t);
 
         log4jLogger.log(FQCN, level, msg, filteredTrace);
     }

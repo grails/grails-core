@@ -15,8 +15,8 @@
  */
 package org.codehaus.groovy.grails.test.event;
 
-import grails.util.GrailsUtil;
 import grails.build.logging.GrailsConsole;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -25,8 +25,6 @@ import org.junit.runner.notification.StoppedByUserException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A RunNotifier that logs the the GrailsConsole.
@@ -61,8 +59,10 @@ public class GrailsTestRunNotifier extends RunNotifier {
         console.error("FAILURE: " + failure.getDescription().getDisplayName());
         Throwable exception = failure.getException();
         if (exception != null) {
-            GrailsUtil.deepSanitize(exception);
-            deepSanitize(exception);
+            StackTraceFilterer filterer = new StackTraceFilterer();
+            filterer.setCutOffPackage("org.junit");
+            filterer.filter(exception, true);
+
             StringWriter sw = new StringWriter();
             PrintWriter ps = new PrintWriter(sw);
             exception.printStackTrace(ps);
@@ -75,27 +75,4 @@ public class GrailsTestRunNotifier extends RunNotifier {
         super.fireTestFailure(failure);
     }
 
-    private void deepSanitize(Throwable exception) {
-        if (FULL_STACKTRACE) {
-            return;
-        }
-
-        StackTraceElement[] stackTrace = exception.getStackTrace();
-        List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
-        for (StackTraceElement stackTraceElement : stackTrace) {
-            if (stackTraceElement.getClassName().startsWith("org.junit")) {
-                break;
-            }
-            newTrace.add(stackTraceElement);
-        }
-
-        if (newTrace.isEmpty()) {
-            return;
-        }
-
-        // We don't want to lose anything, so log it
-        StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
-        newTrace.toArray(clean);
-        exception.setStackTrace(clean);
-    }
 }
