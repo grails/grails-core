@@ -76,23 +76,4 @@ printHtmlPart(0)
         assertEquals("\n", output.htmlParts[0])
     }
 
-    void testEachOutputWithIt() {
-        def output = parseCode("myTest", """
-<g:each in="${'blah'}">\${it-it+it/it[it]itFezfe(aetit)}</g:each>""")
-
-        assertEquals(trimAndRemoveCR(makeImports()+"""\n
-class myTest extends GroovyPage {
-public String getGroovyPageFileName() { "myTest" }
-public Object run() {
-Writer out = getOut()
-Writer codecOut = getCodecOut()
-registerSitemeshPreprocessMode()
-
-printHtmlPart(0)
-for( _it in evaluate('"blah"', 1, it) { return "blah" } ) {
-}
-}""" + GSP_FOOTER
-),trimAndRemoveCR(output.toString()))
-        assertEquals("\n", output.htmlParts[0])
-    }
 }
