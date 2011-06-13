@@ -15,10 +15,10 @@ class WithNamespaceTagLib {
 
     static namespace = "ns1"
 
-    def tag1 = { attrs, body ->
+    Closure tag1 = { attrs, body ->
         out << render(template: "/bug1/t1n")
     }
-    def tag2 = { attrs, body ->
+    Closure tag2 = { attrs, body ->
         out << render(template: "/bug1/t2n")
     }
 
@@ -27,10 +27,10 @@ class WithNamespaceTagLib {
        def tagClass2 = gcl.parseClass('''
 class NormalTagLib {
 
-    def tag1 = { attrs, body ->
+    Closure tag1 = { attrs, body ->
         out << render(template: "/bug1/t1")
     }
-    def tag2 = { attrs, body ->
+    Closure tag2 = { attrs, body ->
         out << render(template: "/bug1/t2")
     }
 

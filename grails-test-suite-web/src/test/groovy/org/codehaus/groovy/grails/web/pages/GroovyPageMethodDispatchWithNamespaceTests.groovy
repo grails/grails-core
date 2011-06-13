@@ -14,7 +14,7 @@ class TestController {
 }
 class Test1TagLib {
     static namespace = "t1"
-    def tag = { attrs, body ->
+    Closure tag = { attrs, body ->
 
         out << "print"
 
@@ -27,7 +27,7 @@ class Test1TagLib {
     }
 }
 class Test2TagLib {
-    def tag2 = { attrs, body -> out << attrs.test }
+    Closure tag2 = { attrs, body -> out << attrs.test }
 }
 class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
     String getGroovyPageFileName() { "test" }

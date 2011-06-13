@@ -28,14 +28,14 @@ class TagLibNamespaceTests extends AbstractGrailsTagTests {
 class TestTagLib {
     static namespace = "t1"
 
-    def condition = { attrs, body -> }
+    Closure condition = { attrs, body -> }
 
-    def foo = { attrs, body ->
+    Closure foo = { attrs, body ->
         out << "bar"
         out << body?.call()
     }
 
-    def nested = { attrs, body ->
+    Closure nested = { attrs, body ->
        out << "<${attrs.name}>"
         out << foo()
         out << body()

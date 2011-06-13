@@ -10,7 +10,7 @@ class ModifyOurScopeWithBodyTagTests extends AbstractGrailsTagTests {
     protected void onSetUp() {
         gcl.parseClass '''
 class OutScopeTagLib {
-  def threeTimes = { attrs, body ->
+  Closure threeTimes = { attrs, body ->
     3.times {
         if (attrs.var)
             out << body((attrs.var):it)
@@ -18,11 +18,11 @@ class OutScopeTagLib {
             out << body()
     }
   }
-    def local = { attrs, body ->
+    Closure local = { attrs, body ->
         out << body(attrs.vars)
     }
 
-    def ittest = { attrs, body ->
+    Closure ittest = { attrs, body ->
         out << body('hello')
     }
 }
