@@ -21,6 +21,9 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
+import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
 
 /**
  * A Log4j appender that appends to the GrailsConsole instance.
@@ -37,7 +40,7 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     protected void append(LoggingEvent event) {
         Level level = event.getLevel();
         String message = buildMessage(event);
-        if (level == Level.ERROR || level == Level.FATAL) {
+        if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
             console.error(message);
         }
         else {
@@ -48,13 +51,27 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     private String buildMessage(LoggingEvent event) {
         StringBuilder b = new StringBuilder(layout.format(event));
 
-        String[] throwableStrRep = event.getThrowableStrRep();
-        if (throwableStrRep != null) {
-            b.append(Layout.LINE_SEP);
-            for (String line : throwableStrRep) {
-                b.append(line).append(Layout.LINE_SEP);
+        if(console.isVerbose()) {
+            String[] throwableStrRep = event.getThrowableStrRep();
+            if (throwableStrRep != null) {
+                b.append(Layout.LINE_SEP);
+                for (String line : throwableStrRep) {
+                    b.append(line).append(Layout.LINE_SEP);
+                }
             }
         }
+        else {
+            ThrowableInformation throwableInformation = event.getThrowableInformation();
+            if(throwableInformation != null) {
+
+                Throwable throwable = throwableInformation.getThrowable();
+                if(throwable != null) {
+                    StackTracePrinter stackTracePrinter = new DefaultStackTracePrinter();
+                    b.append(stackTracePrinter.prettyPrint(throwable));
+                }
+            }
+        }
+
         return b.toString();
     }
 

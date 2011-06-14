@@ -146,10 +146,6 @@ public class GrailsPageFilter extends SiteMeshFilter {
             }
         }
         catch (RuntimeException e) {
-            if (containerTweaks.shouldLogUnhandledExceptions()) {
-                // Some containers (such as Tomcat 4) swallow RuntimeExceptions in filters.
-                servletContext.log("Unhandled exception occurred whilst decorating page", e);
-            }
             throw e;
         }
         catch (ServletException e) {

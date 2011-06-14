@@ -51,7 +51,7 @@ import org.springframework.util.ReflectionUtils;
  * @author Lari Hotari
  * @since 0.5
  */
-class GroovyPageMetaInfo implements GrailsApplicationAware {
+public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageMetaInfo.class);
     private TagLibraryLookup tagLibraryLookup;

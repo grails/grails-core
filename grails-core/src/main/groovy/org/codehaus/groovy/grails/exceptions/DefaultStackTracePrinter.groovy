@@ -41,6 +41,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
     }
 
     String prettyPrint(Throwable t) {
+        if(t == null) return ''
         final sw = new StringWriter()
         def sb = new PrintWriter(sw)
         def mln = Math.max(4, t.stackTrace.lineNumber.max())
@@ -58,10 +59,19 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             def prevFn
             def evenRow = false
             if (!first) {
-                printCausedByMessage(sb)
+                printCausedByMessage(sb, e)
             }
             e.stackTrace[0..-1].eachWithIndex { te, idx ->
                 def fileName = getFileName(te)
+                def lineNumber
+                if (e instanceof SourceCodeAware) {
+                    lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
+                    fileName = e.fileName
+                    fileName = makeRelativeIfPossible(fileName)
+                }
+                else {
+                    lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
+                }
                 if ((idx == 0) || fileName) {
                     if (prevFn && (prevFn == fileName)) {
                         fileName = "    ''"
@@ -80,19 +90,6 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                         methodName = methodName.padRight(methodNameBaseWidth - 1, padChar)
                     }
 
-                    def lineNumber
-                    if (e instanceof SourceCodeAware) {
-                        lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
-                        fileName = e.fileName
-                        final base = System.getProperty("base.dir")
-                        if (base) {
-                            fileName = fileName - base
-                        }
-                        prevFn = fileName
-                    }
-                    else {
-                        lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
-                    }
 
                     if (idx == 0) {
                         printFailureLocation(sb, lineNumber, methodName, fileName)
@@ -113,13 +110,21 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         return sw.toString()
     }
 
+    protected String makeRelativeIfPossible(String fileName) {
+        final base = System.getProperty("base.dir")
+        if (base) {
+            fileName = fileName - base
+        }
+        return fileName
+    }
+
     protected boolean shouldSkipNextCause(Throwable e) {
         return e.cause == null || e == e.cause
     }
 
-    protected def printCausedByMessage(PrintWriter sb) {
+    protected def printCausedByMessage(PrintWriter sb, Throwable e) {
         sb.println()
-        sb.println "Caused by"
+        sb.println "Caused by ${e.class.simpleName}"
     }
 
     protected def printHeader(PrintWriter sb, String header) {
@@ -164,17 +169,8 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     lineNumber = cause.stackTrace[0].lineNumber
                 }
 
-                if (exception instanceof SourceCodeAware) {
-                    SourceCodeAware sca = exception
-                    lineNumber = sca.lineNumber
-                    res = new FileSystemResource(sca.fileName)
-                }
-                else if (cause instanceof SourceCodeAware) {
-                    SourceCodeAware sca = cause
-                    lineNumber = sca.lineNumber
-                    res = new FileSystemResource(sca.fileName)
-                }
-
+                lineNumber = getLineNumberInfo(cause, lineNumber)
+                res = getFileNameInfo(cause, res)
 
                 if (className && lineNumber) {
                     res = res ?: resourceLocator.findResourceForClassName(className)
@@ -232,6 +228,30 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         }
 
         return sw.toString()
+    }
+
+    protected Resource getFileNameInfo(Throwable cause, Resource res) {
+        Throwable start = cause
+        while (start instanceof SourceCodeAware) {
+            final tmp = new FileSystemResource(start.fileName)
+            if(tmp.exists()) {
+                res = tmp
+                break
+            }
+
+            start = start.cause
+            if(start == null || start == start.cause) break
+        }
+        return res
+    }
+
+    protected int getLineNumberInfo(Throwable cause, int defaultInfo) {
+        int lineNumber = defaultInfo
+        if (cause instanceof SourceCodeAware) {
+            SourceCodeAware sca = cause
+            lineNumber = sca.lineNumber
+        }
+        return lineNumber
     }
 
     String formatCodeSnippetEnd(Resource resource, int lineNumber) {

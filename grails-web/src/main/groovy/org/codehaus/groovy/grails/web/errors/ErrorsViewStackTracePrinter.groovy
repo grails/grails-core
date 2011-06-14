@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
 import org.springframework.core.io.Resource
 
-/**
+ /**
  * Customized Stack trace output for the errors view
  *
  * @author Graeme Rocher
@@ -55,7 +55,9 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
         return "<div class=\"errorLine\"><span class=\"lineNumber\">${currentLineNumber}:</span> ${currentLine.encodeAsHTML()}</div>"
     }
 
-
+    @Override protected int getLineNumberInfo(Throwable cause, int defaultInfo) {
+        return super.getLineNumberInfo(cause, defaultInfo)
+    }
 
 
 }
