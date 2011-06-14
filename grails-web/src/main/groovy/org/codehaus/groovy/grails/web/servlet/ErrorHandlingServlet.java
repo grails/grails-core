@@ -14,27 +14,26 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Collections;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.IncludeResponseWrapper;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
 
 /**
  * A servlet for handling errors.
@@ -58,6 +57,9 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     @Override
     protected void doDispatch(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
         int statusCode;
+
+        // Do nothing in the case of an already committed response. Assume error already handled
+        if(response.isCommitted()) return;
 
         if (request.getAttribute("javax.servlet.error.status_code") != null) {
             statusCode = Integer.parseInt(request.getAttribute("javax.servlet.error.status_code").toString());
@@ -88,26 +90,42 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingInfo urlMappingInfo = matchedInfo;
 
         if (urlMappingInfo != null) {
-            final GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-            request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
-            urlMappingInfo.configure(webRequest);
+            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+            boolean restoreOriginalRequestAttributes = false;
+            if(requestAttributes instanceof GrailsWebRequest) {
 
-            String viewName = urlMappingInfo.getViewName();
-            if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+                final GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
+                urlMappingInfo.configure(webRequest);
             }
             else {
-                ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
-                if (viewResolver != null) {
-                    View v;
-                    try {
-                        v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
-                        IncludeResponseWrapper includeResponse = new IncludeResponseWrapper(response);
-                        v.render(Collections.EMPTY_MAP, request, response);
+                restoreOriginalRequestAttributes = true;
+                GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
+                RequestContextHolder.setRequestAttributes(webRequest);
+                urlMappingInfo.configure(webRequest);
+            }
+            request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
+
+            try {
+                String viewName = urlMappingInfo.getViewName();
+                if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                    WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+                }
+                else {
+                    ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
+                    if (viewResolver != null) {
+                        View v;
+                        try {
+                            v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
+                            v.render(Collections.EMPTY_MAP, request, response);
+                        }
+                        catch (Exception e) {
+                            throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
+                        }
                     }
-                    catch (Exception e) {
-                        throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
-                    }
+                }
+            } finally {
+                if(restoreOriginalRequestAttributes) {
+                    RequestContextHolder.setRequestAttributes(requestAttributes);
                 }
             }
         }

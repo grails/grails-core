@@ -15,19 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import java.io.IOException;
-import java.util.Map;
-
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Factory;
+import com.opensymphony.module.sitemesh.HTMLPage;
+import com.opensymphony.sitemesh.*;
+import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
+import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
+import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
+import com.opensymphony.sitemesh.webapp.ContainerTweaks;
+import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 import grails.util.GrailsWebUtil;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
@@ -36,20 +33,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.util.UrlPathHelper;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Factory;
-import com.opensymphony.module.sitemesh.HTMLPage;
-import com.opensymphony.sitemesh.Content;
-import com.opensymphony.sitemesh.ContentProcessor;
-import com.opensymphony.sitemesh.Decorator;
-import com.opensymphony.sitemesh.DecoratorSelector;
-import com.opensymphony.sitemesh.SiteMeshContext;
-import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
-import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
-import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
-import com.opensymphony.sitemesh.webapp.ContainerTweaks;
-import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
-import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Extends the default page filter to overide the apply decorator behaviour
@@ -226,6 +214,9 @@ public class GrailsPageFilter extends SiteMeshFilter {
                         }
                         else {
                             dispatcher.forward(request, response);
+                            if(!response.isCommitted()) {
+                                response.getWriter().flush();
+                            }
                         }
 
                         request.removeAttribute(PAGE);

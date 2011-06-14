@@ -15,17 +15,18 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import javax.servlet.ServletResponse;
-
+import com.opensymphony.module.sitemesh.RequestConstants;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
+
+import javax.servlet.ServletResponse;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -49,9 +50,9 @@ public class GSPResponseWriter extends GrailsPrintWriter {
 
     private ServletResponse response;
     private BoundedCharsAsEncodedBytesCounter bytesCounter;
-    private static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
-    private static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
-    private static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
+    public static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
+    public static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
+    public static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
     private static final int BUFFER_SIZE = Integer.getInteger("GSPResponseWriter.bufferSize", 8042);
 
     public static GSPResponseWriter getInstance(final ServletResponse response) {
@@ -149,12 +150,23 @@ public class GSPResponseWriter extends GrailsPrintWriter {
             if (size > 0) {
                 response.setContentLength(size);
             }
-            try {
-                response.getWriter().flush();
+            flushResponse();
+        }
+        else {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if(webRequest != null && webRequest.getCurrentRequest().getAttribute(RequestConstants.PAGE) != null) {
+                // flush the response if its a layout
+                flushResponse();
             }
-            catch (IOException e) {
-                handleIOException(e);
-            }
+        }
+    }
+
+    private void flushResponse() {
+        try {
+            response.getWriter().flush();
+        }
+        catch (IOException e) {
+            handleIOException(e);
         }
     }
 }
