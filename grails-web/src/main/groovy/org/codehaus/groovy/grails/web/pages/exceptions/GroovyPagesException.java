@@ -29,7 +29,7 @@ public class GroovyPagesException extends GrailsException implements SourceCodeA
     private int lineNumber;
     private String fileName;
 
-    public GroovyPagesException(String message, Exception e) {
+    public GroovyPagesException(String message, Throwable e) {
         super(message,e);
     }
 

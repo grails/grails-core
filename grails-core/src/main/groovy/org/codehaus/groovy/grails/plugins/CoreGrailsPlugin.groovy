@@ -99,7 +99,10 @@ class CoreGrailsPlugin {
         grailsResourceLocator(DefaultResourceLocator) {
             if(devMode) {
                 BuildSettings settings = BuildSettingsHolder.settings
-                searchLocation = settings.baseDir.absolutePath
+                if(settings) {
+                    searchLocation = settings.baseDir.absolutePath
+                }
+
             }
         }
 

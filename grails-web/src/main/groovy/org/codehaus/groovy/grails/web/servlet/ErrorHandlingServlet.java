@@ -14,11 +14,11 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
-import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -118,8 +118,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                             v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
                             v.render(Collections.EMPTY_MAP, request, response);
                         }
-                        catch (Exception e) {
-                            throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
+                        catch (Throwable e) {
+                            StackTraceFilterer filterer = new StackTraceFilterer();
+                            filterer.filter(e);
+                            renderDefaultResponse(response, statusCode, "Internal Server Error", e.getMessage());
                         }
                     }
                 }

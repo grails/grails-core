@@ -47,6 +47,7 @@ public class StackTraceFilterer {
         "org.apache.catalina.",
         "org.apache.coyote.",
         "org.apache.tomcat.",
+        "net.sf.cglib.proxy.",
         "sun.",
         "java.lang.reflect.",
         "org.springframework.",

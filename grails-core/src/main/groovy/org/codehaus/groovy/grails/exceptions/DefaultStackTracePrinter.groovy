@@ -180,8 +180,9 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     res = res ?: resourceLocator.findResourceForClassName(className)
                     if (res != null) {
                         pw.print formatCodeSnippetStart(res, lineNumber)
-                        final input = res.inputStream
+                        final input = null
                         try {
+                            input =  res.inputStream
                             input.withReader { fileIn ->
                                 def reader = new LineNumberReader(fileIn)
                                 def last = lineNumber + 3
@@ -214,7 +215,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                         }
                         finally {
                             try {
-                                input.close()
+                                input?.close()
                             } catch (e) {
                                 // ignore
                             }

@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -294,12 +295,12 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     handlerInterceptor.afterCompletion(request, response, this, null);
                 }
             }
-            catch (Exception e) {
+            catch (Throwable e) {
                 // let the sitemesh filter re-run for the error
                 reapplySitemesh(request);
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
                     try {
-                        handlerInterceptor.afterCompletion(request, response, this, e);
+                        handlerInterceptor.afterCompletion(request, response, this, e instanceof Exception ? (Exception)e : new GroovyPagesException(e.getMessage(), e));
                     }
                     catch (Exception e1) {
                         UrlMappingException ume = new UrlMappingException("Error executing filter after view error: " + e1.getMessage() + ". Original error: " + e.getMessage(), e1);
