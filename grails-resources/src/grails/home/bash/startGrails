@@ -50,40 +50,6 @@ case "`uname`" in
         ;;
 esac
 
-# Process JVM args
-AGENT_STRING="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-SAVED_OPTIONS=""
-
-while true; do
-  if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
-    CP=$2
-    shift 2
-    break
-  fi
-
-  if [ "$1" = "-reloading" ]; then
-    AGENT=$AGENT_STRING
-    shift
-    break
-  fi
-
-  if [ "$1" != -* ]; then
-    break
-  fi
-
-  SAVED_OPTIONS="$SAVED_OPTIONS $1"
-  shift
-done
-
-# Enable agent-based reloading for the 'run-app' command.
-for a in "$@"; do
-  if [ "$a" = "run-app" ]; then
-    AGENT=$AGENT_STRING
-  fi
-done
-
-ARGUMENTS="$SAVED_OPTIONS $@"
-
 # Attempt to set JAVA_HOME if it's not already set
 if [ -z "$JAVA_HOME" ]; then
 
@@ -137,6 +103,21 @@ if [ -z "$GRAILS_HOME" -o ! -d "$GRAILS_HOME" ] ; then
   cd "$SAVED"
 fi
 
+# Warn the user if JAVA_HOME and/or GRAILS_HOME are not set.
+if [ -z "$JAVA_HOME" ] ; then
+    die "JAVA_HOME environment variable is not set"
+elif [ ! -d "$JAVA_HOME" ] ; then
+    die "JAVA_HOME is not a directory: $JAVA_HOME"
+fi
+
+if [ -z "$GRAILS_HOME" ] ; then
+    warn "GRAILS_HOME environment variable is not set"
+fi
+
+if [ ! -d "$GRAILS_HOME" ] ; then
+    die "GRAILS_HOME is not a directory: $GRAILS_HOME"
+fi    
+
 # Use default groovy-conf config
 if [ -z "$GROOVY_CONF" ]; then
     GROOVY_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
@@ -174,9 +155,6 @@ fi
 if [ ! -x "$JAVACMD" ]; then
     die "JAVA_HOME is not defined correctly; can not execute: $JAVACMD"
 fi
-if [ -z "$JAVA_HOME" ] ; then
-    warn "JAVA_HOME environment variable is not set"
-fi
 
 # Increase the maximum file descriptors if we can
 if [ "$cygwin" = "false" ]; then
@@ -197,6 +175,40 @@ if [ "$cygwin" = "false" ]; then
 	    fi
 	fi
 fi
+
+# Process JVM args
+AGENT_STRING="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
+SAVED_OPTIONS=""
+
+while true; do
+  if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
+    CP=$2
+    shift 2
+    break
+  fi
+
+  if [ "$1" = "-reloading" ]; then
+    AGENT=$AGENT_STRING
+    shift
+    break
+  fi
+
+  if [ "$1" != -* ]; then
+    break
+  fi
+
+  SAVED_OPTIONS="$SAVED_OPTIONS $1"
+  shift
+done
+
+# Enable agent-based reloading for the 'run-app' command.
+for a in "$@"; do
+  if [ "$a" = "run-app" ]; then
+    AGENT=$AGENT_STRING
+  fi
+done
+
+ARGUMENTS="$SAVED_OPTIONS $@"
 
 # Setup Profiler
 useprofiler=false
