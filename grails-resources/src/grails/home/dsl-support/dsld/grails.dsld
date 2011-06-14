@@ -1,0 +1,109 @@
+/*******************************************************************************
+* Copyright (c) 2011 Codehaus.org, SpringSource, and others.
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+*      Andrew Eisenberg - Initial implemenation
+*******************************************************************************/
+package dsld
+
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+
+
+
+def grailsArtifact = { String folder ->
+    sourceFolderOfCurrentType("grails-app/" + folder) &
+    nature("grails") & (~isScript())
+}
+
+// define the various kinds of grails artifacts
+def domainClass = grailsArtifact("domain")
+// we only require domainClass, but we can also reference other kinds of artifacts here
+def controllerClass = grailsArtifact("controllers")
+def serviceClass = grailsArtifact("services")
+def taglibClass = grailsArtifact("taglib")
+
+ 
+// constraints
+// The constraints DSL is only applicable inside of the static "constraints" field declaration
+(domainClass &
+    inClosure() &
+    enclosingField(name("constraints") & isStatic()) &
+    currentTypeIsEnclosingType() &
+    bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
+    ).accept {
+ 
+    provider = "Grails Constraints DSL"  // this value will appear in content assist
+
+    // for each non-static property, there are numerous constraints "methods" that are available
+    // define them all here
+    for (PropertyNode prop in props) {
+        if (prop.type == ClassHelper.STRING_TYPE) {
+            method isStatic: true, name: prop.name, params: [blank:Boolean], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [creditCard:Boolean], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [email:Boolean], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [url:Boolean], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [matches:String], useNamedArgs:true
+        } else if (prop.type.name == Date.name) {
+            method isStatic: true, name: prop.name, params: [max:Date], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [min:Date], useNamedArgs:true
+        } else if (ClassHelper.isNumberType(prop.type)) {
+            method isStatic: true, name: prop.name, params: [max:prop.type], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [min:prop.type], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [scale:prop.type], useNamedArgs:true
+        } else if (prop.type.implementsInterface(ClassHelper.LIST_TYPE)) {
+            method isStatic: true, name: prop.name, params: [maxSize:Number], useNamedArgs:true
+            method isStatic: true, name: prop.name, params: [minSize:Number], useNamedArgs:true
+        }
+        method isStatic: true, name: prop.name, params: [unique:Boolean], useNamedArgs:true
+        method isStatic: true, name: prop.name, params: [size:Integer], useNamedArgs:true
+        method isStatic: true, name: prop.name, params: [notEqual:Object], useNamedArgs:true
+        method isStatic: true, name: prop.name, params: [nullable:Boolean], useNamedArgs:true
+        method isStatic: true, name: prop.name, params: [range:Range], useNamedArgs:true
+        method isStatic: true, name: prop.name, params: [inList:List], useNamedArgs:true
+    }
+}
+        
+// criteria queries
+domainClass.accept {
+    method name:"createCriteria", type:"grails.orm.HibernateCriteriaBuilder",
+        declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+}
+currentType("grails.orm.HibernateCriteriaBuilder").accept {
+    method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+    method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+    method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+    method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+}
+
+// hasMany
+domainClass & currentType(props : properties(isStatic() & name("hasMany"))).accept {
+    provider = "Grails hasMany"
+    for (PropertyNode hasMany in props) {
+        if (hasMany.initializer instanceof MapExpression) {
+            for (MapEntryExpression entry in hasMany.initializer.mapExpressions.entrySet) {
+                /* should specify type porameters on list, but can't do that yet */
+                property name : entry.keyExpression, type : List
+            }
+        }
+    }
+}
+
+// hasOne
+domainClass & currentType(props : properties(isStatic() & name("hasOne"))).accept {
+    provider = "Grails hasOne"
+    for (PropertyNode hasMany in props) {
+        if (hasMany.initializer instanceof MapExpression) {
+            for (MapEntryExpression entry in hasMany.initializer.mapExpressions.entrySet) {
+                /* should specify type porameters on list, but can't do that yet */
+                property name : entry.keyExpression, type : entry.valueExpression
+            }
+        }
+    }
+}
