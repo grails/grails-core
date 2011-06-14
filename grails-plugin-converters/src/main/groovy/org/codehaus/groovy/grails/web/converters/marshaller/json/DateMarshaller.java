@@ -36,8 +36,22 @@ import org.codehaus.groovy.grails.web.json.JSONException;
  */
 public class DateMarshaller implements ObjectMarshaller<JSON> {
 
-    // TODO Tests resulted in java.text.SimpleDateFormat beeing a bit faster - but it's not thread-safe - need to discuss
-    private final Format JSON_DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("GMT"), Locale.US);
+    private final Format formatter;
+
+    /**
+     * Constructor with a custom formatter.
+     * @param formatter the formatter
+     */
+    public DateMarshaller(Format formatter) {
+        this.formatter = formatter;
+    }
+
+    /**
+     * Default constructor.
+     */
+    public DateMarshaller() {
+        this(FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone("GMT"), Locale.US));
+    }
 
     public boolean supports(Object object) {
         return object instanceof Date;
@@ -45,7 +59,7 @@ public class DateMarshaller implements ObjectMarshaller<JSON> {
 
     public void marshalObject(Object object, JSON converter) throws ConverterException {
         try {
-            converter.getWriter().value(JSON_DATE_FORMAT.format(object));
+            converter.getWriter().value(formatter.format(object));
         }
         catch (JSONException e) {
             throw new ConverterException(e);
