@@ -717,7 +717,7 @@ class RenderTagLib implements RequestConstants {
             if (exception != null) {
                 currentOut << "<h2>Trace</h2>"
                 currentOut << '<div class="stack"><pre>'
-                currentOut << errorPrinter.prettyPrint(exception.cause)
+                currentOut << errorPrinter.prettyPrint(exception.cause ?: exception)
                 currentOut << '</pre></div>'
 
             }

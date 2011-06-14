@@ -19,9 +19,11 @@ import groovy.text.Template;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
@@ -144,11 +146,18 @@ public class GroovyPageView extends AbstractUrlBasedView  {
 
             Template t;
 
-            if (viewClass != null) {
-                t = engine.createTemplate(viewClass);
-            }
-            else {
-                t = engine.createTemplate(getUrl());
+            try {
+                if (viewClass != null) {
+                    t = engine.createTemplate(viewClass);
+                }
+                else {
+                    t = engine.createTemplate(getUrl());
+                }
+            } catch (Exception e) {
+                // create fresh response writer
+                out = createResponseWriter(response);
+                handleException(e, out, null, request, response);
+                return;
             }
             Writable w = t.make(model);
             w.writeTo(out);
@@ -182,8 +191,37 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             throw (GroovyPagesException) exception;
         }
 
-        throw new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
-                exception, -1, getUrl());
+        if(engine != null) {
+            GroovyPagesException gspException = createGroovyPageException(exception, engine, getUrl());
+            throw gspException;
+        }
+        else {
+            throw new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
+                    exception, -1, getUrl());
+        }
+    }
+
+    public static GroovyPagesException createGroovyPageException(Exception exception, GroovyPagesTemplateEngine engine, String pageUrl) {
+        GroovyPageTemplate t = (GroovyPageTemplate) engine.createTemplate(pageUrl);
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        String className = stackTrace[0].getClassName();
+        int lineNumber = stackTrace[0].getLineNumber();
+        if(className.contains("_gsp")) {
+            int[] lineNumbers = t.getMetaInfo().getLineNumbers();
+            if (lineNumber < lineNumbers.length) {
+                lineNumber = lineNumbers[lineNumber - 1];
+            }
+        }
+
+        Resource resource = engine.getResourceForUri(pageUrl);
+        String file;
+        try {
+            file = resource.exists() ? resource.getFile().getAbsolutePath() : pageUrl;
+        } catch (IOException e) {
+            file = pageUrl;
+        }
+        return new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
+                exception, lineNumber, file);
     }
 
     /**
