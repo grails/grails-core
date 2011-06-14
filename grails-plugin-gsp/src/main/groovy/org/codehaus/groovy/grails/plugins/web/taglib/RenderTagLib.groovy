@@ -14,20 +14,24 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.RequestConstants
 import grails.artefact.Artefact
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import groovy.text.Template
-
 import java.util.concurrent.ConcurrentHashMap
-
 import javax.servlet.ServletConfig
-
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -40,10 +44,6 @@ import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
-import com.opensymphony.module.sitemesh.Factory
-import com.opensymphony.module.sitemesh.RequestConstants
 
 /**
  * Tags to help rendering of views and layouts.
@@ -61,6 +61,7 @@ class RenderTagLib implements RequestConstants {
     def scaffoldingTemplateGenerator
     Map scaffoldedActionMap
     Map controllerToScaffoldedDomainClassMap
+    ResourceLocator grailsResourceLocator
 
     static Map TEMPLATE_CACHE = new ConcurrentHashMap()
 
@@ -91,10 +92,10 @@ class RenderTagLib implements RequestConstants {
 
         if (attrs.controller || attrs.view) {
             def mapping = new ForwardUrlMappingInfo(controller: attrs.controller,
-                                                    action: attrs.action,
-                                                    view: attrs.view,
-                                                    id: attrs.id,
-                                                    params: attrs.params)
+                    action: attrs.action,
+                    view: attrs.view,
+                    id: attrs.id,
+                    params: attrs.params)
 
             out << WebUtils.includeForUrlMappingInfo(request, response, mapping, attrs.model ?: [:])?.content
         }
@@ -159,7 +160,7 @@ class RenderTagLib implements RequestConstants {
             page = parser.parse(content.toCharArray())
         }
 
-        attrs.params.each { k, v->
+        attrs.params.each { k, v ->
             page.addProperty(k, v?.toString())
         }
         def decoratorMapper = getFactory().getDecoratorMapper()
@@ -353,7 +354,7 @@ class RenderTagLib implements RequestConstants {
         if (params.sort) linkParams.sort = params.sort
         if (params.order) linkParams.order = params.order
 
-        def linkTagAttrs = [action:action]
+        def linkTagAttrs = [action: action]
         if (attrs.controller) {
             linkTagAttrs.controller = attrs.controller
         }
@@ -421,7 +422,7 @@ class RenderTagLib implements RequestConstants {
             // display laststep link when endstep is not laststep
             if (endstep < laststep) {
                 writer << '<span class="step">..</span>'
-                linkParams.offset = (laststep -1) * max
+                linkParams.offset = (laststep - 1) * max
                 writer << link(linkTagAttrs.clone()) { laststep.toString() }
             }
         }
@@ -484,7 +485,7 @@ class RenderTagLib implements RequestConstants {
 
         // add sorting property and params to link params
         def linkParams = [:]
-        if (params.id) linkParams.put("id",params.id)
+        if (params.id) linkParams.put("id", params.id)
         if (attrs.params) linkParams.putAll(attrs.remove("params"))
         linkParams.sort = property
 
@@ -518,7 +519,7 @@ class RenderTagLib implements RequestConstants {
         attrs.each { k, v ->
             writer << "${k}=\"${v.encodeAsHTML()}\" "
         }
-        writer << ">${link(action:action, params:linkParams) { title }}</th>"
+        writer << ">${link(action: action, params: linkParams) { title }}</th>"
     }
 
     /**
@@ -663,7 +664,7 @@ class RenderTagLib implements RequestConstants {
                 key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
             }
             collection.each {
-                def b = [body:body]
+                def b = [body: body]
                 if (attrs.model instanceof Map) {
                     b += attrs.model
                 }
@@ -678,10 +679,50 @@ class RenderTagLib implements RequestConstants {
             }
         }
         else if (attrs.model instanceof Map) {
-            t.make([body:body] + attrs.model).writeTo(out)
+            t.make([body: body] + attrs.model).writeTo(out)
         }
         else if (attrs.template) {
-            t.make([body:body]).writeTo(out)
+            t.make([body: body]).writeTo(out)
         }
+    }
+
+    /**
+     * Renders an exception for the errors view
+     *
+     * @attr exception REQUIRED The exception to render
+     */
+    def renderException = { attrs ->
+        def exception = attrs.exception
+
+        if(exception instanceof Throwable) {
+
+            def currentOut = out
+            currentOut << """<h2>Error ${request.'javax.servlet.error.status_code'}</h2>
+<div class="errors">
+${request.'javax.servlet.error.message'.encodeAsHTML()}<br/>
+<strong>URI:</strong> ${request.forwardURI ?: request.'javax.servlet.error.request_uri'}<br/>
+"""
+
+            if (exception != null) {
+                def root = GrailsExceptionResolver.getRootCause(exception)
+                currentOut << "<strong>Message:</strong> ${exception.message?.encodeAsHTML()} <br />"
+                if (root != null && root != exception && root.message != exception.message) {
+                    currentOut << "<strong>Caused by:</strong> ${root.message?.encodeAsHTML()} <br />"
+                }
+            }
+            currentOut << "</div>"
+
+            def errorPrinter = new ErrorsViewStackTracePrinter(grailsResourceLocator)
+            currentOut << errorPrinter.prettyPrintCodeSnippet(exception)
+
+            if (exception != null) {
+                currentOut << "<h2>Trace</h2>"
+                currentOut << '<div class="stack"><pre>'
+                currentOut << errorPrinter.prettyPrint(exception.cause)
+                currentOut << '</pre></div>'
+
+            }
+        }
+
     }
 }

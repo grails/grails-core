@@ -1,0 +1,268 @@
+/*
+ * Copyright 2011 SpringSource
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.codehaus.groovy.grails.exceptions
+
+import org.codehaus.groovy.grails.core.io.ResourceLocator
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.Resource
+
+/**
+ * Default implementation of the {@link StackTracePrinter} interface
+ *
+ * @since 1.4
+ *
+ * @author Graeme Rocher
+ * @author Marc Palmer
+ */
+class DefaultStackTracePrinter implements StackTracePrinter {
+
+    ResourceLocator resourceLocator
+
+
+
+    DefaultStackTracePrinter() {
+    }
+
+    DefaultStackTracePrinter(ResourceLocator resourceLocator) {
+        this.resourceLocator = resourceLocator
+    }
+
+    String prettyPrint(Throwable t) {
+        final sw = new StringWriter()
+        def sb = new PrintWriter(sw)
+        def mln = Math.max(4, t.stackTrace.lineNumber.max())
+        def lineNumWidth = mln.toString().size()
+        def methodNameBaseWidth = t.stackTrace.methodName*.size().max() + 1
+
+        def lh = "Line".padLeft(lineNumWidth + 4)
+        String header = "$lh | Method"
+        printHeader(sb, header)
+
+        boolean first = true
+        Throwable e = t
+        while (e != null) {
+            def last = e.stackTrace.size()
+            def prevFn
+            def evenRow = false
+            if (!first) {
+                printCausedByMessage(sb)
+            }
+            e.stackTrace[0..-1].eachWithIndex { te, idx ->
+                def fileName = getFileName(te)
+                if ((idx == 0) || fileName) {
+                    if (prevFn && (prevFn == fileName)) {
+                        fileName = "    ''"
+                    } else {
+                        prevFn = fileName
+                    }
+                    if (!fileName) {
+                        fileName = "Unknown source"
+                    }
+
+                    def padChar = (evenRow || idx == 0) ? ' ' : ' .'
+                    evenRow = evenRow ? false : true
+
+                    def methodName = te.methodName
+                    if (methodName.size() < methodNameBaseWidth) {
+                        methodName = methodName.padRight(methodNameBaseWidth - 1, padChar)
+                    }
+
+                    def lineNumber
+                    if (e instanceof SourceCodeAware) {
+                        lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
+                        fileName = e.fileName
+                        final base = System.getProperty("base.dir")
+                        if (base) {
+                            fileName = fileName - base
+                        }
+                        prevFn = fileName
+                    }
+                    else {
+                        lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
+                    }
+
+                    if (idx == 0) {
+                        printFailureLocation(sb, lineNumber, methodName, fileName)
+                    } else if (idx < last - 1) {
+                        printStackLine(sb, lineNumber, methodName, fileName)
+                    } else {
+                        printLastEntry(sb, lineNumber, methodName, fileName)
+                    }
+                }
+            }
+            first = false
+            if (shouldSkipNextCause(e)) break
+            e = e.cause
+
+        }
+
+
+        return sw.toString()
+    }
+
+    protected boolean shouldSkipNextCause(Throwable e) {
+        return e.cause == null || e == e.cause
+    }
+
+    protected def printCausedByMessage(PrintWriter sb) {
+        sb.println()
+        sb.println "Caused by"
+    }
+
+    protected def printHeader(PrintWriter sb, String header) {
+        sb.println header
+    }
+
+    protected printLastEntry(PrintWriter sb, String lineNumber, String methodName, String fileName) {
+        sb.println "^   $lineNumber | $methodName in $fileName"
+    }
+
+    protected printStackLine(PrintWriter sb, String lineNumber, String methodName, String fileName) {
+        sb.println "|   $lineNumber | $methodName in $fileName"
+    }
+
+    protected printFailureLocation(PrintWriter sb, String lineNumber, String methodName, String fileName) {
+        sb.println "->> $lineNumber | $methodName in $fileName"
+        sb << "- " * 36
+        sb.println()
+    }
+
+    protected String getFileName(StackTraceElement te) {
+        final res = resourceLocator?.findResourceForClassName(te.className)
+        if (res != null) {
+            return res.getFilename()
+        }
+        else {
+            return te.fileName
+        }
+    }
+
+    String prettyPrintCodeSnippet(Throwable exception) {
+        def className = null
+        def lineNumber = null
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+        if (exception != null) {
+            Throwable cause = exception
+            while (cause != null) {
+                Resource res = null
+                if (cause.stackTrace) {
+                    className = cause.stackTrace[0].className
+                    lineNumber = cause.stackTrace[0].lineNumber
+                }
+
+                if (exception instanceof SourceCodeAware) {
+                    SourceCodeAware sca = exception
+                    lineNumber = sca.lineNumber
+                    res = new FileSystemResource(sca.fileName)
+                }
+                else if (cause instanceof SourceCodeAware) {
+                    SourceCodeAware sca = cause
+                    lineNumber = sca.lineNumber
+                    res = new FileSystemResource(sca.fileName)
+                }
+
+
+                if (className && lineNumber) {
+                    res = res ?: resourceLocator.findResourceForClassName(className)
+                    if (res != null) {
+                        pw.print formatCodeSnippetStart(res, lineNumber)
+                        final input = res.inputStream
+                        try {
+                            input.withReader { fileIn ->
+                                def reader = new LineNumberReader(fileIn)
+                                def last = lineNumber + 3
+                                def range = (lineNumber - 3..last)
+                                def currentLine = reader.readLine()
+
+                                while (currentLine != null) {
+                                    Integer currentLineNumber = reader.lineNumber
+                                    if (currentLineNumber in range) {
+                                        boolean isErrorLine = currentLineNumber == lineNumber
+                                        if (isErrorLine) {
+                                            pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine)
+                                        }
+                                        else {
+                                            pw.print formatCodeSnippetLine(currentLineNumber, currentLine)
+                                        }
+
+                                    }
+                                    else if (currentLineNumber > last) {
+                                        break
+                                    }
+
+                                    currentLine = reader.readLine()
+                                }
+                            }
+
+                        }
+                        catch(e) {
+                            // ignore
+                        }
+                        finally {
+                            try {
+                                input.close()
+                            } catch (e) {
+                                // ignore
+                            }
+                            pw.print formatCodeSnippetEnd(res, lineNumber)
+
+                        }
+                    }
+                }
+
+                if (shouldSkipNextCause(cause)) break
+                cause = cause.cause
+            }
+
+        }
+
+        return sw.toString()
+    }
+
+    String formatCodeSnippetEnd(Resource resource, int lineNumber) {
+        ""
+    }
+
+    String formatCodeSnippetStart(Resource resource, int lineNumber) {
+        """Exception in $resource.filename at line $lineNumber
+"""
+
+    }
+
+    protected String formatCodeSnippetLine(int currentLineNumber, currentLine) {
+        return """${currentLineNumber}: ${currentLine}
+"""
+    }
+
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine) {
+        return """${currentLineNumber}: ${currentLine}
+"""
+    }
+
+    /**
+     * Obtains the root cause of the given exception
+     * @param ex The exception
+     * @return The root cause
+     */
+    protected Throwable getRootCause(Throwable ex) {
+        while (ex.getCause() != null && !ex.equals(ex.getCause())) {
+            ex = ex.getCause();
+        }
+        return ex;
+    }
+
+}

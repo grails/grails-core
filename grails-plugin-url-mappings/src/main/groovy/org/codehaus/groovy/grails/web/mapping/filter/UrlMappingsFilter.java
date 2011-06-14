@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -167,6 +168,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
+                            reapplySitemesh(request);
                             throw ((MultipartException)e);
                         }
                         LOG.error("Error when matching URL mapping [" + info + "]:" + e.getMessage(), e);
@@ -293,18 +295,32 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 }
             }
             catch (Exception e) {
+                // let the sitemesh filter re-run for the error
+                reapplySitemesh(request);
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
                     try {
                         handlerInterceptor.afterCompletion(request, response, this, e);
                     }
                     catch (Exception e1) {
-                        throw new UrlMappingException("Error executing filter after view error: " + e1.getMessage() + ". Original error: " + e.getMessage(), e1);
+                        UrlMappingException ume = new UrlMappingException("Error executing filter after view error: " + e1.getMessage() + ". Original error: " + e.getMessage(), e1);
+                        filterAndThrow(ume);
                     }
                 }
-                throw new UrlMappingException("Error mapping onto view ["+viewName+"]: " + e.getMessage(),e);
+                UrlMappingException ume = new UrlMappingException("Error mapping onto view [" + viewName + "]: " + e.getMessage(), e);
+                filterAndThrow(ume);
             }
         }
         return true;
+    }
+
+    private void filterAndThrow(UrlMappingException ume) {
+        StackTraceFilterer filterer = new StackTraceFilterer();
+        filterer.filter(ume, true);
+        throw ume;
+    }
+
+    private void reapplySitemesh(HttpServletRequest request) {
+        request.removeAttribute("com.opensymphony.sitemesh.APPLIED_ONCE");
     }
 
     private void processFilterChain(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {

@@ -15,28 +15,24 @@
  */
 package org.codehaus.groovy.grails.plugins
 
-import grails.util.Environment
-import grails.util.Metadata
-import grails.util.GrailsUtil
-
+import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
-import org.codehaus.groovy.grails.commons.metaclass.*
-import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
+import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.plugins.support.aware.PluginManagerAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
-
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+import grails.util.*
 
 /**
  * Configures the core shared beans within the Grails application context.
@@ -96,8 +92,15 @@ class CoreGrailsPlugin {
         }
 
         // add shutdown hook if not running in war deployed mode
-        if (!Metadata.getCurrent().isWarDeployed() && Environment.currentEnvironment == Environment.DEVELOPMENT) {
+        final devMode = !Metadata.getCurrent().isWarDeployed() && Environment.currentEnvironment == Environment.DEVELOPMENT
+        if (devMode) {
             shutdownHook(DevelopmentShutdownHook)
+        }
+        grailsResourceLocator(DefaultResourceLocator) {
+            if(devMode) {
+                BuildSettings settings = BuildSettingsHolder.settings
+                searchLocation = settings.baseDir.absolutePath
+            }
         }
 
         customEditors(CustomEditorConfigurer) {
