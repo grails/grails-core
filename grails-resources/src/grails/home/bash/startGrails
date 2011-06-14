@@ -179,6 +179,7 @@ fi
 # Process JVM args
 AGENT_STRING="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
 SAVED_OPTIONS=""
+disablereloading=false
 
 while true; do
   if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
@@ -192,6 +193,12 @@ while true; do
     shift
     break
   fi
+  
+  if [ "$1" = "-noreloading" ]; then
+    disablereloading=true
+    shift
+    break
+  fi
 
   if [ "$1" != -* ]; then
     break
@@ -202,11 +209,17 @@ while true; do
 done
 
 # Enable agent-based reloading for the 'run-app' command.
-for a in "$@"; do
-  if [ "$a" = "run-app" ]; then
-    AGENT=$AGENT_STRING
-  fi
-done
+if ! $disablereloading; then
+    for a in "$@"; do
+        if [ "$a" = "run-app" ]; then
+            AGENT=$AGENT_STRING
+        fi
+    done
+
+    if [ $# = 0 ]; then
+        AGENT=$AGENT_STRING
+    fi
+fi
 
 ARGUMENTS="$SAVED_OPTIONS $@"
 
