@@ -164,17 +164,8 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     lineNumber = cause.stackTrace[0].lineNumber
                 }
 
-                if (exception instanceof SourceCodeAware) {
-                    SourceCodeAware sca = exception
-                    lineNumber = sca.lineNumber
-                    res = new FileSystemResource(sca.fileName)
-                }
-                else if (cause instanceof SourceCodeAware) {
-                    SourceCodeAware sca = cause
-                    lineNumber = sca.lineNumber
-                    res = new FileSystemResource(sca.fileName)
-                }
-
+                lineNumber = getLineNumberInfo(cause, lineNumber)
+                res = getFileNameInfo(cause, res)
 
                 if (className && lineNumber) {
                     res = res ?: resourceLocator.findResourceForClassName(className)
@@ -232,6 +223,30 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         }
 
         return sw.toString()
+    }
+
+    protected Resource getFileNameInfo(Throwable cause, Resource res) {
+        Throwable start = cause
+        while (start instanceof SourceCodeAware) {
+            final tmp = new FileSystemResource(start.fileName)
+            if(tmp.exists()) {
+                res = tmp
+                break
+            }
+
+            start = start.cause
+            if(start == null || start == start.cause) break
+        }
+        return res
+    }
+
+    protected int getLineNumberInfo(Throwable cause, int defaultInfo) {
+        int lineNumber = defaultInfo
+        if (cause instanceof SourceCodeAware) {
+            SourceCodeAware sca = cause
+            lineNumber = sca.lineNumber
+        }
+        return lineNumber
     }
 
     String formatCodeSnippetEnd(Resource resource, int lineNumber) {

@@ -44,10 +44,21 @@ public class GroovyPagesException extends GrailsException implements SourceCodeA
     }
 
     public String getFileName() {
+        if(fileName == null) {
+            if(getCause() instanceof SourceCodeAware) {
+                return ((SourceCodeAware)getCause()).getFileName();
+            }
+
+        }
         return fileName;
     }
 
     public int getLineNumber() {
+        if(lineNumber == -1) {
+            if(getCause() instanceof SourceCodeAware) {
+                return ((SourceCodeAware)getCause()).getLineNumber();
+            }
+        }
         return lineNumber;
     }
 }

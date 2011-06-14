@@ -699,7 +699,6 @@ class RenderTagLib implements RequestConstants {
             def currentOut = out
             currentOut << """<h2>Error ${request.'javax.servlet.error.status_code'}</h2>
 <div class="errors">
-${request.'javax.servlet.error.message'.encodeAsHTML()}<br/>
 <strong>URI:</strong> ${request.forwardURI ?: request.'javax.servlet.error.request_uri'}<br/>
 """
 
