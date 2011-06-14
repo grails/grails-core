@@ -167,7 +167,7 @@ public class BaseSettingsApi {
         return enableProfile;
     }
 
-    public boolean isInteractive() {
+    public boolean getIsInteractive() {
         return isInteractive;
     }
 

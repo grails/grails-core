@@ -15,7 +15,7 @@ class MetaClassEnhancerTests extends GroovyTestCase {
     void testEnhanceMetaClass() {
         def ctx = new MockApplicationContext()
 
-        def application = new DefaultGrailsApplication([TestController] as Class[], getClass().classLoader)
+        def application = new DefaultGrailsApplication([TestMetaClassController] as Class[], getClass().classLoader)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, application)
 
         ctx.registerMockBean "grailsUrlMappingsHolder", new DefaultUrlMappingsHolder([])
@@ -25,11 +25,11 @@ class MetaClassEnhancerTests extends GroovyTestCase {
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi controllerApi
 
-        enhancer.enhance TestController.metaClass
+        enhancer.enhance TestMetaClassController.metaClass
 
         GrailsWebUtil.bindMockWebRequest()
 
-        def controller = new TestController()
+        def controller = new TestMetaClassController()
 
         controller.testRenderText()
         assert "hello world" == controller.response.contentAsString
@@ -40,7 +40,7 @@ class MetaClassEnhancerTests extends GroovyTestCase {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
-class TestController {
+class TestMetaClassController {
 
     def testRenderText = {
         render "hello world"

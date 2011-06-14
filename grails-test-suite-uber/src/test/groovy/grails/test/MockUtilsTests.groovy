@@ -34,7 +34,7 @@ class MockUtilsTests extends GroovyTestCase {
 
     private @Lazy MetaTestHelper metaTestHelper = {
         MetaTestHelper result = new MetaTestHelper()
-        result.classesUnderTest = [TestDomain, TestController, TestCommand, A, B, ClassWithListArgBeforeValidate, ClassWithNoArgBeforeValidate, ClassWithOverloadedBeforeValidate]
+        result.classesUnderTest = [TestDomain, MockUtilsTestController, TestCommand, A, B, ClassWithListArgBeforeValidate, ClassWithNoArgBeforeValidate, ClassWithOverloadedBeforeValidate]
         result.classesToReset = [MockHttpServletRequest, MockHttpServletResponse, BeanPropertyBindingResult, Errors]
         return result
     }()
@@ -769,9 +769,9 @@ class MockUtilsTests extends GroovyTestCase {
      * argument to the response without modification.
      */
     void testMockControllerRenderText() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
         controller.index()
 
         assertEquals "hello", controller.response.contentAsString
@@ -782,9 +782,9 @@ class MockUtilsTests extends GroovyTestCase {
      * map with the given values.
      */
     void testMockControllerRenderView() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Test simple view and model.
         controller.render(view: "list", model: [count: 101])
@@ -803,9 +803,9 @@ class MockUtilsTests extends GroovyTestCase {
      * Test for GRAILS-6533
      */
     void testMockControllerRenderWithCorrectModelAndView() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Test simple view and model.
         controller.render(view: "list", model: [count: 101])
@@ -817,9 +817,9 @@ class MockUtilsTests extends GroovyTestCase {
      * Test for GRAILS-7022
      */
     void testGRAILS7022() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         def returnValue = controller.render(view: "list", model: [count: 101])
         assertTrue returnValue instanceof Map
@@ -830,9 +830,9 @@ class MockUtilsTests extends GroovyTestCase {
      * "renderArgs" map with the given values.
      */
     void testMockControllerRenderTemplate() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Test template on its own.
         controller.render(template: "fragment")
@@ -902,9 +902,9 @@ class MockUtilsTests extends GroovyTestCase {
      * writes the expected XML content to the response stream.
      */
     void testMockControllerRenderXml() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Test the render method with a simple block of markup.
         controller.render(contentType: "application/xml") {
@@ -924,9 +924,9 @@ class MockUtilsTests extends GroovyTestCase {
      * Tests that the mock "params" object on a controller works properly.
      */
     void testMockControllerParamsObject() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
         controller.params.id = "John"
         controller.testParams()
 
@@ -937,9 +937,9 @@ class MockUtilsTests extends GroovyTestCase {
      * Tests that the mock "params" object has typeconversion methods (getInt tested)
      */
     void testMockControllerIntParamsObject() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
         controller.params.intparam = '123456'
         controller.testIntParams()
 
@@ -950,9 +950,9 @@ class MockUtilsTests extends GroovyTestCase {
      * Tests that the mock "chainModel" object on a controller works properly.
      */
     void testMockControllerChainModelObject() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
         controller.chainModel.key = "value"
         controller.testChainModel()
 
@@ -965,9 +965,9 @@ class MockUtilsTests extends GroovyTestCase {
      * "forwardArgs" map.
      */
     void testMockControllerForward() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         controller.testForward()
 
@@ -981,9 +981,9 @@ class MockUtilsTests extends GroovyTestCase {
      * "redirectArgs" map.
      */
     void testMockControllerRedirect() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         controller.testRedirect()
 
@@ -997,9 +997,9 @@ class MockUtilsTests extends GroovyTestCase {
      * "chainArgs" map.
      */
     void testMockControllerChain() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         controller.testChain()
 
@@ -1014,9 +1014,9 @@ class MockUtilsTests extends GroovyTestCase {
      * works.
      */
     void testMockControllerSession() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
         controller.session.setAttribute("attr1", "star")
         controller.session.setAttribute("attr2", "square")
         controller.testSession()
@@ -1037,10 +1037,10 @@ class MockUtilsTests extends GroovyTestCase {
      * Tests that the withFormat method of content negotiation is testable
      */
     void testWithFormat() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
         MockUtils.mockDomain(TestDomain, errorsMap)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
         controller.request.format = "html"
 
         def model = controller.testWithFormat()
@@ -1064,10 +1064,10 @@ class MockUtilsTests extends GroovyTestCase {
      * correctly.
      */
     void testWithForm() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
         MockUtils.mockDomain(TestDomain, errorsMap)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Check that "single submission" works fine.
         def model = controller.testWithForm()
@@ -1092,10 +1092,10 @@ class MockUtilsTests extends GroovyTestCase {
      * correctly when the "invalid token" handler returns a model.
      */
     void testWithFormInvalidReturnsModel() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
         MockUtils.mockDomain(TestDomain, errorsMap)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Make sure that the model returned by the "invalid token"
         // handler is also returned by the action.
@@ -1111,10 +1111,10 @@ class MockUtilsTests extends GroovyTestCase {
      * correctly when there is no "invalid token" handler.
      */
     void testWithFormNoInvalidTokenHandler() {
-        MockUtils.mockController(TestController)
+        MockUtils.mockController(MockUtilsTestController)
         MockUtils.mockDomain(TestDomain, errorsMap)
 
-        def controller = new TestController()
+        def controller = new MockUtilsTestController()
 
         // Check that "single submission" works fine.
         def model = controller.testWithForm2()
@@ -1476,7 +1476,7 @@ class MockUtilsTests extends GroovyTestCase {
 /**
  * Simple controller implementation to test the controller mocking.
  */
-class TestController {
+class MockUtilsTestController {
     def index = {
         render "hello"
     }

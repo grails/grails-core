@@ -24,7 +24,7 @@ class TagLibReloadTests extends AbstractGrailsTagTests {
 
         def event = [source: new GroovyClassLoader().parseClass('''
 class TestTagLib {
-    def myTag = { attrs, body ->
+    Closure myTag = { attrs, body ->
         out << "bar:${attrs.bar}"
     }
 }
@@ -46,7 +46,7 @@ class TestTagLib {
         def tagLibClass = gcl.parseClass(
 '''
 class TestTagLib {
-    def myTag = { attrs, body ->
+    Closure myTag = { attrs, body ->
         println "attributes $attrs"
         out << "foo:${attrs.foo}"
     }

@@ -16,7 +16,7 @@ class TestController {
     def index = {}
 }
 class Test1TagLib {
-    def tag1 = { attrs, body ->
+    Closure tag1 = { attrs, body ->
 
         out << "print"
 
@@ -29,8 +29,8 @@ class Test1TagLib {
     }
 }
 class Test2TagLib {
-    def tag2 = { attrs, body -> out << attrs.test }
-    def tag3 = { attrs, body ->
+    Closure tag2 = { attrs, body -> out << attrs.test }
+    Closure tag3 = { attrs, body ->
                 out << body() }
 }
 class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {

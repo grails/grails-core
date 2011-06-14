@@ -11,7 +11,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
 
     void testGeneratedMetadata() {
-        def emc = new MetadataGeneratingExpandoMetaClass(TestController)
+        def emc = new MetadataGeneratingExpandoMetaClass(MetadataTestController)
         emc.initialize()
 
         DocumentationContext context = DocumentationContext.instance
@@ -21,7 +21,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
         context.document "A test instance method"
         emc.testMethod = { String one, Integer two -> "test"}
 
-        TestController.metaClass {
+        MetadataTestController.metaClass {
             context.document "A test property"
             getSomeProp = {-> "one" }
 
@@ -33,7 +33,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
             }
         }
 
-        def c = new TestController()
+        def c = new MetadataTestController()
         assertEquals "test", c.testMethod("one",2)
 
         DocumentedMethod method = context.methods.find { it.name == 'testMethod'}
@@ -43,7 +43,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
         assertEquals "A test instance method", method.text
         assertEquals([String, Integer] as Class[], method.arguments)
         assertEquals "Controller", method.artefact
-        assertEquals TestController, method.type
+        assertEquals MetadataTestController, method.type
 
         method = context.methods.find { it.name == 'getSomeProp'}
         assertNotNull "should have added method to documentation context",method
@@ -52,7 +52,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
         assertEquals "getSomeProp", method.name
         assertEquals([] as Class[], method.arguments)
         assertEquals "Controller", method.artefact
-        assertEquals TestController, method.type
+        assertEquals MetadataTestController, method.type
 
         method = context.staticMethods.find { it.name == 'listTests'}
         assertNotNull "should have added method to documentation context",method
@@ -61,7 +61,7 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
         assertEquals "listTests", method.name
         assertEquals([Map] as Class[], method.arguments)
         assertEquals "Controller", method.artefact
-        assertEquals TestController, method.type
+        assertEquals MetadataTestController, method.type
 
         def prop = context.properties.find { it.name == 'someProp' }
 
@@ -69,8 +69,8 @@ class MetadataGeneratingExpandoMetaClassTests extends GroovyTestCase {
         assertEquals "someProp", prop.name
 
         assertEquals "Controller", prop.artefact
-        assertEquals TestController, prop.type
+        assertEquals MetadataTestController, prop.type
     }
 }
 
-class TestController {}
+class MetadataTestController {}

@@ -16,7 +16,7 @@ class MyTagLib {
 
    static namespace = 'jeff'
 
-   def doit = { attrs ->
+   Closure doit = { attrs ->
        out << "some foo ${fooo}"
    }
 }

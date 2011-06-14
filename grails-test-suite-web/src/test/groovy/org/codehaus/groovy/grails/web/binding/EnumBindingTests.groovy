@@ -1,5 +1,9 @@
 package org.codehaus.groovy.grails.web.binding
 
+import java.util.Collection;
+
+import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
@@ -8,10 +12,24 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  */
 class EnumBindingTests extends AbstractGrailsControllerTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-import grails.persistence.*
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [StatusTransition]
+    }
+    
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [StatusController]
+    }
 
+    void testBindEnumInConstructor() {
+        def ctrl = new StatusController()
+        def model = ctrl.bindMe()
+
+        assertEquals "blah", model.statusTransition.title
+        assertEquals "OPEN", model.statusTransition.status.toString()
+    }
+}
 @Entity
 class StatusTransition {
     String title
@@ -24,16 +42,5 @@ enum Status {
 class StatusController {
     def bindMe = {
         [statusTransition:new StatusTransition(title:"blah", status:Status.OPEN)]
-    }
-}
-''')
-    }
-
-    void testBindEnumInConstructor() {
-        def ctrl = ga.getControllerClass("StatusController").newInstance()
-        def model = ctrl.bindMe()
-
-        assertEquals "blah", model.statusTransition.title
-        assertEquals "OPEN", model.statusTransition.status.toString()
     }
 }

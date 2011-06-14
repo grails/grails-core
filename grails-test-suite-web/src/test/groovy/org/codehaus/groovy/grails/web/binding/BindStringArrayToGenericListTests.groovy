@@ -1,16 +1,44 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import java.util.Collection;
 
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import grails.persistence.*
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
-import grails.persistence.*
+
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [MenuController]
+    }
+    
+    @Override
+    protected Collection<Class> getDomainClasses() {
+        [Menu]
+    }
+    
+    void testBindStringArrayToGenericList() {
+        def controller = new MenuController()
+
+        controller.params.name = "day"
+        controller.params.items = ['rice', 'soup']as String[]
+
+        def model = controller.save()
+
+        assertEquals(['rice', 'soup'], model.menu.items)
+    }
+}
+class MenuController {
+
+    def save = {
+        def m = new Menu(params)
+        [menu:m]
+    }
+}
 
 @Entity
 class Menu {
@@ -22,24 +50,3 @@ class Menu {
 
 }
 
-class MenuController {
-
-    def save = {
-        def m = new Menu(params)
-        [menu:m]
-    }
-}
-'''
-    }
-
-    void testBindStringArrayToGenericList() {
-        def controller = ga.getControllerClass("MenuController").newInstance()
-
-        controller.params.name = "day"
-        controller.params.items = ['rice', 'soup'] as String[]
-
-        def model = controller.save()
-
-        assertEquals(['rice', 'soup'], model.menu.items)
-    }
-}

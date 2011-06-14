@@ -9,47 +9,47 @@ class InvokeTagLibWithBodyAsMethodTests extends AbstractGrailsTagTests {
     protected void onSetUp() {
         gcl.parseClass('''
 class TestTagLib {
-    def testInvokeWithBodyClosure = { attrs, body ->
+    Closure testInvokeWithBodyClosure = { attrs, body ->
         out << eachItem(items:[1,2,3]) { bodyAttrs ->
              out << "body=${bodyAttrs.var}"
         }
     }
-    def eachItem = { attrs, body ->
+    Closure eachItem = { attrs, body ->
         def items = attrs.items
         items.each { i ->
             out << body(var:i)
         }
     }
-    def testWithClosureAndGStringReturn = { attrs, body ->
+    Closure testWithClosureAndGStringReturn = { attrs, body ->
         def foo = "bar"
         out << "one" << test(foo:"bar") { "$foo" } << "four"
     }
 
-    def testWithClosureAndStringReturn = { attrs, body ->
+    Closure testWithClosureAndStringReturn = { attrs, body ->
 
         out << "one" << test(foo:"bar") { "foo" } << "four"
     }
 
-    def testWithGStringBody = { attrs, body ->
+    Closure testWithGStringBody = { attrs, body ->
         def foo = "bar"
         out << "one" << test(foo:"bar", "$foo") << "four"
     }
 
-    def testWithStringBody = { attrs, body ->
+    Closure testWithStringBody = { attrs, body ->
         out << "one" << test(foo:"bar", "foo") << "four"
     }
 
-    def testWithResultOfBody= { attrs, body ->
+    Closure testWithResultOfBody= { attrs, body ->
         out << "one" << test(foo:"bar", body()) << "four"
     }
 
-    def testWithClosureBody = { attrs, body ->
+    Closure testWithClosureBody = { attrs, body ->
         out << "one" << test(foo:"bar") {
             out << "big" << "body"
         }
         out << "four"
     }
-    def test = { attrs, body ->
+    Closure test = { attrs, body ->
         def value = body()
         out << "two" << value << "three"
     }

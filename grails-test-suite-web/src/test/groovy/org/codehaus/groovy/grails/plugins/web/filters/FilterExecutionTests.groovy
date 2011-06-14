@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -21,25 +23,6 @@ class FilterExecutionTests extends AbstractGrailsControllerTests {
 
         gcl.parseClass '''
 import junit.framework.Assert
-class ItemController {
-    def count = {
-        render(view:'testView')
-    }
-
-    def show = {
-        render(template:"xmlTemplate",contentType:"text/xml")
-    }
-}
-
-class AuthorController {
-    def index = {}
-    def list = {}
-}
-
-class TestController {
-    def index = {}
-    def list = {}
-}
 
 class Filters {
     // Test property on the filters definition.
@@ -109,7 +92,7 @@ class Filters {
             afterView = afterCompleteClosure
         }
 
-        author(controller:"author") {
+        author(controller:"filterAuthor") {
             before = {
                 // Check that the filters method is available. This
                 // tests that FilterConfig's methodMissing handling
@@ -154,13 +137,13 @@ class Filters {
             }
         }
 
-        testRenderWithViewBefore(controller: "item", action: "count") {
+        testRenderWithViewBefore(controller: "filterItem", action: "count") {
             before = {
                 render(view: "error", model: [ total: 1000 ])
             }
         }
 
-        testRenderWithViewAfter(controller: "item", action: "*") {
+        testRenderWithViewAfter(controller: "filterItem", action: "*") {
             after = {
                 render(view: "happyPath")
             }
@@ -237,7 +220,7 @@ class Group3Filters {
         '''
     }
 
-    void testFilterExclusions() {
+     void testFilterExclusions() {
         HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
 
         request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/band/beardfish")
@@ -315,8 +298,8 @@ class Group3Filters {
     void testFilterMatching() {
         HandlerInterceptor filterInterceptor = appCtx.getBean("filterInterceptor")
 
-        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/author/list")
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "author")
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/filterAuthor/list")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "filterAuthor")
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "list")
 
         filterInterceptor.preHandle(request, response, null)
@@ -330,8 +313,8 @@ class Group3Filters {
 
         request.clearAttributes()
 
-        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/author/show")
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "author")
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/filterAuthor/show")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "filterAuthor")
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "show")
 
         filterInterceptor.preHandle(request, response, null)
@@ -413,30 +396,31 @@ class Group3Filters {
         response.committed = false
         response.reset()
         request.clearAttributes()
-        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/item/count")
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "item")
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/filterItem/count")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "filterItem")
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "count")
-        webRequest.controllerName = "item"
+        webRequest.controllerName = "filterItem"
 
         // Check that the new model and view have been set.
         def filterConfig = filterInterceptor.handlers.find{ it.filterConfig.name == "testRenderWithViewBefore" }.filterConfig
 
         assert !filterInterceptor.preHandle(request, response, null)
         assertEquals 1000, filterConfig.modelAndView.model['total']
-        assertEquals "/item/error", filterConfig.modelAndView.viewName
+        assertEquals "/filterItem/error", filterConfig.modelAndView.viewName
 
         // Test the rendering of a view in an 'after' interceptor.
         response.committed = false
         response.reset()
         request.clearAttributes()
-        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/item/show/5")
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "item")
+        request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/filterItem/show/5")
+        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, "filterItem")
         request.setAttribute(GrailsApplicationAttributes.ACTION_NAME_ATTRIBUTE, "show")
-        webRequest.controllerName = "item"
+        webRequest.controllerName = "filterItem"
 
         // Check that the new model and view have been set.
         ModelAndView mv = new ModelAndView()
         filterInterceptor.postHandle(request, response, null, mv)
-        assertEquals "/item/happyPath", mv.viewName
+        assertEquals "/filterItem/happyPath", mv.viewName
     }
 }
+

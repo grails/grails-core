@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import org.apache.tools.ant.types.Path
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
@@ -113,8 +114,35 @@ target(groovydoc:"Produces groovydoc documentation") {
 
     ant.taskdef(name:"groovydoc", classname:"org.codehaus.groovy.ant.Groovydoc")
     event("DocStart", ['groovydoc'])
+
+    def sourcePath = new Path(ant.project)
+    for (dir in projectCompiler.srcDirectories) {
+        sourcePath.add new Path(ant.project, dir)
+    }
+
+    if (isPluginProject) {
+        def pluginDescriptor = grailsSettings.baseDir.listFiles().find { it.name.endsWith "GrailsPlugin.groovy" }
+        def tmpDir = new File(grailsSettings.projectWorkDir, "pluginDescForDocs")
+        tmpDir.deleteOnExit()
+
+        // Copy the plugin descriptor to a temporary directory and add that
+        // directory to groovydoc's source path. This is because adding '.'
+        // will cause all Groovy files in the project to be included as source
+        // files (including test cases) and it will also cause duplication
+        // of classes in the generated docs - see
+        //
+        //     http://jira.grails.org/browse/GRAILS-6530
+        //
+        // Also, we can't add a single file to the path. Only directories
+        // seem to work. There are quite a few limitations with the GroovyDoc
+        // task currently.
+        ant.copy file: pluginDescriptor, todir: tmpDir, overwrite: true
+
+        sourcePath.add new Path(ant.project, tmpDir.absolutePath)
+    }
+
     try {
-        ant.groovydoc(destdir:groovydocDir, sourcepath:".", use:"true",
+        ant.groovydoc(destdir:groovydocDir, sourcepath:sourcePath, use:"true",
                       windowtitle:grailsAppName,'private':"true")
     }
     catch(Exception e) {

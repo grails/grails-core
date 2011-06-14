@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.metaclass
 
+import java.util.Collection;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
@@ -10,8 +12,21 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  */
 class ForwardMethodTests extends AbstractGrailsControllerTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
+    @Override
+    protected Collection<Class> getControllerClasses() {
+        [ForwardingController]
+    }
+
+    void testForwardMethod() {
+        def testController = new ForwardingController()
+
+        webRequest.controllerName = "fowarding"
+        assertEquals "/grails/fowarding/two.dispatch",testController.one()
+        assertEquals "/grails/next/go.dispatch",testController.three()
+        assertEquals "/grails/next/go.dispatch?id=10",testController.four()
+        assertEquals "bar", request.foo
+    }
+}
 class ForwardingController {
     def one = {
         forward(action:'two')
@@ -29,16 +44,4 @@ class ForwardingController {
        forward(controller:'next', action:'go',id:10, model:[foo:'bar'])
     }
 }
-''')
-    }
 
-    void testForwardMethod() {
-        def testController = ga.getControllerClass("ForwardingController").newInstance()
-
-        webRequest.controllerName = "fowarding"
-        assertEquals "/grails/fowarding/two.dispatch",testController.one()
-        assertEquals "/grails/next/go.dispatch",testController.three()
-        assertEquals "/grails/next/go.dispatch?id=10",testController.four()
-        assertEquals "bar", request.foo
-    }
-}

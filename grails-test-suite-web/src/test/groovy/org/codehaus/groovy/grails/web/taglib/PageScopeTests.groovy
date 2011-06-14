@@ -26,7 +26,7 @@ class PageScopeTests extends AbstractGrailsTagTests {
     protected void onInit() {
         def tagClass = gcl.parseClass('''
 class MyTagLib {
-    def test1 = { attrs, body ->
+    Closure test1 = { attrs, body ->
         pageScope.bar = "foo"
         out << pageScope.foo
     }

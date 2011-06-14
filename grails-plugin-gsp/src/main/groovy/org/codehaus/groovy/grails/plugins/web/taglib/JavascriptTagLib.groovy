@@ -62,7 +62,7 @@ class JavascriptTagLib  {
      * @attr contextPath the context path to use (relative to the application context path). Defaults to "" or path to the plugin for a plugin view or template.
      * @attr base specifies the full base url to prepend to the library name
      */
-    def javascript = { attrs, body ->
+    Closure javascript = { attrs, body ->
 
         setUpRequestAttributes()
 
@@ -148,7 +148,7 @@ class JavascriptTagLib  {
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true, specified in 'options' array)
      * @attr method The method to use the execute the call (defaults to "post")
      */
-    def remoteFunction = { attrs ->
+    Closure remoteFunction = { attrs ->
         // before remote function
         def after = ''
         if (attrs.before) {
@@ -208,7 +208,7 @@ class JavascriptTagLib  {
      * @attr mapping The named URL mapping to use to rewrite the link
      * @attr elementId the DOM element id
      */
-    def remoteLink = { attrs, body ->
+    Closure remoteLink = { attrs, body ->
         out << '<a href="'
 
         def cloned = deepClone(attrs)
@@ -258,7 +258,7 @@ class JavascriptTagLib  {
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
      * @attr method The method to use the execute the call (defaults to "post")
      */
-    def remoteField = { attrs, body ->
+    Closure remoteField = { attrs, body ->
         def paramName = attrs.paramName ? attrs.remove('paramName') : 'value'
         def value = attrs.remove('value')
         if (!value) value = ''
@@ -298,7 +298,7 @@ class JavascriptTagLib  {
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
      * @attr method The method to use the execute the call (defaults to "post")
      */
-    def formRemote = { attrs, body ->
+    Closure formRemote = { attrs, body ->
         if (!attrs.name) {
             throwTagError("Tag [formRemote] is missing required attribute [name]")
         }
@@ -348,7 +348,7 @@ a 'params' key to the [url] attribute instead.""")
      * @attr asynchronous Whether to do the call asynchronously or not (defaults to true)
      * @attr method The method to use the execute the call (defaults to "post")
      */
-    def submitToRemote = { attrs, body ->
+    Closure submitToRemote = { attrs, body ->
         // get javascript provider
         def p = getProvider()
         // prepare form settings
@@ -371,7 +371,7 @@ a 'params' key to the [url] attribute instead.""")
      *
      * &lt;g:escapeJavascript&gt;This is some "text" to be escaped&lt;/g:escapeJavascript&gt;
      */
-    def escapeJavascript = { attrs, body ->
+    Closure escapeJavascript = { attrs, body ->
         def js = ''
         if (body instanceof Closure) {
             def tmp = out
@@ -394,7 +394,7 @@ a 'params' key to the [url] attribute instead.""")
                  .replaceAll("'","\\\\'")
     }
 
-    def setProvider = { attrs, body ->
+    Closure setProvider = { attrs, body ->
         if (request[JavascriptTagLib.INCLUDED_LIBRARIES] == null) {
             request[JavascriptTagLib.INCLUDED_LIBRARIES] = []
         }

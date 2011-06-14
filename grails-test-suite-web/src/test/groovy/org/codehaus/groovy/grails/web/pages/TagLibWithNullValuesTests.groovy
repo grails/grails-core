@@ -13,11 +13,11 @@ class TagLibWithNullValuesTests extends AbstractGrailsTagTests {
 class MyTagLib {
   static namespace = 'my'
 
-  def tag1 = { attrs ->
+  Closure tag1 = { attrs ->
     out << out.getClass().name << ": [" << attrs.p1 << "] [" << attrs.p2 << "]"
   }
 
-  def tag2 = { attrs ->
+  Closure tag2 = { attrs ->
     out << my.tag1(p1: "abc")
   }
 }

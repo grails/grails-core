@@ -39,6 +39,26 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     ApplicationContext appCtx
     def originalHandler
 
+    /**
+    * Subclasses may override this method to return a list of classes which should
+    * be added to the GrailsApplication as controller classes
+    *
+    * @return a list of classes
+    */
+   protected Collection<Class> getControllerClasses() {
+       Collections.EMPTY_LIST
+   }
+
+    /**
+     * Subclasses may override this method to return a list of classes which should
+     * be added to the GrailsApplication as domain classes
+     *
+     * @return a list of classes
+     */
+    protected Collection<Class> getDomainClasses() {
+        Collections.EMPTY_LIST
+    }
+    
     protected void onSetUp() {}
 
     protected void setUp() {
@@ -73,7 +93,9 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
         ga.initialise()
         ga.setApplicationContext(ctx)
-
+        domainClasses?.each { cc -> ga.addArtefact 'Domain', cc }
+        controllerClasses?.each { cc -> ga.addArtefact 'Controller', cc }
+        
         ctx.registerMockBean("pluginManager", mockManager)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())

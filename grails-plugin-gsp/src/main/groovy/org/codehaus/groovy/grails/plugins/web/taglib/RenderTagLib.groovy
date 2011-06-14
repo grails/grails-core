@@ -83,7 +83,7 @@ class RenderTagLib implements RequestConstants {
      * @attr view The name of the view. Cannot be specified in combination with controller/action/id
      * @attr model A model to pass onto the included controller in the request
      */
-    def include = { attrs, body ->
+    Closure include = { attrs, body ->
         if (attrs.action && !attrs.controller) {
             def controller = request?.getAttribute(GrailsApplicationAttributes.CONTROLLER)
             def controllerName = controller?.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY)
@@ -115,7 +115,7 @@ class RenderTagLib implements RequestConstants {
      * @attr encoding Optional. The encoding to use
      * @attr params Optiona. The params to pass onto the page object
      */
-    def applyLayout = { attrs, body ->
+    Closure applyLayout = { attrs, body ->
         if (!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         def oldPage = getPage()
         def contentType = attrs.contentType ? attrs.contentType : "text/html"
@@ -196,7 +196,7 @@ class RenderTagLib implements RequestConstants {
      * @attr default the default value to use if the property is null
      * @attr writeEntireProperty if true, writes the property in the form 'foo = "bar"', otherwise renders 'bar'
      */
-    def pageProperty = { attrs ->
+    Closure pageProperty = { attrs ->
         if (!attrs.name) {
             throwTagError("Tag [pageProperty] is missing required attribute [name]")
         }
@@ -244,7 +244,7 @@ class RenderTagLib implements RequestConstants {
      * @attr name REQUIRED the property name
      * @attr equals optional value to test against
      */
-    def ifPageProperty = { attrs, body ->
+    Closure ifPageProperty = { attrs, body ->
         if (!attrs.name) {
             return
         }
@@ -282,7 +282,7 @@ class RenderTagLib implements RequestConstants {
      *
      * @attr default the value to use if the title isn't specified in the GSP
      */
-    def layoutTitle = { attrs ->
+    Closure layoutTitle = { attrs ->
         String title = page.title
         if (!title && attrs.'default') title = attrs.'default'
         if (title) out << title
@@ -295,7 +295,7 @@ class RenderTagLib implements RequestConstants {
      *
      * @emptyTag
      */
-    def layoutBody = { attrs ->
+    Closure layoutBody = { attrs ->
         getPage().writeBody(out)
     }
 
@@ -306,7 +306,7 @@ class RenderTagLib implements RequestConstants {
      *
      * @emptyTag
      */
-    def layoutHead = { attrs ->
+    Closure layoutHead = { attrs ->
         getPage().writeHead(out)
     }
 
@@ -329,7 +329,7 @@ class RenderTagLib implements RequestConstants {
      * @attr offset Used only if params.offset is empty
      * @attr fragment The link fragment (often called anchor tag) to use
      */
-    def paginate = { attrs ->
+    Closure paginate = { attrs ->
         def writer = out
         if (attrs.total == null) {
             throwTagError("Tag [paginate] is missing required attribute [total]")
@@ -463,7 +463,7 @@ class RenderTagLib implements RequestConstants {
      * @attr params A map containing URL query parameters
      * @attr class CSS class name
      */
-    def sortableColumn = { attrs ->
+    Closure sortableColumn = { attrs ->
         def writer = out
         if (!attrs.property) {
             throwTagError("Tag [sortableColumn] is missing required attribute [property]")
@@ -537,7 +537,7 @@ class RenderTagLib implements RequestConstants {
      * @attr var The variable name of the bean to be referenced in the template
      * @attr plugin The plugin to look for the template in
      */
-    def render = { attrs, body ->
+    Closure render = { attrs, body ->
         if (!groovyPagesTemplateEngine) {
             throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         }

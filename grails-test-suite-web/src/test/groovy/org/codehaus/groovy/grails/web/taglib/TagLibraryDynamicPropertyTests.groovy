@@ -9,17 +9,17 @@ class TagLibraryDynamicPropertyTests extends AbstractGrailsTagTests {
     protected void onSetUp() {
         gcl.parseClass '''
 class FooTagLib {
-    def showAction = { attrs, body ->
+    Closure showAction = { attrs, body ->
         out << "action: ${actionName}"
     }
-    def showController = { attrs, body ->
+    Closure showController = { attrs, body ->
         out << "controller: ${controllerName}"
     }
 
-    def showSession = { attrs, body ->
+    Closure showSession = { attrs, body ->
         out << "test: ${session.foo}"
     }
-    def showParam = { attrs, body ->
+    Closure showParam = { attrs, body ->
         out << "test: ${params.foo}"
     }
 }

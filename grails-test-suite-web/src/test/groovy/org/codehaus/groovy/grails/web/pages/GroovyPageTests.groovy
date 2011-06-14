@@ -24,7 +24,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         String taglibCode = "import org.codehaus.groovy.grails.web.taglib.*\n"+
         "\n"+
         "class MyTagLib {\n"+
-        "def isaid = { attrs, body ->\n"+
+        "Closure isaid = { attrs, body ->\n"+
         "out.print('I said, \"')\n"+
         "out << body()\n" +
         "out.print('\"')\n"+
