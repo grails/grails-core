@@ -186,7 +186,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             @SuppressWarnings("unused") HttpServletRequest request,
             @SuppressWarnings("unused") HttpServletResponse response)  {
 
-        LOG.error("Error processing GroovyPageView: " + exception.getMessage(), exception);
+        LOG.debug("Error processing GroovyPageView: " + exception.getMessage(), exception);
         if (exception instanceof GroovyPagesException) {
             throw (GroovyPagesException) exception;
         }

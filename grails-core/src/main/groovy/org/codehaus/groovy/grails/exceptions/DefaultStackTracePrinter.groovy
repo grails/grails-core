@@ -59,10 +59,19 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             def prevFn
             def evenRow = false
             if (!first) {
-                printCausedByMessage(sb)
+                printCausedByMessage(sb, e)
             }
             e.stackTrace[0..-1].eachWithIndex { te, idx ->
                 def fileName = getFileName(te)
+                def lineNumber
+                if (e instanceof SourceCodeAware) {
+                    lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
+                    fileName = e.fileName
+                    fileName = makeRelativeIfPossible(fileName)
+                }
+                else {
+                    lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
+                }
                 if ((idx == 0) || fileName) {
                     if (prevFn && (prevFn == fileName)) {
                         fileName = "    ''"
@@ -81,19 +90,6 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                         methodName = methodName.padRight(methodNameBaseWidth - 1, padChar)
                     }
 
-                    def lineNumber
-                    if (e instanceof SourceCodeAware) {
-                        lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
-                        fileName = e.fileName
-                        final base = System.getProperty("base.dir")
-                        if (base) {
-                            fileName = fileName - base
-                        }
-                        prevFn = fileName
-                    }
-                    else {
-                        lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
-                    }
 
                     if (idx == 0) {
                         printFailureLocation(sb, lineNumber, methodName, fileName)
@@ -114,13 +110,21 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         return sw.toString()
     }
 
+    protected String makeRelativeIfPossible(String fileName) {
+        final base = System.getProperty("base.dir")
+        if (base) {
+            fileName = fileName - base
+        }
+        return fileName
+    }
+
     protected boolean shouldSkipNextCause(Throwable e) {
         return e.cause == null || e == e.cause
     }
 
-    protected def printCausedByMessage(PrintWriter sb) {
+    protected def printCausedByMessage(PrintWriter sb, Throwable e) {
         sb.println()
-        sb.println "Caused by"
+        sb.println "Caused by ${e.class.simpleName}"
     }
 
     protected def printHeader(PrintWriter sb, String header) {
