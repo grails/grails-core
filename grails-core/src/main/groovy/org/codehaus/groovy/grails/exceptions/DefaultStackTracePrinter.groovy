@@ -164,6 +164,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         def lineNumber = null
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
+        def lineNumbersShown = [:].withDefault { k -> [] }
         if (exception != null) {
             Throwable cause = exception
             while (cause != null) {
@@ -176,12 +177,15 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     lineNumber = entry.lineNumber
 
                     lineNumber = getLineNumberInfo(cause, lineNumber)
-                    if(first)
+                    if(first) {
                         res = getFileNameInfo(cause, res)
-                    else
                         first = false
+                    }
+
+                    if(lineNumbersShown[className].contains(lineNumber)) continue // don't repeat the same lines twice
 
                     if (className && lineNumber) {
+                        lineNumbersShown[className] << lineNumber
                         res = res ?: resourceLocator.findResourceForClassName(className)
                         if (res != null) {
                             pw.print formatCodeSnippetStart(res, lineNumber)
@@ -272,7 +276,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
     }
 
     String formatCodeSnippetStart(Resource resource, int lineNumber) {
-        """Exception in $resource.filename at line $lineNumber
+        """Around line $lineNumber of $resource.filename
 """
 
     }

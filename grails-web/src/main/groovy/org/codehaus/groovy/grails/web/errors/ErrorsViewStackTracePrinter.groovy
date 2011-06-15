@@ -19,8 +19,9 @@ import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 
- /**
+/**
  * Customized Stack trace output for the errors view
  *
  * @author Graeme Rocher
@@ -38,7 +39,18 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
 
     @Override
     String formatCodeSnippetStart(Resource resource, int lineNumber) {
-        """<h2>Line ${lineNumber} of ${resource.filename}</h2>
+        def path = resource.filename
+        // try calc better path
+        try {
+            def abs = resource.file.absolutePath
+            def i = abs.indexOf(GrailsResourceUtils.GRAILS_APP_DIR)
+            if(i > -1) {
+                path = abs[i..-1]
+            }
+        } catch (e) {
+            path = resource.filename
+        }
+        """<h2>Line ${lineNumber} of ${path}</h2>
 <div class="snippet"><pre>"""
     }
 
