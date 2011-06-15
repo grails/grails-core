@@ -134,7 +134,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
-                method.setCode(bodyCode(method.getParameters(), method.getCode()));
+                method.setCode(bodyCode(classNode, method.getParameters(), method.getCode()));
                 convertToMethodAction(method);
             }
         }
@@ -185,7 +185,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                         Modifier.PUBLIC, property.getType(),
                         closureAction.getParameters(),
                         EMPTY_CLASS_ARRAY,
-                        bodyCode(closureAction.getParameters(), closureAction.getCode()));
+                        bodyCode(classNode, closureAction.getParameters(), closureAction.getCode()));
 
                 convertToMethodAction(actionMethod);
 
@@ -196,13 +196,14 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         }
     }
 
-    private Statement bodyCode(Parameter[] actionParameters, Statement actionCode) {
+    private Statement bodyCode(ClassNode classNode, Parameter[] actionParameters, Statement actionCode) {
         Statement newCommandCode;
         ConstructorCallExpression constructorCallExpression;
         ArgumentListExpression arguments;
 
         BlockStatement wrapper = new BlockStatement();
 
+        MethodNode bindDataMethodNode = classNode.getMethod("bindData", new Parameter[]{new Parameter(new ClassNode(Object.class), "target"), new Parameter(new ClassNode(Object.class), "params")});
         for (Parameter param : actionParameters) {
             constructorCallExpression = new ConstructorCallExpression(param.getType(), EMPTY_TUPLE);
             newCommandCode = new ExpressionStatement(
@@ -215,7 +216,12 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
             arguments = new ArgumentListExpression();
             arguments.addExpression(new VariableExpression(param.getName()));
             arguments.addExpression(new VariableExpression(PARAMS_EXPRESSION));
-            wrapper.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments)));
+
+            MethodCallExpression bindDataMethodCallExpression = new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments);
+            if(bindDataMethodNode != null) {
+                bindDataMethodCallExpression.setMethodTarget(bindDataMethodNode);
+            }
+            wrapper.addStatement(new ExpressionStatement(bindDataMethodCallExpression));
         }
 
         wrapper.addStatement(actionCode);
