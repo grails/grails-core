@@ -57,6 +57,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         while (e != null) {
             def last = e.stackTrace.size()
             def prevFn
+            def prevLn
             def evenRow = false
             if (!first) {
                 printCausedByMessage(sb, e)
@@ -72,7 +73,10 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                 else {
                     lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
                 }
+
+                if(prevLn == lineNumber && idx != last) return // no point duplicating lines
                 if ((idx == 0) || fileName) {
+                    prevLn = lineNumber
                     if (prevFn && (prevFn == fileName)) {
                         fileName = "    ''"
                     } else {
@@ -124,7 +128,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     protected def printCausedByMessage(PrintWriter sb, Throwable e) {
         sb.println()
-        sb.println "Caused by ${e.class.simpleName}"
+        sb.println "Caused by ${e.class.simpleName}: ${e.message}"
     }
 
     protected def printHeader(PrintWriter sb, String header) {
@@ -163,60 +167,69 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         if (exception != null) {
             Throwable cause = exception
             while (cause != null) {
-                Resource res = null
-                if (cause.stackTrace) {
-                    className = cause.stackTrace[0].className
-                    lineNumber = cause.stackTrace[0].lineNumber
-                }
 
-                lineNumber = getLineNumberInfo(cause, lineNumber)
-                res = getFileNameInfo(cause, res)
+                if(!cause.stackTrace) break
+                boolean first = true
+                for(entry in cause.stackTrace) {
+                    Resource res = null
+                    className = entry.className
+                    lineNumber = entry.lineNumber
 
-                if (className && lineNumber) {
-                    res = res ?: resourceLocator.findResourceForClassName(className)
-                    if (res != null) {
-                        pw.print formatCodeSnippetStart(res, lineNumber)
-                        final input = null
-                        try {
-                            input =  res.inputStream
-                            input.withReader { fileIn ->
-                                def reader = new LineNumberReader(fileIn)
-                                def last = lineNumber + 3
-                                def range = (lineNumber - 3..last)
-                                def currentLine = reader.readLine()
+                    lineNumber = getLineNumberInfo(cause, lineNumber)
+                    if(first)
+                        res = getFileNameInfo(cause, res)
+                    else
+                        first = false
 
-                                while (currentLine != null) {
-                                    Integer currentLineNumber = reader.lineNumber
-                                    if (currentLineNumber in range) {
-                                        boolean isErrorLine = currentLineNumber == lineNumber
-                                        if (isErrorLine) {
-                                            pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine)
-                                        }
-                                        else {
-                                            pw.print formatCodeSnippetLine(currentLineNumber, currentLine)
-                                        }
-
-                                    }
-                                    else if (currentLineNumber > last) {
-                                        break
-                                    }
-
-                                    currentLine = reader.readLine()
-                                }
-                            }
-
-                        }
-                        catch(e) {
-                            // ignore
-                        }
-                        finally {
+                    if (className && lineNumber) {
+                        res = res ?: resourceLocator.findResourceForClassName(className)
+                        if (res != null) {
+                            pw.print formatCodeSnippetStart(res, lineNumber)
+                            final input = null
                             try {
-                                input?.close()
-                            } catch (e) {
+                                input = res.inputStream
+                                input.withReader { fileIn ->
+                                    def reader = new LineNumberReader(fileIn)
+                                    def last = lineNumber + 3
+                                    def range = (lineNumber - 3..last)
+                                    def currentLine = reader.readLine()
+
+                                    while (currentLine != null) {
+                                        Integer currentLineNumber = reader.lineNumber
+                                        if (currentLineNumber in range) {
+                                            boolean isErrorLine = currentLineNumber == lineNumber
+                                            if (isErrorLine) {
+                                                pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine)
+                                            }
+                                            else {
+                                                pw.print formatCodeSnippetLine(currentLineNumber, currentLine)
+                                            }
+
+                                        }
+                                        else if (currentLineNumber > last) {
+                                            break
+                                        }
+
+                                        currentLine = reader.readLine()
+                                    }
+                                }
+
+                            }
+                            catch (e) {
                                 // ignore
                             }
-                            pw.print formatCodeSnippetEnd(res, lineNumber)
+                            finally {
+                                try {
+                                    input?.close()
+                                } catch (e) {
+                                    // ignore
+                                }
+                                pw.print formatCodeSnippetEnd(res, lineNumber)
 
+                            }
+                        }
+                        else {
+                            break
                         }
                     }
                 }
