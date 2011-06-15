@@ -145,20 +145,24 @@ public class GSPResponseWriter extends GrailsPrintWriter {
     @Override
     public void close() {
         flush();
-        if (CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted()) {
+        if (canFlushContentLengthAwareResponse()) {
             int size = bytesCounter.size();
             if (size > 0) {
                 response.setContentLength(size);
             }
             flushResponse();
         }
-        else {
+        else if(!trouble) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
             if(webRequest != null && webRequest.getCurrentRequest().getAttribute(RequestConstants.PAGE) != null) {
                 // flush the response if its a layout
                 flushResponse();
             }
         }
+    }
+
+    private boolean canFlushContentLengthAwareResponse() {
+        return CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted() && !trouble;
     }
 
     private void flushResponse() {

@@ -69,9 +69,16 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                 def fileName = getFileName(te)
                 def lineNumber
                 if (e instanceof SourceCodeAware) {
-                    lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
-                    fileName = e.fileName
-                    fileName = makeRelativeIfPossible(fileName)
+                    if(e.lineNumber && e.lineNumber > -1) {
+                        lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
+                    }
+                    else {
+                        lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
+                    }
+                    if(e.fileName) {
+                        fileName = e.fileName
+                        fileName = makeRelativeIfPossible(fileName)
+                    }
                 }
                 else {
                     lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
@@ -182,7 +189,9 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     lineNumber = getLineNumberInfo(cause, lineNumber)
                     if(first) {
                         res = getFileNameInfo(cause, res)
-                        first = false
+                        if(res != null) {
+                            first = false
+                        }
                     }
 
 
@@ -238,7 +247,8 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                             }
                         }
                         else {
-                            break
+                            if(!first)
+                                break
                         }
                     }
                 }
@@ -256,11 +266,18 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         Throwable start = cause
         while ((start instanceof SourceCodeAware) || (start instanceof MultipleCompilationErrorsException)) {
             if(start instanceof SourceCodeAware) {
-                final tmp = new FileSystemResource(start.fileName)
-                if(tmp.exists()) {
-                    res = tmp
-                    break
+                try {
+                    if(start.fileName) {
+                        final tmp = new FileSystemResource(start.fileName)
+                        if(tmp.exists()) {
+                            res = tmp
+                            break
+                        }
+                    }
+                } catch (e) {
+                    // ignore
                 }
+
             }
             else if(start instanceof MultipleCompilationErrorsException) {
                 MultipleCompilationErrorsException mcee = cause

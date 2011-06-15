@@ -49,7 +49,7 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
         } catch (e) {
             path = resource.filename
         }
-        """<h2>Line ${lineNumber} of ${path}</h2>
+        """<h2>Around line ${lineNumber} of ${path}</h2>
 <div class="snippet"><pre>"""
     }
 

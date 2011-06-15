@@ -930,7 +930,7 @@ public class GroovyPageParser implements Tokens {
 
         if (!lastInStack.equals(tagName) || !lastNamespaceInStack.equals(ns)) {
             throw new GrailsTagException("Grails tag [" + lastNamespaceInStack +
-                    ":" + lastInStack + "] was not closed", pageName, out.getCurrentLineNumber());
+                    ":" + lastInStack + "] was not closed", pageName, getCurrentOutputLineNumber());
         }
 
         if (GroovyPage.DEFAULT_NAMESPACE.equals(ns) && tagRegistry.isSyntaxTag(tagName)) {

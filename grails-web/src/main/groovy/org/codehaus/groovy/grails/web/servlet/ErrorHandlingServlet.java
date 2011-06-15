@@ -78,6 +78,8 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingsHolder urlMappingsHolder = lookupUrlMappings();
         UrlMappingInfo matchedInfo = null;
         if (t != null) {
+            StackTraceFilterer filterer = new StackTraceFilterer();
+            filterer.filter(t, true);
             matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
             if (matchedInfo == null) {
                 matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
