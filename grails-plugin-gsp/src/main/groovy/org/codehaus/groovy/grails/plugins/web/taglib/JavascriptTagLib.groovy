@@ -72,6 +72,7 @@ class JavascriptTagLib  {
         else if (attrs.library) {
             if (resourceService) {
                 out << r.require(module:attrs.library)
+                includedLibrary(attrs.library)
             } else {
                 if (LIBRARY_MAPPINGS.containsKey(attrs.library)) {
                     LIBRARY_MAPPINGS[attrs.library].each {
@@ -82,16 +83,14 @@ class JavascriptTagLib  {
                             javascriptInclude(newattrs)
                         }
                     }
-                    if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-                        request[INCLUDED_LIBRARIES] << attrs.library
-                    }
+                    includedLibrary(attrs.library)
                 }
                 else {
                     if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
                         def newattrs = [:] + attrs
                         newattrs.src = newattrs.remove('library') + '.js'
                         javascriptInclude(newattrs)
-                        request[INCLUDED_LIBRARIES] << attrs.library
+                        includedLibrary(attrs.library)
                         request[INCLUDED_JS] << attrs.library
                     }
                 }
@@ -101,6 +100,12 @@ class JavascriptTagLib  {
             out.println '<script type="text/javascript">'
             out.println body()
             out.println '</script>'
+        }
+    }
+
+    private includedLibrary(library) {
+        if (!request[INCLUDED_LIBRARIES].contains(library)) {
+            request[INCLUDED_LIBRARIES] << library
         }
     }
 

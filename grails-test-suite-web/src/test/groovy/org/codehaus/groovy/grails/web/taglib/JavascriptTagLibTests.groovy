@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.util.WebUtils
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
 class JavascriptTagLibTests extends AbstractGrailsTagTests {
 
@@ -78,6 +79,59 @@ class TestUrlMappings {
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugin/one"))
         assertOutputContains '<script src="/plugin/one/js/foo.js" type="text/javascript"></script>' + EOL, template
     }
+
+    /**
+     * Tests that the INCLUDED_JS_LIBRARIES attribute is set correctly without resources plugin
+     */
+    void testLibraryAttributeSet() {
+        def template = '<g:javascript library="testing"/>'
+
+        assertOutputContains('<script src="/js/testing.js" type="text/javascript"></script>', template)
+        assertEquals(['testing'], request.getAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES"))
+    }
+
+    def replaceMetaClass(Object o) {
+        def old = o.metaClass
+
+        // Create a new EMC for the class and attach it.
+        def emc = new ExpandoMetaClass(o.class, true, true)
+        emc.initialize()
+        o.metaClass = emc
+        
+        return old
+    }
+
+    /**
+     * Tests that the INCLUDED_JS_LIBRARIES attribute is set correctly without resources plugin
+     */
+    void testLibraryAttributeSetWhenResourcesInstalled() {
+        def template = '<g:javascript library="testing"/>'
+
+        def taglib = appCtx.getBean(JavascriptTagLib.class.name)
+        def oldMC = replaceMetaClass(taglib)
+
+        def requiredModule 
+        
+        // Dummy r.resource impl
+        def mockRes = [
+            require: { attrs -> requiredModule = attrs.module; return '' }
+        ]
+        taglib.metaClass.getR = { -> mockRes }
+        taglib.metaClass.getResourceService = { -> [something:'value'] }
+        try {
+            
+            def result = applyTemplate(template, [:])
+            
+            println "Result: $result"
+            assertEquals(['testing'], request.getAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES"))
+            assertEquals 0, result.trim().size()
+            assertEquals 'testing', requiredModule
+            
+        } finally {
+            taglib.metaClass = oldMC
+        }
+    }
+
 
     /**
      * Tests that the 'formRemote' tag complains if a 'params' attribute

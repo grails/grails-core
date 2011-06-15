@@ -54,13 +54,13 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '/test/images/foo.jpg', template
     }
 
-    def replaceMetaClass(Class c) {
-        def old = c.metaClass
+    def replaceMetaClass(Object o) {
+        def old = o.metaClass
 
         // Create a new EMC for the class and attach it.
-        def emc = new ExpandoMetaClass(c, true, true)
+        def emc = new ExpandoMetaClass(o.class, true, true)
         emc.initialize()
-        GroovySystem.metaClassRegistry.setMetaClass(c, emc)
+        o.metaClass = emc
 
         return old
     }
@@ -75,19 +75,39 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         request.contextPath = '/test'
         def template = '${resource(dir:"jquery")}'
 
-        def oldMC = replaceMetaClass(ApplicationTagLib)
+        def taglib = appCtx.getBean(ApplicationTagLib.class.name)
+        def oldMC = replaceMetaClass(taglib)
 
         // Dummy r.resource impl
         def mockRes = [
             resource: { attrs -> "WRONG"}
         ]
-        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, "g:resource")
-        tagLibrary.clazz.metaClass.getR = { -> mockRes }
-        tagLibrary.clazz.metaClass.getResourceService = { -> [something:'value'] }
+        taglib.metaClass.getR = { -> mockRes }
+        taglib.metaClass.getResourceService = { -> [something:'value'] }
         try {
             assertOutputEquals '/test/jquery', template
         } finally {
-            ApplicationTagLib.metaClass = oldMC
+            taglib.metaClass = oldMC
+        }
+    }
+
+    void testResourceTagDirAndFileWithResourcesHooks() {
+        request.contextPath = '/test'
+        def template = '${resource(dir:"jquery", file:"jqtest.js")}'
+
+        def taglib = appCtx.getBean(ApplicationTagLib.class.name)
+        def oldMC = replaceMetaClass(taglib)
+
+        // Dummy r.resource impl
+        def mockRes = [
+            resource: { attrs -> "RESOURCES:${attrs.dir}/${attrs.file}" }
+        ]
+        taglib.metaClass.getR = { -> mockRes }
+        taglib.metaClass.getResourceService = { -> [something:'value'] }
+        try {
+            assertOutputEquals 'RESOURCES:jquery/jqtest.js', template
+        } finally {
+            taglib.metaClass = oldMC
         }
     }
 
