@@ -80,7 +80,7 @@ class StackTracePrinterSpec extends Specification{
 
         then:
             result != null
-            result == '''Exception in FooController.groovy at line 7
+            result == '''Around line 7 of FooController.groovy
 4:     def show() {
 5:         callMe()
 6:     }
@@ -88,7 +88,7 @@ class StackTracePrinterSpec extends Specification{
 8:     def nesting() {
 9:         def fooService = new FooService()
 10:         try {
-Exception in FooController.groovy at line 5
+Around line 5 of FooController.groovy
 2: package test
 3: class FooController {
 4:     def show() {
@@ -123,7 +123,7 @@ Exception in FooController.groovy at line 5
             println result
         then:
             result != null
-            result == '''Exception in FooController.groovy at line 14
+            result == '''Around line 14 of FooController.groovy
 11:             fooService.callMe()
 12:         }
 13:         catch(e) {
@@ -131,12 +131,12 @@ Exception in FooController.groovy at line 5
 15:         }
 16:     }
 17: }
-Exception in FooService.groovy at line 3
+Around line 3 of FooService.groovy
 1: package test
 2: class FooService {
 3:     def callMe() { bad }
 4: }
-Exception in FooController.groovy at line 11
+Around line 11 of FooController.groovy
 8:     def nesting() {
 9:         def fooService = new FooService()
 10:         try {
