@@ -17,11 +17,10 @@ package org.codehaus.groovy.grails.web.errors
 
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
-import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
+import org.springframework.core.io.Resource
 
-/**
+ /**
  * Customized Stack trace output for the errors view
  *
  * @author Graeme Rocher
@@ -34,7 +33,7 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
     }
 
     @Override protected boolean shouldSkipNextCause(Throwable e) {
-        return super.shouldSkipNextCause(e) || e instanceof GroovyPagesException
+        return super.shouldSkipNextCause(e)
     }
 
     @Override

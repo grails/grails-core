@@ -15,11 +15,13 @@
  */
 package org.codehaus.groovy.grails.exceptions
 
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 
-/**
+ /**
  * Default implementation of the {@link StackTracePrinter} interface
  *
  * @since 1.4
@@ -62,6 +64,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             if (!first) {
                 printCausedByMessage(sb, e)
             }
+            if(e instanceof MultipleCompilationErrorsException) break
             e.stackTrace[0..-1].eachWithIndex { te, idx ->
                 def fileName = getFileName(te)
                 def lineNumber
@@ -182,12 +185,14 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                         first = false
                     }
 
-                    if(lineNumbersShown[className].contains(lineNumber)) continue // don't repeat the same lines twice
 
                     if (className && lineNumber) {
-                        lineNumbersShown[className] << lineNumber
+
                         res = res ?: resourceLocator.findResourceForClassName(className)
                         if (res != null) {
+                            if(lineNumbersShown[res.filename].contains(lineNumber)) continue // don't repeat the same lines twice
+
+                            lineNumbersShown[res.filename] << lineNumber
                             pw.print formatCodeSnippetStart(res, lineNumber)
                             final input = null
                             try {
@@ -249,12 +254,27 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     protected Resource getFileNameInfo(Throwable cause, Resource res) {
         Throwable start = cause
-        while (start instanceof SourceCodeAware) {
-            final tmp = new FileSystemResource(start.fileName)
-            if(tmp.exists()) {
-                res = tmp
-                break
+        while ((start instanceof SourceCodeAware) || (start instanceof MultipleCompilationErrorsException)) {
+            if(start instanceof SourceCodeAware) {
+                final tmp = new FileSystemResource(start.fileName)
+                if(tmp.exists()) {
+                    res = tmp
+                    break
+                }
             }
+            else if(start instanceof MultipleCompilationErrorsException) {
+                MultipleCompilationErrorsException mcee = cause
+                Object message = mcee.getErrorCollector().getErrors().iterator().next();
+                if (message instanceof SyntaxErrorMessage) {
+                    SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
+                    final tmp = new FileSystemResource(sem.getCause().getSourceLocator())
+                    if(tmp.exists()) {
+                        res = tmp
+                        break
+                    }
+                }
+            }
+
 
             start = start.cause
             if(start == null || start == start.cause) break
@@ -267,6 +287,14 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         if (cause instanceof SourceCodeAware) {
             SourceCodeAware sca = cause
             lineNumber = sca.lineNumber
+        }
+        else if(cause instanceof MultipleCompilationErrorsException) {
+            MultipleCompilationErrorsException mcee = cause
+            Object message = mcee.getErrorCollector().getErrors().iterator().next();
+            if (message instanceof SyntaxErrorMessage) {
+                SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
+                lineNumber = sem.getCause().getLine();
+            }
         }
         return lineNumber
     }
