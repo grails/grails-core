@@ -88,6 +88,14 @@ class StackTracePrinterSpec extends Specification{
 8:     def nesting() {
 9:         def fooService = new FooService()
 10:         try {
+Exception in FooController.groovy at line 5
+2: package test
+3: class FooController {
+4:     def show() {
+5:         callMe()
+6:     }
+7:     def callMe() { bad }
+8:     def nesting() {
 '''
 
     }
@@ -128,6 +136,14 @@ Exception in FooService.groovy at line 3
 2: class FooService {
 3:     def callMe() { bad }
 4: }
+Exception in FooController.groovy at line 11
+8:     def nesting() {
+9:         def fooService = new FooService()
+10:         try {
+11:             fooService.callMe()
+12:         }
+13:         catch(e) {
+14:             throw new RuntimeException("Bad things happened", e)
 '''
 
 
