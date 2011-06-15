@@ -18,28 +18,6 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.PluginBuildSettings;
-
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -51,6 +29,11 @@ import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * NOTE: Based on work done by the GSP standalone project
@@ -222,7 +205,7 @@ public class GroovyPageParser implements Tokens {
             gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);
             sitemeshPreprocessMode=true;
         }
-        scan = new GroovyPageScanner(gspSource);
+        scan = new GroovyPageScanner(gspSource, uri);
         pageName = uri;
         environment = Environment.getCurrent();
         makeName(name);
@@ -816,7 +799,7 @@ public class GroovyPageParser implements Tokens {
             if (!tagMetaStack.isEmpty()) {
                 throw new GrailsTagException("Grails tags were not closed! [" +
                         tagMetaStack + "] in GSP " + pageName + "", pageName,
-                        out.getCurrentLineNumber());
+                        getCurrentOutputLineNumber());
             }
 
             out.println("}");
