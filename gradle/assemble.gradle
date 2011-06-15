@@ -136,6 +136,9 @@ distSpec = copySpec {
         into "grails-$grailsVersion/src/grails"
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
     }
+    from('grails-resources/src/grails/home/dsl-support') {
+        into "grails-$grailsVersion/dsl-support"
+    }
 }
 
 task zipDist(type: Zip,dependsOn:libs) {

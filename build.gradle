@@ -242,6 +242,11 @@ task installResources << {
         filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
         filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
     }
+    
+    copy {
+        from 'grails-resources/src/grails/home/dsl-support'
+        into 'dsl-support'
+    }
 }
 
 

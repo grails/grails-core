@@ -1,6 +1,7 @@
 /out
 /bin
 /conf
+/dsl-support
 *.ipr
 idea
 /lib
