@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -102,7 +101,11 @@ public class GrailsScriptRunner {
     public static final String AGENT_ARGUMENT = "reloading";
     public static final String VERSION_ARGUMENT = "version";
     public static final String HELP_ARGUMENT = "help";
+    public static final String OLD_NON_INTERACTIVE_ARGUMENT = "non-interactive";
     public static final String NON_INTERACTIVE_ARGUMENT = "nonInteractive";
+    public static final String NOANSI_ARGUMENT = "plainOutput";
+    public static final String FORCE_ARGUMENT = "force";
+
     @SuppressWarnings("rawtypes")
     public static final Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
         private static final long serialVersionUID = 1L;
@@ -110,7 +113,7 @@ public class GrailsScriptRunner {
         @Override public Object call() { return null; }
         @Override public Object call(Object... args) { return null; }
     };
-    public static final String NOANSI_ARGUMENT = "plainOutput";
+
     private static InputStream originalIn;
     private static PrintStream originalOut;
 
@@ -158,9 +161,8 @@ public class GrailsScriptRunner {
         originalIn = System.in;
         originalOut = System.out;
 
-        CommandLineParser parser = new GnuParser();
+        CommandLineParser parser = new GrailsCliParser();
         args = splitAndTrimArgs(args);
-
 
         Options options = new Options();
         options.addOption(new Option(VERBOSE_ARGUMENT, "Enable verbose output"));
@@ -169,15 +171,17 @@ public class GrailsScriptRunner {
         options.addOption(new Option(HELP_ARGUMENT, "Command line help"));
         options.addOption(new Option(VERSION_ARGUMENT, "Current Grails version"));
         options.addOption(new Option(NOANSI_ARGUMENT, "Disables ANSI output"));
+        options.addOption(new Option(FORCE_ARGUMENT, "Does the requested action even if prompted for a y/n question"));
 
         options.addOption(withArgName("property=value")
                                  .hasArgs(2)
                                  .withValueSeparator()
                                  .withDescription("Used to specify System properties")
                                  .create("D"));
-        GrailsConsole console = GrailsConsole.getInstance();
-        CommandLine commandLine;
 
+        GrailsConsole console = GrailsConsole.getInstance();
+
+        CommandLine commandLine;
         try {
             commandLine = parser.parse(options, args);
             if (commandLine.hasOption(NOANSI_ARGUMENT)) {
@@ -203,7 +207,6 @@ public class GrailsScriptRunner {
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
             }
-
         }
         catch (Exception e) {
             exitWithError("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
@@ -222,14 +225,15 @@ public class GrailsScriptRunner {
 
         if (commandLine.hasOption(HELP_ARGUMENT)) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("grails [options] [command]",options);
+            formatter.printHelp("grails [options] [command]", options);
             System.exit(0);
         }
 
         // If there aren't any arguments, then we don't have a command
-        // to execute. So we have to exit.
+        // to execute, so enter "interactive mode"
         GrailsScriptRunner scriptRunner = new GrailsScriptRunner(build);
-        scriptRunner.setInteractive(!commandLine.hasOption(NON_INTERACTIVE_ARGUMENT));
+        scriptRunner.setInteractive(!commandLine.hasOption(NON_INTERACTIVE_ARGUMENT) &&
+                                    !commandLine.hasOption(OLD_NON_INTERACTIVE_ARGUMENT));
         if (script.name == null) {
             console.updateStatus("Loading build configuration");
 
@@ -266,7 +270,7 @@ public class GrailsScriptRunner {
         StringBuilder allArgs = new StringBuilder("");
         for (String arg : args) {
             arg = arg.trim();
-            if (arg.length()>0) {
+            if (arg.length() > 0) {
                 allArgs.append(" ").append(arg);
             }
         }
@@ -275,6 +279,11 @@ public class GrailsScriptRunner {
         if (allArgsString.length() == 0) {
             return new String[0];
         }
+
+        while (allArgsString.contains("  ")) {
+            allArgsString = allArgsString.replaceAll("  ", " ");
+        }
+
         return allArgsString.split(" ");
     }
 
@@ -290,30 +299,38 @@ public class GrailsScriptRunner {
         }
 
         processSystemArguments(commandLine);
-        String[] arguments = commandLine.getArgs();
-
-        if (arguments.length > 0) {
-            return processAndReturnArguments(arguments);
+        List<String> arguments = new ArrayList<String>(Arrays.asList(commandLine.getArgs()));
+        for (Option option : commandLine.getOptions()) {
+            if (option instanceof OptionalOption) {
+                String optionDesc = option.toString();
+                if (!OLD_NON_INTERACTIVE_ARGUMENT.equals(optionDesc)) {
+                    arguments.add(option.toString());
+                }
+            }
         }
-        return new ScriptAndArgs();
+
+        if (arguments.isEmpty()) {
+            return new ScriptAndArgs();
+        }
+
+        return processAndReturnArguments(arguments);
     }
 
-    private static ScriptAndArgs processAndReturnArguments(String[] arguments) {
+    private static ScriptAndArgs processAndReturnArguments(List<String> arguments) {
         ScriptAndArgs info = new ScriptAndArgs();
         int currentParamIndex = 0;
         if (Environment.isSystemSet()) {
             info.env = Environment.getCurrent().getName();
         }
-        else if (isEnvironmentArgs(arguments[currentParamIndex])) {
+        else if (isEnvironmentArgs(arguments.get(currentParamIndex))) {
             // use first argument as environment name and step further
-            String env = arguments[currentParamIndex++];
+            String env = arguments.get(currentParamIndex++);
             info.env = ENV_ARGS.get(env);
         }
 
         abortIfOutOfBounds(arguments, currentParamIndex);
         // use current argument as script name and step further
-        String paramName = arguments[currentParamIndex++];
-
+        String paramName = arguments.get(currentParamIndex++);
 
         if (paramName.charAt(0) == '-') {
             paramName = paramName.substring(1);
@@ -321,19 +338,19 @@ public class GrailsScriptRunner {
         info.inputName = paramName;
         info.name = GrailsNameUtils.getNameFromScript(paramName);
 
-        if (currentParamIndex < arguments.length) {
+        if (currentParamIndex < arguments.size()) {
             // if we have additional params provided - store it in system property
-            StringBuilder b = new StringBuilder(arguments[currentParamIndex]);
-            for (int i = currentParamIndex + 1; i < arguments.length; i++) {
-                b.append(' ').append(arguments[i]);
+            StringBuilder b = new StringBuilder(arguments.get(currentParamIndex));
+            for (int i = currentParamIndex + 1, count = arguments.size(); i < count; i++) {
+                b.append(' ').append(arguments.get(i));
             }
             info.args = b.toString();
         }
         return info;
     }
 
-    private static void abortIfOutOfBounds(String[] splitArgs, int currentParamIndex) {
-        if (currentParamIndex >= splitArgs.length) {
+    private static void abortIfOutOfBounds(List<String> splitArgs, int currentParamIndex) {
+        if (currentParamIndex >= splitArgs.size()) {
             GrailsConsole.getInstance().error("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
             System.exit(0);
         }
@@ -485,7 +502,8 @@ public class GrailsScriptRunner {
         setRunningEnvironment(scriptName, env);
 
         // Get Gant to load the class by name using our class loader.
-        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(settings, pluginPathSupport,isInteractive);
+        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
+                settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
 
         try {
@@ -514,7 +532,8 @@ public class GrailsScriptRunner {
         binding.setVariable("scriptName", scriptFileName);
 
         // Setup the script to call.
-        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(settings, pluginPathSupport,isInteractive);
+        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
+             settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
         gant.setUseCache(true);
         gant.setCacheDirectory(scriptCacheDir);

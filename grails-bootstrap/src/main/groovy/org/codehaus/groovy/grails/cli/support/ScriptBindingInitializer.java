@@ -117,6 +117,9 @@ public class ScriptBindingInitializer {
          binding.setVariable("pluginsDirPath", settings.getProjectPluginsDir().getPath());
          binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
 
+         // setup Ant alias for older scripts
+         binding.setVariable("Ant", binding.getVariable("ant"));
+
          final BaseSettingsApi cla = new BaseSettingsApi(settings, isInteractive);
 
          // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
