@@ -127,6 +127,16 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
                 }
             }
 
+            ['BuildConfig.groovy'].each() {template ->
+                if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.equals(template) }) {
+                    copy(tofile: "${basedir}/grails-app/conf/${template}") {
+                        fileset(file: "${grailsHome}/src/grails/grails-app/conf/${template}") {
+                            present(present: "srconly", targetdir: "${basedir}/grails-app/conf")
+                        }
+                    }
+                }
+            }
+    
             // Install application-only files if needed, with suffix matching
             ['DataSource.groovy'].each() {template ->
                 if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.startsWith(template) }) {
