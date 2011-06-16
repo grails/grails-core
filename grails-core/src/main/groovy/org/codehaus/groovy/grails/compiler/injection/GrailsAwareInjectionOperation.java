@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import groovy.lang.GroovyResourceLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -54,6 +55,13 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
         initializeState();
+        this.localClassInjectors = classInjectors;
+    }
+
+    /**
+     * @deprecated Custom resource loader no longer supported
+     */
+    public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
         this.localClassInjectors = classInjectors;
     }
 
