@@ -68,8 +68,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    private final Set commandObjectActions = new HashSet();
-    private final Set commandObjectClasses = new HashSet();
     private Map<String, FeatureDescriptor> flows = new HashMap<String, FeatureDescriptor>();
 
     public void setDefaultActionName(String defaultActionName) {
@@ -302,19 +300,21 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     /**
      * @deprecated This method is deprecated and will be removed in a future version of Grails
+     * @return EMPTY_SET until the method is removed
      */
     @Deprecated
     public Set getCommandObjectActions() {
-        return commandObjectActions;
+        return Collections.EMPTY_SET;
     }
 
     /**
      * @deprecated This method is deprecated and will be removed in a future version of Grails
+     * @return EMPTY_SET until the method is removed
      */
     @SuppressWarnings("unchecked")
     @Deprecated
     public Set getCommandObjectClasses() {
-        return Collections.unmodifiableSet(commandObjectClasses);
+        return Collections.EMPTY_SET;
     }
 
     public Map<String, Closure> getFlows() {
