@@ -205,16 +205,18 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
         MethodNode bindDataMethodNode = classNode.getMethod("bindData", new Parameter[]{new Parameter(new ClassNode(Object.class), "target"), new Parameter(new ClassNode(Object.class), "params")});
         for (Parameter param : actionParameters) {
-            constructorCallExpression = new ConstructorCallExpression(param.getType(), EMPTY_TUPLE);
+            final ClassNode paramTypeClassNode = param.getType();
+            final String paramName = param.getName();
+            constructorCallExpression = new ConstructorCallExpression(paramTypeClassNode, EMPTY_TUPLE);
             newCommandCode = new ExpressionStatement(
-                    new DeclarationExpression(new VariableExpression(param.getName(), param.getType()),
+                    new DeclarationExpression(new VariableExpression(paramName, paramTypeClassNode),
                             Token.newSymbol(Types.EQUALS, 0, 0),
                             constructorCallExpression));
 
             wrapper.addStatement(newCommandCode);
 
             arguments = new ArgumentListExpression();
-            arguments.addExpression(new VariableExpression(param.getName()));
+            arguments.addExpression(new VariableExpression(paramName));
             arguments.addExpression(new VariableExpression(PARAMS_EXPRESSION));
 
             MethodCallExpression bindDataMethodCallExpression = new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments);
@@ -222,7 +224,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                 bindDataMethodCallExpression.setMethodTarget(bindDataMethodNode);
             }
             wrapper.addStatement(new ExpressionStatement(bindDataMethodCallExpression));
-            MethodCallExpression validateMethodCallExpression = new MethodCallExpression(new VariableExpression(param.getName()), "validate", EMPTY_TUPLE);
+            MethodCallExpression validateMethodCallExpression = new MethodCallExpression(new VariableExpression(paramName), "validate", EMPTY_TUPLE);
 //            MethodNode validateMethod = param.getType().getMethod("validate", new Parameter[0]);
 //            if(validateMethod != null) {
 //                validateMethodCallExpression.setMethodTarget(validateMethod);
