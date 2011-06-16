@@ -280,7 +280,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     }
 
     public void informOfClassChange(Class<?> aClass) {
-        if (aClass ==null || application == null) {
+        if (aClass == null || application == null) {
             return;
         }
 
@@ -342,11 +342,9 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     public void informOfFileChange(File file) {
         String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
         Class<?> cls = null;
-
         if (className != null) {
             cls = loadApplicationClass(className);
         }
-
         informOfClassChange(file, cls);
     }
 
@@ -365,20 +363,21 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         }
         else {
 
-            MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-            registry.removeMetaClass(cls);
-            ExpandoMetaClass newMc = new ExpandoMetaClass(cls, true, true);
-            newMc.initialize();
-            registry.setMetaClass(cls, newMc);
-
+            if (cls != null) {
+                MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+                registry.removeMetaClass(cls);
+                ExpandoMetaClass newMc = new ExpandoMetaClass(cls, true, true);
+                newMc.initialize();
+                registry.setMetaClass(cls, newMc);
+            }
 
             for (GrailsPlugin grailsPlugin : pluginList) {
                 if (grailsPlugin.hasInterestInChange(file.getAbsolutePath())) {
-                    if (cls != null) {
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
+                    if (cls == null) {
+                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
                     }
                     else {
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
+                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
                     }
                 }
             }
@@ -394,7 +393,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         }
         return cls;
     }
-
 
     public String getPluginPathForClass(Class<?> theClass) {
         if (theClass != null) {

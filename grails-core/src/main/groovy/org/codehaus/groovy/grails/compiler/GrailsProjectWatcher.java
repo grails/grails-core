@@ -43,12 +43,12 @@ import org.springframework.util.ClassUtils;
  * @author Graeme Rocher
  * @since 1.4
  */
-public class GrailsProjectWatcher extends DirectoryWatcher{
+public class GrailsProjectWatcher extends DirectoryWatcher {
+
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
     private static final Map<String, ClassUpdate> classChangeEventQueue = new ConcurrentHashMap<String, ClassUpdate>();
     private static boolean active = false;
     public static final String SPRING_LOADED_PLUGIN_CLASS = "com.springsource.loaded.Plugins";
-
 
     private List<String> compilerExtensions;
     private GrailsPluginManager pluginManager;
@@ -56,9 +56,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
     private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
-        super();
-
-
         this.pluginManager = pluginManager;
         this.compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
@@ -84,11 +81,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
      * @param updatedClass The class to update
      */
     public static void firePendingClassChangeEvents(Class<?> updatedClass) {
-        if (updatedClass != null) {
-            ClassUpdate classUpdate = classChangeEventQueue.remove(updatedClass.getName());
-            if (classUpdate != null) {
-                  classUpdate.run(updatedClass);
-            }
+        if (updatedClass == null) {
+            return;
+        }
+
+        ClassUpdate classUpdate = classChangeEventQueue.remove(updatedClass.getName());
+        if (classUpdate != null) {
+            classUpdate.run(updatedClass);
         }
     }
 
@@ -111,7 +110,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
 
         addListener(new FileChangeListener() {
             public void onChange(File file) {
-                LOG.info("File ["+file+"] changed. Applying changes to application.");
+                LOG.info("File [" + file + "] changed. Applying changes to application.");
                 if (descriptorToPluginMap.containsKey(file)) {
                     reloadPlugin(file);
                 }
@@ -119,11 +118,10 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
                     compileIfSource(file);
                     informPluginManager(file, false);
                 }
-
             }
 
             public void onNew(File file) {
-                LOG.info("File ["+file+"] added. Applying changes to application.");
+                LOG.info("File [" + file + "] added. Applying changes to application.");
                 sleep(5000);
                 compileIfSource(file);
                 informPluginManager(file, true);
@@ -154,12 +152,12 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
                         addWatchFile(watchPattern.getFile());
                     }
                     else if (watchPattern.getDirectory() != null) {
-                        addWatchDirectory(watchPattern.getDirectory(),watchPattern.getExtension());
+                        addWatchDirectory(watchPattern.getDirectory(), watchPattern.getExtension());
                     }
                 }
             }
-
         }
+
         super.run();
     }
 
@@ -176,7 +174,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher{
             try {
                 pluginManager.informOfFileChange(file);
             } catch (Exception e) {
-                LOG.error("Failed to reload file ["+file+"] with error: " + e.getMessage());
+                LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage());
             }
         }
         else {
