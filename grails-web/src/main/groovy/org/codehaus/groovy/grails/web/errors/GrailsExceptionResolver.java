@@ -53,6 +53,7 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
  */
 public class GrailsExceptionResolver extends SimpleMappingExceptionResolver implements ServletContextAware, GrailsApplicationAware {
 
+    public static final String EXCEPTION_ATTRIBUTE = "exception";
     private ServletContext servletContext;
 
     private static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
@@ -79,7 +80,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         GrailsUtil.deepSanitize(ex);
 
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext, ex);
-        mv.addObject("exception",gwrex);
+        mv.addObject(EXCEPTION_ATTRIBUTE,gwrex);
 
         UrlMappingsHolder urlMappings = null;
         try {

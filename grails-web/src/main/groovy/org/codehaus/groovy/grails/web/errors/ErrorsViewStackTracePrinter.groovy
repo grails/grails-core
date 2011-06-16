@@ -37,6 +37,29 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
     }
 
     @Override
+    String prettyPrint(Throwable t) {
+        if(t instanceof GrailsWrappedRuntimeException) {
+            return super.prettyPrint(t.cause)
+        }
+        else {
+            return super.prettyPrint(t)
+        }
+    }
+
+    @Override
+    String prettyPrintCodeSnippet(Throwable exception) {
+        if(exception instanceof GrailsWrappedRuntimeException) {
+            return super.prettyPrintCodeSnippet(exception.cause)
+        }
+        else {
+            return super.prettyPrintCodeSnippet(exception)
+        }
+    }
+
+
+
+
+    @Override
     String formatCodeSnippetStart(Resource resource, int lineNumber) {
         def path = resource.filename
         // try calc better path

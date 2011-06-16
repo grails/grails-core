@@ -20,8 +20,10 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.springframework.web.util.NestedServletException
 
- /**
+/**
  * Default implementation of the {@link StackTracePrinter} interface
  *
  * @since 1.4
@@ -57,6 +59,10 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         boolean first = true
         Throwable e = t
         while (e != null) {
+            if(e instanceof NestedServletException) {
+                    e = e.cause
+                    continue
+            }
             def last = e.stackTrace.size()
             def prevFn
             def prevLn
@@ -124,7 +130,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         return sw.toString()
     }
 
-    protected String makeRelativeIfPossible(String fileName) {
+    public static String makeRelativeIfPossible(String fileName) {
         final base = System.getProperty("base.dir")
         if (base) {
             fileName = fileName - base
@@ -180,6 +186,10 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             while (cause != null) {
 
                 if(!cause.stackTrace) break
+                if(cause instanceof NestedServletException) {
+                    cause = cause.cause
+                    continue
+                }
                 boolean first = true
                 for(entry in cause.stackTrace) {
                     Resource res = null
@@ -264,6 +274,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     protected Resource getFileNameInfo(Throwable cause, Resource res) {
         Throwable start = cause
+
         while ((start instanceof SourceCodeAware) || (start instanceof MultipleCompilationErrorsException)) {
             if(start instanceof SourceCodeAware) {
                 try {
@@ -280,7 +291,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
             }
             else if(start instanceof MultipleCompilationErrorsException) {
-                MultipleCompilationErrorsException mcee = cause
+                MultipleCompilationErrorsException mcee = start
                 Object message = mcee.getErrorCollector().getErrors().iterator().next();
                 if (message instanceof SyntaxErrorMessage) {
                     SyntaxErrorMessage sem = (SyntaxErrorMessage)message;

@@ -54,6 +54,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private GrailsPluginManager pluginManager;
     private GrailsProjectCompiler compiler;
     private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
+    private static MultipleCompilationErrorsException currentCompilationError = null;
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -62,6 +63,10 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         if (isReloadingAgentPresent()) {
             GrailsPluginManagerReloadPlugin.register();
         }
+    }
+
+    public static MultipleCompilationErrorsException getCurrentCompilationError() {
+        return currentCompilationError;
     }
 
     public static boolean isReloadingAgentPresent() {
@@ -199,16 +204,22 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         try {
             if (isSourceFile(file)) {
                 compiler.compileAll();
+                currentCompilationError = null;
                 ClassPropertyFetcher.clearClassPropertyFetcherCache();
             }
         }
         catch (MultipleCompilationErrorsException e) {
             LOG.error("Compilation Error: " + e.getMessage());
+            currentCompilationError = e;
         }
         catch(CompilationFailedException e) {
             LOG.error("Compilation Error: " + e.getMessage());
         }
         catch(BuildException e) {
+            Throwable cause = e.getCause();
+            if(cause instanceof MultipleCompilationErrorsException) {
+                currentCompilationError = (MultipleCompilationErrorsException) cause;
+            }
             LOG.error("Compilation Error: " + e.getCause().getMessage());
         }
     }

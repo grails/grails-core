@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.util.StringUtils
 
 /**
  * Tags to help rendering of views and layouts.
@@ -715,10 +716,13 @@ class RenderTagLib implements RequestConstants {
             currentOut << errorPrinter.prettyPrintCodeSnippet(exception)
 
             if (exception != null) {
-                currentOut << "<h2>Trace</h2>"
-                currentOut << '<div class="stack"><pre>'
-                currentOut << errorPrinter.prettyPrint(exception.cause ?: exception)
-                currentOut << '</pre></div>'
+                def trace = errorPrinter.prettyPrint(exception.cause ?: exception)
+                if(StringUtils.hasText(trace.trim())) {
+                    currentOut << "<h2>Trace</h2>"
+                    currentOut << '<div class="stack"><pre>'
+                    currentOut << trace.encodeAsHTML()
+                    currentOut << '</pre></div>'
+                }
 
             }
         }

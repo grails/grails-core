@@ -23,6 +23,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
 
 /**
@@ -67,6 +68,8 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
                 Throwable throwable = throwableInformation.getThrowable();
                 if(throwable != null) {
                     StackTracePrinter stackTracePrinter = new DefaultStackTracePrinter();
+                    StackTraceFilterer stackTraceFilterer = new StackTraceFilterer();
+                    stackTraceFilterer.filter(throwable, true);
                     b.append(stackTracePrinter.prettyPrint(throwable));
                 }
             }

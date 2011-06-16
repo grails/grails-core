@@ -16,12 +16,15 @@ package org.codehaus.groovy.grails.web.mapping.filter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -103,7 +106,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             return;
         }
 
-        checkForCompilationErrors();
+
 
         if (isUriExcluded(holder, uri)) {
             processFilterChain(request, response, filterChain);
@@ -178,6 +181,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                     dispatched = true;
 
+                    checkForCompilationErrors(request);
+
                     request = checkMultipart(request);
 
                     if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
@@ -251,17 +256,15 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
        return controllers == null || controllers.length == 0;
     }
 
-    private void checkForCompilationErrors() {
+    private void checkForCompilationErrors(HttpServletRequest request) {
         if (application.isWarDeployed()) {
             return;
         }
 
-        ClassLoader classLoader = application.getClassLoader();
-        if (classLoader instanceof GrailsClassLoader) {
-            GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
-            if (gcl.hasCompilationErrors()) {
-                throw gcl.getCompilationError();
-            }
+        if(request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
+        MultipleCompilationErrorsException compilationError = GrailsProjectWatcher.getCurrentCompilationError();
+        if(compilationError != null) {
+            throw compilationError;
         }
     }
 
