@@ -31,7 +31,6 @@ import java.util.Stack;
 
 import jline.ConsoleReader;
 import jline.Terminal;
-import jline.UnixTerminal;
 import jline.UnsupportedTerminal;
 import jline.WindowsTerminal;
 
@@ -108,12 +107,13 @@ public class GrailsConsole {
 
         System.setOut(new GrailsConsolePrintStream(this.out));
 
-        if(isWindows()) {
+        if (isWindows()) {
            terminal = new WindowsTerminal() {
+               @Override
                 public boolean isANSISupported() {
-                    return true;
-                }
-		    };
+                   return true;
+               }
+            };
             try {
                 terminal.initializeTerminal();
             } catch (Exception e) {
@@ -128,7 +128,7 @@ public class GrailsConsole {
         reader.setCompletionHandler(new CandidateListCompletionHandler());
         category.add("grails");
         // bit of a WTF this, but see no other way to allow a customization indicator
-        this.maxIndicatorString = new StringBuilder().append(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
+        this.maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
         out.println();
     }
@@ -136,33 +136,6 @@ public class GrailsConsole {
     private boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
     }
-
-    // copied from Terminal.setupTerminal()
-//    private Terminal setupTerminal() {
-//        final Terminal t;
-//
-//        String os = System.getProperty("os.name").toLowerCase();
-//        if (os.indexOf("windows") != -1) {
-//            t = new WindowsTerminal() {
-//                @Override
-//                public boolean isANSISupported() {
-//                    return true;
-//                };
-//            };
-//        }
-//        else {
-//            t = new UnixTerminal();
-//        }
-//
-//        try {
-//            t.initializeTerminal();
-//            return t;
-//        }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//            return new UnsupportedTerminal();
-//        }
-//    }
 
     public static synchronized GrailsConsole getInstance() {
         if (instance == null) {
@@ -257,7 +230,7 @@ public class GrailsConsole {
         progressIndicatorActive = true;
         String currMsg = lastMessage;
         try {
-            updateStatus(new StringBuilder(currMsg).append(' ').append(number).append(" of ").append(total).toString());
+            updateStatus(currMsg + ' '+ number + " of " + total);
         } finally {
             lastMessage = currMsg;
         }
@@ -280,8 +253,7 @@ public class GrailsConsole {
                 out.print(percentage+'%');
             }
             else {
-                String message = new StringBuilder(currMsg).append(' ').append(percentage).append('%').toString();
-                updateStatus(message);
+                updateStatus(currMsg + ' ' + percentage + '%');
             }
         } finally {
             lastMessage = currMsg;
@@ -298,7 +270,7 @@ public class GrailsConsole {
         String currMsg = lastMessage;
         try {
             if (isAnsiEnabled()) {
-                updateStatus(new StringBuilder(currMsg).append(' ').append(number).toString());
+                updateStatus(currMsg + ' ' + number);
             }
             else {
                 out.print("..");
@@ -524,7 +496,7 @@ public class GrailsConsole {
     }
 
     private String createQuestion(String message, String[] validResponses) {
-        return new StringBuilder(message).append("[").append(DefaultGroovyMethods.join(validResponses, ",")).append("] ").toString();
+        return message + "[" + DefaultGroovyMethods.join(validResponses, ",") + "] ";
     }
 
     private void printMessageOnNewLine(String msg) {

@@ -60,18 +60,17 @@ public class ControllersApi extends CommonWebApi {
     public ControllersApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
 
-
         this.redirect = new RedirectDynamicMethod();
         this.forwardMethod= new ForwardMethod();
     }
 
     public static ApplicationContext getStaticApplicationContext() {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-        if (requestAttributes instanceof GrailsWebRequest) {
-            GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
-            return webRequest.getApplicationContext();
+        if (!(requestAttributes instanceof GrailsWebRequest)) {
+            return null;
         }
-        return null;
+
+        return ((GrailsWebRequest)requestAttributes).getApplicationContext();
     }
 
     public void setGspEncoding(String gspEncoding) {
@@ -100,7 +99,6 @@ public class ControllersApi extends CommonWebApi {
         ApplicationContext applicationContext = getStaticApplicationContext();
         if (applicationContext != null) {
             applicationContext.getAutowireCapableBeanFactory().autowireBean(instance);
-
         }
     }
 
@@ -111,7 +109,7 @@ public class ControllersApi extends CommonWebApi {
      */
     public String getActionUri(@SuppressWarnings("unused") Object instance) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return new StringBuilder(SLASH).append(webRequest.getControllerName()).append(SLASH).append(webRequest.getActionName()).toString();
+        return SLASH + webRequest.getControllerName() + SLASH + webRequest.getActionName();
     }
 
     /**
@@ -119,7 +117,7 @@ public class ControllersApi extends CommonWebApi {
      * @return The controller URI
      */
     public String getControllerUri(Object instance) {
-        return new StringBuilder(SLASH).append(getControllerName(instance)).toString();
+        return SLASH + getControllerName(instance);
     }
 
     /**

@@ -20,11 +20,10 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.springframework.web.util.NestedServletException
 
 /**
- * Default implementation of the {@link StackTracePrinter} interface
+ * Default implementation of the {@link StackTracePrinter} interface.
  *
  * @since 1.4
  *
@@ -35,17 +34,14 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     ResourceLocator resourceLocator
 
-
-
-    DefaultStackTracePrinter() {
-    }
+    DefaultStackTracePrinter() {}
 
     DefaultStackTracePrinter(ResourceLocator resourceLocator) {
         this.resourceLocator = resourceLocator
     }
 
     String prettyPrint(Throwable t) {
-        if(t == null) return ''
+        if (t == null) return ''
         final sw = new StringWriter()
         def sb = new PrintWriter(sw)
         def mln = Math.max(4, t.stackTrace.lineNumber.max())
@@ -59,9 +55,9 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         boolean first = true
         Throwable e = t
         while (e != null) {
-            if(e instanceof NestedServletException) {
-                    e = e.cause
-                    continue
+            if (e instanceof NestedServletException) {
+                e = e.cause
+                continue
             }
             def last = e.stackTrace.size()
             def prevFn
@@ -70,18 +66,18 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             if (!first) {
                 printCausedByMessage(sb, e)
             }
-            if(e instanceof MultipleCompilationErrorsException) break
+            if (e instanceof MultipleCompilationErrorsException) break
             e.stackTrace[0..-1].eachWithIndex { te, idx ->
                 def fileName = getFileName(te)
                 def lineNumber
                 if (e instanceof SourceCodeAware) {
-                    if(e.lineNumber && e.lineNumber > -1) {
+                    if (e.lineNumber && e.lineNumber > -1) {
                         lineNumber = e.lineNumber.toString().padLeft(lineNumWidth)
                     }
                     else {
                         lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
                     }
-                    if(e.fileName) {
+                    if (e.fileName) {
                         fileName = e.fileName
                         fileName = makeRelativeIfPossible(fileName)
                     }
@@ -90,7 +86,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     lineNumber = te.lineNumber.toString().padLeft(lineNumWidth)
                 }
 
-                if(prevLn == lineNumber && idx != last) return // no point duplicating lines
+                if (prevLn == lineNumber && idx != last) return // no point duplicating lines
                 if ((idx == 0) || fileName) {
                     prevLn = lineNumber
                     if (prevFn && (prevFn == fileName)) {
@@ -123,9 +119,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             first = false
             if (shouldSkipNextCause(e)) break
             e = e.cause
-
         }
-
 
         return sw.toString()
     }
@@ -167,106 +161,102 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     protected String getFileName(StackTraceElement te) {
         final res = resourceLocator?.findResourceForClassName(te.className)
-        if (res != null) {
-            return res.getFilename()
-        }
-        else {
-            return te.fileName
-        }
+        res == null ? te.fileName : res.getFilename()
     }
 
     String prettyPrintCodeSnippet(Throwable exception) {
+        if (exception == null) {
+            return ''
+        }
+
         def className = null
         def lineNumber = null
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
         def lineNumbersShown = [:].withDefault { k -> [] }
-        if (exception != null) {
-            Throwable cause = exception
-            while (cause != null) {
 
-                if(!cause.stackTrace) break
-                if(cause instanceof NestedServletException) {
-                    cause = cause.cause
-                    continue
-                }
-                boolean first = true
-                for(entry in cause.stackTrace) {
-                    Resource res = null
-                    className = entry.className
-                    lineNumber = entry.lineNumber
+        Throwable cause = exception
+        while (cause != null) {
 
-                    lineNumber = getLineNumberInfo(cause, lineNumber)
-                    if(first) {
-                        res = getFileNameInfo(cause, res)
-                        if(res != null) {
-                            first = false
-                        }
-                    }
-
-
-                    if (className && lineNumber) {
-
-                        res = res ?: resourceLocator.findResourceForClassName(className)
-                        if (res != null) {
-                            if(lineNumbersShown[res.filename].contains(lineNumber)) continue // don't repeat the same lines twice
-
-                            lineNumbersShown[res.filename] << lineNumber
-                            pw.print formatCodeSnippetStart(res, lineNumber)
-                            final input = null
-                            try {
-                                input = res.inputStream
-                                input.withReader { fileIn ->
-                                    def reader = new LineNumberReader(fileIn)
-                                    def last = lineNumber + 3
-                                    def range = (lineNumber - 3..last)
-                                    def currentLine = reader.readLine()
-
-                                    while (currentLine != null) {
-                                        Integer currentLineNumber = reader.lineNumber
-                                        if (currentLineNumber in range) {
-                                            boolean isErrorLine = currentLineNumber == lineNumber
-                                            if (isErrorLine) {
-                                                pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine)
-                                            }
-                                            else {
-                                                pw.print formatCodeSnippetLine(currentLineNumber, currentLine)
-                                            }
-
-                                        }
-                                        else if (currentLineNumber > last) {
-                                            break
-                                        }
-
-                                        currentLine = reader.readLine()
-                                    }
-                                }
-
-                            }
-                            catch (e) {
-                                // ignore
-                            }
-                            finally {
-                                try {
-                                    input?.close()
-                                } catch (e) {
-                                    // ignore
-                                }
-                                pw.print formatCodeSnippetEnd(res, lineNumber)
-
-                            }
-                        }
-                        else {
-                            if(!first)
-                                break
-                        }
-                    }
-                }
-
-                if (shouldSkipNextCause(cause)) break
+            if (!cause.stackTrace) break
+            if (cause instanceof NestedServletException) {
                 cause = cause.cause
+                continue
             }
 
+            boolean first = true
+            for (entry in cause.stackTrace) {
+                Resource res = null
+                className = entry.className
+                lineNumber = entry.lineNumber
+
+                lineNumber = getLineNumberInfo(cause, lineNumber)
+                if (first) {
+                    res = getFileNameInfo(cause, res)
+                    if (res != null) {
+                        first = false
+                    }
+                }
+
+                if (!className || !lineNumber) {
+                    continue
+                }
+
+                res = res ?: resourceLocator.findResourceForClassName(className)
+                if (res != null) {
+                    if (lineNumbersShown[res.filename].contains(lineNumber)) continue // don't repeat the same lines twice
+
+                    lineNumbersShown[res.filename] << lineNumber
+                    pw.print formatCodeSnippetStart(res, lineNumber)
+                    final input = null
+                    try {
+                        input = res.inputStream
+                        input.withReader { fileIn ->
+                            def reader = new LineNumberReader(fileIn)
+                            def last = lineNumber + 3
+                            def range = (lineNumber - 3..last)
+                            def currentLine = reader.readLine()
+
+                            while (currentLine != null) {
+                                Integer currentLineNumber = reader.lineNumber
+                                if (currentLineNumber in range) {
+                                    boolean isErrorLine = currentLineNumber == lineNumber
+                                    if (isErrorLine) {
+                                        pw.print formatCodeSnippetErrorLine(currentLineNumber, currentLine)
+                                    }
+                                    else {
+                                        pw.print formatCodeSnippetLine(currentLineNumber, currentLine)
+                                    }
+                                }
+                                else if (currentLineNumber > last) {
+                                    break
+                                }
+
+                                currentLine = reader.readLine()
+                            }
+                        }
+                    }
+                    catch (e) {
+                        // ignore
+                    }
+                    finally {
+                        try {
+                            input?.close()
+                        } catch (e) {
+                            // ignore
+                        }
+                        pw.print formatCodeSnippetEnd(res, lineNumber)
+                    }
+                }
+                else {
+                    if (!first) {
+                        break
+                    }
+                }
+            }
+
+            if (shouldSkipNextCause(cause)) break
+            cause = cause.cause
         }
 
         return sw.toString()
@@ -276,11 +266,11 @@ class DefaultStackTracePrinter implements StackTracePrinter {
         Throwable start = cause
 
         while ((start instanceof SourceCodeAware) || (start instanceof MultipleCompilationErrorsException)) {
-            if(start instanceof SourceCodeAware) {
+            if (start instanceof SourceCodeAware) {
                 try {
-                    if(start.fileName) {
+                    if (start.fileName) {
                         final tmp = new FileSystemResource(start.fileName)
-                        if(tmp.exists()) {
+                        if (tmp.exists()) {
                             res = tmp
                             break
                         }
@@ -288,24 +278,22 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                 } catch (e) {
                     // ignore
                 }
-
             }
-            else if(start instanceof MultipleCompilationErrorsException) {
+            else if (start instanceof MultipleCompilationErrorsException) {
                 MultipleCompilationErrorsException mcee = start
-                Object message = mcee.getErrorCollector().getErrors().iterator().next();
+                Object message = mcee.getErrorCollector().getErrors().iterator().next()
                 if (message instanceof SyntaxErrorMessage) {
-                    SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
+                    SyntaxErrorMessage sem = (SyntaxErrorMessage)message
                     final tmp = new FileSystemResource(sem.getCause().getSourceLocator())
-                    if(tmp.exists()) {
+                    if (tmp.exists()) {
                         res = tmp
                         break
                     }
                 }
             }
 
-
             start = start.cause
-            if(start == null || start == start.cause) break
+            if (start == null || start == start.cause) break
         }
         return res
     }
@@ -316,12 +304,12 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             SourceCodeAware sca = cause
             lineNumber = sca.lineNumber
         }
-        else if(cause instanceof MultipleCompilationErrorsException) {
+        else if (cause instanceof MultipleCompilationErrorsException) {
             MultipleCompilationErrorsException mcee = cause
-            Object message = mcee.getErrorCollector().getErrors().iterator().next();
+            Object message = mcee.getErrorCollector().getErrors().iterator().next()
             if (message instanceof SyntaxErrorMessage) {
-                SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
-                lineNumber = sem.getCause().getLine();
+                SyntaxErrorMessage sem = (SyntaxErrorMessage)message
+                lineNumber = sem.getCause().getLine()
             }
         }
         return lineNumber
@@ -354,9 +342,8 @@ class DefaultStackTracePrinter implements StackTracePrinter {
      */
     protected Throwable getRootCause(Throwable ex) {
         while (ex.getCause() != null && !ex.equals(ex.getCause())) {
-            ex = ex.getCause();
+            ex = ex.getCause()
         }
-        return ex;
+        return ex
     }
-
 }
