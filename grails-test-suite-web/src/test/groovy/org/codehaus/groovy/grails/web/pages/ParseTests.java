@@ -232,7 +232,7 @@ public class ParseTests extends TestCase {
                  "\n" +
                  "Thanks");
 
-         assertEquals(expected, output.generatedGsp);
+         assertEquals(expected.replaceAll("[\r\n]", ""), output.generatedGsp.replaceAll("[\r\n]", ""));
          assertEquals("Please click the link below to confirm your email address:\n\n", output.htmlParts[0]);
          assertEquals("\n\n\nThanks", output.htmlParts[1]);
      }

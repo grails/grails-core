@@ -119,7 +119,7 @@ def prettyJSON = """{
 }"""
 
         JSON.use("pretty-print") {
-            assertEquals(prettyJSON, (createBook() as JSON).toString())
+            assertEquals(prettyJSON.replaceAll('[\r\n]', ''), (createBook() as JSON).toString().replaceAll('[\r\n]', ''))
         }
 
         def prettyXML = """<?xml version="1.0" encoding="UTF-8"?>
@@ -132,7 +132,7 @@ def prettyJSON = """{
   </title>
 </book>"""
         XML.use("pretty-print") {
-            assertEquals(prettyXML, (createBook() as XML).toString().trim())
+            assertEquals(prettyXML.replaceAll('[\r\n]', ''), (createBook() as XML).toString().replaceAll('[\r\n]', '').trim())
         }
     }
 

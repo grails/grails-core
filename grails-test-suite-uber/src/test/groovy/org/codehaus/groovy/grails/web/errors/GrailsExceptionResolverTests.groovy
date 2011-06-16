@@ -158,7 +158,7 @@ grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
 foo: bar
 one: two
 jennysPhoneNumber: ***
-Stacktrace follows:''' , msg
+Stacktrace follows:'''.replaceAll('[\n\r]', ''), msg.replaceAll('[\n\r]', '')
     }
 
     void testDisablingRequestParameterLogging() {
@@ -174,56 +174,53 @@ Stacktrace follows:''' , msg
             def msgWithParameters = '''Exception occurred when processing request: [GET] /execute/me - parameters:
 foo: bar
 one: two
-Stacktrace follows:'''
+Stacktrace follows:'''.replaceAll('[\n\r]', '')
             def msgWithoutParameters = '''Exception occurred when processing request: [GET] /execute/me
-Stacktrace follows:'''
+Stacktrace follows:'''.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
-            assertEquals msgWithParameters, msg
+            assertEquals msgWithParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
-            assertEquals msgWithoutParameters, msg
+            assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
-            assertEquals msgWithoutParameters, msg
+            assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.logRequestParameters = false
 ''')
 
-
-
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
-            assertEquals msgWithoutParameters, msg
+            assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
-            assertEquals msgWithoutParameters, msg
+            assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
-            assertEquals msgWithoutParameters, msg
+            assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             config = new ConfigSlurper().parse('''
 grails.exceptionresolver.logRequestParameters = true
 ''')
 
-
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
-            assertEquals msgWithParameters, msg
+            assertEquals msgWithParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
-            assertEquals msgWithParameters, msg
+            assertEquals msgWithParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
             msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
-            assertEquals msgWithParameters, msg
+            assertEquals msgWithParameters, msg.replaceAll('[\n\r]', '')
         } finally {
             System.setProperty(Environment.KEY, oldEnvName)
         }

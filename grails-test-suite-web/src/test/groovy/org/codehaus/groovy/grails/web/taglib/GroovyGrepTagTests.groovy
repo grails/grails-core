@@ -33,6 +33,6 @@ class GroovyGrepTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("loop:{\nint i = 0\nfor( t in test.grep(~/regex/) ) {"+System.getProperty("line.separator"), sw.toString())
+        assertEquals("loop:{int i = 0for( t in test.grep(~/regex/) ) {", sw.toString().replaceAll('[\r\n]', ''))
     }
 }
