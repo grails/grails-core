@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import java.util.Collection;
+import java.util.Collection
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
@@ -25,6 +26,12 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         testCtrl = ga.getControllerClass(RenderDynamicMethodTestController.name).newInstance()
     }
 
+    void testRenderTextWithLayout() {
+        testCtrl.renderTextWithLayout()
+        assertEquals "text/html;charset=utf-8", response.contentType
+        assertEquals "foo", response.contentAsString
+        assert "bar" == request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE)
+    }
     void testRenderView() {
         testCtrl.renderView()
 
@@ -90,6 +97,10 @@ class RenderDynamicMethodTestController {
          def writer = new org.codehaus.groovy.grails.web.pages.FastStringWriter()
          writer.write("text")
          render writer.buffer
+    }
+
+    def renderTextWithLayout = {
+        render text:"foo", layout:"bar"
     }
 
     def renderGString = {

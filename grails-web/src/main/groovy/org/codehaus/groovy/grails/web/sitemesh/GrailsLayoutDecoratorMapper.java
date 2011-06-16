@@ -67,6 +67,8 @@ import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
  * @author Lari Hotari
  */
 public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper implements DecoratorMapper {
+
+    public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
     private static final String DEFAULT_DECORATOR_PATH = GrailsApplicationAttributes.PATH_TO_VIEWS + "/layouts";
     private static final String DEFAULT_VIEW_TYPE = ".gsp";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
@@ -112,7 +114,12 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         if (LOG.isDebugEnabled()) {
             LOG.debug("Evaluating layout for request: " + request.getRequestURI());
         }
-        String layoutName = page.getProperty("meta.layout");
+        Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
+        String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
+
+        if(layoutName == null) {
+            layoutName = page.getProperty("meta.layout");
+        }
 
         Decorator d = null;
 
