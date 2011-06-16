@@ -31,6 +31,9 @@ import java.util.Stack;
 
 import jline.ConsoleReader;
 import jline.Terminal;
+import jline.UnixTerminal;
+import jline.UnsupportedTerminal;
+import jline.WindowsTerminal;
 
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
@@ -103,7 +106,7 @@ public class GrailsConsole {
 
         System.setOut(new GrailsConsolePrintStream(this.out));
 
-        terminal = Terminal.setupTerminal();
+        terminal = setupTerminal();
         reader = new ConsoleReader();
         reader.setCompletionHandler(new CandidateListCompletionHandler());
         category.add("grails");
@@ -111,6 +114,33 @@ public class GrailsConsole {
         this.maxIndicatorString = new StringBuilder().append(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
         out.println();
+    }
+
+    // copied from Terminal.setupTerminal()
+    private Terminal setupTerminal() {
+        final Terminal t;
+
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.indexOf("windows") != -1) {
+            t = new WindowsTerminal() {
+                @Override
+                public boolean isANSISupported() {
+                    return true;
+                };
+            };
+        }
+        else {
+            t = new UnixTerminal();
+        }
+
+        try {
+            t.initializeTerminal();
+            return t;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return new UnsupportedTerminal();
+        }
     }
 
     public static synchronized GrailsConsole getInstance() {

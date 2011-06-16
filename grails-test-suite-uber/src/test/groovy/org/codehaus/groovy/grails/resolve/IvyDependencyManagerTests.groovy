@@ -580,7 +580,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 53, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 14, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 22, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
@@ -601,7 +601,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 22, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 70, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
 
@@ -616,7 +616,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 53, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 14, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 22, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }

@@ -26,7 +26,8 @@ dependencies {
 
     // Ant
     compile 'org.fusesource.jansi:jansi:1.2.1',
-            'jline:jline:0.9.94'
+            'jline:jline:0.9.94',
+			'net.java.dev.jna:jna:3.2.3'
 
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
