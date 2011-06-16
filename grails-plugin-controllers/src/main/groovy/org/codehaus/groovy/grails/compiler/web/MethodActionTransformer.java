@@ -222,6 +222,12 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                 bindDataMethodCallExpression.setMethodTarget(bindDataMethodNode);
             }
             wrapper.addStatement(new ExpressionStatement(bindDataMethodCallExpression));
+            MethodCallExpression validateMethodCallExpression = new MethodCallExpression(new VariableExpression(param.getName()), "validate", EMPTY_TUPLE);
+//            MethodNode validateMethod = param.getType().getMethod("validate", new Parameter[0]);
+//            if(validateMethod != null) {
+//                validateMethodCallExpression.setMethodTarget(validateMethod);
+//            }
+            wrapper.addStatement(new ExpressionStatement(validateMethodCallExpression));
         }
 
         wrapper.addStatement(actionCode);

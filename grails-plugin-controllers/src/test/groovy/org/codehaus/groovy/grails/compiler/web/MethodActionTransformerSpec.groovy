@@ -83,6 +83,12 @@ class MethodActionTransformerSpec extends Specification {
             }
             class CommandObject{
                 String prop
+                
+                int validateCounter = 0
+                
+                def validate() {
+                    ++validateCounter
+                }
             }
             ''')
 
@@ -94,8 +100,10 @@ class MethodActionTransformerSpec extends Specification {
         then:
         controller
         controller.commandObjectClosure
+        1 == controller.commandObjectClosure.validateCounter
         controller.commandObjectMethod
-
+        1 == controller.commandObjectMethod.validateCounter
+        
     }
 
     def cleanup() {
