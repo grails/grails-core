@@ -1,13 +1,9 @@
 @if "%DEBUG%" == "" @echo off
 @rem ##########################################################################
 @rem                                                                         ##
-@rem  Groovy JVM Bootstrap for Windowz                                       ##
+@rem  Grails JVM Bootstrap for Windows                                       ##
 @rem                                                                         ##
 @rem ##########################################################################
-
-@rem
-@rem $Revision: 4170 $ $Date: 2006-10-26 12:11:12 +0000 (Thu, 26 Oct 2006) $
-@rem
 
 @rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
@@ -60,7 +56,12 @@ goto end
 if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
 
 :init
-@rem Get command-line arguments, handling Windowz variants
+
+set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails
+set DISABLE_RELOADING=
+if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx512M -XX:MaxPermSize=192m -Dfile.encoding=UTF-8
+
+@rem Get command-line arguments, handling Windows variants
 if "%@eval[2+2]" == "4" goto 4NT_args
 
 :win9xME_args
@@ -70,49 +71,50 @@ if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 @rem Slurp the command line arguments.
 set CMD_LINE_ARGS=
 set CP=
-set GRAILS_OPTIONS=
+set INTERACTIVE=true
 
 :win9xME_args_slurp
 if "x%~1" == "x" goto execute
 set CURR_ARG=%~1
 if "%CURR_ARG:~0,2%" == "-D" (
-	set GRAILS_OPTIONS=%GRAILS_OPTIONS% %~1=%~2
+	set GRAILS_OPTS=%GRAILS_OPTS% %~1=%~2
 	shift
 	shift
 	goto win9xME_args_slurp
-) else (
-	if "x%~1" == "x-cp" (
-		set CP=%~2
-		shift
-		shift
-		goto win9xME_args_slurp
-	) else (
-		if "x%~1" == "x-classpath" (
-			set CP=%~2
-			shift
-			shift
-			goto win9xME_args_slurp
-		) else (
-			if "x%~1" == "x-reloading" (
-				set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-				shift
-				shift
-				goto win9xME_args_slurp
-			) else (
-				if "x%~1" == "x-run-app" (
-					set AGENT="-javaagent:%GRAILS_HOME%\lib\com.springsource.springloaded\springloaded-core\jars\springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-					shift
-					shift
-					goto win9xME_args_slurp
-				) else (
-					set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
-					shift
-					goto win9xME_args_slurp
-				)
-			)
-		)
-	)
 )
+if "x%~1" == "x-cp" (
+	set CP=%~2
+	shift
+	shift
+	goto win9xME_args_slurp
+)
+if "x%~1" == "x-classpath" (
+	set CP=%~2
+	shift
+	shift
+	goto win9xME_args_slurp
+)
+if "x%~1" == "x-reloading" (
+	set AGENT=%AGENT_STRING%
+	shift
+	goto win9xME_args_slurp
+)
+if "x%~1" == "xrun-app" (
+	set AGENT=%AGENT_STRING%
+	set INTERACTIVE=
+	set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
+	shift
+	goto win9xME_args_slurp
+)
+if "x%~1" == "x-noreloading" (
+	set DISABLE_RELOADING=true
+	shift
+	goto win9xME_args_slurp
+)
+set INTERACTIVE=
+set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
+shift
+goto win9xME_args_slurp
 
 :4NT_args
 @rem Get arguments from the 4NT Shell from JP Software
@@ -125,12 +127,19 @@ set STARTER_CLASSPATH=%GRAILS_HOME%\lib\org.codehaus.groovy\groovy-all\jars\groo
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
 @rem Setting a classpath using the -cp or -classpath option means not to use
-@rem the global classpath. Groovy behaves then the same as the java
-@rem interpreter
+@rem the global classpath. Groovy behaves then the same as the java interpreter
 
 if "x" == "x%CLASSPATH%" goto after_classpath
 set CP=%CP%;%CLASSPATH%
 :after_classpath
+
+if "x%DISABLE_RELOADING%" == "xtrue" (
+	set AGENT=
+) else (
+	if "x%INTERACTIVE%" == "xtrue" (
+		set AGENT=%AGENT_STRING%
+	)
+)
 
 set STARTER_MAIN_CLASS=org.codehaus.groovy.grails.cli.support.GrailsStarter
 set STARTER_CONF=%GRAILS_HOME%\conf\groovy-starter.conf
@@ -138,20 +147,19 @@ set STARTER_CONF=%GRAILS_HOME%\conf\groovy-starter.conf
 set JAVA_EXE=%JAVA_HOME%\bin\java.exe
 set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
 
-if "%JAVA_OPTS%" == "" set JAVA_OPTS=-Xmx512m -XX:MaxPermSize=96m
-set JAVA_OPTS=%JAVA_OPTS%  %AGENT%
+set JAVA_OPTS=%GRAILS_OPTS% %JAVA_OPTS% %AGENT%
+
 set JAVA_OPTS=%JAVA_OPTS% -Dprogram.name="%PROGNAME%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgrails.home="%GRAILS_HOME%"
-set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version="@grails.version@"
-set JAVA_OPTS=%JAVA_OPTS% -Dbase.dir="."
-set JAVA_OPTS=%JAVA_OPTS% -Dfile.encoding="UTF-8"
+set JAVA_OPTS=%JAVA_OPTS% -Dgrails.version=@grails.version@
+set JAVA_OPTS=%JAVA_OPTS% -Dbase.dir=.
 set JAVA_OPTS=%JAVA_OPTS% -Dtools.jar="%TOOLS_JAR%"
 set JAVA_OPTS=%JAVA_OPTS% -Dgroovy.starter.conf="%STARTER_CONF%"
 
 if exist "%USERPROFILE%/.groovy/postinit.bat" call "%USERPROFILE%/.groovy/postinit.bat"
 
-@rem Execute Groovy
-CALL "%JAVA_EXE%" %JAVA_OPTS% %GRAILS_OPTIONS% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
+@rem Execute Grails
+CALL "%JAVA_EXE%" %JAVA_OPTS% -classpath "%STARTER_CLASSPATH%" %STARTER_MAIN_CLASS% --main %CLASS% --conf "%STARTER_CONF%" --classpath "%CP%" "%CMD_LINE_ARGS%"
 :end
 @rem End local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" endlocal
