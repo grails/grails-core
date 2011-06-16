@@ -43,7 +43,7 @@ class WatchPattern {
      * Whether the given path matches this watch pattern
      *
      * @param path A file path
-     * @return True if it does
+     * @return true if it does
      */
     boolean matchesPath(String path) {
         if (file != null) {
@@ -52,8 +52,8 @@ class WatchPattern {
 
         if (directory != null) {
             try {
-                def matchPath = /${directory.absolutePath}.+?${extension}/
-                def absolutePath = new File(path).absolutePath
+                def matchPath = /${directory.absolutePath.replaceAll('\\\\', '/')}.+?${extension}/
+                def absolutePath = new File(path).absolutePath.replaceAll('\\\\', '/')
                 return absolutePath ==~ matchPath
             } catch (e) {
                 // ignore
