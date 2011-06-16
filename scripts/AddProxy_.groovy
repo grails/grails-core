@@ -24,7 +24,7 @@ target(default:"Adds a proxy configuration") {
     depends(parseArguments)
 
     if (!argsMap.params) {
-        console.error msg()
+        grailsConsole.error msg()
         exit 1
     }
 
@@ -39,7 +39,7 @@ target(default:"Adds a proxy configuration") {
 
         settingsFile.withWriter { w -> config.writeTo(w) }
 
-        console.updateStatus "Added proxy ${argsMap.params[0]} to ${settingsFile}"
+        grailsConsole.updateStatus "Added proxy ${argsMap.params[0]} to ${settingsFile}"
     }
     else {
         println msg()

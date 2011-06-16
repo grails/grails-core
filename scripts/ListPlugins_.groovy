@@ -124,7 +124,7 @@ ${plugins.join(System.getProperty("line.separator"))}
 
     }
     else {
-        console.error "No plugins found in repository: ${name}. This may be because the repository is behind an HTTP proxy."
+        grailsConsole.error "No plugins found in repository: ${name}. This may be because the repository is behind an HTTP proxy."
     }
 }
 

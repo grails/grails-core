@@ -53,20 +53,20 @@ target(console:"The console implementation target") {
 createConsole = {
     def b = new Binding(ctx: appCtx, grailsApplication: grailsApp)
 
-    def console = new groovy.ui.Console(grailsApp.classLoader, b)
-    console.beforeExecution = {
+    def groovyConsole = new groovy.ui.Console(grailsApp.classLoader, b)
+    groovyConsole.beforeExecution = {
         appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
             v.init()
         }
     }
-    console.afterExecution = {
+    groovyConsole.afterExecution = {
         appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
             v.flush()
             v.destroy()
         }
     }
 
-    return console
+    return groovyConsole
 }
 
 class ConsoleFocusListener implements FocusListener {

@@ -267,7 +267,7 @@ runPluginScript = { File scriptFile, fullPluginName, msg ->
         includeTargets << instrumentedInstallScript
     }
     catch(e) {
-        console.error "Error executing plugin $fullPluginName script: $scriptFile"
+        grailsConsole.error "Error executing plugin $fullPluginName script: $scriptFile"
         exit 1
     }
 }

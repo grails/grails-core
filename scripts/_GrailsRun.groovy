@@ -95,7 +95,7 @@ private EmbeddableServerFactory loadServerFactory() {
     }
     catch (ClassNotFoundException cnfe) {
         if (containerClass == defaultServer) {
-            console.error "WARNING: No default container found, installing Tomcat.."
+            grailsConsole.error "WARNING: No default container found, installing Tomcat.."
             doInstallPlugin "tomcat", GrailsUtil.grailsVersion
             pluginSettings.clearCache()
             compilePlugins()
@@ -104,7 +104,7 @@ private EmbeddableServerFactory loadServerFactory() {
         }
     }
     catch (Throwable e) {
-        console.error e
+        grailsConsole.error e
         event("StatusFinal", ["Failed to load container [$containerClass]: ${e.message}"])
         exit(1)
     }
@@ -177,7 +177,7 @@ runServer = { Map args ->
     catch (Throwable t) {
         GrailsUtil.deepSanitize(t)
         if (!(t instanceof SocketException) && !(t.cause instanceof SocketException)) {
-            console.error t
+            grailsConsole.error t
         }
         event("StatusFinal", ["Server failed to start: $t"])
         exit(1)
@@ -226,7 +226,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         // functional tests so that we can stop the servers that are
         // started.
         if (killFile.exists()) {
-            console.updateStatus "Stopping server..."
+            grailsConsole.updateStatus "Stopping server..."
             grailsServer.stop()
             killFile.delete()
             keepRunning = false
@@ -240,14 +240,14 @@ target(stopServer: "Stops the Grails servlet container") {
             grailsServer.stop()
         }
         catch (Throwable e) {
-            console.error "Error stopping server: ${e.message}", e
+            grailsConsole.error "Error stopping server: ${e.message}", e
         }
 
         try {
             stopPluginScanner()
         }
         catch (Throwable e) {
-            console.error "Error stopping plugin change scanner: ${e.message}", e
+            grailsConsole.error "Error stopping plugin change scanner: ${e.message}", e
         }
     }
     event("StatusFinal", ["Server stopped"])

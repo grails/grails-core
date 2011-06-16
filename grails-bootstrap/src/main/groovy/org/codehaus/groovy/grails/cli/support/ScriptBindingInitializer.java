@@ -81,7 +81,7 @@ public class ScriptBindingInitializer {
          Closure<?> c = settings.getGrailsScriptClosure();
          c.setDelegate(binding);
          binding.setVariable("grailsScript", c);
-         binding.setVariable("console", GrailsConsole.getInstance());
+         binding.setVariable("grailsConsole", GrailsConsole.getInstance());
          binding.setVariable("grailsSettings", settings);
 
          // Add other binding variables, such as Grails version and environment.

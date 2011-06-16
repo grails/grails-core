@@ -43,6 +43,7 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
     def file = new File(filename)
     ant.mkdir dir: file.parentFile
 
+    // TODO need to support specifying datasource name
     def configuration = appCtx.getBean('&sessionFactory').configuration
 
     def schemaExport = new HibernateSchemaExport(configuration)
