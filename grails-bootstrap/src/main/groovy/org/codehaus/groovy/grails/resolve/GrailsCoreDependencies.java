@@ -100,7 +100,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.apache.ant", "ant-launcher", antVersion),
                             ModuleRevisionId.newInstance("org.apache.ant", "ant-junit", antVersion),
                             ModuleRevisionId.newInstance("org.apache.ant", "ant-trax", "1.7.1"),
-                            ModuleRevisionId.newInstance("jline", "jline", "0.9.94"),
+                            ModuleRevisionId.newInstance("jline", "jline", "1.0"),
                             ModuleRevisionId.newInstance("org.fusesource.jansi", "jansi", "1.2.1"),
                             ModuleRevisionId.newInstance("net.java.dev.jna", "jna", "3.2.3"),
                             ModuleRevisionId.newInstance("xalan","serializer", "2.7.1"),
