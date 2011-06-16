@@ -2,18 +2,13 @@ package org.codehaus.groovy.grails.exceptions
 
 import spock.lang.Specification
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 13/06/2011
- * Time: 11:05
- * To change this template use File | Settings | File Templates.
- */
 class StackTraceFiltererSpec extends Specification {
+
+    private filterer = new DefaultStackTraceFilterer()
+    private gcl = new GroovyClassLoader()
 
     void "Test basic filter"() {
         given: "A controller that should throw a MissingPropertyException"
-            def gcl = new GroovyClassLoader()
             def cls = gcl.parseClass('''
 package test
 
@@ -29,7 +24,6 @@ class FooController {
 ''')
 
         when: "The stack trace is filtered with custom packages"
-           def filterer = new StackTraceFilterer()
            filterer.setCutOffPackage("org.spockframework.runtime")
            Throwable exception
            try {
@@ -50,7 +44,6 @@ class FooController {
 
     void "Test deep filter"() {
         given: "A controller that calls a service and rethrows an exception"
-            def gcl = new GroovyClassLoader()
             def cls = gcl.parseClass('''
 package test
 
@@ -78,7 +71,6 @@ class FooService {
 ''')
 
         when: "The stack trace is filtered with custom packages"
-           def filterer = new StackTraceFilterer()
            filterer.setCutOffPackage("org.spockframework.runtime")
            Throwable exception
            try {

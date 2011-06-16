@@ -52,16 +52,16 @@ public class Log4jConfigListener implements ServletContextListener {
                 if (co != null) {
                     Object o = co.get("log4j");
                     if (o instanceof Closure) {
-                        new Log4jConfig().configure((Closure<?>)o);
+                        new Log4jConfig(co).configure((Closure<?>)o);
                     }
                     else if (o instanceof Collection) {
-                        new Log4jConfig().configure((Collection<?>)o);
+                        new Log4jConfig(co).configure((Collection<?>)o);
                     }
                     else if (o instanceof Map) {
-                        new Log4jConfig().configure((Map<?, ?>)o);
+                        new Log4jConfig(co).configure((Map<?, ?>)o);
                     }
                     else {
-                        new Log4jConfig().configure();
+                        new Log4jConfig(co).configure();
                     }
                 }
             }

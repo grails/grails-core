@@ -17,11 +17,16 @@
 package org.codehaus.groovy.grails.plugins.logging.appenders;
 
 import grails.build.logging.GrailsConsole;
+import groovy.util.ConfigObject;
+
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
+import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
@@ -36,6 +41,13 @@ import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
 public class GrailsConsoleAppender extends AppenderSkeleton {
 
     GrailsConsole console = GrailsConsole.getInstance();
+    private StackTracePrinter stackTracePrinter;
+    private StackTraceFilterer stackTraceFilterer;
+
+    GrailsConsoleAppender(ConfigObject config) {
+        createStackTracePrinter(config);
+        createStackTraceFilterer(config);
+    }
 
     @Override
     protected void append(LoggingEvent event) {
@@ -52,7 +64,7 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     private String buildMessage(LoggingEvent event) {
         StringBuilder b = new StringBuilder(layout.format(event));
 
-        if(console.isVerbose()) {
+        if (console.isVerbose()) {
             String[] throwableStrRep = event.getThrowableStrRep();
             if (throwableStrRep != null) {
                 b.append(Layout.LINE_SEP);
@@ -63,12 +75,9 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
         }
         else {
             ThrowableInformation throwableInformation = event.getThrowableInformation();
-            if(throwableInformation != null) {
-
+            if (throwableInformation != null) {
                 Throwable throwable = throwableInformation.getThrowable();
-                if(throwable != null) {
-                    StackTracePrinter stackTracePrinter = new DefaultStackTracePrinter();
-                    StackTraceFilterer stackTraceFilterer = new StackTraceFilterer();
+                if (throwable != null) {
                     stackTraceFilterer.filter(throwable, true);
                     b.append(stackTracePrinter.prettyPrint(throwable));
                 }
@@ -84,5 +93,27 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
 
     public boolean requiresLayout() {
         return true;
+    }
+
+    protected void createStackTracePrinter(ConfigObject config) {
+       try {
+           stackTracePrinter = (StackTracePrinter)GrailsClassUtils.instantiateFromConfig(
+                   config, "grails.logging.stackTracePrinterClass", DefaultStackTracePrinter.class.getName());
+       }
+       catch (Throwable t) {
+           LogLog.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
+           stackTracePrinter = new DefaultStackTracePrinter();
+       }
+    }
+
+    protected void createStackTraceFilterer(ConfigObject config) {
+        try {
+            stackTraceFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
+                    config, "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+        }
+        catch (Throwable t) {
+            LogLog.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
+            stackTraceFilterer = new DefaultStackTraceFilterer();
+        }
     }
 }

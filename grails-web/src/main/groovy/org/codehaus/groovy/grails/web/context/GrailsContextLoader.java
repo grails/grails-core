@@ -15,16 +15,21 @@
 package org.codehaus.groovy.grails.web.context;
 
 import grails.util.Environment;
-import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.grape.Grape;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+
+import java.security.AccessControlException;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeansException;
@@ -34,9 +39,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import javax.servlet.ServletContext;
-import java.security.AccessControlException;
 
 /**
  * @author graemerocher
@@ -95,7 +97,7 @@ public class GrailsContextLoader extends ContextLoader {
                             pluginManager.shutdown();
                         }
                         catch (Exception e) {
-                            GrailsUtil.sanitize(e);
+                            new DefaultStackTraceFilterer().filter(e);
                             LOG.error("Error occurred shutting down plug-in manager: " + e.getMessage(), e);
                         }
                     }

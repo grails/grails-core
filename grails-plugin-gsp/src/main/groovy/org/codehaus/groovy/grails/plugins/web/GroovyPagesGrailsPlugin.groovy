@@ -37,6 +37,7 @@ import org.springframework.web.servlet.view.JstlView
 import grails.util.*
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
+import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 
  /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -80,9 +81,9 @@ class GroovyPagesGrailsPlugin {
      * Configures the various Spring beans required by GSP
      */
     def doWithSpring = {
-        // A bean used to resolve JSP tag libraries
+        // resolves JSP tag libraries
         jspTagLibraryResolver(TagLibraryResolver)
-        // A bean used to resolve GSP tag libraries
+        // resolves GSP tag libraries
         gspTagLibraryLookup(TagLibraryLookup)
 
         boolean developmentMode = !application.warDeployed
@@ -169,7 +170,7 @@ class GroovyPagesGrailsPlugin {
         final pluginManager = manager
         instanceTagLibraryApi(TagLibraryApi, pluginManager)
         instanceControllerTagLibraryApi(ControllerTagLibraryApi, pluginManager)
-        // Now go through tag libraries and configure them in spring too. With AOP proxies and so on
+        // Now go through tag libraries and configure them in Spring too. With AOP proxies and so on
         for (taglib in application.tagLibClasses) {
 
             final tagLibClass = taglib.clazz
@@ -186,6 +187,8 @@ class GroovyPagesGrailsPlugin {
                 //bean.scope = 'request'
             }
         }
+
+		  errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
     }
 
     static String transformToValidLocation(String location) {

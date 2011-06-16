@@ -15,17 +15,17 @@
  */
 package org.codehaus.groovy.grails.test.support;
 
-import grails.util.GrailsUtil;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 
 public class TestStacktraceSanitizer {
 
     private static final String TEST_RUNNING_CLASS = "_GrailsTest";
 
     public static Throwable sanitize(Throwable t) {
-        GrailsUtil.deepSanitize(t);
+        new DefaultStackTraceFilterer().filter(t, true);
         StackTraceElement[] trace = t.getStackTrace();
         List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
         for (StackTraceElement stackTraceElement : trace) {

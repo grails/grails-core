@@ -5,14 +5,9 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import spock.lang.Specification
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 14/06/2011
- * Time: 09:49
- * To change this template use File | Settings | File Templates.
- */
-class StackTracePrinterSpec extends Specification{
+class StackTracePrinterSpec extends Specification {
+
+    private filterer = new DefaultStackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
 
     void "Test pretty print simple stack trace"() {
         given: "a controller that throws an exception"
@@ -21,7 +16,6 @@ class StackTracePrinterSpec extends Specification{
         def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultStackTracePrinter()
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.show()
@@ -42,7 +36,6 @@ class StackTracePrinterSpec extends Specification{
         def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultStackTracePrinter()
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.nesting()
@@ -69,7 +62,6 @@ class StackTracePrinterSpec extends Specification{
             final locator = new StaticResourceLocator()
             locator.addClassResource("test.FooController", getControllerResource())
             def printer = new DefaultStackTracePrinter(locator)
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.show()
@@ -111,7 +103,6 @@ Around line 5 of FooController.groovy
 
         when:"The code snippet is printed"
             def printer = new DefaultStackTracePrinter(locator)
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.nesting()

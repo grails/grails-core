@@ -22,6 +22,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaProperty;
+import groovy.util.ConfigObject;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -48,6 +49,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.core.JdkVersion;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -1092,5 +1094,15 @@ public class GrailsClassUtils {
             }
         }
         return false;
+    }
+
+    public static Object instantiateFromConfig(ConfigObject config, String configKey, String defaultClassName)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
+        String className = defaultClassName;
+        Object configName = config.flatten().get(configKey);
+        if (configName instanceof CharSequence) {
+            className = configName.toString();
+        }
+        return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader()).newInstance();
     }
 }
