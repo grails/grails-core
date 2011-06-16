@@ -17,14 +17,17 @@
 package grails.test.mixin.web
 
 import grails.artefact.Enhanced
+import groovy.lang.Closure
 import groovy.text.Template
+
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
-import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
+import org.junit.Assert
 
 /**
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
@@ -141,4 +144,34 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin{
             webRequest.out = previousOut
         }
     }
+    
+    /**
+    * Asserts the output of a given template against the specified expected value.
+    *
+    * @param expected The expected output
+    * @param template A snippet of GSP
+    * @param params An optional parameter that allows variables to be placed in the binding of the GSP
+    * @param transform An optional parameter that allows the specification of a closure to transform the passed StringWriter
+    */
+   void assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
+       def sw = new StringWriter()
+       applyTemplate sw, template, params
+       Assert.assertEquals expected, transform(sw)
+   }
+
+   /**
+    * Asserts the output of a given template against the specified regex.
+    *
+    * @param expected The regex expression expected to match the output
+    * @param template A snippet of GSP
+    * @param params An optional parameter that allows variables to be placed in the binding of the GSP
+    * @param transform An optional parameter that allows the specification of a closure to transform the passed StringWriter
+    */
+   void assertOutputMatches(regex, template, params = [:], Closure transform = { it.toString() }) {
+       def sw = new StringWriter()
+       applyTemplate sw, template, params
+       Assert.assertTrue (transform(sw) ==~ regex)
+   }
+   
+
 }
