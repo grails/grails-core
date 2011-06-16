@@ -52,7 +52,7 @@ class WatchPattern {
 
         if (directory != null) {
             try {
-                def matchPath = /${directory.absolutePath.replaceAll('\\\\', '/')}.+?${extension}/
+                def matchPath = /${directory.absolutePath.replaceAll('\\\\', '/')}.+?${extension ?: ''}/
                 def absolutePath = new File(path).absolutePath.replaceAll('\\\\', '/')
                 return absolutePath ==~ matchPath
             } catch (e) {

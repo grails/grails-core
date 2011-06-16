@@ -33,7 +33,6 @@ import org.springframework.util.StringUtils;
  * @author Graeme Rocher
  * @since 1.4
  */
-@SuppressWarnings("hiding")
 public class DirectoryWatcher extends Thread {
 
     protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
@@ -43,9 +42,11 @@ public class DirectoryWatcher extends Thread {
     private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
+    private boolean windows;
 
     public DirectoryWatcher() {
         setDaemon(true);
+        windows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
     }
 
     /**
@@ -102,7 +103,12 @@ public class DirectoryWatcher extends Thread {
      */
     public void addWatchDirectory(File dir, String extension) {
         List<String> extensions = new ArrayList<String>();
-        extensions.add(extension);
+        if (extension == null) {
+            extensions.add("*");
+        }
+        else {
+            extensions.add(extension);
+        }
         cacheFilesForDirectory(dir, extensions, false);
     }
 
@@ -115,14 +121,14 @@ public class DirectoryWatcher extends Thread {
          *
          * @param file The file that changed
          */
-        public abstract void onChange(File file);
+        void onChange(File file);
 
         /**
          * Fired when a new file is created
          *
          * @param file The file that was created
          */
-        public abstract void onNew(File file);
+        void onNew(File file);
     }
 
     @Override
@@ -161,7 +167,7 @@ public class DirectoryWatcher extends Thread {
         for (File directory : directoryWatch.keySet()) {
             final Long currentTimestamp = directoryWatch.get(directory);
 
-            if (currentTimestamp < directory.lastModified()) {
+            if (windows || currentTimestamp < directory.lastModified()) {
                 cacheFilesForDirectory(directory, extensions, true);
             }
         }
@@ -177,16 +183,16 @@ public class DirectoryWatcher extends Thread {
         }
 
         for (File file : files) {
-            if (isValidFileToMonitor(file.getName(), extensions)) {
+            if (file.isDirectory()) {
+                cacheFilesForDirectory(file, extensions, fireEvent);
+            }
+            else if (isValidFileToMonitor(file.getName(), extensions)) {
                 if (!lastModifiedMap.containsKey(file) && fireEvent) {
                     for (FileChangeListener listener : listeners) {
                         listener.onNew(file);
                     }
                 }
                 lastModifiedMap.put(file, file.lastModified());
-            }
-            else if (file.isDirectory()) {
-               cacheFilesForDirectory(file, extensions, fireEvent);
             }
         }
     }
@@ -200,6 +206,6 @@ public class DirectoryWatcher extends Thread {
     }
 
     private boolean isValidFileToMonitor(String name, Collection<String> extensions) {
-        return extensions.contains(StringUtils.getFilenameExtension(name));
+        return extensions.contains("*") || extensions.contains(StringUtils.getFilenameExtension(name));
     }
 }

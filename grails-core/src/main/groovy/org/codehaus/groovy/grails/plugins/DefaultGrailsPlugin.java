@@ -290,7 +290,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void evaluateOnChangeListener() {
         if (pluginBean.isReadableProperty(ON_SHUTDOWN)) {
             onShutdownListener = (Closure)GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, ON_SHUTDOWN);
@@ -317,48 +316,50 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Configuring plugin "+this+" to watch resources with pattern: " + referencedResources);
                 }
-                resourceList = new ArrayList();
-                resourceList.add(referencedResources.toString());
+                resourceList = Collections.singletonList(referencedResources.toString());
             }
             else if (referencedResources instanceof List) {
                 resourceList = (List)referencedResources;
             }
 
-            if (resourceList != null) {
-                List<String> resourceListTmp = new ArrayList<String>();
-                PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
+            if (resourceList == null) {
+                return;
+            }
 
-                if (pluginBuildSettings != null) {
+            List<String> resourceListTmp = new ArrayList<String>();
+            PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
-                    final Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
-                    final Environment env = Environment.getCurrent();
-                    final String baseLocation = env.getReloadLocation();
+            if (pluginBuildSettings == null) {
+                return;
+            }
 
-                    for (Object ref : resourceList) {
-                        String stringRef = ref.toString();
-                        if (!warDeployed) {
-                            for (Resource pluginDir : pluginDirs) {
-                                if (pluginDir !=null) {
-                                    String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
-                                    resourceListTmp.add(pluginResources);
-                                }
-                            }
-                            addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
-                        }
-                        else {
-                            addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
-                        }
+            final Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
+            final Environment env = Environment.getCurrent();
+            final String baseLocation = env.getReloadLocation();
+
+            for (Object ref : resourceList) {
+                String stringRef = ref.toString();
+                if (warDeployed) {
+                    addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
+                }
+                else {
+                    for (Resource pluginDir : pluginDirs) {
+                        if (pluginDir == null) continue;
+
+                        String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
+                        resourceListTmp.add(pluginResources);
                     }
-
-                    watchedResourcePatternReferences = new String[resourceListTmp.size()];
-                    for (int i = 0; i < watchedResourcePatternReferences.length; i++) {
-                        String resRef = resourceListTmp.get(i);
-                        watchedResourcePatternReferences[i]=resRef;
-                    }
-
-                    watchedResourcePatterns = new WatchPatternParser().getWatchPatterns(Arrays.asList(watchedResourcePatternReferences));
+                    addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
                 }
             }
+
+            watchedResourcePatternReferences = new String[resourceListTmp.size()];
+            for (int i = 0; i < watchedResourcePatternReferences.length; i++) {
+                String resRef = resourceListTmp.get(i);
+                watchedResourcePatternReferences[i] = resRef;
+            }
+
+            watchedResourcePatterns = new WatchPatternParser().getWatchPatterns(Arrays.asList(watchedResourcePatternReferences));
         }
         catch (IllegalArgumentException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
@@ -651,7 +652,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         // do nothing
     }
 
-    @SuppressWarnings("unused")
     public void setWatchedResources(Resource[] watchedResources) throws IOException {
         this.watchedResources = watchedResources;
     }
