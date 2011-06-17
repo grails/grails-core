@@ -102,10 +102,10 @@ public class GrailsConsole {
     private boolean ansiEnabled = true;
 
     protected GrailsConsole() throws IOException {
-        this.cursorMove = 1;
-        this.out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
+        cursorMove = 1;
+        out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
-        System.setOut(new GrailsConsolePrintStream(this.out));
+        System.setOut(new GrailsConsolePrintStream(out));
 
         if (isWindows()) {
            terminal = new WindowsTerminal() {
@@ -116,6 +116,7 @@ public class GrailsConsole {
             };
             try {
                 terminal.initializeTerminal();
+                terminal.enableEcho();
             } catch (Exception e) {
                 terminal = new UnsupportedTerminal();
             }
@@ -125,10 +126,11 @@ public class GrailsConsole {
         }
 
         reader = new ConsoleReader();
+        reader.setBellEnabled(false);
         reader.setCompletionHandler(new CandidateListCompletionHandler());
         category.add("grails");
         // bit of a WTF this, but see no other way to allow a customization indicator
-        this.maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
+        maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
         out.println();
     }
