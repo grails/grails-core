@@ -18,13 +18,22 @@ package org.codehaus.groovy.grails.plugins.logging
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
+
 import org.apache.commons.beanutils.BeanUtils
+import org.apache.log4j.Appender
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.FileAppender
+import org.apache.log4j.HTMLLayout
+import org.apache.log4j.Level
+import org.apache.log4j.Logger
+import org.apache.log4j.PatternLayout
+import org.apache.log4j.RollingFileAppender
+import org.apache.log4j.SimpleLayout
 import org.apache.log4j.helpers.LogLog
 import org.apache.log4j.jdbc.JDBCAppender
 import org.apache.log4j.varia.NullAppender
 import org.apache.log4j.xml.XMLLayout
 import org.codehaus.groovy.grails.plugins.logging.appenders.GrailsConsoleAppender
-import org.apache.log4j.*
 
 /**
  * Encapsulates the configuration of Log4j.
@@ -42,6 +51,11 @@ class Log4jConfig {
                               file: FileAppender, rollingFile: RollingFileAppender]
 
     private appenders = [:]
+    private config
+
+    Log4jConfig(ConfigObject config) {
+        this.config = config
+    }
 
     def methodMissing(String name, args) {
         if (APPENDERS.containsKey(name) && args) {
@@ -178,9 +192,11 @@ class Log4jConfig {
     }
 
     private createConsoleAppender() {
-        def consoleAppender = grails.util.Environment.isWarDeployed() ?
-                                new ConsoleAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stdout") :
-                                new GrailsConsoleAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stdout")
+        def consoleAppender = Environment.isWarDeployed() ?
+                                new ConsoleAppender() :
+                                new GrailsConsoleAppender(config)
+        consoleAppender.layout = DEFAULT_PATTERN_LAYOUT
+        consoleAppender.name = "stdout"
         consoleAppender.activateOptions()
         appenders.console = consoleAppender
         return consoleAppender

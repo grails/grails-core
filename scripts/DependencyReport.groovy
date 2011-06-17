@@ -35,7 +35,7 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
     ant.delete(dir:targetDir, failonerror:false)
     ant.mkdir(dir:targetDir)
 
-    console.updateStatus "Obtaining dependency data..."
+    grailsConsole.updateStatus "Obtaining dependency data..."
     IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
     for (conf in IvyDependencyManager.ALL_CONFIGURATIONS) {
         dependencyManager.resolveDependencies(conf)
@@ -44,7 +44,7 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
     def conf = args.trim() ?: 'build, compile, provided, runtime, test'
     ivy.report(organisation: 'org.grails.internal', module: grailsAppName, todir: targetDir, conf: conf)
 
-    console.addStatus "Dependency report output to [$targetDir]"
+    grailsConsole.addStatus "Dependency report output to [$targetDir]"
 }
 
 setDefaultTarget(dependencyReport)

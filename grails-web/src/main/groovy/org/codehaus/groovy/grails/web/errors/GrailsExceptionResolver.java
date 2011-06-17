@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.errors;
 
 import grails.util.Environment;
-import grails.util.GrailsUtil;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -33,7 +32,10 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
@@ -58,6 +60,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     private static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
     private GrailsApplication grailsApplication;
+    private StackTraceFilterer stackFilterer;
 
     /* (non-Javadoc)
      * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
@@ -77,7 +80,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         // expose the servlet 2.3 specs status code request attribute as 500
         request.setAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
-        GrailsUtil.deepSanitize(ex);
+        stackFilterer.filter(ex, true);
 
         GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext, ex);
         mv.addObject(EXCEPTION_ATTRIBUTE,gwrex);
@@ -243,5 +246,17 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+        createStackFilterer();
+    }
+
+    private void createStackFilterer() {
+        try {
+            stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
+                    grailsApplication.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+        }
+        catch (Throwable t) {
+            logger.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
+            stackFilterer = new DefaultStackTraceFilterer();
+        }
     }
 }

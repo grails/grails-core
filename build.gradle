@@ -252,6 +252,11 @@ task installResources << {
         from 'grails-resources/src/grails/home/dsl-support'
         into 'dsl-support'
     }
+    
+    copy {
+        from "grails-resources/src/war/WEB-INF"
+        into 'src/war/WEB-INF'
+    }
 }
 
 

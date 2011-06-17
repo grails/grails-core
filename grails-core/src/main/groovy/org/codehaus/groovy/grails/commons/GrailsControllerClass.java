@@ -145,12 +145,14 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
     String getClosurePropertyName(String uri);
 
     /**
+     * @deprecated This method is deprecated and will be removed in a future version of Grails
      * @return A Set of names of actions with command objects presented in this controller
      */
     @SuppressWarnings("rawtypes")
     Set getCommandObjectActions();
 
     /**
+     * @deprecated This method is deprecated and will be removed in a future version of Grails
      * @return command object classes used by this controller
      */
     @SuppressWarnings("rawtypes")

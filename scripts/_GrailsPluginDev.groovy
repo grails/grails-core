@@ -87,7 +87,7 @@ target(packagePlugin: "Implementation target") {
         supportsAtLeastVersion = GrailsPluginUtils.supportsAtLeastVersion(lowerVersion, "1.2")
     }
     catch (e) {
-        console.error "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
+        grailsConsole.error "Error: Plugin specified an invalid version range: ${pluginGrailsVersion}"
         exit 1
     }
 
@@ -109,7 +109,7 @@ target(packagePlugin: "Implementation target") {
     // Package plugin's zip distribution
     pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
 
-    console.addStatus "Plugin packaged ${new File(pluginZip).name}"
+    grailsConsole.addStatus "Plugin packaged ${new File(pluginZip).name}"
 
     event("PackagePluginEnd", [pluginInfo.name])
 }

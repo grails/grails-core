@@ -39,7 +39,7 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     def domainClass = grailsApp.getDomainClass(name)
 
     if (!domainClass) {
-        console.updateStatus "Domain class not found in grails-app/domain, trying hibernate mapped classes..."
+        grailsConsole.updateStatus "Domain class not found in grails-app/domain, trying hibernate mapped classes..."
         bootstrap()
         domainClass = grailsApp.getDomainClass(name)
     }

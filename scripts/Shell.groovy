@@ -41,7 +41,7 @@ target(shell:"The shell implementation target") {
 
     def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
     listeners?.each { key, listener -> listener.init() }
-    def shell = new Groovysh(classLoader,b, new IO(console.input, System.out, System.err))
+    def shell = new Groovysh(classLoader,b, new IO(grailsConsole.input, System.out, System.err))
 
     def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
     watcher.start()

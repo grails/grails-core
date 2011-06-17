@@ -16,15 +16,17 @@
 package org.codehaus.groovy.grails.test.event;
 
 import grails.build.logging.GrailsConsole;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runner.notification.StoppedByUserException;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 /**
  * A RunNotifier that logs the the GrailsConsole.
@@ -58,8 +60,11 @@ public class GrailsTestRunNotifier extends RunNotifier {
     public void fireTestFailure(Failure failure) {
         console.error("FAILURE: " + failure.getDescription().getDisplayName());
         Throwable exception = failure.getException();
-        if (exception != null) {
-            StackTraceFilterer filterer = new StackTraceFilterer();
+        if (exception == null) {
+            console.error(failure.getMessage());
+        }
+        else {
+            StackTraceFilterer filterer = new DefaultStackTraceFilterer();
             filterer.setCutOffPackage("org.junit");
             filterer.filter(exception, true);
 
@@ -69,10 +74,6 @@ public class GrailsTestRunNotifier extends RunNotifier {
 
             console.error(sw.toString());
         }
-        else {
-            console.error(failure.getMessage());
-        }
         super.fireTestFailure(failure);
     }
-
 }

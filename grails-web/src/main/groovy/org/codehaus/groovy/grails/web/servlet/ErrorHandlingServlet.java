@@ -14,6 +14,16 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
@@ -28,12 +38,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Collections;
 
 /**
  * A servlet for handling errors.
@@ -75,11 +79,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                 request.setAttribute("exception", new GrailsWrappedRuntimeException(getServletContext(), t));
             }
         }
-        final UrlMappingsHolder urlMappingsHolder = lookupUrlMappings();
+        final UrlMappingsHolder urlMappingsHolder = (UrlMappingsHolder)getBean(UrlMappingsHolder.BEAN_ID);
         UrlMappingInfo matchedInfo = null;
         if (t != null) {
-            StackTraceFilterer filterer = new StackTraceFilterer();
-            filterer.filter(t, true);
+            createStackTraceFilterer().filter(t, true);
             matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
             if (matchedInfo == null) {
                 matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
@@ -121,8 +124,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                             v.render(Collections.EMPTY_MAP, request, response);
                         }
                         catch (Throwable e) {
-                            StackTraceFilterer filterer = new StackTraceFilterer();
-                            filterer.filter(e);
+                            createStackTraceFilterer().filter(e);
                             renderDefaultResponse(response, statusCode, "Internal Server Error", e.getMessage());
                         }
                     }
@@ -135,6 +137,18 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         }
         else {
             renderDefaultResponse(response, statusCode);
+        }
+    }
+
+    private StackTraceFilterer createStackTraceFilterer() {
+        try {
+            GrailsApplication application = (GrailsApplication)getBean("grailsApplication");
+            return (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
+                    application.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+        }
+        catch (Throwable t) {
+            logger.error("Problem instantiating StackTraceFilterer class, using default: " + t.getMessage());
+            return new DefaultStackTraceFilterer();
         }
     }
 
@@ -165,8 +179,8 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         writer.flush();
     }
 
-    private UrlMappingsHolder lookupUrlMappings() {
+    private Object getBean(String name) {
         WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
+        return wac.getBean(name);
     }
 }

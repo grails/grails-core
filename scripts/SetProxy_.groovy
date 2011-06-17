@@ -39,15 +39,15 @@ target ("default" : "Sets HTTP proxy configuration for Grails") {
             settings.proxySettingsFile.withWriter { w ->
                 proxySettings.writeTo(w)
             }
-            console.updateStatus "Proxy set to [$name]"
+            grailsConsole.updateStatus "Proxy set to [$name]"
         }
         else {
-            console.error "No proxy configuration found for name: $name. Please add a proxy with add-proxy first."
+            grailsConsole.error "No proxy configuration found for name: $name. Please add a proxy with add-proxy first."
             exit 1
         }
     }
     else {
-        console.error '''\
+        grailsConsole.error '''\
 Usage: grails set-proxy [name]
 
 Sets a named proxy. Use "grails add-proxy" to add a named proxy.

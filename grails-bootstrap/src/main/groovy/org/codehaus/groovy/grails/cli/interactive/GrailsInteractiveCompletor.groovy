@@ -17,8 +17,11 @@ package org.codehaus.groovy.grails.cli.interactive
 
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
+
 import java.util.concurrent.ConcurrentHashMap
+
 import jline.SimpleCompletor
+
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 
  /**
@@ -40,45 +43,39 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     @Override
     int complete(String buffer, int cursor, List clist) {
         final trimmedBuffer = buffer.trim()
-        if (trimmedBuffer) {
-            if (trimmedBuffer.contains(' ')) {
-                trimmedBuffer = trimmedBuffer.split(' ')[0]
-            }
-            def completor = completorCache.get(trimmedBuffer)
-            if (completor == null) {
-                def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
-                className = "grails.build.interactive.completors.$className"
+        if (!trimmedBuffer) {
+            return super.complete(buffer, cursor, clist)
+        }
 
-                try {
-                    def completorClass = getClass().classLoader.loadClass(className)
-                    completor = completorClass.newInstance()
-                    if (completor instanceof BuildSettingsAware) {
-                        completor.buildSettings = settings
-                    }
-                    completorCache.put(trimmedBuffer, completor)
-                    return completor.complete(buffer, cursor, clist)
-                } catch (e) {
-                    return super.complete(buffer, cursor, clist)
+        if (trimmedBuffer.contains(' ')) {
+            trimmedBuffer = trimmedBuffer.split(' ')[0]
+        }
+
+        def completor = completorCache.get(trimmedBuffer)
+        if (completor == null) {
+            def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
+            className = "grails.build.interactive.completors.$className"
+
+            try {
+                def completorClass = getClass().classLoader.loadClass(className)
+                completor = completorClass.newInstance()
+                if (completor instanceof BuildSettingsAware) {
+                    completor.buildSettings = settings
                 }
-            }
-            else {
-                try {
-                    return completor.complete(buffer, cursor, clist)
-                } catch (e) {
-                    return super.complete(buffer, cursor, clist)
-                }
+                completorCache.put(trimmedBuffer, completor)
+            } catch (e) {
+                return super.complete(buffer, cursor, clist)
             }
         }
-        else {
+
+        try {
+            return completor.complete(buffer, cursor, clist)
+        } catch (e) {
             return super.complete(buffer, cursor, clist)
         }
     }
-
-
-
 
     static String[] getScriptNames(scriptResources) {
         scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) } as String[]
     }
 }
-

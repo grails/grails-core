@@ -18,39 +18,11 @@ package org.codehaus.groovy.grails.cli;
 
 import gant.Gant;
 import grails.build.logging.GrailsConsole;
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
-import grails.util.CosineSimilarity;
-import grails.util.Environment;
-import grails.util.GrailsNameUtils;
-import grails.util.PluginBuildSettings;
+import grails.util.*;
 import groovy.lang.Closure;
-import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.util.AntBuilder;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.gant.GantMetaClass;
@@ -68,6 +40,13 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URLClassLoader;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -141,11 +120,11 @@ public class GrailsScriptRunner {
         originalIn = System.in;
         originalOut = System.out;
 
-        CommandLineParser parser = getCommandLineParser();
+      CommandLineParser parser = getCommandLineParser();
 
         GrailsConsole console = GrailsConsole.getInstance();
-        CommandLine commandLine;
 
+        CommandLine commandLine;
         try {
             if(args.length == 0) {
                 commandLine = new DefaultCommandLine();
@@ -177,7 +156,6 @@ public class GrailsScriptRunner {
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
             }
-
         }
         catch (Exception e) {
             exitWithError("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
@@ -200,7 +178,7 @@ public class GrailsScriptRunner {
         }
 
         // If there aren't any arguments, then we don't have a command
-        // to execute. So we have to exit.
+        // to execute, so enter "interactive mode"
         GrailsScriptRunner scriptRunner = new GrailsScriptRunner(build);
         scriptRunner.setInteractive(!commandLine.hasOption(NON_INTERACTIVE_ARGUMENT));
         if (script.name == null) {
@@ -279,8 +257,8 @@ public class GrailsScriptRunner {
         return info;
     }
 
-    private static void abortIfOutOfBounds(String[] splitArgs, int currentParamIndex) {
-        if (currentParamIndex >= splitArgs.length) {
+    private static void abortIfOutOfBounds(List<String> splitArgs, int currentParamIndex) {
+        if (currentParamIndex >= splitArgs.size()) {
             GrailsConsole.getInstance().error("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
             System.exit(0);
         }
@@ -422,7 +400,8 @@ public class GrailsScriptRunner {
         setRunningEnvironment(scriptName, env);
 
         // Get Gant to load the class by name using our class loader.
-        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(settings, pluginPathSupport,isInteractive);
+        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
+                settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
 
         try {
@@ -451,7 +430,8 @@ public class GrailsScriptRunner {
         binding.setVariable("scriptName", scriptFileName);
 
         // Setup the script to call.
-        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(settings, pluginPathSupport,isInteractive);
+        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
+             settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
         gant.setUseCache(true);
         gant.setCacheDirectory(scriptCacheDir);

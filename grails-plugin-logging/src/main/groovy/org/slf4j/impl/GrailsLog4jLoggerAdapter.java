@@ -15,15 +15,19 @@
  */
 package org.slf4j.impl;
 
-import grails.util.GrailsUtil;
+import static org.apache.log4j.Level.DEBUG;
+import static org.apache.log4j.Level.ERROR;
+import static org.apache.log4j.Level.INFO;
+import static org.apache.log4j.Level.TRACE;
+import static org.apache.log4j.Level.WARN;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
-
-import static org.apache.log4j.Level.*;
 
 /**
  * A Log4j adapter that produces cleaner, more informative stack traces
@@ -169,7 +173,6 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
         logMessage(ERROR, msg, t);
     }
 
-
     private FormattingTuple getMessageFormat(String format, Object... args) {
         FormattingTuple ft = MessageFormatter.arrayFormat(format, args);
         cleanIfException(ft.getThrowable());
@@ -178,7 +181,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
 
     private Throwable cleanIfException(Throwable t) {
         if (t != null) {
-            GrailsUtil.deepSanitize(t);
+            new DefaultStackTraceFilterer().filter(t, true);
         }
         return t;
     }

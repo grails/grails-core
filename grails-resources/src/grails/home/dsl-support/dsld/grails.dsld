@@ -16,99 +16,183 @@
 package dsld
 
 import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 
+/**
+ * DSL support for the Grails Framework when editing inside of STS.  Requires STS 2.7.0 or later.
+ * @author Andrew Eisenberg
+ * @since 1.4
+ */
 
-
-def grailsArtifact = { String folder ->
-    sourceFolderOfCurrentType("grails-app/" + folder) &
-    nature("grails") & (~isScript())
+def grailsArtifact = { String folder -> 
+	sourceFolderOfCurrentType("grails-app/" + folder) & 
+	nature("grails") & (~isScript())
 }
 
 // define the various kinds of grails artifacts
 def domainClass = grailsArtifact("domain")
-// we only require domainClass, but we can also reference other kinds of artifacts here
-def controllerClass = grailsArtifact("controllers")
-def serviceClass = grailsArtifact("services")
-def taglibClass = grailsArtifact("taglib")
+// so far we only require domainClass, but we can also reference other kinds of artifacts here
+//def controllerClass = grailsArtifact("controllers")
+//def serviceClass = grailsArtifact("services")
+//def taglibClass = grailsArtifact("taglib")
 
- 
+
 // constraints
 // The constraints DSL is only applicable inside of the static "constraints" field declaration
-(domainClass &
-    inClosure() &
-    enclosingField(name("constraints") & isStatic()) &
-    currentTypeIsEnclosingType() &
-    bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
-    ).accept {
- 
-    provider = "Grails Constraints DSL"  // this value will appear in content assist
+(domainClass & 
+	inClosure() & 
+	enclosingField(name("constraints") & isStatic()) & 
+	currentTypeIsEnclosingType() & 
+	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
+	).accept {
 
-    // for each non-static property, there are numerous constraints "methods" that are available
-    // define them all here
-    for (PropertyNode prop in props) {
-        if (prop.type == ClassHelper.STRING_TYPE) {
-            method isStatic: true, name: prop.name, params: [blank:Boolean], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [creditCard:Boolean], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [email:Boolean], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [url:Boolean], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [matches:String], useNamedArgs:true
-        } else if (prop.type.name == Date.name) {
-            method isStatic: true, name: prop.name, params: [max:Date], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [min:Date], useNamedArgs:true
-        } else if (ClassHelper.isNumberType(prop.type)) {
-            method isStatic: true, name: prop.name, params: [max:prop.type], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [min:prop.type], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [scale:prop.type], useNamedArgs:true
-        } else if (prop.type.implementsInterface(ClassHelper.LIST_TYPE)) {
-            method isStatic: true, name: prop.name, params: [maxSize:Number], useNamedArgs:true
-            method isStatic: true, name: prop.name, params: [minSize:Number], useNamedArgs:true
-        }
-        method isStatic: true, name: prop.name, params: [unique:Boolean], useNamedArgs:true
-        method isStatic: true, name: prop.name, params: [size:Integer], useNamedArgs:true
-        method isStatic: true, name: prop.name, params: [notEqual:Object], useNamedArgs:true
-        method isStatic: true, name: prop.name, params: [nullable:Boolean], useNamedArgs:true
-        method isStatic: true, name: prop.name, params: [range:Range], useNamedArgs:true
-        method isStatic: true, name: prop.name, params: [inList:List], useNamedArgs:true
-    }
+	provider = "Grails Constraints DSL"  // this value will appear in content assist
+ 
+	// FIXJB : ensure that all constraints are correct below
+	// FIXJB : add documentation
+	// for each non-static property, there are numerous constraints "methods" that are available
+	// define them all here
+	for (PropertyNode prop in props) {
+		if (prop.type == ClassHelper.STRING_TYPE) {
+			method isStatic: true, name: prop.name, params: [blank:Boolean], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [creditCard:Boolean], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [email:Boolean], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [url:Boolean], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [matches:String], useNamedArgs:true
+		} else if (prop.type.name == Date.name) {
+			method isStatic: true, name: prop.name, params: [max:Date], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [min:Date], useNamedArgs:true
+		} else if (ClassHelper.isNumberType(prop.type)) {
+			method isStatic: true, name: prop.name, params: [max:prop.type], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [min:prop.type], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [scale:prop.type], useNamedArgs:true
+		} else if (prop.type.implementsInterface(ClassHelper.LIST_TYPE)) {
+			method isStatic: true, name: prop.name, params: [maxSize:Number], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [minSize:Number], useNamedArgs:true
+		}
+		method isStatic: true, name: prop.name, params: [unique:Boolean], useNamedArgs:true
+		method isStatic: true, name: prop.name, params: [size:Integer], useNamedArgs:true
+		method isStatic: true, name: prop.name, params: [notEqual:Object], useNamedArgs:true
+		method isStatic: true, name: prop.name, params: [nullable:Boolean], useNamedArgs:true
+		method isStatic: true, name: prop.name, params: [range:Range], useNamedArgs:true
+		method isStatic: true, name: prop.name, params: [inList:List], useNamedArgs:true
+	}
+	
+	// FIXJB : add the id property (type long)
+	
 }
-        
+		
 // criteria queries
 domainClass.accept {
-    method name:"createCriteria", type:"grails.orm.HibernateCriteriaBuilder",
-        declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+	provider = "Criteria builder DSL"
+	method name:"createCriteria", type:"grails.orm.HibernateCriteriaBuilder",
+		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+	method name:"withCriteria", type:List, params: [query : Closure],
+		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
 }
 currentType("grails.orm.HibernateCriteriaBuilder").accept {
-    method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
-    method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
-    method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
-    method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	provider = "Criteria builder DSL"
+	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure] 
+	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 }
 
-// hasMany
+// GormStaticAPI
+// Persistence providers can add more.
+// FIXJB : Any possibility to include the source for GormStaticAPI in projects?
+domainClass.accept {
+	provider = "GORM Static API"
+	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<" + currentType.name + ">", isStatic:true, except:["withCriteria", "createCriteria"]
+}  
+
+// hasMany 
 domainClass & currentType(props : properties(isStatic() & name("hasMany"))).accept {
-    provider = "Grails hasMany"
-    for (PropertyNode hasMany in props) {
-        if (hasMany.initializer instanceof MapExpression) {
-            for (MapEntryExpression entry in hasMany.initializer.mapExpressions.entrySet) {
-                /* should specify type porameters on list, but can't do that yet */
-                property name : entry.keyExpression, type : List
-            }
-        }
-    }
+	provider = "Grails hasMany"
+	props.each { PropertyNode hasMany ->
+		if (hasMany.initialExpression instanceof MapExpression) {
+			hasMany.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
+				if (!currentType.getProperty(entry.keyExpression.text)) {
+					property name : entry.keyExpression, type : "java.util.Set<" + entry.valueExpression.type.name +">"
+				}
+			}
+		}
+	}
 }
 
 // hasOne
 domainClass & currentType(props : properties(isStatic() & name("hasOne"))).accept {
-    provider = "Grails hasOne"
-    for (PropertyNode hasMany in props) {
-        if (hasMany.initializer instanceof MapExpression) {
-            for (MapEntryExpression entry in hasMany.initializer.mapExpressions.entrySet) {
-                /* should specify type porameters on list, but can't do that yet */
-                property name : entry.keyExpression, type : entry.valueExpression
-            }
-        }
+	provider = "Grails hasOne"
+	props.each { PropertyNode hasOne ->
+		if (hasOne.initialExpression instanceof MapExpression) {
+			hasOne.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
+				property name : entry.keyExpression, type : entry.valueExpression.type
+			}
+		}
+	}
+}
+// belongsTo
+domainClass & currentType(props : properties(isStatic() & name("belongsTo"))).accept {
+	provider = "Grails belongsTo"
+	props.each { PropertyNode belongsTo ->
+			if (belongsTo.initialExpression instanceof MapExpression) {
+				belongsTo.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
+					property name : entry.keyExpression, type : entry.valueExpression.type
+				}
+			} else if(belongsTo.initialExpression instanceof ClassExpression) {
+				property name : toPropertyName(belongsTo.type.nameWithoutPackage), type : belongsTo.type
+			}
+		}
+}
+
+// mapping ---orm DSL
+// FIXJB : Ensure nothing is missed
+// FIXJB : Add documentation
+domainClass & currentType(properties(isStatic() & name("mapping")) & 
+	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
+	).accept {
+	provider = "Grails ORM DSL"
+	
+	method name:"table", type:Void, params: [tableName: String], useNamedArgs:true, isStatic:true
+	method name:"groups", type:Void, params: [column:String], useNamedArgs:true, isStatic:true
+	method name:"tablePerHierarchy", type:Void, params: [val:Boolean], isStatic:true
+	method name:"cache", type:Void, params: [shouldCache:Boolean], isStatic:true
+	method name:"cache", type:Void, params: [usage:String, include:String], useNamedArgs:true, isStatic:true
+	method name:"version", type:Void, params: [shouldVersion:Boolean], isStatic:true
+	method name:"sort", type:Void, params: [propertyName:String], isStatic:true
+	method name:"column", type:Void, params: [name:String, index:String, unique:Boolean, sqlType:String], isStatic:true
+	
+	props.each { PropertyNode prop -> 
+		method name: prop.name, type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true	
+		method name: prop.name, type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true	
+		method name: prop.name, type: Void, params:[type:Class], useNamedArgs:true, isStatic:true	
+		method name: prop.name, type: Void, params:[type:String], useNamedArgs:true, isStatic:true	
+		method name: prop.name, type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true	
+		method name: prop.name, type: Void, params:[formula:String], useNamedArgs:true, isStatic:true	
+		method name: prop.name, type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], 
+				useNamedArgs:true, isStatic:true
+	}
+	
+	// now do the same for id
+	method name: 'id', type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true	
+	method name: 'id', type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true	
+	method name: 'id', type: Void, params:[type:Class], useNamedArgs:true, isStatic:true	
+	method name: 'id', type: Void, params:[type:String], useNamedArgs:true, isStatic:true	
+	method name: 'id', type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true	
+	method name: 'id', type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], useNamedArgs:true, isStatic:true
+	method name: 'id', type :Void, params:[composite:"java.util.List<java.lang.String>"], useNamedArgs:true, isStatic:true	
+}
+
+def toPropertyName(String typeName) {
+    // Check whether the name begins with two upper case letters.
+    if (typeName.length() > 1
+		&& Character.isUpperCase(typeName.charAt(0)) 
+		&& Character.isUpperCase(typeName.charAt(1)))  {
+        	return typeName
     }
+    return typeName[0].toLowerCase(Locale.ENGLISH) + typeName.substring(1);
 }

@@ -26,5 +26,5 @@ target(default: "Clears a proxy configuration") {
 
     settingsFile.withWriter { w -> config.writeTo(w) }
 
-    console.updateStatus "Cleared proxy settings."
+    grailsConsole.updateStatus "Cleared proxy settings."
 }

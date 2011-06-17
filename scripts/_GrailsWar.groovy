@@ -81,7 +81,7 @@ target(checkInPlacePlugins: "Perform a check whether inplace plugins have been p
     if (inlinePluginDirs) {
         for (pluginDir in inlinePluginDirs) {
             def descriptor = pluginSettings.getPluginDescriptor(pluginDir)
-            console.updateStatus "Generating plugin.xml for inline plugin"
+            grailsConsole.updateStatus "Generating plugin.xml for inline plugin"
             generatePluginXml(descriptor.file,false)
         }
     }

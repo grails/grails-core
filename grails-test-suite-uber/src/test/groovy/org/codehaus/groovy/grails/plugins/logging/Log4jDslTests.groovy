@@ -17,15 +17,16 @@ package org.codehaus.groovy.grails.plugins.logging
 
 import grails.util.Environment
 
-import org.apache.log4j.Logger
-import org.apache.log4j.LogManager
-import org.apache.log4j.Level
-import org.apache.log4j.net.SMTPAppender
-import org.apache.log4j.WriterAppender
-import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.Appender
+import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.Level
+import org.apache.log4j.LogManager
+import org.apache.log4j.Logger
+import org.apache.log4j.WriterAppender
 
 class Log4jDslTests extends GroovyTestCase {
+
+    private Log4jConfig log4jConfig = new Log4jConfig(new ConfigObject())
 
     protected void setUp() {
         super.setUp()
@@ -39,8 +40,7 @@ class Log4jDslTests extends GroovyTestCase {
     void testSingleDebugStatement() {
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-        config.configure {
+        log4jConfig.configure {
             debug 'org.hibernate.SQL'
         }
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
@@ -54,8 +54,7 @@ class Log4jDslTests extends GroovyTestCase {
 
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-        config.configure {
+        log4jConfig.configure {
             environments {
                 development {
                     trace 'org.hibernate.SQL'
@@ -73,8 +72,7 @@ class Log4jDslTests extends GroovyTestCase {
     void testTraceLevel() {
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-        config.configure {
+        log4jConfig.configure {
             trace 'org.hibernate.SQL'
         }
 
@@ -85,9 +83,7 @@ class Log4jDslTests extends GroovyTestCase {
     void testConfigureRootLogger() {
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-
-        config.configure {
+        log4jConfig.configure {
             root {
                 debug()
                 additivity = true
@@ -103,7 +99,7 @@ class Log4jDslTests extends GroovyTestCase {
 
         LogManager.resetConfiguration()
 
-        config.configure {
+        log4jConfig.configure {
             appenders {
                 appender new WriterAppender(name:'writerAppender')
             }
@@ -122,7 +118,7 @@ class Log4jDslTests extends GroovyTestCase {
 
         LogManager.resetConfiguration()
 
-        config.configure {
+        log4jConfig.configure {
             appenders {
                 appender new WriterAppender(name:'writerAppender')
             }
@@ -146,9 +142,7 @@ class Log4jDslTests extends GroovyTestCase {
     void testSensibleDefaults() {
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-
-        config.configure {
+        log4jConfig.configure {
             debug 'org.codehaus.groovy.grails.web.servlet',
                   'org.codehaus.groovy.grails.web.pages'
 
@@ -180,10 +174,8 @@ class Log4jDslTests extends GroovyTestCase {
 
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-
         def consoleAppender
-        config.configure {
+        log4jConfig.configure {
             appenders {
                 console follow: true, name: 'customAppender', layout: pattern(conversionPattern: '%c{2} %m%n')
                 appender name:'writerAppender', new WriterAppender()
@@ -214,9 +206,8 @@ class Log4jDslTests extends GroovyTestCase {
 
     void testCustomAppenderWithInstance() {
         LogManager.resetConfiguration()
-        Log4jConfig config = new Log4jConfig()
 
-        config.configure {
+        log4jConfig.configure {
             appenders {
                 def consoleAppender = new ConsoleAppender(follow: true, target: "System.out",
                     layout: pattern(conversionPattern: '%c{2} %m%n'))
@@ -245,9 +236,7 @@ class Log4jDslTests extends GroovyTestCase {
 
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-
-        config.configure { root ->
+        log4jConfig.configure { root ->
             root.level = Level.DEBUG
         }
 
@@ -258,8 +247,7 @@ class Log4jDslTests extends GroovyTestCase {
     void testConfigFromCollection() {
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-        config.configure([{
+        log4jConfig.configure([{
             debug 'org.hibernate.SQL'
         },
         {
@@ -273,19 +261,16 @@ class Log4jDslTests extends GroovyTestCase {
     void testConfigFromMap() {
         LogManager.resetConfiguration()
 
-        Log4jConfig config = new Log4jConfig()
-        LinkedHashMap configData = [:]
+        def configData = [:]
         configData.main = {
             debug 'org.hibernate.SQL'
         }
         configData.secondary = {
             warn 'org.hibernate.SQL'
         }
-        config.configure(configData)
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
+        log4jConfig.configure(configData)
 
+        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
         assertEquals Level.WARN, hibernateLogger.level
     }
-
-
 }

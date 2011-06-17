@@ -30,7 +30,7 @@ target ('default': "Sets the current application version") {
 
     if (isPluginProject) {
         if (!pluginSettings.basePluginDescriptor.filename) {
-            console.error "PluginDescripter not found to set version"
+            grailsConsole.error "PluginDescripter not found to set version"
             exit 1
         }
 

@@ -27,6 +27,11 @@ import org.springframework.web.servlet.view.InternalResourceView
  */
 class GrailsExceptionResolverTests extends GroovyTestCase {
 
+    private application = new DefaultGrailsApplication()
+    private resolver = new GrailsExceptionResolver()
+    private mockContext = new MockServletContext()
+    private mockCtx = new MockApplicationContext()
+
     @Override
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
@@ -49,15 +54,13 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testResolveExceptionToView() {
-        def resolver = new GrailsExceptionResolver()
-        def mockContext = new MockServletContext()
         def mappings = new DefaultUrlMappingEvaluator(mockContext).evaluateMappings {
             "500"(view:"myView")
         }
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
-        def mockCtx = new MockApplicationContext()
-        def webRequest = GrailsWebUtil.bindMockWebRequest(mockCtx, new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
+        def webRequest = GrailsWebUtil.bindMockWebRequest(mockCtx,
+                new GrailsMockHttpServletRequest(), new GrailsMockHttpServletResponse())
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
@@ -65,6 +68,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
         resolver.servletContext = mockContext
         resolver.exceptionMappings = ['java.lang.Exception': '/error'] as Properties
+        resolver.grailsApplication = application
 
         def ex = new Exception()
         def request = webRequest.currentRequest
@@ -77,24 +81,22 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testResolveExceptionToController() {
-        def resolver = new GrailsExceptionResolver()
-        def mockContext = new MockServletContext()
         def mappings = new DefaultUrlMappingEvaluator(mockContext).evaluateMappings {
             "500"(controller:"foo", action:"bar")
         }
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
-        def mockCtx = new MockApplicationContext()
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
-        mockCtx.registerMockBean GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication()
+        mockCtx.registerMockBean GrailsApplication.APPLICATION_ID, application
         mockCtx.registerMockBean "multipartResolver", new CommonsMultipartResolver()
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext
         resolver.exceptionMappings = ['java.lang.Exception': '/error'] as Properties
+        resolver.grailsApplication = application
 
         def ex = new Exception()
         def request = webRequest.currentRequest
@@ -109,24 +111,22 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testResolveExceptionToControllerWhenResponseCommitted() {
-        def resolver = new GrailsExceptionResolver()
-        def mockContext = new MockServletContext()
         def mappings = new DefaultUrlMappingEvaluator(mockContext).evaluateMappings {
             "500"(controller:"foo", action:"bar")
         }
 
         def urlMappingsHolder = new DefaultUrlMappingsHolder(mappings)
-        def mockCtx = new MockApplicationContext()
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
-        mockCtx.registerMockBean GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication()
+        mockCtx.registerMockBean GrailsApplication.APPLICATION_ID, application
         mockCtx.registerMockBean "multipartResolver", new CommonsMultipartResolver()
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext
         resolver.exceptionMappings = ['java.lang.Exception': '/error'] as Properties
+        resolver.grailsApplication = application
 
         def ex = new Exception()
         def request = webRequest.currentRequest
@@ -140,21 +140,21 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     }
 
     void testLogRequest() {
-            def config = new ConfigSlurper().parse('''
+        def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
 ''')
 
-            def request = new MockHttpServletRequest()
-            request.setRequestURI("/execute/me")
-            request.setMethod "GET"
-            request.addParameter "foo", "bar"
-            request.addParameter "one", "two"
-            request.addParameter "jennysPhoneNumber", "8675309"
+        def request = new MockHttpServletRequest()
+        request.setRequestURI("/execute/me")
+        request.setMethod "GET"
+        request.addParameter "foo", "bar"
+        request.addParameter "one", "two"
+        request.addParameter "jennysPhoneNumber", "8675309"
 
-            System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
+        System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+        def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(request)
 
-            assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
+        assertEquals '''Exception occurred when processing request: [GET] /execute/me - parameters:
 foo: bar
 one: two
 jennysPhoneNumber: ***
@@ -179,15 +179,15 @@ Stacktrace follows:'''.replaceAll('[\n\r]', '')
 Stacktrace follows:'''.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
-            def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
+            def msg = new GrailsExceptionResolver(grailsApplication:application).getRequestLogMessage(request)
             assertEquals msgWithParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.PRODUCTION.name)
-            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:application).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             System.setProperty(Environment.KEY, Environment.TEST.name)
-            msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication()).getRequestLogMessage(request)
+            msg = new GrailsExceptionResolver(grailsApplication:application).getRequestLogMessage(request)
             assertEquals msgWithoutParameters, msg.replaceAll('[\n\r]', '')
 
             def config = new ConfigSlurper().parse('''
