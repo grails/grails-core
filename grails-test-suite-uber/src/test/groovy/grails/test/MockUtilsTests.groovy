@@ -24,6 +24,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import grails.persistence.Entity
 
 /**
  * Test case for  {@link MockUtils} .
@@ -1471,8 +1472,24 @@ class MockUtilsTests extends GroovyTestCase {
         assertNull dc.errors["cardNumber"]
         assertNull dc.errors["item"]
     }
+
+    void testGetMethodWithAstTransformedEntity() {
+        MockUtils.mockDomain TestTransformedEntity
+
+        def t = new TestTransformedEntity(name:"Bob")
+
+        t.save()
+
+        t = TestTransformedEntity.get(1)
+
+        assert t != null
+    }
 }
 
+@Entity
+class TestTransformedEntity {
+    String name
+}
 /**
  * Simple controller implementation to test the controller mocking.
  */

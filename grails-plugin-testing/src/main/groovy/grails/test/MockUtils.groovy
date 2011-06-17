@@ -661,6 +661,11 @@ class MockUtils {
             return testInstances.find { it?.id == id }
         }
 
+        clazz.metaClass.static.get = { Serializable id ->
+            id = convertToType(id, idType)
+            return testInstances.find { it?.id == id }
+        }
+
         // ..then read()...
         clazz.metaClass.static.read = { id ->
             // We don't do anything different to get(). We certainly
@@ -668,9 +673,16 @@ class MockUtils {
             // complicate the implementation without any real benefit.
             delegate.get id
         }
+        clazz.metaClass.static.read = { Serializable id ->
+            delegate.get id
+        }
 
         // ..then load()...
         clazz.metaClass.static.load = { id -> delegate.get id }
+
+       clazz.metaClass.static.load = { Serializable id ->
+            delegate.get id
+        }
 
         // ...then getAll()...
         clazz.metaClass.static.getAll = { Object[] args ->
