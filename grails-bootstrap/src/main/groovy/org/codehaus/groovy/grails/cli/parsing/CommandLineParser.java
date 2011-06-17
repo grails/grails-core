@@ -17,9 +17,7 @@
 package org.codehaus.groovy.grails.cli.parsing;
 
 import grails.util.Environment;
-import sun.tools.tree.ContinueStatement;
 
-import java.io.NotActiveException;
 import java.util.HashMap;
 import java.util.Map;
 
