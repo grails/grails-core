@@ -42,6 +42,7 @@ import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
+import org.fusesource.jansi.AnsiRenderer;
 import org.springframework.util.StringUtils;
 
 /**
@@ -57,6 +58,7 @@ public class GrailsConsole {
     public static final String CATEGORY_SEPARATOR = "|";
     public static final String PROMPT = "grails> ";
     public static final String SPACE = " ";
+    private static final String ERROR_REGEX = ".*?(ERROR|FATAL).*?";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -262,7 +264,7 @@ public class GrailsConsole {
 
             if (!isAnsiEnabled()) {
                 out.print("..");
-                out.print(percentage+'%');
+                out.print(percentage + '%');
             }
             else {
                 updateStatus(currMsg + ' ' + percentage + '%');
@@ -367,19 +369,24 @@ public class GrailsConsole {
     public void error(String msg) {
         try {
             cursorMove = 0;
-            if (hasNewLines(msg)) {
-                if (isAnsiEnabled()) {
-                    out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(CATEGORY_SEPARATOR));
-                    out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
-                } else {
-                    logSimpleError(msg);
+            if (isAnsiEnabled()) {
+                Ansi ansi;
+                if(msg.contains("ERROR") || msg.contains("FATAL")) {
+                    ansi = outputErrorLabel(ansi(), "Error").a(msg).reset();
                 }
+                else {
+                    ansi = outputErrorLabel(ansi(), "").a(msg).reset();
+                }
+
+                if(msg.endsWith(LINE_SEPARATOR)) {
+                    out.print(ansi);
+                }
+                else {
+                    out.println(ansi);
+                }
+
             } else {
-                if (isAnsiEnabled()) {
-                    out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(CATEGORY_SEPARATOR).fg(Color.DEFAULT).a(msg).reset());
-                } else {
-                    logSimpleError(msg);
-                }
+                logSimpleError(msg);
             }
         } finally {
             postPrintMessage();
@@ -447,7 +454,12 @@ public class GrailsConsole {
      */
     public void log(String msg) {
         try {
-            out.println(msg);
+            if(msg.endsWith(LINE_SEPARATOR)) {
+                out.print(msg);
+            }
+            else {
+                out.println(msg);
+            }
             cursorMove = 0;
         } finally {
             postPrintMessage();
