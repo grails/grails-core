@@ -56,11 +56,11 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     };
 
     private List<String> packagesToFilter = new ArrayList<String>();
-    private boolean shouldFilter = !Boolean.getBoolean(SYS_PROP_DISPLAY_FULL_STACKTRACE);
+    private boolean shouldFilter;
     private String cutOffPackage = null;
 
     public DefaultStackTraceFilterer() {
-        this(true);
+        this(!Boolean.getBoolean(SYS_PROP_DISPLAY_FULL_STACKTRACE));
     }
 
     public DefaultStackTraceFilterer(boolean shouldFilter) {

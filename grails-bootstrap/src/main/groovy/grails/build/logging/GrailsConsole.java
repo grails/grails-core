@@ -162,6 +162,10 @@ public class GrailsConsole {
      * @param verbose Sets whether verbose output should be used
      */
     public void setVerbose(boolean verbose) {
+        if(verbose) {
+            // enable big traces in verbose mode
+            System.setProperty("grails.full.stacktrace", "true");
+        }
         this.verbose = verbose;
     }
 
