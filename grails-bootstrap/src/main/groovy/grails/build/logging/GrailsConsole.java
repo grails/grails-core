@@ -42,7 +42,6 @@ import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
-import org.fusesource.jansi.AnsiRenderer;
 import org.springframework.util.StringUtils;
 
 /**
@@ -578,6 +577,7 @@ public class GrailsConsole {
                 .a(Ansi.Attribute.INTENSITY_BOLD)
                 .fg(YELLOW)
                 .a(categoryName)
+                .a(SPACE)
                 .a(Ansi.Attribute.INTENSITY_BOLD_OFF);
     }
 
