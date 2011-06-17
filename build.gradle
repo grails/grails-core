@@ -25,7 +25,7 @@ ivyVersion = "2.2.0"
 gantVersion = "1.9.5"
 groovyVersion = "1.8.0"
 jansiVersion = "1.2.1"
-jlineVersion = "0.9.94"
+jlineVersion = "1.0"
 jnaVersion = "3.2.3"
 commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
@@ -91,7 +91,10 @@ subprojects { project ->
 
     dependencies {
         // Groovy
-        groovy groovyDependency
+        groovy( groovyDependency ) {
+            exclude module:"commons-cli"
+            exclude module:"ant"
+        }
         compile groovyDependency
 
         // Logging

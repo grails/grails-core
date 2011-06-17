@@ -1,11 +1,21 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    compile "org.springframework:spring-core:${springVersion}",
-            "org.springframework:spring-beans:${springVersion}",
-            "org.springframework:spring-test:${springVersion}",
-            "org.springframework:spring-context:${springVersion}",
-            "org.springframework:spring-context-support:${springVersion}"
+    compile( "org.springframework:spring-core:${springVersion}") {
+        exclude module:"commons-logging"
+    }
+    compile("org.springframework:spring-beans:${springVersion}") {
+        exclude module:"commons-logging"
+    }
+    compile("org.springframework:spring-test:${springVersion}") {
+        exclude module:"commons-logging"
+    }
+    compile("org.springframework:spring-context:${springVersion}") {
+        exclude module:"commons-logging"
+    }
+    compile("org.springframework:spring-context-support:${springVersion}") {
+        exclude module:"commons-logging"
+    }
 
 
     compile("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {
@@ -22,19 +32,22 @@ dependencies {
             "org.bouncycastle:bcpg-jdk15:1.45"
 
     compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile 'commons-cli:commons-cli:1.2'
 
     // Ant
-    compile 'org.fusesource.jansi:jansi:1.2.1',
-            'jline:jline:1.0',
-			'net.java.dev.jna:jna:3.2.3'
+    compile "org.fusesource.jansi:jansi:$jansiVersion",
+            "jline:jline:$jlineVersion",
+			"net.java.dev.jna:jna:$jnaVersion"
 
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
             "org.apache.ant:ant-junit:${antVersion}",
             "org.apache.ant:ant-trax:${antTraxVersion}",
-            "org.apache.ivy:ivy:${ivyVersion}",
-            "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
+            "org.apache.ivy:ivy:${ivyVersion}"
+
+    compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
+        exclude module:'commons-cli'
+    }
+
 }
 
 processResources {
