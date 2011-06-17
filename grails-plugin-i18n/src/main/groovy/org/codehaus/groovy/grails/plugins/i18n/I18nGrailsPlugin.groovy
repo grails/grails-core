@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.core.io.ContextResource
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 
 /**
  * A plugin that configures Grails' internationalisation support.
@@ -123,7 +124,7 @@ class I18nGrailsPlugin {
         if (resourcesDir) {
             String i18nDir = "${resourcesDir}/grails-app/i18n"
 
-            def ant = new AntBuilder()
+            def ant = new GrailsConsoleAntBuilder()
 
             def nativeascii = event.application.config.grails.enable.native2ascii
             nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true

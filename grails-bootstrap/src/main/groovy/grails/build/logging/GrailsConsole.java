@@ -54,7 +54,9 @@ public class GrailsConsole {
 
     private static GrailsConsole instance;
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    public static final String CATEGORY_SEPARATOR = " > ";
+    public static final String CATEGORY_SEPARATOR = "|";
+    public static final String PROMPT = "grails> ";
+    public static final String SPACE = " ";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -100,6 +102,10 @@ public class GrailsConsole {
      * Whether ANSI should be enabled for output
      */
     private boolean ansiEnabled = true;
+    /**
+     * Whether user input is currently active
+     */
+    private boolean userInputActive;
 
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
@@ -128,7 +134,6 @@ public class GrailsConsole {
         reader = new ConsoleReader();
         reader.setBellEnabled(false);
         reader.setCompletionHandler(new CandidateListCompletionHandler());
-        category.add("grails");
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
@@ -224,6 +229,7 @@ public class GrailsConsole {
         else {
             out.print(indicator);
         }
+
     }
 
     /**
@@ -303,10 +309,10 @@ public class GrailsConsole {
                 printMessageOnNewLine(msg);
                 lastMessage = "";
             } else {
-                final String categoryName = category.toString();
+
                 if (isAnsiEnabled()) {
 
-                    lastStatus = outputCategory(erasePreviousLine(categoryName), categoryName)
+                    lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
                             .fg(Color.DEFAULT).a(msg).reset();
                     out.println(lastStatus);
                     cursorMove = replaceCount;
@@ -317,12 +323,30 @@ public class GrailsConsole {
                         out.println();
                     }
 
-                    out.println(categoryName + msg);
+                    out.println(CATEGORY_SEPARATOR + msg);
                 }
                 lastMessage = msg;
             }
         } finally {
-            progressIndicatorActive = false;
+            postPrintMessage();
+        }
+    }
+
+    private void postPrintMessage() {
+        if(!progressIndicatorActive) {
+            replayPromptIfActive();
+        }
+        progressIndicatorActive = false;
+    }
+
+    private void replayPromptIfActive() {
+        if(userInputActive) {
+            if(isAnsiEnabled()) {
+                out.println(ansiPrompt(PROMPT));
+            }
+            else {
+                out.println(PROMPT);
+            }
         }
     }
 
@@ -345,21 +369,20 @@ public class GrailsConsole {
             cursorMove = 0;
             if (hasNewLines(msg)) {
                 if (isAnsiEnabled()) {
-                    out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).reset());
+                    out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(CATEGORY_SEPARATOR));
                     out.println(ansi().fg(Color.DEFAULT).a(msg).reset());
                 } else {
                     logSimpleError(msg);
                 }
-                //updateStatus();
             } else {
                 if (isAnsiEnabled()) {
-                    out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(category.toString()).fg(Color.DEFAULT).a(msg).reset());
+                    out.println(ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(RED).a(CATEGORY_SEPARATOR).fg(Color.DEFAULT).a(msg).reset());
                 } else {
                     logSimpleError(msg);
                 }
             }
         } finally {
-            progressIndicatorActive = false;
+            postPrintMessage();
         }
 
     }
@@ -367,7 +390,7 @@ public class GrailsConsole {
     private void logSimpleError(String msg) {
         if(progressIndicatorActive)
             out.println();
-        out.println(category.toString());
+        out.println(CATEGORY_SEPARATOR);
         out.println(msg);
     }
 
@@ -391,7 +414,7 @@ public class GrailsConsole {
                 error(msg);
             }
         } finally {
-            progressIndicatorActive = false;
+            postPrintMessage();
         }
     }
 
@@ -427,7 +450,7 @@ public class GrailsConsole {
             out.println(msg);
             cursorMove = 0;
         } finally {
-            progressIndicatorActive = false;
+            postPrintMessage();
         }
     }
 
@@ -438,7 +461,7 @@ public class GrailsConsole {
                 cursorMove = 0;
             }
         } finally {
-            progressIndicatorActive = false;
+            postPrintMessage();
         }
     }
 
@@ -462,12 +485,35 @@ public class GrailsConsole {
     public String userInput(String msg) {
         addStatus(msg);
         lastMessage = "";
+        return showPrompt();
+    }
+
+    private String showPrompt() {
         try {
             cursorMove = 0;
-            return reader.readLine("> ");
+            userInputActive = true;
+            try {
+                if(isAnsiEnabled()) {
+                    return reader.readLine(ansiPrompt(PROMPT).toString());
+                }
+                else {
+                    return reader.readLine(PROMPT);
+                }
+            } finally {
+                userInputActive = false;
+            }
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         }
+    }
+
+    private Ansi ansiPrompt(String prompt) {
+        return ansi()
+                .a(Ansi.Attribute.INTENSITY_BOLD)
+                .fg(YELLOW)
+                .a(prompt)
+                .a(Ansi.Attribute.INTENSITY_BOLD_OFF)
+                .fg(DEFAULT);
     }
 
     /**
@@ -506,7 +552,7 @@ public class GrailsConsole {
     }
 
     private void printMessageOnNewLine(String msg) {
-        out.println(outputCategory(ansi(), category.toString())
+        out.println(outputCategory(ansi(), "|")
                 .newline()
                 .fg(DEFAULT).a(msg).reset());
     }
@@ -523,6 +569,19 @@ public class GrailsConsole {
                 .a(Ansi.Attribute.INTENSITY_BOLD_OFF);
     }
 
+    private Ansi outputErrorLabel(Ansi ansi, String label) {
+        return ansi
+                .a(Ansi.Attribute.INTENSITY_BOLD)
+                .fg(RED)
+                .a(CATEGORY_SEPARATOR)
+                .a(SPACE)
+                .a(label)
+                .a(" ")
+                .a(Ansi.Attribute.INTENSITY_BOLD_OFF)
+                .fg(Color.DEFAULT);
+    }
+
+
     private Ansi erasePreviousLine(String categoryName) {
         if (cursorMove > 0) {
             return ansi()
@@ -532,5 +591,21 @@ public class GrailsConsole {
 
         }
         return ansi();
+    }
+
+    public void error(String label, String message) {
+        cursorMove = 0;
+        try {
+            if(isAnsiEnabled()) {
+                out.println(outputErrorLabel(ansi(), label).a(message));
+            }
+            else {
+                out.print(label);
+                out.print(" ");
+                logSimpleError(message);
+            }
+        } finally {
+            postPrintMessage();
+        }
     }
 }

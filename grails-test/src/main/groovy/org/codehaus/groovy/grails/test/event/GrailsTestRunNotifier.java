@@ -58,7 +58,7 @@ public class GrailsTestRunNotifier extends RunNotifier {
 
     @Override
     public void fireTestFailure(Failure failure) {
-        console.error("FAILURE: " + failure.getDescription().getDisplayName());
+        console.error("Failure: ", failure.getDescription().getDisplayName());
         Throwable exception = failure.getException();
         if (exception == null) {
             console.error(failure.getMessage());
