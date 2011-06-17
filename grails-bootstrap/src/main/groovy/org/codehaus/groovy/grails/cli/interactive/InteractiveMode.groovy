@@ -73,7 +73,7 @@ class InteractiveMode {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
                     if ("quit".equals(trimmed)) {
-                        break
+                        System.exit(0)
                     }
                     if ("exit".equals(trimmed)) {
                         if (grailsServer) {
@@ -88,7 +88,7 @@ class InteractiveMode {
                            }
                         }
                         else {
-                            break
+                            System.exit(0)
                         }
                     }
                     else if (scriptName.startsWith("!")) {
