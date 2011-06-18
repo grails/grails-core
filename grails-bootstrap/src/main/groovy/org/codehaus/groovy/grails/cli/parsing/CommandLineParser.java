@@ -37,19 +37,17 @@ public class CommandLineParser {
     static Map<String, String> DEFAULT_ENVS = new HashMap<String, String>();
     private static final String DEFAULT_PADDING = "        ";
 
-
     static {
         ENV_ARGS.put("dev", Environment.DEVELOPMENT.getName());
         ENV_ARGS.put("prod", Environment.PRODUCTION.getName());
         ENV_ARGS.put("test", Environment.TEST.getName());
-        DEFAULT_ENVS.put("War", Environment.PRODUCTION.getName());
-        DEFAULT_ENVS.put("TestApp", Environment.TEST.getName());
+        DEFAULT_ENVS.put("war", Environment.PRODUCTION.getName());
+        DEFAULT_ENVS.put("test-app", Environment.TEST.getName());
     }
 
     private Map<String, Option> declaredOptions = new HashMap<String, Option> ();
     private int longestOptionNameLength = 0;
     private String usageMessage;
-
 
     /**
      * Adds a declared option
@@ -65,7 +63,6 @@ public class CommandLineParser {
         declaredOptions.put(name, new Option(name, description));
     }
 
-
     /**
      * Parses a string of all the command line options converting them into an array of arguments to pass to #parse(String..args)
      *
@@ -77,6 +74,7 @@ public class CommandLineParser {
         String[] args = string.split(" ");
         return parse(args);
     }
+
     /**
      * Parses the given list of command line arguments. Arguments starting with -D become system properties,
      * arguments starting with -- or - become either declared or undeclared options. All other arguments are
