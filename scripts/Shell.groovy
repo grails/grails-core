@@ -22,9 +22,10 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.support.*
-import org.codehaus.groovy.tools.shell.*
-import org.codehaus.groovy.grails.cli.logging.*
+import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
+import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
+import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.IO
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
@@ -37,14 +38,14 @@ target(shell:"The shell implementation target") {
 
     loadApp()
     configureApp()
+
     def b = new Binding(ctx: appCtx, grailsApplication: grailsApp)
 
     def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
     listeners?.each { key, listener -> listener.init() }
     def shell = new Groovysh(classLoader,b, new IO(grailsConsole.input, System.out, System.err))
 
-    def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
-    watcher.start()
+    new GrailsProjectWatcher(projectCompiler, pluginManager).start()
 
     shell.run([] as String[])
     listeners?.each { key, listener ->

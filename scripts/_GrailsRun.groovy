@@ -22,9 +22,10 @@ import grails.web.container.EmbeddableServerFactory
 import java.net.ServerSocket
 
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
+import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 
 /**
- * Gant script that executes Grails using an embedded server
+ * Gant script that executes Grails using an embedded server.
  *
  * @author Graeme Rocher
  *
@@ -75,7 +76,6 @@ target(runAppHttps: "Main implementation that executes a Grails application with
 target (runWar : "Main implementation that executes a Grails application WAR") {
     runWar(SCHEME_HTTP, serverHost, serverPort, serverPortHttps)
 }
-
 
 /**
  * Runs the application over HTTPS using the WAR file directly.
@@ -189,8 +189,7 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-    def watcher = new org.codehaus.groovy.grails.compiler.GrailsProjectWatcher(projectCompiler, pluginManager)
-    watcher.start()
+    new GrailsProjectWatcher(projectCompiler, pluginManager).start()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
