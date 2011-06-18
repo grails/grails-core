@@ -102,8 +102,7 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public String getRemainingArgsString() {
-        String separator = " ";
-        return remainingArgsToString(separator);
+        return remainingArgsToString(" ");
     }
 
     public String getRemainingArgsLineSeparated() {
@@ -112,13 +111,19 @@ public class DefaultCommandLine implements CommandLine {
 
     private String remainingArgsToString(String separator) {
         StringBuilder sb = new StringBuilder();
-        Iterator<String> iterator = remainingArgs.iterator();
-        while (iterator.hasNext()) {
-            Object next =  iterator.next();
-            sb.append(next);
-            if(iterator.hasNext()) {
-                sb.append(separator);
+        String sep = "";
+        List<String> args = new ArrayList<String>(remainingArgs);
+        for (Map.Entry<String, Object> entry : undeclaredOptions.entrySet()) {
+            if (entry.getValue() instanceof Boolean && ((Boolean)entry.getValue())) {
+                args.add('-' + entry.getKey());
             }
+            else {
+                args.add('-' + entry.getKey() + '=' + entry.getValue());
+            }
+        }
+        for (String arg : args) {
+            sb.append(sep).append(arg);
+            sep = separator;
         }
         return sb.toString();
     }
