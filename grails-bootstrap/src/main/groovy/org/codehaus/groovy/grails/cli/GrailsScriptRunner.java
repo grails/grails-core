@@ -125,7 +125,7 @@ public class GrailsScriptRunner {
 
         CommandLine commandLine;
         try {
-            if(args.length == 0) {
+            if (args.length == 0) {
                 commandLine = new DefaultCommandLine();
             }
             else {
@@ -133,7 +133,6 @@ public class GrailsScriptRunner {
                 if (commandLine.hasOption(NOANSI_ARGUMENT)) {
                     console.setAnsiEnabled(false);
                 }
-
             }
         } catch (ParseException e) {
             console.error("Error processing command line arguments: " + e.getMessage());
@@ -175,6 +174,10 @@ public class GrailsScriptRunner {
             console.log(parser.getHelpMessage());
             System.exit(0);
         }
+
+        System.out.println("Welcome to Grails " + build.getGrailsVersion() + " - http://grails.org/");
+        System.out.println("Licensed under Apache Standard License 2.0");
+        System.out.println("Grails home is " + (grailsHome == null ? "not set" : "set to: " + grailsHome));
 
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
@@ -218,7 +221,6 @@ public class GrailsScriptRunner {
 
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
-
         parser.addOption(VERBOSE_ARGUMENT, "Enable verbose output");
         parser.addOption(AGENT_ARGUMENT, "Enable the reloading agent");
         parser.addOption(NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
@@ -301,7 +303,9 @@ public class GrailsScriptRunner {
             console.updateStatus("Loading build config");
             settings.loadConfig();
 
-            System.setProperty("springloaded.directoriesContainingReloadableCode", settings.getClassesDir().getAbsolutePath() + ',' + settings.getPluginClassesDir().getAbsolutePath());
+            System.setProperty("springloaded.directoriesContainingReloadableCode",
+                   settings.getClassesDir().getAbsolutePath() + ',' +
+                   settings.getPluginClassesDir().getAbsolutePath());
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
