@@ -140,7 +140,8 @@ public class GrailsScriptRunner {
             return;
         }
 
-        console.updateStatus("Initializing");
+		String version = System.getProperty("grails.version");
+
 
         ScriptAndArgs script = processArgumentsAndReturnScriptName(commandLine);
 
@@ -175,10 +176,6 @@ public class GrailsScriptRunner {
             System.exit(0);
         }
 
-        System.out.println("Welcome to Grails " + build.getGrailsVersion() + " - http://grails.org/");
-        System.out.println("Licensed under Apache Standard License 2.0");
-        System.out.println("Grails home is " + (grailsHome == null ? "not set" : "set to: " + grailsHome));
-
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
         GrailsScriptRunner scriptRunner = new GrailsScriptRunner(build);
@@ -188,7 +185,7 @@ public class GrailsScriptRunner {
             script.name = null;
         }
         if (script.name == null) {
-            console.updateStatus("Loading build configuration");
+        	console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
             scriptRunner.initializeState();
@@ -300,7 +297,7 @@ public class GrailsScriptRunner {
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
-            console.updateStatus("Loading build config");
+        	console.updateStatus("Loading Grails " + settings.getGrailsVersion());
             settings.loadConfig();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",
