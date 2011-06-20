@@ -59,7 +59,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
         generator = new DefaultGrailsTemplateGenerator();
-        generator.setBasedir("../grails-resources");
+        generator.setBasedir("../grails-resources/src/grails/grails-home");
 
         Class dc = gcl.parseClass("class Test { \n Long id;\n  Long version;  }");
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(dc);
@@ -103,7 +103,7 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
         DefaultGrailsTemplateGenerator generator = new DefaultGrailsTemplateGenerator();
-        generator.setBasedir("../grails-resources");
+        generator.setBasedir("../grails-resources/src/grails/grails-home");
 
         Class dc = gcl.parseClass(
                 "class Test { " +
