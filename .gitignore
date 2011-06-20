@@ -2,8 +2,6 @@
 /src
 /out
 /bin
-/conf
-/dsl-support
 *.ipr
 idea
 /lib
@@ -14,7 +12,6 @@ idea
 /test/groovy/grails/config
 /test/grails-app
 stacktrace.log
-/dist
 /idea-target
 target
 /build
