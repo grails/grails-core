@@ -22,8 +22,17 @@ dependencies {
 
 sourceSets {
     main {
-        groovy.srcDirs = ['../scripts']
+        groovy.srcDirs = ['src/scripts']
     }
 }
 
 jar.appendix = 'scripts'
+
+task installScripts {
+    copy {
+        from("src/scripts")
+        into "${installDir}/scripts"
+    }
+}
+
+install.dependsOn installScripts

@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 buildscript {
     repositories {
         mavenRepo(urls: "http://repo.grails.org/grails/core")
@@ -12,8 +10,8 @@ buildscript {
 
 apply plugin: 'idea'
 
-
 grailsVersion = '1.4.0.BUILD-SNAPSHOT'
+installDir = "${rootProject.projectDir}/install"
 antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 aspectjVersion = "1.6.10"
@@ -118,7 +116,7 @@ subprojects { project ->
             from(project.libsDir) {
                 include "*-${grailsVersion}.jar"
             }
-            into "${rootProject.projectDir}/dist"
+            into "${installDir}/dist"
         }
     }
 
@@ -212,50 +210,13 @@ task clean << {
 //    delete(docs.destinationDir, libs.destinationDir)
     delete(libs.destinationDir)
     delete(buildDir)
+    delete(installDir)
 }
 
 task installResources << {
     copy {
-        from('grails-resources/src/grails/home/tests')
-        into('lib')
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-    }
-
-    copy {
-        from("grails-resources/src/grails/home/bash")
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
-        fileMode = 0755
-        into "bin"
-
-    }
-    // the fileMode property above should take care of the chmod work, but
-    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
-    ant.chmod(dir: 'bin', perm: '755', includes: '*')
-
-    copy {
-        from("grails-resources/src/grails/home/conf")
-        into "conf"
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
-        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
-        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
-        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
-        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
-        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
-        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
-    }
-    
-    copy {
-        from 'grails-resources/src/grails/home/dsl-support'
-        into 'dsl-support'
-    }
-    
-    copy {
-        from "grails-resources/src/war/WEB-INF"
-        into 'src/war/WEB-INF'
+        from 'build.properties'
+        into "${installDir}"
     }
 }
 
