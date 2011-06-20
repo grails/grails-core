@@ -83,6 +83,13 @@ binExecutables = ["cygrails", "grails", "grails-debug", "grails-debug.bat", "gra
 distSpec = copySpec {
     from(installDir) {
         into "grails-$grailsVersion"
+        exclude "bin/*"
+    }
+    
+    from (installDir) {
+        into "grails-$grailsVersion"
+        include "bin/*"
+        fileMode = 0755
     }
     
     from(projectDir) {
