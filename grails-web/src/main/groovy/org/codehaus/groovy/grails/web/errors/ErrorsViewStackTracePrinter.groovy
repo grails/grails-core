@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.errors
 
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.springframework.core.io.Resource
 
  /**
@@ -33,12 +33,46 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
     }
 
     @Override protected boolean shouldSkipNextCause(Throwable e) {
-        return super.shouldSkipNextCause(e) || e instanceof GroovyPagesException
+        return super.shouldSkipNextCause(e)
     }
 
     @Override
+    String prettyPrint(Throwable t) {
+        if(t instanceof GrailsWrappedRuntimeException) {
+            return super.prettyPrint(t.cause)
+        }
+        else {
+            return super.prettyPrint(t)
+        }
+    }
+
+    @Override
+    String prettyPrintCodeSnippet(Throwable exception) {
+        if(exception instanceof GrailsWrappedRuntimeException) {
+            return super.prettyPrintCodeSnippet(exception.cause)
+        }
+        else {
+            return super.prettyPrintCodeSnippet(exception)
+        }
+    }
+
+
+
+
+    @Override
     String formatCodeSnippetStart(Resource resource, int lineNumber) {
-        """<h2>Line ${lineNumber} of ${resource.filename}</h2>
+        def path = resource.filename
+        // try calc better path
+        try {
+            def abs = resource.file.absolutePath
+            def i = abs.indexOf(GrailsResourceUtils.GRAILS_APP_DIR)
+            if(i > -1) {
+                path = abs[i..-1]
+            }
+        } catch (e) {
+            path = resource.filename
+        }
+        """<h2>Around line ${lineNumber} of ${path}</h2>
 <div class="snippet"><pre>"""
     }
 

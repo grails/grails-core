@@ -24,17 +24,16 @@ import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
-import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.FrameworkServlet;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -44,7 +43,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -87,8 +85,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     /**
      * The size of the buffer used when formulating the response
      */
-    private static final String ERRORS_VIEW = GrailsApplicationAttributes.PATH_TO_VIEWS+"/error"+GroovyPage.EXTENSION;
-    public static final String EXCEPTION_MODEL_KEY = "exception";
     public static final String SERVLET_INSTANCE = "org.codehaus.groovy.grails.GSP_SERVLET";
     private Collection<HandlerExceptionResolver> exceptionResolvers;
     private GroovyPagesTemplateEngine groovyPagesTemplateEngine;
@@ -175,69 +171,18 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      */
     protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request,
-            HttpServletResponse response, Template template) throws IOException {
-        Writer out = createResponseWriter(response);
+            HttpServletResponse response, Template template) throws Exception {
+        GrailsPrintWriter out = (GrailsPrintWriter) createResponseWriter(response);
         try {
             Writable w = template.make();
             w.writeTo(out);
         }
         catch(Exception e) {
-            out = createResponseWriter(response);
-            handleException(request, response, e, out,engine);
+            out.setError();
+            throw e;
         }
         finally {
             if (out != null) out.close();
-        }
-    }
-
-    /**
-     * Performs exception handling by attempting to render the Errors view
-     *
-     * @param request
-     * @param response
-     * @param exception The exception that occured
-     * @param out The Writer
-     * @param engine The GSP engine    @throws IOException Thrown when an I/O exception occurs rendering the page
-     */
-    protected void handleException(HttpServletRequest request, HttpServletResponse response,
-            Exception exception, Writer out, GroovyPagesTemplateEngine engine) {
-
-        if (exceptionResolvers == null) {
-            defaultExceptionHandling(exception, out, engine);
-            return;
-        }
-
-        ModelAndView exMv = null;
-        for (HandlerExceptionResolver exceptionResolver : exceptionResolvers) {
-            exMv = exceptionResolver.resolveException(request, response, this, exception);
-            if (exMv != null) break;
-        }
-
-        if (exMv != null) {
-            try {
-                exMv.getView().render(exMv.getModel(),request, response);
-            }
-            catch (Exception e) {
-                defaultExceptionHandling(exception, out, engine);
-            }
-        }
-    }
-
-    private void defaultExceptionHandling(Exception exception, Writer out, GroovyPagesTemplateEngine engine) {
-        if (LOG.isErrorEnabled()) {
-            LOG.error("Error processing GSP: " + exception.getMessage(), exception);
-        }
-
-        try {
-            Template t = engine.createTemplate(ERRORS_VIEW);
-
-            Map<String, GrailsWrappedRuntimeException> model = Collections.singletonMap(
-                    EXCEPTION_MODEL_KEY, new GrailsWrappedRuntimeException(context, exception));
-            t.make(model).writeTo(out);
-        }
-        catch (Throwable t) {
-            LOG.error("Error attempting to render errors view : " + t.getMessage(), t);
-            LOG.error("Original exception : " + exception.getMessage(), exception);
         }
     }
 

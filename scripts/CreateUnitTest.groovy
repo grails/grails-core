@@ -30,7 +30,7 @@ target ('default': "Creates a new Grails unit test. A unit test requires that yo
 
     promptForName(type: "Unit test")
 
-    console.updateStatus "Creating test"
+    grailsConsole.updateStatus "Creating test"
     for (name in argsMap["params"]) {
         name = purgeRedundantArtifactSuffix(name, 'Tests')
         createUnitTest(name: name, suffix: "", testType:"Generic")

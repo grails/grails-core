@@ -18,10 +18,10 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Factory;
 import com.opensymphony.module.sitemesh.HTMLPage;
+import com.opensymphony.module.sitemesh.RequestConstants;
 import com.opensymphony.sitemesh.*;
 import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
 import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
-import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
@@ -29,6 +29,7 @@ import grails.util.GrailsWebUtil;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.util.UrlPathHelper;
@@ -123,10 +124,14 @@ public class GrailsPageFilter extends SiteMeshFilter {
             return;
         }
 
+        // clear the page in case it is already present
+        request.removeAttribute(RequestConstants.PAGE);
+
         if (containerTweaks.shouldAutoCreateSession()) {
             request.getSession(true);
         }
 
+        boolean dispatched = false;
         try {
             Content content = obtainContent(contentProcessor, webAppContext, request, response, chain);
             if (content == null || response.isCommitted()) {
@@ -136,7 +141,9 @@ public class GrailsPageFilter extends SiteMeshFilter {
             detectContentTypeFromPage(content, response);
             Decorator decorator = decoratorSelector.selectDecorator(content, webAppContext);
             persistenceInterceptor.reconnect();
+
             decorator.render(content, webAppContext);
+            dispatched = true;
         }
         catch (IllegalStateException e) {
             // Some containers (such as WebLogic) throw an IllegalStateException when an error page is served.
@@ -145,14 +152,11 @@ public class GrailsPageFilter extends SiteMeshFilter {
                 throw e;
             }
         }
-        catch (RuntimeException e) {
-            throw e;
-        }
-        catch (ServletException e) {
-            request.setAttribute(ALREADY_APPLIED_KEY, null);
-            throw e;
-        }
         finally {
+            if(!dispatched) {
+                // an error occured
+                request.setAttribute(ALREADY_APPLIED_KEY, null);
+            }
             if (persistenceInterceptor.isOpen()) {
                 persistenceInterceptor.destroy();
             }
@@ -177,7 +181,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         factory.refresh();
         return new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper()) {
             @Override
-            public Decorator selectDecorator(Content content, SiteMeshContext context) {
+            public Decorator selectDecorator(Content content, final SiteMeshContext context) {
                 SiteMeshWebAppContext siteMeshWebAppContext = (SiteMeshWebAppContext) context;
                 final com.opensymphony.module.sitemesh.Decorator decorator =
                     factory.getDecoratorMapper().getDecorator(siteMeshWebAppContext.getRequest(), content2htmlPage(content));
@@ -185,15 +189,14 @@ public class GrailsPageFilter extends SiteMeshFilter {
                     return new GrailsNoDecorator();
                 }
 
-                return new OldDecorator2NewDecorator(decorator) {
-                    @Override
-                    protected void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
+                return new Decorator() {
+                    private void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
                                           HttpServletResponse response, ServletContext servletContext,
                                           @SuppressWarnings("hiding") SiteMeshWebAppContext webAppContext)
                             throws IOException, ServletException {
 
                         HTMLPage htmlPage = content2htmlPage(content);
-                        request.setAttribute(PAGE, htmlPage);
+                        request.setAttribute(RequestConstants.PAGE, htmlPage);
 
                         // see if the URI path (webapp) is set
                         if (decorator.getURIPath() != null) {
@@ -209,13 +212,34 @@ public class GrailsPageFilter extends SiteMeshFilter {
                             dispatcher.include(request, response);
                         }
                         else {
-                            dispatcher.forward(request, response);
-                            if(!response.isCommitted()) {
-                                response.getWriter().flush();
+                            boolean dispatched = false;
+                            try {
+                                request.setAttribute(ALREADY_APPLIED_KEY, Boolean.TRUE);
+                                dispatcher.forward(request, response);
+                                dispatched = true;
+                                if(!response.isCommitted()) {
+                                        response.getWriter().flush();
+                                }
+                            } finally {
+                                if(!dispatched) {
+                                    // if an exception occurs then the layout should be re-applied so that error page can be styled
+                                    request.setAttribute(ALREADY_APPLIED_KEY, null);
+                                }
                             }
                         }
 
-                        request.removeAttribute(PAGE);
+                        request.removeAttribute(RequestConstants.PAGE);
+                    }
+
+                    public void render(Content content, SiteMeshContext siteMeshContext) {
+                        SiteMeshWebAppContext webAppContext = (SiteMeshWebAppContext) siteMeshContext;
+                        try {
+                            render(content, webAppContext.getRequest(), webAppContext.getResponse(), webAppContext.getServletContext(), webAppContext);
+                        } catch (IOException e) {
+                            throw new GroovyPagesException("Error applying layout : " + decorator.getURIPath(), e);
+                        } catch (ServletException e) {
+                            throw new GroovyPagesException("Error applying layout : " + decorator.getURIPath(), e);
+                        }
                     }
                 };
             }

@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +46,7 @@ class GroovyPageScanner implements Tokens {
     private int exprBracketCount = 0;
     private List<Integer> lineNumberPositions;
     private int lastLineNumberIndex = -1;
+    private String pageName = "Unknown";
 
     GroovyPageScanner(String text) {
         Strip strip = new Strip(text);
@@ -51,6 +54,11 @@ class GroovyPageScanner implements Tokens {
         this.text = strip.toString();
         len = this.text.length();
         resolveLineNumberPositions();
+    }
+
+    public GroovyPageScanner(String gspSource, String uri) {
+        this(gspSource);
+        this.pageName = uri;
     }
 
     // add line starting positions to array
@@ -131,8 +139,8 @@ class GroovyPageScanner implements Tokens {
 
             switch (state) {
                 case HTML:
-                    if (c == '<' && left > 3) {
-                        if (c1 == '%') {
+                    if (isPotentialScriptletOrTag(c, left)) {
+                        if (isStartScriptletBlock(c1)) {
                             if (c2 == '=') {
                                 return found(JEXPR, 3);
                             }
@@ -142,36 +150,28 @@ class GroovyPageScanner implements Tokens {
                             if (c2 == '!') {
                                 return found(JDECLAR, 3);
                             }
-                            if (c2 == '-' && left > 3 && text.charAt(end1 + 2) == '-') {
+                            if (isStartComment(c1, c2, left)) {
                                 if (skipJComment()) continue;
                             }
                             return found(JSCRIPT, 2);
                         }
 
-                        boolean bStartTag = true;
-                        int fromIndex = end1; // we are expecting a start tag.
-                        if (c1 == '/') {
-                            bStartTag = false;
-                            fromIndex = end1 + 1; // well it should be an end tag.
-                        }
+                        boolean bStartTag = !isClosingTag(c1);
 
-                        int foundColonIdx = text.indexOf(":", fromIndex);
-                        if (foundColonIdx > -1) {
-                            String tagNameSpace = text.substring(fromIndex,foundColonIdx);
-                            if (tagNameSpace.matches("^\\p{Alpha}\\w*$")) {
-                                if (bStartTag) {
-                                    return foundStartOrEndTag(GSTART_TAG,tagNameSpace.length() + 2,tagNameSpace);
-                                }
-
-                                return foundStartOrEndTag(GEND_TAG,tagNameSpace.length() + 3,tagNameSpace);
+                        String tagNameSpace = getTagNamespace(bStartTag ? end1 : end1 + 1);
+                        if (isTagDefinition(tagNameSpace)) {
+                            if (bStartTag) {
+                                return foundStartOrEndTag(GSTART_TAG,tagNameSpace.length() + 2,tagNameSpace);
                             }
+
+                            return foundStartOrEndTag(GEND_TAG,tagNameSpace.length() + 3,tagNameSpace);
                         }
                     }
-                    else if (c == '$' && c1 == '{') {
+                    else if (isStartOfGExpression(c, c1)) {
                         return found(GEXPR, 2);
                     }
 
-                    if (c == '%' && c1 == '{') {
+                    if (isStartScriptletBlock(c) && c1 == '{') {
                         if (c2 == '-' && left > 3 && text.charAt(end1 + 2) == '-') {
                             if (skipGComment()) continue;
                         }
@@ -191,18 +191,18 @@ class GroovyPageScanner implements Tokens {
                 case JSCRIPT:
                 case JDIRECT:
                 case JDECLAR:
-                    if (c == '%' && c1 == '>') {
+                    if (isStartScriptletBlock(c) && c1 == '>') {
                         return found(HTML, 2);
                     }
                     break;
                 case GSTART_TAG:
-                    if (c == '$' && c1 == '{') {
+                    if (isStartOfGExpression(c, c1)) {
                         return found(GTAG_EXPR, 2);
                     }
                     if (c == '>') {
                         return found(HTML,1);
                     }
-                    else if (c == '/' && c1 == '>') {
+                    else if (isClosingTag(c) && c1 == '>') {
                         return found(GEND_EMPTY_TAG,1);
                     }
                     break;
@@ -213,6 +213,7 @@ class GroovyPageScanner implements Tokens {
                     }
                     break;
                 case GTAG_EXPR:
+                    checkValidExpressionState(c, c1, left);
                     if (c == '{') exprBracketCount++;
                     else if (c == '}') {
                         if (exprBracketCount>0) {
@@ -224,23 +225,75 @@ class GroovyPageScanner implements Tokens {
                     }
                     break;
                 case GEXPR:
+                    checkValidExpressionState(c, c1, left);
                 case GDIRECT:
                     if (c == '}' && !str1 && !str2 && level == 0) {
                         return found(HTML, 1);
                     }
                     break;
                 case GSCRIPT:
-                    if (c == '}' && c1 == '%' && !str1 && !str2 && level == 0) {
+                    if (c == '}' && isStartScriptletBlock(c1) && !str1 && !str2 && level == 0) {
                         return found(HTML, 2);
                     }
                     break;
                 case GDECLAR:
-                    if (c == '}' && (c1 == '!' || c1 == '%') && !str1 && !str2 && level == 0) {
+                    if (c == '}' && (c1 == '!' || isStartScriptletBlock(c1)) && !str1 && !str2 && level == 0) {
                         return found(HTML, 2);
                     }
                     break;
             }
         }
+    }
+
+    private void checkValidExpressionState(char c, char c1, int left) {
+        if(isPotentialScriptletOrTag(c, left)) {
+            if(isStartScriptletBlock(c1)) {
+                throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
+            }
+
+            boolean bStartTag = !isClosingTag(c1);
+
+            String tagNameSpace = getTagNamespace(bStartTag ? end1 : end1 + 1);
+            if (isTagDefinition(tagNameSpace)) {
+                throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
+            }
+        }
+        else if(isStartOfGExpression(c, c1)) {
+            throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
+        }
+    }
+
+    private boolean isClosingTag(char c1) {
+        return c1 == '/';
+    }
+
+    private boolean isTagDefinition(String tagNameSpace) {
+        return tagNameSpace != null && tagNameSpace.matches("^\\p{Alpha}\\w*$");
+    }
+
+    private String getTagNamespace(int fromIndex) {
+        int foundColonIdx = text.indexOf(":", fromIndex);
+        String tagNameSpace = null;
+        if (foundColonIdx > -1) {
+            tagNameSpace = text.substring(fromIndex, foundColonIdx);
+        }
+        return tagNameSpace;
+    }
+
+    private boolean isPotentialScriptletOrTag(char c, int left) {
+        return c == '<' && left > 3;
+    }
+
+    private boolean isStartComment(char c1, char c2, int left) {
+        return isStartScriptletBlock(c1) && c2 == '-' && left > 3 && text.charAt(end1 + 2) == '-';
+    }
+
+    private boolean isStartScriptletBlock(char c1) {
+        return c1 == '%';
+    }
+
+    private boolean isStartOfGExpression(char c, char c1) {
+        return c == '$' && c1 == '{';
     }
 
     private boolean skipComment(char c3, char c4) {

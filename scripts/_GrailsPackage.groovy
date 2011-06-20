@@ -15,8 +15,9 @@
  */
 
 import grails.util.PluginBuildSettings
-import java.util.concurrent.Executors
+
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 import org.apache.log4j.LogManager
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -26,7 +27,7 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 
 /**
- * Gant script that packages a Grails application (note: does not create WAR)
+ * Gant script that packages a Grails application (note: does not create WAR).
  *
  * @author Graeme Rocher
  *
@@ -41,14 +42,13 @@ includeTargets << grailsScript("_PackagePlugins")
 
 target(createConfig: "Creates the configuration object") {
 
-
     if (configFile.exists()) {
         def configClass
         try {
             configClass = classLoader.loadClass("Config")
         }
         catch (ClassNotFoundException cnfe) {
-            console.error "WARNING: No config found for the application."
+            grailsConsole.error "WARNING: No config found for the application."
         }
         if (configClass) {
             try {
@@ -69,7 +69,7 @@ target(createConfig: "Creates the configuration object") {
             config.merge(dataSourceConfig)
         }
         catch(ClassNotFoundException e) {
-            console.error "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
+            grailsConsole.error "WARNING: DataSource.groovy not found, assuming dataSource bean is configured by Spring..."
         }
         catch(Exception e) {
             logError("Error loading DataSource.groovy",e)
@@ -83,7 +83,7 @@ target(createConfig: "Creates the configuration object") {
 target(packageApp : "Implementation of package target") {
     depends(createStructure, packagePlugins, packageTlds)
 
-    console.updateStatus "Packaging Grails application"
+    grailsConsole.updateStatus "Packaging Grails application"
 
     try {
         profile("compile") {
@@ -149,7 +149,7 @@ target(packageApp : "Implementation of package target") {
                                                          encoding:"UTF-8")
                                     }
                                     catch (e) {
-                                        console.error "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                                        grailsConsole.error "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
                                     }
                                 }
                             }
@@ -205,12 +205,12 @@ target(startLogging:"Bootstraps logging") {
     LogManager.resetConfiguration()
     if (config.log4j instanceof Closure) {
         profile("configuring log4j") {
-            new Log4jConfig().configure(config.log4j)
+            new Log4jConfig(config).configure(config.log4j)
         }
     }
     else {
         // setup default logging
-        new Log4jConfig().configure()
+        new Log4jConfig(config).configure()
     }
 }
 

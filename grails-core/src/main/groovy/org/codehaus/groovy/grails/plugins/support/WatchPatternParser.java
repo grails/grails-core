@@ -48,7 +48,6 @@ public class WatchPatternParser {
             }
             else {
                 setExtension(pattern, watchPattern);
-
                 watchPattern.setFile(new File(pattern));
                 watchPatterns.add(watchPattern);
             }

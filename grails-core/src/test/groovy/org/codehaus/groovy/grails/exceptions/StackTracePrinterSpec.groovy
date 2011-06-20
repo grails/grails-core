@@ -5,14 +5,9 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import spock.lang.Specification
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 14/06/2011
- * Time: 09:49
- * To change this template use File | Settings | File Templates.
- */
-class StackTracePrinterSpec extends Specification{
+class StackTracePrinterSpec extends Specification {
+
+    private filterer = new DefaultStackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
 
     void "Test pretty print simple stack trace"() {
         given: "a controller that throws an exception"
@@ -21,7 +16,6 @@ class StackTracePrinterSpec extends Specification{
         def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultStackTracePrinter()
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.show()
@@ -42,7 +36,6 @@ class StackTracePrinterSpec extends Specification{
         def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultStackTracePrinter()
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.nesting()
@@ -69,7 +62,6 @@ class StackTracePrinterSpec extends Specification{
             final locator = new StaticResourceLocator()
             locator.addClassResource("test.FooController", getControllerResource())
             def printer = new DefaultStackTracePrinter(locator)
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.show()
@@ -80,7 +72,7 @@ class StackTracePrinterSpec extends Specification{
 
         then:
             result != null
-            result == '''Exception in FooController.groovy at line 7
+            result == '''Around line 7 of FooController.groovy
 4:     def show() {
 5:         callMe()
 6:     }
@@ -88,6 +80,14 @@ class StackTracePrinterSpec extends Specification{
 8:     def nesting() {
 9:         def fooService = new FooService()
 10:         try {
+Around line 5 of FooController.groovy
+2: package test
+3: class FooController {
+4:     def show() {
+5:         callMe()
+6:     }
+7:     def callMe() { bad }
+8:     def nesting() {
 '''
 
     }
@@ -103,7 +103,6 @@ class StackTracePrinterSpec extends Specification{
 
         when:"The code snippet is printed"
             def printer = new DefaultStackTracePrinter(locator)
-            def filterer = new StackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
             def result = null
             try {
                 controller.nesting()
@@ -115,7 +114,7 @@ class StackTracePrinterSpec extends Specification{
             println result
         then:
             result != null
-            result == '''Exception in FooController.groovy at line 14
+            result == '''Around line 14 of FooController.groovy
 11:             fooService.callMe()
 12:         }
 13:         catch(e) {
@@ -123,11 +122,19 @@ class StackTracePrinterSpec extends Specification{
 15:         }
 16:     }
 17: }
-Exception in FooService.groovy at line 3
+Around line 3 of FooService.groovy
 1: package test
 2: class FooService {
 3:     def callMe() { bad }
 4: }
+Around line 11 of FooController.groovy
+8:     def nesting() {
+9:         def fooService = new FooService()
+10:         try {
+11:             fooService.callMe()
+12:         }
+13:         catch(e) {
+14:             throw new RuntimeException("Bad things happened", e)
 '''
 
 

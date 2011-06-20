@@ -25,12 +25,10 @@ import groovy.text.Template
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
@@ -44,6 +42,7 @@ import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.util.StringUtils
 
 /**
  * Tags to help rendering of views and layouts.
@@ -59,9 +58,9 @@ class RenderTagLib implements RequestConstants {
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
     def scaffoldingTemplateGenerator
+    def errorsViewStackTracePrinter
     Map scaffoldedActionMap
     Map controllerToScaffoldedDomainClassMap
-    ResourceLocator grailsResourceLocator
 
     static Map TEMPLATE_CACHE = new ConcurrentHashMap()
 
@@ -694,34 +693,31 @@ class RenderTagLib implements RequestConstants {
     def renderException = { attrs ->
         def exception = attrs.exception
 
-        if(exception instanceof Throwable) {
+        if (!(exception instanceof Throwable)) {
+              return
+        }
 
-            def currentOut = out
-            currentOut << """<h2>Error ${request.'javax.servlet.error.status_code'}</h2>
+        def currentOut = out
+        currentOut << """<h2>Error ${request.'javax.servlet.error.status_code'}</h2>
 <div class="errors">
 <strong>URI:</strong> ${request.forwardURI ?: request.'javax.servlet.error.request_uri'}<br/>
 """
 
-            if (exception != null) {
-                def root = GrailsExceptionResolver.getRootCause(exception)
-                currentOut << "<strong>Message:</strong> ${exception.message?.encodeAsHTML()} <br />"
-                if (root != null && root != exception && root.message != exception.message) {
-                    currentOut << "<strong>Caused by:</strong> ${root.message?.encodeAsHTML()} <br />"
-                }
-            }
-            currentOut << "</div>"
-
-            def errorPrinter = new ErrorsViewStackTracePrinter(grailsResourceLocator)
-            currentOut << errorPrinter.prettyPrintCodeSnippet(exception)
-
-            if (exception != null) {
-                currentOut << "<h2>Trace</h2>"
-                currentOut << '<div class="stack"><pre>'
-                currentOut << errorPrinter.prettyPrint(exception.cause ?: exception)
-                currentOut << '</pre></div>'
-
-            }
+        def root = GrailsExceptionResolver.getRootCause(exception)
+        currentOut << "<strong>Message:</strong> ${exception.message?.encodeAsHTML()} <br />"
+        if (root != null && root != exception && root.message != exception.message) {
+            currentOut << "<strong>Caused by:</strong> ${root.message?.encodeAsHTML()} <br />"
         }
+        currentOut << "</div>"
 
+        currentOut << errorsViewStackTracePrinter.prettyPrintCodeSnippet(exception)
+
+        def trace = errorsViewStackTracePrinter.prettyPrint(exception.cause ?: exception)
+        if (StringUtils.hasText(trace.trim())) {
+            currentOut << "<h2>Trace</h2>"
+            currentOut << '<div class="stack"><pre>'
+            currentOut << trace.encodeAsHTML()
+            currentOut << '</pre></div>'
+        }
     }
 }

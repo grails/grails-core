@@ -821,6 +821,11 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
             "where p.firstName=? and p.lastName=?", ["fred", "flintstone"])
         assertEquals 1, listResult.size()
         assertEquals "fred", listResult[0].getProperty("firstName")
+        
+        def msg = shouldFail(IllegalArgumentException) {
+            domainClass.executeQuery 'select distinct p from PersistentMethodTests as p where p.firstName = :firstName and p.lastName = :lastName', [firstName: null, lastName: 'King']
+        }
+        assertEquals 'Named parameter [firstName] value may not be null', msg
     }
 
     void testDMLOperation() {

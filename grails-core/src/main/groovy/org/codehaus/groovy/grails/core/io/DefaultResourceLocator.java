@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +49,13 @@ public class DefaultResourceLocator implements ResourceLocator{
         initializeForSearchLocation(searchLocation);
     }
 
+    public void setSearchLocations(Collection<String> searchLocations) {
+        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(new FileSystemResourceLoader());
+        for (String searchLocation : searchLocations) {
+            initializeForSearchLocation(searchLocation);
+        }
+    }
+
     private void initializeForSearchLocation(String searchLocation) {
         String searchLocationPlusSlash = searchLocation + FILE_SEPARATOR;
         try {
@@ -56,8 +64,10 @@ public class DefaultResourceLocator implements ResourceLocator{
                     return file.isDirectory() && !file.isHidden();
                 }
             });
-            for (File directory : directories) {
-                classSearchDirectories.add(directory.getCanonicalPath());
+            if(directories != null) {
+                for (File directory : directories) {
+                    classSearchDirectories.add(directory.getCanonicalPath());
+                }
             }
         } catch (IOException e) {
             // ignore

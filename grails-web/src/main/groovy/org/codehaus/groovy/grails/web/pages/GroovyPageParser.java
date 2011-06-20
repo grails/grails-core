@@ -18,28 +18,6 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.PluginBuildSettings;
-
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,9 +30,13 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
- * NOTE: Based on work done by the GSP standalone project
- * (https://gsp.dev.java.net/)
+ * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
  *
  * Parsing implementation for GSP files
  *
@@ -189,7 +171,7 @@ public class GroovyPageParser implements Tokens {
         String foreachRenamedIt = null;
         int lineNumber;
         boolean emptyTag;
-        int tagIndex;
+        @SuppressWarnings("hiding") int tagIndex;
         boolean bufferMode=false;
         int bufferPartNumber = -1;
 
@@ -222,7 +204,7 @@ public class GroovyPageParser implements Tokens {
             gspSource = sitemeshPreprocessor.addGspSitemeshCapturing(gspSource);
             sitemeshPreprocessMode=true;
         }
-        scan = new GroovyPageScanner(gspSource);
+        scan = new GroovyPageScanner(gspSource, uri);
         pageName = uri;
         environment = Environment.getCurrent();
         makeName(name);
@@ -285,7 +267,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     public InputStream parse() {
-        File keepGeneratedDirectory = resolveKeepGeneratedDirectory();
+        resolveKeepGeneratedDirectory();
 
         StreamCharBuffer streamBuffer = new StreamCharBuffer(1024);
         StreamByteBuffer byteOutputBuffer = new StreamByteBuffer(1024,
@@ -336,23 +318,20 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    private File resolveKeepGeneratedDirectory() {
-
-
+    private void resolveKeepGeneratedDirectory() {
         if (keepGeneratedDirectory != null && !keepGeneratedDirectory.isDirectory()) {
             LOG.warn("The directory specified with " + CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR +
                     " config parameter doesn't exist or isn't a readable directory. Absolute path: '" +
                     keepGeneratedDirectory.getAbsolutePath() + "' Keepgenerated will be disabled.");
             keepGeneratedDirectory = null;
         }
-        return keepGeneratedDirectory;
     }
 
     public void generateGsp(Writer target) {
         generateGsp(target, true);
     }
 
-    public void generateGsp(Writer target, boolean precompileMode) {
+    public void generateGsp(Writer target, @SuppressWarnings("hiding") boolean precompileMode) {
         this.precompileMode = precompileMode;
 
         out = new GSPWriter(target, this);
@@ -524,11 +503,12 @@ public class GroovyPageParser implements Tokens {
             text = text.substring(0, text.length() - 1);
             safeDereference = _safeDereference;
         }
-        if(!tagMetaStack.empty()){
+        if (!tagMetaStack.empty()){
             String renamedIt = tagMetaStack.peek().foreachRenamedIt;
-            if(renamedIt != null){
-               if(text.equals("it"))
+            if (renamedIt != null){
+               if (text.equals("it")) {
                    text = renamedIt;
+               }
                text = text.replaceAll("([^\\w_$])(it)([^\\w_$])","$1"+renamedIt+"$3");
                text = text.replaceAll("^(it)([^\\w_$])+",renamedIt+"$2");
                text = text.replaceAll("([^\\w_$])+(it)$","$1"+renamedIt);
@@ -816,7 +796,7 @@ public class GroovyPageParser implements Tokens {
             if (!tagMetaStack.isEmpty()) {
                 throw new GrailsTagException("Grails tags were not closed! [" +
                         tagMetaStack + "] in GSP " + pageName + "", pageName,
-                        out.getCurrentLineNumber());
+                        getCurrentOutputLineNumber());
             }
 
             out.println("}");
@@ -947,7 +927,7 @@ public class GroovyPageParser implements Tokens {
 
         if (!lastInStack.equals(tagName) || !lastNamespaceInStack.equals(ns)) {
             throw new GrailsTagException("Grails tag [" + lastNamespaceInStack +
-                    ":" + lastInStack + "] was not closed", pageName, out.getCurrentLineNumber());
+                    ":" + lastInStack + "] was not closed", pageName, getCurrentOutputLineNumber());
         }
 
         if (GroovyPage.DEFAULT_NAMESPACE.equals(ns) && tagRegistry.isSyntaxTag(tagName)) {
@@ -964,7 +944,7 @@ public class GroovyPageParser implements Tokens {
         else {
             int bodyTagIndex = -1;
             if (!tm.emptyTag && !tm.bufferMode) {
-            	bodyTagIndex = tagIndex;
+                bodyTagIndex = tagIndex;
                 out.println("})");
                 closureLevel--;
             }
@@ -985,10 +965,10 @@ public class GroovyPageParser implements Tokens {
                 out.println("if (!jspTag) throw new GrailsTagException('Unknown JSP tag " +
                         ns + ":" + tagName + "')");
                 out.print("jspTag.doTag(out," + attrsVarsMapDefinition.get(tagIndex) + ",");
-                if(bodyTagIndex > -1) {
-                	out.print("getBodyClosure(" + bodyTagIndex + ")");
+                if (bodyTagIndex > -1) {
+                    out.print("getBodyClosure(" + bodyTagIndex + ")");
                 } else {
-                	out.print("null");
+                    out.print("null");
                 }
                 out.println(")");
             }

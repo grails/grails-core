@@ -16,15 +16,14 @@
 package org.codehaus.groovy.grails.web.util;
 
 import groovy.lang.Writable;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 
 /**
  * PrintWriter implementation that doesn't have synchronization.
@@ -106,6 +105,12 @@ public class GrailsPrintWriter extends PrintWriter {
     @Override
     public boolean checkError() {
         return trouble || super.checkError();
+    }
+
+    @Override
+    public void setError() {
+        trouble = true;
+        super.setError();
     }
 
     /**

@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -701,10 +702,12 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             if (lineNumber>0 && lineNumber < lineMappings.length) {
                 lineNumber = lineMappings[lineNumber-1];
             }
-            throw new GroovyPagesException("Could not parse script [" + name + "]: " + e.getMessage(),e, lineNumber, pageName);
+            String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
+            throw new GroovyPagesException("Could not parse script [" + relativePageName + "]: " + e.getMessage(),e, lineNumber, pageName);
         }
         catch (IOException e) {
-            throw new GroovyPagesException("IO exception parsing script ["+ name + "]: " + e.getMessage(), e);
+            String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
+            throw new GroovyPagesException("IO exception parsing script ["+ relativePageName + "]: " + e.getMessage(), e);
         }
         return scriptClass;
     }

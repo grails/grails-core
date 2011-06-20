@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import grails.util.GrailsUtil;
-
 import java.util.Locale;
 import java.util.Map;
 
@@ -28,7 +26,10 @@ import org.codehaus.groovy.grails.commons.BootstrapArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
+import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
@@ -75,6 +76,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
     private LocaleResolver localeResolver;
+    private StackTraceFilterer stackFilterer;
     private static final String EXCEPTION_ATTRIBUTE = "exception";
 
     /**
@@ -143,7 +145,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
         // construct the SpringConfig for the container managed application
         Assert.notNull(parent, "Grails requires a parent ApplicationContext, is the /WEB-INF/applicationContext.xml file missing?");
-        application = parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+        setApplication(parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
 
         WebApplicationContext webContext;
         if (wac instanceof GrailsApplicationContext) {
@@ -214,6 +216,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
      */
     public void setApplication(GrailsApplication application) {
         this.application = application;
+        createStackTraceFilterer();
     }
 
     /* (non-Javadoc)
@@ -438,7 +441,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 interceptor.afterCompletion(request, response, mappedHandler.getHandler(), ex);
             }
             catch (Throwable e) {
-                GrailsUtil.deepSanitize(e);
+                stackFilterer.filter(e, true);
                 logger.error("HandlerInterceptor.afterCompletion threw exception", e);
             }
         }
@@ -461,5 +464,16 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     @Override
     public HandlerExecutionChain getHandler(HttpServletRequest request, boolean cache) throws Exception {
         return super.getHandler(request, cache);
+    }
+
+    private void createStackTraceFilterer() {
+        try {
+            stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
+                    application.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+        }
+        catch (Throwable t) {
+            logger.error("Problem instantiating StackTraceFilterer class, using default: " + t.getMessage());
+            stackFilterer = new DefaultStackTraceFilterer();
+        }
     }
 }

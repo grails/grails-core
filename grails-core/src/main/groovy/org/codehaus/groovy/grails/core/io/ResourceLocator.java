@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.core.io;
 
 import org.springframework.core.io.Resource;
 
+import java.util.Collection;
+
 /**
  * Used to locate resources at development or production time.
  *
@@ -34,6 +36,12 @@ public interface ResourceLocator {
      * @param searchLocation The search location
      */
     void setSearchLocation(String searchLocation);
+
+    /**
+     * Multiple locations to search. See #setSearchLocation
+     * @param searchLocations The locations to search
+     */
+    void setSearchLocations(Collection<String> searchLocations);
     /**
      * Finds a resource for the given URI
      * @param uri The URI

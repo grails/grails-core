@@ -590,7 +590,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
             else {
                 if (!isInteractive || confirmInput("Plugin [${pluginInfo.name}] is installed, but was not found in the application's metadata, do you want to uninstall?")) {
-                    uninstallPlugin(pluginDir.filename)
+                    uninstallPlugin(pluginInfo.name)
                 }
                 else {
                     registerMetadataForPluginLocation(pluginDir)

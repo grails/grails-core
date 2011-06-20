@@ -175,8 +175,8 @@ class FormTagLib {
           </form>
         </body>
       </html>''', response.contentAsString) */
-        String newLine = System.getProperty("line.separator")
-        assertEquals("<html>${newLine}  <head>${newLine}    <title>Log in</title>${newLine}  </head>${newLine}  <body>${newLine}    <h1>Hello</h1>${newLine}  </body>${newLine}</html>".trim(), webRequest.currentResponse.contentAsString.trim())
+        assertEquals("<html>  <head>    <title>Log in</title>  </head>  <body>    <h1>Hello</h1>  </body></html>".trim(),
+                     webRequest.currentResponse.contentAsString.replaceAll('[\r\n]', '').trim())
     }
 
     Class parseTestBean() {

@@ -100,7 +100,9 @@ class CoreGrailsPlugin {
             if(devMode) {
                 BuildSettings settings = BuildSettingsHolder.settings
                 if(settings) {
-                    searchLocation = settings.baseDir.absolutePath
+                    def locations = new ArrayList(settings.pluginDirectories.collect { it.absolutePath })
+                    locations << settings.baseDir.absolutePath
+                    searchLocations = locations
                 }
 
             }
@@ -117,9 +119,13 @@ class CoreGrailsPlugin {
         MetaClassRegistry registry = GroovySystem.metaClassRegistry
 
         def metaClass = registry.getMetaClass(Class)
-        if (!(metaClass instanceof ExpandoMetaClass)) {
+        if (!(metaClass instanceof ExpandoMetaClass)) {			
             registry.removeMetaClass(Class)
-            metaClass = registry.getMetaClass(Class)
+			def emc = new ExpandoMetaClass(Class, false, true)
+			emc.initialize()
+			registry.setMetaClass(Class, emc)
+
+            metaClass = emc
         }
 
         metaClass.getMetaClass = { ->

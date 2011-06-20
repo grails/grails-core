@@ -33,7 +33,6 @@ import org.springframework.util.StringUtils;
  * @author Graeme Rocher
  * @since 1.4
  */
-@SuppressWarnings("hiding")
 public class DirectoryWatcher extends Thread {
 
     protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
@@ -43,9 +42,11 @@ public class DirectoryWatcher extends Thread {
     private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
+    private boolean windows;
 
     public DirectoryWatcher() {
         setDaemon(true);
+        windows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
     }
 
     /**
@@ -85,25 +86,30 @@ public class DirectoryWatcher extends Thread {
     }
 
     /**
-     * Adds a directory to watch for the given file and extensions
+     * Adds a directory to watch for the given file and extensions.
      *
      * @param dir The directory
-     * @param extensions The extensions
+     * @param fileExtensions The extensions
      */
-    public void addWatchDirectory(File dir, List<String> extensions) {
-        cacheFilesForDirectory(dir, extensions, false);
+    public void addWatchDirectory(File dir, List<String> fileExtensions) {
+        cacheFilesForDirectory(dir, fileExtensions, false);
     }
 
     /**
-     * Adds a directory to watch for the given file and extensions
+     * Adds a directory to watch for the given file and extensions.
      *
      * @param dir The directory
      * @param extension The extension
      */
     public void addWatchDirectory(File dir, String extension) {
-        List<String> extensions = new ArrayList<String>();
-        extensions.add(extension);
-        cacheFilesForDirectory(dir, extensions, false);
+        List<String> fileExtensions = new ArrayList<String>();
+        if (extension == null) {
+            fileExtensions.add("*");
+        }
+        else {
+            fileExtensions.add(extension);
+        }
+        cacheFilesForDirectory(dir, fileExtensions, false);
     }
 
     /**
@@ -115,14 +121,14 @@ public class DirectoryWatcher extends Thread {
          *
          * @param file The file that changed
          */
-        public abstract void onChange(File file);
+        void onChange(File file);
 
         /**
          * Fired when a new file is created
          *
          * @param file The file that was created
          */
-        public abstract void onNew(File file);
+        void onNew(File file);
     }
 
     @Override
@@ -161,14 +167,14 @@ public class DirectoryWatcher extends Thread {
         for (File directory : directoryWatch.keySet()) {
             final Long currentTimestamp = directoryWatch.get(directory);
 
-            if (currentTimestamp < directory.lastModified()) {
+            if (windows || currentTimestamp < directory.lastModified()) {
                 cacheFilesForDirectory(directory, extensions, true);
             }
         }
     }
 
-    private void cacheFilesForDirectory(File directory, Collection<String> extensions, boolean fireEvent) {
-        addExtensions(extensions);
+    private void cacheFilesForDirectory(File directory, Collection<String> fileExtensions, boolean fireEvent) {
+        addExtensions(fileExtensions);
 
         directoryWatch.put(directory, directory.lastModified());
         File[] files = directory.listFiles();
@@ -177,16 +183,16 @@ public class DirectoryWatcher extends Thread {
         }
 
         for (File file : files) {
-            if (isValidFileToMonitor(file.getName(), extensions)) {
+            if (file.isDirectory()) {
+                cacheFilesForDirectory(file, fileExtensions, fireEvent);
+            }
+            else if (isValidFileToMonitor(file.getName(), fileExtensions)) {
                 if (!lastModifiedMap.containsKey(file) && fireEvent) {
                     for (FileChangeListener listener : listeners) {
                         listener.onNew(file);
                     }
                 }
                 lastModifiedMap.put(file, file.lastModified());
-            }
-            else if (file.isDirectory()) {
-               cacheFilesForDirectory(file, extensions, fireEvent);
             }
         }
     }
@@ -199,7 +205,7 @@ public class DirectoryWatcher extends Thread {
         }
     }
 
-    private boolean isValidFileToMonitor(String name, Collection<String> extensions) {
-        return extensions.contains(StringUtils.getFilenameExtension(name));
+    private boolean isValidFileToMonitor(String name, Collection<String> fileExtensions) {
+        return fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name));
     }
 }

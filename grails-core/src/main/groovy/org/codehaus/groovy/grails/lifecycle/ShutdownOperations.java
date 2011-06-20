@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.reflection.ClassInfo;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -45,7 +46,8 @@ public class ShutdownOperations {
             PluginManagerHolder.setPluginManager(null);
             ApplicationHolder.setApplication(null);
             ConfigurationHelper.clearCachedConfigs();
-            ExpandoMetaClass.disableGlobally();
+            ClassInfo.clearModifiedExpandos();
+            //ExpandoMetaClass.disableGlobally();
             ClassPropertyFetcher.clearClassPropertyFetcherCache();
         }
     };

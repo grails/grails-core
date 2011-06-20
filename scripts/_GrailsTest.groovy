@@ -197,10 +197,10 @@ target(allTests: "Runs the project's tests.") {
             msg += " - view reports in ${testReportsDir}"
         }
         if (testsFailed) {
-            console.error(msg)
+            grailsConsole.error(msg)
         }
         else {
-            console.addStatus(msg)
+            grailsConsole.addStatus(msg)
         }
         event("TestPhasesEnd", [])
     }
@@ -265,21 +265,21 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
     if (testCount) {
         try {
             event("TestSuiteStart", [type.name])
-            console.updateStatus "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
+            grailsConsole.updateStatus "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
 
             def start = new Date()
             def result = type.run(testEventPublisher)
             def end = new Date()
 
-            console.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
-            console.lastMessage = ""
+            grailsConsole.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
+            grailsConsole.lastMessage = ""
 
             if (result.failCount > 0) testsFailed = true
             event("TestSuiteEnd", [type.name])
 
         }
         catch (Exception e) {
-            console.error "Error running $type.name tests: ${e.toString()}", e
+            grailsConsole.error "Error running $type.name tests: ${e.toString()}", e
             testsFailed = true
         }
         finally {

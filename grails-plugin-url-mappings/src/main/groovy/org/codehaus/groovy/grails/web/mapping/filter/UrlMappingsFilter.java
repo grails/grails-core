@@ -14,14 +14,30 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -44,17 +60,6 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * Uses the Grails UrlMappings to match and forward requests to a relevant controller and action.
  *
@@ -72,6 +77,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private GrailsConfig grailsConfig;
     private ViewResolver viewResolver;
     private MimeType[] mimeTypes;
+    private StackTraceFilterer filterer;
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -83,12 +89,13 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         this.application = WebUtils.lookupApplication(servletContext);
         this.viewResolver = WebUtils.lookupViewResolver(servletContext);
         if (application != null) {
-           grailsConfig = new GrailsConfig(application);
+            grailsConfig = new GrailsConfig(application);
         }
 
         if (applicationContext.containsBean(MimeType.BEAN_NAME)) {
             this.mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
         }
+        createStackTraceFilterer();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -102,8 +109,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             processFilterChain(request, response, filterChain);
             return;
         }
-
-        checkForCompilationErrors();
 
         if (isUriExcluded(holder, uri)) {
             processFilterChain(request, response, filterChain);
@@ -178,6 +183,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                     dispatched = true;
 
+                    checkForCompilationErrors(request);
+
                     request = checkMultipart(request);
 
                     if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
@@ -251,17 +258,15 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
        return controllers == null || controllers.length == 0;
     }
 
-    private void checkForCompilationErrors() {
+    private void checkForCompilationErrors(HttpServletRequest request) {
         if (application.isWarDeployed()) {
             return;
         }
 
-        ClassLoader classLoader = application.getClassLoader();
-        if (classLoader instanceof GrailsClassLoader) {
-            GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
-            if (gcl.hasCompilationErrors()) {
-                throw gcl.getCompilationError();
-            }
+        if(request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
+        MultipleCompilationErrorsException compilationError = GrailsProjectWatcher.getCurrentCompilationError();
+        if(compilationError != null) {
+            throw compilationError;
         }
     }
 
@@ -315,7 +320,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     }
 
     private void filterAndThrow(UrlMappingException ume) {
-        StackTraceFilterer filterer = new StackTraceFilterer();
         filterer.filter(ume, true);
         throw ume;
     }
@@ -333,6 +337,17 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
         finally {
             WrappedResponseHolder.setWrappedResponse(null);
+        }
+    }
+
+    protected void createStackTraceFilterer() {
+        try {
+            filterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
+                    application.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+        }
+        catch (Throwable t) {
+            logger.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
+            filterer = new DefaultStackTraceFilterer();
         }
     }
 }

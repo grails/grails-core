@@ -73,6 +73,6 @@ class GroovyEachTagTests extends GroovyTestCase {
         tag.setAttributes('"var"':'j')
         tag.doStartTag()
 
-        assert sw.toString() == "loop:{\nint i = 0\nfor( j in test ) {"+System.getProperty("line.separator")
+        assert sw.toString().replaceAll('[\r\n]', '') == "loop:{int i = 0for( j in test ) {"
     }
 }

@@ -130,7 +130,7 @@ createUnitTest = { Map args = [:] ->
 
 promptForName = { Map args = [:] ->
     if (!argsMap["params"]) {
-        argsMap["params"] << console.userInput("${args["type"]} name not specified. Please enter:")
+        argsMap["params"] << grailsConsole.userInput("${args["type"]} name not specified. Please enter:")
     }
 }
 

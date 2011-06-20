@@ -27,27 +27,6 @@ class GroovyPagesServletTests extends GroovyTestCase {
         assert writer != null
     }
 
-    void testHandleException() {
-
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
-        def request = webRequest.currentRequest
-
-        MockServletContext servletContext = new MockServletContext()
-        MockApplicationContext ctx = new MockApplicationContext()
-
-        servletContext.setAttribute("app.ctx", ctx)
-        def gpte = new GroovyPagesTemplateEngine(servletContext)
-        ctx.registerMockBean(GroovyPagesTemplateEngine.BEAN_ID, gpte)
-        def gps = new GroovyPagesServlet()
-        gps.contextAttribute = "app.ctx"
-        gps.init(new MockServletConfig(servletContext))
-        def e = new Exception()
-
-        def response = new MockHttpServletResponse()
-
-        gps.handleException(request, response,e,response.getWriter(),gpte)
-    }
-
     void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
     }

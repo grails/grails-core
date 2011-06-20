@@ -163,7 +163,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         request.addFile(file)
         controller.uploadFile()
 
-        assert file.targetFileLocation.path == "/local/disk/myFile"
+        assert file.targetFileLocation.path == "${File.separatorChar}local${File.separatorChar}disk${File.separatorChar}myFile"
     }
 
     void testRenderBasicTemplateNoTags() {

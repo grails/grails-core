@@ -12,7 +12,7 @@ if "%OS%"=="Windows_NT" setlocal
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.\
 
-set JAVA_OPTS=%JAVA_OPTS% -Xdebug -Xnoagent -Dgrails.full.stacktrace=true -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005
+set JAVA_OPTS=%JAVA_OPTS% -Xdebug -Xnoagent -Dgrails.full.stacktrace=true -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005
 
 CALL "%DIRNAME%\startGrails.bat" "%DIRNAME%" org.codehaus.groovy.grails.cli.GrailsScriptRunner %*
 

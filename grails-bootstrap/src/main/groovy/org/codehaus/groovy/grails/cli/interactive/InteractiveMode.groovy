@@ -23,6 +23,7 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.codehaus.groovy.grails.cli.parsing.ParseException
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -72,7 +73,7 @@ class InteractiveMode {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
                     if ("quit".equals(trimmed)) {
-                        break
+                        System.exit(0)
                     }
                     if ("exit".equals(trimmed)) {
                         if (grailsServer) {
@@ -87,7 +88,7 @@ class InteractiveMode {
                            }
                         }
                         else {
-                            break
+                            System.exit(0)
                         }
                     }
                     else if (scriptName.startsWith("!")) {
@@ -98,17 +99,16 @@ class InteractiveMode {
                             error "Error occurred executing process: ${e.message}"
                         }
                     }
-                    else if (scriptName.contains(" ")) {
-                        def i = scriptName.indexOf(" ")
-                        def args = scriptName[i..-1]
-                        scriptName = scriptName[0..i]
-                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName),
-                            Environment.current.name, args)
-                    }
                     else {
-                        scriptRunner.executeScriptWithCaching(GrailsNameUtils.getNameFromScript(scriptName),
-                            Environment.current.name)
+                        def parser = GrailsScriptRunner.getCommandLineParser()
+                        try {
+                            def commandLine = parser.parseString(scriptName)
+                            scriptRunner.executeScriptWithCaching(commandLine)
+                        } catch (ParseException e) {
+                            error "Invalid command: ${e.message}"
+                        }
                     }
+
                 }
                 else {
                     error "Not script name specified"

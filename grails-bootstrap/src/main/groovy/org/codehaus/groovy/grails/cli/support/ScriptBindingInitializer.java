@@ -81,7 +81,7 @@ public class ScriptBindingInitializer {
          Closure<?> c = settings.getGrailsScriptClosure();
          c.setDelegate(binding);
          binding.setVariable("grailsScript", c);
-         binding.setVariable("console", GrailsConsole.getInstance());
+         binding.setVariable("grailsConsole", GrailsConsole.getInstance());
          binding.setVariable("grailsSettings", settings);
 
          // Add other binding variables, such as Grails version and environment.
@@ -116,6 +116,9 @@ public class ScriptBindingInitializer {
          binding.setVariable("webXmlFile", settings.getWebXmlLocation());
          binding.setVariable("pluginsDirPath", settings.getProjectPluginsDir().getPath());
          binding.setVariable("globalPluginsDirPath", settings.getGlobalPluginsDir().getPath());
+
+         // setup Ant alias for older scripts
+         binding.setVariable("Ant", binding.getVariable("ant"));
 
          final BaseSettingsApi cla = new BaseSettingsApi(settings, isInteractive);
 

@@ -96,7 +96,7 @@ public class ParseTests extends TestCase {
             parseCode("myTest3", "<g:message value=\"${boom\">");
         }
         catch (GrailsTagException e) {
-            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'? at myTest3:14", e.getMessage());
+            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'?", e.getMessage());
             return;
         }
         fail("Expected parse exception not thrown");
@@ -232,7 +232,7 @@ public class ParseTests extends TestCase {
                  "\n" +
                  "Thanks");
 
-         assertEquals(expected, output.generatedGsp);
+         assertEquals(expected.replaceAll("[\r\n]", ""), output.generatedGsp.replaceAll("[\r\n]", ""));
          assertEquals("Please click the link below to confirm your email address:\n\n", output.htmlParts[0]);
          assertEquals("\n\n\nThanks", output.htmlParts[1]);
      }

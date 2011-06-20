@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.core.io;
 
 import org.springframework.core.io.Resource;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,10 @@ public class StaticResourceLocator implements ResourceLocator{
     private Map<String,Resource> classToResourceMap = new HashMap<String,Resource>();
 
     public void setSearchLocation(String searchLocation) {
+        // do nothing
+    }
+
+    public void setSearchLocations(Collection<String> searchLocations) {
         // do nothing
     }
 

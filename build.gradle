@@ -25,7 +25,8 @@ ivyVersion = "2.2.0"
 gantVersion = "1.9.5"
 groovyVersion = "1.8.0"
 jansiVersion = "1.2.1"
-jlineVersion = "0.9.94"
+jlineVersion = "1.0"
+jnaVersion = "3.2.3"
 commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
 commonsBeanUtilsVersion = "1.8.0"
@@ -90,7 +91,10 @@ subprojects { project ->
 
     dependencies {
         // Groovy
-        groovy groovyDependency
+        groovy( groovyDependency ) {
+            exclude module:"commons-cli"
+            exclude module:"ant"
+        }
         compile groovyDependency
 
         // Logging
@@ -237,6 +241,7 @@ task installResources << {
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
         filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
+        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
         filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
         filter(ReplaceTokens, tokens: ['ant.version': antVersion])
         filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
@@ -246,6 +251,11 @@ task installResources << {
     copy {
         from 'grails-resources/src/grails/home/dsl-support'
         into 'dsl-support'
+    }
+    
+    copy {
+        from "grails-resources/src/war/WEB-INF"
+        into 'src/war/WEB-INF'
     }
 }
 

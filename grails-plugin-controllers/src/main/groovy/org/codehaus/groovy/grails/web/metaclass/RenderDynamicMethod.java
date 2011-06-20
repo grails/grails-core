@@ -46,6 +46,7 @@ import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -64,6 +65,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
     public static final String ARGUMENT_TEXT = "text";
     public static final String ARGUMENT_STATUS = "status";
+    public static final String ARGUMENT_LAYOUT = "layout";
     public static final String ARGUMENT_CONTENT_TYPE = "contentType";
     public static final String ARGUMENT_ENCODING = "encoding";
     public static final String ARGUMENT_VIEW = "view";
@@ -127,6 +129,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else {
                 setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
                 out = GSPResponseWriter.getInstance(response);
+            }
+
+            if(argMap.containsKey(ARGUMENT_LAYOUT)) {
+                webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
             }
 
             boolean statusSet = false;

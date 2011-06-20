@@ -127,6 +127,10 @@ distSpec = copySpec {
         filter(ReplaceTokens, tokens: ['ant.version': antVersion])
         filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
         filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
+        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
+        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
+        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
+        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
     }
     from(libs.destinationDir) {
         into "grails-$grailsVersion/dist"

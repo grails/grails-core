@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.support.MockResourceLoader;
@@ -54,7 +55,7 @@ public class GrailsUtil {
     private static final Log LOG = LogFactory.getLog(GrailsUtil.class);
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
-    private static final StackTraceFilterer stackFilterer = new StackTraceFilterer();
+    private static final StackTraceFilterer stackFilterer = new DefaultStackTraceFilterer();
 
     static {
         Package p = GrailsUtil.class.getPackage();
@@ -223,12 +224,17 @@ public class GrailsUtil {
      *
      * @deprecated Use {@link StackTraceFilterer} instead
      */
+    @Deprecated
     public static Throwable sanitize(Throwable t) {
         return stackFilterer.filter(t);
     }
 
     public static void printSanitizedStackTrace(Throwable t, PrintWriter p) {
-        t = stackFilterer.filter(t);
+        printSanitizedStackTrace(t, p, stackFilterer);
+    }
+
+    public static void printSanitizedStackTrace(Throwable t, PrintWriter p, StackTraceFilterer stackTraceFilterer) {
+        t = stackTraceFilterer.filter(t);
 
         StackTraceElement[] trace = t.getStackTrace();
         for (StackTraceElement stackTraceElement : trace) {

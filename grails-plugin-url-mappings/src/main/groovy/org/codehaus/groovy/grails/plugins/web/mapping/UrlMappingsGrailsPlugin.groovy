@@ -94,7 +94,7 @@ class UrlMappingsGrailsPlugin {
         def errorPages = {
             for (Resource r in watchedResources) {
                 r.file.eachLine { line ->
-                    def matcher = line =~ /\s*"(\d+?)"\(.+?\)/
+                    def matcher = line =~ /\s*["'](\d+?)["']\s*\(.+?\)/
                     if (matcher) {
                         def errorCode = matcher[0][1]
                         if (!appliedErrorCodes.contains(errorCode)) {
@@ -110,7 +110,7 @@ class UrlMappingsGrailsPlugin {
         }
 
         if (welcomeFileList.size() > 0) {
-            welcomeFileList = welcomeFileList[welcomeFileList.size()-1]
+            welcomeFileList = welcomeFileList[welcomeFileList.size() - 1]
             welcomeFileList + errorPages
         }
         else {

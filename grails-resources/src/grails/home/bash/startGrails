@@ -1,12 +1,8 @@
 ##############################################################################
 ##                                                                          ##
-##  Groovy JVM Bootstrap for UN*X                                           ##
+##  Grails JVM Bootstrap for UN*X                                           ##
 ##                                                                          ##
 ##############################################################################
-
-##
-## $Revision: 4181 $ $Date: 2006-10-28 15:36:34 +0000 (Sat, 28 Oct 2006) $
-##
 
 PROGNAME=`basename "$0"`
 DIRNAME=`dirname "$0"`
@@ -119,8 +115,8 @@ if [ ! -d "$GRAILS_HOME" ] ; then
 fi    
 
 # Use default groovy-conf config
-if [ -z "$GROOVY_CONF" ]; then
-    GROOVY_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
+if [ -z "$STARTER_CONF" ]; then
+    STARTER_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
 STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-@groovy.version@.jar:$GRAILS_HOME/dist/grails-bootstrap-@grails.version@.jar"
 
@@ -178,8 +174,8 @@ fi
 
 # Process JVM args
 AGENT_STRING="-javaagent:$GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
-SAVED_OPTIONS=""
-disablereloading=false
+CMD_LINE_ARGS=""
+DISABLE_RELOADING=false
 
 while true; do
   if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
@@ -195,7 +191,7 @@ while true; do
   fi
   
   if [ "$1" = "-noreloading" ]; then
-    disablereloading=true
+    DISABLE_RELOADING=true
     shift
     break
   fi
@@ -204,12 +200,12 @@ while true; do
     break
   fi
 
-  SAVED_OPTIONS="$SAVED_OPTIONS $1"
+  CMD_LINE_ARGS="$CMD_LINE_ARGS $1"
   shift
 done
 
 # Enable agent-based reloading for the 'run-app' command.
-if ! $disablereloading; then
+if ! $DISABLE_RELOADING; then
     for a in "$@"; do
         if [ "$a" = "run-app" ]; then
             AGENT=$AGENT_STRING
@@ -221,7 +217,7 @@ if ! $disablereloading; then
     fi
 fi
 
-ARGUMENTS="$SAVED_OPTIONS $@"
+ARGUMENTS="$CMD_LINE_ARGS $@"
 
 # Setup Profiler
 useprofiler=false
@@ -244,7 +240,7 @@ TOOLS_JAR="$JAVA_HOME/lib/tools.jar"
 if $cygwin; then
     GRAILS_HOME=`cygpath --path --mixed "$GRAILS_HOME"`
     JAVA_HOME=`cygpath --path --mixed "$JAVA_HOME"`
-    GROOVY_CONF=`cygpath --path --mixed "$GROOVY_CONF"`
+    STARTER_CONF=`cygpath --path --mixed "$STARTER_CONF"`
     CP=`cygpath --path --mixed "$CP"`
     TOOLS_JAR=`cygpath --path --mixed "$TOOLS_JAR"`
     STARTER_CLASSPATH=`cygpath --path --mixed "$STARTER_CLASSPATH"`
@@ -298,7 +294,7 @@ startGrails() {
           -Dtools.jar="$TOOLS_JAR" \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
-          --conf "$GROOVY_CONF" \
+          --conf "$STARTER_CONF" \
           --classpath "$CP"
   	else
          exec "$JAVACMD" $JAVA_OPTS \
@@ -307,7 +303,7 @@ startGrails() {
           -Dtools.jar="$TOOLS_JAR" \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
-          --conf "$GROOVY_CONF" \
+          --conf "$STARTER_CONF" \
           --classpath "$CP" \
           "${ARGUMENTS}"
   	fi
