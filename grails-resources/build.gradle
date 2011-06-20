@@ -1,33 +1,12 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
-task installGrailsHomeResources << {
-    copy {
-        from("src/grails/grails-home")
-        into "${installDir}/"
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
-        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
-        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
-        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
-        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
-        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
-        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
-        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
-    }
-
-    ant.chmod(dir: "${installDir}/bin", perm: '755', includes: '*')
-}
-
 task createSharedFilesJar(type: Jar, description: 'Package up the files that are shared by both applications and plugins.') {
     version = null
     appendix = "shared-files"
     appFileJar = true
-    from("src/grails/grails-home/src/war/WEB-INF") {
+    from("src/war/WEB-INF") {
         into "web-app/WEB-INF"
         include "applicationContext.xml", "sitemesh.xml", "tld/*.tld"
     }
-    from("src/grails/grails-home/src/grails/grails-app/conf") {
+    from("src/grails/grails-app/conf") {
         into "grails-app/conf"
         include "DataSource.groovy", "UrlMappings.groovy"
     }
@@ -37,11 +16,11 @@ task createSharedApplicationFilesJar(type: Jar, description: 'Package up the fil
     version = null
     appendix = "app-files"
     appFileJar = true
-    from("src/grails/grails-home/src/war") {
+    from("src/war") {
         into "web-app"
         exclude "WEB-INF/**"
     }
-    from("src/grails/grails-home/src/grails/grails-app") {
+    from("src/grails/grails-app") {
         into "grails-app"
         exclude "taglib/**", "utils/**", "conf/DataSource.groovy", "conf/UrlMappings.groovy"
     }
@@ -51,22 +30,23 @@ task createSharedPluginFilesJar(type: Jar, description: 'Package up the files th
     version = null
     appendix = "plugin-files"
     appFileJar = true
-    from("src/grails/grails-home/src/grails/templates/plugins")
-    from("src/grails/grails-home/src/grails") {
+    from("src/grails/templates/plugins")
+    from("src/grails") {
         include "grails-app/views/error.gsp"
     }
-    from("src/grails/grails-home/src/grails/plugin")
+    from("src/grails/plugin")
 }
 
 task createIntegrationFilesJar(type: Jar, description: 'Files to integrate Grails with IDEs and build systems.') {
     version = null
     appendix = "integration-files"
     appFileJar = true
-    from("src/grails/grails-home/src/grails/templates/ide-support", "src/grails/ant")
+    from("src/grails/templates/ide-support", "src/grails/ant")
 }
 
 allJarFileTasks = [createSharedFilesJar,createSharedApplicationFilesJar,createSharedPluginFilesJar,createIntegrationFilesJar]
-task resourceJarFiles(dependsOn: allJarFileTasks)
+task resourceJarFiles(dependsOn:allJarFileTasks)
+
 
 jar.dependsOn resourceJarFiles
 
@@ -74,15 +54,13 @@ for (jarTask in allJarFileTasks) {
     jar.from(jarTask.archivePath)
 }
 
-jar.from("src/grails/grails-home/src/war") {
+jar.from("src/war") {
     into "src/war"
     include "WEB-INF/**"
     exclude 'WEB-INF/tld/grails.tld', 'WEB-INF/tld/spring.tld'
 }
-jar.from("src/grails/grails-home/src/grails/templates") {
+jar.from("src/grails/templates") {
     into "src/grails/templates"
 }
 
 jar.appendix = 'resources'
-
-install.dependsOn installGrailsHomeResources
