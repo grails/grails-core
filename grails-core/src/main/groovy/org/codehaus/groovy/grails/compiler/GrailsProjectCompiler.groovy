@@ -374,7 +374,7 @@ class GrailsProjectCompiler {
 
             def pluginLibDirs = pluginSettings.pluginLibDirectories.findAll { it.exists() }
             for (pluginLib in pluginLibDirs) {
-                fileset(dir: pluginLib.file.absolutePath)
+                fileset(dir: pluginLib.file.absolutePath, excludes:'**/*.txt')
             }
         }
 
