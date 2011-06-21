@@ -21,6 +21,9 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
 import grails.test.mixin.support.LazyTagLibraryLookup
 import grails.util.GrailsWebUtil
+
+import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
@@ -260,6 +263,36 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         }
         controllerClass.metaClass.constructor = callable
 
+        controllerClass.metaClass.invokeMethod = {String name, Object[] args ->
+            def metaMethod = delegate.metaClass.getMetaMethod(name, args)
+
+            def result
+
+            if(metaMethod) {
+                if(!controllerArtefact.isHttpMethodAllowedForAction(delegate, request.method, name)) {
+                    response.sendError HttpServletResponse.SC_METHOD_NOT_ALLOWED
+                    return
+                }
+                result = metaMethod.invoke(delegate,args)
+            } else {
+                def prop = delegate.metaClass.getMetaProperty(name)
+                if(prop) {
+                if(!controllerArtefact.isHttpMethodAllowedForAction(delegate, request.method, name)) {
+                        response.sendError HttpServletResponse.SC_METHOD_NOT_ALLOWED
+                        return
+                    }
+                    def action = prop.getProperty(delegate)
+                    result = action.call(*args)
+                } else {
+                    try {
+                        result = new ControllerTagLibraryApi().methodMissing(delegate, name, args)
+                    } catch (MissingMethodException mme) {
+                        throw new MissingMethodException(name, controllerClass, args)
+                    }
+                }
+            }
+            result
+        }
         return callable.call()
     }
 
