@@ -78,6 +78,9 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
      * @return
      */
     CompositeInterceptor mockFilters(Class filterClass) {
+        if (webRequest == null) {
+            bindGrailsWebRequest()
+        }
         final grailsFilter = grailsApplication.addArtefact(FiltersConfigArtefactHandler.TYPE, filterClass)
         defineBeans {
             "${grailsFilter.fullName}Class"(MethodInvokingFactoryBean) {
