@@ -72,21 +72,21 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
         } catch (e) {
             path = resource.filename
         }
-        """<h2>Around line ${lineNumber} of ${path}</h2>
-<div class="snippet"><pre>"""
+        """<h2>Around line ${lineNumber} of <span class="filename">${path}</span></h2>
+<pre class="snippet">"""
     }
 
     @Override
     String formatCodeSnippetEnd(Resource resource, int lineNumber) {
-        "</div>"
+        "</pre>"
     }
 
     @Override protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine) {
-        return "<div class=\"line\"><span class=\"lineNumber\">${currentLineNumber}:</span> ${currentLine.encodeAsHTML()}</div>"
+        return "<code class=\"line\"><span class=\"lineNumber\">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"
     }
 
     @Override protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine) {
-        return "<div class=\"errorLine\"><span class=\"lineNumber\">${currentLineNumber}:</span> ${currentLine.encodeAsHTML()}</div>"
+        return "<code class=\"line error\"><span class=\"lineNumber\">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"
     }
 
     @Override protected int getLineNumberInfo(Throwable cause, int defaultInfo) {
