@@ -53,10 +53,8 @@ public class GroovyPageParser implements Tokens {
     private static final Pattern ROW_BREAK = Pattern.compile(
             "((/td>\\s*</tr>\\s*<)?tr[^>]*>\\s*<)?td[^>]*>",
             Pattern.CASE_INSENSITIVE);
-    private static final Pattern PARSE_TAG_FIRST_PASS = Pattern.compile(
-            "(\\s*(\\S+)\\s*=\\s*[\"]([^\"]*)[\"][\\s|>]{1}){1}");
-    private static final Pattern PARSE_TAG_SECOND_PASS = Pattern.compile(
-            "(\\s*(\\S+)\\s*=\\s*[']([^']*)['][\\s|>]{1}){1}");
+    private static final Pattern TAG_ATTRIBUTE_PATTERN = Pattern.compile(
+            "(\\s*(\\S+)\\s*=\\s*([\"]([^\"]*)[\"]|[']([^']*)['])[\\s|>]{1}){1}");
     private static final Pattern PAGE_DIRECTIVE_PATTERN = Pattern.compile(
             "(\\w+)\\s*=\\s*\"([^\"]*)\"");
 
@@ -1144,18 +1142,13 @@ public class GroovyPageParser implements Tokens {
 
     private void populateMapWithAttributes(Map<String, String> attrs, String attrTokens) {
         // do first pass parse which retrieves double quoted attributes
-        Matcher m = PARSE_TAG_FIRST_PASS.matcher(attrTokens);
-        populateAttributesFromMatcher(m, attrs);
-
-        // do second pass parse which retrieves single quoted attributes
-        m = PARSE_TAG_SECOND_PASS.matcher(attrTokens);
-        populateAttributesFromMatcher(m, attrs);
-    }
-
-    private void populateAttributesFromMatcher(Matcher m, Map<String, String> attrs) {
+        Matcher m = TAG_ATTRIBUTE_PATTERN.matcher(attrTokens);
         while (m.find()) {
             String name = m.group(2);
-            String val = m.group(3);
+            String val = m.group(4);
+            if(val == null) { 
+                val = m.group(5);
+            }
             name = '\"' + name + '\"';
             if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
                 val = val.substring(2, val.length() - 1);
