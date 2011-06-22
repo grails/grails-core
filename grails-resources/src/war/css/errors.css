@@ -19,7 +19,7 @@ h2 {
 
 .stack,
 .snippet {
-	margin: 0 25px 10px;	
+	margin: 0 25px 10px;
 }
 
 .stack,
@@ -86,8 +86,8 @@ h2 {
 	margin-right: 5px;
 	padding: 0 3px;
 	text-align: right;
-	width: 3em;			
-}	
+	width: 3em;
+}
 
 .snippet .error {
 	background-color: #fff3f3;
@@ -98,7 +98,7 @@ h2 {
 	background-color: #faa;
 	color: #333;
 	font-weight: bold;
-} 
+}
 
 .snippet .line:first-child .lineNumber {
 	padding-top: 5px;

@@ -1,11 +1,9 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import java.util.Collection;
-
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 
 /**
  * Tests the behaviour of the redirect method.
@@ -33,7 +31,7 @@ class UrlMappings {
 }
 ''')
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [NewsSignupController, RedirectController, AController, ABCController]

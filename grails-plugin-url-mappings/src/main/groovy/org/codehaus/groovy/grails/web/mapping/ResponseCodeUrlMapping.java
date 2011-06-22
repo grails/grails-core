@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.util.Assert;
 
 /**
  * A Url mapping for http response codes.
@@ -41,9 +42,8 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMap
         super(controllerName, actionName, viewName, constraints, servletContext);
         this.urlData = (ResponseCodeMappingData) urlData;
 
-        if (constraints != null && constraints.length > 0) {
-            throw new IllegalArgumentException("Constraints can't be used for response code url mapping");
-        }
+        Assert.isTrue(constraints == null || constraints.length == 0,
+                "Constraints can't be used for response code url mapping");
     }
 
     public UrlMappingInfo match(String uri) {

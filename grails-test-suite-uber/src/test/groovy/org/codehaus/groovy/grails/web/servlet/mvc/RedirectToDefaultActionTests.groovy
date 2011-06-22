@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import java.util.Collection;
-
 /**
  * @author Graeme Rocher
  * @since 1.1
@@ -22,7 +20,7 @@ class UrlMappings {
 
 ''')
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [PortalController, RepositoryController]
@@ -52,4 +50,3 @@ class RepositoryController {
 
     def toPortal = { redirect(controller: "portal") }
 }
-    

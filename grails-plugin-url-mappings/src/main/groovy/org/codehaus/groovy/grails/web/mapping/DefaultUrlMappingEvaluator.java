@@ -48,6 +48,7 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -156,12 +157,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     }
 
     public void setClassLoader(ClassLoader classLoader) {
-        if (classLoader instanceof GroovyClassLoader) {
-            this.classLoader = (GroovyClassLoader) classLoader;
-        }
-        else {
-            throw new IllegalArgumentException("Property [classLoader] must be an instance of GroovyClassLoader");
-        }
+        Assert.isInstanceOf(GroovyClassLoader.class, classLoader,
+               "Property [classLoader] must be an instance of GroovyClassLoader");
+        this.classLoader = (GroovyClassLoader) classLoader;
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {

@@ -1,12 +1,18 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.util.GrailsWebUtil
 import grails.util.GrailsNameUtils
+import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -19,12 +25,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.plugins.*
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.web.mime.MimeType
-
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
@@ -58,7 +58,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     protected Collection<Class> getDomainClasses() {
         Collections.EMPTY_LIST
     }
-    
+
     protected void onSetUp() {}
 
     protected void setUp() {
@@ -95,7 +95,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ga.setApplicationContext(ctx)
         domainClasses?.each { cc -> ga.addArtefact 'Domain', cc }
         controllerClasses?.each { cc -> ga.addArtefact 'Controller', cc }
-        
+
         ctx.registerMockBean("pluginManager", mockManager)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())

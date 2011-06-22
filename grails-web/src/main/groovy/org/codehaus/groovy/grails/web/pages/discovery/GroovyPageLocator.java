@@ -19,9 +19,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.springframework.core.io.ResourceLoader;
 
 /**
- *
- * Used to locate GSPs whether in development or WAR deployed mode
- *
+ * Used to locate GSPs whether in development or WAR deployed mode.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -33,7 +31,7 @@ public interface GroovyPageLocator {
      *
      * @param resourceLoader The resource loader to search
      */
-    public void addResourceLoader(ResourceLoader resourceLoader);
+    void addResourceLoader(ResourceLoader resourceLoader);
 
     /**
      * Finds a page for the given URI
@@ -41,7 +39,7 @@ public interface GroovyPageLocator {
      * @param uri The URI
      * @return A script source
      */
-    public GroovyPageScriptSource findPage(String uri);
+    GroovyPageScriptSource findPage(String uri);
 
     /**
      * Finds a page for the given URI
@@ -49,7 +47,7 @@ public interface GroovyPageLocator {
      * @param uri The URI
      * @return A script source
      */
-    public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding);
+    GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding);
 
     /**
      * Finds a page for the URI and binding
@@ -58,7 +56,7 @@ public interface GroovyPageLocator {
      * @param binding The binding
      * @return The page source
      */
-    public GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding);
+    GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding);
 
     /**
      * Removes any precompiled pages for the given URI so that they can be replaced by dynamic pages

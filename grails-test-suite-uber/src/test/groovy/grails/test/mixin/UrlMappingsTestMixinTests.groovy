@@ -12,7 +12,6 @@ import junit.framework.ComparisonFailure
 @TestMixin(UrlMappingsUnitTestMixin)
 class UrlMappingsTestMixinTests {
 
-
     @Test
     void testGRAILS5222() {
         mockController(UserController)
@@ -142,17 +141,19 @@ class AnotherUrlMappings  {
         "/$controller/$action?/$id?" {}
         "/alias/$param1/"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
     }
-
 }
+
 class GrailsUrlMappingsTestCaseFakeController {
    static defaultAction = 'action1'
    def action1 = {}
    def action2 = {}
    def action3 = {}
 }
+
 class UserController {
     def publicProfile = {}
 }
+
 class MyUrlMappings {
     static mappings = {
         "/action1"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
@@ -165,6 +166,7 @@ class MyUrlMappings {
         "/params/$param1/$param2?"(controller: "grailsUrlMappingsTestCaseFake", action: "action3")
     }
 }
+
 class GRAILS5222UrlMappings {
     static mappings = {
         "/user/$idText?"{

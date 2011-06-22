@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.converters
 
-import java.util.Collection;
-
 import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.mime.MimeType
@@ -39,30 +37,29 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
     protected Collection<Class> getControllerClasses() {
         [TestBookController]
     }
-    
+
     @Override
     protected Collection<Class> getDomainClasses() {
         [AutoParamsJSONMarshallingBook, AutoParamsJSONMarshallingAuthor]
     }
-    
+
     void testJSONMarshallingIntoParamsObject() {
-            def controller = ga.getControllerClass(TestBookController.name).newInstance()
+        def controller = ga.getControllerClass(TestBookController.name).newInstance()
 
-            controller.request.contentType = "application/json"
-            controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
+        controller.request.contentType = "application/json"
+        controller.request.content = '{"id":1,"class":"Book","author":{"id":1,"class":"Author","name":"Stephen King"},"releaseDate":new Date(1196179518015),"title":"The Stand"}'.bytes
 
-            webRequest.informParameterCreationListeners()
-            def model = controller.create()
+        webRequest.informParameterCreationListeners()
+        def model = controller.create()
 
-            assert model
-            assert model.book
-            assertEquals "The Stand", model.book.title
-            assertEquals 1, model.book.author.id
-            assertEquals 'Stephen King', model.book.author.name
+        assert model
+        assert model.book
+        assertEquals "The Stand", model.book.title
+        assertEquals 1, model.book.author.id
+        assertEquals 'Stephen King', model.book.author.name
 
-            // "id" should not bind because we are binding to a domain class.
-            assertNull model.book.id
-
+        // "id" should not bind because we are binding to a domain class.
+        assertNull model.book.id
     }
 }
 
@@ -88,4 +85,3 @@ class AutoParamsJSONMarshallingAuthor {
         new AutoParamsJSONMarshallingAuthor(id:id.toLong())
     }
 }
-

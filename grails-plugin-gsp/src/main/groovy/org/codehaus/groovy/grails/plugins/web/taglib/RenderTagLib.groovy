@@ -681,7 +681,7 @@ class RenderTagLib implements RequestConstants {
 """
 
         def root = GrailsExceptionResolver.getRootCause(exception)
-		currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
+        currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
         currentOut << "<dt>Message</dt><dd>${exception.message?.encodeAsHTML()}</dd>"
         if (root != null && root != exception && root.message != exception.message) {
             currentOut << "<dt>Caused by</dt><dd>${root.message?.encodeAsHTML()}</dd>"
@@ -699,7 +699,7 @@ class RenderTagLib implements RequestConstants {
         }
     }
 
-	private String prettyPrintStatus(int statusCode) {
-		"$statusCode: ${WordUtils.capitalizeFully(HttpStatus.valueOf(statusCode).name().replaceAll('_', ' '))}"
-	}
+    private String prettyPrintStatus(int statusCode) {
+        "$statusCode: ${WordUtils.capitalizeFully(HttpStatus.valueOf(statusCode).name().replaceAll('_', ' '))}"
+    }
 }

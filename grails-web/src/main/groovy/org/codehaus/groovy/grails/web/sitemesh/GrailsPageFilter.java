@@ -197,8 +197,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
                 return new Decorator() {
                     private void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
-                                          HttpServletResponse response, ServletContext servletContext,
-                                          @SuppressWarnings("hiding") SiteMeshWebAppContext webAppContext)
+                                          HttpServletResponse response, ServletContext servletContext)
                             throws IOException, ServletException {
 
                         HTMLPage htmlPage = content2htmlPage(content);
@@ -248,7 +247,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
                     public void render(Content content, SiteMeshContext siteMeshContext) {
                         SiteMeshWebAppContext webAppContext = (SiteMeshWebAppContext) siteMeshContext;
                         try {
-                            render(content, webAppContext.getRequest(), webAppContext.getResponse(), webAppContext.getServletContext(), webAppContext);
+                            render(content, webAppContext.getRequest(), webAppContext.getResponse(), webAppContext.getServletContext());
                         } catch (IOException e) {
                             throw new GroovyPagesException("Error applying layout : " + decorator.getURIPath(), e);
                         } catch (ServletException e) {

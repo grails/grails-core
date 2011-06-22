@@ -19,17 +19,13 @@ package org.codehaus.groovy.grails.web.pages.discovery;
 import org.springframework.scripting.ScriptSource;
 
 /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 6/30/11
- * Time: 11:10 AM
- * To change this template use File | Settings | File Templates.
+ * @author Graeme Rocher
+ * @since 2.0
  */
-public interface GroovyPageScriptSource extends ScriptSource{
+public interface GroovyPageScriptSource extends ScriptSource {
 
     /**
-     *
      * @return The URI of the Groovy page
      */
-    public String getURI();
+    String getURI();
 }

@@ -43,7 +43,7 @@ public class GroovyPageBinding extends Binding {
     public GroovyPageBinding() {
         super();
     }
-    
+
     public GroovyPageBinding(Binding parent) {
         setParent(parent);
     }
@@ -98,7 +98,7 @@ public class GroovyPageBinding extends Binding {
 
     /**
      * ModifyOurScopeWithBodyTagTests breaks if variable isn't changed in the binding it exists in.
-     * 
+     *
      * @param name
      * @return
      */

@@ -12,8 +12,6 @@ import org.springframework.validation.Errors
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Jan 14, 2009
  */
 class PersistenceMethodTests extends AbstractGrailsHibernateTests {
 
@@ -821,7 +819,7 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
             "where p.firstName=? and p.lastName=?", ["fred", "flintstone"])
         assertEquals 1, listResult.size()
         assertEquals "fred", listResult[0].getProperty("firstName")
-        
+
         def msg = shouldFail(IllegalArgumentException) {
             domainClass.executeQuery 'select distinct p from PersistentMethodTests as p where p.firstName = :firstName and p.lastName = :lastName', [firstName: null, lastName: 'King']
         }

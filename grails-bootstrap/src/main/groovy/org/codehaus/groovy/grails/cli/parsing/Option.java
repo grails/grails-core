@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.cli.parsing;
 
+import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
 /**
- * Represents a command line option
- *
+ * Represents a command line option.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -28,13 +30,9 @@ public class Option {
     private String description;
 
     public Option(String name, String description) {
-        if(name != null && name.length() > 0) {
-            this.name = name;
-        }
-        else {
-            throw new IllegalArgumentException("illegal option specified");
-        }
-        this.description = description != null ? description : "";
+        Assert.isTrue(StringUtils.hasLength(name), "Illegal option specified");
+        this.name = name;
+        this.description = description == null ? "" : description;
     }
 
     public String getName() {

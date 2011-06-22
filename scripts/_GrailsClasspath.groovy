@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.springframework.core.io.FileSystemResource
+import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 
 /**
  * Gant script containing the Grails classpath setup.
@@ -34,7 +33,7 @@ includeTargets << grailsScript("_GrailsSettings")
 
 classpathSet = false
 includePluginJarsOnClasspath = true
-projectCompiler = new org.codehaus.groovy.grails.compiler.GrailsProjectCompiler(pluginSettings, rootLoader)
+projectCompiler = new GrailsProjectCompiler(pluginSettings, rootLoader)
 projectCompiler.ant = ant
 
 target(name:'classpath', description: "Sets the Grails classpath", prehook:null, posthook:null) {
@@ -50,7 +49,6 @@ commonClasspath = projectCompiler.commonClasspath
 compileClasspath = projectCompiler.compileClasspath
 testClasspath = projectCompiler.testClasspath
 runtimeClasspath = projectCompiler.runtimeClasspath
-
 
 void setClasspath() {
     // Make sure the following code is only executed once.

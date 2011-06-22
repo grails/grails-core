@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.binding
 
-import java.util.Collection;
-
 import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.mime.MimeType
@@ -32,12 +30,12 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                     ]
         """, 'Config')
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [SiteController]
     }
-    
+
     @Override
     protected Collection<Class> getDomainClasses() {
         [Site, SiteMode]

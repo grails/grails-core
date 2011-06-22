@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.binding
 
-import java.util.Collection;
-
 import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
@@ -16,7 +14,7 @@ class EnumBindingTests extends AbstractGrailsControllerTests {
     protected Collection<Class> getDomainClasses() {
         [StatusTransition]
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [StatusController]

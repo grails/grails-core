@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.converters
 
-import java.util.Collection;
+import grails.converters.XML
 
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
@@ -8,7 +8,6 @@ import org.hibernate.proxy.HibernateProxy
 import org.hibernate.proxy.LazyInitializer
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import grails.converters.XML
 
  /**
  * Tests for the XML converter.
@@ -22,12 +21,12 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
     protected Collection<Class> getControllerClasses() {
         [RestController]
     }
-    
+
     @Override
     protected Collection<Class> getDomainClasses() {
         [XmlConverterTestBook, XmlConverterTestPublisher]
     }
-    
+
     void testXMLConverter() {
         def c = new RestController()
         c.test()

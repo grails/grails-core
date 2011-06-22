@@ -144,7 +144,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin{
             webRequest.out = previousOut
         }
     }
-    
+
     /**
     * Asserts the output of a given template against the specified expected value.
     *
@@ -172,6 +172,4 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin{
        applyTemplate sw, template, params
        Assert.assertTrue (transform(sw) ==~ regex)
    }
-   
-
 }

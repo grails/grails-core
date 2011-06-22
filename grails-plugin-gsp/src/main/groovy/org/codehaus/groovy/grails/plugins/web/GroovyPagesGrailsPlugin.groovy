@@ -204,7 +204,7 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-		  errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
+        errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
     }
 
     static String transformToValidLocation(String location) {

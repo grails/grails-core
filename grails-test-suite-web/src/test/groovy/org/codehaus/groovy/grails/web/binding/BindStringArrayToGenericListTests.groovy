@@ -1,15 +1,14 @@
 package org.codehaus.groovy.grails.web.binding
 
-import java.util.Collection;
+import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import grails.persistence.*
+
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
-
 
     @Override
     protected Collection<Class> getControllerClasses() {
@@ -32,6 +31,7 @@ class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
         assertEquals(['rice', 'soup'], model.menu.items)
     }
 }
+
 class MenuController {
 
     def save = {
@@ -43,10 +43,8 @@ class MenuController {
 @Entity
 class Menu {
 
-  String name
-  static hasMany = [items: String]
+    String name
+    static hasMany = [items: String]
 
-  List<String> items
-
+    List<String> items
 }
-

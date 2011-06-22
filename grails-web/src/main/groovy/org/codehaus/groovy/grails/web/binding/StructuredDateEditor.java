@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.util.Assert;
 
 /**
  * Structured editor for editing dates that takes 5 fields that represent the year, month, day, hour
@@ -52,9 +53,7 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
 
     @SuppressWarnings("rawtypes")
     public Object assemble(Class type, Map fieldValues) throws IllegalArgumentException {
-        if (!fieldValues.containsKey("year")) {
-            throw new IllegalArgumentException("Can't populate a date without a year");
-        }
+        Assert.isTrue(fieldValues.containsKey("year"), "Can't populate a date without a year");
 
         String yearString = (String) fieldValues.get("year");
         String monthString = (String) fieldValues.get("month");
@@ -70,9 +69,7 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
         }
         int year;
         try {
-            if (StringUtils.isBlank(yearString)) {
-                throw new IllegalArgumentException("Can't populate a date without a year");
-            }
+            Assert.isTrue(!StringUtils.isBlank(yearString), "Can't populate a date without a year");
 
             year = Integer.parseInt(yearString);
 

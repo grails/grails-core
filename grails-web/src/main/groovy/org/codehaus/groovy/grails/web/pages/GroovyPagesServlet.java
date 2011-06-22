@@ -17,9 +17,19 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Writable;
 import groovy.text.Template;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -33,18 +43,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.FrameworkServlet;
-import org.springframework.web.servlet.HandlerExceptionResolver;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -72,7 +70,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
     private static final long serialVersionUID = -1918149859392123495L;
 
-    private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
     private static final String WEB_INF = "/WEB-INF";
     private static final String GRAILS_APP = "/grails-app";
 
@@ -88,7 +85,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
      * The size of the buffer used when formulating the response
      */
     public static final String SERVLET_INSTANCE = "org.codehaus.groovy.grails.GSP_SERVLET";
-    private Collection<HandlerExceptionResolver> exceptionResolvers;
     private GroovyPagesTemplateEngine groovyPagesTemplateEngine;
     private GrailsPluginManager pluginManager;
     @SuppressWarnings("rawtypes")
@@ -101,7 +97,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         context.setAttribute(SERVLET_INSTANCE, this);
 
         final WebApplicationContext webApplicationContext = getWebApplicationContext();
-        exceptionResolvers = webApplicationContext.getBeansOfType(HandlerExceptionResolver.class).values();
         grailsAttributes = new DefaultGrailsApplicationAttributes(context);
         webApplicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(this, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
         groovyPagesTemplateEngine = webApplicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID,

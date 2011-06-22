@@ -15,14 +15,38 @@
  */
 package org.codehaus.groovy.grails.cli;
 
-
 import gant.Gant;
 import grails.build.logging.GrailsConsole;
-import grails.util.*;
+import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
+import grails.util.CosineSimilarity;
+import grails.util.Environment;
+import grails.util.GrailsNameUtils;
+import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.util.AntBuilder;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.gant.GantMetaClass;
@@ -40,13 +64,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URLClassLoader;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -142,8 +159,7 @@ public class GrailsScriptRunner {
             return;
         }
 
-		String version = System.getProperty("grails.version");
-
+        String version = System.getProperty("grails.version");
 
         ScriptAndArgs script = processArgumentsAndReturnScriptName(commandLine);
 
@@ -187,7 +203,7 @@ public class GrailsScriptRunner {
             script.name = null;
         }
         if (script.name == null) {
-        	console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
+            console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
             scriptRunner.initializeState();
@@ -304,7 +320,7 @@ public class GrailsScriptRunner {
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
-        	console.updateStatus("Loading Grails " + settings.getGrailsVersion());
+            console.updateStatus("Loading Grails " + settings.getGrailsVersion());
             settings.loadConfig();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",

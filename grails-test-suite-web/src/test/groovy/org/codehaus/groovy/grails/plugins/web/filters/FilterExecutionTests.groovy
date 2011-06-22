@@ -1,10 +1,8 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import java.util.Collection;
-
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.util.WebUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 
@@ -423,4 +421,3 @@ class Group3Filters {
         assertEquals "/filterItem/happyPath", mv.viewName
     }
 }
-

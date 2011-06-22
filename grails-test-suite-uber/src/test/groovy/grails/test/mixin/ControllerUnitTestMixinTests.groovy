@@ -298,7 +298,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         request.method = 'GET'
         controller.action3()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-                    
+
         response.reset()
         request.method = 'DELETE'
         controller.action3()
@@ -370,45 +370,44 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         request.method = 'DELETE'
         controller.method3()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-
     }
 }
 
 class TestController {
-    
+
     static allowedMethods = [action2: 'POST', action3: ['POST', 'PUT'], method2: 'POST', method3: ['POST', 'PUT']]
-    
+
     def action1 = {
         render 'action 1'
     }
 
     def action2 = {
-            render 'action 2'
+        render 'action 2'
     }
-    
+
     def action3 = {
-            render 'action 3'
+        render 'action 3'
     }
-    
+
     def method1() {
         render 'method 1'
     }
-    
+
     def method2() {
         render 'method 2'
     }
-    
+
     def method3() {
         render 'method 3'
     }
-    
+
     def handleCommand = { TestCommand test ->
-         if (test.hasErrors()) {
-             render "Bad"
-         }
-         else {
-             render "Good"
-         }
+        if (test.hasErrors()) {
+            render "Bad"
+        }
+        else {
+            render "Good"
+        }
     }
 
     def uploadFile = {
@@ -511,6 +510,7 @@ class TestController {
         }
     }
 }
+
 class TestCommand {
     String name
 

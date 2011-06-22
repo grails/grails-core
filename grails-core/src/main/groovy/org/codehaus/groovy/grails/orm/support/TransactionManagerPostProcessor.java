@@ -22,6 +22,7 @@ import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.util.Assert;
 
 /**
  * Injects the platform transaction manager into beans that implement {@link TransactionManagerAware}.
@@ -42,10 +43,8 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
      * @throws BeansException
      */
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        if (!(beanFactory instanceof ConfigurableListableBeanFactory)) {
-            throw new IllegalArgumentException(
+        Assert.isInstanceOf(ConfigurableListableBeanFactory.class, beanFactory,
                 "TransactionManagerPostProcessor requires a ConfigurableListableBeanFactory");
-        }
 
         this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
     }

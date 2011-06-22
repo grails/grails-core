@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet
 
-import java.util.Collection;
-
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
@@ -15,7 +13,7 @@ class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests 
     protected Collection<Class> getControllerClasses() {
         [MultipleRenderController]
     }
-    
+
     void testLastContentTypeWins() {
         def controller = new MultipleRenderController()
 
@@ -24,7 +22,7 @@ class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests 
         assertEquals "application/json;charset=utf-8", response.contentType
     }
 
-   void testPriorSetContentTypeWins() {
+    void testPriorSetContentTypeWins() {
         def controller = new MultipleRenderController()
 
         controller.test2()
@@ -32,7 +30,9 @@ class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests 
         assertEquals "text/xml", response.contentType
     }
 }
+
 class MultipleRenderController {
+
     def test = {
         render(text:"foo",contentType:"text/xml")
         render(text:"bar",contentType:"application/json")

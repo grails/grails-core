@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import org.codehaus.groovy.grails.compiler.GrailsProjectPackager
+
 /**
  * Gant script that handles the packaging of Grails plug-ins.
  *
@@ -22,25 +24,24 @@
  * @since 0.4
  */
 
-projectPackager = new org.codehaus.groovy.grails.compiler.GrailsProjectPackager(projectCompiler, configFile, false)
+projectPackager = new GrailsProjectPackager(projectCompiler, configFile, false)
 projectPackager.servletVersion = servletVersion
 
 packageFiles = { String from ->
-	projectPackager.packageConfigFiles(from)
+    projectPackager.packageConfigFiles(from)
 }
 
 target(packagePlugins : "Packages any Grails plugins that are installed for this project") {
     depends(classpath, resolveDependencies)
-	projectPackager.packagePlugins()
+    projectPackager.packagePlugins()
 }
 
 packagePluginsForWar = { targetDir ->
-	try {
-		projectPackager.packagePluginsForWar(targetDir)		
-	}
-	catch(e) {
-		grailsConsole.error e.message, e
-		exit 1
-	}
-
+    try {
+        projectPackager.packagePluginsForWar(targetDir)
+    }
+    catch(e) {
+        grailsConsole.error e.message, e
+        exit 1
+    }
 }

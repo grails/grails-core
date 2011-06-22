@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import java.util.Collection;
-
 import org.springframework.validation.Errors
 
 /**
@@ -85,7 +83,7 @@ class CommandObjectErrorsTests extends AbstractGrailsControllerTests {
         assert errors.hasErrors()
         assertEquals 1, errors.allErrors.size()
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [CommandObjectErrorsTestController]

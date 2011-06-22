@@ -2,14 +2,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import java.sql.ResultSet
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/1/11
- * Time: 11:22 AM
- * To change this template use File | Settings | File Templates.
- */
-class MappingDefinitionInheritedBySubclassTests extends AbstractGrailsHibernateTests{
+class MappingDefinitionInheritedBySubclassTests extends AbstractGrailsHibernateTests {
+
     @Override
     protected void onSetUp() {
         gcl.parseClass('''
@@ -34,15 +28,12 @@ class MappingDefinitionInheritedChild extends MappingDefinitionInheritedParent {
 ''')
     }
 
-
     void testMappingInheritance() {
         def Child = ga.getDomainClass("MappingDefinitionInheritedChild").clazz
-
 
         Child.newInstance(name:"Fred", active:true).save()
         Child.newInstance(name:"Bob", active:false).save()
         Child.newInstance(name:"Eddie", active:true).save()
-
 
         session.clear()
         def results = Child.list()
@@ -54,11 +45,7 @@ class MappingDefinitionInheritedChild extends MappingDefinitionInheritedParent {
 
         ResultSet rs = session.connection().createStatement().executeQuery("select active from mapping_definition_inherited_parent where name = 'Bob'")
 
-
         assert rs.next() == true
         assert rs.getString("active") == "N"
-
     }
-
-
 }

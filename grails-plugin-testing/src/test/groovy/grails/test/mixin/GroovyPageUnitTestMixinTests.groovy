@@ -12,21 +12,21 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
     void testAssertOutputEquals() {
         mockTagLib(FooTagLib)
         assertOutputEquals 'tag contents good', '<foo:bar one="${one}"/>', [one:'good']
-        
+
         shouldFail(AssertionError) {
             assertOutputEquals 'tag contents bad', '<foo:bar one="${one}"/>', [one:'good']
         }
     }
-    
+
     void testAssertOutputMatches() {
         mockTagLib(FooTagLib)
         assertOutputMatches (/.*good.*/, '<foo:bar one="${one}"/>', [one:'good'])
-        
+
         shouldFail(AssertionError) {
             assertOutputMatches (/.*bad.*/, '<foo:bar one="${one}"/>', [one:'good'])
         }
     }
-    
+
     void testRenderTemplate() {
         views['/bar/_foo.gsp'] = 'Hello <g:createLink controller="foo" />'
 

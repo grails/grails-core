@@ -121,12 +121,10 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
 
     private String resolveViewFormat(String viewName) {
         String format = lookupRequestFormat();
-        if(format != null) {
+        if (format != null) {
               return viewName + DOT + format;
         }
-        else {
-             return viewName;
-        }
+        return viewName;
     }
 
     /**
@@ -143,7 +141,6 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         if(controller != null && viewName != null) {
             String controllerName = getNameForController(controller);
             String viewNameWithFormat = resolveViewFormat(viewName);
-
 
             GroovyPageScriptSource scriptSource = findResourceScriptSource(uriService.getViewURI(controllerName, viewNameWithFormat));
             if(scriptSource == null) {
@@ -198,9 +195,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         if(webRequest != null) {
             return findView(webRequest.getControllerName(), viewName);
         }
-        else {
-            return findViewByPath(viewName);
-        }
+        return findViewByPath(viewName);
     }
     /**
      * Finds a template for the given given template name, looking up the controller from the request as necessary
@@ -213,9 +208,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         if(webRequest != null) {
             return findTemplate(webRequest.getControllerName(), templateName);
         }
-        else {
-            return findTemplateByPath(templateName);
-        }
+        return findTemplateByPath(templateName);
     }
 
     /**
@@ -229,12 +222,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         if(webRequest != null) {
             return findPageInBinding(uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
         }
-        else {
-            return findPageInBinding(uriService.getAbsoluteTemplateURI(templateName), binding);
-        }
-
+        return findPageInBinding(uriService.getAbsoluteTemplateURI(templateName), binding);
     }
-
 
     /**
      * Finds a template for the given given template name, looking up the controller from the request as necessary
@@ -249,12 +238,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         if(webRequest != null) {
             return findPageInBinding(pluginName, uriService.getTemplateURI(webRequest.getControllerName(), templateName), binding);
         }
-        else {
-            return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName), binding);
-        }
-
+        return findPageInBinding(pluginName, uriService.getAbsoluteTemplateURI(templateName), binding);
     }
-
 
     /**
      * Find a template for a path. For example /foo/bar will search for /WEB-INF/grails-app/views/foo/_bar.gsp in production
@@ -290,7 +275,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
                     BinaryGrailsPlugin binaryGrailsPlugin = (BinaryGrailsPlugin) plugin;
 
                     String uri = "/WEB-INF/grails-app/views/layouts/" + name;
-                    Class viewClass = binaryGrailsPlugin.resolveView(uri);
+                    Class<?> viewClass = binaryGrailsPlugin.resolveView(uri);
                     if (viewClass != null) {
                         return new GroovyPageCompiledScriptSource(uri, viewClass);
                     }
@@ -299,5 +284,4 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         }
         return null;
     }
-
 }

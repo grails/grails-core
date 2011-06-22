@@ -15,13 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.servlet
 
-import java.util.Collection;
-
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
- * Tests for the render method
+ * Tests for the render method.
  *
  * @author Graeme Rocher
  */
@@ -31,7 +29,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     protected Collection<Class> getControllerClasses() {
         [RenderController]
     }
-    
+
     void testRenderMethodWithStatus() {
         def mockController = new RenderController()
         mockController.renderMessageWithStatus.call()
@@ -203,6 +201,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assertEquals "text/xml;charset=utf-8", response.contentType
     }
 }
+
 class RenderController {
 
     def renderBug = {
@@ -254,9 +253,9 @@ class RenderController {
         render(template:"xmlTemplate",contentType:"text/xml")
     }
 }
+
 class RenderTest {
     String foo
 
     String toString() { foo }
 }
-    

@@ -16,7 +16,7 @@ grails.gorm.default.constraints = {
     protected Collection<Class> getControllerClasses() {
         [CommandObjectTestController]
     }
-    
+
     void testCommandObjectAutoWiring() {
         // no command objects
         def testCtrl = new CommandObjectTestController()
@@ -128,7 +128,7 @@ grails.gorm.default.constraints = {
 
 class CommandObjectTestController {
     def someProperty
-    
+
     def action1 = {
          someProperty
     }
@@ -148,24 +148,29 @@ class CommandObjectTestController {
         [artist: artistCommandObject]
     }
 }
+
 class Command {
     String name
 }
+
 class AutoWireCapableCommand {
     def groovyPagesTemplateEngine
 }
+
 class ConstrainedCommand {
     String data
     static constraints = {
         data(size:5..10)
     }
 }
+
 class ConstrainedCommandSubclass extends ConstrainedCommand {
     Integer age
     static constraints = {
         age range: 10..50
     }
 }
+
 class Artist {
     String name
     static constraints = {

@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse
 @Mock(${className})
 class ${className}ControllerTests {
 
-
     @Test
     void testIndex() {
         controller.index()
@@ -22,7 +21,6 @@ class ${className}ControllerTests {
 
         assert model.${propertyName}InstanceList.size() == 0
         assert model.${propertyName}InstanceTotal == 0
-
     }
 
     @Test
@@ -30,8 +28,6 @@ class ${className}ControllerTests {
        def model = controller.create()
 
        assert model.${propertyName}Instance != null
-
-
     }
 
     @Test
@@ -42,12 +38,12 @@ class ${className}ControllerTests {
         response.reset()
         request.method = 'POST'
         controller.save()
-        
+
         assert model.${propertyName}Instance != null
         assert view == '/${propertyName}/create'
 
         response.reset()
-        
+
         // TODO: Populate valid properties
 
         controller.save()
@@ -56,7 +52,6 @@ class ${className}ControllerTests {
         assert controller.flash.message != null
         assert ${className}.count() == 1
     }
-
 
     @Test
     void testShow() {
@@ -105,11 +100,11 @@ class ${className}ControllerTests {
 
         controller.update()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-        
+
         response.reset()
         request.method = 'POST'
         controller.update()
-        
+
         assert flash.message != null
         assert response.redirectedUrl == '/${propertyName}/list'
 
@@ -143,7 +138,7 @@ class ${className}ControllerTests {
     void testDelete() {
         controller.delete()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-        
+
         response.reset()
         request.method = 'POST'
         controller.delete()
@@ -165,9 +160,5 @@ class ${className}ControllerTests {
         assert ${className}.count() == 0
         assert ${className}.get(${propertyName}.id) == null
         assert response.redirectedUrl == '/${propertyName}/list'
-
-
     }
-
-
 }

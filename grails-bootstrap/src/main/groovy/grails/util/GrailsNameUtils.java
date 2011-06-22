@@ -19,6 +19,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.springframework.util.Assert;
+
 /**
  * Utility methods for converting between different name types,
  * for example from class names -> property names and vice-versa. The
@@ -62,9 +64,7 @@ public class GrailsNameUtils {
      * @return The class name
      */
     public static String getClassName(String logicalName, String trailingName) {
-        if (isBlank(logicalName)) {
-            throw new IllegalArgumentException("Argument [logicalName] cannot be null or blank");
-        }
+        Assert.isTrue(!isBlank(logicalName), "Argument [logicalName] cannot be null or blank");
 
         String className = logicalName.substring(0,1).toUpperCase(Locale.ENGLISH) + logicalName.substring(1);
         if (trailingName != null) {

@@ -2,9 +2,11 @@ package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.web.context.request.RequestContextHolder
+
 import spock.lang.Specification
 
 class MethodActionTransformerSpec extends Specification {
@@ -83,9 +85,9 @@ class MethodActionTransformerSpec extends Specification {
             }
             class CommandObject{
                 String prop
-                
+
                 int validateCounter = 0
-                
+
                 def validate() {
                     ++validateCounter
                 }
@@ -103,14 +105,10 @@ class MethodActionTransformerSpec extends Specification {
         1 == controller.commandObjectClosure.validateCounter
         controller.commandObjectMethod
         1 == controller.commandObjectMethod.validateCounter
-        
     }
 
     def cleanup() {
         RequestContextHolder.setRequestAttributes(null)
         System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'false'
     }
-
-
 }
-

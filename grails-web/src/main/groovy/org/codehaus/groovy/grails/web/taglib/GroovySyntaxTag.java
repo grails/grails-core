@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.springframework.util.Assert;
 
 /**
  * <p>A tag type that gets translated directly into Groovy syntax by the GSP parser.</p>
@@ -59,9 +60,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     public void setWriter(Writer w) {
-        if (!(w instanceof PrintWriter)) {
-            throw new IllegalArgumentException("A GroovySynax tag requires a java.io.PrintWriter instance");
-        }
+        Assert.isInstanceOf(PrintWriter.class, w, "A GroovySynax tag requires a java.io.PrintWriter instance");
         out = (PrintWriter)w;
     }
 
@@ -74,9 +73,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     public void setAttribute(String name, Object value) {
-        if (!(value instanceof String)) {
-            throw new IllegalArgumentException("A GroovySynax tag requires only string valued attributes");
-        }
+        Assert.isInstanceOf(String.class, value, "A GroovySynax tag requires only string valued attributes");
 
         String stringValue = (String)value;
         if (stringValue.startsWith("${") && stringValue.endsWith("}")) {
@@ -104,9 +101,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     public abstract boolean isAllowPrecedingContent();
 
     protected String calculateExpression(String expr) {
-        if (StringUtils.isBlank(expr)) {
-            throw new IllegalArgumentException("Argument [expr] cannot be null or blank");
-        }
+        Assert.isTrue(!StringUtils.isBlank(expr), "Argument [expr] cannot be null or blank");
 
         expr = expr.trim();
         if (expr.startsWith("\"") && expr.endsWith("\"")) {

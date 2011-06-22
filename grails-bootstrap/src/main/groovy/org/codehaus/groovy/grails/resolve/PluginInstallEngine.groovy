@@ -1,18 +1,18 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.resolve
 
 import grails.build.logging.GrailsConsole
@@ -21,15 +21,18 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
+
 import java.util.regex.Pattern
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
+import org.springframework.util.Assert
 
  /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -61,23 +64,23 @@ class PluginInstallEngine {
     protected ant
     protected PluginResolveEngine resolveEngine
 
-    PluginInstallEngine(grails.util.BuildSettings settings) {
+    PluginInstallEngine(BuildSettings settings) {
         this(settings, new PluginBuildSettings(settings), Metadata.current, new AntBuilder())
     }
 
-    PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs) {
         this(settings, pbs, Metadata.current, new AntBuilder())
     }
 
-    PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs, Metadata md) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md) {
         this(settings, pbs, md, new AntBuilder())
     }
 
-    PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
-        if (settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
-        if (pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
-        if (md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
-        if (ant== null) throw new IllegalArgumentException("Argument [ant] cannot be null")
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
+        Assert.notNull settings, "Argument [settings] cannot be null"
+        Assert.notNull pbs, "Argument [pbs] cannot be null"
+        Assert.notNull md, "Argument [md] cannot be null"
+        Assert.notNull ant, "Argument [ant] cannot be null"
 
         globalPluginsLocation = settings.globalPluginsDir
         applicationPluginsLocation = settings.getProjectPluginsDir()

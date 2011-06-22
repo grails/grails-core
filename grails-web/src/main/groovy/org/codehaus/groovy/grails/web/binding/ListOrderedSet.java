@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.collections.iterators.AbstractIteratorDecorator;
 import org.apache.commons.collections.list.UnmodifiableList;
 import org.apache.commons.collections.set.AbstractSerializableSetDecorator;
+import org.spockframework.util.Assert;
 
 /**
  * Forked from Apache Commons Collections' implementation of ListOrderedSet. This one actually implements the List interface.
@@ -66,9 +67,8 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
      * @throws IllegalArgumentException if list is null
      */
     public static ListOrderedSet decorate(List list) {
-        if (list == null) {
-            throw new IllegalArgumentException("List must not be null");
-        }
+        Assert.notNull(list, "List must not be null");
+
         Set set = new HashSet(list);
         list.retainAll(set);
 
@@ -109,9 +109,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
      */
     protected ListOrderedSet(Set set, List list) {
         super(set);
-        if (list == null) {
-            throw new IllegalArgumentException("List must not be null");
-        }
+        Assert.notNull(list, "List must not be null");
         setOrder = list;
     }
 

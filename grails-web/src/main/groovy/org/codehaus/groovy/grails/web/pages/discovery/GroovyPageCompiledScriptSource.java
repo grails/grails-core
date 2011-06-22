@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.web.pages.discovery;
 import java.io.IOException;
 
 /**
- * Represents a pre-compiled GSP
+ * Represents a pre-compiled GSP.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -27,9 +27,9 @@ import java.io.IOException;
 public class GroovyPageCompiledScriptSource implements GroovyPageScriptSource {
 
     private String uri;
-    private Class compiledClass;
+    private Class<?> compiledClass;
 
-    public GroovyPageCompiledScriptSource(String uri, Class compiledClass) {
+    public GroovyPageCompiledScriptSource(String uri, Class<?> compiledClass) {
         this.uri = uri;
         this.compiledClass = compiledClass;
     }
@@ -39,10 +39,9 @@ public class GroovyPageCompiledScriptSource implements GroovyPageScriptSource {
     }
 
     /**
-     *
      * @return The compiled class
      */
-    public Class getCompiledClass() {
+    public Class<?> getCompiledClass() {
         return compiledClass;
     }
 
