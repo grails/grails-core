@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import grails.util.CollectionUtils;
 import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
@@ -21,9 +22,7 @@ import groovy.lang.MetaClass;
 
 import java.lang.reflect.Modifier;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -458,7 +457,7 @@ public class GrailsHibernateUtil {
         GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();
 
         @SuppressWarnings("unchecked")
-        Set<Class<?>> proxyInterfaces = new HashSet<Class<?>>(Arrays.asList(HibernateProxy.class));
+        Set<Class<HibernateProxy>> proxyInterfaces = CollectionUtils.newSet(HibernateProxy.class);
 
         final Class<?> javaClass = persistentClass.getMappedClass();
         final Property identifierProperty = persistentClass.getIdentifierProperty();

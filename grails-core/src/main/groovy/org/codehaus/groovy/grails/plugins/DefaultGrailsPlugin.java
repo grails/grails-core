@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.spring.BeanBuilder;
 import grails.util.BuildScope;
+import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
@@ -725,15 +726,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
     }
 
-    @SuppressWarnings("serial")
     public Map notifyOfEvent(int eventKind, final Object source) {
-        Map<String, Object> event = new HashMap<String, Object>() {{
-            put(PLUGIN_CHANGE_EVENT_SOURCE, source);
-            put(PLUGIN_CHANGE_EVENT_PLUGIN, plugin);
-            put(PLUGIN_CHANGE_EVENT_APPLICATION, application);
-            put(PLUGIN_CHANGE_EVENT_MANAGER, getManager());
-            put(PLUGIN_CHANGE_EVENT_CTX, applicationContext);
-        }};
+        @SuppressWarnings("unchecked")
+        Map<String, Object> event = CollectionUtils.newMap(
+            PLUGIN_CHANGE_EVENT_SOURCE, source,
+            PLUGIN_CHANGE_EVENT_PLUGIN, plugin,
+            PLUGIN_CHANGE_EVENT_APPLICATION, application,
+            PLUGIN_CHANGE_EVENT_MANAGER, getManager(),
+            PLUGIN_CHANGE_EVENT_CTX, applicationContext);
 
         switch (eventKind) {
             case EVENT_ON_CHANGE:

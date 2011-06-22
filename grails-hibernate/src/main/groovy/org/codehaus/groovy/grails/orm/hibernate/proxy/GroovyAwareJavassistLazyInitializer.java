@@ -14,11 +14,11 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.proxy;
 
+import grails.util.CollectionUtils;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import javassist.util.proxy.MethodFilter;
@@ -44,14 +44,14 @@ public class GroovyAwareJavassistLazyInitializer extends BasicLazyInitializer im
 
     private static final String WRITE_CLASSES_DIRECTORY = System.getProperty("javassist.writeDirectory");
 
-    private static final Set<String> GROOVY_METHODS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> GROOVY_METHODS = CollectionUtils.newSet(
             "invokeMethod",
             "getMetaClass",
             "setMetaClass",
             "metaClass",
             "getProperty",
             "setProperty",
-            "$getStaticMetaClass"));
+            "$getStaticMetaClass");
 
     private static final MethodFilter METHOD_FILTERS = new MethodFilter() {
         public boolean isHandled(Method m) {

@@ -14,11 +14,8 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.CollectionUtils;
 import groovy.lang.GroovyObject;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
-import org.springframework.validation.Errors;
 
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
@@ -32,7 +29,19 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import org.springframework.validation.Errors;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration.
@@ -226,7 +235,7 @@ public class GrailsDomainConfigurationUtil {
 
     private static final Set<String> BASIC_TYPES;
     static {
-        Set<String> basics = new HashSet<String>(Arrays.asList(
+        Set<String> basics = CollectionUtils.newSet(
                 boolean.class.getName(),
                 long.class.getName(),
                 short.class.getName(),
@@ -265,7 +274,7 @@ public class GrailsDomainConfigurationUtil {
                 Clob.class.getName(),
                 Serializable.class.getName(),
                 URI.class.getName(),
-                URL.class.getName()));
+                URL.class.getName());
         BASIC_TYPES = Collections.unmodifiableSet(basics);
     }
 

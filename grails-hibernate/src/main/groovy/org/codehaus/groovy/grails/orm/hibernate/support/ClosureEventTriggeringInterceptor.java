@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import grails.util.CollectionUtils;
 import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
 
@@ -23,10 +24,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -82,7 +81,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     private static final Logger log = LoggerFactory.getLogger(AbstractSaveEventListener.class);
     private static final long serialVersionUID = 1;
 
-    public static final Collection<String> IGNORED = new HashSet<String>(Arrays.asList("version", "id"));
+    public static final Collection<String> IGNORED = CollectionUtils.newSet("version", "id");
     public static final String ONLOAD_EVENT = "onLoad";
     public static final String ONLOAD_SAVE = "onSave";
     public static final String BEFORE_LOAD_EVENT = "beforeLoad";

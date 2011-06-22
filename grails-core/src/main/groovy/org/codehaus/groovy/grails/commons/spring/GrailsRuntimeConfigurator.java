@@ -16,11 +16,11 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
+import grails.util.CollectionUtils;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -323,7 +323,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * Loads any external Spring configuration into the given RuntimeSpringConfiguration object.
      * @param config The config instance
      */
-    @SuppressWarnings({ "serial", "rawtypes", "unchecked" })
+    @SuppressWarnings("rawtypes")
     public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, final GrailsApplication application) {
         if (springGroovyResourcesBeanBuilder == null) {
             try {
@@ -337,10 +337,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                 }
                 if (groovySpringResourcesClass != null) {
                     springGroovyResourcesBeanBuilder = new BeanBuilder(null, config,Thread.currentThread().getContextClassLoader());
-                    springGroovyResourcesBeanBuilder.setBinding(new Binding(new HashMap() {{
-                        put("application", application);
-                        put("grailsApplication", application); // GRAILS-7550
-                    }}));
+                    springGroovyResourcesBeanBuilder.setBinding(new Binding(CollectionUtils.newMap(
+                        "application", application,
+                        "grailsApplication", application))); // GRAILS-7550
                     Script script = (Script) groovySpringResourcesClass.newInstance();
                     script.run();
                     Object beans = script.getProperty("beans");

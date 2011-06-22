@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import grails.util.CollectionUtils;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -68,13 +70,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private Map<UrlMappingKey, UrlMapping> mappingsLookup = new HashMap<UrlMappingKey, UrlMapping>();
     private Map<String, UrlMapping> namedMappings = new HashMap<String, UrlMapping>();
     private UrlMappingsList mappingsListLookup = new UrlMappingsList();
-    private Set<String> DEFAULT_CONTROLLER_PARAMS = new HashSet<String>() {{
-        add(UrlMapping.CONTROLLER);
-        add(UrlMapping.ACTION);
-    }};
-    private Set<String> DEFAULT_ACTION_PARAMS = new HashSet<String>() {{
-        add(UrlMapping.ACTION);
-    }};
+    private Set<String> DEFAULT_CONTROLLER_PARAMS = CollectionUtils.newSet(
+          UrlMapping.CONTROLLER, UrlMapping.ACTION);
+    private Set<String> DEFAULT_ACTION_PARAMS = CollectionUtils.newSet(UrlMapping.ACTION);
     private UrlCreatorCache urlCreatorCache;
     // capacity of the UrlCreatoreCache is the estimated number of char's stored in cached objects
     private int urlCreatorMaxWeightedCacheCapacity = 160000;

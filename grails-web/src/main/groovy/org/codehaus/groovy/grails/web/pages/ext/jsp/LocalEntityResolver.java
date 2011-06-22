@@ -15,10 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp;
 
+import grails.util.CollectionUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.xml.sax.EntityResolver;
@@ -30,31 +31,30 @@ import org.xml.sax.SAXException;
  *
  * @author Graeme Rocher
  */
-@SuppressWarnings("serial")
 public class LocalEntityResolver implements EntityResolver {
 
-    private static final Map<String, String> ENTITIES = new HashMap<String, String>() {{
+    @SuppressWarnings("unchecked")
+    private static final Map<String, String> ENTITIES = CollectionUtils.newMap(
         // JSP taglib 2.1
-        put("http://java.sun.com/xml/ns/jee/web-jsptaglibrary_2_1.xsd", "web-jsptaglibrary_2_1.xsd");
+        "http://java.sun.com/xml/ns/jee/web-jsptaglibrary_2_1.xsd", "web-jsptaglibrary_2_1.xsd",
         // JSP taglib 2.0
-        put("http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd", "web-jsptaglibrary_2_0.xsd");
+        "http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd", "web-jsptaglibrary_2_0.xsd",
         // JSP taglib 1.2
-        put("-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN", "web-jsptaglibrary_1_2.dtd");
-        put("http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd", "web-jsptaglibrary_1_2.dtd");
+        "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN", "web-jsptaglibrary_1_2.dtd",
+        "http://java.sun.com/dtd/web-jsptaglibrary_1_2.dtd", "web-jsptaglibrary_1_2.dtd",
         // JSP taglib 1.1
-        put("-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN", "web-jsptaglibrary_1_1.dtd");
-        put("http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd", "web-jsptaglibrary_1_1.dtd");
+        "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN", "web-jsptaglibrary_1_1.dtd",
+        "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd", "web-jsptaglibrary_1_1.dtd",
         // Servlet 2.5
-        put("http://java.sun.com/xml/ns/jee/web-app_2_5.xsd", "web-app_2_5.xsd");
+        "http://java.sun.com/xml/ns/jee/web-app_2_5.xsd", "web-app_2_5.xsd",
         // Servlet 2.4
-        put("http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd", "web-app_2_4.xsd");
+        "http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd", "web-app_2_4.xsd",
         // Servlet 2.3
-        put("-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", "web-app_2_3.dtd");
-        put("http://java.sun.com/dtd/web-app_2_3.dtd", "web-app_2_3.dtd");
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", "web-app_2_3.dtd",
+        "http://java.sun.com/dtd/web-app_2_3.dtd", "web-app_2_3.dtd",
         // Servlet 2.2
-        put("-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", "web-app_2_2.dtd");
-        put("http://java.sun.com/j2ee/dtds/web-app_2_2.dtd", "web-app_2_2.dtd");
-    }};
+        "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", "web-app_2_2.dtd",
+        "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd", "web-app_2_2.dtd");
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         String name = ENTITIES.get(publicId);

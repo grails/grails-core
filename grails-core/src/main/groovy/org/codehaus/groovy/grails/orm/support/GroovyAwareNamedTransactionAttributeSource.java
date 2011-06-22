@@ -14,9 +14,9 @@
  */
 package org.codehaus.groovy.grails.orm.support;
 
+import grails.util.CollectionUtils;
+
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,11 +30,11 @@ import org.springframework.transaction.interceptor.TransactionAttribute;
 public class GroovyAwareNamedTransactionAttributeSource extends NameMatchTransactionAttributeSource {
 
     private static final long serialVersionUID = 3519687998898725875L;
-    private static final Set<String> NONTRANSACTIONAL_GROOVY_METHODS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> NONTRANSACTIONAL_GROOVY_METHODS = CollectionUtils.newSet(
             "invokeMethod",
             "getMetaClass",
             "getProperty",
-            "setProperty"));
+            "setProperty");
 
     @SuppressWarnings("rawtypes")
     @Override

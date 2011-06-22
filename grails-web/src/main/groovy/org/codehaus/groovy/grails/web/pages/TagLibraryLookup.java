@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.CollectionUtils;
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
@@ -71,13 +72,11 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
 
     protected void registerTemplateNamespace() {
         namespaceDispatchers.put(GroovyPage.TEMPLATE_NAMESPACE, new NamespacedTagDispatcher(GroovyPage.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this) {
-            @SuppressWarnings("serial")
             @Override
             public Object invokeMethod(final String name, Object args) {
 
-                Map<String, Object> attrs = new HashMap<String, Object>() {{
-                    put("template", name);
-                }};
+                @SuppressWarnings("unchecked")
+                Map<String, Object> attrs = CollectionUtils.newMap("template", name);
                 if (args != null && args instanceof Object[]) {
                     Object[] tagArgs = ((Object[])args);
                     if (tagArgs.length > 0 && tagArgs[0] instanceof Map) {

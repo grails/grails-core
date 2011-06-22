@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.resolve;
 
 import grails.util.BuildSettings;
+import grails.util.CollectionUtils;
 import grails.util.Metadata;
 import groovy.lang.Closure;
 
@@ -110,14 +111,14 @@ public abstract class AbstractIvyDependencyManager {
             PROVIDED_CONFIGURATION,
             DOCS_CONFIGURATION);
 
-    Map<String, List<String>> configurationMappings = new HashMap<String, List<String>>() {{
-       put("runtime", Arrays.asList("default"));
-       put("build", Arrays.asList("default"));
-       put("compile", Arrays.asList("default"));
-       put("provided", Arrays.asList("default"));
-       put("docs", Arrays.asList("default"));
-       put("test", Arrays.asList("default"));
-    }};
+    @SuppressWarnings("unchecked")
+    Map<String, List<String>> configurationMappings = CollectionUtils.newMap(
+       "runtime", Arrays.asList("default"),
+       "build", Arrays.asList("default"),
+       "compile", Arrays.asList("default"),
+       "provided", Arrays.asList("default"),
+       "docs", Arrays.asList("default"),
+       "test", Arrays.asList("default"));
 
     protected String[] configurationNames = configurationMappings.keySet().toArray(
             new String[configurationMappings.size()]);
@@ -571,7 +572,7 @@ public abstract class AbstractIvyDependencyManager {
         ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId();
         ModuleId moduleId = moduleRevisionId.getModuleId();
 
-        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0);
+        String scope = dependencyDescriptor.getModuleConfigurations()[0];
 
         if (!hasDependency(moduleId)) {
             EnhancedDefaultDependencyDescriptor enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope);
