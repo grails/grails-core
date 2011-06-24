@@ -80,6 +80,7 @@ if (!System.getProperty("grails.env.set")) {
         System.setProperty(Environment.KEY, grailsEnv)
         System.setProperty(Environment.DEFAULT, "")
     }
+    grailsConsole.updateStatus "Environment set to $grailsEnv"
     grailsConsole.category << grailsEnv
     System.setProperty("grails.env.set", "true")
 }

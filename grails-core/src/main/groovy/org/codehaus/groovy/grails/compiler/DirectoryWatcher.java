@@ -86,30 +86,30 @@ public class DirectoryWatcher extends Thread {
     }
 
     /**
-     * Adds a directory to watch for the given file and extensions
+     * Adds a directory to watch for the given file and extensions.
      *
      * @param dir The directory
-     * @param extensions The extensions
+     * @param fileExtensions The extensions
      */
-    public void addWatchDirectory(File dir, List<String> extensions) {
-        cacheFilesForDirectory(dir, extensions, false);
+    public void addWatchDirectory(File dir, List<String> fileExtensions) {
+        cacheFilesForDirectory(dir, fileExtensions, false);
     }
 
     /**
-     * Adds a directory to watch for the given file and extensions
+     * Adds a directory to watch for the given file and extensions.
      *
      * @param dir The directory
      * @param extension The extension
      */
     public void addWatchDirectory(File dir, String extension) {
-        List<String> extensions = new ArrayList<String>();
+        List<String> fileExtensions = new ArrayList<String>();
         if (extension == null) {
-            extensions.add("*");
+            fileExtensions.add("*");
         }
         else {
-            extensions.add(extension);
+            fileExtensions.add(extension);
         }
-        cacheFilesForDirectory(dir, extensions, false);
+        cacheFilesForDirectory(dir, fileExtensions, false);
     }
 
     /**
@@ -173,8 +173,8 @@ public class DirectoryWatcher extends Thread {
         }
     }
 
-    private void cacheFilesForDirectory(File directory, Collection<String> extensions, boolean fireEvent) {
-        addExtensions(extensions);
+    private void cacheFilesForDirectory(File directory, Collection<String> fileExtensions, boolean fireEvent) {
+        addExtensions(fileExtensions);
 
         directoryWatch.put(directory, directory.lastModified());
         File[] files = directory.listFiles();
@@ -184,9 +184,9 @@ public class DirectoryWatcher extends Thread {
 
         for (File file : files) {
             if (file.isDirectory()) {
-                cacheFilesForDirectory(file, extensions, fireEvent);
+                cacheFilesForDirectory(file, fileExtensions, fireEvent);
             }
-            else if (isValidFileToMonitor(file.getName(), extensions)) {
+            else if (isValidFileToMonitor(file.getName(), fileExtensions)) {
                 if (!lastModifiedMap.containsKey(file) && fireEvent) {
                     for (FileChangeListener listener : listeners) {
                         listener.onNew(file);
@@ -205,7 +205,7 @@ public class DirectoryWatcher extends Thread {
         }
     }
 
-    private boolean isValidFileToMonitor(String name, Collection<String> extensions) {
-        return extensions.contains("*") || extensions.contains(StringUtils.getFilenameExtension(name));
+    private boolean isValidFileToMonitor(String name, Collection<String> fileExtensions) {
+        return fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name));
     }
 }

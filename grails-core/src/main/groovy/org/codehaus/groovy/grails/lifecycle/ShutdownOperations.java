@@ -45,7 +45,7 @@ public class ShutdownOperations {
             PluginManagerHolder.setPluginManager(null);
             ApplicationHolder.setApplication(null);
             ConfigurationHelper.clearCachedConfigs();
-            ExpandoMetaClass.disableGlobally();
+            //ExpandoMetaClass.disableGlobally();
             ClassPropertyFetcher.clearClassPropertyFetcherCache();
         }
     };

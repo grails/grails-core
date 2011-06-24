@@ -57,7 +57,6 @@ public class GrailsConsole {
     public static final String CATEGORY_SEPARATOR = "|";
     public static final String PROMPT = "grails> ";
     public static final String SPACE = " ";
-    private static final String ERROR_REGEX = ".*?(ERROR|FATAL).*?";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -117,7 +116,7 @@ public class GrailsConsole {
         if (isWindows()) {
            terminal = new WindowsTerminal() {
                @Override
-                public boolean isANSISupported() {
+               public boolean isANSISupported() {
                    return true;
                }
             };
@@ -168,7 +167,7 @@ public class GrailsConsole {
      * @param verbose Sets whether verbose output should be used
      */
     public void setVerbose(boolean verbose) {
-        if(verbose) {
+        if (verbose) {
             // enable big traces in verbose mode
             System.setProperty("grails.full.stacktrace", "true");
         }
@@ -223,14 +222,14 @@ public class GrailsConsole {
         progressIndicatorActive = true;
         if (isAnsiEnabled()) {
             if (StringUtils.hasText(lastMessage)) {
-                if (!lastMessage.contains(maxIndicatorString))
+                if (!lastMessage.contains(maxIndicatorString)) {
                     updateStatus(lastMessage + indicator);
+                }
             }
         }
         else {
             out.print(indicator);
         }
-
     }
 
     /**
@@ -304,7 +303,7 @@ public class GrailsConsole {
     }
 
     private void outputMessage(String msg, int replaceCount) {
-        if(msg == null || msg.trim().length() == 0) return;
+        if (msg == null || msg.trim().length() == 0) return;
         try {
             if (hasNewLines(msg)) {
                 printMessageOnNewLine(msg);
@@ -318,13 +317,14 @@ public class GrailsConsole {
                     out.println(lastStatus);
                     cursorMove = replaceCount;
                 } else {
-                    if(lastMessage != null && lastMessage.equals(msg)) return;
+                    if (lastMessage != null && lastMessage.equals(msg)) return;
 
-                    if(progressIndicatorActive) {
+                    if (progressIndicatorActive) {
                         out.println();
                     }
 
-                    out.println(CATEGORY_SEPARATOR + msg);
+                    out.print(CATEGORY_SEPARATOR);
+                    out.println(msg);
                 }
                 lastMessage = msg;
             }
@@ -334,20 +334,22 @@ public class GrailsConsole {
     }
 
     private void postPrintMessage() {
-        if(!progressIndicatorActive) {
+        if (!progressIndicatorActive) {
             replayPromptIfActive();
         }
         progressIndicatorActive = false;
     }
 
     private void replayPromptIfActive() {
-        if(userInputActive) {
-            if(isAnsiEnabled()) {
-                out.println(ansiPrompt(PROMPT));
-            }
-            else {
-                out.println(PROMPT);
-            }
+        if (!userInputActive) {
+            return;
+        }
+
+        if (isAnsiEnabled()) {
+            out.println(ansiPrompt(PROMPT));
+        }
+        else {
+            out.println(PROMPT);
         }
     }
 
@@ -370,14 +372,14 @@ public class GrailsConsole {
             cursorMove = 0;
             if (isAnsiEnabled()) {
                 Ansi ansi;
-                if(msg.contains("ERROR") || msg.contains("FATAL")) {
+                if (msg.contains("ERROR") || msg.contains("FATAL")) {
                     ansi = outputErrorLabel(ansi(), "Error").a(msg).reset();
                 }
                 else {
                     ansi = outputErrorLabel(ansi(), "").a(msg).reset();
                 }
 
-                if(msg.endsWith(LINE_SEPARATOR)) {
+                if (msg.endsWith(LINE_SEPARATOR)) {
                     out.print(ansi);
                 }
                 else {
@@ -390,12 +392,12 @@ public class GrailsConsole {
         } finally {
             postPrintMessage();
         }
-
     }
 
     private void logSimpleError(String msg) {
-        if(progressIndicatorActive)
+        if (progressIndicatorActive) {
             out.println();
+        }
         out.println(CATEGORY_SEPARATOR);
         out.println(msg);
     }
@@ -453,7 +455,7 @@ public class GrailsConsole {
      */
     public void log(String msg) {
         try {
-            if(msg.endsWith(LINE_SEPARATOR)) {
+            if (msg.endsWith(LINE_SEPARATOR)) {
                 out.print(msg);
             }
             else {
@@ -504,12 +506,10 @@ public class GrailsConsole {
             cursorMove = 0;
             userInputActive = true;
             try {
-                if(isAnsiEnabled()) {
+                if (isAnsiEnabled()) {
                     return reader.readLine(ansiPrompt(PROMPT).toString());
                 }
-                else {
-                    return reader.readLine(PROMPT);
-                }
+                return reader.readLine(PROMPT);
             } finally {
                 userInputActive = false;
             }
@@ -593,7 +593,6 @@ public class GrailsConsole {
                 .fg(Color.DEFAULT);
     }
 
-
     private Ansi erasePreviousLine(String categoryName) {
         if (cursorMove > 0) {
             return ansi()
@@ -608,7 +607,7 @@ public class GrailsConsole {
     public void error(String label, String message) {
         cursorMove = 0;
         try {
-            if(isAnsiEnabled()) {
+            if (isAnsiEnabled()) {
                 out.println(outputErrorLabel(ansi(), label).a(message));
             }
             else {

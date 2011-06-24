@@ -3,13 +3,16 @@ package grails.test.mixin
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
+
+import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeUtility
+import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.web.multipart.MultipartFile
-import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 
 /**
  * Specification for the behavior of the ControllerUnitTestMixin
@@ -232,10 +235,173 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
 
         assert response.contentAsString == 'Good'
     }
+
+    void testAllowedMethods() {
+        def controller = getMockController()
+
+        controller.action1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 1'
+
+        response.reset()
+        request.method = "POST"
+        controller.action1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 1'
+
+        response.reset()
+        request.method = "PUT"
+        controller.action1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 1'
+
+        response.reset()
+        request.method = "DELETE"
+        controller.action1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 1'
+
+        response.reset()
+        request.method = 'POST'
+        controller.action2()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 2'
+
+        response.reset()
+        request.method = 'GET'
+        controller.action2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'PUT'
+        controller.action2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'DELETE'
+        controller.action2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'POST'
+        controller.action3()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 3'
+
+        response.reset()
+        request.method = 'PUT'
+        controller.action3()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'action 3'
+
+        response.reset()
+        request.method = 'GET'
+        controller.action3()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+                    
+        response.reset()
+        request.method = 'DELETE'
+        controller.action3()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'GET'
+        controller.method1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 1'
+
+        response.reset()
+        request.method = "POST"
+        controller.method1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 1'
+
+        response.reset()
+        request.method = "PUT"
+        controller.method1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 1'
+
+        response.reset()
+        request.method = "DELETE"
+        controller.method1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 1'
+
+        response.reset()
+        request.method = 'POST'
+        controller.method2()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 2'
+
+        response.reset()
+        request.method = 'GET'
+        controller.method2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'PUT'
+        controller.method2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'DELETE'
+        controller.method2()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'POST'
+        controller.method3()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 3'
+
+        response.reset()
+        request.method = 'PUT'
+        controller.method3()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 3'
+
+        response.reset()
+        request.method = 'GET'
+        controller.method3()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+        response.reset()
+        request.method = 'DELETE'
+        controller.method3()
+        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+
+    }
 }
 
 class TestController {
+    
+    static allowedMethods = [action2: 'POST', action3: ['POST', 'PUT'], method2: 'POST', method3: ['POST', 'PUT']]
+    
+    def action1 = {
+        render 'action 1'
+    }
 
+    def action2 = {
+            render 'action 2'
+    }
+    
+    def action3 = {
+            render 'action 3'
+    }
+    
+    def method1() {
+        render 'method 1'
+    }
+    
+    def method2() {
+        render 'method 2'
+    }
+    
+    def method3() {
+        render 'method 3'
+    }
+    
     def handleCommand = { TestCommand test ->
          if (test.hasErrors()) {
              render "Bad"

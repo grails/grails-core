@@ -24,6 +24,7 @@ import grails.util.GrailsNameUtils
 import groovy.text.Template
 import java.util.concurrent.ConcurrentHashMap
 import javax.servlet.ServletConfig
+import org.apache.commons.lang.WordUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
@@ -42,6 +43,7 @@ import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
 
 /**
@@ -698,26 +700,31 @@ class RenderTagLib implements RequestConstants {
         }
 
         def currentOut = out
-        currentOut << """<h2>Error ${request.'javax.servlet.error.status_code'}</h2>
-<div class="errors">
-<strong>URI:</strong> ${request.forwardURI ?: request.'javax.servlet.error.request_uri'}<br/>
+        currentOut << """<h1>Error ${prettyPrintStatus(request.'javax.servlet.error.status_code')}</h1>
+<dl class="error-details">
+<dt>URI</dt><dd>${request.forwardURI ?: request.'javax.servlet.error.request_uri'}</dd>
 """
 
         def root = GrailsExceptionResolver.getRootCause(exception)
-        currentOut << "<strong>Message:</strong> ${exception.message?.encodeAsHTML()} <br />"
+		currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
+        currentOut << "<dt>Message</dt><dd>${exception.message?.encodeAsHTML()}</dd>"
         if (root != null && root != exception && root.message != exception.message) {
-            currentOut << "<strong>Caused by:</strong> ${root.message?.encodeAsHTML()} <br />"
+            currentOut << "<dt>Caused by</dt><dd>${root.message?.encodeAsHTML()}</dd>"
         }
-        currentOut << "</div>"
+        currentOut << "</dl>"
 
         currentOut << errorsViewStackTracePrinter.prettyPrintCodeSnippet(exception)
 
         def trace = errorsViewStackTracePrinter.prettyPrint(exception.cause ?: exception)
         if (StringUtils.hasText(trace.trim())) {
             currentOut << "<h2>Trace</h2>"
-            currentOut << '<div class="stack"><pre>'
+            currentOut << '<pre class="stack">'
             currentOut << trace.encodeAsHTML()
-            currentOut << '</pre></div>'
+            currentOut << '</pre>'
         }
     }
+
+	private String prettyPrintStatus(int statusCode) {
+		"$statusCode: ${WordUtils.capitalizeFully(HttpStatus.valueOf(statusCode).name().replaceAll('_', ' '))}"
+	}
 }

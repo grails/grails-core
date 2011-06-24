@@ -35,7 +35,7 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     depends(loadApp)
 
     def name = generateForName
-    name = name.indexOf('.') > -1 ? name : GrailsNameUtils.getClassNameRepresentation(name)
+    name = name.indexOf('.') > 0 ? name : GrailsNameUtils.getClassNameRepresentation(name)
     def domainClass = grailsApp.getDomainClass(name)
 
     if (!domainClass) {

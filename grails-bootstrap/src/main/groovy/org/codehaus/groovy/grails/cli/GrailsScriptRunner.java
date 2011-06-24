@@ -115,18 +115,17 @@ public class GrailsScriptRunner {
      *
      * @param args Command line arguments
      */
-    @SuppressWarnings("static-access")
     public static void main(String[] args) {
         originalIn = System.in;
         originalOut = System.out;
 
-      CommandLineParser parser = getCommandLineParser();
+        CommandLineParser parser = getCommandLineParser();
 
         GrailsConsole console = GrailsConsole.getInstance();
 
         CommandLine commandLine;
         try {
-            if(args.length == 0) {
+            if (args.length == 0) {
                 commandLine = new DefaultCommandLine();
             }
             else {
@@ -134,7 +133,6 @@ public class GrailsScriptRunner {
                 if (commandLine.hasOption(NOANSI_ARGUMENT)) {
                     console.setAnsiEnabled(false);
                 }
-
             }
         } catch (ParseException e) {
             console.error("Error processing command line arguments: " + e.getMessage());
@@ -142,7 +140,8 @@ public class GrailsScriptRunner {
             return;
         }
 
-        console.updateStatus("Initializing");
+		String version = System.getProperty("grails.version");
+
 
         ScriptAndArgs script = processArgumentsAndReturnScriptName(commandLine);
 
@@ -181,8 +180,12 @@ public class GrailsScriptRunner {
         // to execute, so enter "interactive mode"
         GrailsScriptRunner scriptRunner = new GrailsScriptRunner(build);
         scriptRunner.setInteractive(!commandLine.hasOption(NON_INTERACTIVE_ARGUMENT));
+        if ("Interactive".equals(script.name)) {
+            console.error("The 'interactive' script is deprecated; to run in interactive mode just omit the script name");
+            script.name = null;
+        }
         if (script.name == null) {
-            console.updateStatus("Loading build configuration");
+        	console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
             scriptRunner.initializeState();
@@ -215,8 +218,6 @@ public class GrailsScriptRunner {
 
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
-
-
         parser.addOption(VERBOSE_ARGUMENT, "Enable verbose output");
         parser.addOption(AGENT_ARGUMENT, "Enable the reloading agent");
         parser.addOption(NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
@@ -225,7 +226,6 @@ public class GrailsScriptRunner {
         parser.addOption(NOANSI_ARGUMENT, "Disables ANSI output");
         return parser;
     }
-
 
     private static void exitWithError(String error) {
         GrailsConsole.getInstance().error(error);
@@ -255,13 +255,6 @@ public class GrailsScriptRunner {
         info.name = GrailsNameUtils.getNameFromScript(commandLine.getCommandName());
         info.args = commandLine.getRemainingArgsString();
         return info;
-    }
-
-    private static void abortIfOutOfBounds(List<String> splitArgs, int currentParamIndex) {
-        if (currentParamIndex >= splitArgs.size()) {
-            GrailsConsole.getInstance().error("You should specify a script to run. Run 'grails help' for a complete list of available scripts.");
-            System.exit(0);
-        }
     }
 
     private static void processSystemArguments(CommandLine allArgs) {
@@ -304,10 +297,12 @@ public class GrailsScriptRunner {
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
-            console.updateStatus("Loading build config");
+        	console.updateStatus("Loading Grails " + settings.getGrailsVersion());
             settings.loadConfig();
 
-            System.setProperty("springloaded.directoriesContainingReloadableCode", settings.getClassesDir().getAbsolutePath() + ',' + settings.getPluginClassesDir().getAbsolutePath());
+            System.setProperty("springloaded.directoriesContainingReloadableCode",
+                   settings.getClassesDir().getAbsolutePath() + ',' +
+                   settings.getPluginClassesDir().getAbsolutePath());
         }
         catch (Exception e) {
             e.printStackTrace(System.err);
@@ -327,7 +322,7 @@ public class GrailsScriptRunner {
         return callPluginOrGrailsScript(scriptName, env);
     }
 
-    private void setRunningEnvironment(String scriptName, String env) {
+    private void setRunningEnvironment(String env) {
         // Get the default environment if one hasn't been set.
         System.setProperty("base.dir", settings.getBaseDir().getPath());
         System.setProperty(Environment.KEY, env);
@@ -397,7 +392,7 @@ public class GrailsScriptRunner {
         console.updateStatus("Running pre-compiled script");
 
         // Must be called before the binding is initialised.
-        setRunningEnvironment(scriptName, env);
+        setRunningEnvironment(env);
 
         // Get Gant to load the class by name using our class loader.
         ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
@@ -426,7 +421,7 @@ public class GrailsScriptRunner {
     private int executeScriptFile(String scriptName, String env, GantBinding binding, Resource scriptFile) {
         // We can now safely set the default environment
         String scriptFileName = getScriptNameFromFile(scriptFile);
-        setRunningEnvironment(scriptFileName, env);
+        setRunningEnvironment(env);
         binding.setVariable("scriptName", scriptFileName);
 
         // Setup the script to call.

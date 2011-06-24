@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.test.junit4.runner
 
 import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 
+import org.junit.rules.MethodRule
 import org.junit.runners.BlockJUnit4ClassRunner
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
@@ -81,6 +82,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
             statement = withPotentialTimeout(method, test, statement)
             statement = withBefores(method, test, statement)
             statement = withAfters(method, test, statement)
+            
             statement = withRules(method, test, statement)
 
             withGrailsTestEnvironment(statement, test)
@@ -88,6 +90,14 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
             // fast lane for unit tests
             super.methodBlock(method)
         }
+    }
+    
+    private Statement withRules(FrameworkMethod method, Object target,
+        Statement statement) {
+        Statement result= statement;
+        for (MethodRule each : rules(target))
+            result= each.apply(result, method, target);
+        return result;
     }
 
     protected withGrailsTestEnvironment(Statement statement, Object test) {

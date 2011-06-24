@@ -21,7 +21,6 @@ import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandl
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.After
-import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.web.servlet.ModelAndView
@@ -61,11 +60,6 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
         }
     }
 
-    @Before
-    void registerArtefactHandler() {
-        grailsApplication.registerArtefactHandler(new FiltersConfigArtefactHandler())
-    }
-
     @After
     void clearFilters() {
         getCompositeInterceptor().handlers?.clear()
@@ -78,6 +72,13 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
      * @return
      */
     CompositeInterceptor mockFilters(Class filterClass) {
+        if (webRequest == null) {
+            bindGrailsWebRequest()
+        }
+        if (!grailsApplication.hasArtefactHandler(FiltersConfigArtefactHandler.TYPE)) {
+            grailsApplication.registerArtefactHandler(new FiltersConfigArtefactHandler());
+        }
+
         final grailsFilter = grailsApplication.addArtefact(FiltersConfigArtefactHandler.TYPE, filterClass)
         defineBeans {
             "${grailsFilter.fullName}Class"(MethodInvokingFactoryBean) {

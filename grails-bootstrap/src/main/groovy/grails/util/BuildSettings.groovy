@@ -805,7 +805,7 @@ class BuildSettings extends AbstractBuildSettings {
                 def ois = new ObjectInputStream(input)
                 Map dependencyMap = ois.readObject()
 
-                if (dependencyMap?.values()*.any { !it.exists() }) {
+                if (dependencyMap?.values()*.any { !it?.exists() }) {
                     modified = true
                 }
                 else {
