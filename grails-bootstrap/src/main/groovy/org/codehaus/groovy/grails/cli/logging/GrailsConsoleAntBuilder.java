@@ -123,8 +123,6 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
                 console.verbose(StringUtils.LINE_SEP + targetName + ":");
                 targetName = null;
             }
-
-            super.messageLogged(event);
         }
     }
 }

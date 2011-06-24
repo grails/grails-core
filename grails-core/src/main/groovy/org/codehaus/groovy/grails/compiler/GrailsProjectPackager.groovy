@@ -340,7 +340,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
      * @param from Where to package from
      */
     void packageConfigFiles(from) {
-        def ant = new GrailsConsoleAntBuilder(ant.project)
+        def ant = new GrailsConsoleAntBuilder()
         def targetPath = buildSettings.resourcesDir.path
         def dir = new File(from , "grails-app/conf")
         if (dir.exists()) {
