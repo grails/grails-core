@@ -24,6 +24,8 @@ import grails.test.mixin.web.ControllerUnitTestMixin;
 import grails.test.mixin.web.FiltersUnitTestMixin;
 import grails.test.mixin.web.GroovyPageUnitTestMixin;
 import grails.test.mixin.web.UrlMappingsUnitTestMixin;
+import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
 import grails.util.GrailsNameUtils;
 import groovy.util.GroovyTestCase;
 import org.codehaus.groovy.ast.*;
@@ -39,12 +41,18 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.logging.LoggingTransformer;
+import org.codehaus.groovy.grails.core.io.DefaultResourceLocator;
+import org.codehaus.groovy.grails.core.io.ResourceLocator;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +91,29 @@ public class TestForTransformation extends TestMixinTransformation {
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
 
+
+    private ResourceLocator resourceLocator;
+
+    public TestForTransformation() {
+    }
+
+    public ResourceLocator getResourceLocator() {
+        if(resourceLocator == null) {
+            resourceLocator = new DefaultResourceLocator();
+            BuildSettings buildSettings = BuildSettingsHolder.getSettings();
+            String basedir;
+            if(buildSettings != null) {
+                basedir = buildSettings.getBaseDir().getAbsolutePath();
+            }
+            else {
+                basedir = ".";
+            }
+
+            resourceLocator.setSearchLocation(basedir);
+        }
+        return resourceLocator;
+    }
+
     @Override
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -104,7 +135,65 @@ public class TestForTransformation extends TestMixinTransformation {
 
 
         Expression value = node.getMember("value");
+        ClassExpression ce;
+        if (value instanceof ClassExpression) {
+            ce = (ClassExpression) value;
+            testFor(classNode, ce);
+        }
+        else if(!isJunit3Test(classNode)){
+            List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
+            if(annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
+            // no explicit class specified try by convention
+            String fileName = source.getName();
+            String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
+            if(className != null) {
+                boolean isJunit = className.endsWith("Tests");
+                boolean isSpock = className.endsWith("Spec");
+                String targetClassName = null;
 
+                if(isJunit) {
+                    targetClassName = className.substring(0, className.indexOf("Tests"));
+                }
+                else if(isSpock) {
+                    targetClassName = className.substring(0, className.indexOf("Spec"));
+                }
+
+                if(targetClassName != null) {
+                    Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
+                    if(targetResource != null) {
+                        try {
+                            if(GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
+                                testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                            }
+                            else {
+                                for (String artefactType : artefactTypeToTestMap.keySet()) {
+                                    if(classNode.getName().endsWith(artefactType)) {
+                                        testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+
+
+    }
+
+    /**
+     * Main entry point for the calling the TestForTransformation programmatically.
+     *
+     * @param classNode The class node that represents th test
+     * @param ce The class expression that represents the class to test
+     */
+    public void testFor(ClassNode classNode, ClassExpression ce) {
         boolean junit3Test = isJunit3Test(classNode);
 
         // make sure the 'log' property is not the one from GroovyTestCase
@@ -127,19 +216,13 @@ public class TestForTransformation extends TestMixinTransformation {
             }
         }
 
-        if (value instanceof ClassExpression) {
 
-            final MethodNode methodToAdd = weaveMock(classNode, (ClassExpression) value, true);
-            if (methodToAdd != null) {
+        final MethodNode methodToAdd = weaveMock(classNode, ce, true);
+        if (methodToAdd != null) {
 
-                if (junit3Test) {
-                    addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
-                }
+            if (junit3Test) {
+                addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
             }
-        }
-        else {
-           throw new RuntimeException("Error processing class '" + cName + "'. " +
-                        MY_TYPE_NAME + " requires a class value.");
         }
     }
 
