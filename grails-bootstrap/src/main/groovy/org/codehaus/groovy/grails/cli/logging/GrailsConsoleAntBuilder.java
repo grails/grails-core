@@ -33,6 +33,10 @@ import org.apache.tools.ant.util.StringUtils;
  */
 public class GrailsConsoleAntBuilder extends AntBuilder {
 
+    public GrailsConsoleAntBuilder(Project project) {
+        super(project);
+    }
+
     public GrailsConsoleAntBuilder() {
         super(createAntProject());
     }

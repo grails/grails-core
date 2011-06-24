@@ -57,6 +57,8 @@ public class GrailsConsole {
     public static final String CATEGORY_SEPARATOR = "|";
     public static final String PROMPT = "grails> ";
     public static final String SPACE = " ";
+    public static final String ERROR = "Error";
+    public static final String WARNING = "Warning";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -368,30 +370,16 @@ public class GrailsConsole {
      * @param msg The error message
      */
     public void error(String msg) {
-        try {
-            cursorMove = 0;
-            if (isAnsiEnabled()) {
-                Ansi ansi;
-                if (msg.contains("ERROR") || msg.contains("FATAL")) {
-                    ansi = outputErrorLabel(ansi(), "Error").a(msg).reset();
-                }
-                else {
-                    ansi = outputErrorLabel(ansi(), "").a(msg).reset();
-                }
+        error(ERROR, msg);
+    }
 
-                if (msg.endsWith(LINE_SEPARATOR)) {
-                    out.print(ansi);
-                }
-                else {
-                    out.println(ansi);
-                }
-
-            } else {
-                logSimpleError(msg);
-            }
-        } finally {
-            postPrintMessage();
-        }
+    /**
+     * Prints an error message
+     *
+     * @param msg The error message
+     */
+    public void warning(String msg) {
+        error(WARNING, msg);
     }
 
     private void logSimpleError(String msg) {
@@ -416,10 +404,11 @@ public class GrailsConsole {
         try {
             if (verbose && error != null) {
                 StackTraceUtils.deepSanitize(error);
+                error(ERROR, "");
                 printStackTrace(msg, error);
             }
             else {
-                error(msg);
+                error(ERROR, msg);
             }
         } finally {
             postPrintMessage();
@@ -608,7 +597,13 @@ public class GrailsConsole {
         cursorMove = 0;
         try {
             if (isAnsiEnabled()) {
-                out.println(outputErrorLabel(ansi(), label).a(message));
+                Ansi ansi = outputErrorLabel(ansi(), label).a(message);
+                if (message.endsWith(LINE_SEPARATOR)) {
+                    out.print(ansi);
+                }
+                else {
+                    out.println(ansi);
+                }
             }
             else {
                 out.print(label);

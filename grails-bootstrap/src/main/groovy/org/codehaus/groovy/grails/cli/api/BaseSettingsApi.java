@@ -45,19 +45,19 @@ import java.util.Properties;
 public class BaseSettingsApi {
 
     private static final Resource[] NO_RESOURCES = new Resource[0];
-    private BuildSettings buildSettings;
-    private Properties buildProps;
-    private PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-    private File grailsHome;
-    private Metadata metadata;
-    private File metadataFile;
-    private boolean enableProfile;
-    private boolean isInteractive;
-    private String pluginsHome;
-    private PluginBuildSettings pluginSettings;
-    private String grailsAppName;
-    private Object appClassName;
-    private ConfigSlurper configSlurper;
+    protected BuildSettings buildSettings;
+    protected Properties buildProps;
+    protected PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    protected File grailsHome;
+    protected Metadata metadata;
+    protected File metadataFile;
+    protected boolean enableProfile;
+    protected boolean isInteractive;
+    protected String pluginsHome;
+    protected PluginBuildSettings pluginSettings;
+    protected String grailsAppName;
+    protected Object appClassName;
+    protected ConfigSlurper configSlurper;
 
     public BaseSettingsApi(final BuildSettings buildSettings, boolean interactive) {
         this.buildSettings = buildSettings;
