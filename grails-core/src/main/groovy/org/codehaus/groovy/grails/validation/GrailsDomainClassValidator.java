@@ -201,6 +201,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      * @param associatedObject The associated object's current value
      * @param persistentProperty The GrailsDomainClassProperty instance
      * @param propertyName The name of the property
+     * @param index Index of the object in the collection, otherwise -1
      */
     @SuppressWarnings("rawtypes")
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject,
