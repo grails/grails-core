@@ -485,26 +485,36 @@ public class GrailsConsole {
      * string.
      */
     public String userInput(String msg) {
-        addStatus(msg);
         lastMessage = "";
-        return showPrompt();
+        msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
+        return showPrompt(msg);
     }
 
-    private String showPrompt() {
+    /**
+     * Shows the prompt to request user input
+     * @param prompt The prompt to use
+     * @return The user input prompt
+     */
+    private String showPrompt(String prompt) {
         try {
             cursorMove = 0;
             userInputActive = true;
             try {
-                if (isAnsiEnabled()) {
-                    return reader.readLine(ansiPrompt(PROMPT).toString());
-                }
-                return reader.readLine(PROMPT);
+                return reader.readLine(prompt);
             } finally {
                 userInputActive = false;
             }
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         }
+    }
+    /**
+     * Shows the prompt to request user input
+     * @return The user input prompt
+     */
+    public String showPrompt() {
+        String prompt = isAnsiEnabled() ? ansiPrompt(PROMPT).toString() : PROMPT;
+        return showPrompt(prompt);
     }
 
     private Ansi ansiPrompt(String prompt) {
