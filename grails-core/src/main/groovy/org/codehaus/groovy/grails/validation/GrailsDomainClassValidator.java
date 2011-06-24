@@ -54,6 +54,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
     protected MessageSource messageSource;
     protected GrailsApplication grailsApplication;
     private static final String ERRORS_PROPERTY = "errors";
+    private static final int PROPERTY_NOT_INDEXED = -1;
 
     @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz) {
@@ -138,7 +139,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
         if (persistentProperty.isManyToOne() || persistentProperty.isOneToOne() || persistentProperty.isEmbedded()) {
             Object associatedObject = bean.getPropertyValue(propertyName);
-            cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
+            cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, PROPERTY_NOT_INDEXED);
         }
         else if (persistentProperty.isOneToMany()) {
             cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
@@ -160,13 +161,14 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
         Object collection = bean.getPropertyValue(propertyName);
         if (collection instanceof Collection) {
+            int index = 0;
             for (Object associatedObject : ((Collection)collection)) {
-                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, index++);
             }
         }
         else if (collection instanceof Map) {
             for (Object associatedObject : ((Map)collection).values()) {
-                cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName);
+                cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName, PROPERTY_NOT_INDEXED);
             }
         }
     }
@@ -202,7 +204,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      */
     @SuppressWarnings("rawtypes")
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject,
-            GrailsDomainClassProperty persistentProperty, String propertyName) {
+            GrailsDomainClassProperty persistentProperty, String propertyName, int index) {
 
         if (associatedObject == null) {
             return;
@@ -224,7 +226,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistentProperties();
         String nestedPath = errors.getNestedPath();
         try {
-            errors.setNestedPath(nestedPath+propertyName);
+            errors.setNestedPath(buildNestedPath(errors, nestedPath, propertyName, index));
 
             for (GrailsDomainClassProperty associatedPersistentProperty : associatedPersistentProperties) {
                 if (associatedPersistentProperty.equals(otherSide)) continue;
@@ -248,6 +250,14 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         finally {
             errors.setNestedPath(nestedPath);
         }
+    }
+
+    private String buildNestedPath(Errors errors, String nestedPath, String propertyName, int index) {
+        if (index == PROPERTY_NOT_INDEXED) {
+            return nestedPath+propertyName;
+        }
+
+        return nestedPath+propertyName+"["+index+"]";
     }
 
     private GrailsDomainClass getAssociatedDomainClass(Object associatedObject, GrailsDomainClassProperty persistentProperty) {
