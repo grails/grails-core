@@ -162,7 +162,6 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         if (collection instanceof Collection) {
             Integer index = 0;
             for (Object associatedObject : ((Collection)collection)) {
-                System.out.println("toOne with index " + index);
                 cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, index);
                 index++;
             }
@@ -255,19 +254,19 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             errors.setNestedPath(nestedPath);
         }
     }
-    
+
     private String buildNestedPath(String nestedPath, String componentName, Object indexOrKey) {
       if (indexOrKey == null) {
         // Component is neither part of a Collection nor Map.
         return nestedPath + componentName;
       }
-      
+
       if (indexOrKey instanceof Integer) {
         // Component is part of a Collection. Collection access string
         // e.g. path.object[1] will be appended to the nested path.
         return nestedPath + componentName + "[" + indexOrKey + "]";
       }
-      
+
       // Component is part of a Map. Nested path should have a key surrounded
       // with apostrophes at the end.
       return nestedPath + componentName + "['" + indexOrKey + "']";
