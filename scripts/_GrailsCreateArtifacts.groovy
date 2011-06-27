@@ -89,6 +89,13 @@ createArtifact = { Map args = [:] ->
         }
     }
 
+	if(!templateFile.exists()) {
+		if(artifactPath.startsWith("test"))
+			templateFile = grailsResource("src/grails/$templatePath/UnitTest.groovy")
+		else
+			templateFile = grailsResource("src/grails/$templatePath/Generic.groovy")
+	}
+
     copyGrailsResource(artifactFile, templateFile)
     ant.replace(file: artifactFile,
         token: "@artifact.name@", value: "${className}${suffix}")
