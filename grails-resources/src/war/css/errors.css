@@ -17,7 +17,6 @@ h2 {
 	background-color: #E9E9E9;
 }
 
-.error-details,
 .stack,
 .snippet {
 	margin: 0 25px 10px;	
@@ -33,9 +32,19 @@ h2 {
 
 /* error details */
 .error-details {
+	border-top: 1px solid #FFAAAA;
+	   -mox-box-shadow: 0 0 2px rgba(0,0,0,0.2);
+	-webkit-box-shadow: 0 0 2px rgba(0,0,0,0.2);
+	        box-shadow: 0 0 2px rgba(0,0,0,0.2);
+	border-bottom: 1px solid #FFAAAA;	
+	   -mox-box-shadow: 0 0 2px rgba(0,0,0,0.2);
+	-webkit-box-shadow: 0 0 2px rgba(0,0,0,0.2);
+	        box-shadow: 0 0 2px rgba(0,0,0,0.2);
+	background-color:#FFF3F3;
 	line-height: 1.5;
 	overflow: hidden;
-	padding: 0;
+	padding: 5px;
+	padding-left:25px;
 }
 
 .error-details dt {
