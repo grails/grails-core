@@ -95,6 +95,12 @@ class GrailsProjectPackager extends BaseSettingsApi{
         def config = createConfig()
 
         try {
+            packagePlugins()
+        } catch (e) {
+            throw new PackagingException("Error occurred packaging plugin resources: ${e.message}", e)
+        }
+
+        try {
             packageJspFiles()
         } catch (e) {
             throw new PackagingException("Error occurred packaging JSP files: ${e.message}", e)
@@ -288,29 +294,25 @@ class GrailsProjectPackager extends BaseSettingsApi{
      * Packages plugins for development mode
      */
     void packagePlugins() {
-        def logic = {
-            def pluginInfos = pluginSettings.getSupportedPluginInfos()
-            ExecutorService pool = Executors.newFixedThreadPool(5)
-            for (GrailsPluginInfo gpi in pluginInfos) {
-                pool.execute({ GrailsPluginInfo info ->
-                    try {
-                        def pluginDir = info.pluginDir
-                        if (pluginDir) {
-                            def pluginBase = pluginDir.file
-                            packageConfigFiles(pluginBase.path)
-                        }
+        def pluginInfos = pluginSettings.getSupportedPluginInfos()
+        ExecutorService pool = Executors.newFixedThreadPool(5)
+        def futures = []
+        for (GrailsPluginInfo gpi in pluginInfos) {
+            futures << pool.submit({ GrailsPluginInfo info ->
+                try {
+                    def pluginDir = info.pluginDir
+                    if (pluginDir) {
+                        def pluginBase = pluginDir.file
+                        packageConfigFiles(pluginBase.path)
                     }
-                    catch (Exception e) {
-                        grailsConsole.error "Error packaging plugin [${info.name}] : ${e.message}"
-                    }
-                }.curry(gpi))
-            }
+                }
+                catch (Exception e) {
+                    grailsConsole.error "Error packaging plugin [${info.name}] : ${e.message}"
+                }
+            }.curry(gpi) as Runnable)
         }
-        if (async) {
-            Thread.start logic
-        } else {
-            logic.call()
-        }
+
+        futures.each { it.get() }
     }
 
     void packageTlds() {
