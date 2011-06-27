@@ -60,6 +60,7 @@ public class GrailsScriptRunner {
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
 
     public static final String VERBOSE_ARGUMENT = "verbose";
+    private static final String STACKTRACE_ARGUMENT = "stacktrace";
     public static final String AGENT_ARGUMENT = "reloading";
     public static final String VERSION_ARGUMENT = "version";
     public static final String HELP_ARGUMENT = "help";
@@ -86,6 +87,7 @@ public class GrailsScriptRunner {
 
     private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
     private boolean useDefaultEnv = true;
+
 
     public GrailsScriptRunner() {
         this(new BuildSettings());
@@ -157,13 +159,13 @@ public class GrailsScriptRunner {
             }
         }
         catch (Exception e) {
-            exitWithError("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage());
+            exitWithError("An error occurred loading the grails-app/conf/BuildConfig.groovy file: " + e.getMessage(), null);
         }
 
         // Check that Grails' home actually exists.
         final File grailsHomeInSettings = build.getGrailsHome();
         if (grailsHomeInSettings == null || !grailsHomeInSettings.exists()) {
-            exitWithError("Grails' installation directory not found: " + build.getGrailsHome());
+            exitWithError("Grails' installation directory not found: " + build.getGrailsHome(), null);
         }
 
         if (commandLine.hasOption(VERSION_ARGUMENT)) {
@@ -209,9 +211,7 @@ public class GrailsScriptRunner {
             }
             catch (Throwable t) {
                 String msg = "Error executing script " + script.name + ": " + t.getMessage();
-                sanitizeStacktrace(t);
-                t.printStackTrace(System.out);
-                exitWithError(msg);
+                exitWithError(msg, t);
             }
         }
     }
@@ -219,6 +219,7 @@ public class GrailsScriptRunner {
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
         parser.addOption(VERBOSE_ARGUMENT, "Enable verbose output");
+        parser.addOption(STACKTRACE_ARGUMENT, "Enable stack traces in output");
         parser.addOption(AGENT_ARGUMENT, "Enable the reloading agent");
         parser.addOption(NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
         parser.addOption(HELP_ARGUMENT, "Command line help");
@@ -227,8 +228,11 @@ public class GrailsScriptRunner {
         return parser;
     }
 
-    private static void exitWithError(String error) {
-        GrailsConsole.getInstance().error(error);
+    private static void exitWithError(String error, Throwable t) {
+        if(t != null)
+            GrailsConsole.getInstance().error(error, t);
+        else
+            GrailsConsole.getInstance().error(error);
         System.exit(1);
     }
 
@@ -236,6 +240,9 @@ public class GrailsScriptRunner {
 
         if (commandLine.hasOption(VERBOSE_ARGUMENT)) {
             GrailsConsole.getInstance().setVerbose(true);
+        }
+        if (commandLine.hasOption(STACKTRACE_ARGUMENT)) {
+            GrailsConsole.getInstance().setStacktrace(true);
         }
 
         processSystemArguments(commandLine);
@@ -615,7 +622,7 @@ public class GrailsScriptRunner {
 
             attempts++;
             if (attempts > 4) {
-                exitWithError("Selection not found.");
+                exitWithError("Selection not found.", null);
             }
         }
     }

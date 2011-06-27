@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Stack;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import jline.ConsoleReader;
 import jline.Terminal;
 import jline.UnsupportedTerminal;
@@ -66,6 +67,11 @@ public class GrailsConsole {
      * Whether to enable verbose mode
      */
     private boolean verbose;
+
+    /**
+     * Whether to show stack traces
+     */
+    private boolean stacktrace = Boolean.getBoolean("grails.show.stacktrace");
 
     private boolean progressIndicatorActive = false;
 
@@ -174,6 +180,13 @@ public class GrailsConsole {
             System.setProperty("grails.full.stacktrace", "true");
         }
         this.verbose = verbose;
+    }
+
+    /**
+     * @param stacktrace Sets whether to show stack traces on errors
+     */
+    public void setStacktrace(boolean stacktrace) {
+        this.stacktrace = stacktrace;
     }
 
     /**
@@ -402,10 +415,9 @@ public class GrailsConsole {
      */
     public void error(String msg, Throwable error) {
         try {
-            if (verbose && error != null) {
-                StackTraceUtils.deepSanitize(error);
-                error(ERROR, "");
+            if ((verbose||stacktrace) && error != null) {
                 printStackTrace(msg, error);
+                error(ERROR, msg);
             }
             else {
                 error(ERROR, msg);
@@ -421,10 +433,12 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(Throwable error) {
+
         printStackTrace(null, error);
     }
 
     private void printStackTrace(String message, Throwable error) {
+        StackTraceUtils.deepSanitize(error);
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
         if (message != null) {
