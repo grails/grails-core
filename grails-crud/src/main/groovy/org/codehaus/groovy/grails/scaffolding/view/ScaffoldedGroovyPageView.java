@@ -86,9 +86,7 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
             w.writeTo(out);
         }
         catch(Exception e) {
-            // create fresh response writer
-            out = createResponseWriter(response);
-            handleException(e, out, templateEngine, request, response);
+            handleException(e, templateEngine);
         }
         finally {
             if (out != null) {
