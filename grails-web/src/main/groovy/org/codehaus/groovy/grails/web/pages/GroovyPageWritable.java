@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
@@ -144,7 +145,7 @@ class GroovyPageWritable implements Writable {
                 }
 
                 // only try to set content type when evaluating top level GSP
-                boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+                boolean contentTypeAlreadySet = response.isCommitted();
                 if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
                     LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
                 }
