@@ -20,7 +20,6 @@ import groovy.text.Template;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -74,6 +73,8 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     private static final long serialVersionUID = -1918149859392123495L;
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
+    private static final String WEB_INF = "/WEB-INF";
+    private static final String GRAILS_APP = "/grails-app";
 
     private ServletContext context;
     private GrailsApplicationAttributes grailsAttributes;
@@ -122,7 +123,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 
-        if(isNotSecurePath(pageName)) {
+        if(isSecurePath(pageName)) {
             sendNotFound(response, pageName);
         }
         else {
@@ -143,8 +144,8 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
     }
 
-    protected boolean isNotSecurePath(String pageName) {
-        return pageName.startsWith("/WEB-INF") || pageName.startsWith("/grails-app");
+    protected boolean isSecurePath(String pageName) {
+        return pageName.startsWith(WEB_INF) || pageName.startsWith(GRAILS_APP);
     }
 
     protected void sendNotFound(HttpServletResponse response, String pageName) throws IOException {
