@@ -61,6 +61,7 @@ import org.springframework.orm.hibernate3.HibernateAccessor
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
+import org.springframework.validation.Validator
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -307,7 +308,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     static final onChange = { event ->
         def beans = beans {
             // TODO prefix
-String suffix = ''
+            String suffix = ''
             "${SessionFactoryHolder.BEAN_ID}"(SessionFactoryHolder) {
                sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
                    bean.parent = ref("abstractSessionFactoryBeanConfig$suffix")
@@ -319,6 +320,7 @@ String suffix = ''
                     "${dc.fullName}Validator"(HibernateDomainClassValidator) {
                         messageSource = ref("messageSource")
                         domainClass = ref("${dc.fullName}DomainClass")
+                        sessionFactory = ref("sessionFactory")
                         grailsApplication = ref("grailsApplication", true)
                     }
                 }
@@ -329,7 +331,8 @@ String suffix = ''
         beans.registerBeans(ctx)
         if (event.source instanceof Class) {
             def mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-            mappingContext.addPersistentEntity(event.source)
+            def entity = mappingContext.addPersistentEntity(event.source)
+            mappingContext.addEntityValidator(entity, ctx.getBean("${entity.name}Validator", Validator))
         }
         enhanceSessionFactories(ctx, event.application)
     }
