@@ -175,20 +175,26 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
     }
 
     public void onPostInsert(PostInsertEvent event) {
+        Object entity = event.getEntity();
+        AbstractSavePersistentMethod.clearDisabledValidations(entity);
         if (postInsertEventListener != null) {
-            postInsertEventListener.call(event.getEntity());
+            postInsertEventListener.call(entity);
         }
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
+        Object entity = event.getEntity();
+        AbstractSavePersistentMethod.clearDisabledValidations(entity);
         if (postUpdateEventListener != null) {
-            postUpdateEventListener.call(event.getEntity());
+            postUpdateEventListener.call(entity);
         }
     }
 
     public void onPostDelete(PostDeleteEvent event) {
+        Object entity = event.getEntity();
+        AbstractSavePersistentMethod.clearDisabledValidations(entity);
         if (postDeleteEventListener != null) {
-            postDeleteEventListener.call(event.getEntity());
+            postDeleteEventListener.call(entity);
         }
     }
 
