@@ -146,6 +146,69 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         assertEquals "hello", sw.toString()
     }
 
+	void testParsingNestedCurlyBraces() {
+        
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def src = '${people.collect {it.firstName}}'
+        def t = gpte.createTemplate(src, "hello_test")
+
+        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]		
+        def w = t.make(people: people)
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "[Peter, Phil]", sw.toString()
+	}
+	
+	void testParsingParensInNestedCurlyBraces() {
+
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def src = '${people.collect {it.firstName.toUpperCase()}}'
+        def t = gpte.createTemplate(src, "hello_test")
+
+        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]		
+        def w = t.make(people: people)
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "[PETER, PHIL]", sw.toString()
+	}
+
+	void testParsingBracketsInNestedCurlyBraces() {
+
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def src = '${people.collect {it.lastName[0]}}'
+        def t = gpte.createTemplate(src, "hello_test")
+
+        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]		
+        def w = t.make(people: people)
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "[G, C]", sw.toString()
+	}
+
     void testCreateTemplateWithBinding() {
 
         GrailsWebUtil.bindMockWebRequest()
