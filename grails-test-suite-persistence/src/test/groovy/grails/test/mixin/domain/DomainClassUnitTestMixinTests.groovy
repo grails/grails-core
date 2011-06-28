@@ -10,7 +10,7 @@ class DomainClassUnitTestMixinTests {
 
     void testBackReferenceAssignment() {
         def publication = new Publication(title: 'Some Paper')
-        def writer = new Writer(naem: 'Some Writer')
+        def writer = new Writer(name: 'Some Writer')
         
         writer.addToPublications(publication)
         
