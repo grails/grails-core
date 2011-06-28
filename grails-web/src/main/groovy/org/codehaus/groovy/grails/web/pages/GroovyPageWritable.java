@@ -145,7 +145,7 @@ class GroovyPageWritable implements Writable {
                 }
 
                 // only try to set content type when evaluating top level GSP
-                boolean contentTypeAlreadySet = response.isCommitted();
+                boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
                 if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
                     LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
                 }
