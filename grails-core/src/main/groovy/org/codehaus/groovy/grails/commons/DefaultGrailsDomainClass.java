@@ -86,8 +86,8 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         }
 
         // get any mappedBy settings
-        mappedBy = getStaticPropertyValue(GrailsDomainClassProperty.MAPPED_BY, Map.class);
-        hasOneMap = getStaticPropertyValue(GrailsDomainClassProperty.HAS_ONE, Map.class);
+        mappedBy = getMergedConfigurationMap(GrailsDomainClassProperty.MAPPED_BY);
+        hasOneMap = getMergedConfigurationMap(GrailsDomainClassProperty.HAS_ONE);
         if (hasOneMap == null) {
             hasOneMap = Collections.emptyMap();
         }
@@ -205,22 +205,27 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     @SuppressWarnings("unchecked")
     public Map getAssociationMap() {
         if (relationshipMap == null) {
-            relationshipMap = getStaticPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
-            if (relationshipMap == null) {
-                relationshipMap = new HashMap();
-            }
-
-            Class<?> theClass = getClazz();
-            while (theClass != Object.class) {
-                theClass = theClass.getSuperclass();
-                ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(theClass);
-                Map superRelationshipMap = propertyFetcher.getStaticPropertyValue(GrailsDomainClassProperty.HAS_MANY, Map.class);
-                if (superRelationshipMap != null && !superRelationshipMap.equals(relationshipMap)) {
-                    relationshipMap.putAll(superRelationshipMap);
-                }
-            }
+            this.relationshipMap = getMergedConfigurationMap(GrailsDomainClassProperty.HAS_MANY);
         }
         return relationshipMap;
+    }
+
+    private Map getMergedConfigurationMap(String propertyName) {
+        Map configurationMap = getStaticPropertyValue(propertyName, Map.class);
+        if (configurationMap == null) {
+            configurationMap = new HashMap();
+        }
+
+        Class<?> theClass = getClazz();
+        while (theClass != Object.class) {
+            theClass = theClass.getSuperclass();
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(theClass);
+            Map superRelationshipMap = propertyFetcher.getStaticPropertyValue(propertyName, Map.class);
+            if (superRelationshipMap != null && !superRelationshipMap.equals(configurationMap)) {
+                configurationMap.putAll(superRelationshipMap);
+            }
+        }
+        return configurationMap;
     }
 
     /**

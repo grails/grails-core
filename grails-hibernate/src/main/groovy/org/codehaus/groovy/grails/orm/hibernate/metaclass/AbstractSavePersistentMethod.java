@@ -33,8 +33,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -62,7 +61,12 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * the value. Note that this only works because the session is
      * flushed when a domain instance is saved without validation.
      */
-    private static ThreadLocal<Object> disableAutoValidationFor = new ThreadLocal<Object>();
+    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>() {
+        @Override
+        protected Set<Integer> initialValue() {
+            return new HashSet<Integer>();
+        }
+    };
 
     static {
         ShutdownOperations.addOperation(new Runnable() {
@@ -73,7 +77,17 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     }
 
     public static boolean isAutoValidationDisabled(Object obj) {
-        return obj != null && obj == disableAutoValidationFor.get();
+        Set<Integer> identifiers = disableAutoValidationFor.get();
+        return obj != null && identifiers.contains(System.identityHashCode(obj));
+    }
+
+    public static void clearDisabledValidations(Object obj) {
+        disableAutoValidationFor.get().remove(System.identityHashCode(obj));
+    }
+
+
+    public static void clearDisabledValidations() {
+        disableAutoValidationFor.get().clear();
     }
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
@@ -158,13 +172,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                 setObjectToReadWrite(target);
             }
         }
-        else {
-            // If validation is skipped, force a flush. This is a bit
-            // of a hack so that ClosureEventTriggeringInterceptor can
-            // determine that the target domain instance should not be
-            // automatically validated.
-            shouldFlush = true;
-        }
 
         // this piece of code will retrieve a persistent instant
         // of a domain class property is only the id is set thus
@@ -173,18 +180,16 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
             autoRetrieveAssocations(domainClass, target);
         }
 
-        try {
-            if (!shouldValidate) disableAutoValidationFor.set(target);
-
-            if (shouldInsert(arguments)) {
-                return performInsert(target, shouldFlush);
-            }
-
-            return performSave(target, shouldFlush);
+        if (!shouldValidate) {
+            Set<Integer> identifiers = disableAutoValidationFor.get();
+            identifiers.add(System.identityHashCode(target));
         }
-        finally {
-            if (!shouldValidate) disableAutoValidationFor.remove();
+
+        if (shouldInsert(arguments)) {
+            return performInsert(target, shouldFlush);
         }
+
+        return performSave(target, shouldFlush);
     }
 
     @SuppressWarnings("rawtypes")

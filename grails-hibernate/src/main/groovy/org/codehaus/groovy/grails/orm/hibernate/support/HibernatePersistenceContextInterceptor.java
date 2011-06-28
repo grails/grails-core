@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
@@ -69,15 +70,19 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
             return;
         }
 
-        // single session mode
-        SessionHolder holder = (SessionHolder)TransactionSynchronizationManager.unbindResource(getSessionFactory());
-        LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
         try {
-            Session session = holder.getSession();
-            SessionFactoryUtils.closeSession(session);
-        }
-        catch (RuntimeException ex) {
-            LOG.error("Unexpected exception on closing Hibernate Session", ex);
+// single session mode
+            SessionHolder holder = (SessionHolder)TransactionSynchronizationManager.unbindResource(getSessionFactory());
+            LOG.debug("Closing single Hibernate session in GrailsDispatcherServlet");
+            try {
+                Session session = holder.getSession();
+                SessionFactoryUtils.closeSession(session);
+            }
+            catch (RuntimeException ex) {
+                LOG.error("Unexpected exception on closing Hibernate Session", ex);
+            }
+        } finally {
+            AbstractSavePersistentMethod.clearDisabledValidations();
         }
     }
 

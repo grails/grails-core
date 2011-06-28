@@ -29,6 +29,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Stack;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import jline.ConsoleReader;
 import jline.Terminal;
 import jline.UnsupportedTerminal;
@@ -57,6 +58,8 @@ public class GrailsConsole {
     public static final String CATEGORY_SEPARATOR = "|";
     public static final String PROMPT = "grails> ";
     public static final String SPACE = " ";
+    public static final String ERROR = "Error";
+    public static final String WARNING = "Warning";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -64,6 +67,11 @@ public class GrailsConsole {
      * Whether to enable verbose mode
      */
     private boolean verbose;
+
+    /**
+     * Whether to show stack traces
+     */
+    private boolean stacktrace = Boolean.getBoolean("grails.show.stacktrace");
 
     private boolean progressIndicatorActive = false;
 
@@ -172,6 +180,13 @@ public class GrailsConsole {
             System.setProperty("grails.full.stacktrace", "true");
         }
         this.verbose = verbose;
+    }
+
+    /**
+     * @param stacktrace Sets whether to show stack traces on errors
+     */
+    public void setStacktrace(boolean stacktrace) {
+        this.stacktrace = stacktrace;
     }
 
     /**
@@ -368,30 +383,16 @@ public class GrailsConsole {
      * @param msg The error message
      */
     public void error(String msg) {
-        try {
-            cursorMove = 0;
-            if (isAnsiEnabled()) {
-                Ansi ansi;
-                if (msg.contains("ERROR") || msg.contains("FATAL")) {
-                    ansi = outputErrorLabel(ansi(), "Error").a(msg).reset();
-                }
-                else {
-                    ansi = outputErrorLabel(ansi(), "").a(msg).reset();
-                }
+        error(ERROR, msg);
+    }
 
-                if (msg.endsWith(LINE_SEPARATOR)) {
-                    out.print(ansi);
-                }
-                else {
-                    out.println(ansi);
-                }
-
-            } else {
-                logSimpleError(msg);
-            }
-        } finally {
-            postPrintMessage();
-        }
+    /**
+     * Prints an error message
+     *
+     * @param msg The error message
+     */
+    public void warning(String msg) {
+        error(WARNING, msg);
     }
 
     private void logSimpleError(String msg) {
@@ -414,12 +415,12 @@ public class GrailsConsole {
      */
     public void error(String msg, Throwable error) {
         try {
-            if (verbose && error != null) {
-                StackTraceUtils.deepSanitize(error);
+            if ((verbose||stacktrace) && error != null) {
                 printStackTrace(msg, error);
+                error(ERROR, msg);
             }
             else {
-                error(msg);
+                error(ERROR, msg);
             }
         } finally {
             postPrintMessage();
@@ -432,10 +433,12 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(Throwable error) {
+
         printStackTrace(null, error);
     }
 
     private void printStackTrace(String message, Throwable error) {
+        StackTraceUtils.deepSanitize(error);
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
         if (message != null) {
@@ -496,26 +499,36 @@ public class GrailsConsole {
      * string.
      */
     public String userInput(String msg) {
-        addStatus(msg);
         lastMessage = "";
-        return showPrompt();
+        msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
+        return showPrompt(msg);
     }
 
-    private String showPrompt() {
+    /**
+     * Shows the prompt to request user input
+     * @param prompt The prompt to use
+     * @return The user input prompt
+     */
+    private String showPrompt(String prompt) {
         try {
             cursorMove = 0;
             userInputActive = true;
             try {
-                if (isAnsiEnabled()) {
-                    return reader.readLine(ansiPrompt(PROMPT).toString());
-                }
-                return reader.readLine(PROMPT);
+                return reader.readLine(prompt);
             } finally {
                 userInputActive = false;
             }
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         }
+    }
+    /**
+     * Shows the prompt to request user input
+     * @return The user input prompt
+     */
+    public String showPrompt() {
+        String prompt = isAnsiEnabled() ? ansiPrompt(PROMPT).toString() : PROMPT;
+        return showPrompt(prompt);
     }
 
     private Ansi ansiPrompt(String prompt) {
@@ -608,7 +621,13 @@ public class GrailsConsole {
         cursorMove = 0;
         try {
             if (isAnsiEnabled()) {
-                out.println(outputErrorLabel(ansi(), label).a(message));
+                Ansi ansi = outputErrorLabel(ansi(), label).a(message);
+                if (message.endsWith(LINE_SEPARATOR)) {
+                    out.print(ansi);
+                }
+                else {
+                    out.println(ansi);
+                }
             }
             else {
                 out.print(label);

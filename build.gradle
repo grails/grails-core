@@ -13,13 +13,13 @@ buildscript {
 apply plugin: 'idea'
 
 
-grailsVersion = '1.4.0.BUILD-SNAPSHOT'
+grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 aspectjVersion = "1.6.10"
 springVersion = "3.1.0.M1"
 springDatastoreVersion = "1.0.0.M6"
-springLoadedVersion = "0.8.0.RELEASE"
+springLoadedVersion = "0.8.3.BUILD-SNAPSHOT"
 springWebflowVersion= "2.0.8.RELEASE"
 ivyVersion = "2.2.0"
 gantVersion = "1.9.5"

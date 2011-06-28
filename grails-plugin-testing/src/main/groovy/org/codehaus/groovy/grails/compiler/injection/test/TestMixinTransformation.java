@@ -212,15 +212,15 @@ public class TestMixinTransformation implements ASTTransformation{
         return methodBody;
     }
 
-    protected boolean isJunit3Test(ClassNode classNode) {
+    public static boolean isJunit3Test(ClassNode classNode) {
         return isSubclassOf(classNode, JUNIT3_CLASS);
     }
 
-    protected boolean isSpockTest(ClassNode classNode) {
+    public static boolean isSpockTest(ClassNode classNode) {
         return isSubclassOf(classNode, SPEC_CLASS);
     }
 
-    private boolean isSubclassOf(ClassNode classNode, String testType) {
+    private static boolean isSubclassOf(ClassNode classNode, String testType) {
         ClassNode currentSuper = classNode.getSuperClass();
         while (currentSuper != null && !currentSuper.getName().equals(OBJECT_CLASS)) {
             if (currentSuper.getName().equals(testType)) return true;
@@ -230,6 +230,10 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {
+        return isAddableMethod(declaredMethod);
+    }
+
+    public static boolean isAddableMethod(MethodNode declaredMethod) {
         ClassNode groovyMethods = GROOVY_OBJECT_CLASS_NODE;
         String methodName = declaredMethod.getName();
         return !declaredMethod.isSynthetic() &&

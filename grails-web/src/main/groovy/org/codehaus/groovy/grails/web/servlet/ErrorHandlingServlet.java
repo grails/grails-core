@@ -110,7 +110,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             }
             request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
 
+            HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
+
             try {
+                WrappedResponseHolder.setWrappedResponse(response);
                 String viewName = urlMappingInfo.getViewName();
                 if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
                     WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
@@ -130,6 +133,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     }
                 }
             } finally {
+                WrappedResponseHolder.setWrappedResponse(originalResponse);
                 if(restoreOriginalRequestAttributes) {
                     RequestContextHolder.setRequestAttributes(requestAttributes);
                 }

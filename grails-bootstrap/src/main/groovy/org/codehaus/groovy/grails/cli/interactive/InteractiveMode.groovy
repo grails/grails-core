@@ -67,8 +67,9 @@ class InteractiveMode {
         console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         interactiveModeActive = true
 
+        addStatus("Enter a script name to run. Use TAB for completion: ")
         while(interactiveModeActive) {
-            def scriptName = userInput("Enter a script name to run. Use TAB for completion: ")
+            def scriptName = showPrompt()
             try {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
