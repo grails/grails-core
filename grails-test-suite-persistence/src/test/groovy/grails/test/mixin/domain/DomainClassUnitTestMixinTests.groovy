@@ -1,14 +1,17 @@
 package grails.test.mixin.domain
 
 import grails.persistence.Entity
-import grails.test.mixin.Mock
-import grails.test.mixin.TestFor
+import grails.test.mixin.TestMixin
+import org.junit.Test
 
-@TestFor(Writer)
-@Mock(Publication)
+@TestMixin(DomainClassUnitTestMixin)
 class DomainClassUnitTestMixinTests {
 
+    @Test
     void testBackReferenceAssignment() {
+        mockDomain Writer
+        mockDomain Publication
+        
         def publication = new Publication(title: 'Some Paper')
         def writer = new Writer(name: 'Some Writer')
         
