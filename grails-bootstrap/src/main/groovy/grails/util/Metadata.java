@@ -251,7 +251,7 @@ public class Metadata extends Properties {
      * @return Returns true if these properties have not changed since they were loaded
      */
     public boolean propertiesHaveNotChanged() {
-        Metadata transientMetadata = getCurrent();
+        Metadata transientMetadata = this;
 
         Metadata allStringValuesMetadata = new Metadata();
         Map<Object,Object> transientMap = transientMetadata;
