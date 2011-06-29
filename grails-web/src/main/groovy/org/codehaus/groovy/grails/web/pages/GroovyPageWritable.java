@@ -17,30 +17,22 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.Writable;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -68,10 +60,12 @@ class GroovyPageWritable implements Writable {
 
     public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
         this.metaInfo = metaInfo;
-        webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        request = webRequest.getCurrentRequest();
-        HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
-        response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
+        webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+        if(webRequest != null) {
+            request = webRequest.getCurrentRequest();
+            HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
+            response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
+        }
         showSource = shouldShowGroovySource();
         debugTemplates = shouldDebugTemplates();
         if (debugTemplates) {
@@ -84,11 +78,11 @@ class GroovyPageWritable implements Writable {
     }
 
     private boolean shouldDebugTemplates() {
-        return request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
+        return request != null && request.getParameter("debugTemplates") != null && Environment.getCurrent() == Environment.DEVELOPMENT;
     }
 
     private boolean shouldShowGroovySource() {
-        return request.getParameter("showSource") != null &&
+        return request != null && request.getParameter("showSource") != null &&
             (Environment.getCurrent() == Environment.DEVELOPMENT) &&
             metaInfo.getGroovySource() != null;
     }
@@ -133,31 +127,38 @@ class GroovyPageWritable implements Writable {
             }
 
             // Set up the script context
-            Binding parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-            if (parentBinding == null) {
-                if (webRequest != null) {
-                    GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
-                    parentBinding = pageRequestBinding;
-                    GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
-                    if (templateEngine != null) {
-                        pageRequestBinding.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
-                    }
-                }
+            Binding parentBinding = null;
+            boolean hasRequest = request != null;
+            if(hasRequest) {
 
-                // only try to set content type when evaluating top level GSP
-                boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
-                if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
-                    LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
-                }
-                if (!contentTypeAlreadySet) {
-                    response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+                parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                if (parentBinding == null) {
+                    if (webRequest != null) {
+                        GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
+                        parentBinding = pageRequestBinding;
+                        GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
+                        if (templateEngine != null) {
+                            pageRequestBinding.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
+                        }
+                    }
+
+                    // only try to set content type when evaluating top level GSP
+                    boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+                    if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
+                        LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+                    }
+                    if (!contentTypeAlreadySet) {
+                        response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+                    }
                 }
             }
 
             GroovyPageBinding binding = createBinding(parentBinding);
-            request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
+            if(hasRequest)
+                request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
             if (metaInfo.getCodecClass() != null) {
-                request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
+                if(hasRequest)
+                    request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             } else {
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
