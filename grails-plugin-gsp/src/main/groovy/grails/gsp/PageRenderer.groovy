@@ -153,7 +153,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         def resource = findResource(uri)
         if (resource != null) {
             try {
-                def webRequest = new GrailsWebRequest(new PageRenderRequest(uri), new PageRenderResponse(writer), servletContext, applicationContext)
+                def webRequest = new GrailsWebRequest(new PageRenderRequest(uri), new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)), servletContext, applicationContext)
                 RequestContextHolder.setRequestAttributes(webRequest)
                 final template = templateEngine.createTemplate(resource, true)
                 final writable = template.make(model)
@@ -427,11 +427,11 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         String characterEncoding = "UTF-8"
         String contentType
         Locale locale = Locale.getDefault()
-        Writer writer
+        PrintWriter writer
         int bufferSize = 0
 
 
-        PageRenderResponse(Writer writer) {
+        PageRenderResponse(PrintWriter writer) {
             this.writer = writer
         }
 
