@@ -153,7 +153,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         def resource = findResource(uri)
         if (resource != null) {
             try {
-                def webRequest = new GrailsWebRequest(new PageRenderRequest(uri), new PageRenderResponse(), servletContext, applicationContext)
+                def webRequest = new GrailsWebRequest(new PageRenderRequest(uri), new PageRenderResponse(writer), servletContext, applicationContext)
                 RequestContextHolder.setRequestAttributes(webRequest)
                 final template = templateEngine.createTemplate(resource, true)
                 final writable = template.make(model)
@@ -425,7 +425,15 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
     class PageRenderResponse implements HttpServletResponse {
 
         String characterEncoding = "UTF-8"
+        String contentType
         Locale locale = Locale.getDefault()
+        Writer writer
+        int bufferSize = 0
+
+
+        PageRenderResponse(Writer writer) {
+            this.writer = writer
+        }
 
         @Override
         void addCookie(Cookie cookie) {
@@ -433,9 +441,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         }
 
         @Override
-        boolean containsHeader(String name) {
-            return false  //To change body of implemented methods use File | Settings | File Templates.
-        }
+        boolean containsHeader(String name) { false }
 
         @Override
         String encodeURL(String url) { url }
@@ -506,58 +512,31 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
 
         @Override
-        String getContentType() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
         ServletOutputStream getOutputStream() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        PrintWriter getWriter() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
+            throw new UnsupportedOperationException("You cannot use the OutputStream in non-request rendering operations. Use getWriter() instead")
         }
 
         @Override
         void setContentLength(int len) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        void setContentType(String type) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        void setBufferSize(int size) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        int getBufferSize() {
-            return 0  //To change body of implemented methods use File | Settings | File Templates.
+            // no-op
         }
 
         @Override
         void flushBuffer() {
-            //To change body of implemented methods use File | Settings | File Templates.
+           // no-op
         }
 
         @Override
         void resetBuffer() {
-            //To change body of implemented methods use File | Settings | File Templates.
+           // no-op
         }
 
         @Override
-        boolean isCommitted() {
-            return false  //To change body of implemented methods use File | Settings | File Templates.
-        }
+        boolean isCommitted() { false }
 
         @Override
         void reset() {
-            //To change body of implemented methods use File | Settings | File Templates.
+            // no-op
         }
 
 
