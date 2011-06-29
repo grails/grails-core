@@ -37,6 +37,7 @@ import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.support.ServletContextResourceLoader
 
 /**
  * Simplified API for rendering GSP pages from services, jobs and other non-request classes.
@@ -47,6 +48,7 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
+    private Map resourceResolveCache = new ConcurrentHashMap()
     private GroovyPagesTemplateEngine templateEngine
     private GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport()
     private Collection<ResourceLoader> resourceLoaders = new ConcurrentLinkedQueue<ResourceLoader>()
@@ -59,8 +61,19 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
     PageRenderer(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine
+        if(templateEngine.resourceLoader != null) {
+            addResourceLoader(templateEngine.resourceLoader)
+        }
     }
 
+    void setResourceLoader(ResourceLoader resourceLoader) {
+       addResourceLoader resourceLoader
+    }
+
+    void setServletContext(ServletContext sc) {
+        this.servletContext = sc
+        addResourceLoader(new ServletContextResourceLoader(sc))
+    }
     /**
      * Adds  resource loader to attempt to load pages from
      * @param resourceLoader The resource loader
@@ -163,14 +176,20 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         return uri
     }
 
-    protected Resource findResource(String path) {
-        for(loader in resourceLoaders) {
-            final resource = loader.getResource(path)
-            if(resource != null && resource.exists()) {
-                return resource
+    protected Resource findResource(String basePath) {
+        Resource resource = resourceResolveCache.get(basePath)
+        if(resource == null) {
+            for(path in [basePath, "/grails-app/views$basePath", "/WEB-INF/grails-app/views$basePath"]) {
+                for(loader in resourceLoaders) {
+                    resource = loader.getResource(path)
+                    if(resource != null && resource.exists()) {
+                        resourceResolveCache.put(basePath, resource)
+                        return resource
+                    }
+                }
             }
         }
-        return null
+        return resource
     }
 
     /*

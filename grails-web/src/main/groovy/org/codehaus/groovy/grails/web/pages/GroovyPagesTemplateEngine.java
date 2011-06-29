@@ -168,6 +168,10 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         this.resourceLoader = resourceLoader;
     }
 
+    public ResourceLoader getResourceLoader() {
+        return resourceLoader;
+    }
+
     /**
      * Retrieves a line number matrix for the specified page that can be used
      * to retrieve the actual line number within the GSP page if the line number within the

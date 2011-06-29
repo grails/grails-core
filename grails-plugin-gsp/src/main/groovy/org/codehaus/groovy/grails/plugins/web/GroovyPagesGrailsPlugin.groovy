@@ -38,8 +38,9 @@ import grails.util.*
 import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
+import grails.gsp.PageRenderer
 
- /**
+/**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
  *
  * @author Graeme Rocher
@@ -148,6 +149,13 @@ class GroovyPagesGrailsPlugin {
                 }
             }
             cacheResources = enableCacheResources
+        }
+
+        groovyPageRenderer(PageRenderer, ref("groovyPagesTemplateEngine")) { bean ->
+            bean.lazyInit = true
+            if(customResourceLoader) {
+                resourceLoader = groovyPageResourceLoader
+            }
         }
 
         // Setup the GroovyPagesUriService
