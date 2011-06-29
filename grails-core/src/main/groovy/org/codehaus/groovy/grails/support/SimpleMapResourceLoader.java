@@ -35,12 +35,10 @@ public class SimpleMapResourceLoader implements ResourceLoader {
         return resources;
     }
 
-    @Override
     public Resource getResource(String location) {
         return resources.get(location);
     }
 
-    @Override
     public ClassLoader getClassLoader() {
         return SimpleMapResourceLoader.class.getClassLoader();
     }

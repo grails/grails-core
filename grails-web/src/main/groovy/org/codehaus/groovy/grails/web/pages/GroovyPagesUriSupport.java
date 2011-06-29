@@ -50,7 +50,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
         return getTemplateURI(getLogicalControllerName(controller),templateName);
     }
 
-    @Override
     public void clear() {
         // do nothing
     }
@@ -128,7 +127,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @param templateName The template name normally beginning with /
      * @return The template URI
      */
-    @Override
     public String getAbsoluteTemplateURI(String templateName) {
         FastStringWriter buf = new FastStringWriter();
         String tmp = templateName.substring(1,templateName.length());
@@ -164,7 +162,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @param viewName The name of the view
      * @return The view URI
      */
-    @Override
     public String getAbsoluteViewURI(String viewName) {
         FastStringWriter buf = new FastStringWriter();
         return getAbsoluteViewURIInternal(viewName, buf, true);
@@ -198,7 +195,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @param viewName The name of the view
      * @return The view URI
      */
-    @Override
     public String getDeployedAbsoluteViewURI(String viewName) {
         FastStringWriter buf = new FastStringWriter(PATH_TO_VIEWS);
         return getAbsoluteViewURIInternal(viewName, buf, true);
