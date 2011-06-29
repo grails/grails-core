@@ -154,7 +154,7 @@ confirmInput = {String message, code="confirm.message" ->
         grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
         exit(1)
     }
-    return grailsConsole.userInput(message, ["y","n"] as String[])
+    return 'y'.equalsIgnoreCase(grailsConsole.userInput(message, ["y","n"] as String[]))
 }
 
 // Note: the following only work if you also include _GrailsEvents.
