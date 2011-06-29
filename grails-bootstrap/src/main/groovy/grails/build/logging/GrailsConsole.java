@@ -29,7 +29,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Stack;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import jline.ConsoleReader;
 import jline.Terminal;
 import jline.UnsupportedTerminal;
