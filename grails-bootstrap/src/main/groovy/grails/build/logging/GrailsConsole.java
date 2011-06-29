@@ -498,6 +498,11 @@ public class GrailsConsole {
      * string.
      */
     public String userInput(String msg) {
+        // Add a space to the end of the message if there isn't one already.
+        if (!msg.endsWith(" ") && !msg.endsWith("\t")) {
+            msg += ' ';
+        }
+
         lastMessage = "";
         msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
         return showPrompt(msg);
