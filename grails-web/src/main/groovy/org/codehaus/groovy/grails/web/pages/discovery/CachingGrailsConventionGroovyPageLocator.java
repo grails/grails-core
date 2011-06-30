@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.pages.discovery;
 
 import grails.util.Environment;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.springframework.core.io.ByteArrayResource;
 
@@ -68,6 +69,23 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             }
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
+    }
+
+    @Override
+    public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding) {
+        String cacheKey = GrailsResourceUtils.appendPiecesForUri(pluginName, uri);
+        GroovyPageScriptSource scriptSource = uriResolveCache.get(cacheKey);
+        if(scriptSource == null) {
+            scriptSource = super.findPageInBinding(pluginName, uri, binding);
+            if(scriptSource == null && Environment.isWarDeployed()) {
+                uriResolveCache.put(cacheKey, NULL_SCRIPT);
+            }
+            else if(scriptSource != null) {
+                uriResolveCache.put(cacheKey, scriptSource);
+            }
+        }
+        return scriptSource == NULL_SCRIPT ? null : scriptSource;
+
     }
 
     @Override

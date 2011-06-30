@@ -56,6 +56,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * <p>Finds a layout by name. For example the layout name "main" will search for /WEB-INF/grails-app/views/layouts/main.gsp in production
      * and  grails-app/views/layouts/main.gsp at development time</p>
      *
+     * <p>If the layout is not found in the application then a scan is executed that searches through binary and source plugins looking for the first matching layout name</p>
+     *
      * @param layoutName The name of the layout
      * @return The script source or null
      */
@@ -70,6 +72,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     /**
      * <p>Finds a layout by name. For example the layout name "main" will search for /WEB-INF/grails-app/views/layouts/main.gsp in production
      * and  grails-app/views/layouts/main.gsp at development time</p>
+     *
+     * <p>If the layout is not found in the application then a scan is executed that searches through binary and source plugins looking for the first matching layout name</p>
      *
      * @param controller The controller
      * @param layoutName The layout
@@ -91,20 +95,22 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
 
 
     /**
-     * Finds a view for the given controller name and view name
+     * <p>Finds a view for the given controller name and view name. For example specifying a controller name of "home" and a view name of "index" will search for
+     * /WEB-INF/grails-app/views/home/index.gsp in production and grails-app/views/home/index.gsp in development</p>
+     *
+     * <p>This method will also detect the presence of the requested response format and try to resolve a more appropriate view. For example in the response format
+     * is 'xml' then /WEB-INF/grails-app/views/home/index.xml.gsp will be tried first</p>
+     *
+     * <p>If the view is not found in the application then a scan is executed that searches through binary and source plugins looking for the first matching view name</p>
      *
      * @param controllerName The controller name
      * @param viewName The view name
      * @return The GroovyPageScriptSource
      */
     public GroovyPageScriptSource findView(String controllerName, String viewName) {
-        String format = lookupRequestFormat();
 
-        GroovyPageScriptSource scriptSource = null;
-        if(format != null) {
-            scriptSource = findPage(uriService.getViewURI(controllerName, viewName + DOT + format));
-        }
-
+        String viewNameWithFormat = resolveViewFormat(viewName);
+        GroovyPageScriptSource scriptSource = findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
         if(scriptSource == null) {
             scriptSource  = findPage(uriService.getViewURI(controllerName, viewName));
         }
@@ -113,8 +119,21 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         return scriptSource;
     }
 
+    private String resolveViewFormat(String viewName) {
+        String format = lookupRequestFormat();
+        if(format != null) {
+              return viewName + DOT + format;
+        }
+        else {
+             return viewName;
+        }
+    }
+
     /**
-     * Finds a view for the given controller and view name
+     * <p>Finds a view for the given controller and view name. For example specifying a controller with a class name of HomeController and a view name of "index" will search for
+     * /WEB-INF/grails-app/views/home/index.gsp in production and grails-app/views/home/index.gsp in development</p>
+     *
+     * <p>If the view is not found in the application then a scan is executed that searches through binary and source plugins looking for the first matching view name</p>
      *
      * @param controller The controller
      * @param viewName The view name
@@ -123,11 +142,22 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     public GroovyPageScriptSource findView(Object controller, String viewName) {
         if(controller != null && viewName != null) {
             String controllerName = getNameForController(controller);
+            String viewNameWithFormat = resolveViewFormat(viewName);
 
-            GroovyPageScriptSource scriptSource = findView(controllerName, viewName);
+
+            GroovyPageScriptSource scriptSource = findResourceScriptSource(uriService.getViewURI(controllerName, viewNameWithFormat));
+            if(scriptSource == null) {
+                scriptSource = findResourceScriptSource(uriService.getViewURI(controllerName, viewName));
+            }
             if(scriptSource == null && pluginManager != null) {
                 String pathToView = pluginManager.getPluginViewsPathForInstance(controller);
-                scriptSource = findViewByPath(pathToView + viewName);
+                if(pathToView != null) {
+                    scriptSource = findViewByPath(GrailsResourceUtils.appendPiecesForUri(pathToView,viewName));
+                }
+            }
+            // if all else fails do a full search
+            if(scriptSource == null) {
+                scriptSource = findView(controllerName, viewName);
             }
             return scriptSource;
         }
@@ -135,7 +165,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     }
 
     /**
-     * Finds a view for the given controller name and view name
+     * Finds a template for the given controller name and template name
      *
      * @param controllerName The controller name
      * @param templateName The view name
@@ -229,8 +259,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if(webRequest != null) {
             HttpServletRequest request = webRequest.getCurrentRequest();
-            return request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT) != null ?
-                    request.getAttribute(GrailsApplicationAttributes.CONTENT_FORMAT).toString() : null;
+            return request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT) != null ?
+                    request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT).toString() : null;
 
         }
         return null;
