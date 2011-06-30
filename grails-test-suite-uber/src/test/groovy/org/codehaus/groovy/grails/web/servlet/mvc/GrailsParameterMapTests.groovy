@@ -43,6 +43,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         map.aList = [1,2]
         map.array = ["one", "two" ] as String[]
         map.longNumber = 1234567890
+        map.z = 'z'
 
         assertEquals(["1"], map.list("one"))
         assertEquals([1,2], map.list("aList"))
@@ -64,6 +65,24 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals 42, map.byte('bad', 42)
         assertEquals 42, map.byte('nonexistent', 42)
         
+        assertEquals '1', map.char('one')
+        assertNull map.char('longNumber')
+        assertNull map.char("test")
+        assertNull map.char("bad")
+        assertNull map.char("nonexistant")
+        assertEquals '0', map.char('zero')
+        assertEquals '1', map.char('one', 'A' as Character)
+        assertEquals '0', map.char('zero', 'A' as Character)
+        assertEquals 'A', map.char('bad', 'A' as Character)
+        assertEquals 'A', map.char('nonexistent', 'A' as Character)
+        assertEquals '1', map.char('one', (char)'A')
+        assertEquals '0', map.char('zero', (char)'A')
+        assertEquals 'A', map.char('bad', (char)'A')
+        assertEquals 'A', map.char('nonexistent', (char)'A')
+        assertEquals 'z', map.char('z')
+        assertEquals 'z', map.char('z', (char)'A')
+        assertEquals 'z', map.char('z', 'A' as Character)
+
         assertEquals 1, map.int('one')
         assertNull map.int("test")
         assertNull map.int("bad")

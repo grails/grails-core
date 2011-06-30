@@ -258,6 +258,36 @@ class GrailsParameterMap extends TypeConvertingMap {
         return DefaultGroovyMethods.inspect(this.@wrappedMap)
     }
 
+    
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Character 'char'(String name) { getChar(name) }
+    
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Character 'char'(String name, Character defaultValue) { 
+        'char'(name, (Integer)defaultValue)
+    }
+    
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @return The integer value or null if there isn't one
+     */
+    Character 'char'(String name, Integer defaultValue) { 
+        Character value = getChar(name)
+        if(value == null) {
+            value = defaultValue
+        } 
+        value
+    }
+    
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
