@@ -116,7 +116,8 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         boolean foundGroovy = false;
         for (StackTraceElement stackTraceElement : trace) {
             String className = stackTraceElement.getClassName();
-            if(!foundGroovy && stackTraceElement.getFileName().endsWith(".groovy")) {
+            String fileName = stackTraceElement.getFileName();
+            if(!foundGroovy && fileName != null && fileName.endsWith(".groovy")) {
                 foundGroovy = true;
             }
             if (endPackage != null && className.startsWith(endPackage) && foundGroovy) break;
