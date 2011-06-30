@@ -268,10 +268,39 @@ class GrailsParameterMap extends TypeConvertingMap {
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
+     * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Byte
+     * @return The integer value or null if there isn't one
+     */
+    private Byte 'byte'(String name, Byte defaultValue) { 
+        Byte value = getByte(name)
+        if(value == null) {
+            value = defaultValue
+        } 
+        value
+    }
+    
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
      * @return The integer value or null if there isn't one
      */
     private Integer 'int'(String name) { getInt(name) }
 
+    /**
+     * Helper method for obtaining integer value from parameter
+     * @param name The name of the parameter
+     * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to an Integer
+     * @return The integer value or null if there isn't one
+     */
+    private Integer 'int'(String name, Integer defaultValue) {
+        Integer value = getInt(name)
+        if(value == null) {
+            value = defaultValue
+        } 
+        value
+    }
+    
+    
     /**
      * Helper method for obtaining long value from parameter
      * @param name The name of the parameter
@@ -280,6 +309,20 @@ class GrailsParameterMap extends TypeConvertingMap {
     private Long 'long'(String name) { getLong(name) }
 
     /**
+     * Helper method for obtaining long value from parameter
+     * @param name The name of the parameter
+     * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Long
+     * @return The long value or null if there isn't one
+     */
+    private Long 'long'(String name, Long defaultValue) {
+        Long value = getLong(name)
+        if(value == null) {
+            value = defaultValue
+        } 
+        value
+    }
+    
+    /**
      * Helper method for obtaining short value from parameter
      * @param name The name of the parameter
      * @return The short value or null if there isn't one
@@ -287,12 +330,40 @@ class GrailsParameterMap extends TypeConvertingMap {
     private Short 'short'(String name) { getShort(name) }
 
     /**
+     * Helper method for obtaining short value from parameter
+     * @param name The name of the parameter
+     * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Short
+     * @return The short value or null if there isn't one
+     */
+    private Short 'short'(String name, Short defaultValue) { 
+        Short value = getShort(name)
+        if(value == null) {
+            value = defaultValue
+        } 
+        value
+    }
+    
+    /**
      * Helper method for obtaining double value from parameter
      * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
     private Double 'double'(String name) { getDouble(name) }
 
+    /**
+     * Helper method for obtaining double value from parameter
+     * @param name The name of the parameter
+     * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Double
+     * @return The double value or null if there isn't one
+     */
+    private Double 'double'(String name, Double defaultValue) { 
+        Double value = getDouble(name)
+        if(value == null) {
+            value = defaultValue
+        }
+        value
+    }
+    
     /**
      * Helper method for obtaining float value from parameter
      * @param name The name of the parameter
@@ -303,12 +374,41 @@ class GrailsParameterMap extends TypeConvertingMap {
     /**
      * Helper method for obtaining float value from parameter
      * @param name The name of the parameter
+     * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Float
+     * @return The double value or null if there isn't one
+     */
+    private Float 'float'(String name, Float defaultValue) { 
+        Float value = getFloat(name)
+        if(value == null) {
+            value = defaultValue
+        } 
+        value
+    }
+    
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
      * @return The double value or null if there isn't one
      */
     private Boolean 'boolean'(String name) {
         getBoolean(name)
     }
 
+    /**
+     * Helper method for obtaining float value from parameter
+     * @param name The name of the parameter
+     * @return The double value or null if there isn't one
+     */
+    private Boolean 'boolean'(String name, Boolean defaultValue) {
+        Boolean value
+        if(containsKey(name)) {
+            value = getBoolean(name)
+        } else {
+            value = defaultValue
+        }
+        value
+    }
+    
     /**
      * Obtains a list of values from parameter.
      * @param name The name of the parameter
