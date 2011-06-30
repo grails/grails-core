@@ -128,6 +128,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         put(Double.class, "double"); 
         put(Short.class, "short");
         put(Boolean.class, "boolean");
+        put(Byte.class, "byte");
      }};
      
 
