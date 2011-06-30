@@ -21,7 +21,9 @@ import grails.web.Action;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -55,7 +57,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
-import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
@@ -298,7 +299,15 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     protected void initializePrimitiveParameter(final BlockStatement wrapper, final Parameter param) {
         final ClassNode paramTypeClassNode = param.getType();
         final String paramName = param.getName();
-        final Expression paramsTypeConversionMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final Expression defaultValueExpression;
+        if(param.hasInitialExpression()) {
+            defaultValueExpression =  param.getInitialExpression();
+        } else if(Boolean.TYPE == paramTypeClassNode.getTypeClass()) {
+            defaultValueExpression = new ConstantExpression(false);
+        } else {
+            defaultValueExpression = new ConstantExpression(0);
+        }
+        final Expression paramsTypeConversionMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName), defaultValueExpression);
         final Expression retrieveConvertedValueExpression = new MethodCallExpression(PARAMS_EXPRESSION, paramTypeClassNode.getTypeClass().getName(), paramsTypeConversionMethodArguments);
         final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
         final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
@@ -310,19 +319,10 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                       new EmptyExpression()));
         wrapper.addStatement(declareVariableStatement);
 
-        final Expression defaultValueExpression = param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(0);
         final Expression assignmentExpression = new BinaryExpression(new VariableExpression(paramName), 
                                                              Token.newSymbol(Types.EQUALS, 0, 0), 
                                                              new TernaryExpression(containsKeyExpression, retrieveConvertedValueExpression, defaultValueExpression));
-
-        final TryCatchStatement tryCatchStatement = new TryCatchStatement(new ExpressionStatement(assignmentExpression), new EmptyStatement());
-        final Parameter exceptionParameter = new Parameter(new ClassNode(GroovyCastException.class), "e");
-        final ExpressionStatement assignDefaultValueToParameterExpression = new ExpressionStatement(new BinaryExpression(new VariableExpression(paramName), 
-                                                                                                    Token.newSymbol(Types.EQUALS, 0, 0), 
-                                                                                                    defaultValueExpression));
-        final CatchStatement catchGroovyCastExceptionStatement = new CatchStatement(exceptionParameter, assignDefaultValueToParameterExpression);
-        tryCatchStatement.addCatch(catchGroovyCastExceptionStatement);
-        wrapper.addStatement(tryCatchStatement);
+        wrapper.addStatement(new ExpressionStatement(assignmentExpression));
     }
     
     protected void initializeNumberParameter(final BlockStatement wrapper, final Parameter param) {
