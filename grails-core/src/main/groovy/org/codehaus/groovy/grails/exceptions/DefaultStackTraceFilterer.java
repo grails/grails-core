@@ -80,8 +80,9 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     public Throwable filter(Throwable source, boolean recursive) {
         if (recursive) {
             Throwable current = source;
-            while (current.getCause() != null) {
-                current = filter(current.getCause());
+            while (current != null) {
+                current = filter(current);
+                current = current.getCause();
             }
         }
         return filter(source);
@@ -91,9 +92,13 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         if (shouldFilter) {
             StackTraceElement[] trace = source.getStackTrace();
             List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
+            boolean foundGroovy = false;
             for (StackTraceElement stackTraceElement : trace) {
                 String className = stackTraceElement.getClassName();
-                if (cutOffPackage != null && className.startsWith(cutOffPackage)) break;
+                if(!foundGroovy && stackTraceElement.getFileName().endsWith(".groovy")) {
+                    foundGroovy = true;
+                }
+                if (cutOffPackage != null && className.startsWith(cutOffPackage) && foundGroovy) break;
                 if (isApplicationClass(className)) {
                     if (stackTraceElement.getLineNumber() > -1) {
                         newTrace.add(stackTraceElement);
