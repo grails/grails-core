@@ -146,6 +146,26 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         assertEquals "hello", sw.toString()
     }
 
+    void testNestingGroovyExpressionInAttribute() {
+        
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def src = '''<g:actionSubmit onclick="return confirm('${message}')"/>'''
+        def t = gpte.createTemplate(src, "hello_test")
+
+        def w = t.make(message: 'Are You Sure')
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"></g:actionSubmit>''', sw.toString()
+    }
+    
 	void testParsingNestedCurlyBraces() {
         
         GrailsWebUtil.bindMockWebRequest()
