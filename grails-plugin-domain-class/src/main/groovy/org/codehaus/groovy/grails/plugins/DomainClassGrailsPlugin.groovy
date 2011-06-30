@@ -137,6 +137,7 @@ class DomainClassGrailsPlugin {
                 }
                 beans.registerBeans(event.ctx)
                 enhanceDomainClasses(event.application, event.ctx)
+                event.application.refreshConstraints()
             }
         }
     }

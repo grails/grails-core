@@ -29,23 +29,33 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
+import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
+import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
@@ -197,46 +207,172 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     }
 
     private Statement bodyCode(ClassNode classNode, Parameter[] actionParameters, Statement actionCode) {
-        Statement newCommandCode;
-        ConstructorCallExpression constructorCallExpression;
-        ArgumentListExpression arguments;
-
-        BlockStatement wrapper = new BlockStatement();
-
-        MethodNode bindDataMethodNode = classNode.getMethod("bindData", new Parameter[]{new Parameter(new ClassNode(Object.class), "target"), new Parameter(new ClassNode(Object.class), "params")});
-        for (Parameter param : actionParameters) {
-            final ClassNode paramTypeClassNode = param.getType();
-            final String paramName = param.getName();
-            constructorCallExpression = new ConstructorCallExpression(paramTypeClassNode, EMPTY_TUPLE);
-            newCommandCode = new ExpressionStatement(
-                    new DeclarationExpression(new VariableExpression(paramName, paramTypeClassNode),
-                            Token.newSymbol(Types.EQUALS, 0, 0),
-                            constructorCallExpression));
-
-            wrapper.addStatement(newCommandCode);
-
-            arguments = new ArgumentListExpression();
-            arguments.addExpression(new VariableExpression(paramName));
-            arguments.addExpression(new VariableExpression(PARAMS_EXPRESSION));
-
-            MethodCallExpression bindDataMethodCallExpression = new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments);
-            if(bindDataMethodNode != null) {
-                bindDataMethodCallExpression.setMethodTarget(bindDataMethodNode);
-            }
-            wrapper.addStatement(new ExpressionStatement(bindDataMethodCallExpression));
-            MethodCallExpression validateMethodCallExpression = new MethodCallExpression(new VariableExpression(paramName), "validate", EMPTY_TUPLE);
-//            MethodNode validateMethod = param.getType().getMethod("validate", new Parameter[0]);
-//            if(validateMethod != null) {
-//                validateMethodCallExpression.setMethodTarget(validateMethod);
-//            }
-            wrapper.addStatement(new ExpressionStatement(validateMethodCallExpression));
-        }
+        BlockStatement wrapper = initializeActionParameters(classNode, actionParameters);
 
         wrapper.addStatement(actionCode);
 
         return wrapper;
     }
 
+    protected BlockStatement initializeActionParameters(ClassNode classNode,
+            Parameter[] actionParameters) {
+        BlockStatement wrapper = new BlockStatement();
+
+        for (Parameter param : actionParameters) {
+            initializeMethodParameter(classNode, wrapper, param);
+        }
+        return wrapper;
+    }
+
+    protected void initializeMethodParameter(final ClassNode classNode, final BlockStatement wrapper, final Parameter param) {
+        final ClassNode paramTypeClassNode = param.getType();
+        final String paramName = param.getName();
+
+        if(paramTypeClassNode.isResolved() && Number.class.isAssignableFrom(paramTypeClassNode.getTypeClass())) {
+            initializeNumberParameter(wrapper, param);
+        } else if(paramTypeClassNode.isResolved() && Boolean.class == paramTypeClassNode.getTypeClass()) {
+            initializeBooleanParameter(wrapper, param);
+        } else if(paramTypeClassNode.isResolved() && paramTypeClassNode.getTypeClass().isPrimitive()) {
+            initializePrimitiveParameter(wrapper, param);
+        } else  if (paramTypeClassNode.equals(new ClassNode(String.class))) {
+            initializeStringParameter(wrapper, param);
+        } else {
+            initializeCommandObjectParameter(wrapper, classNode, paramTypeClassNode, paramName);
+        }
+    }
+
+    protected void initializeCommandObjectParameter(final BlockStatement wrapper, 
+                                                    final ClassNode classNode,
+                                                    final ClassNode paramTypeClassNode,
+                                                    final String paramName) {
+        final Expression constructorCallExpression = new ConstructorCallExpression(
+                paramTypeClassNode, EMPTY_TUPLE);
+        final Statement newCommandCode = new ExpressionStatement(
+                new DeclarationExpression(new VariableExpression(
+                        paramName, paramTypeClassNode),
+                        Token.newSymbol(Types.EQUALS, 0, 0),
+                        constructorCallExpression));
+        
+        wrapper.addStatement(newCommandCode);
+        final ArgumentListExpression arguments = new ArgumentListExpression();
+        arguments.addExpression(new VariableExpression(paramName));
+        arguments.addExpression(new VariableExpression(
+                PARAMS_EXPRESSION));
+        
+        final MethodCallExpression bindDataMethodCallExpression = new MethodCallExpression(
+                THIS_EXPRESSION, "bindData", arguments);
+        final MethodNode bindDataMethodNode = classNode.getMethod("bindData", new Parameter[]{new Parameter(new ClassNode(Object.class), "target"), new Parameter(new ClassNode(Object.class), "params")});
+        if (bindDataMethodNode != null) {
+            bindDataMethodCallExpression
+                    .setMethodTarget(bindDataMethodNode);
+        }
+        wrapper.addStatement(new ExpressionStatement(
+                bindDataMethodCallExpression));
+        final Expression validateMethodCallExpression = new MethodCallExpression(
+                new VariableExpression(paramName), "validate",
+                EMPTY_TUPLE);
+        // MethodNode validateMethod =
+        // param.getType().getMethod("validate", new Parameter[0]);
+        // if(validateMethod != null) {
+        // validateMethodCallExpression.setMethodTarget(validateMethod);
+        // }
+        wrapper.addStatement(new ExpressionStatement(
+                validateMethodCallExpression));
+    }
+
+    protected void initializeStringParameter(final BlockStatement wrapper, final Parameter param) {
+        final ClassNode paramTypeClassNode = param.getType();
+        final String paramName = param.getName();
+        final Expression paramsGetMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final Expression getValueExpression = new MethodCallExpression(PARAMS_EXPRESSION, "get", paramsGetMethodArguments);
+        final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
+        final Statement initializeParameterStatement = new ExpressionStatement(
+                new DeclarationExpression(new VariableExpression(
+                        paramName, paramTypeClassNode),
+                        Token.newSymbol(Types.EQUALS, 0, 0),
+                        new TernaryExpression(containsKeyExpression, getValueExpression, param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(null))));
+        wrapper.addStatement(initializeParameterStatement);
+    }
+
+    protected void initializePrimitiveParameter(final BlockStatement wrapper, final Parameter param) {
+        final ClassNode paramTypeClassNode = param.getType();
+        final String paramName = param.getName();
+        final Expression paramsTypeConversionMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final Expression retrieveConvertedValueExpression = new MethodCallExpression(PARAMS_EXPRESSION, paramTypeClassNode.getTypeClass().getName(), paramsTypeConversionMethodArguments);
+        final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
+      
+        final Statement declareVariableStatement = new ExpressionStatement(
+              new DeclarationExpression(new VariableExpression(
+                      paramName, paramTypeClassNode),
+                      Token.newSymbol(Types.EQUALS, 0, 0),
+                      new EmptyExpression()));
+        wrapper.addStatement(declareVariableStatement);
+
+        final Expression defaultValueExpression = param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(0);
+        final Expression assignmentExpression = new BinaryExpression(new VariableExpression(paramName), 
+                                                             Token.newSymbol(Types.EQUALS, 0, 0), 
+                                                             new TernaryExpression(containsKeyExpression, retrieveConvertedValueExpression, defaultValueExpression));
+
+        final TryCatchStatement tryCatchStatement = new TryCatchStatement(new ExpressionStatement(assignmentExpression), new EmptyStatement());
+        final Parameter exceptionParameter = new Parameter(new ClassNode(GroovyCastException.class), "e");
+        final ExpressionStatement assignDefaultValueToParameterExpression = new ExpressionStatement(new BinaryExpression(new VariableExpression(paramName), 
+                                                                                                    Token.newSymbol(Types.EQUALS, 0, 0), 
+                                                                                                    defaultValueExpression));
+        final CatchStatement catchGroovyCastExceptionStatement = new CatchStatement(exceptionParameter, assignDefaultValueToParameterExpression);
+        tryCatchStatement.addCatch(catchGroovyCastExceptionStatement);
+        wrapper.addStatement(tryCatchStatement);
+    }
+    
+    protected void initializeNumberParameter(final BlockStatement wrapper, final Parameter param) {
+        final ClassNode paramTypeClassNode = param.getType();
+        final String paramName = param.getName();
+        final Expression paramsGetMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final Expression constructorCallExpression = new ConstructorCallExpression(paramTypeClassNode, new MethodCallExpression(PARAMS_EXPRESSION, "get", paramsGetMethodArguments));
+        
+        final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
+        
+        final Statement declareVariableStatement = new ExpressionStatement(
+                new DeclarationExpression(new VariableExpression(
+                        paramName, paramTypeClassNode),
+                        Token.newSymbol(Types.EQUALS, 0, 0),
+                        new EmptyExpression()));
+        wrapper.addStatement(declareVariableStatement);
+        
+        final Expression defaultValueExpression = param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(null);
+        final Expression assignmentExpression = new BinaryExpression(new VariableExpression(paramName), 
+                                                               Token.newSymbol(Types.EQUALS, 0, 0), 
+                                                               new TernaryExpression(containsKeyExpression, constructorCallExpression, defaultValueExpression));
+        
+        final TryCatchStatement tryCatchStatement = new TryCatchStatement(new ExpressionStatement(assignmentExpression), new EmptyStatement());
+        final Parameter exceptionParameter = new Parameter(new ClassNode(NumberFormatException.class), "e");
+        tryCatchStatement.addCatch(new CatchStatement(exceptionParameter, new ExpressionStatement(new BinaryExpression(new VariableExpression(paramName), 
+                                                                                                                       Token.newSymbol(Types.EQUALS, 0, 0), 
+                                                                                                                       defaultValueExpression))));
+        wrapper.addStatement(tryCatchStatement);
+    }
+
+    protected void initializeBooleanParameter(final BlockStatement wrapper, final Parameter param) {
+        final ClassNode paramTypeClassNode = param.getType();
+        final String paramName = param.getName();
+        final Expression paramsGetMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final Expression retrieveConvertedValueExpression = new MethodCallExpression(PARAMS_EXPRESSION, "get", paramsGetMethodArguments);
+        final Expression argumentsToParseBoolean = new ArgumentListExpression(retrieveConvertedValueExpression);
+        final Expression parseBooleanExpression = new StaticMethodCallExpression(new ClassNode(Boolean.class), "parseBoolean", argumentsToParseBoolean);
+        final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
+        final Expression defaultValueExpression = param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(false);
+        
+        final Statement declarationStatement = new ExpressionStatement(
+                new DeclarationExpression(new VariableExpression(
+                        paramName, paramTypeClassNode),
+                        Token.newSymbol(Types.EQUALS, 0, 0),
+                        new TernaryExpression(containsKeyExpression, parseBooleanExpression, defaultValueExpression)));
+        wrapper.addStatement(declarationStatement);
+    }
+    
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }

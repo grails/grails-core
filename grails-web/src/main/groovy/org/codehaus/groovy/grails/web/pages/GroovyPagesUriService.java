@@ -37,4 +37,10 @@ public interface GroovyPagesUriService {
     String getTemplateURI(GroovyObject controller, String templateName);
 
     void clear();
+
+    String getAbsoluteTemplateURI(String templateName);
+
+    String getAbsoluteViewURI(String viewName);
+
+    String getDeployedAbsoluteViewURI(String viewName);
 }

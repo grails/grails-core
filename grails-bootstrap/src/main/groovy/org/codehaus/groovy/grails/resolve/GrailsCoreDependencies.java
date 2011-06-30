@@ -125,7 +125,7 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, "docs", docDependencies);
 
                         // dependencies needed during development, but not for deployment
-                        String tomcatVersion = "7.0.8";
+                        String tomcatVersion = "7.0.16";
                         ModuleRevisionId[] providedDependencies = {
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-core", tomcatVersion),
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-jasper",tomcatVersion),

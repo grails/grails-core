@@ -29,7 +29,10 @@ import grails.util.GrailsWebUtil;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.util.UrlPathHelper;
@@ -38,6 +41,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -59,6 +63,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
     private WebApplicationContext applicationContext;
     private PersistenceContextInterceptor persistenceInterceptor = new NullPersistentContextInterceptor();
     private String defaultEncoding = UTF_8_ENCODING;
+    private GroovyPagesTemplateEngine templateEngine;
 
     @Override
     public void init(FilterConfig fc) {
@@ -73,6 +78,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         FactoryHolder.setFactory(defaultFactory);
 
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(fc.getServletContext());
+        templateEngine = applicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID, GroovyPagesTemplateEngine.class);
 
         final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(fc.getServletContext());
         String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
@@ -207,23 +213,32 @@ public class GrailsPageFilter extends SiteMeshFilter {
                             }
                         }
                         // get the dispatcher for the decorator
-                        RequestDispatcher dispatcher = servletContext.getRequestDispatcher(decorator.getPage());
-                        if (response.isCommitted()) {
-                            dispatcher.include(request, response);
-                        }
-                        else {
+                        if (!response.isCommitted()) {
                             boolean dispatched = false;
                             try {
                                 request.setAttribute(ALREADY_APPLIED_KEY, Boolean.TRUE);
-                                dispatcher.forward(request, response);
-                                dispatched = true;
-                                if(!response.isCommitted()) {
-                                        response.getWriter().flush();
+
+                                GroovyPageView gspSpringView = new GroovyPageView();
+                                gspSpringView.setServletContext(servletContext);
+                                gspSpringView.setUrl(decorator.getPage());
+                                gspSpringView.setApplicationContext(applicationContext);
+                                gspSpringView.setTemplateEngine(templateEngine);
+
+                                try {
+                                    HttpServletResponse rawResponse = response instanceof GrailsContentBufferingResponse ? (HttpServletResponse) ((GrailsContentBufferingResponse) response).getResponse() : response;
+                                    gspSpringView.render(Collections.<String, Object>emptyMap(), request, rawResponse);
+                                    dispatched = true;
+                                    if(!response.isCommitted()) {
+                                            response.getWriter().flush();
+                                    }
+                                } catch (Exception e) {
+                                    cleanRequestAttributes(request);
+                                    throw new GroovyPagesException("Error applying layout : " + decorator.getPage(), e);
                                 }
+
                             } finally {
                                 if(!dispatched) {
-                                    // if an exception occurs then the layout should be re-applied so that error page can be styled
-                                    request.setAttribute(ALREADY_APPLIED_KEY, null);
+                                    cleanRequestAttributes(request);
                                 }
                             }
                         }
@@ -244,6 +259,12 @@ public class GrailsPageFilter extends SiteMeshFilter {
                 };
             }
         };
+    }
+
+    private void cleanRequestAttributes(HttpServletRequest request) {
+        request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+        request.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE);
+        request.setAttribute(ALREADY_APPLIED_KEY, null);
     }
 
     /**

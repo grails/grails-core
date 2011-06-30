@@ -42,7 +42,8 @@ class GrailsProjectCompiler {
     private AntBuilder ant
     private File pluginDescriptor
     private CompilerConfiguration config
-    private ClassLoader classLoader
+
+    ClassLoader classLoader
     boolean verbose = false
 
     boolean isPluginProject = false

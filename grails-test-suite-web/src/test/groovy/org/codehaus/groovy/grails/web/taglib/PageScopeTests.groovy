@@ -8,6 +8,11 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
  */
 class PageScopeTests extends AbstractGrailsTagTests {
 
+    void testReferringToNonExistentPageScopePropertyDoesNotThrowMissingPropertyException() {
+        def template = "<%= pageScope.nonExistent ?: 'No Property Found'"
+        assertOutputEquals 'No Property Found', template
+    }
+
     void testNamedBodyParams() {
         def template = '<g:set var="foo" value="bar" />one: <g:test1 /> two: ${bar} three: ${pageScope.bar}'
         assertOutputEquals('one: bar two: foo three: foo', template)

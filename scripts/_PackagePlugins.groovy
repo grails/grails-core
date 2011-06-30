@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import java.util.concurrent.Executors
-import java.util.concurrent.ExecutorService
-
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-
 /**
  * Gant script that handles the packaging of Grails plug-ins.
  *
@@ -27,94 +22,25 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
  * @since 0.4
  */
 
+projectPackager = new org.codehaus.groovy.grails.compiler.GrailsProjectPackager(projectCompiler, configFile, false)
+projectPackager.servletVersion = servletVersion
+
 packageFiles = { String from ->
-    grailsConsole.updateStatus "Packaging plugins"
-    def ant = new AntBuilder(ant.project)
-    def targetPath = grailsSettings.resourcesDir.path
-    def dir = new File(from, "grails-app/conf")
-    if (dir.exists()) {
-        ant.copy(todir:targetPath, failonerror:false) {
-            fileset(dir:dir.path) {
-                exclude(name:"**/*.groovy")
-                exclude(name:"**/log4j*")
-                exclude(name:"hibernate/**/*")
-                exclude(name:"spring/**/*")
-            }
-        }
-    }
-
-    dir = new File(dir, "hibernate")
-    if (dir.exists()) {
-        ant.copy(todir:targetPath, failonerror:false) {
-            fileset(dir:dir.path, includes:"**/*")
-        }
-    }
-
-    dir = new File(from, "src/groovy")
-    if (dir.exists()) {
-        ant.copy(todir:targetPath, failonerror:false) {
-            fileset(dir:dir.path) {
-                exclude(name:"**/*.groovy")
-                exclude(name:"**/*.java")
-            }
-        }
-    }
-
-    dir = new File(from, "src/java")
-    if (dir.exists()) {
-        ant.copy(todir:targetPath, failonerror:false) {
-            fileset(dir:dir.path) {
-                exclude(name:"**/*.java")
-            }
-        }
-    }
+	projectPackager.packageConfigFiles(from)
 }
 
 target(packagePlugins : "Packages any Grails plugins that are installed for this project") {
     depends(classpath, resolveDependencies)
-
-    profile("Packaging plugin static files") {
-        Thread.start {
-            def pluginInfos = pluginSettings.getSupportedPluginInfos()
-            ExecutorService pool = Executors.newFixedThreadPool(5)
-            for (GrailsPluginInfo gpi in pluginInfos) {
-                pool.execute({ GrailsPluginInfo info ->
-                    try {
-                        def pluginDir = info.pluginDir
-                        if (pluginDir) {
-                            def pluginBase = pluginDir.file
-                            packageFiles(pluginBase.path)
-                        }
-                    }
-                    catch (Exception e) {
-                        grailsConsole.error "Error packaging plugin [${info.name}] : ${e.message}"
-                        exit 1
-                    }
-                }.curry(gpi))
-            }
-        }
-    }
+	projectPackager.packagePlugins()
 }
 
 packagePluginsForWar = { targetDir ->
-    def pluginInfos = pluginSettings.getSupportedPluginInfos()
-    for (GrailsPluginInfo info in pluginInfos) {
-        try {
-            def pluginBase = info.pluginDir.file
-            def pluginPath = pluginBase.absolutePath
-            def pluginName = "${info.name}-${info.version}"
+	try {
+		projectPackager.packagePluginsForWar(targetDir)		
+	}
+	catch(e) {
+		grailsConsole.error e.message, e
+		exit 1
+	}
 
-            packageFiles(pluginBase.path)
-            if (new File("${pluginPath}/web-app").exists()) {
-                ant.mkdir(dir:"${targetDir}/plugins/${pluginName}")
-                ant.copy(todir: "${targetDir}/plugins/${pluginName}") {
-                    fileset(dir: "${pluginBase}/web-app", includes: "**",
-                            excludes: "**/WEB-INF/**, **/META-INF/**")
-                }
-            }
-        }
-        catch (Exception e) {
-            grailsConsole.error "Error packaging plugin [${info.name}] : ${e.message}", e
-        }
-    }
 }

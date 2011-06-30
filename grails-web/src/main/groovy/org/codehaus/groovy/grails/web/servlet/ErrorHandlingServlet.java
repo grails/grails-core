@@ -48,9 +48,9 @@ import org.springframework.web.servlet.ViewResolver;
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
     private static final long serialVersionUID = 8792197458391395589L;
-    private static final String TEXT_HTML = "text/html";
     private static final String GSP_SUFFIX = ".gsp";
     private static final String JSP_SUFFIX = ".jsp";
+    private static final String TEXT_HTML = "text/html";
 
     @Override
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
@@ -110,7 +110,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             }
             request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
 
+            HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
+
             try {
+                WrappedResponseHolder.setWrappedResponse(response);
                 String viewName = urlMappingInfo.getViewName();
                 if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
                     WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
@@ -120,6 +123,9 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     if (viewResolver != null) {
                         View v;
                         try {
+                            if(!response.isCommitted()) {
+                                response.setContentType(TEXT_HTML);
+                            }
                             v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
                             v.render(Collections.EMPTY_MAP, request, response);
                         }
@@ -130,6 +136,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     }
                 }
             } finally {
+                WrappedResponseHolder.setWrappedResponse(originalResponse);
                 if(restoreOriginalRequestAttributes) {
                     RequestContextHolder.setRequestAttributes(requestAttributes);
                 }

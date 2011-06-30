@@ -90,6 +90,9 @@ public class GrailsResourceUtils
     public static final Pattern GRAILS_RESOURCE_PATTERN_SIXTH_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH;
     public static final Pattern GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_NINTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_TENTH_MATCH;
+    public static final Pattern GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH;
 
     static {
         String fs = File.separator;
@@ -99,6 +102,12 @@ public class GrailsResourceUtils
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
         GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "java"));
         GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "groovy"));
+
+
+        GRAILS_RESOURCE_PATTERN_NINTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "test" + fs + "unit"));
+        GRAILS_RESOURCE_PATTERN_TENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "test" + fs + "integration"));
+        GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "test" + fs + "functional"));
+
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
         GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
@@ -114,7 +123,10 @@ public class GrailsResourceUtils
         GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH,
         GRAILS_RESOURCE_PATTERN_FOURTH_MATCH,
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH,
-        GRAILS_RESOURCE_PATTERN_SIXTH_MATCH
+        GRAILS_RESOURCE_PATTERN_SIXTH_MATCH,
+        GRAILS_RESOURCE_PATTERN_NINTH_MATCH,
+        GRAILS_RESOURCE_PATTERN_TENTH_MATCH,
+        GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH
     };
     private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
 
@@ -145,7 +157,7 @@ public class GrailsResourceUtils
             return getClassName(resource.getFile().getAbsolutePath());
         }
         catch (IOException e) {
-            return null;
+             return null;
         }
     }
 

@@ -73,6 +73,8 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     private static final long serialVersionUID = -1918149859392123495L;
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesServlet.class);
+    private static final String WEB_INF = "/WEB-INF";
+    private static final String GRAILS_APP = "/grails-app";
 
     private ServletContext context;
     private GrailsApplicationAttributes grailsAttributes;
@@ -121,19 +123,34 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 
-        Template template = groovyPagesTemplateEngine.createTemplateForUri(pageName);
+        if(isSecurePath(pageName)) {
+            sendNotFound(response, pageName);
+        }
+        else {
 
-        if (template == null) {
-            template = findPageInBinaryPlugins(pageName);
+            Template template = groovyPagesTemplateEngine.createTemplateForUri(pageName);
+
+            if (template == null) {
+                template = findPageInBinaryPlugins(pageName);
+            }
+
+            if (template == null) {
+                sendNotFound(response, pageName);
+                return;
+            }
+
+            renderPageWithEngine(groovyPagesTemplateEngine, request, response, template);
         }
 
-        if (template == null) {
-            context.log("GroovyPagesServlet:  \"" + pageName + "\" not found");
-            response.sendError(404, "\"" + pageName + "\" not found.");
-            return;
-        }
+    }
 
-        renderPageWithEngine(groovyPagesTemplateEngine, request, response, template);
+    protected boolean isSecurePath(String pageName) {
+        return pageName.startsWith(WEB_INF) || pageName.startsWith(GRAILS_APP);
+    }
+
+    protected void sendNotFound(HttpServletResponse response, String pageName) throws IOException {
+        context.log("GroovyPagesServlet:  \"" + pageName + "\" not found");
+        response.sendError(404, "\"" + pageName + "\" not found.");
     }
 
     protected Template findPageInBinaryPlugins(String pageName) {

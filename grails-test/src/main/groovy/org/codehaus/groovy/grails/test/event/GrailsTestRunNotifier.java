@@ -36,7 +36,6 @@ import org.junit.runner.notification.StoppedByUserException;
  */
 public class GrailsTestRunNotifier extends RunNotifier {
 
-    public static final boolean FULL_STACKTRACE = Boolean.valueOf(System.getProperty("grails.full.stacktrace")).booleanValue();
     int progress = 0;
     int total;
     private GrailsConsole console = GrailsConsole.getInstance();
@@ -72,7 +71,7 @@ public class GrailsTestRunNotifier extends RunNotifier {
             PrintWriter ps = new PrintWriter(sw);
             exception.printStackTrace(ps);
 
-            console.error(sw.toString());
+            console.error("", sw.toString());
         }
         super.fireTestFailure(failure);
     }

@@ -140,7 +140,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
 
-        Writer out = null;
+        GSPResponseWriter out = null;
         try {
             out = createResponseWriter(response);
 
@@ -154,18 +154,16 @@ public class GroovyPageView extends AbstractUrlBasedView  {
                     t = engine.createTemplate(getUrl());
                 }
             } catch (Exception e) {
-                // create fresh response writer
-                out = createResponseWriter(response);
-                handleException(e, out, null, request, response);
+                out.setError();
+                handleException(e, engine);
                 return;
             }
             Writable w = t.make(model);
             w.writeTo(out);
         }
         catch (Exception e) {
-            // create fresh response writer
-            out = createResponseWriter(response);
-            handleException(e, out, engine, request, response);
+            out.setError();
+            handleException(e, engine);
         }
         finally {
             if (out != null) {
@@ -178,13 +176,11 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * Performs exception handling by attempting to render the Errors view.
      *
      * @param exception The exception that occured
-     * @param out The Writer
+
      * @param engine The GSP engine
      */
-    protected void handleException(Exception exception, @SuppressWarnings("unused") Writer out,
-            @SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
-            @SuppressWarnings("unused") HttpServletRequest request,
-            @SuppressWarnings("unused") HttpServletResponse response)  {
+    protected void handleException(Exception exception,
+            GroovyPagesTemplateEngine engine)  {
 
         LOG.debug("Error processing GroovyPageView: " + exception.getMessage(), exception);
         if (exception instanceof GroovyPagesException) {
@@ -231,8 +227,8 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      * @return A response Writer
      */
     //TODO this method is dupe'd across GSP servlet, reload servlet and here...
-    protected Writer createResponseWriter(HttpServletResponse response) {
-        PrintWriter out = GSPResponseWriter.getInstance(response);
+    protected GSPResponseWriter createResponseWriter(HttpServletResponse response) {
+        GSPResponseWriter out = GSPResponseWriter.getInstance(response);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

@@ -102,6 +102,8 @@ if (grailsSettings.grailsHome) {
 
 // Set up an Ant path for the tests.
 ant.path(id: "grails.test.classpath", testClasspath)
+ant.taskdef (name: 'testc', classname:'org.codehaus.groovy.grails.test.compiler.GrailsTestCompiler', classpathref:"grails.test.classpath")
+
 
 createTestReports = true
 
@@ -191,16 +193,17 @@ target(allTests: "Runs the project's tests.") {
         }
     }
     finally {
-        String msg = testsFailed ? "Tests FAILED" : "Tests PASSED"
+        String label = testsFailed ? "Tests FAILED" : "Tests PASSED"
+		String msg = ""
         if (createTestReports) {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}"
         }
         if (testsFailed) {
-            grailsConsole.error(msg)
+            grailsConsole.error(label, msg)
         }
         else {
-            grailsConsole.addStatus(msg)
+            grailsConsole.addStatus("$label$msg")
         }
         event("TestPhasesEnd", [])
     }
@@ -245,14 +248,14 @@ compileTests = { GrailsTestType type, File source, File dest ->
     ant.mkdir(dir: dest.path)
     try {
         def classpathId = "grails.test.classpath"
-        ant.groovyc(destdir: dest, encoding:"UTF-8", classpathref: classpathId,
+        ant.testc(destdir: dest, classpathref: classpathId,
                     verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
             javac(classpathref: classpathId, debug: "yes")
             src(path: source)
         }
     }
     catch (Exception e) {
-        event("StatusFinal", ["Compilation error compiling [$type.name] tests: ${e.message}"])
+		grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.message}", e 
         exit 1
     }
 

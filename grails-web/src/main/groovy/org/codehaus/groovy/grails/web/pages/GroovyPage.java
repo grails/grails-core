@@ -18,19 +18,6 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.Script;
-
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -48,6 +35,10 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.Writer;
+import java.util.*;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -358,7 +349,7 @@ public abstract class GroovyPage extends Script {
 
         try {
             GroovyObject tagLib = getTagLib(tagNamespace, tagName);
-            if (tagLib != null || gspTagLibraryLookup.hasNamespace(tagNamespace)) {
+            if (tagLib != null || (gspTagLibraryLookup != null && gspTagLibraryLookup.hasNamespace(tagNamespace))) {
                 if (tagLib != null) {
                     boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
                     Object tagLibProp = tagLib.getProperty(tagName);

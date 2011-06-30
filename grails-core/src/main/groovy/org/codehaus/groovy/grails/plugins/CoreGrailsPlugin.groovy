@@ -119,11 +119,11 @@ class CoreGrailsPlugin {
         MetaClassRegistry registry = GroovySystem.metaClassRegistry
 
         def metaClass = registry.getMetaClass(Class)
-        if (!(metaClass instanceof ExpandoMetaClass)) {			
+        if (!(metaClass instanceof ExpandoMetaClass)) {         
             registry.removeMetaClass(Class)
-			def emc = new ExpandoMetaClass(Class, false, true)
-			emc.initialize()
-			registry.setMetaClass(Class, emc)
+            def emc = new ExpandoMetaClass(Class, false, true)
+            emc.initialize()
+            registry.setMetaClass(Class, emc)
 
             metaClass = emc
         }

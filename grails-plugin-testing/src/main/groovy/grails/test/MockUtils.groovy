@@ -842,6 +842,8 @@ class MockUtils {
                 // now set back-reference
                 if (!(arg instanceof Map)) {
                     def otherHasMany = GrailsClassUtils.getStaticPropertyValue(instanceClass, 'hasMany')
+                    // if there are hasMany definition, try to find back-reference among fields defined there
+                    boolean fieldFound = false
                     if (otherHasMany) {
                         // many-to-many
                         otherHasMany.each { String otherCollectionName, Class otherCollectionType ->
@@ -850,10 +852,12 @@ class MockUtils {
                                     arg."$otherCollectionName" = GrailsClassUtils.createConcreteCollection(otherCollectionType)
                                 }
                                 arg."$otherCollectionName" << obj
+                                fieldFound = true
                             }
                         }
-                    }
-                    else {
+                    } 
+                    // if back-reference is not found, try among 1-many fields 
+                    if (!fieldFound) {                    
                         // 1-many
                         for (PropertyDescriptor pd in Introspector.getBeanInfo(instanceClass).propertyDescriptors) {
                             if (clazz.isAssignableFrom(pd.propertyType)) {

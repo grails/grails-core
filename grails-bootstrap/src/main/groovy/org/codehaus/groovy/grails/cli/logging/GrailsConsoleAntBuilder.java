@@ -33,6 +33,10 @@ import org.apache.tools.ant.util.StringUtils;
  */
 public class GrailsConsoleAntBuilder extends AntBuilder {
 
+    public GrailsConsoleAntBuilder(Project project) {
+        super(project);
+    }
+
     public GrailsConsoleAntBuilder() {
         super(createAntProject());
     }
@@ -119,8 +123,6 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
                 console.verbose(StringUtils.LINE_SEP + targetName + ":");
                 targetName = null;
             }
-
-            super.messageLogged(event);
         }
     }
 }

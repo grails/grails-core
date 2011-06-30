@@ -80,8 +80,9 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     public Throwable filter(Throwable source, boolean recursive) {
         if (recursive) {
             Throwable current = source;
-            while (current.getCause() != null) {
-                current = filter(current.getCause());
+            while (current != null) {
+                current = filter(current);
+                current = current.getCause();
             }
         }
         return filter(source);
@@ -90,15 +91,11 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     public Throwable filter(Throwable source) {
         if (shouldFilter) {
             StackTraceElement[] trace = source.getStackTrace();
-            List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
-            for (StackTraceElement stackTraceElement : trace) {
-                String className = stackTraceElement.getClassName();
-                if (cutOffPackage != null && className.startsWith(cutOffPackage)) break;
-                if (isApplicationClass(className)) {
-                    if (stackTraceElement.getLineNumber() > -1) {
-                        newTrace.add(stackTraceElement);
-                    }
-                }
+            List<StackTraceElement> newTrace = filterTraceWithCutOff(trace, cutOffPackage);
+
+            if(newTrace.size() == 0) {
+                // filter with no cut-off so at least there is some trace
+                newTrace = filterTraceWithCutOff(trace, null);
             }
 
             // Only trim the trace if there was some application trace on the stack
@@ -112,6 +109,25 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
             }
         }
         return source;
+    }
+
+    private List<StackTraceElement> filterTraceWithCutOff(StackTraceElement[] trace, String endPackage) {
+        List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
+        boolean foundGroovy = false;
+        for (StackTraceElement stackTraceElement : trace) {
+            String className = stackTraceElement.getClassName();
+            String fileName = stackTraceElement.getFileName();
+            if(!foundGroovy && fileName != null && fileName.endsWith(".groovy")) {
+                foundGroovy = true;
+            }
+            if (endPackage != null && className.startsWith(endPackage) && foundGroovy) break;
+            if (isApplicationClass(className)) {
+                if (stackTraceElement.getLineNumber() > -1) {
+                    newTrace.add(stackTraceElement);
+                }
+            }
+        }
+        return newTrace;
     }
 
     /**

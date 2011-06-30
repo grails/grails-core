@@ -72,6 +72,7 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testSave() {
+        request.method = 'POST'
         controller.save()
 
         assert model.bookInstance != null
@@ -130,6 +131,7 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testUpdate() {
+        request.method = 'POST'
         controller.update()
 
         assert flash.message != null
@@ -165,6 +167,7 @@ class DomainClassControllerUnitTestMixinTests {
 
     @Test
     void testDelete() {
+        request.method = 'POST'
         controller.delete()
 
         assert flash.message != null
