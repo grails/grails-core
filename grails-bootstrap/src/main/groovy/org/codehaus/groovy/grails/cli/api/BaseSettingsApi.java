@@ -236,13 +236,8 @@ public class BaseSettingsApi {
         // Return the BuildSettings value if there is one, otherwise use the default.
         return value != null ? value : defaultValue;
     }
-
-    /**
-     * Modifies the application's metadata, as stored in the "application.properties"
-     * file. If it doesn't exist, the file is created.
-     */
-    public void updateMetadata(@SuppressWarnings("rawtypes") Map entries) {
-        @SuppressWarnings("hiding") Metadata metadata = Metadata.getCurrent();
+    
+    public void updateMetadata(Metadata metadata, Map entries) {
         for (Object key : entries.keySet()) {
             final Object value = entries.get(key);
             if (value != null) {
@@ -251,6 +246,15 @@ public class BaseSettingsApi {
         }
 
         metadata.persist();
+    }
+
+    /**
+     * Modifies the application's metadata, as stored in the "application.properties"
+     * file. If it doesn't exist, the file is created.
+     */
+    public void updateMetadata(@SuppressWarnings("rawtypes") Map entries) {
+        @SuppressWarnings("hiding") Metadata metadata = Metadata.getCurrent();
+        updateMetadata(metadata, entries);
     }
 
     /**
