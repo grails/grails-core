@@ -129,8 +129,8 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         put(Short.class, "short");
         put(Boolean.class, "boolean");
         put(Byte.class, "byte");
+        put(Character.class, "char");
      }};
-     
 
     private Boolean converterEnabled;
 
@@ -239,7 +239,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         final ClassNode paramTypeClassNode = param.getType();
         final String paramName = param.getName();
 
-        if(paramTypeClassNode.isResolved() && (Boolean.class == paramTypeClassNode.getTypeClass() || Number.class.isAssignableFrom(paramTypeClassNode.getTypeClass()) || paramTypeClassNode.getTypeClass().isPrimitive())) {
+        if(paramTypeClassNode.isResolved() && (Character.class == paramTypeClassNode.getTypeClass() || Boolean.class == paramTypeClassNode.getTypeClass() || Number.class.isAssignableFrom(paramTypeClassNode.getTypeClass()) || paramTypeClassNode.getTypeClass().isPrimitive())) {
             initializePrimitiveOrTypeWrapperParameter(wrapper, param);
         } else  if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param);

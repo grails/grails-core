@@ -45,7 +45,9 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                              Boolean booleanParam,
                              boolean primitiveBooleanParam,
                              Byte byteParam,
-                             byte primitiveByteParam) {
+                             byte primitiveByteParam,
+                             Character charParam,
+                             char primitiveCharParam) {
                 [ stringParam: stringParam,
                   integerParam: integerParam,
                   primitiveIntParam: primitiveIntParam,
@@ -60,7 +62,9 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                   booleanParam: booleanParam,
                   primitiveBooleanParam: primitiveBooleanParam,
                   byteParam: byteParam,
-                  primitiveByteParam: primitiveByteParam ]
+                  primitiveByteParam: primitiveByteParam,
+                  charParam: charParam,
+                  primitiveCharParam: primitiveCharParam ]
             }
             def methodActionWithDefaultValues(String stringParam = 'defaultString',
                              Short shortParam = 1,
@@ -76,7 +80,9 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                              Boolean booleanParam = true,
                              boolean primitiveBooleanParam = true,
                              Byte byteParam = 11,
-                             byte primitiveByteParam = 12) {
+                             byte primitiveByteParam = 12,
+                             Character charParam = 'A' as Character,
+                             char primitiveCharParam = (char)'B') {
                 [ stringParam: stringParam,
                   integerParam: integerParam,
                   primitiveIntParam: primitiveIntParam,
@@ -91,7 +97,9 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                   booleanParam: booleanParam,
                   primitiveBooleanParam: primitiveBooleanParam,
                   byteParam: byteParam,
-                  primitiveByteParam: primitiveByteParam ]
+                  primitiveByteParam: primitiveByteParam,
+                  charParam: charParam,
+                  primitiveCharParam: primitiveCharParam ]
             }
         }
         ''')
@@ -120,7 +128,9 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveBooleanParam = 'true'
            controller.params.byteParam = '101'
            controller.params.primitiveByteParam = '102'
-           
+           controller.params.charParam = 'Y'
+           controller.params.primitiveCharParam = 'Z'
+
            def model = controller.methodAction()
            
         then:
@@ -139,6 +149,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             model.primitiveBooleanParam
             101 == model.byteParam
             102 == model.primitiveByteParam
+            'Y' == model.charParam
+            'Z' == model.primitiveCharParam
     }
 
     void "Test conversion errors for parameters with default values"() {
@@ -157,6 +169,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         controller.params.primitiveBooleanParam = 'bogus'
         controller.params.byteParam = 'bogus'
         controller.params.primitiveByteParam = 'bogus'
+        controller.params.charParam = 'bogus'
+        controller.params.primitiveCharParam = 'bogus'
 
         def model = controller.methodActionWithDefaultValues()
             
@@ -176,6 +190,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             !model.primitiveBooleanParam
             11 == model.byteParam
             12 == model.primitiveByteParam
+            'A' == model.charParam
+            'B' == model.primitiveCharParam
     }   
      
     void "Test conversion errors"() {
@@ -194,6 +210,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveBooleanParam = 'bogus'
            controller.params.byteParam = 'bogus'
            controller.params.primitiveByteParam = 'bogus'
+           controller.params.charParam = 'bogus'
+           controller.params.primitiveCharParam = 'bogus'
 
            def model = controller.methodAction()
            
@@ -213,6 +231,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             !model.primitiveBooleanParam
             null == model.byteParam
             0 == model.primitiveByteParam
+            null == model.charParam
+            0 == model.primitiveCharParam
     }
 
     void "Test uninitialized action parameters"() {
@@ -235,6 +255,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             !model.primitiveBooleanParam
             null == model.byteParam
             0 == model.primitiveByteParam
+            null == model.charParam
+            0 == model.primitiveCharParam
     }
 
     void "Test default parameter values"() {
@@ -257,6 +279,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             model.primitiveBooleanParam
             11 == model.byteParam
             12 == model.primitiveByteParam
+            'A' == model.charParam
+            'B' == model.primitiveCharParam
     }
     
     void "Test overriding default parameter values"() {
@@ -276,6 +300,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveBooleanParam = 'false'
            controller.params.byteParam = '101'
            controller.params.primitiveByteParam = '102'
+           controller.params.charParam = 'Y'
+           controller.params.primitiveCharParam = 'Z'
 
            def model = controller.methodActionWithDefaultValues()
            
@@ -295,6 +321,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             !model.primitiveBooleanParam
             101 == model.byteParam
             102 == model.primitiveByteParam
+            'Y' == model.charParam
+            'Z' == model.primitiveCharParam
     }
 
     def cleanupSpec() {
