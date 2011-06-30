@@ -271,7 +271,7 @@ class GrailsParameterMap extends TypeConvertingMap {
      * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Byte
      * @return The integer value or null if there isn't one
      */
-    private Byte 'byte'(String name, Byte defaultValue) { 
+    private Byte 'byte'(String name, Integer defaultValue) { 
         Byte value = getByte(name)
         if(value == null) {
             value = defaultValue
@@ -335,7 +335,7 @@ class GrailsParameterMap extends TypeConvertingMap {
      * @param defaultValue The default value to use if the parameter does not exist or cannot be converted to a Short
      * @return The short value or null if there isn't one
      */
-    private Short 'short'(String name, Short defaultValue) { 
+    private Short 'short'(String name, Integer defaultValue) { 
         Short value = getShort(name)
         if(value == null) {
             value = defaultValue
