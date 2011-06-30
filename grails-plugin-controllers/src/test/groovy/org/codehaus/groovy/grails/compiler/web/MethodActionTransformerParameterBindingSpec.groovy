@@ -30,6 +30,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             }
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
         controllerClass = gcl.parseClass('''
+        import grails.web.RequestParameter
+        
         class TestBindingController {
             def methodAction(String stringParam,
                              Short shortParam,
@@ -43,7 +45,11 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                              Double doubleParam,
                              double primitiveDoubleParam,
                              Boolean booleanParam,
-                             boolean primitiveBooleanParam) {
+                             boolean primitiveBooleanParam,
+                             Byte byteParam,
+                             byte primitiveByteParam,
+                             Character charParam,
+                             char primitiveCharParam) {
                 [ stringParam: stringParam,
                   integerParam: integerParam,
                   primitiveIntParam: primitiveIntParam,
@@ -56,7 +62,11 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                   doubleParam: doubleParam,
                   primitiveDoubleParam: primitiveDoubleParam,
                   booleanParam: booleanParam,
-                  primitiveBooleanParam: primitiveBooleanParam ]
+                  primitiveBooleanParam: primitiveBooleanParam,
+                  byteParam: byteParam,
+                  primitiveByteParam: primitiveByteParam,
+                  charParam: charParam,
+                  primitiveCharParam: primitiveCharParam ]
             }
             def methodActionWithDefaultValues(String stringParam = 'defaultString',
                              Short shortParam = 1,
@@ -70,7 +80,11 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                              Double doubleParam = 9.9,
                              double primitiveDoubleParam = 10.10,
                              Boolean booleanParam = true,
-                             boolean primitiveBooleanParam = true) {
+                             boolean primitiveBooleanParam = true,
+                             Byte byteParam = 11,
+                             byte primitiveByteParam = 12,
+                             Character charParam = 'A' as Character,
+                             char primitiveCharParam = (char)'B') {
                 [ stringParam: stringParam,
                   integerParam: integerParam,
                   primitiveIntParam: primitiveIntParam,
@@ -83,7 +97,14 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                   doubleParam: doubleParam,
                   primitiveDoubleParam: primitiveDoubleParam,
                   booleanParam: booleanParam,
-                  primitiveBooleanParam: primitiveBooleanParam ]
+                  primitiveBooleanParam: primitiveBooleanParam,
+                  byteParam: byteParam,
+                  primitiveByteParam: primitiveByteParam,
+                  charParam: charParam,
+                  primitiveCharParam: primitiveCharParam ]
+            }
+            def methodActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
+                [name: name, age: age]
             }
         }
         ''')
@@ -93,6 +114,28 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
     def setup() {
         GrailsWebUtil.bindMockWebRequest()
         controller = controllerClass.newInstance()
+    }
+    
+    void "Test request parameter name matching argument name but not matching @RequestParameter name"() {
+        when:
+            controller.params.name = 'Herbert'
+            controller.params.age = '47'
+            def model = controller.methodActionWithRequestMapping()
+            
+        then:
+            null == model.name
+            0 == model.age
+    }
+    
+    void "Test @RequestParameter"() {
+        when:
+            controller.params.firstName = 'Herbert'
+            controller.params.numberOfYearsOld = '47'
+            def model = controller.methodActionWithRequestMapping()
+            
+        then:
+            'Herbert' == model.name
+            47 == model.age
     }
     
     void "Test binding request parameters to basic types"() {
@@ -110,7 +153,11 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveDoubleParam = '1010.1010'
            controller.params.booleanParam = 'true'
            controller.params.primitiveBooleanParam = 'true'
-           
+           controller.params.byteParam = '101'
+           controller.params.primitiveByteParam = '102'
+           controller.params.charParam = 'Y'
+           controller.params.primitiveCharParam = 'Z'
+
            def model = controller.methodAction()
            
         then:
@@ -127,6 +174,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             1010.1010 == model.primitiveDoubleParam
             model.booleanParam
             model.primitiveBooleanParam
+            101 == model.byteParam
+            102 == model.primitiveByteParam
+            'Y' == model.charParam
+            'Z' == model.primitiveCharParam
     }
 
     void "Test conversion errors for parameters with default values"() {
@@ -143,6 +194,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         controller.params.primitiveDoubleParam = 'bogus'
         controller.params.booleanParam = 'bogus'
         controller.params.primitiveBooleanParam = 'bogus'
+        controller.params.byteParam = 'bogus'
+        controller.params.primitiveByteParam = 'bogus'
+        controller.params.charParam = 'bogus'
+        controller.params.primitiveCharParam = 'bogus'
 
         def model = controller.methodActionWithDefaultValues()
             
@@ -160,7 +215,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             10.10 == model.primitiveDoubleParam
             !model.booleanParam
             !model.primitiveBooleanParam
-
+            11 == model.byteParam
+            12 == model.primitiveByteParam
+            'A' == model.charParam
+            'B' == model.primitiveCharParam
     }   
      
     void "Test conversion errors"() {
@@ -177,7 +235,11 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveDoubleParam = 'bogus'
            controller.params.booleanParam = 'bogus'
            controller.params.primitiveBooleanParam = 'bogus'
-   
+           controller.params.byteParam = 'bogus'
+           controller.params.primitiveByteParam = 'bogus'
+           controller.params.charParam = 'bogus'
+           controller.params.primitiveCharParam = 'bogus'
+
            def model = controller.methodAction()
            
         then:
@@ -194,6 +256,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             0 == model.primitiveDoubleParam
             !model.booleanParam
             !model.primitiveBooleanParam
+            null == model.byteParam
+            0 == model.primitiveByteParam
+            null == model.charParam
+            0 == model.primitiveCharParam
     }
 
     void "Test uninitialized action parameters"() {
@@ -214,6 +280,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             0 == model.primitiveDoubleParam
             !model.booleanParam
             !model.primitiveBooleanParam
+            null == model.byteParam
+            0 == model.primitiveByteParam
+            null == model.charParam
+            0 == model.primitiveCharParam
     }
 
     void "Test default parameter values"() {
@@ -234,6 +304,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             10.10 == model.primitiveDoubleParam
             model.booleanParam
             model.primitiveBooleanParam
+            11 == model.byteParam
+            12 == model.primitiveByteParam
+            'A' == model.charParam
+            'B' == model.primitiveCharParam
     }
     
     void "Test overriding default parameter values"() {
@@ -251,7 +325,11 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveDoubleParam = '1010.1010'
            controller.params.booleanParam = 'false'
            controller.params.primitiveBooleanParam = 'false'
-           
+           controller.params.byteParam = '101'
+           controller.params.primitiveByteParam = '102'
+           controller.params.charParam = 'Y'
+           controller.params.primitiveCharParam = 'Z'
+
            def model = controller.methodActionWithDefaultValues()
            
         then:
@@ -268,6 +346,10 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             1010.1010 == model.primitiveDoubleParam
             !model.booleanParam
             !model.primitiveBooleanParam
+            101 == model.byteParam
+            102 == model.primitiveByteParam
+            'Y' == model.charParam
+            'Z' == model.primitiveCharParam
     }
 
     def cleanupSpec() {

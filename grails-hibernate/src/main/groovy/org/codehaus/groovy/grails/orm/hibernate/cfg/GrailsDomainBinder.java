@@ -269,7 +269,7 @@ public final class GrailsDomainBinder {
 
     /**
      * Override the default naming strategy for the default datasource given a Class or a full class name.
-     * @param datasourceName the datasource name
+     * @param strategy the class or name
      * @throws ClassNotFoundException
      * @throws InstantiationException
      * @throws IllegalAccessException
