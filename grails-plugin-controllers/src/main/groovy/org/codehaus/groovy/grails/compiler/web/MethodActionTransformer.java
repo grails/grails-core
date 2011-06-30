@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.web;
 
 import grails.util.BuildSettings;
 import grails.web.Action;
+import grails.web.RequestParameter;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -42,16 +43,12 @@ import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.CatchStatement;
-import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -238,11 +235,16 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     protected void initializeMethodParameter(final ClassNode classNode, final BlockStatement wrapper, final Parameter param) {
         final ClassNode paramTypeClassNode = param.getType();
         final String paramName = param.getName();
+        String requestParameterName = paramName;
+        List<AnnotationNode> requestParameters = param.getAnnotations(new ClassNode(RequestParameter.class));
+        if(requestParameters.size() == 1) {
+            requestParameterName = requestParameters.get(0).getMember("value").getText();
+        }
 
         if(paramTypeClassNode.isResolved() && (Character.class == paramTypeClassNode.getTypeClass() || Boolean.class == paramTypeClassNode.getTypeClass() || Number.class.isAssignableFrom(paramTypeClassNode.getTypeClass()) || paramTypeClassNode.getTypeClass().isPrimitive())) {
-            initializePrimitiveOrTypeWrapperParameter(wrapper, param);
+            initializePrimitiveOrTypeWrapperParameter(wrapper, param, requestParameterName);
         } else  if (paramTypeClassNode.equals(new ClassNode(String.class))) {
-            initializeStringParameter(wrapper, param);
+            initializeStringParameter(wrapper, param, requestParameterName);
         } else {
             initializeCommandObjectParameter(wrapper, classNode, paramTypeClassNode, paramName);
         }
@@ -287,24 +289,24 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                 validateMethodCallExpression));
     }
 
-    protected void initializeStringParameter(final BlockStatement wrapper, final Parameter param) {
+    protected void initializeStringParameter(final BlockStatement wrapper, final Parameter param, final String requestParameterName) {
         final ClassNode paramTypeClassNode = param.getType();
-        final String paramName = param.getName();
-        final Expression paramsGetMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final String methodParamName = param.getName();
+        final Expression paramsGetMethodArguments = new ArgumentListExpression(new ConstantExpression(requestParameterName));
         final Expression getValueExpression = new MethodCallExpression(PARAMS_EXPRESSION, "get", paramsGetMethodArguments);
-        final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(paramName));
+        final Expression paramsContainsKeyMethodArguments = new ArgumentListExpression(new ConstantExpression(requestParameterName));
         final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
         final Statement initializeParameterStatement = new ExpressionStatement(
                 new DeclarationExpression(new VariableExpression(
-                        paramName, paramTypeClassNode),
+                        methodParamName, paramTypeClassNode),
                         Token.newSymbol(Types.EQUALS, 0, 0),
                         new TernaryExpression(containsKeyExpression, getValueExpression, param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(null))));
         wrapper.addStatement(initializeParameterStatement);
     }
 
-    protected void initializePrimitiveOrTypeWrapperParameter(final BlockStatement wrapper, final Parameter param) {
+    protected void initializePrimitiveOrTypeWrapperParameter(final BlockStatement wrapper, final Parameter param, final String requestParameterName) {
         final ClassNode paramTypeClassNode = param.getType();
-        final String paramName = param.getName();
+        final String methodParamName = param.getName();
         final Expression defaultValueExpression;
         final Class paramTypeClass = paramTypeClassNode.getTypeClass();
         if(param.hasInitialExpression()) {
@@ -317,7 +319,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
             defaultValueExpression = new ConstantExpression(null);
         }
         
-        final ConstantExpression paramConstantExpression = new ConstantExpression(paramName);
+        final ConstantExpression paramConstantExpression = new ConstantExpression(requestParameterName);
         final Expression paramsTypeConversionMethodArguments = new ArgumentListExpression(paramConstantExpression, defaultValueExpression);
         final String conversionMethodName;
         if(TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClass)) {
@@ -331,12 +333,12 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         final BooleanExpression containsKeyExpression = new BooleanExpression(new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
       
         final Token equalsToken = Token.newSymbol(Types.EQUALS, 0, 0);
-        final Statement declareVariableStatement = new ExpressionStatement(new DeclarationExpression(new VariableExpression(paramName, paramTypeClassNode), 
+        final Statement declareVariableStatement = new ExpressionStatement(new DeclarationExpression(new VariableExpression(methodParamName, paramTypeClassNode), 
                                                                                                      equalsToken, 
                                                                                                      new EmptyExpression()));
         wrapper.addStatement(declareVariableStatement);
 
-        final Expression assignmentExpression = new BinaryExpression(new VariableExpression(paramName), 
+        final Expression assignmentExpression = new BinaryExpression(new VariableExpression(methodParamName), 
                                                                      equalsToken, 
                                                                      new TernaryExpression(containsKeyExpression, retrieveConvertedValueExpression, defaultValueExpression));
         wrapper.addStatement(new ExpressionStatement(assignmentExpression));

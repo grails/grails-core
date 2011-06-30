@@ -30,6 +30,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             }
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
         controllerClass = gcl.parseClass('''
+        import grails.web.RequestParameter
+        
         class TestBindingController {
             def methodAction(String stringParam,
                              Short shortParam,
@@ -101,6 +103,9 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                   charParam: charParam,
                   primitiveCharParam: primitiveCharParam ]
             }
+            def methodActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
+                [name: name, age: age]
+            }
         }
         ''')
 
@@ -109,6 +114,28 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
     def setup() {
         GrailsWebUtil.bindMockWebRequest()
         controller = controllerClass.newInstance()
+    }
+    
+    void "Test request parameter name matching argument name but not matching @RequestParameter name"() {
+        when:
+            controller.params.name = 'Herbert'
+            controller.params.age = '47'
+            def model = controller.methodActionWithRequestMapping()
+            
+        then:
+            null == model.name
+            0 == model.age
+    }
+    
+    void "Test @RequestParameter"() {
+        when:
+            controller.params.firstName = 'Herbert'
+            controller.params.numberOfYearsOld = '47'
+            def model = controller.methodActionWithRequestMapping()
+            
+        then:
+            'Herbert' == model.name
+            47 == model.age
     }
     
     void "Test binding request parameters to basic types"() {
