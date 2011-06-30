@@ -14,6 +14,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 
 /**
  * @author Graeme Rocher
@@ -35,7 +36,8 @@ class ScaffoldingViewResolverTests extends GroovyTestCase {
         viewResolver.applicationContext = ctx
         viewResolver.templateEngine = gpte
         viewResolver.servletContext = webRequest.getServletContext()
-        viewResolver.resourceLoader = new DefaultResourceLoader()
+        viewResolver.groovyPageLocator = new GrailsConventionGroovyPageLocator(resourceLoader: new DefaultResourceLoader())
+
         viewResolver.templateGenerator = new DefaultGrailsTemplateGenerator()
         webRequest.actionName = "list"
         webRequest.controllerName = "foo"

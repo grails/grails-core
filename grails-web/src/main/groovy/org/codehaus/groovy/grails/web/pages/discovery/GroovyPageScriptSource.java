@@ -1,4 +1,5 @@
-/* Copyright 2004-2005 Graeme Rocher
+/*
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.pages;
 
-import junit.framework.TestCase;
+package org.codehaus.groovy.grails.web.pages.discovery;
+
+import org.springframework.scripting.ScriptSource;
 
 /**
- * Tests for the development ResourceLoader instance of Groovy Server Pages.
- *
- * @author Graeme Rocher
- * @since 0.5
+ * Created by IntelliJ IDEA.
+ * User: graemerocher
+ * Date: 6/30/11
+ * Time: 11:10 AM
+ * To change this template use File | Settings | File Templates.
  */
-public class GroovyPageResourceLoaderTests extends TestCase {
+public interface GroovyPageScriptSource extends ScriptSource{
 
-    public void testGetRealLocationInProject() {
-        GroovyPageResourceLoader rl = new GroovyPageResourceLoader();
-    }
+    /**
+     *
+     * @return The URI of the Groovy page
+     */
+    public String getURI();
 }

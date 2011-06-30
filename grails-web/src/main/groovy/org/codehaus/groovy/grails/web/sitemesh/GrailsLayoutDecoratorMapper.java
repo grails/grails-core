@@ -15,50 +15,34 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import grails.util.Environment;
-import grails.util.Metadata;
-import groovy.lang.GroovyObject;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-
 import com.opensymphony.module.sitemesh.Config;
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
+import grails.util.Environment;
+import groovy.lang.GroovyObject;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements the SiteMesh decorator mapper interface and allows grails views to map to grails layouts.
@@ -69,8 +53,6 @@ import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper implements DecoratorMapper {
 
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
-    private static final String DEFAULT_DECORATOR_PATH = GrailsApplicationAttributes.PATH_TO_VIEWS + "/layouts";
-    private static final String DEFAULT_VIEW_TYPE = ".gsp";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
     private static final long LAYOUT_CACHE_EXPIRATION_MILLIS =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
 
@@ -78,7 +60,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
     private Map<LayoutCacheKey, DecoratorCacheValue> layoutDecoratorCache = new ConcurrentHashMap<LayoutCacheKey, DecoratorCacheValue>();
     private ServletContext servletContext;
     private WebApplicationContext applicationContext;
-    private GrailsPluginManager pluginManager;
+    private GrailsConventionGroovyPageLocator groovyPageLocator;
     private String defaultDecoratorName;
     private boolean gspReloadEnabled;
     private boolean cacheEnabled;
@@ -88,9 +70,7 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         super.init(c, properties, parentMapper);
         servletContext = c.getServletContext();
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        if (applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
-            pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
-        }
+        groovyPageLocator = applicationContext.getBean(GrailsConventionGroovyPageLocator.class);
         if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {
             GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
@@ -212,42 +192,20 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
             }
         }
 
-        String decoratorName = name;
-        if (!name.matches("(.+)(\\.)(\\w{2}|\\w{3})")) {
-            name += DEFAULT_VIEW_TYPE;
-        }
-        String decoratorPage = DEFAULT_DECORATOR_PATH + '/' + name;
-
-        ResourceLoader resourceLoader = establishResourceLoader();
-
-        // lookup something like /WEB-INF/grails-app/views/layouts/[NAME].gsp
-        Resource res = resourceLoader.getResource(decoratorPage);
         Decorator d = null;
-        if (!res.exists()) {
-            // lookup something like /WEB-INF/plugins/myplugin/grails-app/views/layouts/[NAME].gsp
-            String pathToView = lookupPathToControllerView(request, name);
-            res = pathToView != null ? resourceLoader.getResource(pathToView) : null;
-            if (res != null && res.exists()) {
-                decoratorPage = pathToView;
-                d = createDecorator(decoratorName, decoratorPage);
-            }
-            else {
-                // scan /WEB-INF/plugins/*/grails-app/views/layouts/[NAME].gsp for first matching
-                String pluginViewLocation = searchPluginViews(name, resourceLoader);
-                if (pluginViewLocation == null) {
-                    pluginViewLocation = searchPluginViewsInBinaryPlugins(name);
+        GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
 
-                }
+        GroovyPageScriptSource scriptSource = null;
 
-                if (pluginViewLocation != null) {
-                   decoratorPage = pluginViewLocation;
-                   d = createDecorator(decoratorName, decoratorPage);
-                }
-
-            }
+        if(controller != null) {
+            scriptSource = groovyPageLocator.findLayout(controller, name);
         }
         else {
-            d = createDecorator(decoratorName, decoratorPage);
+            scriptSource = groovyPageLocator.findLayout(name);
+        }
+
+        if(scriptSource != null) {
+            d =  createDecorator(name, scriptSource.getURI());
         }
 
         if (cacheEnabled) {
@@ -256,105 +214,9 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         return d;
     }
 
-    protected String searchPluginViewsInBinaryPlugins(String name) {
-        String result = null;
-        if (pluginManager != null) {
-            final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
-            for (GrailsPlugin plugin : allPlugins) {
-                if (plugin instanceof BinaryGrailsPlugin) {
-                    BinaryGrailsPlugin binaryGrailsPlugin = (BinaryGrailsPlugin) plugin;
-
-                    String uri = "/WEB-INF/grails-app/views/layouts/" + name;
-                    if (binaryGrailsPlugin.resolveView(uri) != null) {
-                        return uri;
-                    }
-                }
-            }
-        }
-        return result;
-    }
-
-    public String searchPluginViews(String name, ResourceLoader resourceLoader) {
-        if (Metadata.getCurrent().isWarDeployed()) {
-            return searchPluginViewsForWarDeployed(name, resourceLoader);
-        }
-
-        return searchPluginViewsInDevelopmentMode(name);
-    }
-
-    private String searchPluginViewsInDevelopmentMode(String name) {
-
-        String pluginViewLocation = null;
-            for (Resource resource : GrailsPluginUtils.getPluginDirectories()) {
-                try {
-                    final String pathToLayoutInPlugin = "grails-app/views/layouts/"+name;
-                    final String absolutePathToResource = resource.getFile().getAbsolutePath();
-                    if (!absolutePathToResource.endsWith("/")) {
-                        resource = new FileSystemResource(absolutePathToResource + '/');
-                    }
-                    final Resource layoutPath = resource.createRelative(pathToLayoutInPlugin);
-                    if (layoutPath.exists()) {
-                        GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfo(absolutePathToResource);
-                        pluginViewLocation = GrailsResourceUtils.WEB_INF + "/plugins/" + info.getFullName() + '/' + pathToLayoutInPlugin;
-                    }
-                }
-                catch (IOException e) {
-                    // ignore
-                }
-            }
-        return pluginViewLocation;
-    }
-
-    private String searchPluginViewsForWarDeployed(String name, ResourceLoader resourceLoader) {
-        String pluginViewLocation = null;
-        ResourcePatternResolver resourceResolver = new PathMatchingResourcePatternResolver(resourceLoader);
-        try {
-            Resource[] resources = resourceResolver.getResources(GrailsResourceUtils.WEB_INF + "/plugins/*/" + GrailsResourceUtils.GRAILS_APP_DIR + "/views/layouts/" + name);
-            if (resources.length > 0 && resources[0].exists()) {
-                Resource r = resources[0];
-                String url = r.getURL().toString();
-                pluginViewLocation = GrailsResourceUtils.WEB_INF + url.substring(url.indexOf("/plugins"));
-            }
-        }
-        catch (Exception e) {
-            // ignore
-        }
-        return pluginViewLocation;
-    }
-
-    private String lookupPathToControllerView(HttpServletRequest request, String viewName) {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-        if (webRequest != null) {
-            GroovyObject controller = webRequest.getAttributes().getController(request);
-
-            if (controller != null && pluginManager != null) {
-                String pathToView = pluginManager.getPluginViewsPathForInstance(controller);
-                return GrailsResourceUtils.WEB_INF + (pathToView != null ? pathToView : "") + "/layouts/" + viewName;
-            }
-        }
-        return null;
-    }
 
     private Decorator createDecorator(String decoratorName, String decoratorPage) {
         return new DefaultDecorator(decoratorName, decoratorPage, Collections.EMPTY_MAP);
-    }
-
-    private ResourceLoader establishResourceLoader() {
-        ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        GrailsApplication application = null;
-        if (ctx.containsBean(GrailsApplication.APPLICATION_ID)) {
-            application = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
-        }
-
-        if (application == null) {
-            return ctx;
-        }
-
-        if (ctx.containsBean(GroovyPageResourceLoader.BEAN_ID) && !application.isWarDeployed()) {
-            return (ResourceLoader)ctx.getBean(GroovyPageResourceLoader.BEAN_ID);
-        }
-
-        return ctx;
     }
 
     private static class LayoutCacheKey {

@@ -133,10 +133,8 @@ class FormTagLib {
             assertEquals "file:.", beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
 
             beanDef = bb.getBeanDefinition("groovyPagesTemplateEngine")
-            assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
+            assertEquals "groovyPageLocator", beanDef.getPropertyValues().getPropertyValue("groovyPageLocator").getValue()?.beanName
 
-            beanDef = bb.getBeanDefinition("jspViewResolver")
-            assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
         }
         finally {
             System.setProperty("grails.env", "")

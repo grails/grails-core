@@ -38,7 +38,7 @@ class TestUrlMappings {
 
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource("/foo/_part.gsp", '<g:remoteLink controller="foo" action="list" />')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "foo"
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 

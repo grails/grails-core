@@ -57,6 +57,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.codehaus.groovy.grails.plugins.web.api.*
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers.
@@ -178,11 +179,14 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             }
             jspTagLibraryResolver(TagLibraryResolver,lazyBean)
             gspTagLibraryLookup(LazyTagLibraryLookup,lazyBean)
+            groovyPageLocator(GrailsConventionGroovyPageLocator) {
+                resourceLoader = new GroovyPageUnitTestResourceLoader(groovyPages)
+            }
             groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
                 bean.lazyInit = true
                 tagLibraryLookup = ref("gspTagLibraryLookup")
                 jspTagLibraryResolver = ref("jspTagLibraryResolver")
-                resourceLoader = new GroovyPageUnitTestResourceLoader(groovyPages)
+                groovyPageLocator = ref("groovyPageLocator")
             }
         }
 

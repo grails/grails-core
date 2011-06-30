@@ -45,7 +45,7 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
     void testTitleInSubTemplate() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_title.gsp', '<title>This is the title</title>')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
 
         def template = '''
 <html>

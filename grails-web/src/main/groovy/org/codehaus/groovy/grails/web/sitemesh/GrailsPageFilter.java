@@ -225,8 +225,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
                                 gspSpringView.setTemplateEngine(templateEngine);
 
                                 try {
-                                    HttpServletResponse rawResponse = response instanceof GrailsContentBufferingResponse ? (HttpServletResponse) ((GrailsContentBufferingResponse) response).getResponse() : response;
-                                    gspSpringView.render(Collections.<String, Object>emptyMap(), request, rawResponse);
+                                    gspSpringView.render(Collections.<String, Object>emptyMap(), request, response);
                                     dispatched = true;
                                     if(!response.isCommitted()) {
                                             response.getWriter().flush();

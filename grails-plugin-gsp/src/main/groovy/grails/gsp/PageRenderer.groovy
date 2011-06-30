@@ -38,6 +38,11 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.support.ServletContextResourceLoader
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageResourceScriptSource
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 
 /**
  * Simplified API for rendering GSP pages from services, jobs and other non-request classes.
@@ -48,41 +53,15 @@ import org.springframework.web.context.support.ServletContextResourceLoader
  */
 class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
-    private Map resourceResolveCache = new ConcurrentHashMap()
     private GroovyPagesTemplateEngine templateEngine
-    private GroovyPagesUriSupport uriSupport = new GroovyPagesUriSupport()
-    private Collection<ResourceLoader> resourceLoaders = new ConcurrentLinkedQueue<ResourceLoader>()
-
-    boolean cacheTemplates
-
+    GrailsConventionGroovyPageLocator groovyPageLocator
     ApplicationContext applicationContext
     ServletContext servletContext
 
-
     PageRenderer(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine
-        if(templateEngine.resourceLoader != null) {
-            addResourceLoader(templateEngine.resourceLoader)
-        }
     }
 
-    void setResourceLoader(ResourceLoader resourceLoader) {
-       addResourceLoader resourceLoader
-    }
-
-    void setServletContext(ServletContext sc) {
-        this.servletContext = sc
-        addResourceLoader(new ServletContextResourceLoader(sc))
-    }
-    /**
-     * Adds  resource loader to attempt to load pages from
-     * @param resourceLoader The resource loader
-     */
-    void addResourceLoader(ResourceLoader resourceLoader) {
-        if(resourceLoader != null) {
-            resourceLoaders << resourceLoader
-        }
-    }
 
     /**
      * Renders a page and returns the contents
@@ -96,17 +75,9 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
      * @return The resulting string contents
      */
     String render(Map args) {
-
-        String uri = getUriFromArgs(args)
-
-        if(uri != null) {
-            final model = args.model ?: [:]
-
-            def fsw = new FastStringWriter()
-            renderViewToWriter(uri, model, fsw)
-            return fsw.toString()
-        }
-        return null
+        def fsw = new FastStringWriter()
+        renderViewToWriter(args, fsw)
+        return fsw.toString()
     }
 
     /**
@@ -122,14 +93,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
      * @return The resulting string contents
      */
     void renderTo(Map args, Writer writer) {
-
-        String uri = getUriFromArgs(args)
-
-        if(uri != null) {
-            final model = args.model ?: [:]
-
-            renderViewToWriter(uri, model, writer)
-        }
+        renderViewToWriter(args, writer)
     }
     /**
      * Renders a page and returns the contents
@@ -149,15 +113,28 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
     }
 
 
-    private void renderViewToWriter(String uri, LinkedHashMap model, Writer writer) {
-        def resource = findResource(uri)
-        if (resource != null) {
+    private void renderViewToWriter(Map args, Writer writer) {
+        def source = null
+        if(args.view) {
+           source = groovyPageLocator.findViewByPath(args.view.toString())
+        }
+        else if(args.template) {
+            source = groovyPageLocator.findTemplateByPath(args.template.toString())
+        }
+        if (source != null) {
             try {
-                def webRequest = new GrailsWebRequest(new PageRenderRequest(uri), new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)), servletContext, applicationContext)
+                def webRequest = new GrailsWebRequest(new PageRenderRequest(source.URI), new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)), servletContext, applicationContext)
                 RequestContextHolder.setRequestAttributes(webRequest)
-                final template = templateEngine.createTemplate(resource, true)
-                final writable = template.make(model)
-                writable.writeTo(writer)
+                def template = null
+                if(source instanceof GroovyPageResourceScriptSource)
+                    template = templateEngine.createTemplate(source.resource, true)
+                else if(source instanceof GroovyPageCompiledScriptSource) {
+                    template = templateEngine.createTemplate(source.compiledClass)
+                }
+                if(template != null) {
+                    final writable = template.make(args.model ?: [:])
+                    writable.writeTo(writer)
+                }
             } finally {
                 RequestContextHolder.setRequestAttributes(null)
             }
@@ -165,31 +142,8 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         }
     }
 
-    private String getUriFromArgs(Map args) {
-        String uri = null
-        if (args.view) {
-            uri = uriSupport.getAbsoluteViewURI(args.view.toString())
-        }
-        else if (args.template) {
-            uri = uriSupport.getAbsoluteTemplateURI(args.template.toString())
-        }
-        return uri
-    }
-
-    protected Resource findResource(String basePath) {
-        Resource resource = resourceResolveCache.get(basePath)
-        if(resource == null) {
-            for(path in [basePath, "/grails-app/views$basePath", "/WEB-INF/grails-app/views$basePath"]) {
-                for(loader in resourceLoaders) {
-                    resource = loader.getResource(path)
-                    if(resource != null && resource.exists()) {
-                        resourceResolveCache.put(basePath, resource)
-                        return resource
-                    }
-                }
-            }
-        }
-        return resource
+    protected GroovyPageScriptSource findResource(String basePath) {
+        return groovyPageLocator.findViewByPath(basePath)
     }
 
     /*

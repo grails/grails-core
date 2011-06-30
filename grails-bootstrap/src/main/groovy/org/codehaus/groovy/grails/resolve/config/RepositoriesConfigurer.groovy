@@ -34,6 +34,10 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         dependencyManager.inheritRepositories = b
     }
 
+    void inherits(boolean b) {
+        dependencyManager.inheritRepositories = b
+    }
+
     void flatDir(Map args) {
         def name = args.name?.toString()
         if (name && args.dirs) {

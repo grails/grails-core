@@ -148,7 +148,8 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "render"
         mockController.renderTemplate.call()
 
@@ -164,7 +165,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${it.firstName} ${it.middleName}<br/>'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = 'render'
         mockController.renderTemplateWithCollection.call()
 
@@ -178,7 +179,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${person.firstName} ${person.middleName}<br/>'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = 'render'
         mockController.renderTemplateWithCollectionAndExplicitVarName.call()
 
@@ -192,7 +193,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource "/render/_xmlTemplate.gsp", '<hello>world</hello>'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "render"
         mockController.renderXmlTemplate.call()
 

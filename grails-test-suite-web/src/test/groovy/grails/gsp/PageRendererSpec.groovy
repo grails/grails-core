@@ -9,8 +9,11 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.springframework.core.io.ByteArrayResource
 import spock.lang.Specification
+import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 
- /**
+/**
  * Created by IntelliJ IDEA.
  * User: graemerocher
  * Date: 29/06/2011
@@ -79,7 +82,9 @@ class PageRendererSpec extends Specification{
 
         te.tagLibraryLookup = tll
 
-        renderer.addResourceLoader(resourceLoader)
+        def locator = new CachingGrailsConventionGroovyPageLocator()
+        locator.addResourceLoader(resourceLoader)
+        renderer.groovyPageLocator = locator
         return renderer
     }
 }

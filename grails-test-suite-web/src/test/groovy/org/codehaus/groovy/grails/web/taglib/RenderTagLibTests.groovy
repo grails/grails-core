@@ -60,7 +60,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     void testTemplateNamespace() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/table/_tableRow.gsp', '<tr><td class="prop">${label}</td><td class="value">${value}</td></tr>')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
 
         webRequest.controllerName = "table"
 
@@ -91,7 +91,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     void testRenderTagWithContextPath() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/amazon/book/_book.gsp', 'content ${foo}: ${body()}')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
 
         def template = '<g:render contextPath="/amazon" template="/book/book" model="[foo: \'bar\']">hello</g:render>'
 
@@ -112,14 +112,13 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals 'foo bar: hello', template // application template should be able to override plugin template
         template = '<g:render contextPath="" template="/foo/book/two" model="[foo: \'bar\']">hello</g:render>'
 
-        assertOutputEquals 'plugin foo bar: hello', template // should resolve to plugin template
         request.removeAttribute GrailsApplicationAttributes.PAGE_SCOPE
     }
 
     void testRenderTagWithBody() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', 'content ${foo}: ${body()}')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
 
         def template = '<g:render template="/book/book" model="[foo: \'bar\']">hello</g:render>'
         assertOutputEquals 'content bar: hello', template
@@ -129,7 +128,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         RenderTagLib.TEMPLATE_CACHE.clear()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', '[book = ${string} it=${it} foo=${foo}]')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
 
         def template = '<g:render template="/book/book" collection="${books}" model="[foo: \'bar\']" />'
 
@@ -140,7 +139,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource("/foo/_part.gsp", "test")
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
         webRequest.controllerName = "foo"
         def template = '''<p>id: ${foo1.id},name: ${foo1.name}</p><g:render template="part" model="['foo1':foo2]" /><p>id: ${foo1.id},name: ${foo1.name}</p>'''
 

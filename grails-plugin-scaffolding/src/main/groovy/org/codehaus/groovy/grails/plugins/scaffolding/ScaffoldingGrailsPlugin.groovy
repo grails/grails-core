@@ -51,25 +51,24 @@ class ScaffoldingGrailsPlugin {
         scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader")) {
             grailsApplication = ref("grailsApplication")
         }
-        BeanDefinition beanDef = getBeanDefinition("jspViewResolver")
+        jspViewResolver(ScaffoldingViewResolver) { bean ->
+            bean.lazyInit = true
+            bean.parent = 'abstractViewResolver'
 
-        jspViewResolver(ScaffoldingViewResolver) {
             templateGenerator = scaffoldingTemplateGenerator
             scaffoldedActionMap = ref("scaffoldedActionMap")
             scaffoldedDomains = controllerToScaffoldedDomainClassMap
-            // copy values from other bean def
-            if (beanDef) {
-                for (PropertyValue pv in beanDef.getPropertyValues().getPropertyValueList()) {
-                    delegate."${pv.name}" = pv.value
-                }
-            }
         }
     }
 
     def doWithApplicationContext = { ApplicationContext ctx ->
         if (!application.warDeployed) {
-            Thread.start {
-                configureScaffolding(ctx, application)
+            try {
+                Thread.start {
+                    configureScaffolding(ctx, application)
+                }
+            } catch (e) {
+                println e.message
             }
         }
         else {
