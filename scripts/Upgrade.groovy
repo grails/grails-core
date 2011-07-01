@@ -140,11 +140,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         // Both applications and plugins can have UrlMappings, but only install default if there is nothing already
         ['UrlMappings.groovy'].each() {template ->
             if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.endsWith(template) }) {
-                copy(tofile: "${basedir}/grails-app/conf/${template}") {
-                    fileset(file: "${grailsHome}/src/grails/grails-app/conf/${template}") {
-                        present(present: "srconly", targetdir: "${basedir}/grails-app/conf")
-                    }
-                }
+                copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
             }
         }
 
