@@ -1,14 +1,13 @@
 Grails
 ===
 
-[Grails][Grails] is a web application framework that uses the [Groovy][Groovy] programming language. 
-[Grails]: http://www.grails.org/
+[Grails][Grails] is a framework used to build web applications with the [Groovy][Groovy] programming language. The core framework is very extensible and there are numerous [plugins][plugins] available.
+[Grails]: http://grails.org/
 [Groovy]: http://groovy.codehaus.org/
+[plugins]: http://grails.org/plugins/
 
 Getting Started
 ---
-
-### Setup
 
 You need a Java Development Kit (JDK) installed, but it is not necessary to install Groovy because it's bundled with the Grails distribution.
 
