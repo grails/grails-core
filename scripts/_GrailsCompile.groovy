@@ -50,7 +50,7 @@ target(compile : "Implementation of compilation phase") {
             projectCompiler.compile(grailsSettings.classesDir)
         }
         catch (Exception e) {
-            event("StatusFinal", ["Compilation error: ${e.cause.message}"])
+            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
             exit(1)
         }
 
@@ -65,7 +65,13 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
     profile("Compiling sources to location [$classesDirPath]") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
+        try {
+            projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
+        }
+        catch (Exception e) {
+            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
+            exit(1)
+        }
     }
 }
 
