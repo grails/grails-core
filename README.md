@@ -14,6 +14,8 @@ You need a Java Development Kit (JDK) installed, but it is not necessary to inst
 To install Grails, visit http://grails.org/Download and download the version you would like to use. Set a GRAILS_HOME environment variable to point to the root of the extracted download and add GRAILS_HOME/bin to your executable PATH. Then in a shell, type the following:
 	
 	grails create-app sampleapp
+	cd sampleapp
+	grails run-app
 	
 To build Grails, clone this GitHub repository and then in a shell, type the following:
 	
