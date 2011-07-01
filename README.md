@@ -18,3 +18,9 @@ To install Grails, visit http://www.grails.org and download the version you woul
 To build Grails, clone this GitHub repository and then in a shell, type the following:
 	
 	./gradlew install
+	
+License
+---
+
+Grails and Groovy are licensed under the terms of the [Apache License, Version 2.0][Apache License, Version 2.0].
+[Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0.html
