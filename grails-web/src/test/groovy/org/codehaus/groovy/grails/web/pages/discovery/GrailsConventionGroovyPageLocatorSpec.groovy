@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.springframework.web.context.request.RequestContextHolder
 import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import grails.util.GrailsUtil
 
 /**
  * Created by IntelliJ IDEA.
@@ -90,13 +91,12 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
     }
     void "Test find view with controller instance and view name from plugin"() {
         given: "a valid path to a plugin view"
-            resourceLoader.resources["/grails-app/views/plugins/core-Unknown/grails-app/views/bar.gsp"] = new ByteArrayResource("contents".bytes)
-            resourceLoader.resources["/grails-app/views/plugins/core-${System.getProperty('grails.version')}/grails-app/views/bar.gsp"] = new ByteArrayResource("contents".bytes)
+            resourceLoader.resources["/grails-app/views/plugins/core-${GrailsUtil.grailsVersion}/grails-app/views/bar.gsp"] = new ByteArrayResource("contents".bytes)
         when: "The controller from a plugin and view name is specified"
             def source = pageLocator.findView(new PluginController(), "bar")
         then: "the script source is found"
             source != null
-            source.URI == '/plugins/core-Unknown/grails-app/views/bar.gsp'
+            source.URI == "/plugins/core-${GrailsUtil.grailsVersion}/grails-app/views/bar.gsp"
 
         when:"A non-existent view is queried"
             source = pageLocator.findView(new PluginController(), "notThere")
