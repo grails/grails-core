@@ -76,6 +76,21 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                 Resource r = super.getResource("file:" + pathToResource);
                 if(r.exists()) return r;
             }
+
+            Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
+            String pathRelativeToPlugin = path.substring(path.indexOf("/"), path.length());
+            for (Resource inlinePluginDirectory : inlinePluginDirectories) {
+                try {
+                    File dirFile = inlinePluginDirectory.getFile();
+                    File pageFile = new File(dirFile, pathRelativeToPlugin);
+                    if(pageFile.exists()) {
+                        return new FileSystemResource(pageFile);
+                    }
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+
         }
 
         Resource resource = super.getResource(location);
