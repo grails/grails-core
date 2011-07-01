@@ -3,6 +3,13 @@ package org.codehaus.groovy.grails.web.pages.discovery
 import spock.lang.Specification
 import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
 import org.springframework.core.io.ByteArrayResource
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
+import org.springframework.web.context.request.RequestContextHolder
+import grails.util.GrailsWebUtil
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,7 +21,90 @@ import org.springframework.core.io.ByteArrayResource
 class GrailsConventionGroovyPageLocatorSpec extends Specification{
     SimpleMapResourceLoader resourceLoader = new SimpleMapResourceLoader()
 
-    void "Test find view with controller and view name"() {
+    void "Test find template with controller instance and view name"() {
+        given: "a simple resource loader with a path to the view"
+            resourceLoader.resources["/grails-app/views/test/_bar.gsp"] = new ByteArrayResource("contents".bytes)
+        when: "The controller and template name is specified"
+            def source = pageLocator.findTemplate(new TestController(), "bar")
+        then: "the script source is found"
+            source != null
+            source.URI == '/test/_bar.gsp'
+
+        when:"A non-existent template is queried"
+            source = pageLocator.findTemplate(new TestController(), "notThere")
+        then:"source is null"
+            source == null
+
+    }
+
+    void "Test find view with controller instance and view name"() {
+        given: "a simple resource loader with a path to the view"
+            resourceLoader.resources["/grails-app/views/test/bar.gsp"] = new ByteArrayResource("contents".bytes)
+        when: "The controller and view name is specified"
+            def source = pageLocator.findView(new TestController(), "bar")
+        then: "the script source is found"
+            source != null
+            source.URI == '/test/bar.gsp'
+
+        when:"A non-existent view is queried"
+            source = pageLocator.findView(new TestController(), "notThere")
+        then:"source is null"
+            source == null
+
+    }
+
+    void "Test find view with controller instance, view name and specified response format"() {
+        setup:
+            def webRequest = GrailsWebUtil.bindMockWebRequest()
+
+
+
+
+        when: "The controller and view name is specified as well as a response format of xml"
+            resourceLoader.resources["/grails-app/views/test/bar.xml.gsp"] = new ByteArrayResource("contents".bytes)
+            resourceLoader.resources["/grails-app/views/test/bar.gsp"] = new ByteArrayResource("contents".bytes)
+
+            webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, "xml")
+            def source = pageLocator.findView(new TestController(), "bar")
+        then: "the script source for the xml view is found"
+            source != null
+            source.URI == '/test/bar.xml.gsp'
+
+        when: "no response format is specified"
+            webRequest.request.removeAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT)
+            source = pageLocator.findView(new TestController(), "bar")
+
+        then: "the default view is found"
+            source != null
+            source.URI == '/test/bar.gsp'
+
+
+        when:"A non-existent view is queried"
+            source = pageLocator.findView(new TestController(), "notThere")
+        then:"source is null"
+            source == null
+
+        cleanup:
+            RequestContextHolder.setRequestAttributes(null)
+
+    }
+    void "Test find view with controller instance and view name from plugin"() {
+        given: "a valid path to a plugin view"
+            resourceLoader.resources["/grails-app/views/plugins/core-Unknown/grails-app/views/bar.gsp"] = new ByteArrayResource("contents".bytes)
+        when: "The controller from a plugin and view name is specified"
+            def source = pageLocator.findView(new PluginController(), "bar")
+        then: "the script source is found"
+            source != null
+            source.URI == '/plugins/core-Unknown/grails-app/views/bar.gsp'
+
+        when:"A non-existent view is queried"
+            source = pageLocator.findView(new PluginController(), "notThere")
+        then:"source is null"
+            source == null
+
+    }
+
+    void "Test find view with controller name and view name"() {
         given: "a simple resource loader with a path to the view"
             resourceLoader.resources["/grails-app/views/foo/bar.gsp"] = new ByteArrayResource("contents".bytes)
         when: "The controller and view name is specified"
@@ -80,7 +170,15 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
 
     GrailsConventionGroovyPageLocator getPageLocator() {
         GrailsConventionGroovyPageLocator locator = new GrailsConventionGroovyPageLocator()
+        def pluginManager = new DefaultGrailsPluginManager([CoreGrailsPlugin] as Class[], new DefaultGrailsApplication())
+        pluginManager.loadPlugins()
+        locator.pluginManager = pluginManager
+
         locator.addResourceLoader(resourceLoader)
         return locator
     }
 }
+class TestController {}
+
+@GrailsPlugin(name="core", version="0.1")
+class PluginController {}

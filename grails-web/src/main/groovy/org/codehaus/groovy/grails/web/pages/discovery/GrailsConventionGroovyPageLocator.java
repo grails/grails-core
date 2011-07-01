@@ -176,6 +176,18 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     }
 
     /**
+     * Finds a template for the given controller name and template name
+     *
+     * @param controller The controller n
+     * @param templateName The view name
+     * @return The GroovyPageScriptSource
+     */
+    public GroovyPageScriptSource findTemplate(Object controller, String templateName) {
+        String controllerName = getNameForController(controller);
+        return findPage(uriService.getTemplateURI(controllerName, templateName));
+    }
+
+    /**
      * Finds a view for the given given view name, looking up the controller from the request as necessary
      *
      * @param viewName The view name

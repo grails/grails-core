@@ -16,9 +16,7 @@
 
 package org.codehaus.groovy.grails.web.pages.discovery;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import grails.util.Environment;
-import grails.util.GrailsUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
