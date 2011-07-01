@@ -24,8 +24,8 @@ function addJsClass(el) {
                 <a href="${path}/guide/index.html" class="button">Table of contents</a>
 
                 <div id="nav-summary-childs">
-                    <% for (ch in toc) { %>
-                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title.encodeAsUrlPath().encodeAsHtml()}.html">${ch.title.encodeAsHtml().replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
+                    <% toc.children.eachWithIndex { ch, i -> %>
+                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.name.encodeAsUrlPath().encodeAsHtml()}.html"><strong>${i + 1}</strong><span>${ch.title.encodeAsHtml()}</span></a>
                     </div>
                     <% } %>
                 </div>

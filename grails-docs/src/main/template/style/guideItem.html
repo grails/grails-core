@@ -23,8 +23,8 @@ function addJsClass() {
                 <a href="${path}/guide/index.html" class="button">Table of contents</a>
 
                 <div id="nav-summary-childs" style="display:none;">
-                    <% for (ch in toc) { %>
-                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.title.encodeAsUrlPath()}.html">${ch.title.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
+                    <% toc.children.eachWithIndex { ch, i -> %>
+                    <div class="toc-item" style="margin-left:0"><a href="${path}/guide/${ch.name.encodeAsUrlPath().encodeAsHtml()}.html"><strong>${i + 1}</strong><span>${ch.title.encodeAsHtml()}</span></a>
                     </div>
                     <% } %>
                 </div>
@@ -54,13 +54,13 @@ function addJsClass() {
             <div id="main" class="corner-all">
 
                 <% if(prev){ %>
-                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">&lt;&lt; ${prev?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.name?.encodeAsUrlPath()?.encodeAsHtml()}.html">&lt;&lt; <strong>${chapterNumber - 1}</strong><span>${prev?.title?.encodeAsHtml()}</span></a></div>
                 <% } %>
 
                 <span id='toggle-col1' class="toggle">(<a href="#" onclick="localToggle(); return false;">Quick Reference</a>)</span>
 
                 <% if(next){ %>
-                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">${next?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
+                    <div class="toc-item next-right"><a href="${path}/guide/${next?.name?.encodeAsUrlPath()?.encodeAsHtml()}.html"><strong>${chapterNumber + 1}</strong><span>${next?.title?.encodeAsHtml()}</span> >></a></div>
                 <% } %>
 
 
@@ -76,20 +76,19 @@ function addJsClass() {
                 <div id="table-of-content">
                     <h2>Table of Contents</h2>
                     <%
-                    sectionWriter = { lvl, section ->
+                    sectionWriter = { lvl, section, prefix ->
                     %>
-                    <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.title.encodeAsUrlFragment().encodeAsHtml() }">${section.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a>
+                    <div class="toc-item" style="margin-left:${lvl * 10}px"><a href="#${ section.name.encodeAsUrlFragment().encodeAsHtml() }"><strong>$prefix</strong><span>${section.title?.encodeAsHtml()}</span></a>
                     </div>
                     <%
-
-                    lvl++
-                    for (s in section.subSections) {
-                    sectionWriter.call(lvl, s)
+                        lvl++
+                        section.children.eachWithIndex { s, j ->
+                            sectionWriter.call(lvl, s, prefix + '.' + (j + 1))
+                        }
                     }
-                    }
 
-                    for (s in sectionToc) {
-                    sectionWriter.call(0, s)
+                    sectionToc.eachWithIndex { s, i ->
+                        sectionWriter.call(0, s, chapterNumber + '.' + (i + 1))
                     }
                     %>
                 </div>
@@ -99,10 +98,10 @@ function addJsClass() {
 
                 <div style="clear:both;margin-top:15px;"></div>
                 <% if(prev){ %>
-                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">&lt;&lt; ${prev?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')}</a></div>
+                    <div class="toc-item prev-left"><a href="${path}/guide/${prev?.name?.encodeAsUrlPath()?.encodeAsHtml()}.html">&lt;&lt; <strong>${chapterNumber - 1}</strong><span>${prev?.title?.encodeAsHtml()}</span></a></div>
                 <% }
                    if(next){ %>
-                    <div class="toc-item next-right"><a href="${path}/guide/${next?.title?.encodeAsUrlPath()?.encodeAsHtml()}.html">${next?.title?.encodeAsHtml()?.replaceFirst(/([^\s]*)\s(.*)/, '<strong>$1</strong><span>$2</span>')} >></a></div>
+                    <div class="toc-item next-right"><a href="${path}/guide/${next?.name?.encodeAsUrlPath()?.encodeAsHtml()}.html"><strong>${chapterNumber + 1}</strong><span>${next?.title?.encodeAsHtml()}</span> >></a></div>
                 <% } %>
                 <div style="clear:both"></div>
             </div>

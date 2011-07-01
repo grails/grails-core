@@ -1,3 +1,3 @@
 <% def hLevel = level == 0 ? 1 : 2 %>
-<h$hLevel><a name="${title.encodeAsUrlFragment().encodeAsHtml()}">${title}</a></h$hLevel>
+<h$hLevel><a name="${name.encodeAsUrlFragment().encodeAsHtml()}">${sectionNumber} ${title}</a></h$hLevel>
 ${content}

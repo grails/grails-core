@@ -15,7 +15,7 @@
 
 package grails.doc
 
-import grails.doc.internal.StringEscapeCategory
+import grails.doc.internal.*
 import groovy.text.Template
 
 import org.radeox.engine.context.BaseInitialRenderContext
@@ -29,6 +29,7 @@ import org.radeox.engine.context.BaseInitialRenderContext
  * @since 1.2
  */
 class DocPublisher {
+    static final String TOC_FILENAME = "toc.yml"
 
     /** The source directory of the documentation */
     File src
@@ -171,53 +172,22 @@ class DocPublisher {
             }
         }
 
-        def comparator = [compare: {o1, o2 ->
-            def idx1 = o1.name[0..o1.name.indexOf(' ') - 1]
-            def idx2 = o2.name[0..o2.name.indexOf(' ') - 1]
-            def nums1 = idx1.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            def nums2 = idx2.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            // pad out with zeros to ensure accurate comparison
-            while (nums1.size() < nums2.size()) {
-                nums1 << 0
-            }
-            while (nums2.size() < nums1.size()) {
-                nums2 << 0
-            }
-            def result = 0
-            for (i in 0..<nums1.size()) {
-                result = nums1[i].compareTo(nums2[i])
-                if (result != 0) break
-            }
-            result
-        },
-        equals: { false }] as Comparator
-
-        def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
-        def templateEngine = new groovy.text.SimpleTemplateEngine()
-
-        // A tree of book sections, where 'book' is a list of the top-level
-        // sections and each of those has a list of sub-sections and so on.
-        def book = []
-        for (f in files) {
-            // Chapter is filename - '.gdoc' suffix.
-            def chapter = f.name[0..-6]
-            def section = new Expando(title: chapter, file: f, subSections: [])
-
-            def level = 0
-            def matcher = (chapter =~ /^(\S+?)\.?\s/) // drops last '.' of "xx.yy. "
-            if (matcher) {
-                level = matcher.group(1).split(/\./).size() - 1
-            }
-
-            // This cryptic line finds the appropriate parent section list based
-            // on the current section's level. If the level is 0, then it's 'book'.
-            def parent = (0..<level).inject(book) { sectionList, n -> sectionList[-1].subSections }
-            parent << section
+        def guideSrcDir = new File("${src}/guide")
+        def yamlTocFile = new File(guideSrcDir, "toc.yml")
+        def guide
+        if (yamlTocFile.exists()) {
+            guide = new YamlTocStrategy().generateToc(yamlTocFile)
         }
+        else {
+            def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") } ?: []
+            guide = new LegacyTocStrategy().generateToc(files)
+        }
+
+        def templateEngine = new groovy.text.SimpleTemplateEngine()
 
         // Reference menu items.
         def sectionFilter = { it.directory && !it.name.startsWith('.') } as FileFilter
-        files = new File("${src}/ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
+        def files = new File("${src}/ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
         def refCategories = files.collect { f ->
             new Expando(
                     name: f.name,
@@ -236,7 +206,7 @@ class DocPublisher {
             authors: authors,
             version: version,
             refMenu: refCategories,
-            toc: book,
+            toc: guide,
             copyright: copyright,
             logo: injectPath(logo, pathToRoot),
             sponsorLogo: injectPath(sponsorLogo, pathToRoot),
@@ -252,15 +222,17 @@ class DocPublisher {
         def fullContents = new StringBuilder()
 
         def chapterVars
-        book.eachWithIndex{ chapter, i ->
-            chapterVars = [*:vars]
+        def chapters = guide.children
+        chapters.eachWithIndex{ chapter, i ->
+            chapterVars = [*:vars, chapterNumber: i + 1]
             if (i != 0) {
-                chapterVars['prev'] = book[i - 1]
+                chapterVars['prev'] = chapters[i - 1]
             }
-            if (i != (book.size() - 1)) {
-                chapterVars['next'] = book[i + 1]
+            if (i != (chapters.size() - 1)) {
+                chapterVars['next'] = chapters[i + 1]
             }
-            writeChapter(chapter, template, sectionTemplate, refGuideDir, fullContents, chapterVars)
+            chapterVars.sectionNumber = (i + 1)
+            writeChapter(chapter, template, sectionTemplate, guideSrcDir, refGuideDir, fullContents, chapterVars)
         }
 
         files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
@@ -336,20 +308,38 @@ class DocPublisher {
         ant.echo "Built user manual at ${refDocsDir}/index.html"
     }
 
-    void writeChapter(section, Template layoutTemplate, Template sectionTemplate, String targetDir, fullContents, vars) {
-        fullContents << writePage(section, layoutTemplate, sectionTemplate, targetDir, "", "..", 0, vars)
+    void writeChapter(
+            section,
+            Template layoutTemplate,
+            Template sectionTemplate,
+            File guideSrcDir,
+            String targetDir,
+            fullContents,
+            vars) {
+        fullContents << writePage(section, layoutTemplate, sectionTemplate, guideSrcDir, targetDir, "", "..", 0, vars)
     }
 
-    String writePage(section, Template layoutTemplate, Template sectionTemplate, String targetDir, String subDir, path, level, vars) {
-        context.set(DocEngine.SOURCE_FILE, section.file)
+    String writePage(
+            section,
+            Template layoutTemplate,
+            Template sectionTemplate,
+            File guideSrcDir,
+            String targetDir,
+            String subDir,
+            path,
+            level,
+            vars) {
+        def sourceFile = new File(guideSrcDir, section.file)
+        context.set(DocEngine.SOURCE_FILE, sourceFile)
         context.set(DocEngine.CONTEXT_PATH, path)
 
         def varsCopy = [*:vars]
+        varsCopy.name = section.name
         varsCopy.title = section.title
         varsCopy.path = path
         varsCopy.level = level
-        varsCopy.sectionToc = section.subSections
-        varsCopy.content = engine.render(section.file.text, context)
+        varsCopy.sectionToc = section.children
+        varsCopy.content = engine.render(sourceFile.text, context)
 
         // First create the section content, which usually consists of a header
         // and the translated gdoc content.
@@ -362,9 +352,16 @@ class DocPublisher {
 
         // Create the sub-section pages.
         level++
-        for (s in section.subSections) {
-            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, targetDir, "pages", path, level, vars)
+        final sectionNumber = varsCopy.sectionNumber
+        int subSectionNumber = 1
+        for (s in section.children) {
+            varsCopy.sectionNumber = "$sectionNumber.$subSectionNumber"
+            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, guideSrcDir, targetDir, "pages", path, level, varsCopy)
+            subSectionNumber++
         }
+
+        // Reset the section number in the template vars.
+        varsCopy.sectionNumber = sectionNumber
 
         // TODO PAL - I don't see why these pages are necessary, plus there seems
         // to be no way to get embedded images to display properly (since the path
@@ -383,7 +380,7 @@ class DocPublisher {
             varsCopy.sponsorLogo = injectPath(sponsorLogo, varsCopy.path)
         }
 
-        new File("${targetDir}/${section.title}.html").withWriter(encoding) { writer ->
+        new File("${targetDir}/${section.name}.html").withWriter(encoding) { writer ->
             varsCopy.content = accumulatedContent.toString()
             layoutTemplate.make(varsCopy).writeTo(writer)
         }
@@ -425,6 +422,11 @@ class DocPublisher {
             }
             engine.addMacro(m)
         }
+    }
+
+    protected loadGuideStructure() {
+        def tocFile = new File(TOC_FILENAME)
+
     }
 
     private String injectPath(String source, String path) {

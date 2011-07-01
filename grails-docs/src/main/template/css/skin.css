@@ -37,6 +37,14 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
     color: white;
 }
 
+.toc-item a {
+    text-decoration: none;
+}
+
+.toc-item a:hover {
+    text-decoration: underline;
+}
+
 /*
 ////////////////////////////////////////////////////////////////////////////////
 //
