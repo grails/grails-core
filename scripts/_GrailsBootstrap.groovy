@@ -129,9 +129,13 @@ target(bootstrap: "Loads and configures a Grails instance") {
 }
 
 target(bootstrapOnce:"Loads and configures a Grails instance only if it is not already loaded and configured") {
+    depends(enableExpandoMetaClass)
     if (!binding.variables.applicationLoaded) {
-        ExpandoMetaClass.enableGlobally()
         loadApp()
         configureApp()
     }
+}
+
+target(enableExpandoMetaClass: "Calls ExpandoMetaClass.enableGlobally()") {
+    ExpandoMetaClass.enableGlobally()
 }
