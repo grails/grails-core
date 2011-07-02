@@ -24,7 +24,6 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
 /**
  * @author Andrew Eisenberg
- * @created Jul 22, 2010
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ ElementType.TYPE })

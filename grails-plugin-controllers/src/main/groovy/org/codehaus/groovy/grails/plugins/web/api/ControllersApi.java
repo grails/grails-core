@@ -209,10 +209,10 @@ public class ControllersApi extends CommonWebApi {
     }
 
     /**
-     * Redirects for the given arguments
+     * Redirects for the given arguments.
      *
      * @param args The arguments
-     * @return
+     * @return null
      */
     public Object redirect(Object instance,Map args) {
         return redirect.invoke(instance, "redirect", new Object[]{ args });

@@ -228,7 +228,7 @@ public interface GrailsApplication extends ApplicationContextAware {
 
     /**
      * Rebuilds the constraint definitions.
-     * @todo move this out? Why ORM dependencies in here?
+     * TODO move this out? Why ORM dependencies in here?
      */
     void refreshConstraints();
 

@@ -62,7 +62,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     /**
      * Creates the ApplicationContext instance. Subclasses can override to customise the used ApplicationContext
      *
-     * @param parent The parent ApplicationContext instance. Can be null.
+     * @param parentCtx The parent ApplicationContext instance. Can be null.
      *
      * @return An instance of GenericApplicationContext
      */

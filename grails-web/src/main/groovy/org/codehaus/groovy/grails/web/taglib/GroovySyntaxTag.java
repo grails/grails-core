@@ -95,7 +95,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
      * <p>Tags must return the correct value to indicate whether or not non-whitespace content is permitted before this tag.</p>
      * <p>This is for tags that must follow other tags, such as g:else or g:elseif that do not allow content between them and the
      * previous tag. It is simply used as a safety mechanism to trap incorrect usage of tags.</p>
-     * @todo rework this and combine with isKeepPrecedingWhiteSpace as really they are used in the same situations
+     * TODO rework this and combine with isKeepPrecedingWhiteSpace as really they are used in the same situations
      * @return True if any content is allowed immediately before the tag - false if it is an error to have such content before it
      */
     public abstract boolean isAllowPrecedingContent();
