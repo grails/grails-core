@@ -112,8 +112,6 @@ class HibernatePluginSupport {
 
         hibernateEventListeners(HibernateEventListeners)
 
-        entityInterceptor(EmptyInterceptor)
-
         // TODO make sure this works with mongo & redis
         persistenceInterceptor(AggregatePersistenceContextInterceptor) {
             dataSourceNames = datasourceNames
@@ -203,6 +201,8 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 nativeJdbcExtractor = ref("nativeJdbcExtractor")
             }
 
+            "entityInterceptor$suffix"(EmptyInterceptor)
+
 // TODO
 //        BeanDefinition externalDefinition = HibernatePluginSupport.checkExternalBeans(application)
 //        if (externalDefinition && !ds) {
@@ -240,7 +240,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
 
                 lobHandler = ref("lobHandlerDetector$suffix")
 
-                entityInterceptor = ref('entityInterceptor')
+                entityInterceptor = ref("entityInterceptor$suffix")
 
                 eventListeners = ['flush':       new PatchedDefaultFlushEventListener(),
                                   'save':        eventTriggeringInterceptor,
