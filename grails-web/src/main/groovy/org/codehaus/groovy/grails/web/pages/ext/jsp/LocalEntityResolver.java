@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 public class LocalEntityResolver implements EntityResolver {
 
     @SuppressWarnings("unchecked")
-    private static final Map<String, String> ENTITIES = CollectionUtils.newMap(
+    private static final Map<String, String> ENTITIES = CollectionUtils.<String, String>newMap(
         // JSP taglib 2.1
         "http://java.sun.com/xml/ns/jee/web-jsptaglibrary_2_1.xsd", "web-jsptaglibrary_2_1.xsd",
         // JSP taglib 2.0

@@ -728,7 +728,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     public Map notifyOfEvent(int eventKind, final Object source) {
         @SuppressWarnings("unchecked")
-        Map<String, Object> event = CollectionUtils.newMap(
+        Map<String, Object> event = CollectionUtils.<String, Object>newMap(
             PLUGIN_CHANGE_EVENT_SOURCE, source,
             PLUGIN_CHANGE_EVENT_PLUGIN, plugin,
             PLUGIN_CHANGE_EVENT_APPLICATION, application,

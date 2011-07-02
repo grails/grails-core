@@ -36,7 +36,7 @@ public interface UrlMappingEvaluator {
 
     // default HTTP method to action name mappings
     @SuppressWarnings("unchecked")
-    Map<String, String> DEFAULT_REST_MAPPING = CollectionUtils.newMap(
+    Map<String, String> DEFAULT_REST_MAPPING = CollectionUtils.<String, String>newMap(
         "GET", "show",
         "POST", "save",
         "PUT", "update",

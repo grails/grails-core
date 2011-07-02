@@ -76,7 +76,7 @@ public enum Environment {
 
     private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
     @SuppressWarnings("unchecked")
-    private static Map<String, String> envNameMappings = CollectionUtils.newMap(
+    private static Map<String, String> envNameMappings = CollectionUtils.<String, String>newMap(
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());

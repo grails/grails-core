@@ -76,7 +76,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             public Object invokeMethod(final String name, Object args) {
 
                 @SuppressWarnings("unchecked")
-                Map<String, Object> attrs = CollectionUtils.newMap("template", name);
+                Map<String, Object> attrs = CollectionUtils.<String, Object>newMap("template", name);
                 if (args != null && args instanceof Object[]) {
                     Object[] tagArgs = ((Object[])args);
                     if (tagArgs.length > 0 && tagArgs[0] instanceof Map) {

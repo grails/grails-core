@@ -27,7 +27,7 @@ import java.util.Set;
 import org.apache.commons.collections.iterators.AbstractIteratorDecorator;
 import org.apache.commons.collections.list.UnmodifiableList;
 import org.apache.commons.collections.set.AbstractSerializableSetDecorator;
-import org.spockframework.util.Assert;
+import org.springframework.util.Assert;
 
 /**
  * Forked from Apache Commons Collections' implementation of ListOrderedSet. This one actually implements the List interface.

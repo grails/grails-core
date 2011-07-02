@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
+import grails.util.CollectionUtils;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
@@ -148,13 +149,12 @@ public final class GrailsDomainBinder {
             }
         };
 
-        private static final Map<Class<?>, CollectionType> INSTANCES = new HashMap<Class<?>, CollectionType>();
-        static {
-            INSTANCES.put(Set.class, SET);
-            INSTANCES.put(SortedSet.class, SET);
-            INSTANCES.put(List.class, LIST);
-            INSTANCES.put(Map.class, MAP);
-        }
+        @SuppressWarnings("unchecked")
+        private static final Map<Class<?>, CollectionType> INSTANCES = CollectionUtils.<Class<?>, CollectionType>newMap(
+              Set.class, SET,
+              SortedSet.class, SET,
+              List.class, LIST,
+              Map.class, MAP);
 
         public static CollectionType collectionTypeForClass(Class<?> clazz) {
             return INSTANCES.get(clazz);
@@ -407,6 +407,7 @@ public final class GrailsDomainBinder {
 
                 referenced.addProperty(prop);
             }
+
             if ((!list.getKey().isNullable() && !list.isInverse()) || compositeIdProperty) {
                 IndexBackref ib = new IndexBackref();
                 ib.setName(UNDERSCORE + property.getName() + "IndexBackref");
@@ -418,7 +419,6 @@ public final class GrailsDomainBinder {
                 ib.setEntityName(list.getOwner().getEntityName());
                 ib.setValue(list.getIndex());
                 referenced.addProperty(ib);
-
             }
         }
     }
@@ -1221,35 +1221,36 @@ public final class GrailsDomainBinder {
      * @param sessionFactoryBeanName  the session factory bean name
      */
     public static void bindRoot(GrailsDomainClass domainClass, Mappings mappings, String sessionFactoryBeanName) {
-        if (mappings.getClass(domainClass.getFullName()) == null) {
-            RootClass root = new RootClass();
-            root.setAbstract(Modifier.isAbstract(domainClass.getClazz().getModifiers()));
-            if (!domainClass.hasSubClasses()) {
-                root.setPolymorphic(false);
-            }
-            bindClass(domainClass, root, mappings);
-
-            Mapping m = getMapping(domainClass);
-
-            bindRootPersistentClassCommonValues(domainClass, root, mappings, sessionFactoryBeanName);
-
-            if (!domainClass.getSubClasses().isEmpty()) {
-                boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
-                if (!tablePerSubclass) {
-                    // if the root class has children create a discriminator property
-                    bindDiscriminatorProperty(root.getTable(), root, mappings);
-                }
-                // bind the sub classes
-                bindSubClasses(domainClass, root, mappings, sessionFactoryBeanName);
-            }
-
-            if (root.getEntityPersisterClass() == null) {
-                root.setEntityPersisterClass(GroovyAwareSingleTableEntityPersister.class);
-            }
-            mappings.addClass(root);
-        } else {
+        if (mappings.getClass(domainClass.getFullName()) != null) {
             LOG.info("[GrailsDomainBinder] Class [" + domainClass.getFullName() + "] is already mapped, skipping.. ");
+            return;
         }
+
+        RootClass root = new RootClass();
+        root.setAbstract(Modifier.isAbstract(domainClass.getClazz().getModifiers()));
+        if (!domainClass.hasSubClasses()) {
+            root.setPolymorphic(false);
+        }
+        bindClass(domainClass, root, mappings);
+
+        Mapping m = getMapping(domainClass);
+
+        bindRootPersistentClassCommonValues(domainClass, root, mappings, sessionFactoryBeanName);
+
+        if (!domainClass.getSubClasses().isEmpty()) {
+            boolean tablePerSubclass = m != null && !m.getTablePerHierarchy();
+            if (!tablePerSubclass) {
+                // if the root class has children create a discriminator property
+                bindDiscriminatorProperty(root.getTable(), root, mappings);
+            }
+            // bind the sub classes
+            bindSubClasses(domainClass, root, mappings, sessionFactoryBeanName);
+        }
+
+        if (root.getEntityPersisterClass() == null) {
+            root.setEntityPersisterClass(GroovyAwareSingleTableEntityPersister.class);
+        }
+        mappings.addClass(root);
     }
 
     /**
@@ -1597,7 +1598,7 @@ public final class GrailsDomainBinder {
 
             Value value = null;
 
-            // see if its a collection type
+            // see if it's a collection type
             CollectionType collectionType = CollectionType.collectionTypeForClass(currentGrailsProp.getType());
 
             Class<?> userType = getUserType(currentGrailsProp);
@@ -1850,7 +1851,7 @@ public final class GrailsDomainBinder {
              GrailsDomainClassProperty currentGrailsProp, PersistentClass persistentClass,
              String path, Table table, Mappings mappings, String sessionFactoryBeanName) {
         Value value;
-        // see if its a collection type
+        // see if it's a collection type
         CollectionType collectionType = CollectionType.collectionTypeForClass(currentGrailsProp.getType());
         if (collectionType != null) {
             // create collection
@@ -2211,7 +2212,9 @@ public final class GrailsDomainBinder {
 
     private static boolean isBidirectionalManyToOneWithListMapping(GrailsDomainClassProperty grailsProperty, Property prop) {
         GrailsDomainClassProperty otherSide = grailsProperty.getOtherSide();
-        return grailsProperty.isBidirectional() && otherSide != null && prop.getValue() instanceof ManyToOne && List.class.isAssignableFrom(otherSide.getType());
+        return grailsProperty.isBidirectional() && otherSide != null &&
+                 prop.getValue() instanceof ManyToOne &&
+                 List.class.isAssignableFrom(otherSide.getType());
     }
 
     private static void setCascadeBehaviour(GrailsDomainClassProperty grailsProperty, Property prop) {

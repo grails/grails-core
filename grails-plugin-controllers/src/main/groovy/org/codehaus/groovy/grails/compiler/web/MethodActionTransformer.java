@@ -16,13 +16,13 @@
 package org.codehaus.groovy.grails.compiler.web;
 
 import grails.util.BuildSettings;
+import grails.util.CollectionUtils;
 import grails.web.Action;
 import grails.web.RequestParameter;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,21 +31,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.EmptyExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.TernaryExpression;
-import org.codehaus.groovy.ast.expr.TupleExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
@@ -118,16 +104,16 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
-    private static final Map<Class, String> TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME = new HashMap<Class, String>() {{
-        put(Integer.class, "int"); 
-        put(Float.class, "float"); 
-        put(Long.class, "long"); 
-        put(Double.class, "double"); 
-        put(Short.class, "short");
-        put(Boolean.class, "boolean");
-        put(Byte.class, "byte");
-        put(Character.class, "char");
-     }};
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static final Map<Class, String> TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME = CollectionUtils.<Class, String>newMap(
+        Integer.class, "int", 
+        Float.class, "float", 
+        Long.class, "long", 
+        Double.class, "double", 
+        Short.class, "short",
+        Boolean.class, "boolean",
+        Byte.class, "byte",
+        Character.class, "char");
 
     private Boolean converterEnabled;
 
@@ -308,7 +294,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         final ClassNode paramTypeClassNode = param.getType();
         final String methodParamName = param.getName();
         final Expression defaultValueExpression;
-        final Class paramTypeClass = paramTypeClassNode.getTypeClass();
+        final Class<?> paramTypeClass = paramTypeClassNode.getTypeClass();
         if(param.hasInitialExpression()) {
             defaultValueExpression =  param.getInitialExpression();
         } else if(Boolean.TYPE == paramTypeClass) {

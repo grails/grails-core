@@ -35,10 +35,10 @@ import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
-import org.spockframework.util.Assert;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
+import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
 

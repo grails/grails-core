@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.util.Assert;
-
 /**
  * Collection utility methods.
  *
@@ -42,7 +40,9 @@ public class CollectionUtils {
         if (keysAndValues == null) {
             return Collections.emptyMap();
         }
-        Assert.isTrue(keysAndValues.length % 2 == 0, "Must have an even number of keys and values");
+        if (keysAndValues.length % 2 == 1) {
+            throw new IllegalArgumentException("Must have an even number of keys and values");
+        }
 
         Map<K, V> map = new HashMap<K, V>();
         for (int i = 0; i < keysAndValues.length; i += 2) {

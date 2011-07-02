@@ -15,9 +15,6 @@
  */
 package org.codehaus.groovy.grails.cli.parsing;
 
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
 /**
  * Represents a command line option.
  *
@@ -30,9 +27,12 @@ public class Option {
     private String description;
 
     public Option(String name, String description) {
-        Assert.isTrue(StringUtils.hasLength(name), "Illegal option specified");
+        if (name == null || name.length() == 0) {
+            throw new IllegalArgumentException("illegal option specified");
+        }
+
         this.name = name;
-        this.description = description == null ? "" : description;
+        this.description = description != null ? description : "";
     }
 
     public String getName() {

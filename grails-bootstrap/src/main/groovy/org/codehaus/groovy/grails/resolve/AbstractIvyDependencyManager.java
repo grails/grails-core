@@ -55,7 +55,6 @@ import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext;
  * @author Graeme Rocher
  * @since 1.3
  */
-@SuppressWarnings("serial")
 public abstract class AbstractIvyDependencyManager {
 
     /*
@@ -112,7 +111,7 @@ public abstract class AbstractIvyDependencyManager {
             DOCS_CONFIGURATION);
 
     @SuppressWarnings("unchecked")
-    Map<String, List<String>> configurationMappings = CollectionUtils.newMap(
+    Map<String, List<String>> configurationMappings = CollectionUtils.<String, List<String>>newMap(
        "runtime", Arrays.asList("default"),
        "build", Arrays.asList("default"),
        "compile", Arrays.asList("default"),

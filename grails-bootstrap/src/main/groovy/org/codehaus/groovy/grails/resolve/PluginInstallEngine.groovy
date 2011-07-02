@@ -32,7 +32,6 @@ import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
-import org.springframework.util.Assert
 
  /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -77,10 +76,10 @@ class PluginInstallEngine {
     }
 
     PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
-        Assert.notNull settings, "Argument [settings] cannot be null"
-        Assert.notNull pbs, "Argument [pbs] cannot be null"
-        Assert.notNull md, "Argument [md] cannot be null"
-        Assert.notNull ant, "Argument [ant] cannot be null"
+        if (settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
+        if (pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
+        if (md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
+        if (ant== null) throw new IllegalArgumentException("Argument [ant] cannot be null")
 
         globalPluginsLocation = settings.globalPluginsDir
         applicationPluginsLocation = settings.getProjectPluginsDir()
@@ -92,9 +91,9 @@ class PluginInstallEngine {
     }
 
     /**
-    * This method will resolve the current dependencies and install any missing plugins or upgrades
-    * and remove any plugins that aren't present in the metadata but are installed
-    */
+     * This method will resolve the current dependencies and install any missing plugins or upgrades
+     * and remove any plugins that aren't present in the metadata but are installed
+     */
     void resolvePluginDependencies() {
 
         IvyDependencyManager dependencyManager = settings.dependencyManager
