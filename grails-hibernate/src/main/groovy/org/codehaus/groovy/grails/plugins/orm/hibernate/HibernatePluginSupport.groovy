@@ -112,7 +112,6 @@ class HibernatePluginSupport {
 
         hibernateEventListeners(HibernateEventListeners)
 
-        // TODO make sure this works with mongo & redis
         persistenceInterceptor(AggregatePersistenceContextInterceptor) {
             dataSourceNames = datasourceNames
         }
@@ -138,10 +137,12 @@ class HibernatePluginSupport {
             def hibConfig = application.config["hibernate$suffix"] ?: application.config.hibernate
 
             def hibConfigClass = ds?.configClass
-            def hibProps = [(Environment.SESSION_FACTORY_NAME): ConfigurableLocalSessionFactoryBean.name]
+            def hibProps = [(Environment.SESSION_FACTORY_NAME): ConfigurableLocalSessionFactoryBean.name + suffix]
 
             if (ds.loggingSql || ds.logSql) {
                 hibProps."hibernate.show_sql" = "true"
+            }
+            if (ds.formatSql) {
                 hibProps."hibernate.format_sql" = "true"
             }
 
@@ -161,7 +162,7 @@ class HibernatePluginSupport {
                 hibProps."hibernate.dialect" = ref("dialectDetector$suffix")
             }
 
-            hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate ?: "create-drop"
+            hibProps."hibernate.hbm2ddl.auto" = ds.dbCreate ?: ''
 
             LOG.info "Set db generation strategy to '${hibProps.'hibernate.hbm2ddl.auto'}' for datasource $datasourceName"
 
