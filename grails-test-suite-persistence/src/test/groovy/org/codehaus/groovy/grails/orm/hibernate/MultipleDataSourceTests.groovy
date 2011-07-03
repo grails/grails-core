@@ -167,6 +167,7 @@ dataSource {
     url = 'jdbc:h2:mem:testDb'
     username = 'sa'
     password = ''
+    dbCreate = 'update'
 }
 
 dataSource_ds2 {
@@ -176,6 +177,7 @@ dataSource_ds2 {
     username = 'sa'
     password = ''
     dialect = org.hibernate.dialect.H2Dialect
+    dbCreate = 'update'
 }
 
 dataSource_ds3 {
@@ -185,6 +187,7 @@ dataSource_ds3 {
     username = 'sa'
     password = ''
     readOnly = true
+    dbCreate = 'update'
 }
 
 dataSource_ds4 {
@@ -193,6 +196,7 @@ dataSource_ds4 {
     url = 'jdbc:h2:mem:testDb4'
     username = 'sa'
     password = ''
+    dbCreate = 'update'
 }
 
 hibernate {
@@ -302,6 +306,26 @@ hibernate {
 
         assertTrue appCtx.containsBean('mdsNonTxService')
         assertTrue appCtx.containsBean('MdsNonTxServiceServiceClass')
+    }
+
+    void testPartitioning() {
+        Map meta = appCtx.sessionFactory.allClassMetadata
+        assertEquals 2, meta.size()
+        assertTrue meta.keySet().contains('MdsAllDatasources')
+        assertTrue meta.keySet().contains('MdsPerson')
+
+        meta = appCtx.sessionFactory_ds2.allClassMetadata
+        assertEquals 4, meta.size()
+        assertTrue meta.keySet().contains('MdsAllDatasources')
+        assertTrue meta.keySet().contains('MdsTwoDatasources')
+        assertTrue meta.keySet().contains('MdsLibrary')
+        assertTrue meta.keySet().contains('MdsVisit')
+
+        meta = appCtx.sessionFactory_ds3.allClassMetadata
+        assertEquals 3, meta.size()
+        assertTrue meta.keySet().contains('MdsAllDatasources')
+        assertTrue meta.keySet().contains('MdsTwoDatasources')
+        assertTrue meta.keySet().contains('MdsZipCode')
     }
 
     void testServices_default() {
