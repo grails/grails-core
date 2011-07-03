@@ -155,8 +155,9 @@ class PluginInstallEngine {
      * @param name The plugin name
      * @param version The plugin version (optional)
      * @param globalInstall Whether to install globally or not (optional)
+     * @return true if installed and not cancelled by user
      */
-    void installPlugin(String name, String version = null, boolean globalInstall = false) {
+    boolean installPlugin(String name, String version = null, boolean globalInstall = false) {
 
         installedPlugins.clear()
         def pluginZip = resolveEngine.resolvePluginZip(name, version)
@@ -167,7 +168,7 @@ class PluginInstallEngine {
 
         try {
             (name, version) = readMetadataFromZip(pluginZip.absolutePath)
-            installPluginZipInternal(name, version, pluginZip, globalInstall)
+            return installPluginZipInternal(name, version, pluginZip, globalInstall)
         }
         catch (e) {
             errorHandler "Error installing plugin: ${e.message}"
@@ -211,7 +212,7 @@ class PluginInstallEngine {
         installPlugin(file, globalInstall, true)
     }
 
-    protected void installPluginZipInternal(String name, String version, File pluginZip,
+    protected boolean installPluginZipInternal(String name, String version, File pluginZip,
             boolean globalInstall = false, boolean overwrite = false) {
 
         def fullPluginName = "$name-$version"
@@ -222,8 +223,7 @@ class PluginInstallEngine {
         def abort = checkExistingPluginInstall(name, version)
 
         if (abort && !overwrite) {
-            registerPluginWithMetadata(name, version)
-            return
+            return false
         }
 
         eventHandler "StatusUpdate", "Installing zip ${pluginZip.name}..."
@@ -275,6 +275,8 @@ class PluginInstallEngine {
             postInstall(pluginInstallPath)
             eventHandler("PluginInstalled", fullPluginName)
         }
+
+        true
     }
 
     /**

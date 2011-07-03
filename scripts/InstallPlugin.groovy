@@ -38,22 +38,23 @@ target(installPlugin:"Installs a plug-in for the given URL or name and version")
 
             ant.mkdir(dir:pluginsBase)
 
+            boolean installed
             def pluginFile = new File(pluginArgs[0])
             def urlPattern = ~"^[a-zA-Z][a-zA-Z0-9\\-\\.\\+]*://"
             if (pluginArgs[0] =~ urlPattern) {
                 def url = new URL(pluginArgs[0])
-                doInstallPluginFromURL(url)
+                installed = doInstallPluginFromURL(url)
             }
             else if (pluginFile.exists() && pluginFile.name.startsWith("grails-") && pluginFile.name.endsWith(".zip")) {
-                doInstallPluginZip(pluginFile)
+                installed = doInstallPluginZip(pluginFile)
             }
             else {
                 // The first argument is the plugin name, the second
                 // (if provided) is the plugin version.
-                doInstallPlugin(pluginArgs[0], pluginArgs[1])
+                installed = doInstallPlugin(pluginArgs[0], pluginArgs[1])
             }
 
-            event("StatusFinal", ["Plugin installed."])
+            event("StatusFinal", [installed ? "Plugin installed." : 'Plugin not installed.'])
         }
         else {
             event("StatusError", [ ERROR_MESSAGE])

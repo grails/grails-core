@@ -63,6 +63,3 @@ target(installDefaultPluginSet:"Installs the default plugin set used by Grails")
         }
     }
 }
-
-
-
