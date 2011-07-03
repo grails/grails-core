@@ -272,7 +272,6 @@ class PluginInstallEngine {
 
             registerPluginWithMetadata(pluginName, pluginVersion)
 
-
             postInstall(pluginInstallPath)
             eventHandler("PluginInstalled", fullPluginName)
         }
@@ -310,32 +309,35 @@ class PluginInstallEngine {
      *
      * @param name The plugin name
      * @param version The plugin version
-     * @return True if the installation should be aborted
+     * @return true if the installation should be aborted
      */
     protected boolean checkExistingPluginInstall(String name, version) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
 
-        if (currentInstall?.exists()) {
-
-            PluginBuildSettings pluginSettings = pluginSettings
-            def pluginDir = currentInstall.file.canonicalFile
-            def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
-            // if the versions are the same no need to continue
-            if (version == pluginInfo?.version) return true
-
-            if (pluginSettings.isInlinePluginLocation(currentInstall)) {
-                errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
-                return true
-            }
-            else if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to upgrade this version?")) {
-                ant.delete(dir: currentInstall.file)
-            }
-            else {
-                eventHandler("StatusUpdate", "Plugin $name-$version install aborted");
-                return true
-            }
+        if (!currentInstall?.exists()) {
+            return false
         }
-        return false
+
+        PluginBuildSettings pluginSettings = pluginSettings
+        def pluginDir = currentInstall.file.canonicalFile
+        def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
+        // if the versions are the same no need to continue
+        if (version == pluginInfo?.version) {
+            return true
+        }
+
+        if (pluginSettings.isInlinePluginLocation(currentInstall)) {
+            errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
+            return true
+        }
+
+        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to update to [$name-$version]? ")) {
+            ant.delete(dir: currentInstall.file)
+            return false
+        }
+
+        eventHandler("StatusUpdate", "Plugin $name-$version install aborted");
+        return true
     }
 
     protected void assertNoExistingInlinePlugin(String name) {
