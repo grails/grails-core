@@ -486,7 +486,6 @@ public class GrailsHibernateUtil {
     }
 
     public static boolean usesDatasource(GrailsDomainClass domainClass, String dataSourceName) {
-        // TODO handle subclassing
         List<String> names = getDatasourceNames(domainClass);
         return names.contains(dataSourceName) ||
                names.contains(GrailsDomainClassProperty.ALL_DATA_SOURCES);
