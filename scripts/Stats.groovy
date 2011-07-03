@@ -58,6 +58,7 @@ target (default: "Generates basic stats for a Grails project") {
         [name: "Java Helpers",       path: "^src.java",                    filetype: [".java"]],
         [name: "Unit Tests",         path: "^test.unit",                   filetype: [".groovy"]],
         [name: "Integration Tests",  path: "^test.integration",            filetype: [".groovy"]],
+        [name: "Functional Tests",   path: "^test.functional",             filetype: [".groovy"]],
         [name: "Scripts",            path: "^scripts",                     filetype: [".groovy"]],
     ]
 
