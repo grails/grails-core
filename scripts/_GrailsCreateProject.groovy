@@ -18,7 +18,7 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 
 /**
- * Gant script that handles the creation of Grails applications
+ * Handles the creation of Grails applications.
  *
  * @author Graeme Rocher
  *
@@ -32,7 +32,7 @@ includeTargets << grailsScript("IntegrateWith")
 grailsAppName = ""
 projectType = "app"
 
-target(createApp: "Creates a Grails application for the given name")  {
+target(createApp: "Creates a Grails application for the given name") {
     depends(parseArguments, appName)
     initProject()
 
@@ -62,7 +62,7 @@ def resetBaseDirectory(String basedir) {
     pluginsHome = grailsSettings.projectPluginsDir.path
 }
 
-target(createPlugin: "The implementation target")  {
+target(createPlugin: "The implementation target") {
     depends(parseArguments, appName)
     metadataFile = new File("${basedir}/application.properties")
     projectType = "plugin"
@@ -80,9 +80,8 @@ target(createPlugin: "The implementation target")  {
         tofile: "${basedir}/${pluginName}GrailsPlugin.groovy",
         overwrite: true)
 
-    // The plugin's Grails version should be based on the current minor
-    // version, not the patch level. For example, 1.3.6 should be converted
-    // to 1.3.
+    // The plugin's Grails version should be based on the current minor version,
+    // not the patch level. For example, 1.3.6 should be converted to 1.3.
     def m = grailsVersion =~ /^(\d+\.\d+)(?:\.\d+)?(?:.*)/
     def pluginGrailsVersion = m[0][1]
 
@@ -96,7 +95,6 @@ target(createPlugin: "The implementation target")  {
         replacefilter(token: "@plugin.version@", value: grailsAppVersion ?: "0.1")
         replacefilter(token: "@grails.version@", value: pluginGrailsVersion)
     }
-
 
     event("StatusFinal", [ "Created plugin ${pluginName}" ])
 }

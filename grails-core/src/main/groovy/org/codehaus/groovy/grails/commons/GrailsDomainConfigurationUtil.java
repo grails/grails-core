@@ -120,38 +120,43 @@ public class GrailsDomainConfigurationUtil {
             GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 
             for (GrailsDomainClassProperty prop : props) {
-                if (prop != null && prop.isAssociation()) {
+                if (prop == null || !prop.isAssociation()) {
+                    continue;
+                }
 
-                    GrailsDomainClass referenced = prop.getReferencedDomainClass();
-                    if (referenced != null) {
-                        boolean isOwnedBy = referenced.isOwningClass(domainClass.getClazz());
-                        prop.setOwningSide(isOwnedBy);
-                        String refPropertyName = null;
-                        try {
-                            refPropertyName = prop.getReferencedPropertyName();
+                GrailsDomainClass referenced = prop.getReferencedDomainClass();
+                if (referenced == null) {
+                    continue;
+                }
+
+                boolean isOwnedBy = referenced.isOwningClass(domainClass.getClazz());
+                prop.setOwningSide(isOwnedBy);
+                String refPropertyName = null;
+                try {
+                    refPropertyName = prop.getReferencedPropertyName();
+                }
+                catch (UnsupportedOperationException e) {
+                    // ignore (to support Hibernate entities)
+                }
+
+                if (StringUtils.isBlank(refPropertyName)) {
+                    GrailsDomainClassProperty[] referencedProperties = referenced.getPersistentProperties();
+                    for (GrailsDomainClassProperty referencedProp : referencedProperties) {
+                        // for bi-directional circular dependencies we don't want the other side
+                        // to be equal to self
+                        if (prop.equals(referencedProp) && prop.isBidirectional()) {
+                            continue;
                         }
-                        catch (UnsupportedOperationException e) {
-                            // ignore (to support Hibernate entities)
-                        }
-                        if (!StringUtils.isBlank(refPropertyName)) {
-                            GrailsDomainClassProperty otherSide = referenced.getPropertyByName(refPropertyName);
-                            prop.setOtherSide(otherSide);
-                            otherSide.setOtherSide(prop);
-                        }
-                        else {
-                            GrailsDomainClassProperty[] referencedProperties = referenced.getPersistentProperties();
-                            for (GrailsDomainClassProperty referencedProp : referencedProperties) {
-                                // for bi-directional circular dependencies we don't want the other side
-                                // to be equal to self
-                                if (prop.equals(referencedProp) && prop.isBidirectional())
-                                    continue;
-                                if (isCandidateForOtherSide(domainClass, prop, referencedProp)) {
-                                    prop.setOtherSide(referencedProp);
-                                    break;
-                                }
-                            }
+                        if (isCandidateForOtherSide(domainClass, prop, referencedProp)) {
+                            prop.setOtherSide(referencedProp);
+                            break;
                         }
                     }
+                }
+                else {
+                    GrailsDomainClassProperty otherSide = referenced.getPropertyByName(refPropertyName);
+                    prop.setOtherSide(otherSide);
+                    otherSide.setOtherSide(prop);
                 }
             }
         }
@@ -229,8 +234,7 @@ public class GrailsDomainConfigurationUtil {
      * @return True if it is basic
      */
     public static boolean isBasicType(GrailsDomainClassProperty prop) {
-        if (prop == null) return false;
-        return isBasicType(prop.getType());
+        return prop == null ? false : isBasicType(prop.getType());
     }
 
     private static final Set<String> BASIC_TYPES;
@@ -353,7 +357,8 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance,
+            GrailsDomainClassProperty[] properties) {
         return evaluateConstraints(instance, properties,null);
     }
 
@@ -367,7 +372,7 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance) {
         return evaluateConstraints(instance, null, null);
     }
 
@@ -381,7 +386,7 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass) {
         return evaluateConstraints(theClass, null, null);
     }
 
@@ -395,7 +400,8 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass, GrailsDomainClassProperty[] properties)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass,
+            GrailsDomainClassProperty[] properties) {
         return evaluateConstraints(theClass, properties, null);
     }
 

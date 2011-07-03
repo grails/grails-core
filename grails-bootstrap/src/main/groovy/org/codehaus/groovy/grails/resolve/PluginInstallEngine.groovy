@@ -41,7 +41,9 @@ import org.springframework.core.io.Resource
  */
 class PluginInstallEngine {
 
-    static final CORE_PLUGINS = ['core', 'i18n','converters','mimeTypes', 'controllers','webflow', 'dataSource', 'domainClass', 'filters','logging', 'groovyPages']
+    static final CORE_PLUGINS = ['core', 'i18n','converters','mimeTypes', 'controllers',
+                                 'webflow', 'dataSource', 'domainClass', 'filters',
+                                 'logging', 'groovyPages']
 
     Closure errorHandler = { String msg -> throw new ScriptExitException(msg) }
     Closure eventHandler = { String name, String msg -> GrailsConsole.instance.updateStatus msg }
@@ -129,24 +131,26 @@ class PluginInstallEngine {
      * @param params A list of plugins defined each by a ModuleRevisionId
      */
     void installPlugins(Collection<EnhancedDefaultDependencyDescriptor> plugins) {
-        if (plugins) {
-            ResolveReport report = resolveEngine.resolvePlugins(plugins)
-            if (report.hasError()) {
-                errorHandler "Failed to resolve plugins."
-            }
-            else {
-                for (ArtifactDownloadReport ar in report.getArtifactsReports(null, false)) {
-                    def arName = ar.artifact.moduleRevisionId.name
-                    if (plugins.any { it.dependencyRevisionId.name == arName }) {
-                        installPlugin ar.localFile
-                    }
-                }
+        if (!plugins) {
+            return
+        }
+
+        ResolveReport report = resolveEngine.resolvePlugins(plugins)
+        if (report.hasError()) {
+            errorHandler "Failed to resolve plugins."
+            return
+        }
+
+        for (ArtifactDownloadReport ar in report.getArtifactsReports(null, false)) {
+            def arName = ar.artifact.moduleRevisionId.name
+            if (plugins.any { it.dependencyRevisionId.name == arName }) {
+                installPlugin ar.localFile
             }
         }
     }
 
     /**
-     * Installs a plugin for the given name and optional version
+     * Installs a plugin for the given name and optional version.
      *
      * @param name The plugin name
      * @param version The plugin version (optional)
@@ -178,13 +182,12 @@ class PluginInstallEngine {
      */
     void installPlugin(File zipFile, boolean globalInstall = false, boolean overwrite = false) {
 
-        if (zipFile.exists()) {
-            def (name, version) = readMetadataFromZip(zipFile.absolutePath)
-            installPluginZipInternal name, version, zipFile, globalInstall, overwrite
-        }
-        else {
+        if (!zipFile.exists()) {
             errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
         }
+
+        def (name, version) = readMetadataFromZip(zipFile.absolutePath)
+        installPluginZipInternal name, version, zipFile, globalInstall, overwrite
     }
 
     /**
@@ -557,7 +560,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    private boolean isCorePlugin(name)  {
+    private boolean isCorePlugin(name) {
         CORE_PLUGINS.contains(name)
     }
 

@@ -653,6 +653,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         // do nothing
     }
 
+    @SuppressWarnings("unused")
     public void setWatchedResources(Resource[] watchedResources) throws IOException {
         this.watchedResources = watchedResources;
     }

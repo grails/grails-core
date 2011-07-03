@@ -138,7 +138,7 @@ class HibernateMappingBuilder {
      * <p>Configures the table name. Example:
      * <code> { table name:'foo', schema:'dbo', catalog:'CRM' }
      */
-    void table(Map tableDef)  {
+    void table(Map tableDef) {
         mapping.table.name = tableDef?.name?.toString()
         mapping.table.schema = tableDef?.schema?.toString()
         mapping.table.catalog = tableDef?.catalog?.toString()
@@ -350,7 +350,7 @@ class HibernateMappingBuilder {
                 if (propertyNames) {
                     def ni = new NaturalId()
                     ni.mutable = (naturalArgs instanceof Map) && naturalArgs.mutable ?: false
-                    if (propertyNames instanceof List)  {
+                    if (propertyNames instanceof List) {
                         ni.propertyNames = propertyNames
                     }
                     else {

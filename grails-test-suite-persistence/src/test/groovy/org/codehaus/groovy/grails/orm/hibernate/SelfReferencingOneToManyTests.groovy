@@ -3,8 +3,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Mar 12, 2008
  */
 class SelfReferencingOneToManyTests extends AbstractGrailsHibernateTests {
 
@@ -19,7 +17,7 @@ class SelfReferencingOneToManyCategory {
     static hasMany = [children: SelfReferencingOneToManyCategory]
     static belongsTo = [parent: SelfReferencingOneToManyCategory]
 
-    static constraints =   {
+    static constraints = {
         parent(nullable: true)
     }
 }

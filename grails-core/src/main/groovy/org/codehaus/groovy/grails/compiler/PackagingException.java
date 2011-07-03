@@ -16,12 +16,15 @@
 package org.codehaus.groovy.grails.compiler;
 
 /**
- * Exception thrown when there was an error in the packing process of an application
+ * Exception thrown when there was an error in the packing process of an application.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-public class PackagingException extends RuntimeException{
+public class PackagingException extends RuntimeException {
+
+    private static final long serialVersionUID = 1;
+
     public PackagingException(String message) {
         super(message);
     }

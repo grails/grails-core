@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -65,8 +64,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         Assert.hasLength(location, "Argument [location] cannot be null or blank");
 
         // deal with plug-in resolving
-        if (location.startsWith(PLUGINS_PATH))
-        {
+        if (location.startsWith(PLUGINS_PATH)) {
             if (pluginSettings == null) throw new RuntimeException("'pluginsettings' has not been initialised.");
             List<String> pluginBaseDirectories = pluginSettings.getPluginBaseDirectories();
             String path = location.substring(PLUGINS_PATH.length(), location.length());
@@ -74,7 +72,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
             for (String pluginBaseDirectory : pluginBaseDirectories) {
                 String pathToResource = pluginBaseDirectory + File.separatorChar + path;
                 Resource r = super.getResource("file:" + pathToResource);
-                if(r.exists()) return r;
+                if (r.exists()) return r;
             }
 
             Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
@@ -83,14 +81,13 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                 try {
                     File dirFile = inlinePluginDirectory.getFile();
                     File pageFile = new File(dirFile, pathRelativeToPlugin);
-                    if(pageFile.exists()) {
+                    if (pageFile.exists()) {
                         return new FileSystemResource(pageFile);
                     }
                 } catch (IOException e) {
                     // ignore
                 }
             }
-
         }
 
         Resource resource = super.getResource(location);
@@ -101,8 +98,4 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         }
         return resource;
     }
-
-
-
-
 }

@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import groovy.lang.Writable;
 import groovy.text.Template;
 
 import java.io.IOException;
@@ -182,12 +181,12 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
      *
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      */
-    protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request,
+    protected void renderPageWithEngine(@SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
+            @SuppressWarnings("unused") HttpServletRequest request,
             HttpServletResponse response, Template template) throws Exception {
         GrailsPrintWriter out = (GrailsPrintWriter) createResponseWriter(response);
         try {
-            Writable w = template.make();
-            w.writeTo(out);
+            template.make().writeTo(out);
         }
         catch(Exception e) {
             out.setError();

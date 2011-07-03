@@ -31,7 +31,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
         controllerClass = gcl.parseClass('''
         import grails.web.RequestParameter
-        
+
         class TestBindingController {
             def methodAction(String stringParam,
                              Short shortParam,
@@ -110,34 +110,34 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         ''')
 
     }
-    
+
     def setup() {
         GrailsWebUtil.bindMockWebRequest()
         controller = controllerClass.newInstance()
     }
-    
+
     void "Test request parameter name matching argument name but not matching @RequestParameter name"() {
         when:
             controller.params.name = 'Herbert'
             controller.params.age = '47'
             def model = controller.methodActionWithRequestMapping()
-            
+
         then:
             null == model.name
             0 == model.age
     }
-    
+
     void "Test @RequestParameter"() {
         when:
             controller.params.firstName = 'Herbert'
             controller.params.numberOfYearsOld = '47'
             def model = controller.methodActionWithRequestMapping()
-            
+
         then:
             'Herbert' == model.name
             47 == model.age
     }
-    
+
     void "Test binding request parameters to basic types"() {
         when:
            controller.params.stringParam = 'Herbert'
@@ -159,7 +159,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveCharParam = 'Z'
 
            def model = controller.methodAction()
-           
+
         then:
             'Herbert' == model.stringParam
             1001 == model.shortParam
@@ -200,7 +200,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         controller.params.primitiveCharParam = 'bogus'
 
         def model = controller.methodActionWithDefaultValues()
-            
+
         then:
             'defaultString' == model.stringParam
             1 == model.shortParam
@@ -219,8 +219,8 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             12 == model.primitiveByteParam
             'A' == model.charParam
             'B' == model.primitiveCharParam
-    }   
-     
+    }
+
     void "Test conversion errors"() {
         when:
            controller.params.shortParam = 'bogus'
@@ -241,7 +241,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveCharParam = 'bogus'
 
            def model = controller.methodAction()
-           
+
         then:
             null == model.stringParam
             null == model.shortParam
@@ -265,7 +265,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
     void "Test uninitialized action parameters"() {
         when:
            def model = controller.methodAction()
-           
+
         then:
             null == model.stringParam
             null == model.shortParam
@@ -289,7 +289,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
     void "Test default parameter values"() {
         when:
             def model = controller.methodActionWithDefaultValues()
-            
+
         then:
             'defaultString' == model.stringParam
             1 == model.shortParam
@@ -309,7 +309,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             'A' == model.charParam
             'B' == model.primitiveCharParam
     }
-    
+
     void "Test overriding default parameter values"() {
         when:
            controller.params.stringParam = 'Herbert'
@@ -331,7 +331,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.primitiveCharParam = 'Z'
 
            def model = controller.methodActionWithDefaultValues()
-           
+
         then:
             'Herbert' == model.stringParam
             1001 == model.shortParam

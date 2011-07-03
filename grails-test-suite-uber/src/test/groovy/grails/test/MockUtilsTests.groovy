@@ -27,7 +27,7 @@ import org.springframework.validation.Errors
 import grails.persistence.Entity
 
 /**
- * Test case for  {@link MockUtils} .
+ * Test case for {@link MockUtils}.
  *
  * @author Peter Ledbrook
  */
@@ -168,7 +168,7 @@ class MockUtilsTests extends GroovyTestCase {
     }
 
     /**
-     * Tests the  {@link MockUtils#mockDomain(Class, Map, List)}  method.
+     * Tests the {@link MockUtils#mockDomain(Class, Map, List)}  method.
      */
     void testDynamicFinders() {
         def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)
@@ -626,7 +626,7 @@ class MockUtilsTests extends GroovyTestCase {
     }
 
     /**
-     * Tests the <code>validate()</code> method added by  {@link
+     * Tests the <code>validate()</code> method added by {@link
      * MockUtils # prepareForConstraintsTests (Class , List)} .
      */
     void testConstraintValidation() {
@@ -740,7 +740,7 @@ class MockUtilsTests extends GroovyTestCase {
 
     /**
      * Tests that the dynamic methods can be called on the test instances
-     * passed into the  {@link MockUtils#mockDomain(Class, Map, List)}  method.
+     * passed into the {@link MockUtils#mockDomain(Class, Map, List)}  method.
      */
     void testDynamicMethodsOnTestInstances() {
         def aliceDoeUS = new TestDomain(name: "Alice Doe", country: "US", age: 35)

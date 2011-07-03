@@ -20,12 +20,10 @@ import groovy.util.ConfigObject;
 import org.apache.log4j.LogManager;
 
 /**
- *
- * Default logging initializer used for Log4j
+ * Default logging initializer used for Log4j.
  *
  * @author Graeme Rocher
  * @since 1.4
- *
  */
 public class LoggingInitializer {
 
@@ -33,7 +31,7 @@ public class LoggingInitializer {
         LogManager.resetConfiguration();
         Object log4j = config.get("log4j");
         if (log4j instanceof Closure) {
-            new Log4jConfig(config).configure((Closure) log4j);
+            new Log4jConfig(config).configure((Closure<?>)log4j);
         } else {
             // setup default logging
             new Log4jConfig(config).configure();

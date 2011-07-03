@@ -58,7 +58,6 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
  * @author Graeme Rocher
  * @author Lari Hotari
  */
-@SuppressWarnings("serial")
 public abstract class GroovyPage extends Script {
 
     private static final Log LOG = LogFactory.getLog(GroovyPage.class);

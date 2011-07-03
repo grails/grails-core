@@ -26,7 +26,7 @@ mappings {
     '''
 
     def mappingScript2 = '''
-mappings  {
+mappings {
     "/$controller/$action?/$id?"()
 
     "/images/$image**.jpg" (controller: 'userImage', action: 'download')

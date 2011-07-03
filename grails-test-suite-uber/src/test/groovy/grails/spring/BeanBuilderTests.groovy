@@ -414,11 +414,12 @@ class BeanBuilderTests extends GroovyTestCase {
             }
             marge(Bean2) {
                 person = "marge"
-                bean1 =  { Bean1 b ->
-                             person = "homer"
-                            age = 45
-                            props = [overweight:true, height:"1.8m"]
-                            children = ["bart", "lisa"] }
+                bean1 = { Bean1 b ->
+                    person = "homer"
+                    age = 45
+                    props = [overweight:true, height:"1.8m"]
+                    children = ["bart", "lisa"]
+                }
                 children = [bart, lisa]
             }
         }
@@ -500,10 +501,11 @@ class BeanBuilderTests extends GroovyTestCase {
             }
             marge(Bean2) {
                 person = "marge"
-                bean1 =  { bean ->
-                            bean.factoryBean = "homer"
-                            bean.factoryMethod = "newInstance"
-                            person = "homer" }
+                bean1 = { bean ->
+                    bean.factoryBean = "homer"
+                    bean.factoryMethod = "newInstance"
+                    person = "homer"
+                }
                 children = [bart, lisa]
             }
         }

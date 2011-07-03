@@ -69,7 +69,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     protected GenericApplicationContext createApplicationContext(ApplicationContext parentCtx) {
         if (parentCtx != null && beanFactory != null) {
             Assert.isInstanceOf(DefaultListableBeanFactory.class, beanFactory,
-            		"ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
 
             return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory,parentCtx);
         }
@@ -127,7 +127,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         if (parent != null && classLoader == null) {
             trySettingClassLoaderOnContextIfFoundInParent(parent);
         }
-        else if (classLoader != null)  {
+        else if (classLoader != null) {
             setClassLoaderOnContext(classLoader);
         }
 

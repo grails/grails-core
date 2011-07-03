@@ -165,15 +165,17 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
             validatorDef.getPropertyValues().addPropertyValue("messageSource", new RuntimeBeanReference(messageSourceRef));
             validatorDef.getPropertyValues().addPropertyValue("domainClass", new RuntimeBeanReference(domainRef));
             validatorDef.getPropertyValues().addPropertyValue("sessionFactory", new RuntimeBeanReference("sessionFactory"));
-            targetRegistry.registerBeanDefinition(entityClass.getName() + "Validator",validatorDef);
+            targetRegistry.registerBeanDefinition(entityClass.getName() + "Validator", validatorDef);
         }
 
         targetRegistry.registerBeanDefinition(entityClass.getName(), beanDef);
         targetRegistry.registerBeanDefinition(domainRef, domainDef);
     }
 
-    private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId, BeanDefinitionRegistry targetRegistry, ParserContext parserContext)  {
-        String sessionFactoryId = StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)) ? element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
+    private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId,
+   		 BeanDefinitionRegistry targetRegistry, ParserContext parserContext) {
+        String sessionFactoryId = StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)) ?
+      		  element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
         AbstractBeanDefinition sessionFactoryBean = new GenericBeanDefinition();
         sessionFactoryBean.setBeanClass(ConfigurableLocalSessionFactoryBean.class);
 

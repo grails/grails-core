@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -311,7 +310,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
      * @deprecated This method is deprecated and will be removed in a future version of Grails
      * @return EMPTY_SET until the method is removed
      */
-    @SuppressWarnings("unchecked")
     @Deprecated
     public Set getCommandObjectClasses() {
         return Collections.EMPTY_SET;

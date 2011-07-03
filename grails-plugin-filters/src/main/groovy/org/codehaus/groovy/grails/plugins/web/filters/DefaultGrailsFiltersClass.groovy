@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
  * @author mike
  * @author Graeme Rocher
  */
-class DefaultGrailsFiltersClass  extends AbstractInjectableGrailsClass implements GrailsFiltersClass  {
+class DefaultGrailsFiltersClass extends AbstractInjectableGrailsClass implements GrailsFiltersClass {
     static FILTERS = "Filters"
 
     DefaultGrailsFiltersClass(Class aClass) {

@@ -16,11 +16,24 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.springframework.beans.*;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
@@ -31,24 +44,17 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.util.ClassUtils;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Constructor;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * A BeanFactory that can deal with class cast exceptions that may occur due to class reload events
- * and then attempt to reload the bean being instantiated to avoid them.
+ * A BeanFactory that can deal with class cast exceptions that may occur due to
+ * class reload events and then attempt to reload the bean being instantiated to
+ * avoid them.
  *
- * Caches autowiring for beans (mainly controllers & domain class instances). Bypasses autowiring if there
- * are no beans for the properties in the class.
+ * Caches autowiring for beans (mainly controllers & domain class instances).
+ * Bypasses autowiring if there are no beans for the properties in the class.
  * Caching is only used in environments where reloading is not enabled.
  *
  * @author Graeme Rocher
  * @since 1.1.1
- *        <p/>
- *        Created: May 8, 2009
  */
 public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFactory {
 
@@ -59,7 +65,8 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
             }
         });
     }
-    ConcurrentHashMap<Class<?>, Set<String>> autowiringByNameCacheForClass =
+
+    ConcurrentMap<Class<?>, Set<String>> autowiringByNameCacheForClass =
         new ConcurrentHashMap<Class<?>, Set<String>>();
 
     /**
@@ -68,8 +75,9 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
     public ReloadAwareAutowireCapableBeanFactory() {
         if (Environment.getCurrent().isReloadEnabled()) {
 
-            // Implementation note: The default Spring InstantiationStrategy caches constructors. This is no good at development time
-            // because if the class reloads then Spring continues to use the old class. We deal with this here by disabling the caching
+            // Implementation note: The default Spring InstantiationStrategy caches constructors.
+            // This is no good at development time because if the class reloads then Spring
+            // continues to use the old class. We deal with this here by disabling the caching
             // for development time only
             setInstantiationStrategy(new CglibSubclassingInstantiationStrategy() {
                 @Override
@@ -102,38 +110,54 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
 
     @Override
     protected Object doCreateBean(String beanName, RootBeanDefinition mbd, Object[] args) {
-        if (Environment.getCurrent().isReloadEnabled()) {
-            try {
-                return super.doCreateBean(beanName, mbd, args);
-            }
-            catch (BeanCreationException t) {
-                if (t.getCause() instanceof TypeMismatchException)  {
-                    // type mismatch probably occured because another class was reloaded
-                    final Class<?> beanClass = mbd.getBeanClass();
-                    if (GroovyObject.class.isAssignableFrom(beanClass)) {
-                        GrailsApplication application = (GrailsApplication) getBean(GrailsApplication.APPLICATION_ID);
-                        ClassLoader classLoader = application.getClassLoader();
-                        if (classLoader instanceof GrailsClassLoader) {
-                            GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
-                            gcl.reloadClass(beanClass.getName());
-                            try {
-                                Class<?> newBeanClass = gcl.loadClass(beanClass.getName());
-                                mbd.setBeanClass(newBeanClass);
-                                if (!newBeanClass.equals(beanClass)) {
-                                    GrailsPluginManager pluginManager = (GrailsPluginManager) getBean(GrailsPluginManager.BEAN_NAME);
-                                    pluginManager.informOfClassChange(newBeanClass);
-                                    return super.doCreateBean(beanName, mbd, args);
-                                }
-                            }
-                            catch (ClassNotFoundException e) {
-                                throw t;
-                            }
-                        }
-                    }
-                }
-                throw t;
-            }
+        if (!Environment.getCurrent().isReloadEnabled()) {
+            return super.doCreateBean(beanName, mbd, args);
         }
+
+        try {
+            return super.doCreateBean(beanName, mbd, args);
+        }
+        catch (BeanCreationException t) {
+            if (t.getCause() instanceof TypeMismatchException) {
+                Object bean = handleTypeMismatchException(beanName, mbd, args);
+                if (bean != null) {
+                    return bean;
+                }
+            }
+            throw t;
+        }
+    }
+
+    private Object handleTypeMismatchException(String beanName, RootBeanDefinition mbd, Object[] args) {
+        // type mismatch probably occured because another class was reloaded
+        final Class<?> beanClass = mbd.getBeanClass();
+        if (!GroovyObject.class.isAssignableFrom(beanClass)) {
+            return null;
+        }
+
+        GrailsApplication application = (GrailsApplication) getBean(GrailsApplication.APPLICATION_ID);
+        ClassLoader classLoader = application.getClassLoader();
+        if (!(classLoader instanceof GrailsClassLoader)) {
+            return null;
+        }
+
+        GrailsClassLoader gcl = (GrailsClassLoader) classLoader;
+        gcl.reloadClass(beanClass.getName());
+        Class<?> newBeanClass;
+        try {
+            newBeanClass = gcl.loadClass(beanClass.getName());
+        }
+        catch (ClassNotFoundException e) {
+            return null;
+        }
+
+        mbd.setBeanClass(newBeanClass);
+        if (newBeanClass.equals(beanClass)) {
+            return null;
+        }
+
+        GrailsPluginManager pluginManager = (GrailsPluginManager) getBean(GrailsPluginManager.BEAN_NAME);
+        pluginManager.informOfClassChange(newBeanClass);
         return super.doCreateBean(beanName, mbd, args);
     }
 

@@ -37,9 +37,9 @@ public class ConstraintsDynamicProperty extends AbstractDynamicProperty {
     }
 
     @Override
-    public Object get(Object object)  {
-        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,
-                object.getClass().getName());
+    public Object get(Object object) {
+        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(
+                DomainClassArtefactHandler.TYPE, object.getClass().getName());
         return domainClass.getConstrainedProperties();
     }
 

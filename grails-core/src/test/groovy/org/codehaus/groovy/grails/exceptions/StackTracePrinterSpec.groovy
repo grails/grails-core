@@ -11,9 +11,9 @@ class StackTracePrinterSpec extends Specification {
 
     void "Test pretty print simple stack trace"() {
         given: "a controller that throws an exception"
-        final gcl = new GroovyClassLoader()
-        gcl.parseClass(getServiceResource().inputStream)
-        def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
+            final gcl = new GroovyClassLoader()
+            gcl.parseClass(getServiceResource().inputStream)
+            def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultStackTracePrinter()
             def result = null
@@ -31,9 +31,9 @@ class StackTracePrinterSpec extends Specification {
 
     void "Test pretty print nested stack trace"() {
       given: "a controller that throws an exception"
-        final gcl = new GroovyClassLoader()
-        gcl.parseClass(getServiceResource().inputStream)
-        def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
+            final gcl = new GroovyClassLoader()
+            gcl.parseClass(getServiceResource().inputStream)
+            def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultStackTracePrinter()
             def result = null
@@ -89,7 +89,6 @@ Around line 5 of FooController.groovy
 7:     def callMe() { bad }
 8:     def nesting() {
 '''
-
     }
 
     void "Test pretty print nested exception code snippet"() {
@@ -136,9 +135,8 @@ Around line 11 of FooController.groovy
 13:         catch(e) {
 14:             throw new RuntimeException("Bad things happened", e)
 '''
-
-
     }
+
     Resource getControllerResource() {
         new ByteArrayResource('''
 package test
@@ -157,12 +155,11 @@ class FooController {
         }
     }
 }
-'''.bytes){
+'''.bytes) {
             @Override
             String getFilename() {
                 return "FooController.groovy"
             }
-
         }
     }
 
@@ -171,14 +168,11 @@ class FooController {
 class FooService {
     def callMe() { bad }
 }
-'''.bytes)  {
+'''.bytes) {
             @Override
             String getFilename() {
                 return "FooService.groovy"
             }
-
         }
     }
 }
-
-

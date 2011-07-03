@@ -90,18 +90,19 @@ public class GrailsNameUtils {
      * @return The property name representation
      */
     public static String getClassNameRepresentation(String name) {
+        if (name == null || name.length() == 0) {
+            return "";
+        }
 
         StringBuilder buf = new StringBuilder();
-        if (name != null && name.length() > 0) {
-            String[] tokens = name.split("[^\\w\\d]");
-            for (String token1 : tokens) {
-                String token = token1.trim();
-                int length = token.length();
-                if (length > 0) {
-                    buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH));
-                    if (length > 1) {
-                        buf.append(token.substring(1));
-                    }
+        String[] tokens = name.split("[^\\w\\d]");
+        for (String token1 : tokens) {
+            String token = token1.trim();
+            int length = token.length();
+            if (length > 0) {
+                buf.append(token.substring(0, 1).toUpperCase(Locale.ENGLISH));
+                if (length > 1) {
+                    buf.append(token.substring(1));
                 }
             }
         }
@@ -119,23 +120,23 @@ public class GrailsNameUtils {
         // Handle null and empty strings.
         if (isBlank(name)) return name;
 
-        if (name.indexOf('-') > -1) {
-            StringBuilder buf = new StringBuilder();
-            String[] tokens = name.split("-");
-            for (String token : tokens) {
-                if (token == null || token.length() == 0) continue;
-                buf.append(token.substring(0, 1).toUpperCase())
-                   .append(token.substring(1));
-            }
-            return buf.toString();
+        if (name.indexOf('-') == -1) {
+            return name.substring(0,1).toUpperCase() + name.substring(1);
         }
 
-        return name.substring(0,1).toUpperCase() + name.substring(1);
+        StringBuilder buf = new StringBuilder();
+        String[] tokens = name.split("-");
+        for (String token : tokens) {
+            if (token == null || token.length() == 0) continue;
+            buf.append(token.substring(0, 1).toUpperCase())
+               .append(token.substring(1));
+        }
+        return buf.toString();
     }
 
     /**
      * Retrieves the logical class name of a Grails artifact given the Grails class
-     * and a specified trailing name
+     * and a specified trailing name.
      *
      * @param clazz The class
      * @param trailingName The trailing name such as "Controller" or "TagLib"
@@ -152,13 +153,16 @@ public class GrailsNameUtils {
      * @return The logical name
      */
     public static String getLogicalName(String name, String trailingName) {
-        if (!isBlank(trailingName)) {
-            String shortName = getShortName(name);
-            if (shortName.indexOf(trailingName) > - 1) {
-                return shortName.substring(0, shortName.length() - trailingName.length());
-            }
+        if (isBlank(trailingName)) {
+            return name;
         }
-        return name;
+
+        String shortName = getShortName(name);
+        if (shortName.indexOf(trailingName) == - 1) {
+            return name;
+        }
+
+        return shortName.substring(0, shortName.length() - trailingName.length());
     }
 
     public static String getLogicalPropertyName(String className, String trailingName) {
@@ -195,8 +199,7 @@ public class GrailsNameUtils {
      * @return A property name reperesentation of the class name (eg. MyClass becomes myClass)
      */
     public static String getPropertyNameRepresentation(Class<?> targetClass) {
-        String shortName = getShortName(targetClass);
-        return getPropertyNameRepresentation(shortName);
+        return getPropertyNameRepresentation(getShortName(targetClass));
     }
 
     /**
@@ -213,7 +216,8 @@ public class GrailsNameUtils {
         }
 
         // Check whether the name begins with two upper case letters.
-        if (name.length() > 1 && Character.isUpperCase(name.charAt(0)) && Character.isUpperCase(name.charAt(1)))  {
+        if (name.length() > 1 && Character.isUpperCase(name.charAt(0)) &&
+                Character.isUpperCase(name.charAt(1))) {
             return name;
         }
 
@@ -241,8 +245,7 @@ public class GrailsNameUtils {
      * @return The short name of the class
      */
     public static String getShortName(Class<?> targetClass) {
-        String className = targetClass.getName();
-        return getShortName(className);
+        return getShortName(targetClass.getName());
     }
 
     /**
@@ -267,10 +270,7 @@ public class GrailsNameUtils {
      * @return The script name representation
      */
     public static String getScriptName(Class<?> clazz) {
-        if (clazz == null) {
-            return null;
-        }
-        return getScriptName(clazz.getName());
+        return clazz == null ? null : getScriptName(clazz.getName());
     }
 
     /**
@@ -288,8 +288,7 @@ public class GrailsNameUtils {
         if (name.endsWith(".groovy")) {
             name = name.substring(0, name.length()-7);
         }
-        String naturalName = getNaturalName(name);
-        return naturalName.replaceAll("\\s", "-").toLowerCase();
+        return getNaturalName(name).replaceAll("\\s", "-").toLowerCase();
     }
 
     /**
@@ -322,8 +321,7 @@ public class GrailsNameUtils {
             throw new IllegalArgumentException("Plugin descriptor name is not valid: " + descriptorName);
         }
 
-        int pos = descriptorName.indexOf("GrailsPlugin.groovy");
-        return getScriptName(descriptorName.substring(0, pos));
+        return getScriptName(descriptorName.substring(0, descriptorName.indexOf("GrailsPlugin.groovy")));
     }
 
     /**

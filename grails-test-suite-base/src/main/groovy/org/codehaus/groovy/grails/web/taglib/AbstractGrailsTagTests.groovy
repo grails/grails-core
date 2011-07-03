@@ -1,18 +1,21 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import com.opensymphony.module.sitemesh.RequestConstants
 import grails.util.GrailsWebUtil
+
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
+
+import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
@@ -36,8 +39,8 @@ import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver
 import org.springframework.web.servlet.support.JstlUtils
 import org.springframework.web.servlet.theme.SessionThemeResolver
 import org.w3c.dom.Document
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.web.pages.*
+
+import com.opensymphony.module.sitemesh.RequestConstants
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
@@ -81,7 +84,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         return request
     }
 
-
     def profile(String name, Closure callable) {
         if (!enableProfile) return callable.call()
 
@@ -108,7 +110,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                 fail("No tag library found for tag $tagName")
             }
             def go = tagLibrary.newInstance()
-            if (go.properties.containsKey("grailsUrlMappingsHolder"))   {
+            if (go.properties.containsKey("grailsUrlMappingsHolder")) {
                 go.grailsUrlMappingsHolder = appCtx.grailsUrlMappingsHolder
             }
             if (go instanceof ApplicationContextAware) {

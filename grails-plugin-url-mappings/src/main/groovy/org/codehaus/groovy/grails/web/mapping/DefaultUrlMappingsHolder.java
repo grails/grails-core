@@ -48,7 +48,7 @@ import com.googlecode.concurrentlinkedhashmap.Weigher;
  * @author Graeme Rocher
  * @since 0.4
  */
-@SuppressWarnings({"serial","rawtypes"})
+@SuppressWarnings("rawtypes")
 public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);

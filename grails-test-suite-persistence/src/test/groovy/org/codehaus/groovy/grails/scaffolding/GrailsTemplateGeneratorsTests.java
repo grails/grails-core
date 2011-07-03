@@ -105,9 +105,9 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         assertFalse(Modifier.isFinal(method.getModifiers()));
         assertSame(Object.class, method.getReturnType());
         assertEquals(0, method.getParameterTypes().length);
-	}
+    }
 
-	public void testGenerateViews() throws Exception {
+    public void testGenerateViews() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
         DefaultGrailsTemplateGenerator generator = new DefaultGrailsTemplateGenerator();

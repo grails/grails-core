@@ -94,7 +94,7 @@ class DataSourceGrailsPlugin {
 
         String pwd
         boolean passwordSet = false
-        if (ds.password)  {
+        if (ds.password) {
             pwd = resolvePassword(ds, application)
             passwordSet = true
         }

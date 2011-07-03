@@ -16,13 +16,13 @@
 package org.codehaus.groovy.grails.support;
 
 /**
- * A  interface for a class to implement that will setup the persistent context
- * before and after a Grails operation is invoked. @see grails.util.RunTests
+ * Sets up the persistent context before and after a Grails operation is invoked.
  *
+ * @see grails.util.RunTests
  * @author Graeme Rocher
  * @since 0.4
  */
-public interface PersistenceContextInterceptor  {
+public interface PersistenceContextInterceptor {
 
     /**
      * Called to intialisation the persistent context.

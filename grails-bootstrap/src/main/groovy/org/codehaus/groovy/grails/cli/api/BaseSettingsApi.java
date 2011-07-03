@@ -236,8 +236,8 @@ public class BaseSettingsApi {
         // Return the BuildSettings value if there is one, otherwise use the default.
         return value != null ? value : defaultValue;
     }
-    
-    public void updateMetadata(Metadata metadata, Map entries) {
+
+    public void updateMetadata(@SuppressWarnings("hiding") Metadata metadata, @SuppressWarnings("rawtypes") Map entries) {
         for (Object key : entries.keySet()) {
             final Object value = entries.get(key);
             if (value != null) {

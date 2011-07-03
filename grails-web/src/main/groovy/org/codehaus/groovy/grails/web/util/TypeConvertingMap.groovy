@@ -112,7 +112,7 @@ class TypeConvertingMap implements Map, Cloneable {
         }
         return null
     }
-    
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter

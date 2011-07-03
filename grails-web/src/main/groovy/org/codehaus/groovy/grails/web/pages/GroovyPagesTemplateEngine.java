@@ -75,29 +75,27 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @since 0.1
  */
-/**
- * @author lari
- *
- */
-public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
+public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
     public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
+    public static final String BEAN_ID = "groovyPagesTemplateEngine";
+
     private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
     private static final Log LOG = LogFactory.getLog(GroovyPagesTemplateEngine.class);
+    private static File dumpLineNumbersTo;
+
     private Map<String, GroovyPageMetaInfo> pageCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
     private ClassLoader classLoader;
     private int scriptNameCount;
 
     private GroovyPageLocator groovyPageLocator = new DefaultGroovyPageLocator();
 
-    public static final String BEAN_ID = "groovyPagesTemplateEngine";
     private boolean reloadEnabled;
     private TagLibraryLookup tagLibraryLookup;
     private TagLibraryResolver jspTagLibraryResolver;
     private Map<String, GroovyPageMetaInfo> precompiledCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
     private boolean cacheResources=true;
 
-    private static File dumpLineNumbersTo;
     private GrailsApplication grailsApplication;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
     private ServletContext servletContext;
@@ -119,8 +117,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     /**
      * @param servletContext The servlet context
      * @deprecated here for compatibility
-     *
      */
+    @Deprecated
     public GroovyPagesTemplateEngine(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
@@ -242,7 +240,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
             name = establishPageName(resource, null);
         }
 
-
         if (!isReloadEnabled()) {
             // presumably war deployed mode, but precompiled gsp isn't used, log this for debugging
             if (LOG.isDebugEnabled()) {
@@ -283,14 +280,14 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      * @throws CompilationFailedException
      */
     @Override
-    public Template createTemplate(String uri)  {
+    public Template createTemplate(String uri) {
         return createTemplateForUri(uri);
     }
 
-    private GroovyPageTemplate createTemplateFromPrecompiled(final String uri, Class gspClass) {
+    private GroovyPageTemplate createTemplateFromPrecompiled(final String uri, Class<?> gspClass) {
         GroovyPageMetaInfo meta = precompiledCache.get(uri);
-        if (meta==null) {
-            meta=loadPrecompiledGsp(gspClass);
+        if (meta == null) {
+            meta = loadPrecompiledGsp(gspClass);
             if (meta != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Adding GSP class GroovyPageMetaInfo in cache for uri " + uri + " classname is " + meta.getPageClass().getName());
@@ -311,9 +308,8 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
                 // remove the precompiled version from caches & mapping
                 for (Iterator<Map.Entry<String, GroovyPageMetaInfo>> it=precompiledCache.entrySet().iterator(); it.hasNext();) {
                     Map.Entry<String, GroovyPageMetaInfo> entry=it.next();
-                    if (entry.getValue()==meta) {
+                    if (entry.getValue() == meta) {
                         groovyPageLocator.removePrecompiledPage(entry.getKey());
-
                         it.remove();
                     }
                 }
@@ -325,9 +321,9 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private GroovyPageMetaInfo loadPrecompiledGsp(Class gspClass) {
-        GroovyPageMetaInfo meta=null;
+        GroovyPageMetaInfo meta = null;
         if (gspClass != null) {
             meta = createPreCompiledGroovyPageMetaInfo(gspClass);
         }
@@ -354,18 +350,18 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
 
         for (String uri : uris) {
             scriptSource = groovyPageLocator.findPage(uri);
-            if(scriptSource != null) break;
+            if (scriptSource != null) break;
         }
 
-        if(scriptSource instanceof GroovyPageResourceScriptSource) {
+        if (scriptSource instanceof GroovyPageResourceScriptSource) {
             GroovyPageResourceScriptSource resourceSource = (GroovyPageResourceScriptSource) scriptSource;
 
             Resource resource = resourceSource.getResource();
-            if(resource.exists()) {
+            if (resource.exists()) {
                 return createTemplate(resource, true);
             }
         }
-        else if(scriptSource instanceof GroovyPageCompiledScriptSource) {
+        else if (scriptSource instanceof GroovyPageCompiledScriptSource) {
             // handle pre-compiled
             GroovyPageCompiledScriptSource compiledSource = (GroovyPageCompiledScriptSource) scriptSource;
 
@@ -533,7 +529,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
      */
     public Resource getResourceForUri(String uri) {
         GroovyPageScriptSource scriptSource = getResourceWithinContext(uri);
-        if(scriptSource != null && (scriptSource instanceof GroovyPageResourceScriptSource)) {
+        if (scriptSource != null && (scriptSource instanceof GroovyPageResourceScriptSource)) {
             return ((GroovyPageResourceScriptSource)scriptSource).getResource();
         }
         return new ServletContextResource(servletContext, uri);
@@ -542,7 +538,7 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
     private GroovyPageScriptSource getResourceWithinContext(String uri) {
         Assert.state(groovyPageLocator != null, "TemplateEngine not initialised correctly, no [groovyPageLocator] specified!");
         GroovyPageScriptSource scriptSource = groovyPageLocator.findPage(uri);
-        if(scriptSource != null) {
+        if (scriptSource != null) {
             return scriptSource;
         }
         return null;
@@ -823,7 +819,6 @@ public class GroovyPagesTemplateEngine  extends ResourceAwareTemplateEngine impl
         pageCache.clear();
         precompiledCache.clear();
     }
-
 
     public boolean isCacheResources() {
         return cacheResources;

@@ -444,11 +444,11 @@ public class BeanBuilder extends GroovyObjectSupport {
         Binding b = new Binding() {
             @Override
             public void setVariable(String name, Object value) {
-                if (currentBeanConfig!=null) {
-                    setPropertyOnBeanConfig(name, value);
+                if (currentBeanConfig == null) {
+                    super.setVariable(name, value);
                 }
                 else {
-                    super.setVariable(name, value);
+                    setPropertyOnBeanConfig(name, value);
                 }
             }
         };
@@ -611,7 +611,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * This method is called when a bean definition node is called
+     * Called when a bean definition node is called.
      *
      * @param name The name of the bean to define
      * @param args The arguments to the bean. The first argument is the class name, the last argument is sometimes a closure. All
@@ -633,10 +633,9 @@ public class BeanBuilder extends GroovyObjectSupport {
                         currentBeanConfig = springConfig.addSingletonBean(name, beanClass);
                     }
                 }
-                else  {
+                else {
                     currentBeanConfig = springConfig.addSingletonBean(name, beanClass, resolveConstructorArguments(args,1,args.length));
                 }
-
             }
         }
         else if (args[0] instanceof RuntimeBeanReference) {
@@ -725,7 +724,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * When an methods argument is only a closure it is a set of bean definitions
+     * When an method's argument is only a closure it is a set of bean definitions.
      *
      * @param callable The closure argument
      * @return This BeanBuilder instance
@@ -741,8 +740,8 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * This method overrides property setting in the scope of the BeanBuilder to set
-     * properties on the current BeanConfiguration
+     * Overrides property setting in the scope of the BeanBuilder to set
+     * properties on the current BeanConfiguration.
      */
     @Override
     public void setProperty(String name, Object value) {
@@ -752,7 +751,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * Defines an inner bean definition
+     * Defines an inner bean definition.
      *
      * @param type The bean type
      * @return The bean definition
@@ -762,7 +761,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * Defines an inner bean definition
+     * Defines an inner bean definition.
      *
      * @param type The bean type
      * @param args The constructors arguments and closure configurer
@@ -830,7 +829,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 
     /**
      * Checks whether there are any runtime refs inside a Map and converts
-     * it to a ManagedMap if necessary
+     * it to a ManagedMap if necessary.
      *
      * @param value The current map
      * @return A ManagedMap or a normal map
@@ -855,7 +854,7 @@ public class BeanBuilder extends GroovyObjectSupport {
 
     /**
      * Checks whether there are any runtime refs inside the list and
-     * converts it to a ManagedList if necessary
+     * converts it to a ManagedList if necessary.
      *
      * @param value The object that represents the list
      * @return Either a new list or a managed one
@@ -879,7 +878,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * This method overrides property retrieval in the scope of the BeanBuilder to either:
+     * Overrides property retrieval in the scope of the BeanBuilder to either:
      *
      * a) Retrieve a variable from the bean builder's binding if it exists
      * b) Retrieve a RuntimeBeanReference for a specific bean if it exists
@@ -944,7 +943,7 @@ public class BeanBuilder extends GroovyObjectSupport {
     }
 
     /**
-     * Sets the binding (the variables available in the scope of the BeanBuilder)
+     * Sets the binding (the variables available in the scope of the BeanBuilder).
      * @param b The Binding instance
      */
     @SuppressWarnings("unchecked")

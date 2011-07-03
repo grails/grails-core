@@ -25,6 +25,6 @@ import junit.framework.TestCase;
 public class GroovyPageResourceLoaderTests extends TestCase {
 
     public void testGetRealLocationInProject() {
-        GroovyPageResourceLoader rl = new GroovyPageResourceLoader();
+        /*GroovyPageResourceLoader rl =*/ new GroovyPageResourceLoader();
     }
 }

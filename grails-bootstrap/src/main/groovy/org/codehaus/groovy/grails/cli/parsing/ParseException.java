@@ -16,12 +16,14 @@
 package org.codehaus.groovy.grails.cli.parsing;
 
 /**
- * Exception that is thrown in command line parsing fails
+ * Exception that is thrown in command line parsing fails.
  *
  * @author Graeme Rocher
  * @since 1.4
  */
-public class ParseException extends RuntimeException{
+public class ParseException extends RuntimeException {
+
+    private static final long serialVersionUID = 1;
 
     public ParseException(String message) {
         super(message);

@@ -37,11 +37,11 @@ class TestUrlMappings {
     }
 
     void testLinkTagWithAttributeValueContainingEqualSignFollowedByQuote() {
-        //  Some of these tests look peculiar but they relate to 
+        //  Some of these tests look peculiar but they relate to
         //  scenarios that were broken before GRAILS-7229 was addressed
 
         def template = '''<g:link controller="demo" class="${(y == '5' && x == '4') ? 'A' : 'B'}" >demo</g:link>'''
-        assertOutputEquals '<a href="/demo" class="B">demo</a>', template, [x: '7', x: '4']    
+        assertOutputEquals '<a href="/demo" class="B">demo</a>', template, [x: '7', x: '4']
         template = '''<g:link controller="demo" class="${(y == '5' && x == '4') ? 'A' : 'B'}" >demo</g:link>'''
         assertOutputEquals '<a href="/demo" class="A">demo</a>', template, [x: '4', y: '5']
 
@@ -56,7 +56,7 @@ class TestUrlMappings {
         assertOutputEquals '<a href="/demo" class="true">demos</a>', template, [someVar: 'abcd']
 
         template = '''<g:link controller="demo" class="${(someVar == 'abcd' )}" >demos</g:link>'''
-        assertOutputEquals '<a href="/demo" class="false">demos</a>', template, [someVar: 'some value'] 
+        assertOutputEquals '<a href="/demo" class="false">demos</a>', template, [someVar: 'some value']
         template = '''<g:link controller="demo" class="${(someVar == 'abcd' )}" >demos</g:link>'''
         assertOutputEquals '<a href="/demo" class="true">demos</a>', template, [someVar: 'abcd']
     }

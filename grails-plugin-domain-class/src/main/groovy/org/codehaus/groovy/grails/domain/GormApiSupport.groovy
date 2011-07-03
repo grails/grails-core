@@ -20,9 +20,9 @@ import org.springframework.datastore.mapping.core.Datastore
 import org.springframework.datastore.mapping.model.PersistentEntity
 import org.springframework.validation.Validator
 
- /**
+/**
  * Helper class used in the case where there is not GORM API installed in the application to provide
- * basic validation facility
+ * basic validation facility.
  *
  * @author Graeme Rocher
  * @since 1.4

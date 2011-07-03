@@ -2,9 +2,9 @@ package grails.test.mixin
 
 import grails.test.mixin.web.UrlMappingsUnitTestMixin
 import junit.framework.AssertionFailedError
+import junit.framework.ComparisonFailure
 
 import org.junit.Test
-import junit.framework.ComparisonFailure
 
 /**
  * Tests for the UrlMappingsTestMixin class
@@ -136,7 +136,7 @@ class UrlMappingsTestMixinTests {
     }
 }
 
-class AnotherUrlMappings  {
+class AnotherUrlMappings {
     static mappings = {
         "/$controller/$action?/$id?" {}
         "/alias/$param1/"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")

@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.testing
 
 import spock.lang.Specification
 
-class SubclassRequestWithApiDelegateSpec extends Specification{
+class SubclassRequestWithApiDelegateSpec extends Specification {
 
     void "Test that delegate methods are available on request"() {
         when:
@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import grails.artefact.ApiDelegate
 import javax.servlet.http.HttpServletRequest
 
-class GrailsMockHttpServletRequest extends MockHttpServletRequest  {
+class GrailsMockHttpServletRequest extends MockHttpServletRequest {
     @ApiDelegate(HttpServletRequest) RequestMimeTypesApi requestMimeTypesApi = new RequestMimeTypesApi()
 }
 '''

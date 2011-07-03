@@ -104,7 +104,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public ClosureEventTriggeringInterceptor() {
         try {
-            this.markInterceptorDirtyMethod = ReflectionUtils.findMethod(AbstractSaveEventListener.class, "markInterceptorDirty", new Class[]{Object.class, EntityPersister.class, EventSource.class});
+            markInterceptorDirtyMethod = ReflectionUtils.findMethod(AbstractSaveEventListener.class, "markInterceptorDirty", new Class[]{Object.class, EntityPersister.class, EventSource.class});
             ReflectionUtils.makeAccessible(markInterceptorDirtyMethod);
         } catch (Exception e) {
             // ignore
@@ -113,7 +113,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public void setConfiguration(ConfigObject co) {
         Object failOnErrorConfig = co.flatten().get("grails.gorm.failOnError");
-        if (failOnErrorConfig instanceof List)  {
+        if (failOnErrorConfig instanceof List) {
             failOnError = true;
             failOnErrorPackages = (List)failOnErrorConfig;
         }

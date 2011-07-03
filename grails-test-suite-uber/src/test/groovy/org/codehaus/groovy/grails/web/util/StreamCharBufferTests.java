@@ -50,7 +50,7 @@ public class StreamCharBufferTests extends TestCase {
         }
     }
 
-    public void testEquals()  throws Exception  {
+    public void testEquals() throws Exception {
         StreamCharBuffer charBuffer = new StreamCharBuffer();
         Writer writer=charBuffer.getWriter();
         writer.write("ABCDE");

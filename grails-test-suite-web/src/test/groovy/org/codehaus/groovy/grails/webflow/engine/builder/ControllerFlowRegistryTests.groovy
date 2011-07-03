@@ -27,18 +27,18 @@ class FooController {
         enterPersonalDetails {
             on("submit").to "enterShipping"
         }
-        enterShipping  {
+        enterShipping {
             on("back").to "enterPersonDetails"
             on("submit").to "enterPayment"
         }
-        enterPayment  {
+        enterPayment {
             on("back").to "enterShipping"
             on("submit").to "confirmPurchase"
         }
-        confirmPurchase  {
+        confirmPurchase {
             on("confirm").to "processPurchaseOrder"
         }
-        processPurchaseOrder  {
+        processPurchaseOrder {
             action {
                 println "processing purchase order"
                 [order:"done"]

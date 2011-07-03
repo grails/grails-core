@@ -14,12 +14,12 @@ class BindStringArrayToGenericListTests extends AbstractGrailsControllerTests {
     protected Collection<Class> getControllerClasses() {
         [MenuController]
     }
-    
+
     @Override
     protected Collection<Class> getDomainClasses() {
         [Menu]
     }
-    
+
     void testBindStringArrayToGenericList() {
         def controller = new MenuController()
 

@@ -46,8 +46,8 @@ import org.hibernate.engine.FilterDefinition;
 public class GrailsAnnotationConfiguration extends Configuration implements GrailsDomainConfiguration {
 
     private static final Log LOG = LogFactory.getLog(GrailsAnnotationConfiguration.class);
-
     private static final long serialVersionUID = -7115087342689305517L;
+
     private GrailsApplication grailsApplication;
     private Set<GrailsDomainClass> domainClasses = new HashSet<GrailsDomainClass>();
     private boolean configLocked;
@@ -199,7 +199,7 @@ public class GrailsAnnotationConfiguration extends Configuration implements Grai
             Class<?> namingStrategyClass = null;
             if (customStrategy instanceof Class<?>) {
                 namingStrategyClass = (Class<?>)customStrategy;
-            } else  {
+            } else {
                 try {
                     namingStrategyClass = grailsApplication.getClassLoader().loadClass(customStrategy.toString());
                 } catch (ClassNotFoundException e) {

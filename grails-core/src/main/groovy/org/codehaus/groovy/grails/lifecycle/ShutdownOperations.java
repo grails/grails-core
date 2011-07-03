@@ -15,16 +15,15 @@
  */
 package org.codehaus.groovy.grails.lifecycle;
 
-import groovy.lang.ExpandoMetaClass;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-
-import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Operations that should be executed on shutdown
@@ -38,9 +37,7 @@ public class ShutdownOperations {
 
     private static final Collection<Runnable> shutdownOperations = new ConcurrentLinkedQueue<Runnable>();
 
-
     public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
-
         public void run() {
             PluginManagerHolder.setPluginManager(null);
             ApplicationHolder.setApplication(null);
@@ -71,8 +68,6 @@ public class ShutdownOperations {
             shutdownOperations.clear();
             shutdownOperations.add(DEFAULT_SHUTDOWN_OPERATION);
         }
-
-
     }
 
     /**

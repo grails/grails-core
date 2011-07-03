@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.web.pages
 
+import grails.util.GrailsUtil
+import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
-
-import grails.util.GrailsUtil
-import grails.util.GrailsWebUtil
 
 class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
@@ -151,7 +151,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testNestingGroovyExpressionInAttribute() {
-        
+
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
@@ -169,9 +169,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"></g:actionSubmit>''', sw.toString()
     }
-    
-	void testParsingNestedCurlyBraces() {
-        
+
+    void testParsingNestedCurlyBraces() {
+
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
@@ -180,7 +180,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         def src = '${people.collect {it.firstName}}'
         def t = gpte.createTemplate(src, "hello_test")
 
-        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]		
+        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]
         def w = t.make(people: people)
 
         def sw = new StringWriter()
@@ -189,9 +189,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         w.writeTo(pw)
 
         assertEquals "[Peter, Phil]", sw.toString()
-	}
-	
-	void testParsingParensInNestedCurlyBraces() {
+    }
+
+    void testParsingParensInNestedCurlyBraces() {
 
         GrailsWebUtil.bindMockWebRequest()
 
@@ -201,7 +201,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         def src = '${people.collect {it.firstName.toUpperCase()}}'
         def t = gpte.createTemplate(src, "hello_test")
 
-        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]		
+        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]
         def w = t.make(people: people)
 
         def sw = new StringWriter()
@@ -210,9 +210,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         w.writeTo(pw)
 
         assertEquals "[PETER, PHIL]", sw.toString()
-	}
+    }
 
-	void testParsingBracketsInNestedCurlyBraces() {
+    void testParsingBracketsInNestedCurlyBraces() {
 
         GrailsWebUtil.bindMockWebRequest()
 
@@ -222,7 +222,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         def src = '${people.collect {it.lastName[0]}}'
         def t = gpte.createTemplate(src, "hello_test")
 
-        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]		
+        def people = [[firstName: 'Peter', lastName: 'Gabriel'], [firstName: 'Phil', lastName: 'Collins']]
         def w = t.make(people: people)
 
         def sw = new StringWriter()
@@ -231,7 +231,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         w.writeTo(pw)
 
         assertEquals "[G, C]", sw.toString()
-	}
+    }
 
     void testCreateTemplateWithBinding() {
 

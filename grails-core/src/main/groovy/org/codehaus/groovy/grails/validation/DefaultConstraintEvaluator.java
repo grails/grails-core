@@ -64,7 +64,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         return evaluate(cls.getClazz(), cls.getPersistentProperties());
     }
 
-      /**
+    /**
      * Evaluates the constraints closure to build the list of constraints
      *
      * @param theClass  The domain class to evaluate constraints for
@@ -91,9 +91,9 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             }
 
             if (c != null) {
-                    c = (Closure<?>) c.clone();
-                    c.setDelegate(delegate);
-                    c.call();
+                c = (Closure<?>) c.clone();
+                c.setDelegate(delegate);
+                c.call();
             }
             else {
                 LOG.debug("User-defined constraints not found on class [" + clazz + "], applying default constraints");

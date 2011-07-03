@@ -194,7 +194,7 @@ target(allTests: "Runs the project's tests.") {
     }
     finally {
         String label = testsFailed ? "Tests FAILED" : "Tests PASSED"
-		String msg = ""
+        String msg = ""
         if (createTestReports) {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}"
@@ -249,13 +249,13 @@ compileTests = { GrailsTestType type, File source, File dest ->
     try {
         def classpathId = "grails.test.classpath"
         ant.testc(destdir: dest, classpathref: classpathId,
-                    verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
+                  verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
             javac(classpathref: classpathId, debug: "yes")
             src(path: source)
         }
     }
     catch (Exception e) {
-		grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.message}", e 
+        grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.message}", e
         exit 1
     }
 

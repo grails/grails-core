@@ -724,27 +724,6 @@ public class GrailsScriptRunner {
         }
     }
 
-
-    /**
-     * Sanitizes a stack trace using GrailsUtil.deepSanitize(). We use
-     * this method so that the GrailsUtil class is loaded from the
-     * context class loader. Basically, we don't want this class to
-     * have a direct dependency on GrailsUtil otherwise the class loader
-     * used to load this class (GrailsScriptRunner) would have to have
-     * far more libraries on its classpath than we want.
-     */
-    private static void sanitizeStacktrace(Throwable t) {
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class<?> clazz = loader.loadClass("grails.util.GrailsUtil");
-            Method method = clazz.getMethod("deepSanitize", Throwable.class);
-            method.invoke(null, t);
-        }
-        catch (Throwable ex) {
-            // cannot sanitize, ignore
-        }
-    }
-
     /**
      * Contains details about a Grails command invocation such as the
      * name of the corresponding script, the environment (if specified),

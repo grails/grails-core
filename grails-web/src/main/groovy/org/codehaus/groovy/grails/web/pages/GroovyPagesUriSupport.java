@@ -102,23 +102,22 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
         if (templateName.startsWith(SLASH_STR)) {
             return getAbsoluteTemplateURI(templateName);
         }
-        else {
-            FastStringWriter buf = new FastStringWriter();
-            String pathToTemplate = BLANK;
 
-            int lastSlash = templateName.lastIndexOf(SLASH);
-            if (lastSlash > -1) {
-                pathToTemplate = templateName.substring(0, lastSlash + 1);
-                templateName = templateName.substring(lastSlash + 1);
-            }
-            buf.append(SLASH)
-               .append(controllerName)
-               .append(SLASH)
-               .append(pathToTemplate)
-               .append(UNDERSCORE)
-               .append(templateName);
-            return buf.append(GroovyPage.EXTENSION).toString();
+        FastStringWriter buf = new FastStringWriter();
+        String pathToTemplate = BLANK;
+
+        int lastSlash = templateName.lastIndexOf(SLASH);
+        if (lastSlash > -1) {
+            pathToTemplate = templateName.substring(0, lastSlash + 1);
+            templateName = templateName.substring(lastSlash + 1);
         }
+        buf.append(SLASH)
+           .append(controllerName)
+           .append(SLASH)
+           .append(pathToTemplate)
+           .append(UNDERSCORE)
+           .append(templateName);
+        return buf.append(GroovyPage.EXTENSION).toString();
     }
 
     /**
@@ -204,22 +203,13 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
         if (viewName != null && viewName.startsWith(SLASH_STR)) {
             return getAbsoluteViewURIInternal(viewName, buf, includeSuffix);
         }
-        else {
-            buf.append(SLASH)
-               .append(controllerName);
-            if (viewName != null) {
 
-                buf.append(SLASH)
-                   .append(viewName);
-            }
-            if (includeSuffix) {
-                return buf.append(GroovyPage.SUFFIX).toString();
-            }
+        buf.append(SLASH).append(controllerName);
+        if (viewName != null) {
+            buf.append(SLASH).append(viewName);
         }
 
-
-
-        return buf.toString();
+        return includeSuffix ? buf.append(GroovyPage.SUFFIX).toString() : buf.toString();
     }
 
     private String getAbsoluteViewURIInternal(String viewName, FastStringWriter buf, boolean includeSuffix) {

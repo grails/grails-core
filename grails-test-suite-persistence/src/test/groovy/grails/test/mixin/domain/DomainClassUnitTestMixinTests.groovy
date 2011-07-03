@@ -11,12 +11,12 @@ class DomainClassUnitTestMixinTests {
     void testBackReferenceAssignment() {
         mockDomain Writer
         mockDomain Publication
-        
+
         def publication = new Publication(title: 'Some Paper')
         def writer = new Writer(name: 'Some Writer')
-        
+
         writer.addToPublications(publication)
-        
+
         assert publication.ghostWriter == null
         assert writer.is(publication.writer)
     }

@@ -59,7 +59,7 @@ import org.springframework.validation.Errors;
  * @author Graeme Rocher
  * @since 07-Nov-2005
  */
-public class ConstrainedProperty   {
+public class ConstrainedProperty {
 
     static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
     static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE = "default.invalid.min.size.message";

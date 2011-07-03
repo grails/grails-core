@@ -47,7 +47,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GrailsViewResolver extends InternalResourceViewResolver implements ApplicationContextAware, PluginManagerAware, GrailsApplicationAware {
 
-    private String localPrefix;
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
 
     public static final String GSP_SUFFIX = ".gsp";
@@ -58,7 +57,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     // no need for static cache since GrailsViewResolver is in app context
     private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
-    private static final char DOT = '.';
     private GrailsApplication grailsApplication;
 
     /**
@@ -97,26 +95,22 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         GroovyObject controller = webRequest.getAttributes().getController(request);
 
         if (grailsApplication == null) {
-
             grailsApplication = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
         }
 
-
         GroovyPageScriptSource scriptSource = null;
-        if(controller == null) {
+        if (controller == null) {
             scriptSource = groovyPageLocator.findViewByPath(viewName);
         }
         else {
             scriptSource = groovyPageLocator.findView(controller, viewName);
         }
         if (scriptSource != null) {
-            if(scriptSource instanceof GroovyPageCompiledScriptSource) {
+            if (scriptSource instanceof GroovyPageCompiledScriptSource) {
                 GroovyPageCompiledScriptSource compiled = (GroovyPageCompiledScriptSource) scriptSource;
                 return createGroovyPageView(webRequest, compiled.getURI(), compiled.getCompiledClass());
             }
-            else {
-                return createGroovyPageView(webRequest, scriptSource.getURI());
-            }
+            return createGroovyPageView(webRequest, scriptSource.getURI());
         }
 
         AbstractUrlBasedView view = buildView(viewName);
@@ -151,12 +145,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         // ignored, here for compatibility
-    }
-
-    @Override
-    public void setPrefix(String prefix) {
-        super.setPrefix(prefix);
-        this.localPrefix = prefix;
     }
 
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {

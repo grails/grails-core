@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
  * @author Graeme Rocher
  */
 @Artefact("TagLibrary")
-class JavascriptTagLib  {
+class JavascriptTagLib {
 
     /**
      * Mappings to the relevant files to be included for each library.
@@ -415,7 +415,7 @@ a 'params' key to the [url] attribute instead.""")
 }
 
 /**
- * Defines methods that a JavaScript provider should implement.
+ * Defines methods that a JavaScript provider must implement.
  *
  * @author Graeme Rocher
  */

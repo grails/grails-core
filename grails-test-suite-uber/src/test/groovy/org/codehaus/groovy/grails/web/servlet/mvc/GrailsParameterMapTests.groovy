@@ -64,7 +64,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals 0, map.byte('zero', 42)
         assertEquals 42, map.byte('bad', 42)
         assertEquals 42, map.byte('nonexistent', 42)
-        
+
         assertEquals '1', map.char('one')
         assertNull map.char('longNumber')
         assertNull map.char("test")

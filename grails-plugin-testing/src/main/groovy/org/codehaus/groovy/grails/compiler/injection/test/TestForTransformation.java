@@ -91,18 +91,14 @@ public class TestForTransformation extends TestMixinTransformation {
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
 
-
     private ResourceLocator resourceLocator;
 
-    public TestForTransformation() {
-    }
-
     public ResourceLocator getResourceLocator() {
-        if(resourceLocator == null) {
+        if (resourceLocator == null) {
             resourceLocator = new DefaultResourceLocator();
             BuildSettings buildSettings = BuildSettingsHolder.getSettings();
             String basedir;
-            if(buildSettings != null) {
+            if (buildSettings != null) {
                 basedir = buildSettings.getBaseDir().getAbsolutePath();
             }
             else {
@@ -133,41 +129,40 @@ public class TestForTransformation extends TestMixinTransformation {
                     MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
-
         Expression value = node.getMember("value");
         ClassExpression ce;
         if (value instanceof ClassExpression) {
             ce = (ClassExpression) value;
             testFor(classNode, ce);
         }
-        else if(!isJunit3Test(classNode)){
+        else if (!isJunit3Test(classNode)){
             List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
-            if(annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
+            if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
             // no explicit class specified try by convention
             String fileName = source.getName();
             String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
-            if(className != null) {
+            if (className != null) {
                 boolean isJunit = className.endsWith("Tests");
                 boolean isSpock = className.endsWith("Spec");
                 String targetClassName = null;
 
-                if(isJunit) {
+                if (isJunit) {
                     targetClassName = className.substring(0, className.indexOf("Tests"));
                 }
-                else if(isSpock) {
+                else if (isSpock) {
                     targetClassName = className.substring(0, className.indexOf("Spec"));
                 }
 
-                if(targetClassName != null) {
+                if (targetClassName != null) {
                     Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
-                    if(targetResource != null) {
+                    if (targetResource != null) {
                         try {
-                            if(GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
+                            if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
                                 testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
                             }
                             else {
                                 for (String artefactType : artefactTypeToTestMap.keySet()) {
-                                    if(classNode.getName().endsWith(artefactType)) {
+                                    if (classNode.getName().endsWith(artefactType)) {
                                         testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
                                         break;
                                     }
@@ -179,12 +174,7 @@ public class TestForTransformation extends TestMixinTransformation {
                     }
                 }
             }
-
-
         }
-
-
-
     }
 
     /**
@@ -216,20 +206,16 @@ public class TestForTransformation extends TestMixinTransformation {
             }
         }
 
-
         final MethodNode methodToAdd = weaveMock(classNode, ce, true);
-        if (methodToAdd != null) {
-
-            if (junit3Test) {
-                addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
-            }
+        if (methodToAdd != null && junit3Test) {
+            addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
         }
     }
 
     private Map<ClassNode, List<Class>> wovenMixins = new HashMap<ClassNode, List<Class>>();
     protected MethodNode weaveMock(ClassNode classNode, ClassExpression value, boolean isClassUnderTest) {
-        ClassNode testTarget = value.getType();
 
+        ClassNode testTarget = value.getType();
         String className = testTarget.getName();
         MethodNode testForMethod = null;
         for (String artefactType : artefactTypeToTestMap.keySet()) {
@@ -264,7 +250,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
         BlockStatement methodBody;
         if (isJunit3Test(classNode)) {
-            methodBody= getJunit3Setup(classNode);
+            methodBody = getJunit3Setup(classNode);
             addMockCollaborator(artefactType, targetClassExpression,methodBody);
         }
         else {

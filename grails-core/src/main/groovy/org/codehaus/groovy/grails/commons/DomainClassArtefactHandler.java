@@ -25,7 +25,7 @@ import groovy.lang.GroovyObject;
  * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
 
     public static final String TYPE = "Domain";
 
@@ -73,7 +73,6 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
         }
 
         Class testClass = clazz;
-        boolean result = false;
         while (testClass != null && !testClass.equals(GroovyObject.class) && !testClass.equals(Object.class)) {
             try {
                 // make sure the identify and version field exist
@@ -81,8 +80,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
                 testClass.getDeclaredField(GrailsDomainClassProperty.VERSION);
 
                 // passes all conditions return true
-                result = true;
-                break;
+                return true;
             }
             catch (SecurityException e) {
                 // ignore
@@ -92,6 +90,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter  {
             }
             testClass = testClass.getSuperclass();
         }
-        return result;
+
+        return false;
     }
 }

@@ -25,7 +25,7 @@ mappings {
 '''
 
    def mappingScript2 = '''
-mappings  {
+mappings {
     "/specific/$action?" {
         controller = "someController"
     }
