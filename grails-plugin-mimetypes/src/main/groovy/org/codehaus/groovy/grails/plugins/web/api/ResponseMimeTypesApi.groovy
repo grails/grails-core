@@ -44,6 +44,10 @@ class ResponseMimeTypesApi {
     ResponseMimeTypesApi() {
     }
 
+    MimeType[] getMimeTypes() {
+        return this.mimeTypes
+    }
+
     /**
      * Initialize with settings provided by GrailsApplication and the given MimeType[]
      *
@@ -70,9 +74,9 @@ class ResponseMimeTypesApi {
         if (!result) {
             def formatOverride = webRequest?.params?.format
             if (formatOverride) {
-                def allMimes = mimeTypes
+                def allMimes = getMimeTypes()
                 MimeType mime = allMimes.find { it.extension == formatOverride }
-                result = mime ? mime.extension : mimeTypes[0].extension
+                result = mime ? mime.extension : getMimeTypes()[0].extension
 
                 // Save the evaluated format as a request attribute.
                 // This is a blatant hack because we should to this
@@ -123,7 +127,7 @@ class ResponseMimeTypesApi {
             def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
             def parser = new DefaultAcceptHeaderParser(grailsApplication)
-            parser.configuredMimeTypes = mimeTypes
+            parser.configuredMimeTypes = getMimeTypes()
             def header = null
             if (msie) header = "*/*"
             if (!header && useAcceptHeader) header = request.getHeader(HttpHeaders.ACCEPT)

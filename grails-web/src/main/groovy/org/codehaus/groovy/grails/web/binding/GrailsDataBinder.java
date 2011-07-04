@@ -77,6 +77,7 @@ import java.util.*;
 public class GrailsDataBinder extends ServletRequestDataBinder {
 
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
+    private static final String JSON_DATE_FORMAT = "yyyy-MM-dd'T'hh:mm:ss'Z'";
 
     protected BeanWrapper bean;
 
@@ -216,7 +217,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         registry.registerCustomEditor(int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
         registry.registerCustomEditor(Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
         registry.registerCustomEditor(short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        registry.registerCustomEditor(Date.class, new StructuredDateEditor(dateFormat,true));
+        registry.registerCustomEditor(Date.class, new CompositeEditor(new StructuredDateEditor(dateFormat,true), new CustomDateEditor(new SimpleDateFormat(JSON_DATE_FORMAT), true)));
         registry.registerCustomEditor(Calendar.class, new StructuredDateEditor(dateFormat,true));
 
         ServletContext servletContext = grailsWebRequest != null ? grailsWebRequest.getServletContext() : null;
@@ -433,6 +434,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private void filterNestedParameterMaps(MutablePropertyValues mpvs) {
         for (PropertyValue pv : mpvs.getPropertyValues()) {
             final Object value = pv.getValue();
+            if(JSONObject.NULL.getClass().isInstance(value)) {
+                mpvs.removePropertyValue(pv);
+            }
             if (isNotCandidateForBinding(value)) {
                 mpvs.removePropertyValue(pv);
             }

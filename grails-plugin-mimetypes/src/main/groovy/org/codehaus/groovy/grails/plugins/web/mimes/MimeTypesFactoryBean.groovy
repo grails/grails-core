@@ -48,20 +48,21 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
         def config = grailsApplication?.config
         def mimeConfig = config?.grails?.mime?.types
         if (!mimeConfig) mimeTypes = MimeType.createDefaults()
-
-        def mimes = []
-        for (entry in mimeConfig) {
-            if (entry.value instanceof List) {
-                for (i in entry.value) {
-                    mimes << new MimeType(i)
+        else {
+            def mimes = []
+            for (entry in mimeConfig) {
+                if (entry.value instanceof List) {
+                    for (i in entry.value) {
+                        mimes << new MimeType(i)
+                        mimes[-1].extension = entry.key
+                    }
+                }
+                else {
+                    mimes << new MimeType(entry.value)
                     mimes[-1].extension = entry.key
                 }
             }
-            else {
-                mimes << new MimeType(entry.value)
-                mimes[-1].extension = entry.key
-            }
+            mimeTypes = mimes as MimeType[]
         }
-        mimeTypes = mimes as MimeType[]
     }
 }

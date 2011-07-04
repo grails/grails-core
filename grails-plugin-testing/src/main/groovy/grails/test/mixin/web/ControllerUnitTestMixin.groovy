@@ -58,6 +58,11 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 import org.codehaus.groovy.grails.plugins.web.api.*
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
+import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
+import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers.
@@ -157,9 +162,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
 
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
+        defineBeans(new ConvertersGrailsPlugin().doWithSpring)
         defineBeans {
             instanceControllersApi(ControllersApi)
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
+
 
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
 
@@ -172,7 +179,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
                 grailsApplication = GrailsUnitTestMixin.grailsApplication
                 servletContext = ControllerUnitTestMixin.servletContext
             }
-            convertersConfigurationInitializer(ConvertersConfigurationInitializer)
 
             def lazyBean = { bean ->
                 bean.lazyInit = true
@@ -211,8 +217,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             ServletsGrailsPluginSupport.enhanceServletApi()
             ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-            request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  applicationContext.getBean("requestMimeTypesApi", RequestMimeTypesApi))
-            response = new GrailsMockHttpServletResponse(responseMimeTypesApi: applicationContext.getBean("responseMimeTypesApi", ResponseMimeTypesApi))
+            request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication))
+            response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication))
             webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
             request = webRequest.getCurrentRequest()
             response = webRequest.getCurrentResponse()
@@ -321,4 +327,27 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         response = null
         RequestContextHolder.setRequestAttributes(null)
     }
+}
+class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
+
+
+    @Override
+    MimeType[] getMimeTypes() {
+        def factory = new MimeTypesFactoryBean(grailsApplication:grailsApplication)
+        factory.afterPropertiesSet()
+        return factory.getObject()
+    }
+
+}
+
+class TestRequestMimeTypesApi extends RequestMimeTypesApi {
+
+
+    @Override
+    MimeType[] getMimeTypes() {
+        def factory = new MimeTypesFactoryBean(grailsApplication:grailsApplication)
+        factory.afterPropertiesSet()
+        return factory.getObject()
+    }
+
 }
