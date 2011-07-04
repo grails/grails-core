@@ -318,7 +318,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
         if (request instanceof MultipartHttpServletRequest) {
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-            bindMultipartFiles(multipartRequest.getFileMap(), mpvs);
+            bindMultipart(multipartRequest.getMultiFileMap(), mpvs);
         }
         doBind(mpvs);
     }
