@@ -18,6 +18,7 @@ import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.springframework.util.ClassUtils
 
 /**
  * Tags for developing javascript and ajax applications.
@@ -40,7 +41,20 @@ class JavascriptTagLib {
 
     def resourceService
 
-    /**
+    Class<JavascriptProvider> defaultProvider
+
+    JavascriptTagLib() {
+        def cl = Thread.currentThread().contextClassLoader
+        def hasJquery = ClassUtils.isPresent("org.codehaus.groovy.grails.plugins.jquery.JQueryProvider", cl)
+        if(hasJquery) {
+            try {
+                defaultProvider = cl.loadClass("org.codehaus.groovy.grails.plugins.jquery.JQueryProvider")
+            } catch (e) {
+                // ignore
+            }
+        }
+    }
+/**
      * Includes a javascript src file, library or inline script
      * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
      *
@@ -408,7 +422,12 @@ a 'params' key to the [url] attribute instead.""")
         setUpRequestAttributes()
         def providerClass = PROVIDER_MAPPINGS.find { request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains(it.key) }?.value
         if (providerClass == null) {
-            throw new GrailsTagException("No javascript provider is configured")
+            if(defaultProvider != null) {
+                return defaultProvider.newInstance()
+            }
+            else {
+                throw new GrailsTagException("No javascript provider is configured")
+            }
         }
         return providerClass.newInstance()
     }
