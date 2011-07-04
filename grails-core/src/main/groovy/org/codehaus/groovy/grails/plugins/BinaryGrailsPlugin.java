@@ -114,9 +114,9 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         List<Class> artefacts = new ArrayList<Class>();
         if (descriptor != null) {
             GPathResult resources = (GPathResult) descriptor.getProperty("resources");
-            if (resources.isEmpty()) {
+            if (!resources.isEmpty()) {
                 GPathResult allResources = (GPathResult) resources.getProperty("resource");
-                if (allResources.isEmpty()) {
+                if (!allResources.isEmpty()) {
                     final ClassLoader classLoader = application.getClassLoader();
                     for (Iterator i = allResources.nodeIterator(); i.hasNext(); ) {
                         final String className = ((Node)i.next()).text();
