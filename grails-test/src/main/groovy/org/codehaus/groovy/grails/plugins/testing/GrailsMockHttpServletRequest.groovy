@@ -80,8 +80,14 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         setContentType("text/xml")
         setFormat("xml")
 
-        XML xml = new XML(sourceXml);
-        setContent(xml.toString().bytes)
+        if(sourceXml instanceof String) {
+            setContent(sourceXml.bytes)
+        }
+        else {
+            XML xml = new XML(sourceXml);
+            setContent(xml.toString().bytes)
+        }
+
 
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
