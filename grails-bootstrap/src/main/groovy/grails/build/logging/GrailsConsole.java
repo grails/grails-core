@@ -319,38 +319,33 @@ public class GrailsConsole {
     private void outputMessage(String msg, int replaceCount) {
         if (msg == null || msg.trim().length() == 0) return;
         try {
-            if (hasNewLines(msg)) {
-                printMessageOnNewLine(msg);
-                lastMessage = "";
-            } else {
+            if (isAnsiEnabled()) {
 
-                if (isAnsiEnabled()) {
-
-                    lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
-                            .fg(Color.DEFAULT).a(msg).reset();
-                    out.println(lastStatus);
-                    cursorMove = replaceCount;
-                } else {
-                    if (lastMessage != null && lastMessage.equals(msg)) return;
-
-                    if (progressIndicatorActive) {
-                        out.println();
-                    }
-
-                    out.print(CATEGORY_SEPARATOR);
-                    out.println(msg);
+                lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
+                        .fg(Color.DEFAULT).a(msg).reset();
+                out.println(lastStatus);
+                if(userInputActive) {
+                    out.print(ansi().cursorRight(PROMPT.length()).reset());
                 }
-                lastMessage = msg;
+
+                cursorMove = replaceCount;
+            } else {
+                if (lastMessage != null && lastMessage.equals(msg)) return;
+
+                if (progressIndicatorActive) {
+                    out.println();
+                }
+
+                out.print(CATEGORY_SEPARATOR);
+                out.println(msg);
             }
+            lastMessage = msg;
         } finally {
             postPrintMessage();
         }
     }
 
     private void postPrintMessage() {
-        if (!progressIndicatorActive) {
-            replayPromptIfActive();
-        }
         progressIndicatorActive = false;
     }
 
@@ -515,7 +510,7 @@ public class GrailsConsole {
      */
     private String showPrompt(String prompt) {
         try {
-            cursorMove = 0;
+            cursorMove = 1;
             userInputActive = true;
             try {
                 return reader.readLine(prompt);
@@ -612,9 +607,13 @@ public class GrailsConsole {
 
     private Ansi erasePreviousLine(String categoryName) {
         if (cursorMove > 0) {
+            int moveLeftLength = categoryName.length() + lastMessage.length();
+            if(userInputActive) {
+                moveLeftLength += PROMPT.length();
+            }
             return ansi()
                     .cursorUp(cursorMove)
-                    .cursorLeft(categoryName.length() + lastMessage.length())
+                    .cursorLeft(moveLeftLength)
                     .eraseLine(FORWARD);
 
         }
