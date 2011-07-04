@@ -111,32 +111,25 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
     protected void initializeProvidedArtefacts(@SuppressWarnings("hiding") GPathResult descriptor) {
 
-        if (descriptor == null) {
-            return;
-        }
-
-        GPathResult resources = (GPathResult) descriptor.getProperty("resources");
-        if (resources.isEmpty()) {
-            return;
-        }
-
-        GPathResult allResources = (GPathResult) resources.getProperty("resource");
-        if (allResources.isEmpty()) {
-            return;
-        }
-
         List<Class> artefacts = new ArrayList<Class>();
-        artefacts.addAll(Arrays.asList(super.getProvidedArtefacts()));
-        final ClassLoader classLoader = application.getClassLoader();
-        for (Iterator i = allResources.nodeIterator(); i.hasNext(); ) {
-            final String className = ((Node)i.next()).text();
-            try {
-                artefacts.add(classLoader.loadClass(className));
-            } catch (ClassNotFoundException e) {
-                LOG.error("Class not found loading plugin resource [" + className + "]. Resource skipped.", e);
+        if (descriptor != null) {
+            GPathResult resources = (GPathResult) descriptor.getProperty("resources");
+            if (resources.isEmpty()) {
+                GPathResult allResources = (GPathResult) resources.getProperty("resource");
+                if (allResources.isEmpty()) {
+                    final ClassLoader classLoader = application.getClassLoader();
+                    for (Iterator i = allResources.nodeIterator(); i.hasNext(); ) {
+                        final String className = ((Node)i.next()).text();
+                        try {
+                            artefacts.add(classLoader.loadClass(className));
+                        } catch (ClassNotFoundException e) {
+                            LOG.error("Class not found loading plugin resource [" + className + "]. Resource skipped.", e);
+                        }
+                    }
+                }
             }
         }
-
+        artefacts.addAll(Arrays.asList(super.getProvidedArtefacts()));
         providedArtefacts = artefacts.toArray(new Class[artefacts.size()]);
     }
 
