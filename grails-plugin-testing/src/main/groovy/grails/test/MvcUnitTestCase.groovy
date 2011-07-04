@@ -27,6 +27,9 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.WebApplicationContext
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
 /**
  * Common test case support class for controllers, tag libraries, and
@@ -111,15 +114,26 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
         mockParams = instance.params
         mockFlash = instance.flash
 
+        bindMockWebRequest(mockRequest, mockResponse)
+
+        return instance
+    }
+
+    protected def bindMockWebRequest(GrailsMockHttpServletRequest mockRequest, GrailsMockHttpServletResponse mockResponse) {
         MockApplicationContext ctx = new MockApplicationContext()
+        def application = new DefaultGrailsApplication([testClass] as Class[], getClass().classLoader)
+        application.initialise()
+        ctx.registerMockBean(testClass.name, testClass.newInstance())
+        def lookup = new TagLibraryLookup(applicationContext: ctx, grailsApplication: application)
+        lookup.afterPropertiesSet()
+        ctx.registerMockBean("gspTagLibraryLookup", lookup)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
         mockRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
+        mockRequest.servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
 
         webRequest = new GrailsWebRequest(mockRequest, mockResponse, mockRequest.servletContext)
 
         mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest)
         RequestContextHolder.setRequestAttributes(webRequest)
-
-        return instance
     }
 }

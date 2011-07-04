@@ -512,6 +512,10 @@ public abstract class GroovyPage extends Script {
         }
         GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
+        if(tagLib == null) {
+            throw new GrailsTagException("Tag [" + tagName + "] does not exist. No corresponding tag library found.");
+        }
+
         boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(namespace, tagName);
         Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest, preferSubChunkWhenWritingToOtherBuffer);
 
