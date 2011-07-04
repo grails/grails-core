@@ -29,6 +29,8 @@ import java.io.UnsupportedEncodingException
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap
+import org.apache.commons.logging.LogFactory
+import org.apache.commons.logging.Log
 
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
@@ -40,6 +42,9 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap
  * @since Oct 24, 2005
  */
 class GrailsParameterMap extends TypeConvertingMap {
+
+    private static final Log LOG = LogFactory.getLog(GrailsParameterMap)
+    public static final String REQUEST_BODY_PARSED = "org.codehaus.groovy.grails.web.REQUEST_BODY_PARSED"
 
     private HttpServletRequest request
 
@@ -61,6 +66,20 @@ class GrailsParameterMap extends TypeConvertingMap {
     GrailsParameterMap(HttpServletRequest request) {
         this.request = request
         final Map requestMap = new LinkedHashMap(request.getParameterMap())
+        if(requestMap.size() == 0 && "PUT".equals(request.getMethod()) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
+            // attempt manual parse of request body. This is here because some containers don't parse the request body automatically for PUT request
+            String contentType = request.getContentType();
+            if("application/x-www-form-urlencoded".equals(contentType)) {
+                try {
+                    def contents = request.reader.text
+                    request.setAttribute(REQUEST_BODY_PARSED, true)
+                    requestMap.putAll(org.codehaus.groovy.grails.web.util.WebUtils.fromQueryString(contents))
+                } catch (e) {
+                    LOG.error("Error processing form encoded PUT request: " + e.message, e)
+                }
+            }
+
+        }
         if (request instanceof MultipartHttpServletRequest) {
             def fileMap = request.fileMap
             for (fileName in fileMap.keySet()) {
