@@ -44,18 +44,32 @@ class JSONBindingToNullTests {
 		def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
 
         def builder = new JSONBuilder()
-        def result = builder.build { user = pebbles }
-		controller.request.method = 'PUT'
-		controller.request.contentType = 'application/json'
-		controller.params.format = 'json'
-        controller.request.content = result.toString().getBytes()
-		controller.request.getAttribute("org.codehaus.groovy.grails.WEB_REQUEST").informParameterCreationListeners()
-		controller.params.id = pebbles.id
+        request.method = 'PUT'
+        request.json = builder.build { user = pebbles }
+        response.format = "json"
+		params.id = pebbles.id
+
 		controller.update()
 
 
         // if any binding errors occurred this will break
         assert response.json.id == pebbles.id
+    }
+
+    @Test
+    void testXmlBindingToNull() {
+		def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
+
+
+        request.method = 'PUT'
+        request.xml = pebbles
+		params.id = pebbles.id
+
+		controller.update()
+
+
+        // if any binding errors occurred this will break
+        assert response.xml.@id == pebbles.id
     }
 }
 
