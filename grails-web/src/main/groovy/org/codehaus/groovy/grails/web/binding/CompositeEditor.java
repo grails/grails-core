@@ -54,4 +54,8 @@ public class CompositeEditor extends PropertyEditorSupport {
             throw first;
         }
     }
+
+    public List<PropertyEditor> getPropertyEditors() {
+        return propertyEditors;
+    }
 }

@@ -906,12 +906,30 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
 
             PropertyEditor editor = findCustomEditor(type, propertyName);
-            if (null == editor || !StructuredPropertyEditor.class.isAssignableFrom(editor.getClass())) {
-                continue;
+
+            if(editor instanceof CompositeEditor) {
+                CompositeEditor composite = (CompositeEditor) editor;
+                List<PropertyEditor> propertyEditors = composite.getPropertyEditors();
+                for (PropertyEditor propertyEditor : propertyEditors) {
+                    if (null == propertyEditor || !StructuredPropertyEditor.class.isAssignableFrom(propertyEditor.getClass())) {
+                        continue;
+                    }
+                    else {
+                        StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) propertyEditor;
+                        processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
+
+                    }
+                }
+            }
+            else {
+                if (null == editor || !StructuredPropertyEditor.class.isAssignableFrom(editor.getClass())) {
+                    continue;
+                }
+
+                StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) editor;
+                processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
             }
 
-            StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) editor;
-            processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
         }
     }
 
