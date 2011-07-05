@@ -126,7 +126,7 @@ class PropertyConfig {
      */
     String getIndex() {
         checkHasSingleColumn()
-        return columns[0].index
+        return columns[0].index?.toString()
     }
 
     /**

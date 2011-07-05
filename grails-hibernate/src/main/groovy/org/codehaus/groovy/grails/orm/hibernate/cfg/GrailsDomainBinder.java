@@ -1764,7 +1764,7 @@ public final class GrailsDomainBinder {
 
         PropertyConfig propertyConfig = getPropertyConfig(property);
         if (propertyConfig != null && !propertyConfig.getColumns().isEmpty()) {
-            bindIndex(column, propertyConfig.getColumns().get(0), t);
+            bindIndex(columnName, column, propertyConfig.getColumns().get(0), t);
         }
     }
 
@@ -2485,7 +2485,7 @@ public final class GrailsDomainBinder {
             }
         }
 
-        bindIndex(column, cc, table);
+        bindIndex(columnName, column, cc, table);
 
         if (!property.getDomainClass().isRoot()) {
             Mapping mapping = getMapping(property.getDomainClass());
@@ -2525,12 +2525,22 @@ public final class GrailsDomainBinder {
         }
     }
 
-    private static void bindIndex(Column column, ColumnConfig cc, Table table) {
+    private static void bindIndex(String columnName, Column column, ColumnConfig cc, Table table) {
         if (cc == null) {
             return;
         }
 
-        String indexDefinition = cc.getIndex();
+        Object indexObj = cc.getIndex();
+        String indexDefinition = null;
+        if(indexObj instanceof Boolean) {
+            Boolean b = (Boolean) indexObj;
+            if(b) {
+               indexDefinition = columnName + "_idx";
+            }
+        }
+        else {
+            indexDefinition = indexObj.toString();
+        }
         if (indexDefinition == null) {
             return;
         }
