@@ -1955,7 +1955,8 @@ public final class GrailsDomainBinder {
         bindManyToOneValues(property, manyToOne);
         GrailsDomainClass refDomainClass = property.isManyToMany() ? property.getDomainClass() : property.getReferencedDomainClass();
         Mapping mapping = getMapping(refDomainClass);
-        if (hasCompositeIdentifier(mapping)) {
+        boolean isComposite = hasCompositeIdentifier(mapping);
+        if (isComposite) {
             CompositeIdentity ci = (CompositeIdentity) mapping.getIdentity();
             bindCompositeIdentifierToManyToOne(property, manyToOne, ci, refDomainClass, path, sessionFactoryBeanName);
         }
@@ -1988,7 +1989,7 @@ public final class GrailsDomainBinder {
         }
 
         PropertyConfig config = getPropertyConfig(property);
-        if (property.isOneToOne()) {
+        if (property.isOneToOne() && !isComposite) {
             manyToOne.setAlternateUniqueKey(true);
             Column c = getColumnForSimpleValue(manyToOne);
             if (config != null) {
@@ -2004,17 +2005,19 @@ public final class GrailsDomainBinder {
             SimpleValue value, CompositeIdentity compositeId, GrailsDomainClass refDomainClass,
             String path, String sessionFactoryBeanName) {
 
-      NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
 
         String[] propertyNames = compositeId.getPropertyNames();
         PropertyConfig config = getPropertyConfig(property);
         if (config == null) config = new PropertyConfig();
 
-        for (String propertyName : propertyNames) {
-            final ColumnConfig cc = new ColumnConfig();
-            cc.setName(addUnderscore(namingStrategy.classToTableName(refDomainClass.getShortName()),
-                       getDefaultColumnName(refDomainClass.getPropertyByName(propertyName), sessionFactoryBeanName)));
-            config.getColumns().add(cc);
+        if(config.getColumns().size() != propertyNames.length) {
+            for (String propertyName : propertyNames) {
+                final ColumnConfig cc = new ColumnConfig();
+                cc.setName(addUnderscore(namingStrategy.classToTableName(refDomainClass.getShortName()),
+                        getDefaultColumnName(refDomainClass.getPropertyByName(propertyName), sessionFactoryBeanName)));
+                config.getColumns().add(cc);
+            }
         }
         bindSimpleValue(property, value, path, config, sessionFactoryBeanName);
     }
