@@ -158,6 +158,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
 
     FlowDefinition getFlowDefinition() {
         FlowBuilder builder = new FlowBuilder(getFlowId(), getFlowBuilderServices(), getDefinitionLocator())
+        builder.applicationContext = appCtx
         builder.flow(getFlowClosure())
     }
 

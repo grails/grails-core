@@ -199,7 +199,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
                         Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
 
-                        state = createSubFlow(name, subflow, trans, flowFactory)
+                        state = createSubFlow(flowInfo, name, subflow, trans, flowFactory)
                     }
                     else {
                         String view = createViewPath(flowInfo, name)
@@ -303,8 +303,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
     }
 
-    private State createSubFlow(String stateId, Flow subflow, Transition[] trans, FlowArtifactFactory flowFactory) {
-        return flowFactory.createSubflowState(stateId, getFlow(), null, new StaticExpression(subflow),null,trans, null, null, null)
+    private State createSubFlow(flowInfo, String stateId, Flow subflow, Transition[] trans, FlowArtifactFactory flowFactory) {
+        return flowFactory.createSubflowState(stateId, getFlow(), null, new StaticExpression(subflow),new GrailsSubflowAttributeMapper(flowInfo.subflowInput),trans, null, null, null)
     }
 
     private State createActionState(String stateId, Closure action, Transition[] transitions,
