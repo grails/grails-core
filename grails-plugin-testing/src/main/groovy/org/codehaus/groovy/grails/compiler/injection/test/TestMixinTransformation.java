@@ -29,6 +29,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
@@ -93,6 +94,7 @@ public class TestMixinTransformation implements ASTTransformation{
             values = new ListExpression();
             values.addExpression(value);
         }
+
         return values;
     }
 
@@ -241,5 +243,9 @@ public class TestMixinTransformation implements ASTTransformation{
                 Modifier.isPublic(declaredMethod.getModifiers()) &&
                 !Modifier.isAbstract(declaredMethod.getModifiers()) &&
                 !groovyMethods.hasMethod(declaredMethod.getName(), declaredMethod.getParameters());
+    }
+
+    protected void error(SourceUnit source, String me) {
+        source.getErrorCollector().addError(new SimpleMessage(me,source), true);
     }
 }

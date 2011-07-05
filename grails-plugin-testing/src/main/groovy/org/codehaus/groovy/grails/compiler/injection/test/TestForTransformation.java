@@ -125,8 +125,7 @@ public class TestForTransformation extends TestMixinTransformation {
         ClassNode classNode = (ClassNode) parent;
         String cName = classNode.getName();
         if (classNode.isInterface()) {
-            throw new RuntimeException("Error processing interface '" + cName + "'. " +
-                    MY_TYPE_NAME + " not allowed for interfaces.");
+                error(source, "Error processing interface '" + cName + "'. " + MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
         Expression value = node.getMember("value");
