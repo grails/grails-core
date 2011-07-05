@@ -255,7 +255,7 @@ compileTests = { GrailsTestType type, File source, File dest ->
         }
     }
     catch (Exception e) {
-        grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.message}", e
+        grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.cause ? e.cause.message : e.message}", e
         exit 1
     }
 
