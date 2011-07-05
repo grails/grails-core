@@ -27,8 +27,10 @@ import org.codehaus.groovy.grails.scaffolding.view.ScaffoldingViewResolver
 import org.springframework.beans.PropertyValue
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.ApplicationContext
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
- /**
+/**
  * Handles the configuration of dynamic scaffolding in Grails.
  *
  * @author Graeme Rocher
@@ -68,7 +70,7 @@ class ScaffoldingGrailsPlugin {
                     configureScaffolding(ctx, application)
                 }
             } catch (e) {
-                println e.message
+                log.error("Error configuration scaffolding: ${e.message}", e )
             }
         }
         else {
@@ -104,22 +106,23 @@ class ScaffoldingGrailsPlugin {
         scaffoldedDomains[controllerClass.logicalPropertyName] = domainClass
         String controllerSource = generateControllerSource(generator, domainClass)
         def scaffoldedInstance = createScaffoldedInstance(parentLoader, controllerSource)
+        appCtx.autowireCapableBeanFactory.autowireBean(scaffoldedInstance)
         List actionProperties = getScaffoldedActions(scaffoldedInstance)
 
         def javaClass = controllerClass.clazz
         def metaClass = javaClass.metaClass
 
-        for (MetaProperty actionProp in actionProperties) {
-            if (!actionProp) {
+        for (actionProp in actionProperties) {
+            if (actionProp == null) {
                 continue
             }
 
-            String propertyName = actionProp.name
+            String propertyName = actionProp instanceof MetaProperty ? actionProp.name : actionProp.method
             def mp = metaClass.getMetaProperty(propertyName)
             scaffoldedActionMap[controllerClass.logicalPropertyName] << propertyName
 
             if (!mp) {
-                Closure propertyValue = actionProp.getProperty(scaffoldedInstance)
+                Closure propertyValue = actionProp instanceof MetaProperty ? actionProp.getProperty(scaffoldedInstance) : actionProp
                 metaClass."${GrailsClassUtils.getGetterName(propertyName)}" = {->
                     propertyValue.delegate = delegate
                     propertyValue.resolveStrategy = Closure.DELEGATE_FIRST
@@ -175,6 +178,12 @@ class ScaffoldingGrailsPlugin {
                 // ignore
             }
         }
+
+        def methodActions = scaffoldedInstance.class.declaredMethods.findAll { Method m ->
+            def modifiers = m.modifiers
+            Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers) && !Modifier.isSynthetic(modifiers)
+        }.collect { Method m -> scaffoldedInstance.&"$m.name"}
+        actionProperties.addAll(methodActions)
         return actionProperties
     }
 

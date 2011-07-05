@@ -1,5 +1,8 @@
 <%=packageName ? "package ${packageName}\n\n" : ''%>import org.springframework.dao.DataIntegrityViolationException
 
+import grails.artefact.*
+
+@Artefact("Controller")
 class ${className}Controller {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
