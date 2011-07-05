@@ -59,6 +59,7 @@ public class GrailsConsole {
     public static final String SPACE = " ";
     public static final String ERROR = "Error";
     public static final String WARNING = "Warning";
+    public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -411,10 +412,10 @@ public class GrailsConsole {
         try {
             if ((verbose||stacktrace) && error != null) {
                 printStackTrace(msg, error);
-                error(ERROR, msg);
+                error(ERROR, msg );
             }
             else {
-                error(ERROR, msg);
+                error(ERROR, msg + STACKTRACE_MESSAGE);
             }
         } finally {
             postPrintMessage();
