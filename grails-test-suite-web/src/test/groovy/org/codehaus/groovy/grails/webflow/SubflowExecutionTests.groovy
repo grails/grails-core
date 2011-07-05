@@ -7,15 +7,8 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
  * @since 1.2
  */
 class SubflowExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests {
-    def subberFlow = {
-        subber {
-            on("proceed").to("subberEnd")
-        }
-        subberEnd()
-    }
 
     void testSubFlowExecution() {
-        registerFlow('subflowExecutionTests/subber', subberFlow)
         startFlow()
         assertCurrentStateEquals "start"
 
@@ -27,6 +20,13 @@ class SubflowExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests {
     }
 
     Closure getFlowClosure() {
+        def subberFlow = {
+            subber {
+                on("proceed").to("subberEnd")
+            }
+            subberEnd()
+        }
+
         return {
             start {
                 on("next").to "subber"

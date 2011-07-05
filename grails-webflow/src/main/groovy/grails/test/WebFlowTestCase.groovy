@@ -47,16 +47,12 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
     protected MockHttpServletRequest mockRequest
     protected MockHttpServletResponse mockResponse
     protected MockServletContext mockServletContext
-    protected FlowDefinitionRegistry flowDefinitionRegistry
     protected ApplicationContext applicationContext
-    protected FlowBuilderServices flowBuilderServices
-    protected MvcViewFactoryCreator viewCreator
-
     /**
      * Subclasses should return the flow closure that within the controller. For example:
      * <code>return new TestController().myFlow</code>.
      */
-    abstract getFlow()
+    abstract Closure getFlow()
 
     /**
      * Subclasses should override to change flow id.
@@ -66,6 +62,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
     protected void setUp() {
         super.setUp()
         GrailsWebRequest webRequest = RequestContextHolder.getRequestAttributes()
+
         if (webRequest) {
             mockRequest = webRequest.currentRequest
             mockResponse = webRequest.currentResponse
@@ -73,22 +70,13 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
             applicationContext = WebApplicationContextUtils.getWebApplicationContext(webRequest.getServletContext())
         }
         else {
+            applicationContext = new GrailsWebApplicationContext()
             mockRequest = new MockHttpServletRequest()
             mockResponse = new MockHttpServletResponse()
             mockServletContext = new MockServletContext()
+
         }
-        if (!applicationContext) applicationContext = new GrailsWebApplicationContext()
-        flowDefinitionRegistry = new FlowDefinitionRegistryImpl()
-        flowBuilderServices = new FlowBuilderServices()
-        viewCreator = new MvcViewFactoryCreator()
-        viewCreator.applicationContext = applicationContext
-        def viewResolvers = applicationContext?.getBeansOfType(ViewResolver)
-        if (viewResolvers) {
-            viewCreator.viewResolvers = viewResolvers.values().toList()
-        }
-        flowBuilderServices.viewFactoryCreator = viewCreator
-        flowBuilderServices.conversionService = new DefaultConversionService()
-        flowBuilderServices.expressionParser = DefaultExpressionParserFactory.getExpressionParser()
+
     }
 
     protected void tearDown() {
@@ -98,17 +86,21 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         mockServletContext = null
     }
 
-    FlowDefinition registerFlow(String flowId, Closure flowClosure) {
-        FlowBuilder builder = new FlowBuilder(flowId, flowClosure, flowBuilderServices, flowDefinitionRegistry)
-        builder.viewPath = "/"
-        builder.applicationContext = applicationContext
-        FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
-        flowDefinitionRegistry.registerFlowDefinition(new DefaultFlowHolder(assembler))
-        return flowDefinitionRegistry.getFlowDefinition(flowId)
-    }
 
     FlowDefinition getFlowDefinition() {
-        return registerFlow(getFlowId(), getFlow())
+        def flowBuilderServices = new FlowBuilderServices()
+
+        MvcViewFactoryCreator viewCreator = new MvcViewFactoryCreator()
+        def viewResolvers = applicationContext?.getBeansOfType(ViewResolver)
+        if (viewResolvers) {
+            viewCreator.viewResolvers = viewResolvers.values().toList()
+        }
+        flowBuilderServices.viewFactoryCreator = viewCreator
+        flowBuilderServices.conversionService = new DefaultConversionService()
+        flowBuilderServices.expressionParser = DefaultExpressionParserFactory.getExpressionParser()
+
+        FlowBuilder builder = new FlowBuilder(getFlowId(), flowBuilderServices, new FlowDefinitionRegistryImpl())
+        builder.flow( getFlow() )
     }
 
     /**
