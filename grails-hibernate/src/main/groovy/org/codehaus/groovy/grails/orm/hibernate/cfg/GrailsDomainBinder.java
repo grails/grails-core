@@ -2538,7 +2538,7 @@ public final class GrailsDomainBinder {
                indexDefinition = columnName + "_idx";
             }
         }
-        else {
+        else if(indexObj != null) {
             indexDefinition = indexObj.toString();
         }
         if (indexDefinition == null) {
