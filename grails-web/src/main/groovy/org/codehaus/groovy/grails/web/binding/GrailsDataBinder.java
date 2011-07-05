@@ -900,14 +900,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
 
             String propertyName = getNameOf(propertyValue);
-            bean.setAutoGrowNestedPaths(true);
             Class<?> type = bean.getPropertyType(propertyName);
             if (type == null) {
                 continue;
             }
 
             PropertyEditor editor = findCustomEditor(type, propertyName);
-            bean.setAutoGrowNestedPaths(false);
 
             if(editor instanceof CompositeEditor) {
                 CompositeEditor composite = (CompositeEditor) editor;
