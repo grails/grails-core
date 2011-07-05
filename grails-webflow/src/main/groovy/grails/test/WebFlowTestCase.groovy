@@ -52,7 +52,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
      * Subclasses should return the flow closure that within the controller. For example:
      * <code>return new TestController().myFlow</code>.
      */
-    abstract Closure getFlow()
+    abstract getFlow()
 
     /**
      * Subclasses should override to change flow id.
@@ -91,6 +91,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         def flowBuilderServices = new FlowBuilderServices()
 
         MvcViewFactoryCreator viewCreator = new MvcViewFactoryCreator()
+        viewCreator.applicationContext = applicationContext
         def viewResolvers = applicationContext?.getBeansOfType(ViewResolver)
         if (viewResolvers) {
             viewCreator.viewResolvers = viewResolvers.values().toList()
