@@ -117,7 +117,6 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
             this.flowClosure = args[0]
             flowClosure.setDelegate(this)
             flowDefiningMode = true
-            flowClosure.delegate = this
             flowClosure.call()
             flowDefiningMode = false
             initialised = true

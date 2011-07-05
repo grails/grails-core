@@ -38,6 +38,7 @@ import org.springframework.webflow.test.execution.AbstractFlowExecutionTests
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.springframework.webflow.engine.builder.FlowAssembler
 import org.springframework.webflow.engine.builder.DefaultFlowHolder
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 /**
  * A test harness for testing Grails flows.
@@ -74,7 +75,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
             mockRequest = new MockHttpServletRequest()
             mockResponse = new MockHttpServletResponse()
             mockServletContext = new MockServletContext()
-
+            RequestContextHolder.setRequestAttributes(new GrailsWebRequest(mockRequest,mockResponse,mockServletContext,applicationContext))
         }
 
     }
@@ -84,6 +85,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         mockRequest = null
         mockResponse = null
         mockServletContext = null
+        RequestContextHolder.setRequestAttributes(null)
     }
 
 
@@ -101,7 +103,13 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         flowBuilderServices.expressionParser = DefaultExpressionParserFactory.getExpressionParser()
 
         FlowBuilder builder = new FlowBuilder(getFlowId(), flowBuilderServices, new FlowDefinitionRegistryImpl())
-        builder.flow( getFlow() )
+        def flow = getFlow()
+
+        if(flow instanceof Closure) {
+            // delegate will be controller
+            GrailsWebRequest.lookup()?.request?.setAttribute(GrailsApplicationAttributes.CONTROLLER, flow.delegate)
+            builder.flow(flow)
+        }
     }
 
     /**
