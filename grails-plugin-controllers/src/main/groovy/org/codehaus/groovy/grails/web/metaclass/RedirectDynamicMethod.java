@@ -171,7 +171,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             LOG.debug("Executing redirect with response ["+response+"]");
         }
 
-        String absoluteURL = serverBaseURL + actualUri;
+        String absoluteURL = actualUri.contains("://") ? actualUri : serverBaseURL + actualUri;
         String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
 
