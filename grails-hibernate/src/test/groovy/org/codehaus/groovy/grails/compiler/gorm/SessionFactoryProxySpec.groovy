@@ -26,6 +26,19 @@ class SessionFactoryProxySpec extends Specification{
 
     }
 
+    void "Verify that we can access other properties of the SessionFactoryImpl via the proxy in Groovy code"() {
+        given:
+            def ctx = applicationContext
+            def sessionFactoryProxy = ctx.getBean("sessionFactoryProxy")
+
+        when:
+            def eventListeners = sessionFactoryProxy.eventListeners
+
+        then:
+            eventListeners != null
+
+    }
+
 
     ApplicationContext getApplicationContext() {
         BeanBuilder bb = new BeanBuilder()
