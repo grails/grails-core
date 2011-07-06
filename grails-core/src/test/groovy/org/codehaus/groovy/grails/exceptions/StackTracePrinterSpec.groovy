@@ -26,7 +26,7 @@ class StackTracePrinterSpec extends Specification {
 
         then:"The formatting is correctly applied"
             result != null
-            result.contains '->> 7 | callMe in script'
+            result.contains '->> 7 | callMe in test.FooController'
     }
 
     void "Test pretty print nested stack trace"() {
@@ -48,8 +48,8 @@ class StackTracePrinterSpec extends Specification {
 
         then:"The formatting is correctly applied"
             result != null
-            result.contains '->> 14 | nesting in script'
-            result.contains '->>  3 | callMe  in script'
+            result.contains '->> 14 | nesting in test.FooController'
+            result.contains '->>  3 | callMe  in test.FooService'
     }
 
     void "Test pretty print code snippet"() {
