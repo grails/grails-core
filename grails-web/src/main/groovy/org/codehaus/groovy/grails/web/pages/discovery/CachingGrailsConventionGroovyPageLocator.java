@@ -38,11 +38,13 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
 
     @Override
     public GroovyPageScriptSource findViewByPath(String uri) {
+        if(uri == null) return null;
         return super.findViewByPath(uri);
     }
 
     @Override
     public GroovyPageScriptSource findLayout(String layoutName) {
+       if(layoutName == null) return null;
        GroovyPageScriptSource scriptSource = layoutResolveCache.get(layoutName);
         if(scriptSource == null) {
             scriptSource = super.findLayout(layoutName);
@@ -58,6 +60,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
 
     @Override
     public GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding) {
+        if(uri == null) return null;
         GroovyPageScriptSource scriptSource = uriResolveCache.get(uri);
         if(scriptSource == null) {
             scriptSource = super.findPageInBinding(uri, binding);
@@ -73,6 +76,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
 
     @Override
     public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding) {
+        if(uri == null || pluginName == null) return null;
         String cacheKey = GrailsResourceUtils.appendPiecesForUri(pluginName, uri);
         GroovyPageScriptSource scriptSource = uriResolveCache.get(cacheKey);
         if(scriptSource == null) {
@@ -85,11 +89,11 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             }
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
-
     }
 
     @Override
     public GroovyPageScriptSource findPage(String uri) {
+       if(uri == null) return null;
        GroovyPageScriptSource scriptSource = uriResolveCache.get(uri);
         if(scriptSource == null) {
             scriptSource = super.findPage(uri);

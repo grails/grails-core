@@ -110,7 +110,9 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
                 GroovyPageCompiledScriptSource compiled = (GroovyPageCompiledScriptSource) scriptSource;
                 return createGroovyPageView(webRequest, compiled.getURI(), compiled.getCompiledClass());
             }
-            return createGroovyPageView(webRequest, scriptSource.getURI());
+            else {
+                return createGroovyPageView(webRequest, scriptSource.getURI());
+            }
         }
 
         AbstractUrlBasedView view = buildView(viewName);
@@ -126,6 +128,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         GroovyPageView gspSpringView = new GroovyPageView();
         gspSpringView.setServletContext(webRequest.getServletContext());
         gspSpringView.setViewClass(viewClass);
+        gspSpringView.setUrl(gspView);
         gspSpringView.setApplicationContext(getApplicationContext());
         gspSpringView.setTemplateEngine(templateEngine);
         return gspSpringView;

@@ -206,13 +206,15 @@ public class GroovyPageView extends AbstractUrlBasedView {
             }
         }
 
-        Resource resource = engine.getResourceForUri(pageUrl);
+        Resource resource = pageUrl != null ? engine.getResourceForUri(pageUrl) : null;
         String file;
         try {
-            file = resource.exists() ? resource.getFile().getAbsolutePath() : pageUrl;
+            file = resource != null && resource.exists() ? resource.getFile().getAbsolutePath() : pageUrl;
         } catch (IOException e) {
             file = pageUrl;
         }
+
+
         return new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
                 exception, lineNumber, file);
     }
