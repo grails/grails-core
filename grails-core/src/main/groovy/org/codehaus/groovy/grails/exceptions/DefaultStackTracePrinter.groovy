@@ -95,7 +95,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                         prevFn = fileName
                     }
                     if (!fileName) {
-                        fileName = "Unknown source"
+                        fileName = te.className
                     }
 
                     def padChar = (evenRow || idx == 0) ? ' ' : ' .'
@@ -161,7 +161,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     protected String getFileName(StackTraceElement te) {
         final res = resourceLocator?.findResourceForClassName(te.className)
-        res == null ? te.fileName : res.getFilename()
+        res == null ? te.className : res.getFilename()
     }
 
     String prettyPrintCodeSnippet(Throwable exception) {
