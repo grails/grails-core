@@ -120,18 +120,29 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         when:
             controller.params.name = 'Herbert'
             controller.params.age = '47'
-            def model = controller.methodActionWithRequestMapping()
+            def model = controller.$methodActionWithRequestMapping()
 
         then:
             null == model.name
             0 == model.age
     }
 
+     void "Test method is duplicated and directly callable with full parameters"() {
+        when:
+            def firstName = 'Herbert'
+            def age = 47
+            def model = controller.methodActionWithRequestMapping(firstName, age)
+
+        then:
+            'Herbert' == model.name
+            47 == model.age
+    }
+
     void "Test @RequestParameter"() {
         when:
             controller.params.firstName = 'Herbert'
             controller.params.numberOfYearsOld = '47'
-            def model = controller.methodActionWithRequestMapping()
+            def model = controller.$methodActionWithRequestMapping()
 
         then:
             'Herbert' == model.name
@@ -158,7 +169,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.charParam = 'Y'
            controller.params.primitiveCharParam = 'Z'
 
-           def model = controller.methodAction()
+           def model = controller.$methodAction()
 
         then:
             'Herbert' == model.stringParam
@@ -199,7 +210,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         controller.params.charParam = 'bogus'
         controller.params.primitiveCharParam = 'bogus'
 
-        def model = controller.methodActionWithDefaultValues()
+        def model = controller.$methodActionWithDefaultValues()
 
         then:
             'defaultString' == model.stringParam
@@ -240,7 +251,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.charParam = 'bogus'
            controller.params.primitiveCharParam = 'bogus'
 
-           def model = controller.methodAction()
+           def model = controller.$methodAction()
 
         then:
             null == model.stringParam
@@ -264,7 +275,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
 
     void "Test uninitialized action parameters"() {
         when:
-           def model = controller.methodAction()
+           def model = controller.$methodAction()
 
         then:
             null == model.stringParam
@@ -288,7 +299,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
 
     void "Test default parameter values"() {
         when:
-            def model = controller.methodActionWithDefaultValues()
+            def model = controller.$methodActionWithDefaultValues()
 
         then:
             'defaultString' == model.stringParam
@@ -330,7 +341,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.charParam = 'Y'
            controller.params.primitiveCharParam = 'Z'
 
-           def model = controller.methodActionWithDefaultValues()
+           def model = controller.$methodActionWithDefaultValues()
 
         then:
             'Herbert' == model.stringParam
