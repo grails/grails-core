@@ -41,6 +41,7 @@ import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -246,7 +247,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         }
 
         GrailsWebRequest requestAttributes = null;
-        GrailsWebRequest previousRequestAttributes = null;
+        RequestAttributes previousRequestAttributes = null;
         Exception handlerException = null;
         try {
             ModelAndView mv;
@@ -258,7 +259,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     processedRequest = checkMultipart(request);
                 }
                 // Expose current RequestAttributes to current thread.
-                previousRequestAttributes = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+                previousRequestAttributes = RequestContextHolder.currentRequestAttributes();
                 requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
                 copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
 
@@ -390,7 +391,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             // Reset thread-bound holders
             if (requestAttributes != null) {
                 requestAttributes.requestCompleted();
-                WebUtils.storeGrailsWebRequest(previousRequestAttributes);
+                if(previousRequestAttributes instanceof GrailsWebRequest) {
+                    WebUtils.storeGrailsWebRequest((GrailsWebRequest) previousRequestAttributes);
+                }
+                else {
+                    RequestContextHolder.setRequestAttributes(previousRequestAttributes);
+                }
             }
 
             LocaleContextHolder.setLocaleContext(previousLocaleContext);
@@ -408,12 +414,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected void copyParamsFromPreviousRequest(GrailsWebRequest previousRequestAttributes, GrailsWebRequest requestAttributes) {
-        Map previousParams = previousRequestAttributes.getParams();
-        Map params =  requestAttributes.getParams();
-        for (Object o : previousParams.keySet()) {
-            String name = (String) o;
-            params.put(name, previousParams.get(name));
+    protected void copyParamsFromPreviousRequest(RequestAttributes previousRequestAttributes, GrailsWebRequest requestAttributes) {
+        if(previousRequestAttributes instanceof GrailsWebRequest) {
+            GrailsWebRequest previousWebRequest = (GrailsWebRequest) previousRequestAttributes;
+            Map previousParams = previousWebRequest.getParams();
+            Map params =  requestAttributes.getParams();
+            for (Object o : previousParams.keySet()) {
+                String name = (String) o;
+                params.put(name, previousParams.get(name));
+            }
         }
     }
 
