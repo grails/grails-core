@@ -8,13 +8,11 @@ import javax.servlet.http.HttpServletResponse
 @Mock(${className})
 class ${className}ControllerTests {
 
-    @Test
     void testIndex() {
         controller.index()
         assert "/$propertyName/list" == response.redirectedUrl
     }
 
-    @Test
     void testList() {
 
         def model = controller.list()
@@ -23,14 +21,12 @@ class ${className}ControllerTests {
         assert model.${propertyName}InstanceTotal == 0
     }
 
-    @Test
     void testCreate() {
        def model = controller.create()
 
        assert model.${propertyName}Instance != null
     }
 
-    @Test
     void testSave() {
         controller.save()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
@@ -53,7 +49,6 @@ class ${className}ControllerTests {
         assert ${className}.count() == 1
     }
 
-    @Test
     void testShow() {
         controller.show()
 
@@ -74,7 +69,6 @@ class ${className}ControllerTests {
         assert model.${propertyName}Instance == ${propertyName}
     }
 
-    @Test
     void testEdit() {
         controller.edit()
 
@@ -95,7 +89,6 @@ class ${className}ControllerTests {
         assert model.${propertyName}Instance == ${propertyName}
     }
 
-    @Test
     void testUpdate() {
 
         controller.update()
@@ -134,7 +127,6 @@ class ${className}ControllerTests {
         assert flash.message != null
     }
 
-    @Test
     void testDelete() {
         controller.delete()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
