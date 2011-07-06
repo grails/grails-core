@@ -95,6 +95,14 @@ class UrlMappings {
         assertEquals "/", response.redirectedUrl
     }
 
+    void testRedirectToAbsoluteURL() {
+        def c = new RedirectController()
+        webRequest.controllerName = 'redirect'
+        c.toAbsolute()
+        assertEquals "http://google.com", response.redirectedUrl
+
+    }
+
     void testRedirectWithFragment() {
         def c = new RedirectController()
         webRequest.controllerName = 'redirect'
@@ -248,6 +256,10 @@ class RedirectController {
     }
     def toControllerWithDuplicateArrayParams = {
         redirect(controller:'test',action:'foo', params:[one:['two','three'] as String[]])
+    }
+
+    def toAbsolute() {
+        redirect(url:"http://google.com")
     }
 }
 
