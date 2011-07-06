@@ -35,6 +35,7 @@ import jline.UnsupportedTerminal;
 import jline.WindowsTerminal;
 
 import org.apache.tools.ant.BuildException;
+import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -371,6 +372,7 @@ public class GrailsConsole {
      */
     public void addStatus(String msg) {
         outputMessage(msg, 0);
+        lastMessage="";
     }
 
     /**
@@ -434,6 +436,10 @@ public class GrailsConsole {
     }
 
     private void printStackTrace(String message, Throwable error) {
+        if(error instanceof ScriptExitException) {
+            return; // don't bother with exit exceptions
+        }
+
         if((error instanceof BuildException) && error.getCause() != null) {
             error = error.getCause();
         }
