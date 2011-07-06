@@ -45,7 +45,7 @@ public class Metadata extends Properties {
     public static final String APPLICATION_GRAILS_VERSION = "app.grails.version";
     public static final String SERVLET_VERSION = "app.servlet.version";
     public static final String WAR_DEPLOYED = "grails.war.deployed";
-    public static final String DEFAULT_SERVLET_VERSION = "2.4";
+    public static final String DEFAULT_SERVLET_VERSION = "2.5";
 
     private static Reference<Metadata> metadata = new SoftReference<Metadata>(new Metadata());
 
