@@ -150,7 +150,7 @@ runServer = { Map args ->
 
             try { new ServerSocket(args.httpPort).close() }
             catch (IOException e) {
-                event("StatusFinal", ["Server failed to start for port $args.httpPort: $e.message"])
+                event("StatusError", ["Server failed to start for port $args.httpPort: $e.message"])
                 exit(1)
             }
 
@@ -158,7 +158,7 @@ runServer = { Map args ->
 
                 try { new ServerSocket(args.httpsPort).close() }
                 catch (IOException e) {
-                    event("StatusFinal", ["Server failed to start for port $args.httpsPort: $e.message"])
+                    event("StatusError", ["Server failed to start for port $args.httpsPort: $e.message"])
                     exit(1)
                 }
 

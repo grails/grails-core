@@ -254,8 +254,8 @@ compileTests = { GrailsTestType type, File source, File dest ->
             src(path: source)
         }
     }
-    catch (Exception e) {
-        grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.cause ? e.cause.message : e.message}", e
+    catch (e) {
+        grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.cause ? e.cause.message : e.message}", e.cause ? e.cause : e
         exit 1
     }
 
@@ -281,8 +281,8 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             event("TestSuiteEnd", [type.name])
 
         }
-        catch (Exception e) {
-            grailsConsole.error "Error running $type.name tests: ${e.toString()}", e
+        catch (e) {
+            grailsConsole.error "Error running $type.name tests: ${e.message}", e
             testsFailed = true
         }
         finally {
