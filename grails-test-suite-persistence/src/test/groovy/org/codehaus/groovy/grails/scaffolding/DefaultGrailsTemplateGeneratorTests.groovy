@@ -21,17 +21,17 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 class DefaultGrailsTemplateGeneratorTests extends GroovyTestCase {
 
     public static GrailsPlugin fakeHibernatePlugin = [getName: { -> 'hibernate' }] as GrailsPlugin
+    private MockGrailsPluginManager pluginManager
 
     protected void setUp() {
         def buildSettings = new BuildSettings(new File("."))
         BuildSettingsHolder.settings = buildSettings
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin fakeHibernatePlugin
+        pluginManager = new MockGrailsPluginManager()
+        pluginManager.registerMockPlugin fakeHibernatePlugin
     }
 
     protected void tearDown() {
         BuildSettingsHolder.settings = null
-        PluginManagerHolder.pluginManager = null
     }
 
     GroovyClassLoader gcl = new GroovyClassLoader()
@@ -53,6 +53,7 @@ class ScaffoldingTest {
 
     void testGenerateDateSelect() {
         def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
+        templateGenerator.pluginManager = pluginManager
         gcl.parseClass(testDomain)
         def testClass = gcl.loadClass("ScaffoldingTest")
 
@@ -74,6 +75,7 @@ class ScaffoldingTest {
 
     void testGenerateNumberSelect() {
         def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
+        templateGenerator.pluginManager = pluginManager
         gcl.parseClass(testDomain)
         def testClass = gcl.loadClass("ScaffoldingTest")
 
@@ -92,6 +94,7 @@ class ScaffoldingTest {
 
 	void testDoesNotGenerateInputForId() {
 		def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
+        templateGenerator.pluginManager = pluginManager
 		gcl.parseClass(testDomain)
 		def testClass = gcl.loadClass("ScaffoldingTest")
 		def domainClass = new DefaultGrailsDomainClass(testClass)
@@ -106,6 +109,7 @@ class ScaffoldingTest {
 
 	void testGeneratesInputForAssignedId() {
 		def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
+        templateGenerator.pluginManager = pluginManager
 		gcl.parseClass('''
 import grails.persistence.*
 

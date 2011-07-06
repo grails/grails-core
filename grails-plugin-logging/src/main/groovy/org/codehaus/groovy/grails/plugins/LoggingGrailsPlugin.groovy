@@ -58,6 +58,10 @@ class LoggingGrailsPlugin {
 
         def mappingElement = webXml.'listener'
         mappingElement = mappingElement[mappingElement.size() - 1]
+        if(mappingElement == null) {
+            mappingElement = webXml.'filter-mapping'
+            mappingElement = mappingElement[mappingElement.size() - 1]
+        }
 
         mappingElement + {
             'listener' {

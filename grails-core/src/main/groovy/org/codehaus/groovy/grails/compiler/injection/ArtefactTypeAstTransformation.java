@@ -39,7 +39,7 @@ import java.util.List;
  * @since 1.4
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class ArtefactTypeAstTransformation implements ASTTransformation {
+public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation implements ASTTransformation {
     private static final ClassNode MY_TYPE = new ClassNode(Artefact.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
@@ -67,22 +67,12 @@ public class ArtefactTypeAstTransformation implements ASTTransformation {
         if (value != null && (value instanceof ConstantExpression)) {
             ConstantExpression ce = (ConstantExpression) value;
             String artefactType = ce.getText();
-            try {
-                ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
-                java.util.List<ClassInjector> injectors = findInjectors(artefactType, classInjectors);
-                if (!injectors.isEmpty()) {
-                    for (ClassInjector injector : injectors) {
-                        injector.performInjection(sourceUnit,cNode);
-                    }
-                    return;
-                }
-            } catch (RuntimeException e) {
-                GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
-                throw e;
-            }
+            performInjectionOnArtefactType(sourceUnit, cNode, artefactType);
+        }
+        else {
+            throw new RuntimeException("Class ["+cName+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
         }
 
-        throw new RuntimeException("Class ["+cName+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
     }
 
 

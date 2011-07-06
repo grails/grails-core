@@ -29,6 +29,10 @@ import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.ApplicationContext
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
+import org.codehaus.groovy.grails.compiler.injection.NamedArtefactTypeAstTransformation
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
 /**
  * Handles the configuration of dynamic scaffolding in Grails.
@@ -163,7 +167,10 @@ class ScaffoldingGrailsPlugin {
     }
 
     private static createScaffoldedInstance(ClassLoader parentLoader, String controllerSource) {
-        def classLoader = new GroovyClassLoader(parentLoader)
+        def configuration = new CompilerConfiguration()
+        configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new NamedArtefactTypeAstTransformation(ControllerArtefactHandler.TYPE)))
+        def classLoader = new GroovyClassLoader(parentLoader, configuration)
+
         def scaffoldedControllerClass = classLoader.parseClass(controllerSource)
         return scaffoldedControllerClass.newInstance()
     }
