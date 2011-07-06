@@ -97,8 +97,8 @@ class MethodActionTransformerSpec extends Specification {
         GrailsWebUtil.bindMockWebRequest()
 
         def controller = cls.newInstance()
-        controller.action()
-        controller.action2()
+        controller.$action()
+        controller.$action2()
         then:
         controller
         controller.commandObjectClosure
