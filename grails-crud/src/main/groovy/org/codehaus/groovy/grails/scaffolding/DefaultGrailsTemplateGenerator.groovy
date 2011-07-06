@@ -23,21 +23,22 @@ import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.CommandLineHelper
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.Assert
+import org.codehaus.groovy.grails.plugins.PluginManagerAware
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 
- /**
+/**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
  * from the domain model.
  *
  * @author Graeme Rocher
  */
-class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, ResourceLoaderAware {
+class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, ResourceLoaderAware, PluginManagerAware {
 
     static final Log LOG = LogFactory.getLog(DefaultGrailsTemplateGenerator)
 
@@ -47,6 +48,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     ResourceLoader resourceLoader
     Template renderEditorTemplate
     String domainSuffix = 'Instance'
+    GrailsPluginManager pluginManager
     GrailsApplication grailsApplication
 
     /**
@@ -81,7 +83,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     def renderEditor = { property ->
         def domainClass = property.domainClass
         def cp
-        if (PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')) {
+        if (pluginManager?.hasGrailsPlugin('hibernate')) {
             cp = domainClass.constrainedProperties[property.name]
         }
 
@@ -91,7 +93,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
             renderEditorTemplate = engine.createTemplate(templateText)
         }
 
-        def binding = [property: property,
+        def binding = [pluginManager: pluginManager,
+                       property: property,
                        domainClass: domainClass,
                        cp: cp,
                        domainInstance:getPropertyName(domainClass)]
@@ -191,7 +194,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         def templateText = getTemplateText("Test.groovy")
         def t = engine.createTemplate(templateText)
 
-        def binding = [packageName: domainClass.packageName,
+        def binding = [pluginManager: pluginManager,
+                       packageName: domainClass.packageName,
                        domainClass: domainClass,
                        className: domainClass.shortName,
                        propertyName: domainClass.logicalPropertyName]
@@ -210,9 +214,10 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         def t = engine.createTemplate(templateText)
         def multiPart = domainClass.properties.find {it.type == ([] as Byte[]).class || it.type == ([] as byte[]).class}
 
-        boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
+        boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate')
         def packageName = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
-        def binding = [packageName: packageName,
+        def binding = [pluginManager: pluginManager,
+                       packageName: packageName,
                        domainClass: domainClass,
                        multiPart: multiPart,
                        className: domainClass.shortName,
@@ -226,8 +231,9 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     void generateController(GrailsDomainClass domainClass, Writer out) {
         def templateText = getTemplateText("Controller.groovy")
 
-        boolean hasHibernate = PluginManagerHolder.pluginManager.hasGrailsPlugin('hibernate')
-        def binding = [packageName: domainClass.packageName,
+        boolean hasHibernate =pluginManager?.hasGrailsPlugin('hibernate')
+        def binding = [pluginManager: pluginManager,
+                       packageName: domainClass.packageName,
                        domainClass: domainClass,
                        className: domainClass.shortName,
                        propertyName: getPropertyName(domainClass),
