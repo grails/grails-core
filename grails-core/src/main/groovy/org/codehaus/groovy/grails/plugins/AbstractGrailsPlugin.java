@@ -17,13 +17,13 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
-import groovy.util.slurpersupport.GPathResult;
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
+import org.w3c.dom.Element;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -105,7 +105,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         return false;
     }
 
-    public void doWithWebDescriptor(GPathResult webXml) {
+    public void doWithWebDescriptor(Element webXml) {
         // do nothing
     }
 

@@ -26,13 +26,7 @@ import groovy.lang.Writable;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -51,7 +45,12 @@ import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
+import groovy.xml.DOMBuilder;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -69,6 +68,9 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -671,25 +673,19 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
     private void doWebDescriptor(InputStream inputStream, Writer target) {
         checkInitialised();
         try {
-            XmlSlurper slurper = new XmlSlurper();
-
-            slurper.setEntityResolver(new EntityResolver() {
-                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    if (systemId != null && systemId.equals("http://java.sun.com/dtd/web-app_2_3.dtd")) {
-                        return new InputSource(new StringReader(getWeb23DTD()));
-                    }
-                    return null;
-                }
-            });
-
-            GPathResult result = slurper.parse(inputStream);
+            Document document = DOMBuilder.parse(new InputStreamReader(inputStream));
+            Element documentElement = document.getDocumentElement();
 
             for (GrailsPlugin plugin : pluginList) {
                 if (plugin.supportsCurrentScopeAndEnvironment()) {
-                    plugin.doWithWebDescriptor(result);
+                    plugin.doWithWebDescriptor(documentElement);
                 }
             }
-            writeWebDescriptorResult(result, target);
+
+            if(ClassUtils.isPresent("javax.servlet.AsyncContext", Thread.currentThread().getContextClassLoader())) {
+                new Servlet3AsyncWebXmlProcessor().process(documentElement);
+            }
+            writeWebDescriptorResult(documentElement, target);
         }
         catch (ParserConfigurationException e) {
             throw new PluginException("Unable to configure web.xml due to parser configuration problem: " + e.getMessage(), e);
@@ -702,24 +698,14 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
         }
     }
 
-    private void writeWebDescriptorResult(GPathResult result, Writer output) throws IOException {
-        Binding b = new Binding();
-        b.setVariable("node", result);
-        String namespace;
-        Metadata metadata = Metadata.getCurrent();
-        String servletVersion = metadata.getServletVersion();
-        if (servletVersion == null || "2.4".equals(servletVersion)) {
-            namespace = "http://java.sun.com/xml/ns/j2ee";
+    private void writeWebDescriptorResult(Element result, Writer output) throws IOException {
+        try {
+            TransformerFactory.newInstance().newTransformer().transform(
+                    new DOMSource(result),
+                    new StreamResult(output));
+        } catch (TransformerException e) {
+            throw new IOException("Error transforming web.xml: " + e.getMessage(), e);
         }
-        else {
-            namespace = "http://java.sun.com/xml/ns/javaee";
-        }
-
-        Writable w = (Writable)new GroovyShell(b).evaluate(
-                "new groovy.xml.StreamingMarkupBuilder().bind {" +
-                    " mkp.declareNamespace(\"\":  \""+namespace+"\");" +
-                    " mkp.yield node}");
-        w.writeTo(output);
     }
 
     public void doWebDescriptor(File descriptor, Writer target) {
