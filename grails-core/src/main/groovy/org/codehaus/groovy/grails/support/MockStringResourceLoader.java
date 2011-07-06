@@ -28,7 +28,7 @@ import org.springframework.core.io.Resource;
  */
 public class MockStringResourceLoader extends MockResourceLoader {
 
-    private Map<String, GrailsByteArrayResource> mockResources = new HashMap<String, GrailsByteArrayResource>();
+    private Map<String, Resource> mockResources = new HashMap<String, Resource>();
 
     @Override
     public Resource getResource(String location) {
@@ -39,6 +39,16 @@ public class MockStringResourceLoader extends MockResourceLoader {
         return super.getResource(location);
     }
 
+    /**
+     * Registers a mock resource with the first argument as the location and the second as the contents
+     * of the resource.
+     *
+     * @param location The location
+     * @param res The resource itself
+     */
+    public void registerMockResource(String location, Resource res) {
+        mockResources.put(location, res);
+    }
     /**
      * Registers a mock resource with the first argument as the location and the second as the contents
      * of the resource.

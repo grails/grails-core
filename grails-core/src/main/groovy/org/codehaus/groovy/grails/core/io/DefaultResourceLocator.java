@@ -15,9 +15,12 @@
  */
 package org.codehaus.groovy.grails.core.io;
 
+import grails.util.Environment;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.FileSystemResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.File;
@@ -36,28 +39,37 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.4
  *
  */
-public class DefaultResourceLocator implements ResourceLocator{
+public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware{
     public static final String WILDCARD = "*";
     public static final String FILE_SEPARATOR = File.separator;
     public static final String CLOSURE_MARKER = "$";
+    public static final String WEB_APP_DIR = "web-app";
     private PathMatchingResourcePatternResolver patchMatchingResolver;
     private List<String> classSearchDirectories = new ArrayList<String>();
+    private List<String> resourceSearchDirectories = new ArrayList<String>();
     private Map<String, Resource> classNameToResourceCache = new ConcurrentHashMap<String, Resource>();
+    private Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<String, Resource>();
+    private ResourceLoader defaultResourceLoader =  new FileSystemResourceLoader();
 
     public void setSearchLocation(String searchLocation) {
-        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(new FileSystemResourceLoader());
+        ResourceLoader resourceLoader = getDefaultResourceLoader();
+        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(resourceLoader);
         initializeForSearchLocation(searchLocation);
     }
 
+    protected ResourceLoader getDefaultResourceLoader() {
+        return defaultResourceLoader;
+    }
+
     public void setSearchLocations(Collection<String> searchLocations) {
-        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(new FileSystemResourceLoader());
+        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(getDefaultResourceLoader());
         for (String searchLocation : searchLocations) {
             initializeForSearchLocation(searchLocation);
         }
     }
 
     private void initializeForSearchLocation(String searchLocation) {
-        String searchLocationPlusSlash = searchLocation + FILE_SEPARATOR;
+        String searchLocationPlusSlash = searchLocation.endsWith("/") ? searchLocation : searchLocation + FILE_SEPARATOR;
         try {
             File[] directories = new File(searchLocationPlusSlash + GrailsResourceUtils.GRAILS_APP_DIR).listFiles(new FileFilter() {
                 public boolean accept(File file) {
@@ -75,10 +87,55 @@ public class DefaultResourceLocator implements ResourceLocator{
 
         classSearchDirectories.add(searchLocationPlusSlash + "src/java");
         classSearchDirectories.add(searchLocationPlusSlash + "src/groovy");
+        resourceSearchDirectories.add(searchLocationPlusSlash);
     }
 
     public Resource findResourceForURI(String uri) {
-        return null;  // TODO: Add static resource search
+        Resource resource = uriToResourceCache.get(uri);
+        if(resource == null) {
+
+            String uriWebAppRelative = WEB_APP_DIR + uri;
+            for (String resourceSearchDirectory : resourceSearchDirectories) {
+                Resource res = resolveExceptionSafe(resourceSearchDirectory + uriWebAppRelative);
+                if(res.exists()) {
+                    resource = res;
+                    uriToResourceCache.put(uri, resource);
+                }
+                else if(!Environment.isWarDeployed()){
+                    PluginResourceInfo info = inferPluginNameFromURI(uri);
+                    Resource dir = resolveExceptionSafe(resourceSearchDirectory);
+                    if(dir.exists() && info != null) {
+                        try {
+                            String filename = dir.getFilename();
+                            if(filename != null && filename.equals(info.pluginName)) {
+                                Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri);
+                                if(pluginFile.exists()) {
+                                    resource = pluginFile;
+                                    uriToResourceCache.put(uri, resource);
+                                }
+                            }
+                        } catch (IOException e) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        }
+        return resource;
+    }
+
+    private PluginResourceInfo inferPluginNameFromURI(String uri) {
+        if(uri.startsWith("/plugins/")) {
+            String withoutPluginsPath = uri.substring("/plugins/".length(), uri.length());
+            int i = withoutPluginsPath.indexOf('/');
+            if(i > -1) {
+                PluginResourceInfo info = new PluginResourceInfo();
+                info.pluginName = withoutPluginsPath.substring(0, i);
+                info.uri = withoutPluginsPath.substring(i, withoutPluginsPath.length());
+                return info;
+            }
+        }
+        return null;
     }
 
     public Resource findResourceForClassName(String className) {
@@ -124,5 +181,16 @@ public class DefaultResourceLocator implements ResourceLocator{
             return null;
         }
         return null;
+    }
+
+    public void setResourceLoader(ResourceLoader resourceLoader) {
+        if(Environment.isWarDeployed()) {
+            this.defaultResourceLoader = resourceLoader;
+        }
+    }
+
+    class PluginResourceInfo {
+        String pluginName;
+        String uri;
     }
 }

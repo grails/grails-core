@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean
 import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.springframework.core.io.FileSystemResourceLoader
+import org.codehaus.groovy.grails.core.io.PluginPathAwareFileSystemResourceLoader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
@@ -61,7 +61,11 @@ target(loadApp:"Loads the Grails application object") {
     // The mock servlet context needs to resolve resources relative to the 'web-app'
     // directory. We also need to use a FileSystemResourceLoader, otherwise paths are
     // evaluated against the classpath - not what we want!
-    servletContext = new MockServletContext('web-app', new FileSystemResourceLoader())
+    def resourceLoader = new PluginPathAwareFileSystemResourceLoader()
+    def locations = new ArrayList(grailsSettings.pluginDirectories.collect { it.absolutePath })
+    locations << grailsSettings.baseDir.absolutePath    
+    resourceLoader.searchLocations = locations
+    servletContext = new MockServletContext('web-app', resourceLoader)
     ctx.servletContext = servletContext
     grailsApp = ctx.grailsApplication
     ApplicationHolder.application = grailsApp
