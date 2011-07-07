@@ -329,14 +329,17 @@ a 'params' key to the [url] attribute instead.""")
 
         // get javascript provider
         def p = getProvider()
-        def url = deepClone(attrs.url)
+        def url = attrs.url
+        if(!url instanceof String) {
+            url = deepClone(attrs.url)
+        }
 
         // prepare form settings
         p.prepareAjaxForm(attrs)
 
         def params = [onsubmit:remoteFunction(attrs) + 'return false',
                       method: (attrs.method? attrs.method : 'POST'),
-                      action: (attrs.action? attrs.action : createLink(url))]
+                      action: (attrs.action? attrs.action : url instanceof String ? url : createLink(url))]
         attrs.remove('url')
         params.putAll(attrs)
         if (params.name && !params.id) {
