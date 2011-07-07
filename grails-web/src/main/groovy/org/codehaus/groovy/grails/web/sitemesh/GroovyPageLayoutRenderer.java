@@ -104,7 +104,7 @@ public class GroovyPageLayoutRenderer {
     }
 
 
-    private HTMLPage content2htmlPage(Content content) {
+    public static HTMLPage content2htmlPage(Content content) {
         HTMLPage htmlPage = null;
         if (content instanceof HTMLPage) {
             htmlPage = (HTMLPage) content;

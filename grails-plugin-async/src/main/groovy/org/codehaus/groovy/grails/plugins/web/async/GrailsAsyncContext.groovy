@@ -21,6 +21,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutRenderer
 
 /**
  * Wraps an AsyncContext providing additional logic to provide the appropriate context to a Grails application
@@ -32,15 +34,19 @@ class GrailsAsyncContext implements AsyncContext{
 
     @Delegate AsyncContext delegate
     GrailsWebRequest originalWebRequest
+    GroovyPageLayoutFinder groovyPageLayoutFinder
 
     GrailsAsyncContext(AsyncContext delegate, GrailsWebRequest webRequest) {
         this.delegate = delegate
         this.originalWebRequest = webRequest
+        this.groovyPageLayoutFinder = webRequest.getApplicationContext()?.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
     }
 
     def <T extends AsyncListener> T createListener(Class<T> tClass) {
         delegate.createListener(tClass)
     }
+
+
 
     void start(java.lang.Runnable runnable) {
         delegate.start {
@@ -73,7 +79,16 @@ class GrailsAsyncContext implements AsyncContext{
             def targetResponse = bufferingResponse.getTargetResponse()
             def content = bufferingResponse.getContent()
             if(content != null) {
-                content.writeOriginal(targetResponse.getWriter())
+
+                def decorator = groovyPageLayoutFinder?.findLayout(request, content)
+                if(decorator) {
+                    GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator, originalWebRequest.attributes.pagesTemplateEngine, originalWebRequest.applicationContext)
+                    renderer.render(content, request, targetResponse, request.servletContext)
+                }
+                else {
+                   content.writeOriginal(targetResponse.getWriter())
+                }
+
             }
         }
         delegate.complete()

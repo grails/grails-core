@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
+import com.opensymphony.sitemesh.Content;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang.StringUtils;
@@ -71,6 +72,9 @@ public class GroovyPageLayoutFinder {
         this.cacheEnabled = cacheEnabled;
     }
 
+    public Decorator findLayout(HttpServletRequest request, Content page) {
+        return findLayout(request, GroovyPageLayoutRenderer.content2htmlPage(page));
+    }
     public Decorator findLayout(HttpServletRequest request, Page page) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Evaluating layout for request: " + request.getRequestURI());

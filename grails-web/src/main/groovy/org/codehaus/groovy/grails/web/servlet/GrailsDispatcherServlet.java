@@ -22,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.sitemesh.Content;
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.BootstrapArtefactHandler;
@@ -35,6 +36,8 @@ import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutRenderer;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -352,11 +355,20 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 try {
                     render(mv, processedRequest, response);
                     if(isAsyncRequest && (response instanceof GrailsContentBufferingResponse)) {
+                        GroovyPageLayoutFinder groovyPageLayoutFinder = getWebApplicationContext().getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
                         GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
                         HttpServletResponse targetResponse = bufferingResponse.getTargetResponse();
                         Content content = bufferingResponse.getContent();
-                        if(content != null) {
-                            content.writeOriginal(targetResponse.getWriter());
+                        if (content != null) {
+
+                            Decorator decorator = groovyPageLayoutFinder.findLayout(request, content);
+                            if (decorator != null) {
+                                GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator, requestAttributes.getAttributes().getPagesTemplateEngine(), getWebApplicationContext());
+                                renderer.render(content, request, targetResponse, getServletContext());
+                            } else {
+                                content.writeOriginal(targetResponse.getWriter());
+                            }
+
                         }
                     }
                     if (errorView) {
