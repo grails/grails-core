@@ -213,6 +213,8 @@ public class Metadata extends Properties {
 
     /**
      * @return The version of the servlet spec the application was created for
+     *
+     * @deprecated Use {@link BuildSettings#servletVersion} instead
      */
     public String getServletVersion() {
         final String servletVersion = (String) get(SERVLET_VERSION);

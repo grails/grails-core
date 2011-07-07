@@ -30,9 +30,15 @@ import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
 public class GrailsCoreDependencies {
 
     public final String grailsVersion;
+    public final String servletVersion;
 
     public GrailsCoreDependencies(String grailsVersion) {
         this.grailsVersion = grailsVersion;
+        this.servletVersion = "2.5";
+    }
+    public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
+        this.grailsVersion = grailsVersion;
+        this.servletVersion = servletVersion;
     }
 
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, String... excludes) {

@@ -125,7 +125,7 @@ public class BaseSettingsApi {
     public String getGrailsAppName() { return grailsAppName; }
     public String getGrailsAppVersion() { return metadata.getApplicationVersion(); }
     public String getAppGrailsVersion() { return metadata.getGrailsVersion(); }
-    public String getServletVersion() { return metadata.getServletVersion() != null ? metadata.getServletVersion() : "2.5"; }
+    public String getServletVersion() { return buildSettings.getServletVersion(); }
 
     public String getPluginsHome() {
         return pluginsHome;
