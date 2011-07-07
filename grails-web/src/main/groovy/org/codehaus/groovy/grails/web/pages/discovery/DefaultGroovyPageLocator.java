@@ -52,6 +52,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
 
     private static final Log LOG = LogFactory.getLog(DefaultGroovyPageLocator.class);
     private static final String PATH_TO_WEB_INF_VIEWS = GrailsApplicationAttributes.PATH_TO_VIEWS;
+    private static final String PLUGINS_PATH = "/plugins/";
     private static final String BLANK = "";
     protected Collection<ResourceLoader> resourceLoaders = new ConcurrentLinkedQueue<ResourceLoader>();
     protected GrailsPluginManager pluginManager;
@@ -111,7 +112,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     }
 
     public GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding) {
-        GroovyPageScriptSource scriptSource = findResourceScriptSource(uri);
+         GroovyPageScriptSource scriptSource = findResourceScriptSource(uri);
 
         if(scriptSource == null) {
             GrailsPlugin pagePlugin = binding.getPagePlugin();
@@ -177,8 +178,11 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         List<String> searchPaths = null;
 
         if(Environment.isWarDeployed()) {
-            if(uri.startsWith("/plugins")) {
+            if(uri.startsWith(PLUGINS_PATH)) {
+                PluginViewPathInfo pathInfo = getPluginViewPathInfo(uri);
+
                 searchPaths = CollectionUtils.newList(
+                    GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, PLUGINS_PATH, pathInfo.pluginName,GrailsResourceUtils.VIEWS_DIR_PATH, pathInfo.path),
                     GrailsResourceUtils.appendPiecesForUri(GrailsResourceUtils.WEB_INF, uri),
                     uri);
             }
@@ -247,5 +251,22 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
+    }
+
+
+    public static PluginViewPathInfo getPluginViewPathInfo(String uri) {
+        PluginViewPathInfo info = new PluginViewPathInfo();
+        String path = uri.substring(PLUGINS_PATH.length(), uri.length());
+        info.basePath = path;
+        int i = path.indexOf("/");
+        info.pluginName = path.substring(0,i);
+        info.path = path.substring(i, path.length());
+        return info;
+    }
+
+    public static class PluginViewPathInfo {
+        public String basePath;
+        public String pluginName;
+        public String path;
     }
 }

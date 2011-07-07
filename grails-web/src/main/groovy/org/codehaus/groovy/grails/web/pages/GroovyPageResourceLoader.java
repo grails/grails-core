@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
+import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -67,22 +68,38 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         if (location.startsWith(PLUGINS_PATH)) {
             if (pluginSettings == null) throw new RuntimeException("'pluginsettings' has not been initialised.");
             List<String> pluginBaseDirectories = pluginSettings.getPluginBaseDirectories();
-            String path = location.substring(PLUGINS_PATH.length(), location.length());
+            DefaultGroovyPageLocator.PluginViewPathInfo pluginViewPathInfo = DefaultGroovyPageLocator.getPluginViewPathInfo(location);
+            String path = pluginViewPathInfo.basePath;
+            String pluginName = pluginViewPathInfo.pluginName;
+            String pathRelativeToPlugin = pluginViewPathInfo.path;
 
             for (String pluginBaseDirectory : pluginBaseDirectories) {
                 String pathToResource = pluginBaseDirectory + File.separatorChar + path;
                 Resource r = super.getResource("file:" + pathToResource);
-                if (r.exists()) return r;
+                if (r.exists()) {
+                    return r;
+                }
+                else {
+                    pathToResource = buildPluginViewPath(pluginBaseDirectory, pluginName, pathRelativeToPlugin);
+                    r = super.getResource(pathToResource);
+                    if(r.exists()) return r;
+                }
             }
 
             Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
-            String pathRelativeToPlugin = path.substring(path.indexOf("/"), path.length());
             for (Resource inlinePluginDirectory : inlinePluginDirectories) {
                 try {
                     File dirFile = inlinePluginDirectory.getFile();
                     File pageFile = new File(dirFile, pathRelativeToPlugin);
                     if (pageFile.exists()) {
                         return new FileSystemResource(pageFile);
+                    }
+                    else{
+                        String pathToInlinePluginView = buildPluginViewPathFromBase(dirFile.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
+                        Resource resource = super.getResource(pathToInlinePluginView);
+                        if(resource.exists()) {
+                            return resource;
+                        }
                     }
                 } catch (IOException e) {
                     // ignore
@@ -97,5 +114,14 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                     "] (exists? [" + resource.exists() + "]) using base resource [" + localBaseResource + "]");
         }
         return resource;
+    }
+
+    protected String buildPluginViewPath(String pluginBaseDirectory, String pluginName, String pathRelativeToPlugin) {
+        StringBuilder builder = new StringBuilder("file:").append(pluginBaseDirectory).append(File.separatorChar);
+        return buildPluginViewPathFromBase(pluginName, pathRelativeToPlugin, builder);
+    }
+
+    protected String buildPluginViewPathFromBase(String pluginBase, String pathRelativeToPlugin, StringBuilder builder) {
+        return builder.append(pluginBase).append(File.separatorChar).append("grails-app").append(File.separatorChar).append("views").append(pathRelativeToPlugin).toString();
     }
 }
