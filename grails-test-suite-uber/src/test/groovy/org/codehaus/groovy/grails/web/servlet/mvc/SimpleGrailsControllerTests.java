@@ -35,7 +35,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -59,41 +58,9 @@ public class SimpleGrailsControllerTests extends TestCase {
     protected void setUp() throws Exception {
         ExpandoMetaClass.enableGlobally();
         GroovyClassLoader cl = new GroovyClassLoader();
-        cl.parseClass("class MyCommandObject {\n" +
-                "String firstName\n" +
-                "String lastName\n" +
-                "static constraints = {\n" +
-                "  firstName(maxSize:10)\n" +
-                "  lastName(maxSize:10)" +
-                "}\n" +
-                "}");
-        cl.parseClass("class DateStructCommandObject {\n" +
-                "Date birthday\n" +
-        "}");
-        cl.parseClass("class AnotherCommandObject {\n" +
-                "Integer age\n" +
-                "static constraints = {\n" +
-                "  age(max:99)\n" +
-                "}\n" +
-                "}");
-        cl.parseClass("class UnconstrainedCommandObject {\n" +
-                "String firstName\n" +
-                "}");
         Class<?> testControllerClass = cl.parseClass("class TestController {\n"+
                             " Closure test = {\n"+
                                 "return [ \"test\" : \"123\" ]\n"+
-                             "}\n" +
-                             "def codatestruct = { DateStructCommandObject dsco ->\n" +
-                             "[theDate:dsco.birthday, validationErrors:dsco.errors]" +
-                             "}\n" +
-                             "def singlecommandobject = { MyCommandObject mco ->\n" +
-                             "[theFirstName:mco.firstName, theLastName:mco.lastName, validationErrors:mco.errors]\n" +
-                             "}\n" +
-                             "def multiplecommandobjects = {MyCommandObject mco, AnotherCommandObject aco ->\n" +
-                             "[theFirstName:mco.firstName, theLastName:mco.lastName, theAge:aco.age, acoErrors:aco.errors, mcoErrors:mco.errors]\n" +
-                             "}\n" +
-                             "def unconstrainedcommandobject = { UnconstrainedCommandObject uco ->" +
-                             "[theFirstName:uco.firstName, validationErrors:uco.errors]\n" +
                              "}\n" +
                         "}");
 
@@ -180,112 +147,6 @@ public class SimpleGrailsControllerTests extends TestCase {
     public void testSimpleControllerSuccess() throws Exception {
         ModelAndView modelAndView = execute("/test/test","test","test", null);
         assertNotNull(modelAndView);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testCommandObjectDateStruct() throws Exception {
-        Properties props = new Properties();
-        props.put("birthday", "struct");
-        props.put("birthday_day", "03");
-        props.put("birthday_month", "05");
-        props.put("birthday_year", "1973");
-
-        ModelAndView modelAndView = execute("/test/codatestruct","test", "codatestruct", props);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
-        Date birthDate = (Date) model.get("theDate");
-        assertNotNull("null birthday", birthDate);
-        Calendar expectedCalendar = Calendar.getInstance();
-        expectedCalendar.clear();
-        expectedCalendar.set(Calendar.DAY_OF_MONTH, 3);
-        expectedCalendar.set(Calendar.MONTH, Calendar.MAY);
-        expectedCalendar.set(Calendar.YEAR, 1973);
-        Date expectedDate = expectedCalendar.getTime();
-        assertEquals("wrong date", expectedDate, birthDate);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testUnconstrainedCommandObject() throws Exception {
-        Properties props = new Properties();
-        props.put("firstName", "James");
-        ModelAndView modelAndView = execute("/test/unconstrainedcommandobject?id=1&firstName=James","test","unconstrainedcommandobject", props);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        assertEquals("wrong firstName", "James", model.get("theFirstName"));
-        Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testSingleCommandObjectValidationSuccess() throws Exception {
-        Properties props = new Properties();
-        props.put("firstName", "James");
-        props.put("lastName", "Gosling");
-
-        ModelAndView modelAndView = execute("/test/singlecommandobject","test","singlecommandobject", props);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        assertEquals("wrong firstName", "James", model.get("theFirstName"));
-        assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
-        Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of errors", 0, validationErrors.getErrorCount());
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testMultipleCommandObjectValidationSuccess() throws Exception {
-
-        Properties props = new Properties();
-        props.put("firstName", "James");
-        props.put("lastName", "Gosling");
-        props.put("age", "30");
-
-        ModelAndView modelAndView = execute("/test/multiplecommandobjects","test","multiplecommandobjects", props);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        assertEquals("wrong firstName", "James", model.get("theFirstName"));
-        assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
-        assertEquals("wrong age", new Integer(30), model.get("theAge"));
-        Errors mcoErrors = (Errors) model.get("mcoErrors");
-        assertEquals("wrong number of mco errors", 0, mcoErrors.getErrorCount());
-        Errors acoErrors = (Errors) model.get("acoErrors");
-        assertEquals("wrong number of aco errors", 0, acoErrors.getErrorCount());
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testSingleCommandObjectValidationFailure() throws Exception {
-        Properties props = new Properties();
-        props.put("firstName", "ThisFirstNameIsTooLong");
-        props.put("lastName", "ThisLastNameIsTooLong");
-
-        ModelAndView modelAndView = execute("/test/singlecommandobject","test", "singlecommandobject", props);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));
-        assertEquals("wrong lastName", "ThisLastNameIsTooLong", model.get("theLastName"));
-        Errors validationErrors = (Errors) model.get("validationErrors");
-        assertEquals("wrong number of mcoErrors", 2, validationErrors.getErrorCount());
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void testMultipleCommandObjectValidationFailure() throws Exception {
-        Properties props = new Properties();
-        props.put("firstName", "ThisFirstNameIsTooLong");
-        props.put("lastName", "Gosling");
-        props.put("age", "300");
-
-        ModelAndView modelAndView = execute("/test/multiplecommandobjects", "test","multiplecommandobjects", props);
-        assertNotNull("null modelAndView", modelAndView);
-        Map model = modelAndView.getModelMap();
-        assertEquals("wrong firstName", "ThisFirstNameIsTooLong", model.get("theFirstName"));
-        assertEquals("wrong lastName", "Gosling", model.get("theLastName"));
-        assertEquals("wrong age", new Integer(300), model.get("theAge"));
-        Errors mcoErrors = (Errors) model.get("mcoErrors");
-        assertEquals("wrong number of mco errors", 1, mcoErrors.getErrorCount());
-        Errors acoErrors = (Errors) model.get("acoErrors");
-        assertEquals("wrong number of aco errors", 1, acoErrors.getErrorCount());
-
     }
 
     public void testAllowedMethods() throws Exception {

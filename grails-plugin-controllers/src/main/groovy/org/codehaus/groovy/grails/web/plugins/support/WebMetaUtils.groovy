@@ -146,6 +146,15 @@ class WebMetaUtils {
         }
     }
 
+    public static Map getCommandObjectBindingParams(Class commandObjectClass, Map params) {
+        def commandParamsKey = convertTypeNameToParamsPrefix(commandObjectClass)
+        def commandParams = params
+        if (params != null && commandParamsKey != null && params[commandParamsKey] instanceof Map) {
+            commandParams = params[commandParamsKey]
+        }
+        commandParams
+    }
+    
     private static String convertTypeNameToParamsPrefix(Class clazz) {
         def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/, '-$1')?.toLowerCase()
         if (result?.endsWith("-command")) {

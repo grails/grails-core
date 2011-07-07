@@ -173,8 +173,6 @@ class ControllersGrailsPlugin {
 
     def doWithDynamicMethods = {ApplicationContext ctx ->
 
-        ctx.getAutowireCapableBeanFactory().addBeanPostProcessor(new CommandObjectEnablingPostProcessor(ctx))
-
         ControllersApi controllerApi = ctx.getBean("instanceControllersApi",ControllersApi)
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding");
 

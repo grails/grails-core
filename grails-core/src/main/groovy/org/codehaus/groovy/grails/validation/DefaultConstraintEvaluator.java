@@ -14,7 +14,22 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.Script;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.persistence.Entity;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -23,15 +38,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-
-import javax.persistence.Entity;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Default implementation of the {@link ConstraintsEvaluator} interface.
@@ -128,11 +134,15 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                         }
                 }
             }
-        } else if(properties == null) {
-            final Set<Entry<String, ConstrainedProperty>> entrySet = constrainedProperties.entrySet();
-            for(Entry<String, ConstrainedProperty> entry : entrySet) {
-                final ConstrainedProperty constrainedProperty = entry.getValue();
-                if(!constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
+        }
+        if (properties == null || properties.length == 0) {
+            final Set<Entry<String, ConstrainedProperty>> entrySet = constrainedProperties
+                    .entrySet();
+            for (Entry<String, ConstrainedProperty> entry : entrySet) {
+                final ConstrainedProperty constrainedProperty = entry
+                        .getValue();
+                if (!constrainedProperty
+                        .hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
                     applyDefaultNullableConstraint(constrainedProperty);
                 }
             }
@@ -150,7 +160,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             String propertyName = entry.getKey();
             ConstrainedProperty constrainedProperty = entry.getValue();
             String sharedConstraintReference = constrainedPropertyBuilder.getSharedConstraint(propertyName);
-            if (sharedConstraintReference != null) {
+            if (sharedConstraintReference != null && defaultConstraints !=  null) {
                 Object o = defaultConstraints.get(sharedConstraintReference);
                 if (o instanceof Map) {
                     @SuppressWarnings({ "unchecked", "rawtypes" })

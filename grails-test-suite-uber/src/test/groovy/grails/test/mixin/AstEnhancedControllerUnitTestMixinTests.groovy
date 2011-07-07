@@ -201,26 +201,6 @@ class AstEnhancedControllerUnitTestMixinTests extends GroovyTestCase{
 
         assert response.contentAsString == "Hello foo.bar"
     }
-
-    void testInvokeWithCommandObject() {
-        def controller = getMockController()
-        def cmd = mockCommandObject(TestCommand)
-        cmd.name = ''
-
-        cmd.validate()
-        controller.handleCommand(cmd)
-
-        assert response.contentAsString == 'Bad'
-
-        response.reset()
-
-        cmd.name = "Bob"
-        cmd.clearErrors()
-        cmd.validate()
-        controller.handleCommand(cmd)
-
-        assert response.contentAsString == 'Good'
-    }
 }
 
 @Artefact("Controller")
