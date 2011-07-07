@@ -224,6 +224,10 @@ class HibernateGormStaticApi extends GormStaticApi {
         getAllInternal(ids)
     }
 
+	List getAll(Long... ids) {
+		getAllInternal(ids)
+	}
+
     @Override
     List getAll(Serializable... ids) {
         getAllInternal(ids)

@@ -419,6 +419,26 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
         assertEquals 3, result.getProperty("id")
         assertEquals 1, result1.getProperty("id")
 
+        returnValue = domainClass.getAll(3, 1)
+        assertNotNull returnValue
+        assertEquals ArrayList, returnValue.getClass()
+        returnList = returnValue
+        assertEquals 2, returnList.size()
+        result = returnList[0]
+        result1 = returnList[1]
+        assertEquals 3, result.getProperty("id")
+        assertEquals 1, result1.getProperty("id")
+
+        returnValue = domainClass.getAll(3l, 1l)
+        assertNotNull returnValue
+        assertEquals ArrayList, returnValue.getClass()
+        returnList = returnValue
+        assertEquals 2, returnList.size()
+        result = returnList[0]
+        result1 = returnList[1]
+        assertEquals 3, result.getProperty("id")
+        assertEquals 1, result1.getProperty("id")
+
         // when called without arguments should return a list of all objects
         returnValue = domainClass.getAll()
         assertNotNull returnValue
