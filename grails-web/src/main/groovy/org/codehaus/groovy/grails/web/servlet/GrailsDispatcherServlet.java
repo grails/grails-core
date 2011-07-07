@@ -293,6 +293,10 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 // Actually invoke the handler.
                 HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
                 mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+                // if an async request was started simply return
+                if(processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
+                    return;
+                }
 
                 // Do we need view name translation?
                 if ((ha instanceof AnnotationMethodHandlerAdapter) && mv != null && !mv.hasView()) {

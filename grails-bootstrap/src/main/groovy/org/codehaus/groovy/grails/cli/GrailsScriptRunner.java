@@ -328,8 +328,7 @@ public class GrailsScriptRunner {
                    settings.getPluginClassesDir().getAbsolutePath());
         }
         catch (Exception e) {
-            e.printStackTrace(System.err);
-            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            console.error("There was an error loading the BuildConfig: " + e.getMessage(), e);
             System.exit(1);
         }
         finally {

@@ -245,7 +245,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * The version of the servlet API used
      */
-    String servletVersion
+    String servletVersion = "2.5"
 
     /** The root loader for the build. This has the required libraries on the classpath. */
     URLClassLoader rootLoader
@@ -316,7 +316,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     boolean modified = false
 
-    final GrailsCoreDependencies coreDependencies
+    GrailsCoreDependencies coreDependencies
 
     private List<File> compileDependencies = []
     private boolean defaultCompileDepsAdded = false
@@ -551,8 +551,6 @@ class BuildSettings extends AbstractBuildSettings {
             throw new IOException("Unable to find 'build.properties' - make " +
                     "that sure the 'grails-core-*.jar' file is on the classpath.")
         }
-
-        coreDependencies = new GrailsCoreDependencies(grailsVersion, servletVersion)
 
         // If 'grailsHome' is set, add the JAR file dependencies.
         defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
@@ -931,6 +929,7 @@ class BuildSettings extends AbstractBuildSettings {
         def grailsConfig = config.grails
 
         if (!dependenciesExternallyConfigured) {
+            coreDependencies = new GrailsCoreDependencies(grailsVersion, servletVersion)
             grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
             def credentials = grailsConfig.project.ivy.authentication
             if (credentials instanceof Closure) {

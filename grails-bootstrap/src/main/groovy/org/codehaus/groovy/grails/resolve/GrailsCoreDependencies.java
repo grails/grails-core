@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.resolve;
 import groovy.lang.Closure;
 
 import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.JarDependenciesConfigurer;
 import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
@@ -38,7 +40,7 @@ public class GrailsCoreDependencies {
     }
     public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
         this.grailsVersion = grailsVersion;
-        this.servletVersion = servletVersion;
+        this.servletVersion = servletVersion != null ? servletVersion : "2.5";
     }
 
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, String... excludes) {
@@ -121,6 +123,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5")
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
+
 
                         // depenencies needed when creating docs
                         ModuleRevisionId[] docDependencies = {
@@ -207,6 +210,14 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion)
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
+
+                        if(GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
+                            ModuleRevisionId[] servletThreeCompileDependencies = {
+                                 ModuleRevisionId.newInstance("org.grails", "grails-plugin-async", grailsVersion),
+                            };
+                            registerDependencies(dependencyManager, compileTimeDependenciesMethod, servletThreeCompileDependencies);
+                        }
+
 
                         // dependencies needed for running tests
                         ModuleRevisionId[] testDependencies = {

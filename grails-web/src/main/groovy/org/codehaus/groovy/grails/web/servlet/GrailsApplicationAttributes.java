@@ -36,6 +36,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
 
     String PATH_TO_VIEWS = "/WEB-INF/grails-app/views";
     String GSP_TEMPLATE_ENGINE = "org.codehaus.groovy.grails.GSP_TEMPLATE_ENGINE";
+    String ASYNC_STARTED = "org.codehaus.groovy.grails.ASYNC_STARTED";
     String CONTENT_FORMAT = "org.codehaus.groovy.grails.CONTENT_FORMAT";
     String RESPONSE_FORMAT = "org.codehaus.groovy.grails.RESPONSE_FORMAT";
     String REQUEST_FORMATS = "org.codehaus.groovy.grails.REQUEST_FORMATS";
