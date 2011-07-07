@@ -42,6 +42,7 @@ import grails.gsp.PageRenderer
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -164,6 +165,11 @@ class GroovyPagesGrailsPlugin {
             groovyPageLocator = groovyPageLocator
         }
 
+        groovyPageLayoutFinder(GroovyPageLayoutFinder) {
+            groovyPageLocator = groovyPageLocator
+            gspReloadEnabled = enableReload
+            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: 'application'
+        }
 
         // Setup the GroovyPagesUriService
         groovyPagesUriService(DefaultGroovyPagesUriService) { bean ->

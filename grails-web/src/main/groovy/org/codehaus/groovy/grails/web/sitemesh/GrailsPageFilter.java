@@ -29,6 +29,7 @@ import grails.util.GrailsWebUtil;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -52,7 +53,7 @@ import java.util.Map;
  */
 public class GrailsPageFilter extends SiteMeshFilter {
 
-    private static final String ALREADY_APPLIED_KEY = "com.opensymphony.sitemesh.APPLIED_ONCE";
+    public static final String ALREADY_APPLIED_KEY = "com.opensymphony.sitemesh.APPLIED_ONCE";
     private static final String HTML_EXT = ".html";
     private static final String UTF_8_ENCODING = "UTF-8";
     private static final String CONFIG_OPTION_GSP_ENCODING = "grails.views.gsp.encoding";
@@ -199,47 +200,8 @@ public class GrailsPageFilter extends SiteMeshFilter {
                     private void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
                                         HttpServletResponse response, ServletContext servletContext) {
 
-                        HTMLPage htmlPage = content2htmlPage(content);
-                        request.setAttribute(RequestConstants.PAGE, htmlPage);
-
-                        // see if the URI path (webapp) is set
-                        if (decorator.getURIPath() != null) {
-                            // in a security conscious environment, the servlet container
-                            // may return null for a given URL
-                            if (servletContext.getContext(decorator.getURIPath()) != null) {
-                                servletContext = servletContext.getContext(decorator.getURIPath());
-                            }
-                        }
-                        // get the dispatcher for the decorator
-                        if (!response.isCommitted()) {
-                            boolean dispatched = false;
-                            try {
-                                request.setAttribute(ALREADY_APPLIED_KEY, Boolean.TRUE);
-
-                                GroovyPageView gspSpringView = new GroovyPageView();
-                                gspSpringView.setServletContext(servletContext);
-                                gspSpringView.setUrl(decorator.getPage());
-                                gspSpringView.setApplicationContext(applicationContext);
-                                gspSpringView.setTemplateEngine(templateEngine);
-
-                                try {
-                                    gspSpringView.render(Collections.<String, Object>emptyMap(), request, response);
-                                    dispatched = true;
-                                    if (!response.isCommitted()) {
-                                        response.getWriter().flush();
-                                    }
-                                } catch (Exception e) {
-                                    cleanRequestAttributes(request);
-                                    throw new GroovyPagesException("Error applying layout : " + decorator.getPage(), e);
-                                }
-                            } finally {
-                                if (!dispatched) {
-                                    cleanRequestAttributes(request);
-                                }
-                            }
-                        }
-
-                        request.removeAttribute(RequestConstants.PAGE);
+                        GroovyPageLayoutRenderer layoutRenderer = new GroovyPageLayoutRenderer(decorator, templateEngine, applicationContext);
+                        layoutRenderer.render(content, request, response, servletContext);
                     }
 
                     public void render(@SuppressWarnings("hiding") Content content, SiteMeshContext siteMeshContext) {
@@ -251,11 +213,6 @@ public class GrailsPageFilter extends SiteMeshFilter {
         };
     }
 
-    private void cleanRequestAttributes(HttpServletRequest request) {
-        request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-        request.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE);
-        request.setAttribute(ALREADY_APPLIED_KEY, null);
-    }
 
     /**
      * Continue in filter-chain, writing all content to buffer and parsing

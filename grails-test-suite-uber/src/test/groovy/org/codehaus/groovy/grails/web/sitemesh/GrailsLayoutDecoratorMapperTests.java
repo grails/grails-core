@@ -24,6 +24,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.ServletContext;
+import java.util.Collections;
+import java.util.Map;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
@@ -36,7 +38,15 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         GrailsConventionGroovyPageLocator pageLocator = new GrailsConventionGroovyPageLocator();
         pageLocator.setApplicationContext(appCtx);
+
+        GroovyPageLayoutFinder layoutFinder = new GroovyPageLayoutFinder();
+        layoutFinder.setGroovyPageLocator(pageLocator);
+        Map flat = config != null ?  config.flatten() : Collections.emptyMap();
+        layoutFinder.setDefaultDecoratorName(flat.get("grails.sitemesh.default.layout") != null ? flat.get("grails.sitemesh.default.layout").toString(): "application");
+
+
         appCtx.registerMockBean("groovyPageLocator", pageLocator);
+        appCtx.registerMockBean("groovyPageLayoutFinder", layoutFinder);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
         return GrailsWebUtil.bindMockWebRequest(appCtx);
