@@ -22,6 +22,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.opensymphony.sitemesh.Content;
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.BootstrapArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
@@ -32,6 +34,7 @@ import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -249,6 +252,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         GrailsWebRequest requestAttributes = null;
         RequestAttributes previousRequestAttributes = null;
         Exception handlerException = null;
+        boolean isAsyncRequest = processedRequest.getAttribute("javax.servlet.async.request_uri") != null;
         try {
             ModelAndView mv;
             boolean errorView = false;
@@ -290,17 +294,32 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     }
                 }
 
-                // Actually invoke the handler.
-                HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
-                mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
-                // if an async request was started simply return
-                if(processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
-                    return;
-                }
+                // if this is an async request that has been resumed, then don't execute the action again instead try get the model and view and continue
 
-                // Do we need view name translation?
-                if ((ha instanceof AnnotationMethodHandlerAdapter) && mv != null && !mv.hasView()) {
-                    mv.setViewName(getDefaultViewName(request));
+                if(isAsyncRequest) {
+                    Object modelAndViewO = processedRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW);
+                    if(modelAndViewO != null) {
+                        mv = (ModelAndView) modelAndViewO;
+                    }
+                    else {
+                        mv = null;
+                    }
+
+                }else {
+                    // Actually invoke the handler.
+                    HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+                    mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+                    // if an async request was started simply return
+                    if(processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
+                        processedRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mv);
+                        return;
+                    }
+
+                    // Do we need view name translation?
+                    if ((ha instanceof AnnotationMethodHandlerAdapter) && mv != null && !mv.hasView()) {
+                        mv.setViewName(getDefaultViewName(request));
+                    }
+
                 }
 
                 // Apply postHandle methods of registered interceptors.
@@ -332,6 +351,14 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 try {
                     render(mv, processedRequest, response);
+                    if(isAsyncRequest && (response instanceof GrailsContentBufferingResponse)) {
+                        GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
+                        HttpServletResponse targetResponse = bufferingResponse.getTargetResponse();
+                        Content content = bufferingResponse.getContent();
+                        if(content != null) {
+                            content.writeOriginal(targetResponse.getWriter());
+                        }
+                    }
                     if (errorView) {
                         WebUtils.clearErrorRequestAttributes(request);
                     }
@@ -368,6 +395,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                             getServletName() + "': assuming HandlerAdapter completed request handling");
                 }
             }
+
 
             // Trigger after-completion for successful outcome.
             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, handlerException);

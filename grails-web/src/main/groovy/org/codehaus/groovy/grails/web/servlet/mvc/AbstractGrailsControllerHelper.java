@@ -217,7 +217,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             // Step 8: determine return value type and handle accordingly
             Map chainModel = initChainModel(request);
 
-            if (response.isCommitted() || request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null || request.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
+            if (response.isCommitted() || request.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Response has been redirected, returning null model and view");
                 }

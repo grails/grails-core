@@ -20,6 +20,7 @@ import javax.servlet.AsyncListener
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
+import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 
 /**
  * Wraps an AsyncContext providing additional logic to provide the appropriate context to a Grails application
@@ -52,6 +53,7 @@ class GrailsAsyncContext implements AsyncContext{
             }
             try {
                 runnable.run()
+
                 for(PersistenceContextInterceptor i in interceptors) {
                     i.flush()
                 }
@@ -64,6 +66,18 @@ class GrailsAsyncContext implements AsyncContext{
             }
         }
     }
+
+     void complete() {
+        if(response instanceof GrailsContentBufferingResponse) {
+            GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response
+            def targetResponse = bufferingResponse.getTargetResponse()
+            def content = bufferingResponse.getContent()
+            if(content != null) {
+                content.writeOriginal(targetResponse.getWriter())
+            }
+        }
+        delegate.complete()
+     }
 
     protected Collection<PersistenceContextInterceptor> getPersistenceInterceptors(GrailsWebRequest webRequest) {
         def servletContext = webRequest.servletContext
