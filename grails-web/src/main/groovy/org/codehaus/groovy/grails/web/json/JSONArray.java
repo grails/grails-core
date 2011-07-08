@@ -855,6 +855,21 @@ public class JSONArray implements JSONElement, List {
         return sb.toString();
     }
 
+    /**
+     * If the passed object is a JSONArray, then the underlying collection must be equal.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) return true;
+
+        JSONArray that = (JSONArray) obj;
+
+        if (myArrayList != null ? !myArrayList.equals(that.myArrayList) : that.myArrayList != null) return false;
+
+        return true;
+    }
+
 
     /**
      * Write the contents of the JSONArray as JSON text to a writer.
