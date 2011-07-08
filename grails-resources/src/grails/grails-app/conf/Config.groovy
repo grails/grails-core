@@ -43,8 +43,6 @@ grails.scaffolding.templates.domainSuffix = 'Instance'
 grails.json.legacy.builder = false
 // enabled native2ascii conversion of i18n properties files
 grails.enable.native2ascii = true
-// whether to install the java.util.logging bridge for sl4j. Disable for AppEngine!
-grails.logging.jul.usebridge = true
 // packages to include in Spring bean scanning
 grails.spring.bean.packages = []
 // whether to disable processing of multi part requests
@@ -55,7 +53,11 @@ grails.exceptionresolver.params.exclude = ['password']
 
 // set per-environment serverURL stem for creating absolute links
 environments {
+    development {
+        grails.logging.jul.usebridge = true
+    }
     production {
+        grails.logging.jul.usebridge = false
         grails.serverURL = "http://www.changeme.com"
     }
 }
