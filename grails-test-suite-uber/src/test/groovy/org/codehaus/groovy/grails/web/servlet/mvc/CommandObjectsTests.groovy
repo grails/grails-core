@@ -124,6 +124,29 @@ grails.gorm.default.constraints = {
         def codes = result.artist.errors.getFieldError('name').codes.toList()
         assertTrue codes.contains("artist.name.inList.error")
     }
+    
+    void testNullability() {
+        // command objects validation should fail
+        def testCtrl = new CommandObjectTestController()
+        def result = testCtrl.action7()
+        assertNotNull result.command
+        assert result.command.hasErrors()
+        assert 2 == result.command.errors.errorCount
+        def codes = result.command.errors.getFieldError('data').codes.toList()
+        assertTrue codes.contains("constrainedCommand.data.nullable.error")
+        codes = result.command.errors.getFieldError('explicitlyNotNullableProperty').codes.toList()
+        assertTrue codes.contains("constrainedCommand.explicitlyNotNullableProperty.nullable.error")
+
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        request = webRequest.currentRequest
+        request.setParameter('explicitlyNotNullableProperty', 'Keenan')
+        result = testCtrl.action7()
+        assertNotNull result.command
+        assert result.command.hasErrors()
+        assert 1 == result.command.errors.errorCount
+        codes = result.command.errors.getFieldError('data').codes.toList()
+        assertTrue codes.contains("constrainedCommand.data.nullable.error")
+    }
 }
 
 class CommandObjectTestController {
@@ -147,6 +170,10 @@ class CommandObjectTestController {
     def action6 = { Artist artistCommandObject ->
         [artist: artistCommandObject]
     }
+    
+    def action7 = { ConstrainedCommand co ->
+        [command: co]
+    }
 }
 
 class Command {
@@ -156,11 +183,14 @@ class Command {
 class AutoWireCapableCommand {
     def groovyPagesTemplateEngine
 }
-
 class ConstrainedCommand {
     String data
+    String explicitlyNullableProperty
+    String explicitlyNotNullableProperty
     static constraints = {
-        data(size:5..10)
+        data size:5..10
+        explicitlyNullableProperty nullable: true
+        explicitlyNotNullableProperty nullable: false
     }
 }
 
