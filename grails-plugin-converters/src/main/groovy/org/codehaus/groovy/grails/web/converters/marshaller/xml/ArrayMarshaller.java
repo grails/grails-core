@@ -29,16 +29,22 @@ import java.lang.reflect.Array;
 public class ArrayMarshaller implements ObjectMarshaller<XML>, NameAwareMarshaller {
 
     public boolean supports(Object object) {
-        return object.getClass().isArray();
+        return object != null && object.getClass().isArray();
     }
 
     public void marshalObject(Object o, XML xml) throws ConverterException {
         int len = Array.getLength(o);
         for (int i = 0; i < len; i++) {
             Object cur = Array.get(o, i);
-            xml.startNode(xml.getElementName(cur));
-            xml.convertAnother(cur);
-            xml.end();
+            if(cur != null) {
+                xml.startNode(xml.getElementName(cur));
+                xml.convertAnother(cur);
+                xml.end();
+            }
+            else {
+                xml.startNode("null");
+                xml.end();
+            }
         }
     }
 
