@@ -71,4 +71,12 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         return parent != null ? super.getDecorator(request, page) : null;
     }
 
+    @Override
+    public Decorator getNamedDecorator(HttpServletRequest request, String name) {
+        Decorator layout = groovyPageLayoutFinder.getNamedDecorator(request, name);
+        if(layout != null) {
+            return layout;
+        }
+        return parent != null ? super.getNamedDecorator(request, name) : null;
+    }
 }
