@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Default implementation of the {@link ConstraintsEvaluator} interface.
@@ -126,10 +128,18 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                         }
                 }
             }
+        } else if(properties == null) {
+            final Set<Entry<String, ConstrainedProperty>> entrySet = constrainedProperties.entrySet();
+            for(Entry<String, ConstrainedProperty> entry : entrySet) {
+                final ConstrainedProperty constrainedProperty = entry.getValue();
+                if(!constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
+                    applyDefaultNullableConstraint(constrainedProperty);
+                }
+            }
         }
 
         applySharedConstraints(delegate, constrainedProperties);
-
+        
         return constrainedProperties;
     }
 
@@ -227,11 +237,14 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
     }
 
     protected void applyDefaultNullableConstraint(GrailsDomainClassProperty p, ConstrainedProperty cp) {
-        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
-                Collection.class.isAssignableFrom(p.getType()) ||
-                Map.class.isAssignableFrom(p.getType()));
+        applyDefaultNullableConstraint(cp);
     }
-
+    
+    protected void applyDefaultNullableConstraint(ConstrainedProperty cp) {
+        boolean isCollection = Collection.class.isAssignableFrom(cp.getPropertyType()) || Map.class.isAssignableFrom(cp.getPropertyType());
+        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, isCollection);
+    }
+    
     protected boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {
         if (property == null || property.getType() == null) return false;
 

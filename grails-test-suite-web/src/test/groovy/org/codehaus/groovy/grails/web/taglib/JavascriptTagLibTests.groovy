@@ -91,6 +91,18 @@ class TestUrlMappings {
             applyTemplate(template)
         }
     }
+    
+    void testFormRemoteWithStringUrl() {
+        def template = '''\
+<g:formRemote name="myForm" method="GET" url="/dirt-grails/ruleDetails/saveDynamicParameters" >\
+<g:textField name="foo" />\
+</g:formRemote>'''
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+
+        assertOutputEquals('''\
+<form onsubmit="<remote>return false" method="GET"\
+ action="/dirt-grails/ruleDetails/saveDynamicParameters" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
+    }
 
     /**
      * <p>Tests that the 'formRemote' tag defaults to supplied 'method'

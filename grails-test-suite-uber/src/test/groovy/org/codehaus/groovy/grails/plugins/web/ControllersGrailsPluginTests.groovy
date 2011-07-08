@@ -120,7 +120,7 @@ class FormTagLib {
     void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
         try {
             System.setProperty("grails.env", "development")
-            def mock = [application: [config: new ConfigObject(), warDeployed: false], manager:mockManager]
+            def mock = [application: [flatConfig: new ConfigObject(), config: new ConfigObject(), warDeployed: false], manager:mockManager]
             def plugin = new GroovyPagesGrailsPlugin()
             def beans = plugin.doWithSpring
             def bb = new BeanBuilder()

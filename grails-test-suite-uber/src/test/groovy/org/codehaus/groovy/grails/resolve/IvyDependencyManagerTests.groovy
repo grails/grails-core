@@ -588,6 +588,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
 
         def settings = new BuildSettings()
+        settings.postLoadConfig()
+        
         def grailsVersion = getCurrentGrailsVersion()
 
         def manager = new IvyDependencyManager("project", "0.1",settings)
