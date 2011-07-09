@@ -74,40 +74,6 @@ class MethodActionTransformerSpec extends Specification {
 
     }
 */
-    void "Test command object actions"() {
-        when:
-        def cls = gcl.parseClass('''
-            class TestControllerTransformer2Controller {
-                def commandObjectClosure
-                def commandObjectMethod
-                def action = { CommandObject cmd->
-                    commandObjectClosure = cmd
-                }
-                def action2(CommandObject cmd) {
-                    commandObjectMethod = cmd
-                }
-            }
-            class CommandObject{
-                String prop
-
-                int validateCounter = 0
-
-                def validate() {
-                    ++validateCounter
-                }
-            }
-            ''')
-
-        def controller = cls.newInstance()
-        controller.$action()
-        controller.$action2()
-        then:
-        controller
-        controller.commandObjectClosure
-        1 == controller.commandObjectClosure.validateCounter
-        controller.commandObjectMethod
-        1 == controller.commandObjectMethod.validateCounter
-    }
 
     def cleanup() {
         RequestContextHolder.setRequestAttributes(null)
