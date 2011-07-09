@@ -68,41 +68,6 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
                   charParam: charParam,
                   primitiveCharParam: primitiveCharParam ]
             }
-            def methodActionWithDefaultValues(String stringParam = 'defaultString',
-                             Short shortParam = 1,
-                             short primitiveShortParam = 2,
-                             Integer integerParam = 3,
-                             int primitiveIntParam = 4,
-                             Long longParam = 5,
-                             long primitiveLongParam = 6,
-                             Float floatParam = 7.7f,
-                             float primitiveFloatParam = 8.8f,
-                             Double doubleParam = 9.9,
-                             double primitiveDoubleParam = 10.10,
-                             Boolean booleanParam = true,
-                             boolean primitiveBooleanParam = true,
-                             Byte byteParam = 11,
-                             byte primitiveByteParam = 12,
-                             Character charParam = 'A' as Character,
-                             char primitiveCharParam = (char)'B') {
-                [ stringParam: stringParam,
-                  integerParam: integerParam,
-                  primitiveIntParam: primitiveIntParam,
-                  shortParam: shortParam,
-                  primitiveShortParam: primitiveShortParam,
-                  longParam: longParam,
-                  primitiveLongParam: primitiveLongParam,
-                  floatParam: floatParam,
-                  primitiveFloatParam: primitiveFloatParam,
-                  doubleParam: doubleParam,
-                  primitiveDoubleParam: primitiveDoubleParam,
-                  booleanParam: booleanParam,
-                  primitiveBooleanParam: primitiveBooleanParam,
-                  byteParam: byteParam,
-                  primitiveByteParam: primitiveByteParam,
-                  charParam: charParam,
-                  primitiveCharParam: primitiveCharParam ]
-            }
             def methodActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
                 [name: name, age: age]
             }
@@ -191,47 +156,6 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             'Z' == model.primitiveCharParam
     }
 
-    void "Test conversion errors for parameters with default values"() {
-        when:
-        controller.params.shortParam = 'bogus'
-        controller.params.primitiveShortParam = 'bogus'
-        controller.params.integerParam = 'bogus'
-        controller.params.primitiveIntParam = 'bogus'
-        controller.params.longParam = 'bogus'
-        controller.params.primitiveLongParam = 'bogus'
-        controller.params.floatParam = 'bogus'
-        controller.params.primitiveFloatParam = 'bogus'
-        controller.params.doubleParam = 'bogus'
-        controller.params.primitiveDoubleParam = 'bogus'
-        controller.params.booleanParam = 'bogus'
-        controller.params.primitiveBooleanParam = 'bogus'
-        controller.params.byteParam = 'bogus'
-        controller.params.primitiveByteParam = 'bogus'
-        controller.params.charParam = 'bogus'
-        controller.params.primitiveCharParam = 'bogus'
-
-        def model = controller.$methodActionWithDefaultValues()
-
-        then:
-            'defaultString' == model.stringParam
-            1 == model.shortParam
-            2 == model.primitiveShortParam
-            3 == model.integerParam
-            4 == model.primitiveIntParam
-            5 == model.longParam
-            6 == model.primitiveLongParam
-            7.7f == model.floatParam
-            8.8f == model.primitiveFloatParam
-            9.9 == model.doubleParam
-            10.10 == model.primitiveDoubleParam
-            !model.booleanParam
-            !model.primitiveBooleanParam
-            11 == model.byteParam
-            12 == model.primitiveByteParam
-            'A' == model.charParam
-            'B' == model.primitiveCharParam
-    }
-
     void "Test conversion errors"() {
         when:
            controller.params.shortParam = 'bogus'
@@ -295,72 +219,6 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             0 == model.primitiveByteParam
             null == model.charParam
             0 == model.primitiveCharParam
-    }
-
-    void "Test default parameter values"() {
-        when:
-            def model = controller.$methodActionWithDefaultValues()
-
-        then:
-            'defaultString' == model.stringParam
-            1 == model.shortParam
-            2 == model.primitiveShortParam
-            3 == model.integerParam
-            4 == model.primitiveIntParam
-            5 == model.longParam
-            6 == model.primitiveLongParam
-            7.7f == model.floatParam
-            8.8f == model.primitiveFloatParam
-            9.9 == model.doubleParam
-            10.10 == model.primitiveDoubleParam
-            model.booleanParam
-            model.primitiveBooleanParam
-            11 == model.byteParam
-            12 == model.primitiveByteParam
-            'A' == model.charParam
-            'B' == model.primitiveCharParam
-    }
-
-    void "Test overriding default parameter values"() {
-        when:
-           controller.params.stringParam = 'Herbert'
-           controller.params.shortParam = '1001'
-           controller.params.primitiveShortParam = '1002'
-           controller.params.integerParam = '1003'
-           controller.params.primitiveIntParam = '1004'
-           controller.params.longParam = '1005'
-           controller.params.primitiveLongParam = '1006'
-           controller.params.floatParam = '1007.1007'
-           controller.params.primitiveFloatParam = '1008.1008'
-           controller.params.doubleParam = '1009.1009'
-           controller.params.primitiveDoubleParam = '1010.1010'
-           controller.params.booleanParam = 'false'
-           controller.params.primitiveBooleanParam = 'false'
-           controller.params.byteParam = '101'
-           controller.params.primitiveByteParam = '102'
-           controller.params.charParam = 'Y'
-           controller.params.primitiveCharParam = 'Z'
-
-           def model = controller.$methodActionWithDefaultValues()
-
-        then:
-            'Herbert' == model.stringParam
-            1001 == model.shortParam
-            1002 == model.primitiveShortParam
-            1003 == model.integerParam
-            1004 == model.primitiveIntParam
-            1005 == model.longParam
-            1006 == model.primitiveLongParam
-            1007.1007f == model.floatParam
-            1008.1008f == model.primitiveFloatParam
-            1009.1009 == model.doubleParam
-            1010.1010 == model.primitiveDoubleParam
-            !model.booleanParam
-            !model.primitiveBooleanParam
-            101 == model.byteParam
-            102 == model.primitiveByteParam
-            'Y' == model.charParam
-            'Z' == model.primitiveCharParam
     }
 
     def cleanupSpec() {

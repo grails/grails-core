@@ -172,17 +172,29 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     }
 
     private MethodNode convertToMethodAction(ClassNode classNode, MethodNode _method) {
-
         final ClassNode returnType = _method.getReturnType();
-        MethodNode method = new MethodNode(
+        Parameter[] parameters = _method.getParameters();
+        
+        for(Parameter param : parameters) {
+        	if(param.hasInitialExpression()) {
+        		String paramName = param.getName();
+        		String methodName = _method.getName();
+        		String initialValue = param.getInitialExpression().getText();
+        		String methodDeclaration = _method.getText();
+        		String message = "Parameter [%s] to method [%s] has default value [%s].  Default parameter values are not allowed in controller action methods. ([%s])";
+        		String formattedMessage = String.format(message, paramName, methodName, initialValue, methodDeclaration);
+        		throw new GrailsControllerCompilationException(formattedMessage);
+        	}
+        }
+		MethodNode method = new MethodNode(
                 GrailsControllerClass.METHOD_DISPATCHER_PREFIX+_method.getName(),
                 Modifier.PUBLIC, returnType,
                 ZERO_PARAMETERS,
                 EMPTY_CLASS_ARRAY,
-                addOriginalMethodCall(_method, initializeActionParameters(classNode, _method.getParameters()))
+                addOriginalMethodCall(_method, initializeActionParameters(classNode, parameters))
         );
 
-        annotateActionMethod(_method.getParameters(), method);
+        annotateActionMethod(parameters, method);
 
         return method;
     }
@@ -484,8 +496,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                 new DeclarationExpression(new VariableExpression(
                         methodParamName, paramTypeClassNode),
                         Token.newSymbol(Types.EQUALS, 0, 0),
-                        new TernaryExpression(containsKeyExpression, getValueExpression,
-                                param.hasInitialExpression() ? param.getInitialExpression() : new ConstantExpression(null))));
+                        new TernaryExpression(containsKeyExpression, getValueExpression, new ConstantExpression(null))));
         wrapper.addStatement(initializeParameterStatement);
     }
 
@@ -494,9 +505,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         final String methodParamName = param.getName();
         final Expression defaultValueExpression;
         final Class<?> paramTypeClass = paramTypeClassNode.getTypeClass();
-        if (param.hasInitialExpression()) {
-            defaultValueExpression = param.getInitialExpression();
-        } else if (Boolean.TYPE == paramTypeClass) {
+        if (Boolean.TYPE == paramTypeClass) {
             defaultValueExpression = new ConstantExpression(false);
         } else if (paramTypeClass.isPrimitive()) {
             defaultValueExpression = new ConstantExpression(0);
