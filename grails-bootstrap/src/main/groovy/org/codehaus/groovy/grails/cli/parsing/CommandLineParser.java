@@ -85,7 +85,7 @@ public class CommandLineParser {
      */
     public CommandLine parse(String... args) {
         DefaultCommandLine cl = createCommandLine();
-        boolean first = true;
+        boolean beforeCommand = true;
         for (String arg : args) {
             if(arg == null) continue;
             String trimmed = arg.trim();
@@ -94,13 +94,13 @@ public class CommandLineParser {
                     processOption(cl, trimmed);
                 }
                 else {
-                   if(ENV_ARGS.containsKey(trimmed)) {
+                   if(beforeCommand && ENV_ARGS.containsKey(trimmed)) {
                        cl.setEnvironment(ENV_ARGS.get(trimmed));
                    }
                    else {
-                      if(first) {
+                      if(beforeCommand) {
                           cl.setCommandName(trimmed);
-                          first = false;
+                          beforeCommand = false;
                       }
                       else {
                           cl.addRemainingArg(trimmed);
