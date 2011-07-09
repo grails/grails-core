@@ -60,11 +60,6 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
 
 
     /**
-    *  Prefix for generated no-args methods which dispatch to real arg-n methods
-     */
-    String METHOD_DISPATCHER_PREFIX = "$";
-
-    /**
      * Checks to see if an action is accessible via a particular http method.
      *
      * @param controller The instance of the controller

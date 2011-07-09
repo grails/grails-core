@@ -132,10 +132,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
                     && method.getAnnotation(Action.class) != null) {
                 String methodName = method.getName();
 
-                if(methodName.startsWith(METHOD_DISPATCHER_PREFIX)){
-                    methodName = methodName.substring(1,methodName.length());
-                }
-                
                 methodNames.add(methodName);
 
                 configureMappingForClosureProperty(methodName);

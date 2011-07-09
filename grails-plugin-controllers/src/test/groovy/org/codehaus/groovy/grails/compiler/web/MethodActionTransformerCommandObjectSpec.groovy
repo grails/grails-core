@@ -137,7 +137,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
     void "Test binding to multiple command objects"() {
         when:
             controller.params.name = 'Emerson'
-            def model = controller.$methodActionWithMultipleCommandObjects()
+            def model = controller.methodActionWithMultipleCommandObjects()
             
         then:
             model.person
@@ -160,7 +160,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
         when:
             controller.params.person = [name: 'Emerson']
             controller.params.artist = [name: 'Lake']
-            def model = controller.$methodActionWithMultipleCommandObjects()
+            def model = controller.methodActionWithMultipleCommandObjects()
             
         then:
             model.person
@@ -182,7 +182,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
 
     void "Test clearErrors"() {
         when:
-        def model = controller.$methodActionWithArtist()
+        def model = controller.methodActionWithArtist()
     
         then:
             model.artist
@@ -200,7 +200,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
     
     void "Test nullability"() {
         when:
-            def model = controller.$methodActionWithArtist()
+            def model = controller.methodActionWithArtist()
             def nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
         
         then:
@@ -222,7 +222,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
     
     void "Test command object gets autowired"() {
         when:
-            def model = controller.$methodAction()
+            def model = controller.methodAction()
 
         then:
             model.person.theAnswer == 42
@@ -237,7 +237,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
     void "Test validation"() {
         when:
             controller.params.name = 'JFK'
-            def model = controller.$methodAction()
+            def model = controller.methodAction()
         
         then:
             !model.person.hasErrors()
@@ -261,7 +261,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
 
         when:
             controller.params.name = 'Maynard'
-            model = controller.$methodAction()
+            model = controller.methodAction()
         
         then:
             model.person.hasErrors()
@@ -284,7 +284,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
         when:
             controller.params.name = 'Emerson'
             controller.params.bandName = 'Emerson Lake and Palmer'
-            model = controller.$methodActionWithArtistSubclass()
+            model = controller.methodActionWithArtistSubclass()
             
         then:
             model.artist
@@ -302,7 +302,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
             model.artist.errors.errorCount == 2
     
         when:
-            model = controller.$methodActionWithArtistSubclass()
+            model = controller.methodActionWithArtistSubclass()
                 
         then:
             model.artist
@@ -321,7 +321,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
 
         when:
             controller.params.name = 'Emerson'
-            model = controller.$methodActionWithArtist()
+            model = controller.methodActionWithArtist()
 
         then:
             model.artist
@@ -337,7 +337,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
 
         when:
             controller.params.name = 'Hendrix'
-            model = controller.$methodActionWithArtist()
+            model = controller.methodActionWithArtist()
 
         then:
             model.artist
@@ -372,7 +372,7 @@ class MethodActionTransformerCommandObjectSpec extends Specification {
             controller.params.birthday_day = "03"
             controller.params.birthday_month = "05"
             controller.params.birthday_year = "1973"
-            model = controller.$methodActionWithDate()
+            model = controller.methodActionWithDate()
             birthday = model.command?.birthday
 
         then:

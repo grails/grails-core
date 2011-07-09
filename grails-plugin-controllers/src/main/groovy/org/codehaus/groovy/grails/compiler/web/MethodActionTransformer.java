@@ -162,7 +162,10 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
-                defferedNewMethods.add(convertToMethodAction(classNode, method));
+                MethodNode wrapperMethod = convertToMethodAction(classNode, method);
+                if(wrapperMethod != null) {
+                	defferedNewMethods.add(wrapperMethod);
+                }
             }
         }
 
@@ -171,6 +174,14 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         }
     }
 
+    /**
+     * Converts a method into a controller action.  If the method accepts parameters,
+     * a no-arg counterpart is created which delegates to the original.
+     * 
+     * @param classNode The controller class
+     * @param _method The method to be converted
+     * @return The no-arg wrapper method, or null if none was created.
+     */
     private MethodNode convertToMethodAction(ClassNode classNode, MethodNode _method) {
         final ClassNode returnType = _method.getReturnType();
         Parameter[] parameters = _method.getParameters();
@@ -186,15 +197,20 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         		throw new GrailsControllerCompilationException(formattedMessage);
         	}
         }
-		MethodNode method = new MethodNode(
-                GrailsControllerClass.METHOD_DISPATCHER_PREFIX+_method.getName(),
+		MethodNode method = null;
+		if(_method.getParameters().length > 0) {
+			method = new MethodNode(
+                _method.getName(),
                 Modifier.PUBLIC, returnType,
                 ZERO_PARAMETERS,
                 EMPTY_CLASS_ARRAY,
                 addOriginalMethodCall(_method, initializeActionParameters(classNode, parameters))
-        );
+			);
+	        annotateActionMethod(parameters, method);
+		} else {
+			annotateActionMethod(parameters, _method);
+		}
 
-        annotateActionMethod(parameters, method);
 
         return method;
     }
@@ -210,7 +226,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
             MethodCallExpression callExpression = new MethodCallExpression(
                     THIS_EXPRESSION,
-                    GrailsControllerClass.METHOD_DISPATCHER_PREFIX+_method.getName(),
+                    _method.getName(),
                     arguments
             );
             callExpression.setMethodTarget(_method);
@@ -292,8 +308,11 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                 closureAction.getParameters(), EMPTY_CLASS_ARRAY,
                 closureAction.getCode());
 
-        classNode.addMethod(convertToMethodAction(classNode,
-                actionMethod));
+        MethodNode convertedMethod = convertToMethodAction(classNode,
+                actionMethod);
+        if(convertedMethod != null) {
+        	classNode.addMethod(convertedMethod);
+        }
         classNode.getProperties().remove(property);
         classNode.getFields().remove(property.getField());
         classNode.addMethod(actionMethod);

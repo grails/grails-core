@@ -85,7 +85,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         when:
             controller.params.name = 'Herbert'
             controller.params.age = '47'
-            def model = controller.$methodActionWithRequestMapping()
+            def model = controller.methodActionWithRequestMapping()
 
         then:
             null == model.name
@@ -107,7 +107,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
         when:
             controller.params.firstName = 'Herbert'
             controller.params.numberOfYearsOld = '47'
-            def model = controller.$methodActionWithRequestMapping()
+            def model = controller.methodActionWithRequestMapping()
 
         then:
             'Herbert' == model.name
@@ -134,7 +134,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.charParam = 'Y'
            controller.params.primitiveCharParam = 'Z'
 
-           def model = controller.$methodAction()
+           def model = controller.methodAction()
 
         then:
             'Herbert' == model.stringParam
@@ -175,7 +175,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            controller.params.charParam = 'bogus'
            controller.params.primitiveCharParam = 'bogus'
 
-           def model = controller.$methodAction()
+           def model = controller.methodAction()
 
         then:
             null == model.stringParam
@@ -199,7 +199,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
 
     void "Test uninitialized action parameters"() {
         when:
-           def model = controller.$methodAction()
+           def model = controller.methodAction()
 
         then:
             null == model.stringParam
