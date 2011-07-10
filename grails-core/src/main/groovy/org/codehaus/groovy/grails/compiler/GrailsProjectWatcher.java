@@ -179,7 +179,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             try {
                 pluginManager.informOfFileChange(file);
             } catch (Exception e) {
-                LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage());
+                LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage(), e);
             }
         }
         else {
