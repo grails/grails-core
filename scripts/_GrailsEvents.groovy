@@ -59,7 +59,7 @@ event = {String name, args ->
         eventListener.triggerEvent(name, * args)
     }
     catch(e) {
-        println "Exception occurred trigger event [$name]: ${e.message}"
+        grailsConsole.error "Exception occurred trigger event [$name]: ${e.message}", e
     }
 }
 
