@@ -63,6 +63,7 @@ import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.springframework.validation.Validator
+import org.springframework.transaction.PlatformTransactionManager
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -446,7 +447,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
             ApplicationContext ctx, String suffix) {
 
         MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-        HibernateTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", HibernateTransactionManager)
+        PlatformTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", PlatformTransactionManager )
         final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx)
         String datasourceName = suffix ? suffix[1..-1] : GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
 
@@ -475,7 +476,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     }
 
     private static void registerNamespaceMethods(GrailsDomainClass dc, HibernateDatastore datastore,
-            String datasourceName, HibernateTransactionManager transactionManager,
+            String datasourceName, PlatformTransactionManager  transactionManager,
             GrailsApplication application) {
 
         String getter = GrailsNameUtils.getGetterName(datasourceName)
