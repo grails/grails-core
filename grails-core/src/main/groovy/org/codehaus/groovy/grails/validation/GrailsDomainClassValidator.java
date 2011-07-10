@@ -16,12 +16,7 @@ package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GroovyObject;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -159,6 +154,12 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             GrailsDomainClassProperty persistentProperty, String propertyName) {
 
         Object collection = bean.getPropertyValue(propertyName);
+        if (collection instanceof List || collection instanceof SortedSet) {
+            int idx = 0;
+             for (Object associatedObject : ((Collection)collection)) {
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]");
+            }
+        }
         if (collection instanceof Collection) {
             for (Object associatedObject : ((Collection)collection)) {
                 cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
