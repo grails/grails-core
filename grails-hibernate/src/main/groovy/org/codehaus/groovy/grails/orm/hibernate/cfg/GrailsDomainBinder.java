@@ -71,6 +71,7 @@ import org.hibernate.util.StringHelper;
  */
 public final class GrailsDomainBinder {
 
+    private static final String CASCADE_ALL_DELETE_ORPHAN = "all-delete-orphan";
     private static final String FOREIGN_KEY_SUFFIX = "_id";
     private static final Log LOG = LogFactory.getLog(GrailsDomainBinder.class);
     private static final String STRING_TYPE = "string";
@@ -957,6 +958,9 @@ public final class GrailsDomainBinder {
             collection.setFetchMode(FetchMode.DEFAULT);
         }
 
+        if (pc != null && pc.getCascade() != null) {
+            collection.setOrphanDelete(pc.getCascade().equals(CASCADE_ALL_DELETE_ORPHAN));
+        }
         // if it's a one-to-many mapping
         if (shouldBindCollectionWithForeignKey(property)) {
             OneToMany oneToMany = new OneToMany(mappings, collection.getOwner());
