@@ -56,6 +56,7 @@ import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -787,7 +788,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             GenericApplicationContext ctx = (GenericApplicationContext) applicationContext;
             ConfigurableListableBeanFactory beanFactory = ctx.getBeanFactory();
             for (BeanFactoryPostProcessor postProcessor : ctx.getBeanFactoryPostProcessors()) {
-                postProcessor.postProcessBeanFactory(beanFactory);
+                try {
+                    postProcessor.postProcessBeanFactory(beanFactory);
+                } catch (IllegalStateException e) {
+                    // post processor doesn't allow running again, just continue
+                }
             }
         }
     }
