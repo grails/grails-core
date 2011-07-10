@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
@@ -53,6 +55,7 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AbstractGrailsPluginManager implements GrailsPluginManager {
 
+    private static final Log LOG = LogFactory.getLog(AbstractGrailsPluginManager.class);
     private static final String BLANK = "";
     public static final String CONFIG_FILE = "Config";
     protected List<GrailsPlugin> pluginList = new ArrayList<GrailsPlugin>();
@@ -373,11 +376,15 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
             for (GrailsPlugin grailsPlugin : pluginList) {
                 if (grailsPlugin.hasInterestInChange(file.getAbsolutePath())) {
-                    if (cls == null) {
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
-                    }
-                    else {
-                        grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
+                    try {
+                        if (cls == null) {
+                            grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, new FileSystemResource(file));
+                        }
+                        else {
+                            grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
+                        }
+                    } catch (Exception e) {
+                        LOG.error("Plugin " + grailsPlugin + " could not reload changes to file ["+file+"]: " + e.getMessage(), e );
                     }
                 }
             }

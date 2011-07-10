@@ -147,7 +147,6 @@ class CoreGrailsPlugin {
     }
 
     def onChange = { event ->
-        println "Change event: $event"
         if (event.source instanceof Resource) {
             def xmlBeans = new XmlBeanFactory(event.source)
             xmlBeans.beanDefinitionNames.each { name ->
@@ -155,9 +154,9 @@ class CoreGrailsPlugin {
             }
         }
         else if (event.source instanceof Class) {
-            println "Change event was class... reloading spring resources.groovy beans"
             RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application, event.ctx)
+            GrailsRuntimeConfigurator.reloadSpringResourcesConfig(springConfig, application, event.source)
+            springConfig.registerBeansWithContext(event.ctx)
         }
     }
 }

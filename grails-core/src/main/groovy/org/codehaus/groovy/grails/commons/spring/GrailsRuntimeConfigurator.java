@@ -336,14 +336,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                     // ignore
                 }
                 if (groovySpringResourcesClass != null) {
-                    springGroovyResourcesBeanBuilder = new BeanBuilder(null, config,Thread.currentThread().getContextClassLoader());
-                    springGroovyResourcesBeanBuilder.setBinding(new Binding(CollectionUtils.newMap(
-                        "application", application,
-                        "grailsApplication", application))); // GRAILS-7550
-                    Script script = (Script) groovySpringResourcesClass.newInstance();
-                    script.run();
-                    Object beans = script.getProperty("beans");
-                    springGroovyResourcesBeanBuilder.beans((Closure) beans);
+                    reloadSpringResourcesConfig(config, application, groovySpringResourcesClass);
                 }
             }
             catch (Exception ex) {
@@ -355,6 +348,18 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                 springGroovyResourcesBeanBuilder.registerBeans(config);
             }
         }
+    }
+
+    public static BeanBuilder reloadSpringResourcesConfig(RuntimeSpringConfiguration config, GrailsApplication application, Class<?> groovySpringResourcesClass) throws InstantiationException, IllegalAccessException {
+        springGroovyResourcesBeanBuilder = new BeanBuilder(null, config,Thread.currentThread().getContextClassLoader());
+        springGroovyResourcesBeanBuilder.setBinding(new Binding(CollectionUtils.newMap(
+                "application", application,
+                "grailsApplication", application))); // GRAILS-7550
+        Script script = (Script) groovySpringResourcesClass.newInstance();
+        script.run();
+        Object beans = script.getProperty("beans");
+        springGroovyResourcesBeanBuilder.beans((Closure) beans);
+        return springGroovyResourcesBeanBuilder;
     }
 
     public static void loadSpringGroovyResources(RuntimeSpringConfiguration config, GrailsApplication application) {
@@ -386,7 +391,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     /**
      * Resets the GrailsRumtimeConfigurator.
      */
-    public void reset() {
+    public static void reset() {
         springGroovyResourcesBeanBuilder = null;
     }
 }
