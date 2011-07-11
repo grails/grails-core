@@ -12,7 +12,7 @@ body, .wiki-table th strong {
 
 a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content a:hover strong,
     #table-of-content a strong, .menu .menu-block h1, .menu a:hover, .local .local-title .toggle a,
-    #navigation #nav-summary-childs a:hover {
+    #navigation #nav-summary-childs a:hover, #main h1, #main h2 {
     color: #7c9d00;
 }
 

@@ -9,10 +9,6 @@ class YamlTocStrategy {
     private final parser
     private resourceChecker
 
-    YamlTocStrategy() {
-        this(null)
-    }
-
     YamlTocStrategy(resourceChecker) {
         this.parser = new Yaml()
         this.resourceChecker = resourceChecker

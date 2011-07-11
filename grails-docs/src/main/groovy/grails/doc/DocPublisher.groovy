@@ -18,7 +18,9 @@ package grails.doc
 import grails.doc.internal.*
 import groovy.text.Template
 
+import org.apache.commons.logging.LogFactory
 import org.radeox.engine.context.BaseInitialRenderContext
+import org.yaml.snakeyaml.Yaml
 
 /**
  * Coordinated the DocEngine the produce documentation based on the gdoc format.
@@ -30,6 +32,7 @@ import org.radeox.engine.context.BaseInitialRenderContext
  */
 class DocPublisher {
     static final String TOC_FILENAME = "toc.yml"
+    static final LOG = LogFactory.getLog(this)
 
     /** The source directory of the documentation */
     File src
@@ -172,15 +175,45 @@ class DocPublisher {
             }
         }
 
+        // Build the table of contents as a tree of nodes. We currently support
+        // two strategies for this:
+        //
+        //  1. From a toc.yml file
+        //  2. From the gdoc filenames
+        //
+        // The first strategy is used if the TOC file exists, otherwise we call
+        // back to the old way of doing it, which means putting the section
+        // numbers in the gdoc filenames.
         def guideSrcDir = new File("${src}/guide")
-        def yamlTocFile = new File(guideSrcDir, "toc.yml")
+        def yamlTocFile = new File(guideSrcDir, TOC_FILENAME)
         def guide
         if (yamlTocFile.exists()) {
-            guide = new YamlTocStrategy().generateToc(yamlTocFile)
+            guide = new YamlTocStrategy(new FileResourceChecker(guideSrcDir)).generateToc(yamlTocFile)
+            
+            if (!verifyToc(guideSrcDir, guide)) {
+                throw new RuntimeException("Encountered errors while building table of contents. Aborting.")
+            }
+
+            for (ch in guide.children) {
+                overrideAliasesFromToc(ch)
+            }
         }
         else {
             def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") } ?: []
             guide = new LegacyTocStrategy().generateToc(files)
+        }
+
+        // When migrating from the old style docs to the new style, existing
+        // external links that use URL fragment identifiers will break. To
+        // mitigate against this problem, the user can provide a list of mappings
+        // from the new fragment identifiers to the old ones. The docs will then
+        // include both.
+        def legacyLinksFile = new File(guideSrcDir, "links.yml")
+        def legacyLinks = [:]
+        if (legacyLinksFile.exists()) {
+            legacyLinksFile.withInputStream { input ->
+                legacyLinks = new Yaml().load(input)
+            }
         }
 
         def templateEngine = new groovy.text.SimpleTemplateEngine()
@@ -213,7 +246,8 @@ class DocPublisher {
             single: false,
             path: pathToRoot,
             prev: null,
-            next: null
+            next: null,
+            legacyLinks: legacyLinks
         ]
 
         // Build the user guide sections first.
@@ -231,7 +265,7 @@ class DocPublisher {
             if (i != (chapters.size() - 1)) {
                 chapterVars['next'] = chapters[i + 1]
             }
-            chapterVars.sectionNumber = (i + 1)
+            chapterVars.sectionNumber = (i + 1).toString()
             writeChapter(chapter, template, sectionTemplate, guideSrcDir, refGuideDir, fullContents, chapterVars)
         }
 
@@ -424,9 +458,44 @@ class DocPublisher {
         }
     }
 
-    protected loadGuideStructure() {
-        def tocFile = new File(TOC_FILENAME)
+    /**
+     * Checks the table of contents (a tree of {@link UserGuideNode}s) for
+     * duplicate section/alias names and invalid file paths.
+     * @return <code>false</code> if any errors are detected.
+     */
+    protected verifyToc(File baseDir, toc) {
+        def hasErrors = false
+        def sectionsFound = [] as Set
+        for (ch in toc.children) {
+            hasErrors |= verifyTocInternal(baseDir, ch, sectionsFound, [])
+        }
 
+        return !hasErrors
+    }
+
+    private verifyTocInternal(File baseDir, section, existing, pathElements) {
+        def hasErrors = false
+        def fullName = "${pathElements.join('/')}/${section.name}"
+
+        // Has this section name already been used?
+        if (section.name in existing) {
+            hasErrors = true
+            LOG.warn "Duplicate section name: ${fullName}"
+        }
+
+        // Does the file path for the gdoc exist?
+        if (!section.file || !new File(baseDir, section.file).exists()) {
+            hasErrors = true
+            LOG.warn "No file found for '${fullName}'"
+        }
+
+        existing << section.name
+
+        for (s in section.children) {
+            hasErrors |= verifyTocInternal(baseDir, s, existing, pathElements + section.name)
+        }
+
+        return hasErrors
     }
 
     private String injectPath(String source, String path) {
@@ -469,6 +538,14 @@ class DocPublisher {
         finally {
             // Don't need the JAR file any more, so remove it.
             ant.delete(file: "${dir}/${src}", failonerror:false)
+        }
+    }
+
+    private overrideAliasesFromToc(node) {
+        engine.engineProperties.setProperty "alias.${node.name}", node.file - ".gdoc"
+
+        for (section in node.children) {
+            overrideAliasesFromToc(section)
         }
     }
 }

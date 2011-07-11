@@ -188,6 +188,10 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                 alias = ALIAS[alias]
             }
 
+            // Deal with aliases that include a '/'-separated path.
+            def i = alias.lastIndexOf('/')
+            if (i >= 0) alias = alias[(i + 1)..-1]
+
             buffer << "<a href=\"$contextPath/guide/single.html#${alias.encodeAsUrlFragment()}\" class=\"guide\">$view</a>"
         }
         else if (name.startsWith("api:")) {
