@@ -59,7 +59,9 @@ target(main:"Install a JAR dependency into a project") {
                 }
             }
 
-            compile dep
+            dependencies {
+                compile dep
+            }
         }
 
         grailsConsole.updateStatus "Installing dependency '${dep}'. Please wait.."
