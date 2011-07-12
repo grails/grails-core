@@ -157,7 +157,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         if (collection instanceof List || collection instanceof SortedSet) {
             int idx = 0;
              for (Object associatedObject : ((Collection)collection)) {
-                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]");
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]", idx);
             }
         }
         if (collection instanceof Collection) {
@@ -203,6 +203,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      * @param associatedObject The associated object's current value
      * @param persistentProperty The GrailsDomainClassProperty instance
      * @param propertyName The name of the property
+     * @param indexOrKey
      */
     @SuppressWarnings("rawtypes")
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject,
