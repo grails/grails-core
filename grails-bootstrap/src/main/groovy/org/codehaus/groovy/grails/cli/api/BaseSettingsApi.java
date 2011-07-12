@@ -279,4 +279,19 @@ public class BaseSettingsApi {
             callable.call();
         }
     }
+
+
+    public String makeRelative(String path) {
+        if(buildSettings != null && path != null) {
+            String absolutePath = buildSettings.getBaseDir().getAbsolutePath();
+            if(path.startsWith(absolutePath)) {
+                return path.substring(absolutePath.length()+1);
+            }
+        }
+        return path;
+    }
+
+    public String makeRelative(File file) {
+        return makeRelative(file.getAbsolutePath());
+    }
 }

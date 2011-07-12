@@ -336,7 +336,7 @@ target (war: "The implementation target") {
         event("StatusFinal", ["Done creating Unpacked WAR at ${stagingDir}"])
     }
     else {
-        event("StatusFinal", ["Done creating WAR ${warName}"])
+        event("StatusFinal", ["Done creating WAR ${makeRelative(warName)}"])
     }
 }
 
