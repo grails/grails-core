@@ -130,9 +130,7 @@ class SetTest {
   }
 
 
-  // TODO: This is failing with a NPE. Investigate
   void testMapValidation() {
-    if(notYetImplemented()) return
     def baseTest = ga.getDomainClass('BaseTest').newInstance()
     baseTest.name = 'Base Name'
 
@@ -141,7 +139,7 @@ class SetTest {
 
     def mapTest1 = ga.getDomainClass('MapTest').newInstance()
 
-    def key = 'foo'
+    def key = 'key with spaces and non-standard chars $!@3��'
     baseTest.mapTests = [MKEY0:mapTest0, "${key}":mapTest1]
     baseTest.validate()
 

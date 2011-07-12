@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import groovy.lang.GString;
 import groovy.lang.GroovyObject;
 
 import java.util.*;
@@ -167,11 +168,28 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             }
         }
         else if (collection instanceof Map) {
+
+            filterGStringKeys((Map)collection);
             for (Object entryObject : ((Map) collection).entrySet()) {
                 @SuppressWarnings("unchecked")
-                Map.Entry<String, Object> entry = (Map.Entry<String, Object>) entryObject;
+                Map.Entry entry = (Map.Entry) entryObject;
                 cascadeValidationToOne(errors, bean, entry.getValue(), persistentProperty, propertyName, entry.getKey());
             }
+        }
+    }
+
+    private void filterGStringKeys(Map collection) {
+        Set set = collection.keySet();
+        Set<GString> gstrings = new HashSet<GString>();
+        for (Object o : set) {
+            if(o instanceof GString) {
+                gstrings.add((GString) o);
+            }
+        }
+
+        for (GString gstring : gstrings) {
+            Object value = collection.remove(gstring);
+            collection.put(gstring.toString(), value);
         }
     }
 
