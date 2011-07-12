@@ -27,7 +27,7 @@ class PageRendererSpec extends Specification {
             contents == "Hello John"
     }
 
-    void "Test render page from issue 78"() {
+    void "Test render page with embedded JavaScript function call"() {
         given:
             resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""
             <h1>\${person}</h1>
