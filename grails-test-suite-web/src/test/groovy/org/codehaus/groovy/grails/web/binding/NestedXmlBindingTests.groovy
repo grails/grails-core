@@ -62,9 +62,70 @@ class NestedXmlBindingTests {
         assert p.location.shippingAddress == 'foo'
         assert p.location.billingAddress == 'bar'
     }
+
+    void testBindToArrayOfDomains() {
+        request.xml = '''
+<person>
+   <name>John Doe</name>
+   <locations>
+      <location>
+         <shippingAddress>foo</shippingAddress>
+	      <billingAddress>bar</billingAddress>
+      </location>
+      <location>
+	    <shippingAddress>foo2</shippingAddress>
+	    <billingAddress>bar2</billingAddress>
+      </location>
+   </locations>
+</person>
+'''
+        def result = controller.bind()
+
+        assert result != null
+
+        Person p = result.person
+
+        assert p != null
+        assert p.name == "John Doe"
+        assert p.locations.size() == 2
+        assert p.locations[0].shippingAddress == 'foo'
+        assert p.locations[0].billingAddress == 'bar'
+        assert p.locations[1].shippingAddress == 'foo2'
+        assert p.locations[1].billingAddress == 'bar2'
+
+    }
+
+// TODO: Move this into JSON tests and get working
+//    void testBindToArrayOfDomainsWithJson() {
+//        request.json = '''
+//{
+//'class': 'Person',
+//"person": {
+//"name": "John Doe",
+//"locations": {
+//"location": [
+//{ "shipppingAddress": "foo", "billingAddress": "bar" },
+//
+//{ "shipppingAddress": "foo2", "billingAddress": "bar2" }
+//]
+//}
+//}
+//}
+//'''
+//        def result = controller.bind()
+//
+//        assert result != null
+//
+//        Person p = result.person
+//
+//        assert p != null
+//        assert p.name == "John Doe"
+//        assert p.locations.size() == 2
+//    }
 }
 class NestedXmlController {
     def bind() {
+        println params['person']
         def person = new Person(params['person'])
 
         [person: person]
@@ -75,6 +136,8 @@ class NestedXmlController {
 class Person {
     String name
     Location location
+    List<Location> locations = []
+    static hasMany = [locations:Location]
 }
 
 @Entity
