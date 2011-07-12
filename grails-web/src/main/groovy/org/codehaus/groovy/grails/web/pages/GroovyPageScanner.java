@@ -139,7 +139,7 @@ class GroovyPageScanner implements Tokens {
             } else if(begin1 > 0 && (c == '{' || c == '(' || c == '[')) {
                 if(c == '{') {
                     levelTokens.push('}');
-                } else if(c == '(') {
+                } else if(c == '(' && !levelTokens.empty()) {
                     levelTokens.push(')');
                 } else if(c == '[' && !levelTokens.empty()) {
                     levelTokens.push(']');
