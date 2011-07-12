@@ -472,6 +472,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (PropertyValue pv : pvs) {
             String propertyName = pv.getName();
+            if(!isAllowed(propertyName)) continue;
             if (propertyName.indexOf(PATH_SEPARATOR) > -1) {
                 String[] propertyNames = propertyName.split("\\.");
                 BeanWrapper currentBean = bean;
@@ -490,6 +491,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 autoCreatePropertyIfPossible(bean, propertyName, pv.getValue());
             }
         }
+    }
+
+    @Override
+    protected boolean isAllowed(String field) {
+        int i = field.indexOf('[');
+        if(i>-1) {
+            field = field.substring(0,i);
+        }
+        return super.isAllowed(field);
     }
 
     @SuppressWarnings("unchecked")
@@ -684,6 +694,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     protected void bindAssociations(MutablePropertyValues mpvs) {
         for (PropertyValue pv : mpvs.getPropertyValues()) {
             String propertyName = pv.getName();
+            if(!isAllowed(propertyName)) continue;
             String propertyNameToCheck = propertyName;
             final int i = propertyName.indexOf('.');
             if (i >-1) {
@@ -998,8 +1009,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private void mapPropertyValues(PropertyValue[] pvs,
             Map<String, PropertyValue> valuesByName, List<String> valueNames) {
         for (PropertyValue pv : pvs) {
-            valuesByName.put(pv.getName(), pv);
-            valueNames.add(pv.getName());
+            String propertyName = pv.getName();
+            if(!isAllowed(propertyName)) continue;
+            valuesByName.put(propertyName, pv);
+            valueNames.add(propertyName);
         }
     }
 
