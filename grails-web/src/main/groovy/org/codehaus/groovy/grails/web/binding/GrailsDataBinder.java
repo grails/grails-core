@@ -694,7 +694,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     protected void bindAssociations(MutablePropertyValues mpvs) {
         for (PropertyValue pv : mpvs.getPropertyValues()) {
             String propertyName = pv.getName();
-            if(!isAllowed(propertyName)) continue;
             String propertyNameToCheck = propertyName;
             final int i = propertyName.indexOf('.');
             if (i >-1) {
