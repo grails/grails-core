@@ -27,6 +27,26 @@ class PageRendererSpec extends Specification {
             contents == "Hello John"
     }
 
+    void "Test render page from issue 78"() {
+        given:
+            resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""
+            <h1>\${person}</h1>
+            <script type="text/javascript">
+            alert("\${person}");
+            </script>
+            """.bytes))
+        when:
+            def contents = pageRenderer.render(template:"/foo/bar", model:[person:"John"])
+        then:
+            contents != null
+            contents == """
+            <h1>John</h1>
+            <script type="text/javascript">
+            alert("John");
+            </script>
+            """
+    }
+
     void "Test render template with tag"() {
         given:
             resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource('Hello <g:join in="[\'john\', \'fred\']" />'.bytes))
