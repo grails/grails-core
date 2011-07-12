@@ -94,7 +94,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed by the Grails build system
 
-                        String springVersion = "3.1.0.M1";
+                        String springVersion = "3.1.0.M2";
                         String antVersion = "1.8.2";
                         String slf4jVersion = "1.6.1";
                         ModuleRevisionId[] buildDependencies = {

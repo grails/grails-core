@@ -858,7 +858,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             GrailsDomainClass dc = (GrailsDomainClass) grailsApplication.getArtefact(
                     DomainClassArtefactHandler.TYPE, target.getClass().getName());
             if (dc != null) {
-                GrailsDomainClassProperty domainProperty = dc.getPropertyByName(name);
+                GrailsDomainClassProperty domainProperty = dc.getPersistentProperty(name);
                 if (domainProperty != null) {
                     return domainProperty.getReferencedPropertyType();
                 }

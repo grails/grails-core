@@ -21,6 +21,7 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -297,8 +298,13 @@ public class GrailsDomainConfigurationUtil {
      * @return True if it is configurational
      */
     public static boolean isNotConfigurational(PropertyDescriptor descriptor) {
+
         final String name = descriptor.getName();
-        return !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
+        Method readMethod = descriptor.getReadMethod();
+        Method writeMethod = descriptor.getWriteMethod();
+        return !(readMethod == null || writeMethod == null) &&
+               !(Modifier.isStatic(readMethod.getModifiers()) || Modifier.isStatic(writeMethod.getModifiers())) &&
+               !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
                !name.equals(GrailsDomainClassProperty.META_CLASS) &&
                !name.equals(GrailsDomainClassProperty.CLASS) &&
                !name.equals(GrailsDomainClassProperty.TRANSIENT) &&

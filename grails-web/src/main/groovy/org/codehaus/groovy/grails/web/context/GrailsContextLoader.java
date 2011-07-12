@@ -36,6 +36,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -49,7 +50,7 @@ public class GrailsContextLoader extends ContextLoader {
     GrailsApplication application;
 
     @Override
-    protected WebApplicationContext createWebApplicationContext(ServletContext servletContext, ApplicationContext parent) throws BeansException {
+    public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
         // disable annoying ehcache up-to-date check
         System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
         ExpandoMetaClass.enableGlobally();
@@ -65,7 +66,7 @@ public class GrailsContextLoader extends ContextLoader {
 
         WebApplicationContext  ctx;
         try {
-            ctx = super.createWebApplicationContext(servletContext, parent);
+            ctx = super.initWebApplicationContext(servletContext);
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[GrailsContextLoader] Created parent application context");
@@ -120,6 +121,7 @@ public class GrailsContextLoader extends ContextLoader {
         }
         return ctx;
     }
+
 
     @Override
     public void closeWebApplicationContext(ServletContext servletContext) {
