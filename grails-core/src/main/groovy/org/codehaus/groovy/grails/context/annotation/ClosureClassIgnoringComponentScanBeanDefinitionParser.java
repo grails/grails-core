@@ -32,8 +32,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.HierarchicalBeanFactory;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -64,7 +66,18 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
     @Override
     protected ClassPathBeanDefinitionScanner createScanner(XmlReaderContext readerContext, boolean useDefaultFilters) {
         final ClassPathBeanDefinitionScanner scanner = super.createScanner(readerContext, useDefaultFilters);
-        GrailsPluginManager pluginManager = PluginManagerHolder.getPluginManager();
+        BeanDefinitionRegistry beanDefinitionRegistry = readerContext.getRegistry();
+
+        GrailsPluginManager pluginManager = null;
+
+        if(beanDefinitionRegistry instanceof HierarchicalBeanFactory) {
+            HierarchicalBeanFactory beanFactory = (HierarchicalBeanFactory) beanDefinitionRegistry;
+            BeanFactory parent = beanFactory.getParentBeanFactory();
+            if(parent != null && parent.containsBean(GrailsPluginManager.BEAN_NAME)) {
+                pluginManager = parent.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
+            }
+
+        }
         if (pluginManager != null) {
             List<TypeFilter> typeFilters = pluginManager.getTypeFilters();
             for (TypeFilter typeFilter : typeFilters) {
