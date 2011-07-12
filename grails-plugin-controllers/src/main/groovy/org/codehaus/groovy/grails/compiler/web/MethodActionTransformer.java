@@ -55,8 +55,8 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
@@ -151,18 +151,18 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        annotateCandidateActionMethods(classNode);
-        processClosures(classNode);
+        annotateCandidateActionMethods(classNode, source);
+        processClosures(classNode, source);
     }
 
-    private void annotateCandidateActionMethods(ClassNode classNode) {
+    private void annotateCandidateActionMethods(ClassNode classNode, SourceUnit source) {
         List<MethodNode> defferedNewMethods = new ArrayList<MethodNode>();
         for (MethodNode method : classNode.getMethods()) {
             if (!method.isStatic() && method.isPublic() &&
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
-                MethodNode wrapperMethod = convertToMethodAction(classNode, method);
+                MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
                 if(wrapperMethod != null) {
                 	defferedNewMethods.add(wrapperMethod);
                 }
@@ -182,7 +182,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
      * @param _method The method to be converted
      * @return The no-arg wrapper method, or null if none was created.
      */
-    private MethodNode convertToMethodAction(ClassNode classNode, MethodNode _method) {
+    private MethodNode convertToMethodAction(ClassNode classNode, MethodNode _method, SourceUnit source) {
         final ClassNode returnType = _method.getReturnType();
         Parameter[] parameters = _method.getParameters();
         
@@ -194,7 +194,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         		String methodDeclaration = _method.getText();
         		String message = "Parameter [%s] to method [%s] has default value [%s].  Default parameter values are not allowed in controller action methods. ([%s])";
         		String formattedMessage = String.format(message, paramName, methodName, initialValue, methodDeclaration);
-        		throw new GrailsControllerCompilationException(formattedMessage);
+        		error(source, formattedMessage);
         	}
         }
 		MethodNode method = null;
@@ -245,7 +245,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     }
 
 
-    private void processClosures(ClassNode classNode) {
+    private void processClosures(ClassNode classNode, SourceUnit source) {
         List<PropertyNode> propertyNodes = new ArrayList<PropertyNode>(classNode.getProperties());
 
         Expression initialExpression;
@@ -257,7 +257,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                     initialExpression != null && initialExpression.getClass().equals(ClosureExpression.class)) {
                 closureAction = (ClosureExpression) initialExpression;
                 if(converterEnabled) {
-                    transformClosureToMethod(classNode, closureAction, property);
+                    transformClosureToMethod(classNode, closureAction, property, source);
                 } else {
                     addMethodToInvokeClosure(classNode, property);
                 }
@@ -302,14 +302,14 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
     }
 
     protected void transformClosureToMethod(ClassNode classNode,
-            ClosureExpression closureAction, PropertyNode property) {
+            ClosureExpression closureAction, PropertyNode property, SourceUnit source) {
         final MethodNode actionMethod = new MethodNode(property.getName(),
                 Modifier.PUBLIC, property.getType(),
                 closureAction.getParameters(), EMPTY_CLASS_ARRAY,
                 closureAction.getCode());
 
         MethodNode convertedMethod = convertToMethodAction(classNode,
-                actionMethod);
+                actionMethod, source);
         if(convertedMethod != null) {
         	classNode.addMethod(convertedMethod);
         }
@@ -566,5 +566,9 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+    protected void error(SourceUnit source, String me) {
+        source.getErrorCollector().addError(new SimpleMessage(me,source), true);
     }
 }
