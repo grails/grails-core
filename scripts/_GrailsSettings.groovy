@@ -59,7 +59,6 @@ GrailsPluginUtils.pluginBuildSettings = pluginSettings
 
 
 // Other useful properties.
-args = System.getProperty("grails.cli.args")
 grailsApp = null
 
 isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
