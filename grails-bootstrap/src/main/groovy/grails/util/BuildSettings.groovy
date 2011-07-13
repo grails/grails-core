@@ -29,14 +29,14 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 
- /**
+/**
  * <p>Represents the project paths and other build settings
  * that the user can change when running the Grails commands. Defaults
  * are provided for all settings, but the user can override those by
  * setting the appropriate system property or specifying a value for
  * it in the BuildConfig.groovy file.</p>
  * <p><b>Warning</b> The behaviour is poorly defined if you explicitly
- * set some of the project paths (such as {@link BuildSettings#projectWorkDir }),
+ * set some of the project paths (such as {@link BuildSettings#projectWorkDir}),
  * but not others. If you set one of them explicitly, set all of them
  * to ensure consistent behaviour.</p>
  */
@@ -78,7 +78,7 @@ class BuildSettings extends AbstractBuildSettings {
 
     /**
      * The name of the system property for {@link #
-         }.
+     }.
      */
     public static final String PROJECT_RESOURCES_DIR = "grails.project.resource.dir"
 
@@ -162,7 +162,6 @@ class BuildSettings extends AbstractBuildSettings {
 
     public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
 
-
     /**
      * The base directory for the build, which is normally the root
      * directory of the current project. If a command is run outside
@@ -171,7 +170,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     File baseDir
 
-    /** Location of the current user's home directory - equivalent to "user.home" system property. */
+    /** Location of the current user's home directory - equivalent to "user.home" system property.  */
     File userHome
 
     /**
@@ -182,13 +181,13 @@ class BuildSettings extends AbstractBuildSettings {
      */
     File grailsHome
 
-    /** The version of Grails being used for the current script. */
+    /** The version of Grails being used for the current script.  */
     String grailsVersion
 
-    /** The environment for the current script. */
+    /** The environment for the current script.  */
     String grailsEnv
 
-    /** <code>true</code> if the default environment for a script should be used. */
+    /** <code>true</code> if the default environment for a script should be used.  */
     boolean defaultEnv
 
     /**
@@ -196,16 +195,16 @@ class BuildSettings extends AbstractBuildSettings {
      */
     boolean dependenciesExternallyConfigured = false
 
-    /** The location of the Grails working directory where non-project-specific temporary files are stored. */
+    /** The location of the Grails working directory where non-project-specific temporary files are stored.  */
     File grailsWorkDir
 
-    /** The location of the project working directory for project-specific temporary files. */
+    /** The location of the project working directory for project-specific temporary files.  */
     File projectWorkDir
 
-    /** The location of the project target directory where reports, artifacts and so on are output. */
+    /** The location of the project target directory where reports, artifacts and so on are output.  */
     File projectTargetDir
 
-    /** The location of the Grails WAR directory where exploded WAR is built. */
+    /** The location of the Grails WAR directory where exploded WAR is built.  */
     File projectWarExplodedDir
 
     /**
@@ -218,28 +217,28 @@ class BuildSettings extends AbstractBuildSettings {
      */
     boolean projectWarOsgiHeaders = false
 
-    /** The location to which Grails compiles a project's classes. */
+    /** The location to which Grails compiles a project's classes.  */
     File classesDir
 
-    /** The location to which Grails compiles a project's test classes. */
+    /** The location to which Grails compiles a project's test classes.  */
     File testClassesDir
 
-    /** The location to which Grails compiles a project's plugin classes. */
+    /** The location to which Grails compiles a project's plugin classes.  */
     File pluginClassesDir
 
-    /** The location where Grails keeps temporary copies of a project's resources. */
+    /** The location where Grails keeps temporary copies of a project's resources.  */
     File resourcesDir
 
-    /** The location of the plain source. */
+    /** The location of the plain source.  */
     File sourceDir
 
-    /** The location of the test reports. */
+    /** The location of the test reports.  */
     File testReportsDir
 
-    /** The location of the documentation output. */
+    /** The location of the documentation output.  */
     File docsOutputDir
 
-    /** The location of the test source. */
+    /** The location of the test source.  */
     File testSourceDir
 
     /**
@@ -247,7 +246,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     String servletVersion = "2.5"
 
-    /** The root loader for the build. This has the required libraries on the classpath. */
+    /** The root loader for the build. This has the required libraries on the classpath.  */
     URLClassLoader rootLoader
 
     /**
@@ -260,7 +259,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     File proxySettingsFile;
 
-    /** Implementation of the "grailsScript()" method used in Grails scripts. */
+    /** Implementation of the "grailsScript()" method used in Grails scripts.  */
     Closure getGrailsScriptClosure() {
         return new OwnerlessClosure() {
             Object doCall(String name) {
@@ -329,7 +328,7 @@ class BuildSettings extends AbstractBuildSettings {
     private List<File> internalPluginRuntimeDependencies = []
     private List<File> internalPluginProvidedDependencies = []
 
-    /** List containing the compile-time dependencies of the app as File instances. */
+    /** List containing the compile-time dependencies of the app as File instances.  */
     List<File> getCompileDependencies() {
         if (!defaultCompileDepsAdded) {
             compileDependencies += defaultCompileDependencies
@@ -345,25 +344,22 @@ class BuildSettings extends AbstractBuildSettings {
         compileDependencies = deps
     }
 
-    /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances. */
+    /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances.  */
     private List<File> internalCompileDependencies
     @Lazy List<File> defaultCompileDependencies = {
-        if(internalCompileDependencies) return internalCompileDependencies
+        if (internalCompileDependencies) return internalCompileDependencies
         Message.info "Resolving [compile] dependencies..."
-        List<File> jarFiles = dependencyManager
-                            .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-                            .getArtifactsReports(null, false)
-                            .localFile + applicationJars
+        List<File> jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
 
         jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
-        Message.debug("Resolved jars for [compile]: ${{->jarFiles.join('\n')}}")
+        Message.debug("Resolved jars for [compile]: ${{-> jarFiles.join('\n')}}")
         return jarFiles
     }()
 
     private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
         def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
-        for(z in pluginZips) {
-            if(!pluginDependencies.contains(z))
+        for (z in pluginZips) {
+            if (!pluginDependencies.contains(z))
                 pluginDependencies.add(z)
         }
         scopePluginDependencies.addAll(pluginZips)
@@ -376,7 +372,7 @@ class BuildSettings extends AbstractBuildSettings {
     private List<File> testDependencies = []
     private boolean defaultTestDepsAdded = false
 
-    /** List containing the test-time dependencies of the app as File instances. */
+    /** List containing the test-time dependencies of the app as File instances.  */
     List<File> getTestDependencies() {
         if (!defaultTestDepsAdded) {
             testDependencies += defaultTestDependencies
@@ -392,24 +388,21 @@ class BuildSettings extends AbstractBuildSettings {
         testDependencies = deps
     }
 
-    /** List containing the default test-time dependencies of the app as File instances. */
+    /** List containing the default test-time dependencies of the app as File instances.  */
     private List<File> internalTestDependencies
     @Lazy List<File> defaultTestDependencies = {
         Message.info "Resolving [test] dependencies..."
-        if(internalTestDependencies) return internalTestDependencies
-        def jarFiles = dependencyManager
-                            .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
-                            .getArtifactsReports(null, false)
-                            .localFile + applicationJars
+        if (internalTestDependencies) return internalTestDependencies
+        def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
         jarFiles = findAndRemovePluginDependencies("test", jarFiles, internalPluginTestDependencies)
-        Message.debug("Resolved jars for [test]: ${{->jarFiles.join('\n')}}")
+        Message.debug("Resolved jars for [test]: ${{-> jarFiles.join('\n')}}")
         return jarFiles
     }()
 
     private List<File> runtimeDependencies = []
     private boolean defaultRuntimeDepsAdded = false
 
-    /** List containing the runtime dependencies of the app as File instances. */
+    /** List containing the runtime dependencies of the app as File instances.  */
     List<File> getRuntimeDependencies() {
         if (!defaultRuntimeDepsAdded) {
             runtimeDependencies += defaultRuntimeDependencies
@@ -425,17 +418,14 @@ class BuildSettings extends AbstractBuildSettings {
         runtimeDependencies = deps
     }
 
-    /** List containing the default runtime-time dependencies of the app as File instances. */
+    /** List containing the default runtime-time dependencies of the app as File instances.  */
     private List<File> internalRuntimeDependencies
     @Lazy List<File> defaultRuntimeDependencies = {
         Message.info "Resolving [runtime] dependencies..."
-        if(internalRuntimeDependencies) return internalRuntimeDependencies
-        def jarFiles = dependencyManager
-                   .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-                   .getArtifactsReports(null, false)
-                   .localFile + applicationJars
+        if (internalRuntimeDependencies) return internalRuntimeDependencies
+        def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
         jarFiles = findAndRemovePluginDependencies("runtime", jarFiles, internalPluginRuntimeDependencies)
-        Message.debug("Resolved jars for [runtime]: ${{->jarFiles.join('\n')}}")
+        Message.debug("Resolved jars for [runtime]: ${{-> jarFiles.join('\n')}}")
 
         return jarFiles
     }()
@@ -443,7 +433,7 @@ class BuildSettings extends AbstractBuildSettings {
     private List<File> providedDependencies = []
     private boolean defaultProvidedDepsAdded = false
 
-    /** List containing the runtime dependencies of the app as File instances. */
+    /** List containing the runtime dependencies of the app as File instances.  */
     List<File> getProvidedDependencies() {
         if (!defaultProvidedDepsAdded) {
             providedDependencies += defaultProvidedDependencies
@@ -459,29 +449,26 @@ class BuildSettings extends AbstractBuildSettings {
         providedDependencies = deps
     }
 
-    /** List containing the dependencies needed at development time, but provided by the container at runtime **/
+    /** List containing the dependencies needed at development time, but provided by the container at runtime  **/
     private List<File> internalProvidedDependencies
     @Lazy List<File> defaultProvidedDependencies = {
         if (dependenciesExternallyConfigured) {
             return []
         }
-        if(internalProvidedDependencies) return internalProvidedDependencies
+        if (internalProvidedDependencies) return internalProvidedDependencies
 
         Message.info "Resolving [provided] dependencies..."
-        def jarFiles = dependencyManager
-                       .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-                       .getArtifactsReports(null, false)
-                       .localFile
+        def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION).getArtifactsReports(null, false).localFile
 
         jarFiles = findAndRemovePluginDependencies("provided", jarFiles, internalPluginProvidedDependencies)
-        Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
+        Message.debug("Resolved jars for [provided]: ${{-> jarFiles.join('\n')}}")
         return jarFiles
     }()
 
     private List<File> buildDependencies = []
     private boolean defaultBuildDepsAdded = false
 
-    /** List containing the runtime dependencies of the app as File instances. */
+    /** List containing the runtime dependencies of the app as File instances.  */
     List<File> getBuildDependencies() {
         if (!defaultBuildDepsAdded) {
             buildDependencies += defaultBuildDependencies
@@ -490,8 +477,6 @@ class BuildSettings extends AbstractBuildSettings {
         return buildDependencies
     }
 
-
-
     /**
      * Obtains a list of source plugins that are provided time dependencies
      *
@@ -499,7 +484,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginCompileDependencies() {
         // ensure initialization
-        if(!internalPluginCompileDependencies)
+        if (!internalPluginCompileDependencies)
             getPluginCompileDependencies()
 
 
@@ -513,7 +498,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginProvidedDependencies() {
         // ensure initialization
-        if(!internalPluginProvidedDependencies)
+        if (!internalPluginProvidedDependencies)
             getProvidedDependencies()
 
 
@@ -526,7 +511,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginRuntimeDependencies() {
         // ensure initialization
-        if(!internalPluginRuntimeDependencies)
+        if (!internalPluginRuntimeDependencies)
             getRuntimeDependencies()
 
 
@@ -540,7 +525,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginTestDependencies() {
         // ensure initialization
-        if(!internalPluginTestDependencies)
+        if (!internalPluginTestDependencies)
             getTestDependencies()
 
 
@@ -554,7 +539,7 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginBuildDependencies() {
         // ensure initialization
-        if(!internalPluginBuildDependencies)
+        if (!internalPluginBuildDependencies)
             getBuildDependencies()
 
 
@@ -575,16 +560,13 @@ class BuildSettings extends AbstractBuildSettings {
         if (dependenciesExternallyConfigured) {
             return []
         }
-        if(internalBuildDependencies) return internalBuildDependencies
+        if (internalBuildDependencies) return internalBuildDependencies
 
         Message.info "Resolving [build] dependencies..."
-        def jarFiles = dependencyManager
-                           .resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-                           .getArtifactsReports(null, false)
-                           .localFile + applicationJars
+        def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
 
         jarFiles = findAndRemovePluginDependencies("build", jarFiles, internalPluginBuildDependencies)
-        Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
+        Message.debug("Resolved jars for [build]: ${{-> jarFiles.join('\n')}}")
 
         return jarFiles
     }()
@@ -652,7 +634,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        defaultPluginMap = [hibernate:grailsVersion, tomcat:grailsVersion]
+        defaultPluginMap = [hibernate: grailsVersion, tomcat: grailsVersion]
         defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.
@@ -674,7 +656,7 @@ class BuildSettings extends AbstractBuildSettings {
 
                 }
             }
-            catch(e) {
+            catch (e) {
                 // failed to cache for some reason, probably I/O related. Ignore.
             }
 
@@ -871,7 +853,7 @@ class BuildSettings extends AbstractBuildSettings {
                 postLoadConfig()
             }
         }
-        catch(e) {
+        catch (e) {
             StackTraceUtils.deepSanitize e
             throw e
         }
@@ -897,80 +879,85 @@ class BuildSettings extends AbstractBuildSettings {
         flatConfig = config.flatten()
 
         def configURL = config.getConfigFile()
-        def configFile  = configURL ? new File(configURL.getFile()) : null
+        def configFile = configURL ? new File(configURL.getFile()) : null
 
         def metadataFile = Metadata.current.getMetadataFile()
 
-        if (configFile?.exists() && metadataFile?.exists()) {
-            this.resolveChecksum = ChecksumHelper.computeAsString(configFile, "md5") +
-            ChecksumHelper.computeAsString(metadataFile, "md5")
-        }
+        if (!modified) {
 
-        def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
-        if (cachedResolve.exists()) {
+            if (configFile?.exists() && metadataFile?.exists()) {
+                this.resolveChecksum = ChecksumHelper.computeAsString(configFile, "md5") +
+                        ChecksumHelper.computeAsString(metadataFile, "md5")
+            }
 
-            cachedResolve.withInputStream { input ->
-                Map dependencyMap = [:]
-                try {
-                    def ois = new ObjectInputStream(input)
-                    dependencyMap = ois.readObject()
-                } catch (e) {
-                    // ignore
-                }
+            def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
+            if (cachedResolve.exists()) {
 
-
-                if (dependencyMap?.isEmpty()) {
-                    modified = true
-                }
-                else {
-                    def compileDeps = dependencyMap.compile
-                    def runtimeDeps = dependencyMap.runtime
-                    def testDeps = dependencyMap.test
-                    def buildDeps = dependencyMap.build
-                    def providedDeps = dependencyMap.provided
-
-                    if (compileDeps) {
-                        compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
-                        if(compileDeps.any( { File f -> !f.exists() })) modified = true
-                        this.internalCompileDependencies = compileDeps
+                cachedResolve.withInputStream { input ->
+                    Map dependencyMap = [:]
+                    try {
+                        def ois = new ObjectInputStream(input)
+                        dependencyMap = ois.readObject()
+                    } catch (e) {
+                        // ignore
                     }
 
-                    if (runtimeDeps) {
-                        runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
-                        if(runtimeDeps.any( { File f -> !f.exists() })) modified = true
-                        this.internalRuntimeDependencies = runtimeDeps
-                    }
 
-                    if (testDeps) {
-                        testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
-                        if(testDeps.any( { File f -> !f.exists() })) modified = true
-                        this.internalTestDependencies = testDeps
+                    if (dependencyMap?.isEmpty()) {
+                        modified = true
                     }
+                    else {
+                        def compileDeps = dependencyMap.compile
+                        def runtimeDeps = dependencyMap.runtime
+                        def testDeps = dependencyMap.test
+                        def buildDeps = dependencyMap.build
+                        def providedDeps = dependencyMap.provided
 
-                    if (buildDeps) {
-                        buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
-                        if(buildDeps.any( { File f -> !f.exists() })) modified = true
-                        this.internalBuildDependencies = buildDeps
-                    }
+                        if (compileDeps) {
+                            compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
+                            if (compileDeps.any({ File f -> !f.exists() })) modified = true
+                            this.internalCompileDependencies = compileDeps
+                        }
 
-                    if (providedDeps) {
-                        providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
-                        if(providedDeps.any( { File f -> !f.exists() })) modified = true
-                        this.internalProvidedDependencies = providedDeps
+                        if (runtimeDeps) {
+                            runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
+                            if (runtimeDeps.any({ File f -> !f.exists() })) modified = true
+                            this.internalRuntimeDependencies = runtimeDeps
+                        }
+
+                        if (testDeps) {
+                            testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
+                            if (testDeps.any({ File f -> !f.exists() })) modified = true
+                            this.internalTestDependencies = testDeps
+                        }
+
+                        if (buildDeps) {
+                            buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
+                            if (buildDeps.any({ File f -> !f.exists() })) modified = true
+                            this.internalBuildDependencies = buildDeps
+                        }
+
+                        if (providedDeps) {
+                            providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
+                            if (providedDeps.any({ File f -> !f.exists() })) modified = true
+                            this.internalProvidedDependencies = providedDeps
+                        }
                     }
                 }
             }
+            else {
+                this.modified = true
+            }
+            if (modified) {
+                [internalBuildDependencies, internalCompileDependencies, internalProvidedDependencies, internalRuntimeDependencies, internalTestDependencies].each { it?.clear() }
+            }
         }
-        else {
-            this.modified = true
-        }
-        if(modified) {
-            [internalBuildDependencies, internalCompileDependencies, internalProvidedDependencies, internalRuntimeDependencies, internalTestDependencies].each { it?.clear() }
-        }
+
         configureDependencyManager(config)
     }
 
     protected boolean settingsFileLoaded = false
+
     protected ConfigObject loadSettingsFile() {
         if (!settingsFileLoaded) {
             def settingsFile = new File("$userHome/.grails/settings.groovy")
@@ -1010,6 +997,7 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     private GroovyClassLoader gcl
+
     GroovyClassLoader obtainGroovyClassLoader() {
         if (gcl == null) {
             gcl = rootLoader != null ? new GroovyClassLoader(rootLoader) : new GroovyClassLoader(ClassLoader.getSystemClassLoader())
@@ -1029,12 +1017,12 @@ class BuildSettings extends AbstractBuildSettings {
 
         def console = GrailsConsole.instance
         dependencyManager.transferListener = { TransferEvent e ->
-            switch(e.eventType) {
+            switch (e.eventType) {
                 case TransferEvent.TRANSFER_STARTED:
                     def resourceName = e.resource.name
-                    resourceName = resourceName[resourceName.lastIndexOf('/')+1..-1]
+                    resourceName = resourceName[resourceName.lastIndexOf('/') + 1..-1]
                     console.updateStatus "Downloading: ${resourceName}"
-                break
+                    break
             }
         } as TransferListener
 
@@ -1142,8 +1130,8 @@ class BuildSettings extends AbstractBuildSettings {
                 grailsVersion: grailsVersion,
                 userHome: userHome,
                 grailsSettings: this,
-                appName:Metadata.current.getApplicationName(),
-                appVersion:Metadata.current.getApplicationVersion())
+                appName: Metadata.current.getApplicationName(),
+                appVersion: Metadata.current.getApplicationVersion())
         return slurper
     }
 
@@ -1178,11 +1166,11 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!projectWarExplodedDirSet) {
-            projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props,  "${projectWorkDir}/stage"))
+            projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props, "${projectWorkDir}/stage"))
         }
 
         if (!convertClosuresArtefactsSet) {
-            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props,  'false').toBoolean()
+            convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props, 'false').toBoolean()
             System.setProperty(CONVERT_CLOSURES_KEY, "$convertClosuresArtefacts")
         }
 

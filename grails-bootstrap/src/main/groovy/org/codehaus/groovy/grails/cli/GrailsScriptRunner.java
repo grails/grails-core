@@ -90,18 +90,20 @@ public class GrailsScriptRunner {
         @Override public Object call(Object... args) { return null; }
     };
     public static final String NOANSI_ARGUMENT = "plain-output";
-    private static InputStream originalIn;
-    private static PrintStream originalOut;
+    private static final String RESOLVE_DEPENDENCIES_ARGUMENT = "force-resolve";
 
+    private static InputStream originalIn;
+
+    private static PrintStream originalOut;
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
-    private PrintStream out = System.out;
 
+    private PrintStream out = System.out;
     private boolean isInteractive = true;
     private URLClassLoader classLoader;
     private GrailsConsole console = GrailsConsole.getInstance();
-    private File scriptCacheDir;
 
+    private File scriptCacheDir;
     private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
     private boolean useDefaultEnv = true;
 
@@ -170,6 +172,9 @@ public class GrailsScriptRunner {
         BuildSettings build = null;
         try {
             build = new BuildSettings(new File(grailsHome));
+            if(commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+                build.setModified(true);
+            }
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
             }
@@ -234,6 +239,7 @@ public class GrailsScriptRunner {
 
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
+        parser.addOption(RESOLVE_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
         parser.addOption(VERBOSE_ARGUMENT, "Enable verbose output");
         parser.addOption(STACKTRACE_ARGUMENT, "Enable stack traces in output");
         parser.addOption(AGENT_ARGUMENT, "Enable the reloading agent");

@@ -337,6 +337,19 @@ public abstract class AbstractIvyDependencyManager {
     public void registerDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         registerDependencyCommon(scope, descriptor);
 
+        String plugin = descriptor.getPlugin();
+        if(plugin != null) {
+            DependencyDescriptor pluginDependencyDescriptor = getPluginDependencyDescriptor(plugin);
+            if(pluginDependencyDescriptor != null) {
+                ExcludeRule[] excludeRules = pluginDependencyDescriptor.getExcludeRules(scope);
+                if(excludeRules != null) {
+                    for (ExcludeRule excludeRule : excludeRules) {
+                        descriptor.addExcludeRule(scope, excludeRule);
+                    }
+                }
+            }
+        }
+
         ModuleRevisionId revisionId = descriptor.getDependencyRevisionId();
         modules.add(revisionId.getModuleId());
         dependencies.add(revisionId);

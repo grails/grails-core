@@ -64,11 +64,14 @@ pluginsBase = "${grailsWorkDir}/plugins".toString().replaceAll('\\\\','/')
 // Targets
 target(resolveDependencies:"Resolve plugin dependencies") {
     depends(parseArguments, initInplacePlugins)
-
-    profile("Resolving plugin dependencies") {
-        def installEngine = createPluginInstallEngine()
-        installEngine.resolvePluginDependencies()
+    def pluginZips = grailsSettings.pluginDependencies
+    
+    def installEngine = createPluginInstallEngine()
+    for(zip in pluginZips) {
+        installEngine.installPlugin(zip)
     }
+
+    installEngine.checkPluginsToUninstall()
 }
 
 target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
