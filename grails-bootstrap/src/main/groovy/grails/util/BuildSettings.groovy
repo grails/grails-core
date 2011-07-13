@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import org.codehaus.groovy.grails.resolve.ResolveException
+import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 
 /**
  * <p>Represents the project paths and other build settings
@@ -969,6 +970,7 @@ class BuildSettings extends AbstractBuildSettings {
                 this.modified = true
             }
             if (modified) {
+                ClasspathConfigurer.cleanResolveCache(this)
                 [internalBuildDependencies, internalCompileDependencies, internalProvidedDependencies, internalRuntimeDependencies, internalTestDependencies].each { it?.clear() }
             }
         }

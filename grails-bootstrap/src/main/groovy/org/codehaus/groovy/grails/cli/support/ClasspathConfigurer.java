@@ -19,6 +19,7 @@ import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -109,6 +110,8 @@ public class ClasspathConfigurer {
             final List<File> buildDependencies = settings.getBuildDependencies();
             if (!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
                 GrailsConsole.getInstance().error("Required Grails build dependencies were not found. Either GRAILS_HOME is not set or your dependencies are misconfigured in grails-app/conf/BuildConfig.groovy");
+                cleanResolveCache(settings);
+
                 System.exit(1);
             }
             addDependenciesToURLs(excludes, urls, buildDependencies);
@@ -129,6 +132,23 @@ public class ClasspathConfigurer {
             System.exit(1);
         }
         return urls.toArray(new URL[urls.size()]);
+    }
+
+    public static void cleanResolveCache(BuildSettings settings) {
+        File projectWorkDir = settings.getProjectWorkDir();
+        if(projectWorkDir != null) {
+            File[] files = projectWorkDir.listFiles(new FilenameFilter() {
+
+                public boolean accept(File file, String s) {
+                    return s.endsWith(".resolve");
+                }
+            });
+            if(files != null) {
+                for (File file : files) {
+                    file.delete();
+                }
+            }
+        }
     }
 
     protected void addDependenciesToURLs(Set<String> excludes, List<URL> urls, List<File> runtimeDeps) throws MalformedURLException {
