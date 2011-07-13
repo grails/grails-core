@@ -37,6 +37,7 @@ import jline.WindowsTerminal;
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
@@ -122,6 +123,8 @@ public class GrailsConsole {
         out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
         System.setOut(new GrailsConsolePrintStream(out));
+        System.setErr(new GrailsConsoleErrorPrintStream(new PrintStream(AnsiConsole.wrapOutputStream(System.err))));
+
 
         if (isWindows()) {
            terminal = new WindowsTerminal() {
