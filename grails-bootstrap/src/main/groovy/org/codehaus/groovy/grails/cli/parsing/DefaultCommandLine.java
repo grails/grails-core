@@ -128,6 +128,10 @@ public class DefaultCommandLine implements CommandLine {
         return sb.toString();
     }
 
+    public Map<String, Object> getUndeclaredOptions() {
+        return undeclaredOptions;
+    }
+
     public void addSystemProperty(String name, String value) {
         systemProperties.put(name, value);
     }
