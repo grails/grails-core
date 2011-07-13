@@ -125,6 +125,14 @@ class PluginInstallEngine {
         checkPluginsToUninstall(pluginDescriptors)
     }
 
+    void checkPluginsToUninstall() {
+        IvyDependencyManager dependencyManager = settings.dependencyManager
+
+        // Get the plugin dependency descriptors for the max version of each applicable dependency
+        def pluginDescriptors = dependencyManager.effectivePluginDependencyDescriptors
+
+        checkPluginsToUninstall(pluginDescriptors)
+    }
     /**
      * Installs a list of plugins
      *
@@ -585,8 +593,14 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
         }
 
+
         pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
-            !dependencyManager.isPluginTransitivelyIncluded(pluginInfo.name) && pluginInfo.pluginDir.file != settings.baseDir
+            def pluginFullName = "${pluginInfo.name}-${pluginInfo.version}.zip".toString()
+            !settings.pluginDependencies.any {
+                it.name == pluginFullName
+            } &&
+            !dependencyManager.isPluginTransitivelyIncluded(pluginInfo.name) &&
+            pluginInfo.pluginDir.file != settings.baseDir
         }
 
         for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
@@ -595,10 +609,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             if ((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue;
 
             if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
-                registerMetadataForPluginLocation(pluginDir)
+                uninstallPlugin(pluginInfo.name, pluginInfo.version)
             }
             else {
-                registerMetadataForPluginLocation(pluginDir)
+                uninstallPlugin(pluginInfo.name, pluginInfo.version)
             }
         }
     }

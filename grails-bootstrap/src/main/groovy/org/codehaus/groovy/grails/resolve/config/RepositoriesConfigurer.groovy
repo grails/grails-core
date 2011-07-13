@@ -156,8 +156,8 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         if (isResolverNotAlreadyDefined(name ?: url)) {
             dependencyManager.repositoryData << ['type':'grailsRepo', url:url]
             def urlResolver = new GrailsRepoResolver(name ?: url, new URL(url))
-            urlResolver.addArtifactPattern("${url}/grails-[artifact]/tags/RELEASE_*/grails-[artifact]-[revision].[ext]")
-            urlResolver.addIvyPattern("${url}/grails-[artifact]/tags/RELEASE_*/[artifact]-[revision].pom")
+            urlResolver.addArtifactPattern("${url}/grails-[module]/tags/RELEASE_*/grails-[module]-[revision].[ext]")
+            urlResolver.addIvyPattern("${url}/grails-[module]/tags/RELEASE_*/[module]-[revision].pom")
             urlResolver.settings = dependencyManager.ivySettings
             urlResolver.latestStrategy = new LatestTimeStrategy()
             urlResolver.changingPattern = ".*SNAPSHOT"

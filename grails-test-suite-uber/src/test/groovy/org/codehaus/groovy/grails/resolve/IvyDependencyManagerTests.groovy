@@ -129,7 +129,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             }
         }
 
-        def report = manager.resolvePluginDependencies()
+        def report = manager.resolveDependencies()
     }
 
     void testCheckPluginDependencyScope() {
@@ -542,8 +542,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 'runtime', foocache.@conf.text()
         assertEquals 'true', foocache.@transitive.text()
 
-        assertEquals 'jms', foocache.excludes.@name.text()
-        assertEquals '*', foocache.excludes.@group.text()
+        assertEquals 'xml-apisxmlParserAPIsjms', foocache.excludes.@name.text()
+        assertEquals '***', foocache.excludes.@group.text()
 
         // should not include inherited dependencies
         def inherited = dependencies.find { it.@name == 'grails-test' }

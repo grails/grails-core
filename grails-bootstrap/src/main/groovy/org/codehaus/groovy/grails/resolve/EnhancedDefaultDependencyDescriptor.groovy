@@ -68,6 +68,10 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, String scope) {
         super(mrid, force)
         this.scope = scope
+
+        // never allow these to avoid LinkageError
+        excludeForString("xml-apis")
+        excludeForString("xmlParserAPIs")
     }
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, boolean transitive, String scope) {

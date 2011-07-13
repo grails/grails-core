@@ -304,6 +304,8 @@ class BuildSettings extends AbstractBuildSettings {
 
     List buildListeners = []
 
+    List<File> pluginDependencies = []
+
     boolean convertClosuresArtefacts = false
 
     /**
@@ -320,6 +322,12 @@ class BuildSettings extends AbstractBuildSettings {
 
     private List<File> compileDependencies = []
     private boolean defaultCompileDepsAdded = false
+
+    private List<File> internalPluginCompileDependencies = []
+    private List<File> internalPluginTestDependencies = []
+    private List<File> internalPluginBuildDependencies = []
+    private List<File> internalPluginRuntimeDependencies = []
+    private List<File> internalPluginProvidedDependencies = []
 
     /** List containing the compile-time dependencies of the app as File instances. */
     List<File> getCompileDependencies() {
@@ -338,17 +346,32 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances. */
+    private List<File> internalCompileDependencies
     @Lazy List<File> defaultCompileDependencies = {
+        if(internalCompileDependencies) return internalCompileDependencies
         Message.info "Resolving [compile] dependencies..."
-        def jarFiles = dependencyManager
+        List<File> jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
                             .getArtifactsReports(null, false)
                             .localFile + applicationJars
+
+        jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
         Message.debug("Resolved jars for [compile]: ${{->jarFiles.join('\n')}}")
-        resolveCache['compile'] = jarFiles
-        storeCache()
         return jarFiles
     }()
+
+    private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
+        def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
+        for(z in pluginZips) {
+            if(!pluginDependencies.contains(z))
+                pluginDependencies.add(z)
+        }
+        scopePluginDependencies.addAll(pluginZips)
+        resolveCache[scope] = jarFiles
+        storeCache()
+        jarFiles = jarFiles.findAll { it.name.endsWith(".jar") }
+        return jarFiles
+    }
 
     private List<File> testDependencies = []
     private boolean defaultTestDepsAdded = false
@@ -370,15 +393,16 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     /** List containing the default test-time dependencies of the app as File instances. */
+    private List<File> internalTestDependencies
     @Lazy List<File> defaultTestDependencies = {
         Message.info "Resolving [test] dependencies..."
+        if(internalTestDependencies) return internalTestDependencies
         def jarFiles = dependencyManager
                             .resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
                             .getArtifactsReports(null, false)
                             .localFile + applicationJars
+        jarFiles = findAndRemovePluginDependencies("test", jarFiles, internalPluginTestDependencies)
         Message.debug("Resolved jars for [test]: ${{->jarFiles.join('\n')}}")
-        resolveCache['test'] = jarFiles
-        storeCache()
         return jarFiles
     }()
 
@@ -402,15 +426,17 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     /** List containing the default runtime-time dependencies of the app as File instances. */
+    private List<File> internalRuntimeDependencies
     @Lazy List<File> defaultRuntimeDependencies = {
         Message.info "Resolving [runtime] dependencies..."
+        if(internalRuntimeDependencies) return internalRuntimeDependencies
         def jarFiles = dependencyManager
                    .resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
                    .getArtifactsReports(null, false)
                    .localFile + applicationJars
+        jarFiles = findAndRemovePluginDependencies("runtime", jarFiles, internalPluginRuntimeDependencies)
         Message.debug("Resolved jars for [runtime]: ${{->jarFiles.join('\n')}}")
-        resolveCache['runtime'] = jarFiles
-        storeCache()
+
         return jarFiles
     }()
 
@@ -434,20 +460,21 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     /** List containing the dependencies needed at development time, but provided by the container at runtime **/
+    private List<File> internalProvidedDependencies
     @Lazy List<File> defaultProvidedDependencies = {
         if (dependenciesExternallyConfigured) {
             return []
         }
+        if(internalProvidedDependencies) return internalProvidedDependencies
+
         Message.info "Resolving [provided] dependencies..."
         def jarFiles = dependencyManager
                        .resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
                        .getArtifactsReports(null, false)
                        .localFile
 
+        jarFiles = findAndRemovePluginDependencies("provided", jarFiles, internalPluginProvidedDependencies)
         Message.debug("Resolved jars for [provided]: ${{->jarFiles.join('\n')}}")
-        resolveCache['provided'] = jarFiles
-        storeCache()
-
         return jarFiles
     }()
 
@@ -463,6 +490,77 @@ class BuildSettings extends AbstractBuildSettings {
         return buildDependencies
     }
 
+
+
+    /**
+     * Obtains a list of source plugins that are provided time dependencies
+     *
+     * @return A list of the source zips
+     */
+    List<File> getPluginCompileDependencies() {
+        // ensure initialization
+        if(!internalPluginCompileDependencies)
+            getPluginCompileDependencies()
+
+
+        return internalPluginCompileDependencies
+    }
+
+    /**
+     * Obtains a list of source plugins that are provided time dependencies
+     *
+     * @return A list of the source zips
+     */
+    List<File> getPluginProvidedDependencies() {
+        // ensure initialization
+        if(!internalPluginProvidedDependencies)
+            getProvidedDependencies()
+
+
+        return internalPluginProvidedDependencies
+    }
+    /**
+     * Obtains a list of source plugins that are runtime time dependencies
+     *
+     * @return A list of the source zips
+     */
+    List<File> getPluginRuntimeDependencies() {
+        // ensure initialization
+        if(!internalPluginRuntimeDependencies)
+            getRuntimeDependencies()
+
+
+        return internalPluginRuntimeDependencies
+    }
+
+    /**
+     * Obtains a list of source plugins that are test time dependencies
+     *
+     * @return A list of the source zips
+     */
+    List<File> getPluginTestDependencies() {
+        // ensure initialization
+        if(!internalPluginTestDependencies)
+            getTestDependencies()
+
+
+        return internalPluginTestDependencies
+    }
+
+    /**
+     * Obtains a list of source plugins that are build time dependencies
+     *
+     * @return A list of the source zips
+     */
+    List<File> getPluginBuildDependencies() {
+        // ensure initialization
+        if(!internalPluginBuildDependencies)
+            getBuildDependencies()
+
+
+        return internalPluginBuildDependencies
+    }
+
     /**
      * Sets the runtime dependencies for the project
      */
@@ -472,10 +570,12 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * List containing the dependencies required for the build system only
      */
+    private List<File> internalBuildDependencies
     @Lazy List<File> defaultBuildDependencies = {
         if (dependenciesExternallyConfigured) {
             return []
         }
+        if(internalBuildDependencies) return internalBuildDependencies
 
         Message.info "Resolving [build] dependencies..."
         def jarFiles = dependencyManager
@@ -483,9 +583,8 @@ class BuildSettings extends AbstractBuildSettings {
                            .getArtifactsReports(null, false)
                            .localFile + applicationJars
 
+        jarFiles = findAndRemovePluginDependencies("build", jarFiles, internalPluginBuildDependencies)
         Message.debug("Resolved jars for [build]: ${{->jarFiles.join('\n')}}")
-        resolveCache['build'] = jarFiles
-        storeCache()
 
         return jarFiles
     }()
@@ -811,10 +910,16 @@ class BuildSettings extends AbstractBuildSettings {
         if (cachedResolve.exists()) {
 
             cachedResolve.withInputStream { input ->
-                def ois = new ObjectInputStream(input)
-                Map dependencyMap = ois.readObject()
+                Map dependencyMap = [:]
+                try {
+                    def ois = new ObjectInputStream(input)
+                    dependencyMap = ois.readObject()
+                } catch (e) {
+                    // ignore
+                }
 
-                if (dependencyMap?.values()*.any { !it?.exists() }) {
+
+                if (dependencyMap?.isEmpty()) {
                     modified = true
                 }
                 else {
@@ -825,34 +930,42 @@ class BuildSettings extends AbstractBuildSettings {
                     def providedDeps = dependencyMap.provided
 
                     if (compileDeps) {
-                        this.@compileDependencies.addAll(compileDeps)
-                        defaultCompileDepsAdded = true
+                        compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
+                        if(compileDeps.any( { File f -> !f.exists() })) modified = true
+                        this.internalCompileDependencies = compileDeps
                     }
 
                     if (runtimeDeps) {
-                        this.@runtimeDependencies.addAll(runtimeDeps)
-                        defaultRuntimeDepsAdded = true
+                        runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
+                        if(runtimeDeps.any( { File f -> !f.exists() })) modified = true
+                        this.internalRuntimeDependencies = runtimeDeps
                     }
 
                     if (testDeps) {
-                        this.@testDependencies.addAll(testDeps)
-                        defaultTestDepsAdded = true
+                        testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
+                        if(testDeps.any( { File f -> !f.exists() })) modified = true
+                        this.internalTestDependencies = testDeps
                     }
 
                     if (buildDeps) {
-                        this.@buildDependencies.addAll(buildDeps)
-                        defaultBuildDepsAdded = true
+                        buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
+                        if(buildDeps.any( { File f -> !f.exists() })) modified = true
+                        this.internalBuildDependencies = buildDeps
                     }
 
                     if (providedDeps) {
-                        this.@providedDependencies.addAll(providedDeps)
-                        defaultProvidedDepsAdded = true
+                        providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
+                        if(providedDeps.any( { File f -> !f.exists() })) modified = true
+                        this.internalProvidedDependencies = providedDeps
                     }
                 }
             }
         }
         else {
             this.modified = true
+        }
+        if(modified) {
+            [internalBuildDependencies, internalCompileDependencies, internalProvidedDependencies, internalRuntimeDependencies, internalTestDependencies].each { it?.clear() }
         }
         configureDependencyManager(config)
     }
@@ -978,6 +1091,7 @@ class BuildSettings extends AbstractBuildSettings {
             def pluginName = dir.name
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
             pluginName = matcher ? matcher[0][1] : pluginName
+
             // Try BuildConfig.groovy first, which should work
             // work for in-place plugins.
             def path = dir.absolutePath

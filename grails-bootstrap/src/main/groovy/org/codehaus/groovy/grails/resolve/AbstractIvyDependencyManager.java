@@ -131,7 +131,7 @@ public abstract class AbstractIvyDependencyManager {
     protected Set<ModuleRevisionId> dependencies = new HashSet<ModuleRevisionId>();
     protected Set<DependencyDescriptor> dependencyDescriptors = new HashSet<DependencyDescriptor>();
     protected Set<DependencyDescriptor> pluginDependencyDescriptors = new HashSet<DependencyDescriptor>();
-    protected Set<String> pluginDependencyNames = new HashSet<String>();
+
     protected Set<String> metadataRegisteredPluginNames = new HashSet<String>();
     protected Map<String, Collection<ModuleRevisionId>> orgToDepMap = new HashMap<String, Collection<ModuleRevisionId>>();
     protected Collection<String> usedConfigurations = new ConcurrentLinkedQueue<String>();
@@ -235,7 +235,7 @@ public abstract class AbstractIvyDependencyManager {
      * Obtains a set of plugins this application is dependent onb
      * @return A set of plugins names
      */
-    public Set<String> getPluginDependencyNames() { return pluginDependencyNames; }
+    public Set<String> getPluginDependencyNames() { return pluginNameToDescriptorMap.keySet(); }
 
     /**
      * Obtains a list of dependencies defined in the project
@@ -306,7 +306,7 @@ public abstract class AbstractIvyDependencyManager {
      */
     public boolean isPluginTransitivelyIncluded(String pluginName) {
         EnhancedDefaultDependencyDescriptor dd = (EnhancedDefaultDependencyDescriptor) pluginNameToDescriptorMap.get(pluginName);
-        return dd != null && dd.isTransitivelyIncluded();
+        return dd != null && dd.isTransitivelyIncluded() && dd.isExported();
     }
 
     /**
@@ -361,7 +361,15 @@ public abstract class AbstractIvyDependencyManager {
      * @see #registerDependency(String, EnhancedDefaultDependencyDescriptor)
      */
     public void registerPluginDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
-        String name = descriptor.getDependencyId().getName();
+        ModuleId dependencyId = descriptor.getDependencyId();
+        String name = dependencyId.getName();
+
+        DependencyDescriptor existing = pluginNameToDescriptorMap.get(name);
+        if(existing != null && descriptor.isTransitivelyIncluded()) {
+            ModuleRevisionId dependencyRevisionId = existing.getDependencyRevisionId();
+            if(dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
+        }
+
 
         String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
         String packaging;
@@ -376,9 +384,12 @@ public abstract class AbstractIvyDependencyManager {
 
         registerDependencyCommon(scope, descriptor);
 
-        pluginDependencyNames.add(name);
+        pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
         pluginNameToDescriptorMap.put(name, descriptor);
+        if(descriptor.isExported()) {
+            moduleDescriptor.addDependency(descriptor);
+        }
     }
 
     /**
@@ -607,7 +618,7 @@ public abstract class AbstractIvyDependencyManager {
             String name = plugin.getKey();
             String version = plugin.getValue();
 
-            if (pluginDependencyNames.contains(name)) {
+            if (pluginNameToDescriptorMap.containsKey(name)) {
                 continue;
             }
 
