@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
-import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * Gant script that compiles Groovy and Java files in the src tree
@@ -81,5 +78,15 @@ target(compilepackage : "Compile & Compile GSP files") {
 }
 
 target(compilegsp : "Compile GSP files") {
-    projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
+    try {
+        projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
+    }
+    catch (e) {
+        if (e.cause instanceof GrailsTagException) {
+            event("StatusError", ["GSP Compilation error in file $e.cause.fileName at line $e.cause.lineNumber: $e.cause.message"])
+            exit(1)
+        }
+        event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
+        exit(1)
+    }
 }
