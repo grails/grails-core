@@ -10,9 +10,10 @@ class AssociationsValidationErrorsTests extends AbstractGrailsHibernateTests {
 
   protected void onSetUp() {
     gcl.parseClass('''
+import grails.persistence.*
+
+@Entity
 class BaseTest {
-    Long id
-    Long version
 
     String name
     
@@ -27,10 +28,8 @@ class BaseTest {
     }
 }
 
+@Entity
 class ListTest {
-    Long id
-    Long version
-    
     String name
     
     List list2Tests = new ArrayList()
@@ -44,10 +43,8 @@ class ListTest {
     }
 }
 
+@Entity
 class List2Test {
-    Long id
-    Long version
-    
     String name
     
     static belongsTo = ListTest
@@ -57,10 +54,8 @@ class List2Test {
     }
 }
 
+@Entity
 class MapTest {
-    Long id
-    Long version
-    
     String name
     
     Map map2Tests
@@ -74,10 +69,8 @@ class MapTest {
     }
 }
 
+@Entity
 class Map2Test {
-    Long id
-    Long version
-    
     String name
     
     static belongsTo = MapTest
@@ -87,10 +80,8 @@ class Map2Test {
     }
 }
 
+@Entity
 class SetTest {
-    Long id
-    Long version
-    
     String name
     
     static belongsTo = BaseTest
@@ -138,6 +129,7 @@ class SetTest {
     assertNotNull("Error not found for field listTests[0].list2Tests[1].name, errors were: ${baseTest.errors}", baseTest.errors.getFieldError('listTests[0].list2Tests[1].name'))
   }
 
+
   void testMapValidation() {
     def baseTest = ga.getDomainClass('BaseTest').newInstance()
     baseTest.name = 'Base Name'
@@ -147,7 +139,7 @@ class SetTest {
 
     def mapTest1 = ga.getDomainClass('MapTest').newInstance()
 
-    def key = 'key with spaces and non-standard chars $!@3уш'
+    def key = 'key with spaces and non-standard chars $!@3пїЅпїЅ'
     baseTest.mapTests = [MKEY0:mapTest0, "${key}":mapTest1]
     baseTest.validate()
 
