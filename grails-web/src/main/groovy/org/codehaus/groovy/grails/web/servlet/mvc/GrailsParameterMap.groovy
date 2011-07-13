@@ -86,11 +86,15 @@ class GrailsParameterMap extends TypeConvertingMap {
                 requestMap.put(fileName, request.getFile(fileName))
             }
         }
-        for (key in requestMap.keySet()) {
-            Object paramValue = getParameterValue(requestMap, key)
+        updateNestedKeys(requestMap)
+    }
+
+    def updateNestedKeys(Map keys) {
+        for (key in keys.keySet()) {
+            Object paramValue = getParameterValue(keys, key)
 
             this.@wrappedMap.put(key, paramValue)
-            processNestedKeys(request, requestMap, key, key, this.@wrappedMap)
+            processNestedKeys(this.request, keys, key, key, this.@wrappedMap)
         }
     }
 

@@ -791,11 +791,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     @SuppressWarnings("unchecked")
     private void bindCollectionAssociation(MutablePropertyValues mpvs, PropertyValue pv) {
         Object v = pv.getValue();
+        final boolean isArray = v != null && v.getClass().isArray();
+
+        if(!isArray && !(v instanceof String)) return;
 
         Collection collection = (Collection) bean.getPropertyValue(pv.getName());
         collection.clear();
         final Class associatedType = getReferencedTypeForCollection(pv.getName(), getTarget());
-        final boolean isArray = v != null && v.getClass().isArray();
         final PropertyEditor propertyEditor = findCustomEditor(collection.getClass(), pv.getName());
         if (propertyEditor == null) {
             if (isDomainAssociation(associatedType)) {

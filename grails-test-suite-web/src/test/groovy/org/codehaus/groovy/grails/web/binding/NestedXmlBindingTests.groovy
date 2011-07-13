@@ -110,33 +110,32 @@ class NestedXmlBindingTests {
         assert result.bar.id == 1
     }
 
-// TODO: Move this into JSON tests and get working
-//    void testBindToArrayOfDomainsWithJson() {
-//        request.json = '''
-//{
-//'class': 'Person',
-//"person": {
-//"name": "John Doe",
-//"locations": {
-//"location": [
-//{ "shipppingAddress": "foo", "billingAddress": "bar" },
-//
-//{ "shipppingAddress": "foo2", "billingAddress": "bar2" }
-//]
-//}
-//}
-//}
-//'''
-//        def result = controller.bind()
-//
-//        assert result != null
-//
-//        Person p = result.person
-//
-//        assert p != null
-//        assert p.name == "John Doe"
-//        assert p.locations.size() == 2
-//    }
+    void testBindToArrayOfDomainsWithJson() {
+        request.json = '''
+{
+'class': 'Person',
+"person": {
+"name": "John Doe",
+"locations": {
+"location": [
+{ "shipppingAddress": "foo", "billingAddress": "bar" },
+
+{ "shipppingAddress": "foo2", "billingAddress": "bar2" }
+]
+}
+}
+}
+'''
+        def result = controller.bind()
+
+        assert result != null
+
+        Person p = result.person
+
+        assert p != null
+        assert p.name == "John Doe"
+        assert p.locations.size() == 2
+    }
 }
 class NestedXmlController {
     def bind() {

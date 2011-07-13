@@ -58,6 +58,7 @@ class JSONParsingParameterCreationListener extends AbstractParsingParameterCreat
                     flattenedMap[entry.key] = entry.value
                 }
             }
+            params.updateNestedKeys(target)
         }
         catch (Exception e) {
             LOG.error "Error parsing incoming JSON request: ${e.message}", e
