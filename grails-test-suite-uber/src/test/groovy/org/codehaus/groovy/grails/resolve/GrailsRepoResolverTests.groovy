@@ -16,6 +16,6 @@ class GrailsRepoResolverTests extends GroovyTestCase {
         assertEquals "http://localhost/grails-[artifact]/tags/LATEST_RELEASE/grails-[artifact]-[revision].[ext]",repoResolver.transformGrailsRepositoryPattern(mrid, url)
 
         mrid = ModuleRevisionId.newInstance("org.grails.plugins","feeds", "1.1")
-        assertEquals "http://localhost/grails-[artifact]/tags/RELEASE_1_1/grails-[artifact]-[revision].[ext]",repoResolver.transformGrailsRepositoryPattern(mrid, url)
+        assertEquals "http://localhost/grails-[artifact]/tags/RELEASE_[revision]/grails-[artifact]-[revision].[ext]",repoResolver.transformGrailsRepositoryPattern(mrid, url)
     }
 }
