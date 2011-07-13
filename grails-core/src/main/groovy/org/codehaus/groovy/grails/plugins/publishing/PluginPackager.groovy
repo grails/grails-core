@@ -211,8 +211,20 @@ class PluginPackager {
             copy(file:"${basedir}/plugin.xml", tofile:"${metaInf}/grails-plugin.xml")
             move(file:"${classesDir}/gsp/views.properties", todir:metaInf, failonerror:false)
             mkdir(dir:"${metaInf}/grails-app/i18n")
-            copy(todir:"${metaInf}/grails-app/i18n", failonerror:false) {
-                fileset(dir:"${resourcesDir}/grails-app/i18n")
+            if(new File("${resourcesDir}/grails-app/i18n").exists()) {
+                copy(todir:"${metaInf}/grails-app/i18n", includeEmptyDirs:false,failonerror:false) {
+                    fileset(dir:"${resourcesDir}/grails-app/i18n")
+                }
+            }
+            mkdir(dir:"${metaInf}/static")
+            copy(todir:"${metaInf}/static", includeEmptyDirs:false, failonerror:false) {
+                fileset(dir:"${basedir}/web-app") {
+                    exclude name:"plugins/**"
+                    exclude name:"**/WEB-INF/**"
+                    exclude name:"**/META-INF/**"
+                    exclude name:"**/*.gsp"
+                    exclude name:"**/*.jsp"
+                }
             }
             mkdir(dir:"${metaInf}/scripts")
             copy(todir:"${metaInf}/scripts") {
@@ -223,6 +235,7 @@ class PluginPackager {
             copy(todir:"${classesDir}/src") {
                 fileset(dir:"${basedir}/src", excludes:"groovy/**,java/**")
             }
+
 
             jar(destfile:destinationFile) {
                 fileset(dir:classesDir, excludes:excludeList.join(','))

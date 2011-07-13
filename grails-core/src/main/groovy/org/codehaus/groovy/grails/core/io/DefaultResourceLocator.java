@@ -17,7 +17,12 @@ package org.codehaus.groovy.grails.core.io;
 
 import grails.util.Environment;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -39,7 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 1.4
  *
  */
-public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware{
+public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, PluginManagerAware{
+    private static final Resource NULL_RESOURCE = new ByteArrayResource("null".getBytes());
     public static final String WILDCARD = "*";
     public static final String FILE_SEPARATOR = File.separator;
     public static final String CLOSURE_MARKER = "$";
@@ -50,6 +56,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     private Map<String, Resource> classNameToResourceCache = new ConcurrentHashMap<String, Resource>();
     private Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<String, Resource>();
     private ResourceLoader defaultResourceLoader =  new FileSystemResourceLoader();
+    private GrailsPluginManager pluginManager;
 
     public void setSearchLocation(String searchLocation) {
         ResourceLoader resourceLoader = getDefaultResourceLoader();
@@ -94,15 +101,14 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
         Resource resource = uriToResourceCache.get(uri);
         if(resource == null) {
 
+            PluginResourceInfo info = inferPluginNameFromURI(uri);
             String uriWebAppRelative = WEB_APP_DIR + uri;
             for (String resourceSearchDirectory : resourceSearchDirectories) {
                 Resource res = resolveExceptionSafe(resourceSearchDirectory + uriWebAppRelative);
                 if(res.exists()) {
                     resource = res;
-                    uriToResourceCache.put(uri, resource);
                 }
-                else if(!Environment.isWarDeployed()){
-                    PluginResourceInfo info = inferPluginNameFromURI(uri);
+                else if(!Environment.isWarDeployed()) {
                     Resource dir = resolveExceptionSafe(resourceSearchDirectory);
                     if(dir.exists() && info != null) {
                         try {
@@ -111,7 +117,6 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                                 Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri);
                                 if(pluginFile.exists()) {
                                     resource = pluginFile;
-                                    uriToResourceCache.put(uri, resource);
                                 }
                             }
                         } catch (IOException e) {
@@ -120,8 +125,37 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                     }
                 }
             }
+
+            if(resource == null && info != null) {
+                resource = findResourceInBinaryPlugins(info);
+            }
+
+            if(resource != null) {
+                uriToResourceCache.put(uri, resource);
+            }
+            else if(Environment.isWarDeployed()) {
+                uriToResourceCache.put(uri, NULL_RESOURCE);
+            }
         }
-        return resource;
+        return resource == NULL_RESOURCE ? null : resource;
+    }
+
+    protected Resource findResourceInBinaryPlugins(PluginResourceInfo info) {
+        if(pluginManager != null) {
+            String fullPluginName = info.pluginName;
+            GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+            BinaryGrailsPlugin binaryPlugin = null;
+            for (GrailsPlugin plugin : allPlugins) {
+                if(plugin.getFileSystemName().equals(fullPluginName) && (plugin instanceof BinaryGrailsPlugin)) {
+                    binaryPlugin = (BinaryGrailsPlugin) plugin;
+                }
+            }
+
+            if(binaryPlugin != null) {
+                return binaryPlugin.getResource(info.uri);
+            }
+        }
+        return null;
     }
 
     private PluginResourceInfo inferPluginNameFromURI(String uri) {
@@ -187,6 +221,10 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
         if(Environment.isWarDeployed()) {
             this.defaultResourceLoader = resourceLoader;
         }
+    }
+
+    public void setPluginManager(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
     }
 
     class PluginResourceInfo {

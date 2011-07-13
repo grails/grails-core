@@ -145,6 +145,27 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         return descriptor;
     }
 
+
+    /**
+     * Resolves a static resource contained within this binary plugin
+     *
+     * @param path The relative path to the static resource
+     * @return The resource or null if it doesn't exist
+     */
+    public Resource getResource(String path) {
+        final Resource descriptorResource = descriptor.getResource();
+
+        try {
+            Resource resource = descriptorResource.createRelative("static" + path);
+            if(resource.exists()) {
+                return resource;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
+    }
+
     /**
      * Obtains all properties for this binary plugin for the given locale.
      *
