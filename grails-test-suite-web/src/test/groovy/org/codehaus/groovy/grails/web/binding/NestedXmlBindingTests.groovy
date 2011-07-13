@@ -13,7 +13,7 @@ import grails.test.mixin.TestFor
  */
 
 @TestFor(NestedXmlController)
-@Mock([Person, Location])
+@Mock([Person, Location, Foo, Bar])
 class NestedXmlBindingTests {
 
     void testNestedXmlBinding() {
@@ -95,6 +95,21 @@ class NestedXmlBindingTests {
 
     }
 
+    void testBindToOne() {
+        request.xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+<bar id="1" />
+</foo>
+'''
+        new Bar().save(flush:true)
+        def result = controller.bindToOne()
+
+        assert result != null
+
+        assert result.bar != null
+        assert result.bar.id == 1
+    }
+
 // TODO: Move this into JSON tests and get working
 //    void testBindToArrayOfDomainsWithJson() {
 //        request.json = '''
@@ -130,6 +145,11 @@ class NestedXmlController {
 
         [person: person]
     }
+
+    def bindToOne() {
+        def fooInstance = new Foo(params['foo'])
+        return  fooInstance
+    }
 }
 
 @Entity
@@ -144,4 +164,15 @@ class Person {
 class Location {
     String shippingAddress
     String billingAddress
+}
+
+@Entity
+class Foo {
+
+    static belongsTo = [bar: Bar];
+
+}
+@Entity
+class Bar {
+
 }
