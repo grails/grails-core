@@ -202,7 +202,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     continue
                 }
 
-                res = res ?: resourceLocator.findResourceForClassName(className)
+                res = res ?: resourceLocator?.findResourceForClassName(className)
                 if (res != null) {
                     if (lineNumbersShown[res.filename].contains(lineNumber)) continue // don't repeat the same lines twice
 
