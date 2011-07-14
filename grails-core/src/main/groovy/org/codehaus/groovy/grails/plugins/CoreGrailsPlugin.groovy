@@ -96,7 +96,7 @@ class CoreGrailsPlugin {
         if (devMode) {
             shutdownHook(DevelopmentShutdownHook)
         }
-        grailsResourceLocator(DefaultResourceLocator) {
+        abstractGrailsResourceLocator {
             if(devMode) {
                 BuildSettings settings = BuildSettingsHolder.settings
                 if(settings) {
@@ -106,6 +106,9 @@ class CoreGrailsPlugin {
                 }
 
             }
+        }
+        grailsResourceLocator(DefaultResourceLocator) { bean ->
+            bean.parent = "abstractGrailsResourceLocator"
         }
 
         customEditors(CustomEditorConfigurer) {

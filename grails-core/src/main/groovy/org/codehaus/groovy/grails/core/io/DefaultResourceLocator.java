@@ -45,18 +45,18 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, PluginManagerAware{
-    private static final Resource NULL_RESOURCE = new ByteArrayResource("null".getBytes());
+    protected static final Resource NULL_RESOURCE = new ByteArrayResource("null".getBytes());
     public static final String WILDCARD = "*";
     public static final String FILE_SEPARATOR = File.separator;
     public static final String CLOSURE_MARKER = "$";
     public static final String WEB_APP_DIR = "web-app";
-    private PathMatchingResourcePatternResolver patchMatchingResolver;
-    private List<String> classSearchDirectories = new ArrayList<String>();
-    private List<String> resourceSearchDirectories = new ArrayList<String>();
-    private Map<String, Resource> classNameToResourceCache = new ConcurrentHashMap<String, Resource>();
-    private Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<String, Resource>();
-    private ResourceLoader defaultResourceLoader =  new FileSystemResourceLoader();
-    private GrailsPluginManager pluginManager;
+    protected PathMatchingResourcePatternResolver patchMatchingResolver;
+    protected List<String> classSearchDirectories = new ArrayList<String>();
+    protected List<String> resourceSearchDirectories = new ArrayList<String>();
+    protected Map<String, Resource> classNameToResourceCache = new ConcurrentHashMap<String, Resource>();
+    protected Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<String, Resource>();
+    protected ResourceLoader defaultResourceLoader =  new FileSystemResourceLoader();
+    protected GrailsPluginManager pluginManager;
 
     public void setSearchLocation(String searchLocation) {
         ResourceLoader resourceLoader = getDefaultResourceLoader();

@@ -43,6 +43,8 @@ import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageStaticResourceLocator
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -147,6 +149,9 @@ class GroovyPagesGrailsPlugin {
                 }
             }
 
+        }
+        grailsResourceLocator(deployed ? CachingGroovyPageStaticResourceLocator : GroovyPageStaticResourceLocator) { bean ->
+            bean.parent = "abstractGrailsResourceLocator"
         }
         // Setup the main templateEngine used to render GSPs
         groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
