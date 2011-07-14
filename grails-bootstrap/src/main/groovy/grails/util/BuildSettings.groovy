@@ -924,7 +924,8 @@ class BuildSettings extends AbstractBuildSettings {
                         def ois = new ObjectInputStream(input)
                         dependencyMap = ois.readObject()
                     } catch (e) {
-                        // ignore
+                        modified = true
+                        return
                     }
 
 
@@ -942,30 +943,40 @@ class BuildSettings extends AbstractBuildSettings {
                             compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
                             if (compileDeps.any({ File f -> !f.exists() })) modified = true
                             this.internalCompileDependencies = compileDeps
+                        }else {
+                            modified = true
                         }
 
                         if (runtimeDeps) {
                             runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
                             if (runtimeDeps.any({ File f -> !f.exists() })) modified = true
                             this.internalRuntimeDependencies = runtimeDeps
+                        }else {
+                            modified = true
                         }
 
                         if (testDeps) {
                             testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
                             if (testDeps.any({ File f -> !f.exists() })) modified = true
                             this.internalTestDependencies = testDeps
+                        }else {
+                            modified = true
                         }
 
                         if (buildDeps) {
                             buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
                             if (buildDeps.any({ File f -> !f.exists() })) modified = true
                             this.internalBuildDependencies = buildDeps
+                        }else {
+                            modified = true
                         }
 
                         if (providedDeps) {
                             providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
                             if (providedDeps.any({ File f -> !f.exists() })) modified = true
                             this.internalProvidedDependencies = providedDeps
+                        }else {
+                            modified = true
                         }
                     }
                 }

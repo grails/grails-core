@@ -52,7 +52,7 @@ public class DefaultCommandLine implements CommandLine {
             env = env != null ? env : Environment.DEVELOPMENT.getName();
         }
         else {
-            env = environment;
+            env = environment != null ? environment : Environment.DEVELOPMENT.getName();
         }
 
         System.setProperty(Environment.KEY, env);
