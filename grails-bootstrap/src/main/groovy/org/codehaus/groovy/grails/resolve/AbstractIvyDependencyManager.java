@@ -364,7 +364,7 @@ public abstract class AbstractIvyDependencyManager {
         }
 
         dependencyDescriptors.add(descriptor);
-        if (descriptor.isExportedToApplication()) {
+        if (descriptor.isExportedToApplication() || buildSettings.isPluginProject()) {
             moduleDescriptor.addDependency(descriptor);
         }
     }
@@ -401,7 +401,7 @@ public abstract class AbstractIvyDependencyManager {
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
         pluginNameToDescriptorMap.put(name, descriptor);
-        if(descriptor.isExported()) {
+        if(descriptor.isExported()|| buildSettings.isPluginProject()) {
             moduleDescriptor.addDependency(descriptor);
         }
     }
