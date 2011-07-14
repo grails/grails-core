@@ -211,6 +211,9 @@ public class GrailsScriptRunner {
             console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
+            if(commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+                ClasspathConfigurer.cleanResolveCache(build);
+            }
             scriptRunner.initializeState();
             try {
                 new InteractiveMode(build, scriptRunner).run();
