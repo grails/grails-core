@@ -489,7 +489,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 eventHandler "PluginUninstalled", "Uninstalled plugin [${name}]."
             }
             else {
-                errorHandler("No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall")
+                GrailsConsole.getInstance().warning("No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall")
             }
         }
         catch (e) {

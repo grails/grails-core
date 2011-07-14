@@ -121,13 +121,20 @@ public class ClasspathConfigurer {
             // will be required for the build to work.
             addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
 
+            // Important, we call these so they're properly initialized!
+            settings.getRuntimeDependencies();
+            settings.getCompileDependencies();
+
             // Add the libraries of both project and global plugins.
             if (!skipPlugins) {
                 for (File dir : pluginPathSupport.listKnownPluginDirs()) {
                     addPluginLibs(dir, urls, settings);
                 }
             }
+
+            settings.storeDependencyCache();
         } catch (ResolveException e) {
+            cleanResolveCache(settings);
             GrailsConsole.getInstance().error(e.getMessage());
             System.exit(1);
         }

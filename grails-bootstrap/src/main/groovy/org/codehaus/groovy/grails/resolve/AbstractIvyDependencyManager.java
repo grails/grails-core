@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.resolve;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.util.Metadata;
+import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 
 import java.io.File;
@@ -642,7 +643,9 @@ public abstract class AbstractIvyDependencyManager {
                     mrid, true, true, scope);
             // since the plugin dependency isn't declared but instead installed via install-plugin
             // it should be not be exported by another plugin
-            enhancedDescriptor.setExport(false);
+            if(buildSettings.isPluginProject()) {
+                enhancedDescriptor.setExport(false);
+            }
 
             registerPluginDependency(scope, enhancedDescriptor);
         }
