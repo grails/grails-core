@@ -31,6 +31,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.Assert
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import grails.build.logging.GrailsConsole
 
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
@@ -245,11 +246,10 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 
     private String getPropertyName(GrailsDomainClass domainClass) { "${domainClass.propertyName}${domainSuffix}" }
 
-    private helper = new CommandLineHelper()
-    private canWrite(testFile) {
+    private canWrite(File testFile) {
         if (!overwrite && testFile.exists()) {
             try {
-                def response = helper.userInput("File ${testFile} already exists. Overwrite?",['y','n','a'] as String[])
+                def response = GrailsConsole.getInstance().userInput("File ${makeRelativeIfPossible(testFile.absolutePath, basedir)} already exists. Overwrite?",['y','n','a'] as String[])
                 overwrite = overwrite || response == "a"
                 return overwrite || response == "y"
             }
@@ -260,6 +260,14 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         }
         return true
     }
+
+    public static String makeRelativeIfPossible(String fileName, String base = System.getProperty("base.dir")) {
+        if (base) {
+            fileName = fileName - new File(base).canonicalPath
+        }
+        return fileName
+    }
+
 
     private getTemplateText(String template) {
         def application = grailsApplication
