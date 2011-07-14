@@ -14,10 +14,7 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
-import grails.util.BuildSettings;
-import grails.util.CollectionUtils;
-import grails.util.Metadata;
-import grails.util.PluginBuildSettings;
+import grails.util.*;
 import groovy.lang.Closure;
 
 import java.io.File;
@@ -364,7 +361,7 @@ public abstract class AbstractIvyDependencyManager {
         }
 
         dependencyDescriptors.add(descriptor);
-        if (descriptor.isExportedToApplication() || buildSettings.isPluginProject()) {
+        if (shouldIncludeDependency(descriptor)) {
             moduleDescriptor.addDependency(descriptor);
         }
     }
@@ -401,9 +398,24 @@ public abstract class AbstractIvyDependencyManager {
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
         pluginNameToDescriptorMap.put(name, descriptor);
-        if(descriptor.isExported()|| buildSettings.isPluginProject()) {
+        if(shouldIncludeDependency(descriptor)) {
             moduleDescriptor.addDependency(descriptor);
         }
+    }
+
+    private boolean shouldIncludeDependency(EnhancedDefaultDependencyDescriptor descriptor) {
+        return descriptor.isExported()|| (buildSettings.isPluginProject() && isExposedByThisPlugin(descriptor) );
+    }
+
+    private boolean isExposedByThisPlugin(EnhancedDefaultDependencyDescriptor descriptor) {
+        File basePluginDescriptor = buildSettings.getBasePluginDescriptor();
+        if(basePluginDescriptor != null) {
+            String basePluginName = GrailsNameUtils.getPluginName(basePluginDescriptor.getName());
+            String plugin = descriptor.getPlugin();
+            return plugin != null && plugin.equals(basePluginName);
+        }
+        return false;
+
     }
 
     /**
