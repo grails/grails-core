@@ -103,7 +103,10 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
 
             PluginResourceInfo info = inferPluginNameFromURI(uri);
             if(Environment.isWarDeployed()) {
-                resource = defaultResourceLoader.getResource(uri);
+                Resource defaultResource = defaultResourceLoader.getResource(uri);
+                if(defaultResource != null && defaultResource.exists()) {
+                    resource = defaultResource;
+                }
             }
             else {
                 String uriWebAppRelative = WEB_APP_DIR + uri;

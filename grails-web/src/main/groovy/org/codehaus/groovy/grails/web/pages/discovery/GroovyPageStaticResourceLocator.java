@@ -37,7 +37,7 @@ public class GroovyPageStaticResourceLocator extends DefaultResourceLocator {
     @Override
     public Resource findResourceForURI(String uri) {
         Resource resource = super.findResourceForURI(uri);
-        if (resource == null) {
+        if (resource == null || !resource.exists()) {
             GroovyPageBinding binding = findBindingInWebRequest();
             if (binding != null) {
                 GrailsPlugin pagePlugin = binding.getPagePlugin();
