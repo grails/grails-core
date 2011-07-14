@@ -682,7 +682,7 @@ class BuildSettings extends AbstractBuildSettings {
                 }
             }
             catch (e) {
-                // failed to cache for some reason, probably I/O related. Ignore.
+                ClasspathConfigurer.cleanResolveCache(this)
             }
 
         }
