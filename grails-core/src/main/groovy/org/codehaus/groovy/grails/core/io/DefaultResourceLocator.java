@@ -102,25 +102,31 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
         if(resource == null) {
 
             PluginResourceInfo info = inferPluginNameFromURI(uri);
-            String uriWebAppRelative = WEB_APP_DIR + uri;
-            for (String resourceSearchDirectory : resourceSearchDirectories) {
-                Resource res = resolveExceptionSafe(resourceSearchDirectory + uriWebAppRelative);
-                if(res.exists()) {
-                    resource = res;
-                }
-                else if(!Environment.isWarDeployed()) {
-                    Resource dir = resolveExceptionSafe(resourceSearchDirectory);
-                    if(dir.exists() && info != null) {
-                        try {
-                            String filename = dir.getFilename();
-                            if(filename != null && filename.equals(info.pluginName)) {
-                                Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri);
-                                if(pluginFile.exists()) {
-                                    resource = pluginFile;
+            if(Environment.isWarDeployed()) {
+                resource = defaultResourceLoader.getResource(uri);
+            }
+            else {
+                String uriWebAppRelative = WEB_APP_DIR + uri;
+
+                for (String resourceSearchDirectory : resourceSearchDirectories) {
+                    Resource res = resolveExceptionSafe(resourceSearchDirectory + uriWebAppRelative);
+                    if(res.exists()) {
+                        resource = res;
+                    }
+                    else if(!Environment.isWarDeployed()) {
+                        Resource dir = resolveExceptionSafe(resourceSearchDirectory);
+                        if(dir.exists() && info != null) {
+                            try {
+                                String filename = dir.getFilename();
+                                if(filename != null && filename.equals(info.pluginName)) {
+                                    Resource pluginFile = dir.createRelative(WEB_APP_DIR + info.uri);
+                                    if(pluginFile.exists()) {
+                                        resource = pluginFile;
+                                    }
                                 }
+                            } catch (IOException e) {
+                                // ignore
                             }
-                        } catch (IOException e) {
-                            // ignore
                         }
                     }
                 }
