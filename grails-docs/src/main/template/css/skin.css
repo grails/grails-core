@@ -16,6 +16,10 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
     color: #7c9d00;
 }
 
+#main .project h1, #table-of-content h2 {
+    color: #444;
+}
+
 #footer {
     color: #999;
 }
