@@ -661,6 +661,10 @@ class BuildSettings extends AbstractBuildSettings {
         // Update the base directory. This triggers some extra config.
         setBaseDir(baseDir)
 
+        if(![Environment.DEVELOPMENT, Environment.TEST].contains(Environment.current)) {
+            modified = true
+        }
+
         // The "grailsScript" closure definition. Returns the location
         // of the corresponding script file if GRAILS_HOME is set,
         // otherwise it loads the script class using the Gant classloader.

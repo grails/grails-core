@@ -357,15 +357,13 @@ public class GrailsScriptRunner {
         return callPluginOrGrailsScript(commandLine, scriptName, env);
     }
 
-    private void setRunningEnvironment(String env) {
+    private void setRunningEnvironment(CommandLine commandLine, String env) {
         // Get the default environment if one hasn't been set.
         System.setProperty("base.dir", settings.getBaseDir().getPath());
-        System.setProperty(Environment.KEY, env);
-        System.setProperty(Environment.DEFAULT, "true");
 
         // Add some extra binding variables that are now available.
         settings.setGrailsEnv(env);
-        settings.setDefaultEnv(useDefaultEnv);
+        settings.setDefaultEnv(!commandLine.isEnvironmentSet());
     }
 
     private int callPluginOrGrailsScript(CommandLine commandLine, String scriptName, String env) {
@@ -427,7 +425,7 @@ public class GrailsScriptRunner {
         console.updateStatus("Running pre-compiled script");
 
         // Must be called before the binding is initialised.
-        setRunningEnvironment(env);
+        setRunningEnvironment(commandLine, env);
 
         // Get Gant to load the class by name using our class loader.
         ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(commandLine,
@@ -456,7 +454,7 @@ public class GrailsScriptRunner {
     private int executeScriptFile(CommandLine commandLine, String scriptName, String env, GantBinding binding, Resource scriptFile) {
         // We can now safely set the default environment
         String scriptFileName = getScriptNameFromFile(scriptFile);
-        setRunningEnvironment(env);
+        setRunningEnvironment(commandLine, env);
         binding.setVariable("scriptName", scriptFileName);
 
         // Setup the script to call.
