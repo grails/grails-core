@@ -102,11 +102,26 @@ class LegacyDocMigrator {
     private alias(section) {
         def alias = aliasMap[section.name]
         if (!alias) {
-            def parts = []
-            section.title.eachMatch(/(\w+)/) { parts << it[0] }
-            alias = parts.join('')
-            alias = alias[0].toLowerCase() + alias[1..-1]
+            alias = naturalNameToCamelCase(section.title)
+            aliasMap[section.name] = alias
         }
         return alias
+    }
+
+    private naturalNameToCamelCase(name) {
+        if (!name) return name
+
+        // Start by breaking the natural name into words.
+        def parts = name.split(/\s+/)
+
+        // Lower case the first letter according to Java Beans rules.
+        parts[0] = java.beans.Introspector.decapitalize(parts[0])
+
+        // The rest of the name parts should have their first letter capitalised.
+        for (int i = 1; i < parts.size(); i++) {
+            parts[i] = parts[i].capitalize()
+        }
+            
+        return parts.join('')
     }
 }
