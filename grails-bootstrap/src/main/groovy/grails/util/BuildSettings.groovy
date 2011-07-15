@@ -1096,10 +1096,6 @@ class BuildSettings extends AbstractBuildSettings {
             dependencyManager.inheritsAll = true
         }
         if (dependencyConfig) {
-            if (resolveCache) {
-                dependencyManager.pluginsOnly = true
-            }
-
             dependencyManager.parseDependencies dependencyConfig
         }
 
