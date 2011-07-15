@@ -16,6 +16,7 @@
 package grails.doc
 
 import grails.doc.internal.*
+import groovy.io.FileType
 import groovy.text.Template
 
 import org.apache.commons.logging.LogFactory
@@ -190,7 +191,13 @@ class DocPublisher {
         if (yamlTocFile.exists()) {
             guide = new YamlTocStrategy(new FileResourceChecker(guideSrcDir)).generateToc(yamlTocFile)
             
-            if (!verifyToc(guideSrcDir, guide)) {
+            // A set of all gdoc files.
+            def files = []
+            guideSrcDir.traverse(type: FileType.FILES, nameFilter: ~/^.+\.gdoc$/) {
+                files << (it.absolutePath - guideSrcDir.absolutePath)[1..-1]
+            }
+
+            if (!verifyToc(guideSrcDir, files, guide)) {
                 throw new RuntimeException("Encountered errors while building table of contents. Aborting.")
             }
 
@@ -199,7 +206,7 @@ class DocPublisher {
             }
         }
         else {
-            def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") } ?: []
+            def files = guideSrcDir.listFiles()?.findAll { it.name.endsWith(".gdoc") } ?: []
             guide = new LegacyTocStrategy().generateToc(files)
         }
 
@@ -463,17 +470,28 @@ class DocPublisher {
      * duplicate section/alias names and invalid file paths.
      * @return <code>false</code> if any errors are detected.
      */
-    protected verifyToc(File baseDir, toc) {
+    protected verifyToc(File baseDir, gdocFiles, toc) {
         def hasErrors = false
         def sectionsFound = [] as Set
+        def gdocsNotInToc = gdocFiles as Set
+        
+        // Defensive copy
+        if (gdocsNotInToc.is(gdocFiles)) gdocsNotInToc = new HashSet(gdocFiles)
+
         for (ch in toc.children) {
-            hasErrors |= verifyTocInternal(baseDir, ch, sectionsFound, [])
+            hasErrors |= verifyTocInternal(baseDir, ch, sectionsFound, gdocsNotInToc, [])
+        }
+
+        if (gdocsNotInToc) {
+            for (gdoc in gdocsNotInToc) {
+                LOG.warn "No TOC entry found for '${gdoc}'"
+            }
         }
 
         return !hasErrors
     }
 
-    private verifyTocInternal(File baseDir, section, existing, pathElements) {
+    private verifyTocInternal(File baseDir, section, existing, gdocFiles, pathElements) {
         def hasErrors = false
         def fullName = "${pathElements.join('/')}/${section.name}"
 
@@ -488,11 +506,15 @@ class DocPublisher {
             hasErrors = true
             LOG.warn "No file found for '${fullName}'"
         }
+        else {
+            // Found this gdoc file in the TOC.
+            gdocFiles.remove section.file
+        }
 
         existing << section.name
 
         for (s in section.children) {
-            hasErrors |= verifyTocInternal(baseDir, s, existing, pathElements + section.name)
+            hasErrors |= verifyTocInternal(baseDir, s, existing, gdocFiles, pathElements + section.name)
         }
 
         return hasErrors
