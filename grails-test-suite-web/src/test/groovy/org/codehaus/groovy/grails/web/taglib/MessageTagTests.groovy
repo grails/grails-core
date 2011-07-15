@@ -15,7 +15,7 @@ class MessageTagTests extends AbstractGrailsTagTests {
         assertOutputEquals 'hello world!', template
     }
 
-    void testMessageTagWitMissingMessage() {
+    void testMessageTagWithMissingMessage() {
 
         withTag("message", sw) { tag ->
             Map attrs = [code:"test.code"]
@@ -28,6 +28,7 @@ class MessageTagTests extends AbstractGrailsTagTests {
     void testMessageTagWithMessage() {
 
         withTag("message", sw) { tag ->
+            Map attrs = [code:"test.code"]
             messageSource.addMessage("test.code", new Locale("en"), "hello world!")
             def result = tag.call( attrs )
             assertEquals "hello world!", result
