@@ -5,8 +5,8 @@ class MessageTagTests extends AbstractGrailsTagTests {
     private StringWriter sw
 
     void setUp() {
-        super.setUp();
-        sw = new StringWriter();
+        super.setUp()
+        sw = new StringWriter()
     }
 
     void testMessageTagInTemplate() {
