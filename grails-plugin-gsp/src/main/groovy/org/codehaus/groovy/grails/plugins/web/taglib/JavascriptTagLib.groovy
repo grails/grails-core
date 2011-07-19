@@ -338,7 +338,7 @@ a 'params' key to the [url] attribute instead.""")
         p.prepareAjaxForm(attrs)
 
         def params = [onsubmit:remoteFunction(attrs) + 'return false',
-                      method: (attrs.method? attrs.method : 'POST'),
+                      method: (attrs.method? attrs.method : 'post'),
                       action: (attrs.action? attrs.action : url instanceof String ? url : createLink(url))]
         attrs.remove('url')
         params.putAll(attrs)
