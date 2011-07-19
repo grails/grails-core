@@ -26,7 +26,7 @@ includeTargets << grailsScript("_GrailsTest")
 
 TEST_PHASE_AND_TYPE_SEPARATOR = ':'
 
-target('default': "Run a Grails applications unit tests") {
+target(main: "Run a Grails applications unit tests") {
     depends(checkVersion, configureProxy, parseArguments, cleanTestReports)
 
     // The test targeting patterns
@@ -81,3 +81,5 @@ target('default': "Run a Grails applications unit tests") {
 
     allTests()
 }
+
+setDefaultTarget main

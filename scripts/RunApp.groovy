@@ -24,7 +24,7 @@
 
 includeTargets << grailsScript("_GrailsRun")
 
-target('default': "Runs a Grails application") {
+target(main: "Runs a Grails application") {
     depends(checkVersion, configureProxy, packageApp, parseArguments)
     if (argsMap.https) {
         runAppHttps()
@@ -34,3 +34,5 @@ target('default': "Runs a Grails application") {
     }
     watchContext()
 }
+
+setDefaultTarget main
