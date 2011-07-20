@@ -32,8 +32,9 @@ includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
 target(createConfig: "Creates the configuration object") {
-    if (!binding.variables.containsKey("config")) {
+    if (!binding.variables.containsKey("configLoaded")) {
         config = projectPackager.createConfig()
+        configLoaded = true
     }
 }
 
@@ -61,7 +62,7 @@ target(packageApp : "Implementation of package target") {
         generateWebXml()
     }
     else {
-        loadPluginsAsync()
+        loadPlugins()
     }
     event("PackagingEnd",[])
 }
