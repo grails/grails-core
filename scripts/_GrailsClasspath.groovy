@@ -33,7 +33,7 @@ includeTargets << grailsScript("_GrailsSettings")
 
 classpathSet = false
 includePluginJarsOnClasspath = true
-projectCompiler = new GrailsProjectCompiler(pluginSettings, rootLoader)
+projectCompiler = new GrailsProjectCompiler(pluginSettings, classLoader)
 projectCompiler.ant = ant
 
 target(name:'classpath', description: "Sets the Grails classpath", prehook:null, posthook:null) {

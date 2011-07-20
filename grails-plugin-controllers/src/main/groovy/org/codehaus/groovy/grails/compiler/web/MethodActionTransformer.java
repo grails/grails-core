@@ -124,6 +124,7 @@ class TestController{
 @AstTransformer
 public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
+    private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
@@ -345,7 +346,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
             initializePrimitiveOrTypeWrapperParameter(wrapper, param, requestParameterName);
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param, requestParameterName);
-        } else {
+        } else if(!paramTypeClassNode.equals(OBJECT_CLASS)) {
             initializeCommandObjectParameter(wrapper, classNode, paramTypeClassNode, paramName);
         }
     }

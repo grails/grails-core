@@ -147,8 +147,8 @@ public class GroovyPageBinding extends Binding {
                 getVariables().put(name, value);
             }
         } else {
-            if (log.isWarnEnabled()) {
-                log.warn("Cannot override reserved variable '" + name + "'");
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot override reserved variable '" + name + "'");
             }
         }
     }

@@ -396,6 +396,15 @@ public class GrailsConsole {
         error(WARNING, msg);
     }
 
+    /**
+     * Prints a warn message
+     *
+     * @param msg The message
+     */
+    public void warn(String msg) {
+        warning(msg);
+    }
+
     private void logSimpleError(String msg) {
         if (progressIndicatorActive) {
             out.println();
@@ -477,6 +486,15 @@ public class GrailsConsole {
         } finally {
             postPrintMessage();
         }
+    }
+
+    /**
+     * Synonym for #log
+     *
+     * @param msg The message to log
+     */
+    public void info(String msg) {
+        log(msg);
     }
 
     public void verbose(String msg) {
