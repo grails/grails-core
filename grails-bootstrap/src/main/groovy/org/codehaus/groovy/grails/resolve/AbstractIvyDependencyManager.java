@@ -412,7 +412,7 @@ public abstract class AbstractIvyDependencyManager {
         if(basePluginDescriptor != null) {
             String basePluginName = GrailsNameUtils.getPluginName(basePluginDescriptor.getName());
             String plugin = descriptor.getPlugin();
-            return plugin != null && plugin.equals(basePluginName);
+            return plugin == null || plugin.equals(basePluginName);
         }
         return false;
 
