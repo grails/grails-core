@@ -75,6 +75,7 @@ class DocPublisher {
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
+    private output
     private context
     private engine
     private customMacros = []
@@ -83,9 +84,10 @@ class DocPublisher {
         this(null, null)
     }
 
-    DocPublisher(File src, File target) {
+    DocPublisher(File src, File target, out = LOG) {
         this.src = src
         this.target = target
+        this.output = out
 
         try {
             engineProperties.load(getClass().classLoader.getResourceAsStream("grails/doc/doc.properties"))
@@ -484,7 +486,7 @@ class DocPublisher {
 
         if (gdocsNotInToc) {
             for (gdoc in gdocsNotInToc) {
-                LOG.warn "No TOC entry found for '${gdoc}'"
+                output.warn "No TOC entry found for '${gdoc}'"
             }
         }
 
@@ -493,18 +495,18 @@ class DocPublisher {
 
     private verifyTocInternal(File baseDir, section, existing, gdocFiles, pathElements) {
         def hasErrors = false
-        def fullName = "${pathElements.join('/')}/${section.name}"
+        def fullName = pathElements ? "${pathElements.join('/')}/${section.name}" : section.name
 
         // Has this section name already been used?
         if (section.name in existing) {
             hasErrors = true
-            LOG.warn "Duplicate section name: ${fullName}"
+            output.error "Duplicate section name: ${fullName}"
         }
 
         // Does the file path for the gdoc exist?
         if (!section.file || !new File(baseDir, section.file).exists()) {
             hasErrors = true
-            LOG.warn "No file found for '${fullName}'"
+            output.error "No file found for '${fullName}'"
         }
         else {
             // Found this gdoc file in the TOC.

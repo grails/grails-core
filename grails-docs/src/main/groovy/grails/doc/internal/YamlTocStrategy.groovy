@@ -77,7 +77,7 @@ class YamlTocStrategy {
         if (resourceChecker.exists(filePath)) {
             return filePath
         }
-        else {
+        else if (pathElements) {
             // Now check whether its in any sub-directories named after the
             // ancestor nodes. First we look in a directory with the same
             // name as the root (named) node, then in a sub-directory of

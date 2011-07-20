@@ -235,7 +235,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
     if (srcDocs.exists()) {
         File refDocsDir = grailsSettings.docsOutputDir
-        def publisher = new DocPublisher(srcDocs, refDocsDir)
+        def publisher = new DocPublisher(srcDocs, refDocsDir, grailsConsole)
         publisher.ant = ant
         publisher.title = grailsAppName
         publisher.subtitle = grailsAppName
@@ -245,16 +245,28 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         publisher.copyright = ""
         publisher.footer = ""
         publisher.engineProperties = config?.grails?.doc
+        println ">> ${config.grails.doc}"
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)
         configureAliases()
 
-        publisher.publish()
+        try {
+            publisher.publish()
 
-        createdManual = true
+            createdManual = true
+            grailsConsole.updateStatus "Built user manual at ${refDocsDir}/index.html"
+        }
+        catch (RuntimeException ex) {
+            if (ex.message) {
+                grailsConsole.error "Failed to build user manual.", ex
+            }
+            else {
+                grailsConsole.error "Failed to build user manual."
+            }
+            exit 1
+        }
 
-        grailsConsole.updateStatus "Built user manual at ${refDocsDir}/index.html"
     }
 }
 
@@ -315,7 +327,7 @@ target(createIndex: "Produces an index.html page in the root directory") {
 }
 
 def readPluginMetadataForDocs(DocPublisher publisher) {
-    def basePlugin = loadBasePlugin()
+    def basePlugin = loadBasePlugin()?.instance
     if (basePlugin) {
         if (basePlugin.hasProperty("title")) {
             publisher.title = basePlugin.title
