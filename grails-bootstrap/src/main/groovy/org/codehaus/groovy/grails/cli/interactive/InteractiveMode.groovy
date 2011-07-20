@@ -113,7 +113,7 @@ class InteractiveMode {
 
                 }
                 else {
-                    error "Not script name specified"
+                    error "No script name specified"
                 }
             }
             catch(ScriptExitException e) {
