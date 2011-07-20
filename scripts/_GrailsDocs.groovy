@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 import grails.util.GrailsNameUtils
 import grails.doc.DocPublisher
+import grails.doc.LegacyDocMigrator
 import grails.doc.PdfBuilder
 
 /**
@@ -323,6 +324,19 @@ target(createIndex: "Produces an index.html page in the root directory") {
     </body>
 </html>
 """
+    }
+}
+
+target(migrateDocs: "Migrates an old-style gdoc user guide to the current approach using a YAML TOC file.") {
+    depends createConfig
+
+    def guideDir = new File(grailsSettings.baseDir, "src/docs/guide")
+    if (guideDir.exists()) {
+        def outDir = new File(guideDir.parentFile, "migratedGuide")
+        def migrator = new LegacyDocMigrator(guideDir, outDir, config.grails.doc.alias)
+        migrator.migrate()
+
+        grailsConsole.updateStatus "Migrated user guide at ${outDir.path}"
     }
 }
 
