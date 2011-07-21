@@ -100,12 +100,14 @@ class PluginBuildSettings {
         this.pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
         this.pluginLocations = buildSettings?.config?.grails?.plugin?.location
 
-        populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginCompileDependencies)
-        populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginRuntimeDependencies)
-        populateSourceDirectories(buildScopePluginInfo,  buildSettings.pluginBuildDependencies)
-        populateSourceDirectories(providedScopePluginInfo,  buildSettings.pluginProvidedDependencies)
-        populateSourceDirectories(testScopePluginInfo,  buildSettings.pluginTestDependencies)
-        testScopePluginInfo = testScopePluginInfo - compileScopePluginInfo
+        if(buildSettings != null) {
+            populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginCompileDependencies)
+            populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginRuntimeDependencies)
+            populateSourceDirectories(buildScopePluginInfo,  buildSettings.pluginBuildDependencies)
+            populateSourceDirectories(providedScopePluginInfo,  buildSettings.pluginProvidedDependencies)
+            populateSourceDirectories(testScopePluginInfo,  buildSettings.pluginTestDependencies)
+            testScopePluginInfo = testScopePluginInfo - compileScopePluginInfo
+        }
 
     }
 
