@@ -103,6 +103,15 @@ class PluginBuildSettings {
         if(buildSettings != null) {
             populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginCompileDependencies)
             populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginRuntimeDependencies)
+
+            final inlinePlugins = getInlinePluginDirectories()
+            for(pluginDir in inlinePlugins) {
+                final pluginInfo = getPluginInfo(pluginDir.file.absolutePath)
+                if(pluginInfo != null) {
+                    addPluginScopeInfoForDirAndInfo(compileScopePluginInfo, pluginInfo, pluginDir)
+                }
+            }
+
             populateSourceDirectories(buildScopePluginInfo,  buildSettings.pluginBuildDependencies)
             populateSourceDirectories(providedScopePluginInfo,  buildSettings.pluginProvidedDependencies)
             populateSourceDirectories(testScopePluginInfo,  buildSettings.pluginTestDependencies)
@@ -113,26 +122,30 @@ class PluginBuildSettings {
 
 
     private populateSourceDirectories(PluginScopeInfo compileInfo, List<File> pluginDependencies) {
-        def excludedPaths = PLUGIN_EXCLUDE_PATHS // conf gets special handling
+
         for (zip in pluginDependencies) {
             def info = readPluginInfoFromZip(zip.absolutePath)
             if (info != null) {
                 Resource dir = getPluginDirForName(info.name)
                 if (dir != null) {
-                    compileInfo.pluginInfos << info
-                    compileInfo.pluginNames << info.name
-                    compileInfo.sourceDirectories.addAll(
-                            getPluginSourceDirectories(dir.file.canonicalFile).findAll {
-                                !excludedPaths.contains(it.file.name) && it.file.isDirectory()
-                            }
-                    )
-                    compileInfo.pluginDescriptors << getPluginDescriptor(dir)
-                    compileInfo.artefactResources.addAll( getArtefactResourcesForOne(dir.file.absolutePath) )
+                    addPluginScopeInfoForDirAndInfo(compileInfo, info, dir)
                 }
             }
         }
     }
 
+    protected def addPluginScopeInfoForDirAndInfo(PluginScopeInfo compileInfo, GrailsPluginInfo info, Resource dir) {
+        def excludedPaths = PLUGIN_EXCLUDE_PATHS // conf gets special handling
+        compileInfo.pluginInfos << info
+        compileInfo.pluginNames << info.name
+        compileInfo.sourceDirectories.addAll(
+                getPluginSourceDirectories(dir.file.canonicalFile).findAll {
+                    !excludedPaths.contains(it.file.name) && it.file.isDirectory()
+                }
+        )
+        compileInfo.pluginDescriptors << getPluginDescriptor(dir)
+        compileInfo.artefactResources.addAll(getArtefactResourcesForOne(dir.file.absolutePath))
+    }
 
     /**
      * Clears any cached entries.
@@ -583,6 +596,8 @@ class PluginBuildSettings {
             for (inlinePluginDir in inlinePlugins) {
                 descriptorList << getPluginDescriptor(inlinePluginDir)
             }
+
+            descriptorList = descriptorList.unique()
 
             cache['pluginDescriptorsForCurrentEnvironment'] = descriptorList
         }
