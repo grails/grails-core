@@ -128,7 +128,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         // if there are errors add it to the list of errors
         Errors controllerErrors = (Errors)controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY);
         Errors errors = (Errors)argMap.get(ARGUMENT_ERRORS);
-        if (controllerErrors != null) {
+        if (controllerErrors != null && errors != null) {
             controllerErrors.addAllErrors(errors);
         }
         else {
