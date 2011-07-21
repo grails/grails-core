@@ -544,6 +544,11 @@ class PluginBuildSettings {
             if(Environment.getCurrent() == Environment.TEST) {
                 artefactResources.addAll testScopePluginInfo.getArtefactResources()
             }
+            def inlineDirectories = getInlinePluginDirectories()
+            for(dir in inlineDirectories) {
+                artefactResources.addAll( getArtefactResourcesForOne(dir.file.absolutePath))
+            }
+
             artefactResources = artefactResources as Resource[];
             cache['allArtefactResourcesForEnvironment'] = artefactResources
         }
@@ -560,12 +565,28 @@ class PluginBuildSettings {
 
 
     Resource[] getPluginDescriptorsForCurrentEnvironment() {
-        if(Environment.current == Environment.TEST) {
-            return pluginScopeInfoMap.values()*.pluginDescriptors.flatten() as Resource[]
+        def descriptorList  = cache['pluginDescriptorsForCurrentEnvironment']
+        if(descriptorList  == null) {
+
+            if (Environment.current == Environment.TEST) {
+                descriptorList = pluginScopeInfoMap.values()*.pluginDescriptors.flatten()
+            }
+            else {
+                descriptorList = pluginScopeInfoMap.values().findAll { PluginScopeInfo scopeInfo -> scopeInfo.scopeName != "test" }*.pluginDescriptors.flatten()
+            }
+
+            def baseDescriptor = getBasePluginDescriptor()
+            if (baseDescriptor != null) {
+                descriptorList << baseDescriptor
+            }
+            def inlinePlugins = getInlinePluginDirectories()
+            for (inlinePluginDir in inlinePlugins) {
+                descriptorList << getPluginDescriptor(inlinePluginDir)
+            }
+
+            cache['pluginDescriptorsForCurrentEnvironment'] = descriptorList
         }
-        else {
-            return pluginScopeInfoMap.values().findAll { PluginScopeInfo scopeInfo -> scopeInfo.scopeName != "test" }*.pluginDescriptors.flatten() as Resource[]
-        }
+        return descriptorList as Resource[]
     }
     /**
      * Obtains an array of all plugin descriptors (the root classes that end with *GrailsPlugin.groovy).
@@ -694,16 +715,20 @@ class PluginBuildSettings {
         GrailsPluginInfo info = cache[key]
         if(info == null) {
 
-            def (name, version, xml) = readMetadataFromZip(zipLocation)
+            def result = readMetadataFromZip(zipLocation)
+            if(result != null) {
 
-            if(name == null || version == null) return null;
+                def (name, version, xml) = result
 
-            def pluginInfo = getPluginInfoForName(name)
-            if(pluginInfo != null) {
-                info = new BasicGrailsPluginInfo(pluginInfo.descriptor)
-                info.name = name
-                info.version = version
-                cache[key] = info
+                if (name == null || version == null) return null;
+
+                def pluginInfo = getPluginInfoForName(name)
+                if (pluginInfo != null) {
+                    info = new BasicGrailsPluginInfo(pluginInfo.descriptor)
+                    info.name = name
+                    info.version = version
+                    cache[key] = info
+                }
             }
         }
         return info
