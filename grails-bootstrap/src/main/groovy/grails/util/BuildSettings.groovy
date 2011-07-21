@@ -371,15 +371,22 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultCompileDependencies = {
         if (internalCompileDependencies) return internalCompileDependencies
         Message.info "Resolving [compile] dependencies..."
-        def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-        if(resolveReport.hasError()) {
-            throw new ResolveException(resolveReport)
+        List<File> jarFiles
+        if(dependencyManager != null) {
+
+            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
+            if(resolveReport.hasError()) {
+                throw new ResolveException(resolveReport)
+            }
+
+            jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
+
+            jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
+            Message.debug("Resolved jars for [compile]: ${{-> jarFiles.join('\n')}}")
         }
-
-        List<File> jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
-
-        jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
-        Message.debug("Resolved jars for [compile]: ${{-> jarFiles.join('\n')}}")
+        else {
+            jarFiles = []
+        }
         return jarFiles
     }()
 
@@ -419,15 +426,21 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultTestDependencies = {
         Message.info "Resolving [test] dependencies..."
         if (internalTestDependencies) return internalTestDependencies
-        def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
-        if(resolveReport.hasError()) {
-            throw new ResolveException(resolveReport)
-        }
+        if(dependencyManager != null) {
 
-        def jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
-        jarFiles = findAndRemovePluginDependencies("test", jarFiles, internalPluginTestDependencies)
-        Message.debug("Resolved jars for [test]: ${{-> jarFiles.join('\n')}}")
-        return jarFiles
+            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
+            if (resolveReport.hasError()) {
+                throw new ResolveException(resolveReport)
+            }
+
+            def jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            jarFiles = findAndRemovePluginDependencies("test", jarFiles, internalPluginTestDependencies)
+            Message.debug("Resolved jars for [test]: ${{-> jarFiles.join('\n')}}")
+            return jarFiles
+        }
+        else {
+            return []
+        }
     }()
 
     private List<File> runtimeDependencies = []
@@ -454,15 +467,21 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultRuntimeDependencies = {
         Message.info "Resolving [runtime] dependencies..."
         if (internalRuntimeDependencies) return internalRuntimeDependencies
-        def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-        if(resolveReport.hasError()) {
-            throw new ResolveException(resolveReport)
-        }
-        def jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
-        jarFiles = findAndRemovePluginDependencies("runtime", jarFiles, internalPluginRuntimeDependencies)
-        Message.debug("Resolved jars for [runtime]: ${{-> jarFiles.join('\n')}}")
+        if(dependencyManager != null) {
 
-        return jarFiles
+            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
+            if (resolveReport.hasError()) {
+                throw new ResolveException(resolveReport)
+            }
+            def jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            jarFiles = findAndRemovePluginDependencies("runtime", jarFiles, internalPluginRuntimeDependencies)
+            Message.debug("Resolved jars for [runtime]: ${{-> jarFiles.join('\n')}}")
+
+            return jarFiles
+        }
+        else {
+            return []
+        }
     }()
 
     private List<File> providedDependencies = []
@@ -492,17 +511,23 @@ class BuildSettings extends AbstractBuildSettings {
         }
         if (internalProvidedDependencies) return internalProvidedDependencies
 
-        Message.info "Resolving [provided] dependencies..."
-        def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-        if(resolveReport.hasError()) {
-            throw new ResolveException(resolveReport)
+        if(dependencyManager != null) {
+
+            Message.info "Resolving [provided] dependencies..."
+            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
+            if (resolveReport.hasError()) {
+                throw new ResolveException(resolveReport)
+            }
+
+            def jarFiles = resolveReport.getArtifactsReports(null, false).localFile
+
+            jarFiles = findAndRemovePluginDependencies("provided", jarFiles, internalPluginProvidedDependencies)
+            Message.debug("Resolved jars for [provided]: ${{-> jarFiles.join('\n')}}")
+            return jarFiles
         }
-
-        def jarFiles = resolveReport.getArtifactsReports(null, false).localFile
-
-        jarFiles = findAndRemovePluginDependencies("provided", jarFiles, internalPluginProvidedDependencies)
-        Message.debug("Resolved jars for [provided]: ${{-> jarFiles.join('\n')}}")
-        return jarFiles
+        else {
+            return []
+        }
     }()
 
     private List<File> buildDependencies = []
@@ -525,7 +550,7 @@ class BuildSettings extends AbstractBuildSettings {
     List<File> getPluginCompileDependencies() {
         // ensure initialization
         if (!internalPluginCompileDependencies)
-            getPluginCompileDependencies()
+            getCompileDependencies()
 
 
         return internalPluginCompileDependencies
@@ -602,13 +627,19 @@ class BuildSettings extends AbstractBuildSettings {
         }
         if (internalBuildDependencies) return internalBuildDependencies
 
-        Message.info "Resolving [build] dependencies..."
-        def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
+        if(dependencyManager != null) {
 
-        jarFiles = findAndRemovePluginDependencies("build", jarFiles, internalPluginBuildDependencies)
-        Message.debug("Resolved jars for [build]: ${{-> jarFiles.join('\n')}}")
+            Message.info "Resolving [build] dependencies..."
+            def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
 
-        return jarFiles
+            jarFiles = findAndRemovePluginDependencies("build", jarFiles, internalPluginBuildDependencies)
+            Message.debug("Resolved jars for [build]: ${{-> jarFiles.join('\n')}}")
+
+            return jarFiles
+        }
+        else {
+            return []
+        }
     }()
 
     /**
