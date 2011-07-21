@@ -25,6 +25,9 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
+import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
+import grails.util.Environment
 
 /**
  *
@@ -64,6 +67,11 @@ class GrailsProjectCompiler {
     PluginBuildSettings pluginSettings
     List<String> compilerExtensions = ['groovy', 'java']
 
+    private PluginScopeInfo compileScopePluginInfo
+    private PluginScopeInfo buildScopePluginInfo
+    private PluginScopeInfo providedScopePluginInfo
+    private PluginScopeInfo testScopePluginInfo
+
     /**
      * Constructs a new GrailsProjectCompiler instance for the given PluginBuildSettings and optional classloader
      *
@@ -102,8 +110,11 @@ class GrailsProjectCompiler {
 
         initializeAntClasspaths()
 
-        Resource[] resources = pluginBuildSettings.getArtefactResources()
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(resources)
+        compileScopePluginInfo = pluginSettings.compileScopePluginInfo
+        buildScopePluginInfo = pluginSettings.buildScopePluginInfo
+        providedScopePluginInfo = pluginSettings.providedScopePluginInfo
+        testScopePluginInfo = pluginSettings.testScopePluginInfo
+        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
         GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
     }
 
@@ -258,6 +269,10 @@ class GrailsProjectCompiler {
         if (isPluginProject) {
             compilePluginDescriptor(pluginDescriptor, classesDirPath)
         }
+
+        if(classLoader instanceof URLClassLoader) {
+            classLoader.addURL(buildSettings.classesDir.toURI().toURL())
+        }
     }
 
     void compilePlugins() {
@@ -273,25 +288,35 @@ class GrailsProjectCompiler {
         def classesDirPath = targetDir
         ant.mkdir(dir:classesDirPath)
 
+
+        if(classLoader instanceof URLClassLoader) {
+            classLoader.addURL(buildSettings.pluginClassesDir.toURI().toURL())
+            classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
+            classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
+        }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        def classpathId = CLASSPATH_REF
+        compilePluginSources(compileScopePluginInfo, classesDirPath)
+        compilePluginSources(buildScopePluginInfo, buildSettings.pluginBuildClassesDir)
+        compilePluginSources(providedScopePluginInfo, buildSettings.pluginProvidedClassesDir)
+        compilePluginSources(testScopePluginInfo, buildSettings.testClassesDir)
 
-        def excludedPaths = PLUGIN_EXCLUDE_PATHS // conf gets special handling
-        def pluginResources = pluginSettings.pluginSourceFiles?.findAll {
-            !excludedPaths.contains(it.file.name) && it.file.isDirectory()
-        }
 
+    }
+
+    private  compilePluginSources(PluginScopeInfo pluginCompileInfo, classesDirPath) {
+        def pluginResources = pluginCompileInfo.sourceDirectories
         if (pluginResources) {
             // Only perform the compilation if there are some plugins
             // installed or otherwise referenced.
-            ant.groovyc(destdir:classesDirPath,
-                        classpathref:classpathId,
-                        encoding:encoding,
-                        verbose: verbose,
-                        listfiles: verbose) {
+            ant.mkdir(dir:classesDirPath)
+            ant.groovyc(destdir: classesDirPath,
+                    classpathref: CLASSPATH_REF,
+                    encoding: encoding,
+                    verbose: verbose,
+                    listfiles: verbose) {
                 for (dir in pluginResources.file) {
-                    src(path:"${dir}")
+                    src(path: "${dir}")
                 }
                 exclude(name: "**/BootStrap.groovy")
                 exclude(name: "**/BuildConfig.groovy")
@@ -301,6 +326,28 @@ class GrailsProjectCompiler {
                 exclude(name: "**/resources.groovy")
                 javac(javaOptions)
             }
+        }
+
+        if(pluginCompileInfo.pluginDescriptors) {
+            def classesDirString = classesDirPath.toString()
+            config.setTargetDirectory(classesDirString)
+
+            def cl = new GroovyClassLoader(classLoader)
+            cl.addURL(new File(classesDirString).toURL())
+            def unit = new CompilationUnit (config , null , cl)
+            def pluginFiles = pluginCompileInfo.pluginDescriptors
+
+            for (plugin in pluginFiles) {
+                def pluginFile = plugin.file
+                def className = pluginFile.name - '.groovy'
+                def classFile = new File("${classesDirPath}/${className}.class")
+
+                if (pluginFile.lastModified() > classFile.lastModified()) {
+                    unit.addSource (pluginFile)
+                }
+            }
+
+            unit.compile()
         }
     }
 
@@ -330,7 +377,7 @@ class GrailsProjectCompiler {
                  tmpdir:gspTmpDir)
 
         // compile views in plugins
-        def pluginInfos = pluginSettings.supportedPluginInfos
+        def pluginInfos = compileScopePluginInfo.pluginInfos
         if (pluginInfos) {
             for (GrailsPluginInfo info in pluginInfos) {
                 File pluginViews = new File(info.pluginDir.file, "grails-app/views")

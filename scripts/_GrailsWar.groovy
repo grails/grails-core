@@ -191,32 +191,19 @@ target (war: "The implementation target") {
         }
 
         ant.delete(file:webXmlFile)
+        PluginBuildSettings ps = pluginSettings
+        def compileScopePluginInfo = ps.compileScopePluginInfo
+        def compileScopePluginInfos = ps.getCompileScopedSupportedPluginInfos()
+        def resourceList = ps.getCompileScopedArtefactResources()
+        
 
-        def pluginInfos = pluginSettings.supportedPluginInfos
-        // filter out plugins that aren't configured for runtime inclusion
-        IvyDependencyManager dm = grailsSettings.dependencyManager
-        pluginInfos = pluginInfos.findAll { GrailsPluginInfo info ->
-            def pluginName = info.name
-            def descriptor = dm.getPluginDependencyDescriptor(pluginName)
-            if (descriptor) {
-                def configs = ["runtime", "compile"]
-                if (grailsEnv == "test") {
-                    configs << "test"
-                }
-
-                def i = configs.any { descriptor.isSupportedInConfiguration(it) }
-                i != null ? i : true
-            } else {
-                true
-            }
-        }
 
         if (includeJars) {
-            if (pluginInfos) {
+            if (compileScopePluginInfos) {
                 def libDir = "${stagingDir}/WEB-INF/lib"
                 // Copy embedded libs (dependencies declared inside dependencies.groovy are already provided)
                 ant.copy(todir:libDir, flatten:true, failonerror:false, preservelastmodified:true) {
-                    for (GrailsPluginInfo info in pluginInfos) {
+                    for (GrailsPluginInfo info in compileScopePluginInfos) {
                         fileset(dir: info.pluginDir.file.path) {
                             include(name:"lib/*.jar")
                         }
@@ -302,9 +289,8 @@ target (war: "The implementation target") {
             }
         }
 
-        warPluginsInternal(pluginInfos)
-        def resourceList = pluginSettings.getArtefactResources()
-        createDescriptorInternal(pluginInfos, resourceList)
+        warPluginsInternal(compileScopePluginInfos)
+        createDescriptorInternal(compileScopePluginInfos, resourceList)
 
         // update OSGi bundle classpath in MANIFEST.MF after event
         // handlers had a chance to modify included jars
@@ -343,12 +329,17 @@ target (war: "The implementation target") {
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
     PluginBuildSettings ps = pluginSettings
     def pluginInfos = ps.supportedPluginInfos
-    def resourceList = ps.getArtefactResources()
+    def compileScopePluginInfo = ps.compileScopePluginInfo
+    def compileScopePluginInfos = compileScopePluginInfo.pluginInfos
+    compileScopePluginInfos = compileScopePluginInfos.findAll { info -> pluginInfos.any { it.name == info.name } }
 
-    createDescriptorInternal(pluginInfos, resourceList)
+    def resourceList = compileScopePluginInfo.artefactResources
+
+    createDescriptorInternal(compileScopePluginInfos, resourceList)
 }
 
 protected def createDescriptorInternal(pluginInfos, resourceList) {
+    
     return new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
         def xml = new MarkupBuilder(writer)
         xml.grails {

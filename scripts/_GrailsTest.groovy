@@ -123,6 +123,9 @@ target(allTests: "Runs the project's tests.") {
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
+    
+    // add the test classes to the classpath
+    classLoader.addURL(grailsSettings.testClassesDir.toURL())
 
     testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
 
@@ -261,6 +264,7 @@ compileTests = { GrailsTestType type, File source, File dest ->
             javac(classpathref: classpathId, debug: "yes")
             src(path: source)
         }
+
     }
     catch (e) {
         grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.cause ? e.cause.message : e.message}", e.cause ? e.cause : e
@@ -306,7 +310,7 @@ initPersistenceContext = {
 }
 
 destroyPersistenceContext = {
-    if (appCtx != null) {
+    if (binding.variables.containsKey("appCtx") && appCtx != null) {
         appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
     }
 }
@@ -346,7 +350,8 @@ integrationTestPhasePreparation = {
 integrationTestPhaseCleanUp = {
     if (!(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
         destroyPersistenceContext()
-        appCtx?.close()
+        if(binding.variables.containsKey("appCtx"))
+            appCtx?.close()
     }
 }
 

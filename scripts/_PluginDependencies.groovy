@@ -144,24 +144,9 @@ target(loadPlugins:"Loads Grails' plugins") {
     }
   
     PluginManagerHolder.inCreation = true
-    compConfig.setTargetDirectory(pluginClassesDir)
-    def unit = new CompilationUnit (compConfig , null , new GroovyClassLoader(classLoader))
-    def pluginFiles = pluginSettings.pluginDescriptors
-
-    for (plugin in pluginFiles) {
-        def pluginFile = plugin.file
-        def className = pluginFile.name - '.groovy'
-        def classFile = new File("${classesDirPath}/${className}.class")
-
-        if (pluginFile.lastModified() > classFile.lastModified()) {
-            unit.addSource (pluginFile)
-        }
-    }
+    def pluginFiles = pluginSettings.getPluginDescriptorsForCurrentEnvironment()
 
     try {
-        profile("compiling plugins") {
-            unit.compile()
-        }
 
         def application
         def pluginClasses = []
@@ -225,8 +210,7 @@ target(loadPlugins:"Loads Grails' plugins") {
         }
     }
     catch (Exception e) {
-        GrailsUtil.deepSanitize(e).printStackTrace()
-        event("StatusFinal", [ "Error loading plugin manager: " + e.message ])
+        grailsConsole.error "Error loading plugin manager: " + e.message , e
         exit(1)
     }
 }

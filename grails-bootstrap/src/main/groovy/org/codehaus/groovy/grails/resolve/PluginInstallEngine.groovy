@@ -32,8 +32,10 @@ import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
+import org.springframework.core.io.FileSystemResource
 
- /**
+/**
  * Manages the installation and uninstallation of plugins from a Grails project.
  *
  * @author Graeme Rocher
@@ -295,21 +297,28 @@ class PluginInstallEngine {
      * @return A list
      */
     List readMetadataFromZip(String zipLocation) {
-        try {
-            def zipFile = new ZipFile(zipLocation)
-            ZipEntry entry = zipFile.entries().find {ZipEntry entry -> entry.name == 'plugin.xml'}
-            if (entry) {
-                def pluginXml = new XmlSlurper().parse(zipFile.getInputStream(entry))
-                def name = pluginXml.'@name'.text()
-                def release = pluginXml.'@version'.text()
-                return [name, release, pluginXml]
-            }
+        def list= pluginSettings.readMetadataFromZip(zipLocation)
+        if(list == null)  {
+           errorHandler "Zip $zipLocation is not a valid plugin"
+        }
+        else {
+           return list
+        }
+    }
 
-            errorHandler("Plugin $zipLocation is not a valid Grails plugin. No plugin.xml descriptor found!")
-        }
-        catch (e) {
-            errorHandler("Error reading plugin zip [$zipLocation]. The plugin zip file may be corrupt.")
-        }
+    /**
+     * Reads plugin info from the zip file location
+     *
+     * @param zipLocation The zip location
+     * @return
+     */
+    GrailsPluginInfo readPluginInfoFromZip(String zipLocation) {
+        def (name, version, xml) = readMetadataFromZip(zipLocation)
+
+        def info = new BasicGrailsPluginInfo(new FileSystemResource(new File(zipLocation)))
+        info.name = name
+        info.version = version
+        return info
     }
 
     /**

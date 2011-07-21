@@ -103,6 +103,16 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_PLUGIN_CLASSES_DIR = "grails.project.plugin.class.dir"
 
     /**
+     * The name of the system property for {@link #pluginBuildClassesDir}.
+     */
+    public static final String PROJECT_PLUGIN_BUILD_CLASSES_DIR = "grails.project.plugin.build.class.dir"
+
+    /**
+     * The name of the system property for {@link #pluginProvidedClassesDir}.
+     */
+    public static final String PROJECT_PLUGIN_PROVIDED_CLASSES_DIR = "grails.project.plugin.provided.class.dir"
+
+    /**
      * The name of the system property for {@link #testClassesDir}.
      */
     public static final String PROJECT_TEST_CLASSES_DIR = "grails.project.test.class.dir"
@@ -222,11 +232,21 @@ class BuildSettings extends AbstractBuildSettings {
     /** The location to which Grails compiles a project's classes.  */
     File classesDir
 
-    /** The location to which Grails compiles a project's test classes.  */
+    /** The location to which Grails compiles a project's test classes and any test scoped plugin classes.  */
     File testClassesDir
 
-    /** The location to which Grails compiles a project's plugin classes.  */
+    /** The location to which Grails compiles a project's plugin classes. Plugin classes that are compile or runtime scoped will be compiled to this directory  */
     File pluginClassesDir
+
+    /**
+     * The location to which Grails compiles build scoped plugins classes.
+     */
+    File pluginBuildClassesDir
+
+    /**
+     * The location to which Grails compiles provided scoped plugins classes.
+     */
+    File pluginProvidedClassesDir
 
     /** The location where Grails keeps temporary copies of a project's resources.  */
     File resourcesDir
@@ -614,6 +634,8 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean classesDirSet
     private boolean testClassesDirSet
     private boolean pluginClassesDirSet
+    private boolean pluginBuildClassesDirSet
+    private boolean pluginProvidedClassesDirSet
     private boolean resourcesDirSet
     private boolean sourceDirSet
     private boolean webXmlFileSet
@@ -804,6 +826,20 @@ class BuildSettings extends AbstractBuildSettings {
     void setPluginClassesDir(File dir) {
         pluginClassesDir = dir
         pluginClassesDirSet = true
+    }
+
+    File getPluginBuildClassesDir() { pluginBuildClassesDir }
+
+    void setPluginBuildClassesDir(File dir) {
+        pluginBuildClassesDir = dir
+        pluginBuildClassesDirSet = true
+    }
+
+    File getPluginProvidedClassesDir() { pluginProvidedClassesDir }
+
+    void setPluginProvidedClassesDir(File dir) {
+        pluginProvidedClassesDir = dir
+        pluginProvidedClassesDirSet = true
     }
 
     File getResourcesDir() { resourcesDir }
@@ -1227,6 +1263,14 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!pluginClassesDirSet) {
             pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
+        }
+
+        if (!pluginBuildClassesDirSet) {
+            pluginBuildClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes"))
+        }
+
+        if (!pluginProvidedClassesDirSet) {
+            pluginProvidedClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes"))
         }
 
         if (!resourcesDirSet) {

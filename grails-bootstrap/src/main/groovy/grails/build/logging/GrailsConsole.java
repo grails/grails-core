@@ -654,24 +654,26 @@ public class GrailsConsole {
     }
 
     public void error(String label, String message) {
-        cursorMove = 0;
-        try {
-            if (isAnsiEnabled()) {
-                Ansi ansi = outputErrorLabel(ansi(), label).a(message);
-                if (message.endsWith(LINE_SEPARATOR)) {
-                    out.print(ansi);
+        if(message != null) {
+            cursorMove = 0;
+            try {
+                if (isAnsiEnabled()) {
+                    Ansi ansi = outputErrorLabel(ansi(), label).a(message);
+                    if (message.endsWith(LINE_SEPARATOR)) {
+                        out.print(ansi);
+                    }
+                    else {
+                        out.println(ansi);
+                    }
                 }
                 else {
-                    out.println(ansi);
+                    out.print(label);
+                    out.print(" ");
+                    logSimpleError(message);
                 }
+            } finally {
+                postPrintMessage();
             }
-            else {
-                out.print(label);
-                out.print(" ");
-                logSimpleError(message);
-            }
-        } finally {
-            postPrintMessage();
         }
     }
 }

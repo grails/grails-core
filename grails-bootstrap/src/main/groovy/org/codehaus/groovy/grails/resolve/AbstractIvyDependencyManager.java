@@ -333,11 +333,10 @@ public abstract class AbstractIvyDependencyManager {
      * @see #registerPluginDependency(String, EnhancedDefaultDependencyDescriptor)
      */
     public void registerDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
-        registerDependencyCommon(scope, descriptor);
 
         String plugin = descriptor.getPlugin();
         if(plugin != null) {
-            DependencyDescriptor pluginDependencyDescriptor = getPluginDependencyDescriptor(plugin);
+            EnhancedDefaultDependencyDescriptor pluginDependencyDescriptor = (EnhancedDefaultDependencyDescriptor) getPluginDependencyDescriptor(plugin);
             if(pluginDependencyDescriptor != null) {
                 ExcludeRule[] excludeRules = pluginDependencyDescriptor.getExcludeRules(scope);
                 if(excludeRules != null) {
@@ -345,9 +344,17 @@ public abstract class AbstractIvyDependencyManager {
                         descriptor.addExcludeRule(scope, excludeRule);
                     }
                 }
+
+                String pluginScope = pluginDependencyDescriptor.getScope();
+                if(pluginScope != null) {
+                    if(isCompileOrRuntimeScope(scope)) {
+                       scope = pluginScope;
+                    }
+                }
             }
         }
 
+        registerDependencyCommon(scope, descriptor);
         ModuleRevisionId revisionId = descriptor.getDependencyRevisionId();
         modules.add(revisionId.getModuleId());
         dependencies.add(revisionId);
@@ -364,6 +371,10 @@ public abstract class AbstractIvyDependencyManager {
         if (shouldIncludeDependency(descriptor)) {
             moduleDescriptor.addDependency(descriptor);
         }
+    }
+
+    private boolean isCompileOrRuntimeScope(String scope) {
+        return scope.equals("runtime") || scope.equals("compile");
     }
 
     /**
@@ -397,7 +408,6 @@ public abstract class AbstractIvyDependencyManager {
 
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
-        pluginNameToDescriptorMap.put(name, descriptor);
         if(shouldIncludeDependency(descriptor)) {
             moduleDescriptor.addDependency(descriptor);
         }
