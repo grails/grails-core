@@ -210,7 +210,7 @@ class ConfigurationHelper {
                 }
             }
             catch (Exception e) {
-                LOG.error "Unable to load specified config location $location : ${e.message}", e
+                LOG.warn "Unable to load specified config location $location : ${e.message}"
             }
         }
     }
