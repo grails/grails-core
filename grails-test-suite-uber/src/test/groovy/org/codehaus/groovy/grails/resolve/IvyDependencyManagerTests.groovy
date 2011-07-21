@@ -627,7 +627,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
-        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
+        assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
 
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
@@ -650,7 +650,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 70, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
-        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
+        assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
 
         manager = new IvyDependencyManager("project", "0.1",settings)
         defaultDependencyClosure = settings.coreDependencies.createDeclaration()
@@ -665,7 +665,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 23, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
-        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
+        assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
 
     def getCurrentGrailsVersion() {

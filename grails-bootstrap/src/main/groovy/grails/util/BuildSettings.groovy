@@ -207,6 +207,11 @@ class BuildSettings extends AbstractBuildSettings {
      */
     boolean dependenciesExternallyConfigured = false
 
+    /**
+     * Whether to enable resolving dependencies
+     */
+    boolean enableResolve = true
+
     /** The location of the Grails working directory where non-project-specific temporary files are stored.  */
     File grailsWorkDir
 
@@ -372,7 +377,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (internalCompileDependencies) return internalCompileDependencies
         Message.info "Resolving [compile] dependencies..."
         List<File> jarFiles
-        if(dependencyManager != null) {
+        if(shouldResolve()) {
 
             def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
             if(resolveReport.hasError()) {
@@ -426,7 +431,7 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultTestDependencies = {
         Message.info "Resolving [test] dependencies..."
         if (internalTestDependencies) return internalTestDependencies
-        if(dependencyManager != null) {
+        if(shouldResolve()) {
 
             def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
             if (resolveReport.hasError()) {
@@ -467,7 +472,7 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultRuntimeDependencies = {
         Message.info "Resolving [runtime] dependencies..."
         if (internalRuntimeDependencies) return internalRuntimeDependencies
-        if(dependencyManager != null) {
+        if(shouldResolve()) {
 
             def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
             if (resolveReport.hasError()) {
@@ -511,7 +516,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         if (internalProvidedDependencies) return internalProvidedDependencies
 
-        if(dependencyManager != null) {
+        if(shouldResolve()) {
 
             Message.info "Resolving [provided] dependencies..."
             def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
@@ -627,7 +632,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         if (internalBuildDependencies) return internalBuildDependencies
 
-        if(dependencyManager != null) {
+        if(shouldResolve()) {
 
             Message.info "Resolving [build] dependencies..."
             def jarFiles = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION).getArtifactsReports(null, false).localFile + applicationJars
@@ -641,6 +646,10 @@ class BuildSettings extends AbstractBuildSettings {
             return []
         }
     }()
+
+    protected boolean shouldResolve() {
+        return dependencyManager != null && enableResolve
+    }
 
     /**
      * Manages dependencies and dependency resolution in a Grails application
