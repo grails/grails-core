@@ -12,8 +12,12 @@ body, .wiki-table th strong {
 
 a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content a:hover strong,
     #table-of-content a strong, .menu .menu-block h1, .menu a:hover, .local .local-title .toggle a,
-    #navigation #nav-summary-childs a:hover {
+    #navigation #nav-summary-childs a:hover, #main h1, #main h2 {
     color: #7c9d00;
+}
+
+#main .project h1, #table-of-content h2 {
+    color: #444;
 }
 
 #footer {
@@ -35,6 +39,14 @@ a, a:hover, a:focus, a:active, a:hover, #main .project strong, #table-of-content
 
 #navigation a, #nav-summary #nav-summary-childs a:hover {
     color: white;
+}
+
+.toc-item a {
+    text-decoration: none;
+}
+
+.toc-item a:hover {
+    text-decoration: underline;
 }
 
 /*

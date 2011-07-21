@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 import grails.util.GrailsNameUtils
 import grails.doc.DocPublisher
+import grails.doc.LegacyDocMigrator
 import grails.doc.PdfBuilder
 
 /**
@@ -235,7 +236,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
     if (srcDocs.exists()) {
         File refDocsDir = grailsSettings.docsOutputDir
-        def publisher = new DocPublisher(srcDocs, refDocsDir)
+        def publisher = new DocPublisher(srcDocs, refDocsDir, grailsConsole)
         publisher.ant = ant
         publisher.title = grailsAppName
         publisher.subtitle = grailsAppName
@@ -245,16 +246,28 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         publisher.copyright = ""
         publisher.footer = ""
         publisher.engineProperties = config?.grails?.doc
+        println ">> ${config.grails.doc}"
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)
         configureAliases()
 
-        publisher.publish()
+        try {
+            publisher.publish()
 
-        createdManual = true
+            createdManual = true
+            grailsConsole.updateStatus "Built user manual at ${refDocsDir}/index.html"
+        }
+        catch (RuntimeException ex) {
+            if (ex.message) {
+                grailsConsole.error "Failed to build user manual.", ex
+            }
+            else {
+                grailsConsole.error "Failed to build user manual."
+            }
+            exit 1
+        }
 
-        grailsConsole.updateStatus "Built user manual at ${refDocsDir}/index.html"
     }
 }
 
@@ -314,8 +327,21 @@ target(createIndex: "Produces an index.html page in the root directory") {
     }
 }
 
+target(migrateDocs: "Migrates an old-style gdoc user guide to the current approach using a YAML TOC file.") {
+    depends createConfig
+
+    def guideDir = new File(grailsSettings.baseDir, "src/docs/guide")
+    if (guideDir.exists()) {
+        def outDir = new File(guideDir.parentFile, "migratedGuide")
+        def migrator = new LegacyDocMigrator(guideDir, outDir, config.grails.doc.alias)
+        migrator.migrate()
+
+        grailsConsole.updateStatus "Migrated user guide at ${outDir.path}"
+    }
+}
+
 def readPluginMetadataForDocs(DocPublisher publisher) {
-    def basePlugin = loadBasePlugin()
+    def basePlugin = loadBasePlugin()?.instance
     if (basePlugin) {
         if (basePlugin.hasProperty("title")) {
             publisher.title = basePlugin.title
