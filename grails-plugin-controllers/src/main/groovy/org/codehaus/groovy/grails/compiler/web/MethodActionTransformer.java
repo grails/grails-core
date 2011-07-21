@@ -23,6 +23,7 @@ import grails.web.RequestParameter;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.MessageSource;
+import org.springframework.validation.MapBindingResult;
 
 /**
  * Enhances controller classes by converting closures actions to method actions
@@ -323,6 +325,18 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                                                         Parameter[] actionParameters) {
         BlockStatement wrapper = new BlockStatement();
 
+        ArgumentListExpression mapBindingResultConstructorArgs = new ArgumentListExpression();
+        mapBindingResultConstructorArgs.addExpression(new ConstructorCallExpression(new ClassNode(HashMap.class), EMPTY_TUPLE));
+        mapBindingResultConstructorArgs.addExpression(new ConstantExpression("controller"));
+        final Expression mapBindingResultConstructorCallExpression = new ConstructorCallExpression(
+                new ClassNode(MapBindingResult.class), mapBindingResultConstructorArgs);
+        
+        final Expression errorsAssignmentExpression = new BinaryExpression(
+                new VariableExpression("errors"), Token.newSymbol(Types.EQUALS, 0, 0),
+                mapBindingResultConstructorCallExpression);
+
+        wrapper.addStatement(new ExpressionStatement(errorsAssignmentExpression));
+
         for (Parameter param : actionParameters) {
             initializeMethodParameter(classNode, wrapper, param);
         }
@@ -535,7 +549,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
         final ConstantExpression paramConstantExpression = new ConstantExpression(requestParameterName);
         final Expression paramsTypeConversionMethodArguments = new ArgumentListExpression(
-                paramConstantExpression, defaultValueExpression);
+                paramConstantExpression/*, defaultValueExpression*/, new ConstantExpression(null));
         final String conversionMethodName;
         if (TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClass)) {
             conversionMethodName = TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.get(paramTypeClass);
@@ -550,15 +564,45 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
                 new MethodCallExpression(PARAMS_EXPRESSION, "containsKey", paramsContainsKeyMethodArguments));
 
         final Token equalsToken = Token.newSymbol(Types.EQUALS, 0, 0);
-        final Statement declareVariableStatement = new ExpressionStatement(
-                new DeclarationExpression(new VariableExpression(methodParamName, paramTypeClassNode),
-                        equalsToken, new EmptyExpression()));
+        final VariableExpression convertedValueExpression = new VariableExpression("___converted_" + methodParamName, new ClassNode(Object.class));
+        final DeclarationExpression declareConvertedValueExpression = new DeclarationExpression(convertedValueExpression, equalsToken, new EmptyExpression());
+       
+        Statement declareVariableStatement = new ExpressionStatement(declareConvertedValueExpression);
+        wrapper.addStatement(declareVariableStatement);
+
+        final VariableExpression methodParamExpression = new VariableExpression(methodParamName, paramTypeClassNode);
+        final DeclarationExpression declareParameterVariableStatement = new DeclarationExpression(methodParamExpression,
+            equalsToken, new EmptyExpression());
+        declareVariableStatement = new ExpressionStatement(
+                declareParameterVariableStatement);
         wrapper.addStatement(declareVariableStatement);
 
         final Expression assignmentExpression = new BinaryExpression(
-                new VariableExpression(methodParamName), equalsToken,
+                convertedValueExpression, equalsToken,
                 new TernaryExpression(containsKeyExpression, retrieveConvertedValueExpression, defaultValueExpression));
         wrapper.addStatement(new ExpressionStatement(assignmentExpression));
+        Expression rejectValueMethodCallExpression = getRejectValueExpression(methodParamName);
+        
+        BlockStatement ifConvertedValueIsNullBlockStatement = new BlockStatement();
+        ifConvertedValueIsNullBlockStatement.addStatement(new ExpressionStatement(rejectValueMethodCallExpression));
+        ifConvertedValueIsNullBlockStatement.addStatement(new ExpressionStatement(new BinaryExpression(methodParamExpression, equalsToken, defaultValueExpression)));
+        
+        final BooleanExpression isConvertedValueNullExpression = new BooleanExpression(new BinaryExpression(convertedValueExpression, Token.newSymbol(
+                Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null)));
+        final ExpressionStatement assignConvertedValueToParamStatement = new ExpressionStatement(new BinaryExpression(methodParamExpression, equalsToken, convertedValueExpression));
+        final Statement ifStatement = new IfStatement(isConvertedValueNullExpression, 
+                                                ifConvertedValueIsNullBlockStatement, 
+                                                assignConvertedValueToParamStatement);
+        
+        wrapper.addStatement(new IfStatement(new BooleanExpression(containsKeyExpression), ifStatement, new ExpressionStatement(new EmptyExpression())));
+    }
+
+    protected Expression getRejectValueExpression(final String methodParamName) {
+        ArgumentListExpression rejectValueArgs = new ArgumentListExpression();
+        rejectValueArgs.addExpression(new ConstantExpression(methodParamName));
+        rejectValueArgs.addExpression(new ConstantExpression("params." + methodParamName + ".conversion.error"));
+        Expression rejectValueMethodCallExpression = new MethodCallExpression(new VariableExpression("errors"), "rejectValue", rejectValueArgs);
+        return rejectValueMethodCallExpression;
     }
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
@@ -573,3 +617,4 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
         source.getErrorCollector().addError(new SimpleMessage(me,source), true);
     }
 }
+

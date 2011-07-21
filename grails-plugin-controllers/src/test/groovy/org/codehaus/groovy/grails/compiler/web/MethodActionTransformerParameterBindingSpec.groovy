@@ -88,6 +88,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             def model = controller.methodActionWithRequestMapping()
 
         then:
+            !controller.hasErrors()
             null == model.name
             0 == model.age
     }
@@ -99,6 +100,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             def model = controller.methodActionWithRequestMapping(firstName, age)
 
         then:
+            !controller.hasErrors()
             'Herbert' == model.name
             47 == model.age
     }
@@ -110,6 +112,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             def model = controller.methodActionWithRequestMapping()
 
         then:
+            !controller.hasErrors()
             'Herbert' == model.name
             47 == model.age
     }
@@ -137,6 +140,7 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
            def model = controller.methodAction()
 
         then:
+            !controller.hasErrors()
             'Herbert' == model.stringParam
             1001 == model.shortParam
             1002 == model.primitiveShortParam
@@ -195,13 +199,35 @@ class MethodActionTransformerParameterBindingSpec extends Specification {
             0 == model.primitiveByteParam
             null == model.charParam
             0 == model.primitiveCharParam
+            controller.hasErrors()
+            14 == controller.errors.errorCount
+            controller.errors.getFieldError('shortParam')
+            controller.errors.getFieldError('primitiveShortParam')
+            controller.errors.getFieldError('integerParam')
+            controller.errors.getFieldError('primitiveIntParam')
+            controller.errors.getFieldError('longParam')
+            controller.errors.getFieldError('primitiveLongParam')
+            controller.errors.getFieldError('floatParam')
+            controller.errors.getFieldError('primitiveFloatParam')
+            controller.errors.getFieldError('doubleParam')
+            controller.errors.getFieldError('primitiveDoubleParam')
+            controller.errors.getFieldError('byteParam')
+            controller.errors.getFieldError('primitiveByteParam')
+            controller.errors.getFieldError('charParam')
+            controller.errors.getFieldError('primitiveCharParam')
+            
+            // boolean conversions should never fail
+            !controller.errors.getFieldError('booleanParam')
+            !controller.errors.getFieldError('primitiveBooleanParam')
     }
 
     void "Test uninitialized action parameters"() {
         when:
            def model = controller.methodAction()
+           def err = controller.errors
 
         then:
+            !controller.hasErrors()
             null == model.stringParam
             null == model.shortParam
             0 == model.primitiveShortParam
