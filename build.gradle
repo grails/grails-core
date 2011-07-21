@@ -92,8 +92,10 @@ subprojects { project ->
     dependencies {
         // Groovy
         groovy( groovyDependency ) {
-            exclude module:"commons-cli"
-            exclude module:"ant"
+            if(!System.getProperty('groovy.grails.joint')) {
+                exclude module:"commons-cli"
+                exclude module:"ant"
+            }
         }
         compile groovyDependency
 
