@@ -33,9 +33,6 @@ import org.springframework.validation.Errors;
 public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
-
-    public void injectErrorsCode(ClassNode classNode, String propertyName) {
-    }
     
     public void injectErrorsCode(ClassNode classNode) {
         addErrorsField(classNode);
