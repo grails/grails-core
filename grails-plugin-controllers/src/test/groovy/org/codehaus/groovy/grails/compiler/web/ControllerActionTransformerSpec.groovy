@@ -11,14 +11,14 @@ import org.springframework.web.context.request.RequestContextHolder
 
 import spock.lang.Specification
 
-class MethodActionTransformerSpec extends Specification {
+class ControllerActionTransformerSpec extends Specification {
 
     def gcl
 
     void setup() {
         System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'true'
         gcl = new GrailsAwareClassLoader()
-        def transformer = new MethodActionTransformer() {
+        def transformer = new ControllerActionTransformer() {
                 @Override
                 boolean shouldInject(URL url) {
                     return true;

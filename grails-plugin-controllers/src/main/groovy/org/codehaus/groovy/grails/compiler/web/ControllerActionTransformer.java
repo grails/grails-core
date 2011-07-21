@@ -71,10 +71,9 @@ import org.springframework.context.MessageSource;
 import org.springframework.validation.MapBindingResult;
 
 /**
- * Enhances controller classes by converting closures actions to method actions
+ * Enhances controller classes by converting closures actions to method actions and binding
+ * request parameters to action arguments.
  *
- * @author Stephane Maldini
- * @since 1.4
  */
 /*
 
@@ -124,7 +123,7 @@ class TestController{
 */
 
 @AstTransformer
-public class MethodActionTransformer implements GrailsArtefactClassInjector {
+public class ControllerActionTransformer implements GrailsArtefactClassInjector {
 
     private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     private static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(new ClassNode(Action.class));
@@ -145,7 +144,7 @@ public class MethodActionTransformer implements GrailsArtefactClassInjector {
 
     private Boolean converterEnabled;
 
-    public MethodActionTransformer() {
+    public ControllerActionTransformer() {
         converterEnabled = Boolean.parseBoolean(System.getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
     }
 

@@ -7,14 +7,14 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
-class MethodActionTransformerParameterBindingSpec extends Specification {
+class ControllerActionTransformerParameterBindingSpec extends Specification {
 
     static controllerClass
     def controller
 
     void setupSpec() {
         def gcl = new GrailsAwareClassLoader()
-        def transformer = new MethodActionTransformer() {
+        def transformer = new ControllerActionTransformer() {
                 @Override
                 boolean shouldInject(URL url) {
                     return true;

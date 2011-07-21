@@ -8,13 +8,13 @@ import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.FailsWith
 import spock.lang.Specification
 
-class MethodActionTransformerCompilationErrorsSpec extends Specification {
+class ControllerActionTransformerCompilationErrorsSpec extends Specification {
 
 	static gcl
 
     void setupSpec() {
         gcl = new GrailsAwareClassLoader()
-        def transformer = new MethodActionTransformer() {
+        def transformer = new ControllerActionTransformer() {
                     @Override
                     boolean shouldInject(URL url) {
                         return true;
