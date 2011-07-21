@@ -9,6 +9,7 @@ import org.codehaus.groovy.ast.ClassNode;
  *  public void setErrors(Errors errors)
  *  public Errors getErrors()
  *  public void clearErrors()
+ *  public Boolean hasErrors()
  *  </pre>
  *
  */
