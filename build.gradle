@@ -91,8 +91,12 @@ subprojects { project ->
 
     dependencies {
         // Groovy
-        groovy( groovyDependency ) {
-            if(!System.getProperty('groovy.grails.joint')) {
+        if(System.getProperty('groovy.jar')) {
+            // use the jar specified in the system property (the joint build specifies its own groovy jar)...
+            groovy groovyDependency
+        } else {
+            // resolve the dependency from a repo...
+            groovy( groovyDependency ) {
                 exclude module:"commons-cli"
                 exclude module:"ant"
             }
