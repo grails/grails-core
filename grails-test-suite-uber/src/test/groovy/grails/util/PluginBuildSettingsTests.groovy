@@ -18,6 +18,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
 
     PluginBuildSettings createPluginBuildSettings(File projectDir = TEST_PROJ_DIR) {
         def settings = new BuildSettings(new File(".."), projectDir)
+        settings.dependenciesExternallyConfigured = true
         settings.loadConfig()
         return new PluginBuildSettings(settings)
     }

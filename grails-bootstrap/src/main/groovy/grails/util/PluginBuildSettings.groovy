@@ -281,7 +281,9 @@ class PluginBuildSettings {
 
         Resource pluginDir = getPluginDirForName(pluginName)
         GPathResult result = getMetadataForPlugin(pluginDir)
-        pluginMetaDataMap[pluginName] = result
+        if(result != null) {
+            pluginMetaDataMap[pluginName] = result
+        }
         return result
     }
 
