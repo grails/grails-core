@@ -369,7 +369,7 @@ class GrailsProjectCompiler {
                  tmpdir:gspTmpDir)
 
         // compile views in plugins
-        def pluginInfos = compileScopePluginInfo.pluginInfos
+        def pluginInfos = pluginSettings.compileScopePluginInfo.pluginInfos
         if (pluginInfos) {
             for (GrailsPluginInfo info in pluginInfos) {
                 File pluginViews = new File(info.pluginDir.file, "grails-app/views")
