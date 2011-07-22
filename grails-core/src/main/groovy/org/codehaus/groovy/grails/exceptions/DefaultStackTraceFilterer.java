@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Default implementation of StackTraceFilterer.
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 public class DefaultStackTraceFilterer implements StackTraceFilterer {
@@ -94,14 +94,14 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
             StackTraceElement[] trace = source.getStackTrace();
             List<StackTraceElement> newTrace = filterTraceWithCutOff(trace, cutOffPackage);
 
-            if(newTrace.size() == 0) {
+            if (newTrace.isEmpty()) {
                 // filter with no cut-off so at least there is some trace
                 newTrace = filterTraceWithCutOff(trace, null);
             }
 
             // Only trim the trace if there was some application trace on the stack
             // if not we will just skip sanitizing and leave it as is
-            if (newTrace.size() > 0) {
+            if (!newTrace.isEmpty()) {
                 // We don't want to lose anything, so log it
                 STACK_LOG.error(FULL_STACK_TRACE_MESSAGE, source);
                 StackTraceElement[] clean = new StackTraceElement[newTrace.size()];
@@ -118,7 +118,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         for (StackTraceElement stackTraceElement : trace) {
             String className = stackTraceElement.getClassName();
             String fileName = stackTraceElement.getFileName();
-            if(!foundGroovy && fileName != null && fileName.endsWith(".groovy")) {
+            if (!foundGroovy && fileName != null && fileName.endsWith(".groovy")) {
                 foundGroovy = true;
             }
             if (endPackage != null && className.startsWith(endPackage) && foundGroovy) break;

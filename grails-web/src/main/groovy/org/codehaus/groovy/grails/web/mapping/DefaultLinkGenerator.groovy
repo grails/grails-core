@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * A link generating service for applications to use when generating links
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     String configuredServerBaseURL
@@ -41,7 +41,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     @Autowired
     UrlMappingsHolder urlMappingsHolder
 
-
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
         this.configuredServerBaseURL = serverBaseURL
         this.contextPath = contextPath
@@ -50,8 +49,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     DefaultLinkGenerator(String serverBaseURL) {
         this.configuredServerBaseURL = serverBaseURL
     }
-
-
 
     /**
      * {@inheritDoc }
@@ -129,7 +126,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             }
         }
         return writer.toString()
-
     }
 
     /**
@@ -235,8 +231,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         return u
     }
 
-
-
     String getServerBaseURL() {
         return makeServerURL()
     }
@@ -244,6 +238,4 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager
     }
-
-
 }

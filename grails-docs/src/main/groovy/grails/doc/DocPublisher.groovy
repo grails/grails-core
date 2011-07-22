@@ -192,7 +192,7 @@ class DocPublisher {
         def guide
         if (yamlTocFile.exists()) {
             guide = new YamlTocStrategy(new FileResourceChecker(guideSrcDir)).generateToc(yamlTocFile)
-            
+
             // A set of all gdoc files.
             def files = []
             guideSrcDir.traverse(type: FileType.FILES, nameFilter: ~/^.+\.gdoc$/) {
@@ -476,7 +476,7 @@ class DocPublisher {
         def hasErrors = false
         def sectionsFound = [] as Set
         def gdocsNotInToc = gdocFiles as Set
-        
+
         // Defensive copy
         if (gdocsNotInToc.is(gdocFiles)) gdocsNotInToc = new HashSet(gdocFiles)
 

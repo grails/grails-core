@@ -45,7 +45,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * TODO: Subclass this to add hibernate-specific exceptions!
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
 
@@ -149,7 +149,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         }
 
         applySharedConstraints(delegate, constrainedProperties);
-        
+
         return constrainedProperties;
     }
 
@@ -246,15 +246,16 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         }
     }
 
-    protected void applyDefaultNullableConstraint(GrailsDomainClassProperty p, ConstrainedProperty cp) {
+    protected void applyDefaultNullableConstraint(@SuppressWarnings("unused") GrailsDomainClassProperty p,
+            ConstrainedProperty cp) {
         applyDefaultNullableConstraint(cp);
     }
-    
+
     protected void applyDefaultNullableConstraint(ConstrainedProperty cp) {
         boolean isCollection = Collection.class.isAssignableFrom(cp.getPropertyType()) || Map.class.isAssignableFrom(cp.getPropertyType());
         cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, isCollection);
     }
-    
+
     protected boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {
         if (property == null || property.getType() == null) return false;
 

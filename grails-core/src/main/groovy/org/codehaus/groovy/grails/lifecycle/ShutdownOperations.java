@@ -26,10 +26,10 @@ import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 
 /**
- * Operations that should be executed on shutdown
+ * Operations that should be executed on shutdown.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ShutdownOperations {
 

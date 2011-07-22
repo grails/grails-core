@@ -40,36 +40,33 @@ public class PluginPathAwareFileSystemResourceLoader extends FileSystemResourceL
     @Override
     protected Resource getResourceByPath(String path) {
         Resource resource = super.getResourceByPath(path);
-        if(resource != null && resource.exists()) {
+        if (resource != null && resource.exists()) {
             return resource;
         }
-        else {
-            String resourcePath = path;
-            if(resourcePath.startsWith(WEB_APP_DIRECTORY)) {
-                 resourcePath = resourcePath.substring("web-app".length(),resourcePath.length());
-            }
-            Resource res = resourceLocator.findResourceForURI(resourcePath);
-            if(res != null) {
-                return res;
-            }
-            else {
-                return new  FileSystemContextResource(path);
-            }
+
+        String resourcePath = path;
+        if (resourcePath.startsWith(WEB_APP_DIRECTORY)) {
+             resourcePath = resourcePath.substring("web-app".length(),resourcePath.length());
         }
+        Resource res = resourceLocator.findResourceForURI(resourcePath);
+        if (res != null) {
+            return res;
+        }
+        return new FileSystemContextResource(path);
     }
 
-	/**
-	 * FileSystemResource that explicitly expresses a context-relative path
-	 * through implementing the ContextResource interface.
-	 */
-	private static class FileSystemContextResource extends FileSystemResource implements ContextResource {
+    /**
+     * FileSystemResource that explicitly expresses a context-relative path
+     * through implementing the ContextResource interface.
+     */
+    private static class FileSystemContextResource extends FileSystemResource implements ContextResource {
 
-		public FileSystemContextResource(String path) {
-			super(path);
-		}
+        public FileSystemContextResource(String path) {
+            super(path);
+        }
 
-		public String getPathWithinContext() {
-			return getPath();
-		}
-	}
+        public String getPathWithinContext() {
+            return getPath();
+        }
+    }
 }

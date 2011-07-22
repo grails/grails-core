@@ -131,7 +131,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 out = GSPResponseWriter.getInstance(response);
             }
 
-            if(argMap.containsKey(ARGUMENT_LAYOUT)) {
+            if (argMap.containsKey(ARGUMENT_LAYOUT)) {
                 webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
             }
 

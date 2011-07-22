@@ -21,10 +21,10 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 /**
- * Additional methods added to the HttpServletRequest API
+ * Additional methods added to the HttpServletRequest API.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ServletRequestApi {
 

@@ -29,7 +29,7 @@ import org.apache.tools.ant.util.StringUtils;
  * Silences ant builder output.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsConsoleAntBuilder extends AntBuilder {
 

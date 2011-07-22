@@ -43,8 +43,7 @@ import org.springframework.web.servlet.ModelAndView
  *
  * </pre>
  *
- *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 class FiltersUnitTestMixin extends ControllerUnitTestMixin {

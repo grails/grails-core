@@ -4,14 +4,6 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/10/11
- * Time: 6:30 PM
- * To change this template use File | Settings | File Templates.
- */
-
 @TestFor(NestedXmlController)
 @Mock([Person, Location, Foo, Bar])
 class NestedXmlBindingTests {
@@ -70,11 +62,11 @@ class NestedXmlBindingTests {
    <locations>
       <location>
          <shippingAddress>foo</shippingAddress>
-	      <billingAddress>bar</billingAddress>
+         <billingAddress>bar</billingAddress>
       </location>
       <location>
-	    <shippingAddress>foo2</shippingAddress>
-	    <billingAddress>bar2</billingAddress>
+         <shippingAddress>foo2</shippingAddress>
+         <billingAddress>bar2</billingAddress>
       </location>
    </locations>
 </person>

@@ -19,13 +19,12 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 
 /**
- * A mixin that provides mocking capability for services
+ * A mixin that provides mocking capability for services.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
-class ServiceUnitTestMixin extends GrailsUnitTestMixin{
-
+class ServiceUnitTestMixin extends GrailsUnitTestMixin {
 
     /**
      * Mocks a service class, registering it with the application context
@@ -33,7 +32,7 @@ class ServiceUnitTestMixin extends GrailsUnitTestMixin{
      * @param serviceClass The service class
      * @return An instance of the service
      */
-    def <T> T  testFor(Class<T> serviceClass) {
+    def <T> T testFor(Class<T> serviceClass) {
         return mockService(serviceClass)
     }
 
@@ -43,7 +42,7 @@ class ServiceUnitTestMixin extends GrailsUnitTestMixin{
      * @param serviceClass The service class
      * @return An instance of the service
      */
-    def <T> T  mockService(Class<T> serviceClass) {
+    def <T> T mockService(Class<T> serviceClass) {
         final serviceArtefact = grailsApplication.addArtefact(ServiceArtefactHandler.TYPE, serviceClass)
 
         defineBeans {

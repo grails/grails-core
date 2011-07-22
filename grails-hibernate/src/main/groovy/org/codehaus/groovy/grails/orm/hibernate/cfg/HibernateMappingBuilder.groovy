@@ -370,7 +370,7 @@ class HibernateMappingBuilder {
      * A closure used by methodMissing to create column definitions
      */
     private handleMethodMissing = { String name, args ->
-        if (args && ((args[0] instanceof Map) || (args[0] instanceof Closure) )) {
+        if (args && ((args[0] instanceof Map) || (args[0] instanceof Closure))) {
             def namedArgs = args[0] instanceof Map ? args[0] : [:]
             PropertyConfig property = mapping.columns[name] ?: new PropertyConfig()
             property.formula = namedArgs.formula

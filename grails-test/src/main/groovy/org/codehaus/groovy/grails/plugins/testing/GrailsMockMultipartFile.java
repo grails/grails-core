@@ -26,7 +26,7 @@ import java.io.InputStream;
  * doesn't use the file system.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsMockMultipartFile extends MockMultipartFile {
 

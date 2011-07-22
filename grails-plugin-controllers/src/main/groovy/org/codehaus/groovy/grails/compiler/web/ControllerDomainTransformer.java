@@ -14,7 +14,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi;
  * Adds binding methods to domain classes.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class ControllerDomainTransformer extends AbstractGrailsArtefactTransformer {

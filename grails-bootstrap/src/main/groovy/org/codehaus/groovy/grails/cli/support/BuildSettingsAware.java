@@ -21,7 +21,7 @@ import grails.util.BuildSettings;
  * Marker interface for classes interested in BuildSettings. Build time only. Do not use in production!
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface BuildSettingsAware {
 
@@ -30,5 +30,5 @@ public interface BuildSettingsAware {
      *
      * @param settings The BuildSettings instance
      */
-    public void setBuildSettings(BuildSettings settings);
+    void setBuildSettings(BuildSettings settings);
 }

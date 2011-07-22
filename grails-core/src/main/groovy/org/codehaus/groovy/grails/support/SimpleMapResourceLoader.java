@@ -22,10 +22,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Simple implementation of the ResourceLoader interface that uses a Map to load resources
+ * Simple implementation of the ResourceLoader interface that uses a Map to load resources.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class SimpleMapResourceLoader implements ResourceLoader {
 

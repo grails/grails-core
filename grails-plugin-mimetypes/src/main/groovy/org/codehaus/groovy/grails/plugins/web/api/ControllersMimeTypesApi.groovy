@@ -16,17 +16,19 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
 import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * Api extensions to controllers for the MimeTypes plugin
+ * Api extensions to controllers for the MimeTypes plugin.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ControllersMimeTypesApi {
 
     protected apiSupport = new MimeTypesApiSupport()
+
     /**
      * <p>The withFormat method is used to allow controllers to handle different types of
      * request formats such as HTML, XML and so on. Example usage:</p>
@@ -49,6 +51,4 @@ class ControllersMimeTypesApi {
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         apiSupport.withFormat(response, callable)
     }
-
-
 }

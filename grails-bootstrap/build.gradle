@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 dependencies {
-    compile( "org.springframework:spring-core:${springVersion}") {
+    compile("org.springframework:spring-core:${springVersion}") {
         exclude module:"commons-logging"
     }
     compile("org.springframework:spring-beans:${springVersion}") {
@@ -36,7 +36,7 @@ dependencies {
     // Ant
     compile "org.fusesource.jansi:jansi:$jansiVersion",
             "jline:jline:$jlineVersion",
-			"net.java.dev.jna:jna:$jnaVersion"
+            "net.java.dev.jna:jna:$jnaVersion"
 
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",

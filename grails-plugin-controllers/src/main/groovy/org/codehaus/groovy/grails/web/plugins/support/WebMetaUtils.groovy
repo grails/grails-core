@@ -154,14 +154,13 @@ class WebMetaUtils {
         }
         commandParams
     }
-    
+
     private static String convertTypeNameToParamsPrefix(Class clazz) {
         def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/, '-$1')?.toLowerCase()
         if (result?.endsWith("-command")) {
             return result.substring(0, result.size() - 8)
-        } else {
-            return null
         }
+        return null
     }
 
     /**

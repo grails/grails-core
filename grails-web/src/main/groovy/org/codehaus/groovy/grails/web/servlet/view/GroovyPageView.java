@@ -199,7 +199,7 @@ public class GroovyPageView extends AbstractUrlBasedView {
         StackTraceElement[] stackTrace = exception.getStackTrace();
         String className = stackTrace[0].getClassName();
         int lineNumber = stackTrace[0].getLineNumber();
-        if(className.contains("_gsp")) {
+        if (className.contains("_gsp")) {
             int[] lineNumbers = t.getMetaInfo().getLineNumbers();
             if (lineNumber < lineNumbers.length) {
                 lineNumber = lineNumbers[lineNumber - 1];

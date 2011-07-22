@@ -23,7 +23,7 @@ import org.apache.log4j.LogManager;
  * Default logging initializer used for Log4j.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class LoggingInitializer {
 

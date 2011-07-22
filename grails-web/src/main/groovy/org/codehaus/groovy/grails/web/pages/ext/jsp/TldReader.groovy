@@ -28,14 +28,14 @@ class TldReader extends DefaultHandler {
     final Map tags = [:]
     final List listeners = []
 
-    StringBuffer buf
+    StringBuilder buf
 
     private tagName
     private className
 
     void startElement(String nsuri, String localName, String qName, Attributes attributes) {
         if ("name" == qName || "tagclass" == qName || "tag-class" == qName || "listener-class" == qName) {
-            buf = new StringBuffer()
+            buf = new StringBuilder()
         }
     }
 

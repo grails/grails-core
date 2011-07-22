@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
  * Utility class for delivering console output in a nicely formatted way.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsConsole {
 
@@ -113,6 +113,7 @@ public class GrailsConsole {
      * Whether ANSI should be enabled for output
      */
     private boolean ansiEnabled = true;
+
     /**
      * Whether user input is currently active
      */
@@ -124,7 +125,6 @@ public class GrailsConsole {
 
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(new PrintStream(AnsiConsole.wrapOutputStream(System.err))));
-
 
         if (isWindows()) {
            terminal = new WindowsTerminal() {
@@ -330,7 +330,7 @@ public class GrailsConsole {
                 lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);
-                if(userInputActive) {
+                if (userInputActive) {
                     out.print(ansi().cursorRight(PROMPT.length()).reset());
                 }
 
@@ -353,19 +353,6 @@ public class GrailsConsole {
 
     private void postPrintMessage() {
         progressIndicatorActive = false;
-    }
-
-    private void replayPromptIfActive() {
-        if (!userInputActive) {
-            return;
-        }
-
-        if (isAnsiEnabled()) {
-            out.println(ansiPrompt(PROMPT));
-        }
-        else {
-            out.println(PROMPT);
-        }
     }
 
     /**
@@ -427,7 +414,7 @@ public class GrailsConsole {
         try {
             if ((verbose||stacktrace) && error != null) {
                 printStackTrace(msg, error);
-                error(ERROR, msg );
+                error(ERROR, msg);
             }
             else {
                 error(ERROR, msg + STACKTRACE_MESSAGE);
@@ -443,20 +430,20 @@ public class GrailsConsole {
      * @param error The error
      */
     public void error(Throwable error) {
-
         printStackTrace(null, error);
     }
 
     private void printStackTrace(String message, Throwable error) {
-        if(error instanceof ScriptExitException) {
+        if (error instanceof ScriptExitException) {
             return; // don't bother with exit exceptions
         }
 
-        if((error instanceof BuildException) && error.getCause() != null) {
+        if ((error instanceof BuildException) && error.getCause() != null) {
             error = error.getCause();
         }
-        if(!isVerbose())
+        if (!isVerbose()) {
             StackTraceUtils.deepSanitize(error);
+        }
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
         if (message != null) {
@@ -611,16 +598,6 @@ public class GrailsConsole {
         return message + "[" + DefaultGroovyMethods.join(validResponses, ",") + "] ";
     }
 
-    private void printMessageOnNewLine(String msg) {
-        out.println(outputCategory(ansi(), "|")
-                .newline()
-                .fg(DEFAULT).a(msg).reset());
-    }
-
-    private boolean hasNewLines(String msg) {
-        return msg.contains(LINE_SEPARATOR);
-    }
-
     private Ansi outputCategory(Ansi ansi, String categoryName) {
         return ansi
                 .a(Ansi.Attribute.INTENSITY_BOLD)
@@ -645,7 +622,7 @@ public class GrailsConsole {
     private Ansi erasePreviousLine(String categoryName) {
         if (cursorMove > 0) {
             int moveLeftLength = categoryName.length() + lastMessage.length();
-            if(userInputActive) {
+            if (userInputActive) {
                 moveLeftLength += PROMPT.length();
             }
             return ansi()
@@ -658,7 +635,7 @@ public class GrailsConsole {
     }
 
     public void error(String label, String message) {
-        if(message != null) {
+        if (message != null) {
             cursorMove = 0;
             try {
                 if (isAnsiEnabled()) {

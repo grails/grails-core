@@ -20,7 +20,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
  * Strategy interface for obtaining details about the currently executing request
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface GrailsRequestStateLookupStrategy {
 

@@ -22,11 +22,11 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 
- /**
- * Methods added to the {@link javax.servlet.http.HttpServletRequest} instance for request format handling
+/**
+ * Methods added to the {@link javax.servlet.http.HttpServletRequest} instance for request format handling.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class RequestMimeTypesApi {
 
@@ -35,9 +35,7 @@ class RequestMimeTypesApi {
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
-
-    RequestMimeTypesApi() {
-    }
+    RequestMimeTypesApi() {}
 
     MimeType[] getMimeTypes() {
         return this.mimeTypes

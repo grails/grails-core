@@ -22,13 +22,12 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.factory.InitializingBean
 
 /**
- *
- * Creates the MimeType[] object that defines the configured mime types
+ * Creates the MimeType[] object that defines the configured mime types.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
-class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplicationAware, InitializingBean{
+class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplicationAware, InitializingBean {
 
     GrailsApplication grailsApplication
 
@@ -47,22 +46,24 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
     void afterPropertiesSet() {
         def config = grailsApplication?.config
         def mimeConfig = config?.grails?.mime?.types
-        if (!mimeConfig) mimeTypes = MimeType.createDefaults()
-        else {
-            def mimes = []
-            for (entry in mimeConfig) {
-                if (entry.value instanceof List) {
-                    for (i in entry.value) {
-                        mimes << new MimeType(i)
-                        mimes[-1].extension = entry.key
-                    }
-                }
-                else {
-                    mimes << new MimeType(entry.value)
+        if (!mimeConfig) {
+            mimeTypes = MimeType.createDefaults()
+            return
+        }
+
+        def mimes = []
+        for (entry in mimeConfig) {
+            if (entry.value instanceof List) {
+                for (i in entry.value) {
+                    mimes << new MimeType(i)
                     mimes[-1].extension = entry.key
                 }
             }
-            mimeTypes = mimes as MimeType[]
+            else {
+                mimes << new MimeType(entry.value)
+                mimes[-1].extension = entry.key
+            }
         }
+        mimeTypes = mimes as MimeType[]
     }
 }

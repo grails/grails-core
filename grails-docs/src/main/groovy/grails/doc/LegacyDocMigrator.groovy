@@ -121,7 +121,7 @@ class LegacyDocMigrator {
         for (int i = 1; i < parts.size(); i++) {
             parts[i] = parts[i].capitalize()
         }
-            
+
         return parts.join('')
     }
 }

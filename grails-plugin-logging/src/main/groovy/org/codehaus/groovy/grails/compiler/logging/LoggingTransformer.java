@@ -36,7 +36,7 @@ import java.net.URL;
  * Adds a log method to all artifacts.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class LoggingTransformer implements AllArtefactClassInjector{

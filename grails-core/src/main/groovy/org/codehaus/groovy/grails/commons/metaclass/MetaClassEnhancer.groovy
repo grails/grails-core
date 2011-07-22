@@ -17,13 +17,14 @@
 package org.codehaus.groovy.grails.commons.metaclass
 
 import java.lang.reflect.Method
+
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
 
- /**
- * Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider
+/**
+ * Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class MetaClassEnhancer extends BaseApiProvider {
 

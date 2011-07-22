@@ -28,7 +28,7 @@ import java.net.ServerSocket;
  * An isolated version of Tomcat used to run Grails applications with run-war.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class IsolatedTomcat {
 

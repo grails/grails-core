@@ -24,10 +24,10 @@ import org.codehaus.groovy.grails.documentation.DocumentedProperty
 import org.springframework.core.io.Resource
 
 /**
- * Generates the plugin.xml descriptor
+ * Generates the plugin.xml descriptor.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class PluginDescriptorGenerator {
 

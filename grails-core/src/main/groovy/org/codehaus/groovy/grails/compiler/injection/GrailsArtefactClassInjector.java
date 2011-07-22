@@ -20,10 +20,10 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 
 /**
- * Interface specific to Grails artefacts that returns the artefact type
+ * Interface specific to Grails artefacts that returns the artefact type.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface GrailsArtefactClassInjector extends ClassInjector{
 

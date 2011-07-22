@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 class MimeType {
 
     static {
-        ShutdownOperations.addOperation( { reset() } as Runnable )
+        ShutdownOperations.addOperation({ reset() } as Runnable)
     }
 
     /**

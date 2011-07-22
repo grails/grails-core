@@ -91,7 +91,7 @@ class TestUrlMappings {
             applyTemplate(template)
         }
     }
-    
+
     void testFormRemoteWithStringUrl() {
         def template = '''\
 <g:formRemote name="myForm" method="GET" url="/dirt-grails/ruleDetails/saveDynamicParameters" >\

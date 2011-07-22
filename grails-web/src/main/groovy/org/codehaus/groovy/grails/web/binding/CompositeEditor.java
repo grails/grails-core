@@ -16,7 +16,6 @@
 
 package org.codehaus.groovy.grails.web.binding;
 
-
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
@@ -25,10 +24,9 @@ import java.util.List;
 
 /**
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class CompositeEditor extends PropertyEditorSupport {
-
 
     List<PropertyEditor> propertyEditors = new ArrayList<PropertyEditor>();
 
@@ -46,11 +44,11 @@ public class CompositeEditor extends PropertyEditorSupport {
                 converted = true;
                 break;
             } catch (IllegalArgumentException e) {
-                if(first == null) first = e;
+                if (first == null) first = e;
             }
         }
 
-        if(!converted && first != null) {
+        if (!converted && first != null) {
             throw first;
         }
     }

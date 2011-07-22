@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch
 
 /**
  * @author Luke Daley
- * @since 1.4
+ * @since 2.0
  */
 class HibernatePersistenceContextInterceptorTests extends AbstractGrailsHibernateTests {
 

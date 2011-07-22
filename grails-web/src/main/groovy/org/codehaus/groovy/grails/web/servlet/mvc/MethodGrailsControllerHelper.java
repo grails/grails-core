@@ -30,7 +30,7 @@ import org.springframework.util.ReflectionUtils;
  * Implements action invocation through Method.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper {
 

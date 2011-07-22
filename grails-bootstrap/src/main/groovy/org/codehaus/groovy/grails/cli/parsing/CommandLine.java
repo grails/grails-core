@@ -20,10 +20,10 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Represents the parsed command line options
+ * Represents the parsed command line options.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface CommandLine {
 

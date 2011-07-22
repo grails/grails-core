@@ -32,7 +32,7 @@ import org.junit.runner.notification.StoppedByUserException;
  * A RunNotifier that logs the the GrailsConsole.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsTestRunNotifier extends RunNotifier {
 

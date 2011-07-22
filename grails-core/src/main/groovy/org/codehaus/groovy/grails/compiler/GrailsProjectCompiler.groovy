@@ -19,22 +19,19 @@ package org.codehaus.groovy.grails.compiler
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.PluginBuildSettings
+
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
-import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
-import grails.util.Environment
 
 /**
- *
- * Encapsulates the compilation logic required for a Grails application
+ * Encapsulates the compilation logic required for a Grails application.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class GrailsProjectCompiler {
 
@@ -72,7 +69,6 @@ class GrailsProjectCompiler {
      *
      * @param pluginBuildSettings The PluginBuildSettings
      * @param rootLoader The ClassLoader
-
      */
     GrailsProjectCompiler(PluginBuildSettings pluginBuildSettings, ClassLoader rootLoader = Thread.currentThread().getContextClassLoader()) {
         pluginSettings = pluginBuildSettings
@@ -90,7 +86,7 @@ class GrailsProjectCompiler {
                            "${srcdir}/groovy".toString(),
                            "${srcdir}/java".toString()]
 
-        def excludedPaths =  EXCLUDED_PATHS
+        def excludedPaths = EXCLUDED_PATHS
 
         final grailsAppDirs = new File("${basedir}/grails-app").listFiles()
         if (grailsAppDirs != null) {
@@ -262,7 +258,7 @@ class GrailsProjectCompiler {
             compilePluginDescriptor(pluginDescriptor, classesDirPath)
         }
 
-        if(classLoader instanceof URLClassLoader) {
+        if (classLoader instanceof URLClassLoader) {
             classLoader.addURL(buildSettings.classesDir.toURI().toURL())
         }
     }
@@ -284,7 +280,7 @@ class GrailsProjectCompiler {
         final pluginClassesDir = buildSettings.pluginClassesDir
         final pluginProvidedClassesDir = buildSettings.pluginProvidedClassesDir
         final pluginBuildClassesDir = buildSettings.pluginBuildClassesDir
-        if(classLoader instanceof URLClassLoader) {
+        if (classLoader instanceof URLClassLoader) {
             pluginBuildClassesDir.mkdirs()
             pluginProvidedClassesDir.mkdirs()
             pluginClassesDir.mkdirs()
@@ -326,7 +322,7 @@ class GrailsProjectCompiler {
             }
         }
 
-        if(pluginCompileInfo.pluginDescriptors) {
+        if (pluginCompileInfo.pluginDescriptors) {
             def classesDirString = classesDirPath.toString()
             config.setTargetDirectory(classesDirString)
 

@@ -21,6 +21,7 @@ import grails.web.container.EmbeddableServerFactory
 
 import java.net.ServerSocket
 
+import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 
@@ -175,7 +176,7 @@ runServer = { Map args ->
         event("StatusFinal", [message])
     }
     catch (Throwable t) {
-        if(t instanceof org.codehaus.groovy.grails.cli.ScriptExitException) throw t
+        if (t instanceof ScriptExitException) throw t
         GrailsUtil.deepSanitize(t)
         if (!(t instanceof SocketException) && !(t.cause instanceof SocketException)) {
             grailsConsole.error t

@@ -73,9 +73,9 @@ class XMLParsingParameterCreationListener extends AbstractParsingParameterCreati
                 populateParamsFromXML(child, childMap)
             }
             else {
-                if(child.childNodes()) {
+                if (child.childNodes()) {
                     def childPrefix
-                    if(prefix) {
+                    if (prefix) {
                         childPrefix = "${prefix[0..-2]}[${i++}]."
                     }
                     else {

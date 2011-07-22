@@ -38,7 +38,7 @@ import org.springframework.util.ClassUtils;
  * Integrates UAA usage tracking with Grails.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class UaaIntegration {
 

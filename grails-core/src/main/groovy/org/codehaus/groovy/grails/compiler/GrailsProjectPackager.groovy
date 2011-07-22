@@ -32,11 +32,10 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 /**
  * Encapsulates the logic to package a project ready for execution.
  *
- *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
-class GrailsProjectPackager extends BaseSettingsApi{
+class GrailsProjectPackager extends BaseSettingsApi {
 
     public static final String LOGGING_INITIALIZER_CLASS = "org.codehaus.groovy.grails.plugins.logging.LoggingInitializer"
     GrailsProjectCompiler projectCompiler
@@ -52,7 +51,6 @@ class GrailsProjectPackager extends BaseSettingsApi{
     private basedir
     private resourcesDirPath
     private boolean doCompile
-
 
     GrailsProjectPackager(GrailsProjectCompiler compiler, File configFile, boolean doCompile = true) {
         super(compiler.buildSettings, false)
@@ -81,7 +79,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
      */
     ConfigObject packageApplication() {
 
-        if(doCompile) {
+        if (doCompile) {
             projectCompiler.compilePlugins()
             projectCompiler.compile()
         }
@@ -110,6 +108,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
         } catch (e) {
             throw new PackagingException("Error occurred processing message bundles: ${e.message}", e)
         }
+
         try {
             packageConfigFiles(basedir)
         } catch (e) {
@@ -130,7 +129,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
      * @param config The config object
      */
     void startLogging(ConfigObject config) {
-        if(ClassUtils.isPresent(LOGGING_INITIALIZER_CLASS, classLoader)) {
+        if (ClassUtils.isPresent(LOGGING_INITIALIZER_CLASS, classLoader)) {
             try {
                 classLoader
                     .loadClass(LOGGING_INITIALIZER_CLASS)
@@ -140,7 +139,6 @@ class GrailsProjectPackager extends BaseSettingsApi{
                 throw new PackagingException("Error initializing logging: $e.message",e)
             }
         }
-
     }
 
     /**
@@ -164,8 +162,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
                     config.setConfigFile(configFile.toURI().toURL())
                 }
                 catch (Exception e) {
-                    throw new PackagingException("Error loading Config.groovy: $e.message",e)
-
+                    throw new PackagingException("Error loading Config.groovy: $e.message", e)
                 }
             }
         }
@@ -193,7 +190,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
      */
     void processMessageBundles() {
         String i18nDir = "${resourcesDirPath}/grails-app/i18n"
-        if(native2ascii) {
+        if (native2ascii) {
 
             def ant = new GrailsConsoleAntBuilder(ant.project)
             ant.native2ascii(src: "${basedir}/grails-app/i18n",
@@ -255,10 +252,10 @@ class GrailsProjectPackager extends BaseSettingsApi{
             }
         }
 
-        if(async) {
+        if (async) {
             Thread.start logic
         }
-        else{
+        else {
             logic.call()
         }
     }
@@ -285,7 +282,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
                 }
             }
             catch (Exception e) {
-                throw new PackagingException( "Error packaging plugin [${info.name}] : ${e.message}", e )
+                throw new PackagingException("Error packaging plugin [${info.name}] : ${e.message}", e)
             }
         }
     }
@@ -332,8 +329,6 @@ class GrailsProjectPackager extends BaseSettingsApi{
             copyGrailsResources(scaffoldDir, "src/grails/templates/scaffolding/*")
         }
     }
-
-
 
     /**
      * Packages any config files such as Hibernate config, XML files etc.

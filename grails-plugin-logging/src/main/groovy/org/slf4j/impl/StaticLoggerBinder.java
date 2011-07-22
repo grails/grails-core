@@ -20,10 +20,10 @@ import org.slf4j.ILoggerFactory;
 import org.slf4j.spi.LoggerFactoryBinder;
 
 /**
- * Provides stack trace cleaning and filtering of log4j log output
+ * Provides stack trace cleaning and filtering of log4j log output.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class StaticLoggerBinder implements LoggerFactoryBinder {
 

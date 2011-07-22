@@ -40,7 +40,7 @@ class WebXmlTagLibraryReader extends DefaultHandler {
 
     void startElement(String ns, String localName, String qName, Attributes attributes) {
         if (TAG_TAGLIB_URI == qName || TAG_TAGLIB_LOC == qName) {
-            buf = new StringBuffer()
+            buf = new StringBuilder()
         }
     }
 

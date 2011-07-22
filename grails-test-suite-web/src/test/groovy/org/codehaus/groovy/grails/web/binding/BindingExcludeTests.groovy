@@ -3,13 +3,6 @@ package org.codehaus.groovy.grails.web.binding
 import grails.test.mixin.TestFor
 import grails.test.mixin.Mock
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/12/11
- * Time: 2:35 PM
- * To change this template use File | Settings | File Templates.
- */
 @TestFor(ExcludingController)
 @Mock([Person, Location])
 class BindingExcludeTests {
@@ -21,11 +14,11 @@ class BindingExcludeTests {
    <locations>
       <location>
          <shippingAddress>foo</shippingAddress>
-	      <billingAddress>bar</billingAddress>
+         <billingAddress>bar</billingAddress>
       </location>
       <location>
-	    <shippingAddress>foo2</shippingAddress>
-	    <billingAddress>bar2</billingAddress>
+         <shippingAddress>foo2</shippingAddress>
+         <billingAddress>bar2</billingAddress>
       </location>
    </locations>
 </person>
@@ -38,6 +31,7 @@ class BindingExcludeTests {
 
     }
 }
+
 class ExcludingController {
     def bind() {
         def p = new Person()

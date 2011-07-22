@@ -16,12 +16,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
 /**
- * The Default URL mappings that are used if none are configured
+ * The Default URL mappings that are used if none are configured.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
- *
+ * @since 2.0
  */
 class DefaultUrlMappings {
     static Closure mappings = {
@@ -34,5 +32,4 @@ class DefaultUrlMappings {
         "/"(view:"/index")
         "500"(view:'/error')
     }
-
 }

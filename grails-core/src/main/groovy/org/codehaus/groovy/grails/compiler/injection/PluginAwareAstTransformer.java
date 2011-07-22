@@ -33,7 +33,7 @@ import java.util.List;
  * Automatically annotates each class based on the plugin it originated from.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class PluginAwareAstTransformer implements ClassInjector {

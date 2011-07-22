@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
  * Extended marker interface that indicates this ClassInjector applies to GSPs.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public interface GroovyPageInjector extends ClassInjector {
     // marker

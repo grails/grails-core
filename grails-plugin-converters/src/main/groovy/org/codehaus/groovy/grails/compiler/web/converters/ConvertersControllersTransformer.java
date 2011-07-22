@@ -25,11 +25,10 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi;
 
 /**
- *
- * Enhances controller classes with additional render methods specific to converters
+ * Enhances controller classes with additional render methods specific to converters.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class ConvertersControllersTransformer extends AbstractGrailsArtefactTransformer {

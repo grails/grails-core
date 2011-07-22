@@ -173,9 +173,9 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
     }
 
     private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId,
-   		 BeanDefinitionRegistry targetRegistry, ParserContext parserContext) {
+              BeanDefinitionRegistry targetRegistry, ParserContext parserContext) {
         String sessionFactoryId = StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)) ?
-      		  element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
+                element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
         AbstractBeanDefinition sessionFactoryBean = new GenericBeanDefinition();
         sessionFactoryBean.setBeanClass(ConfigurableLocalSessionFactoryBean.class);
 

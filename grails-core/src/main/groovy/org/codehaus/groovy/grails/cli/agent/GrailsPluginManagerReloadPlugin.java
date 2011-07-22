@@ -25,7 +25,7 @@ import org.springframework.beans.CachedIntrospectionResults;
  * Reloading agent plugin for use with the GrailsPluginManager.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsPluginManagerReloadPlugin implements ReloadEventProcessorPlugin {
 

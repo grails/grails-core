@@ -22,12 +22,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation to mark controller methods as actions
+ * An annotation to mark controller methods as actions.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface Action {

@@ -35,11 +35,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- * API shared by controllers, tag libraries and any other web artifact
+ * API shared by controllers, tag libraries and any other web artifact.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
 public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware{
     private GrailsPluginManager pluginManager;

@@ -18,20 +18,20 @@ package org.codehaus.groovy.grails.cli.interactive
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-import grails.util.Environment
-import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.cli.GrailsScriptRunner
-import org.codehaus.groovy.grails.cli.ScriptNotFoundException
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.cli.parsing.ParseException
-import org.codehaus.groovy.grails.cli.ScriptExitException
+
 import java.awt.Desktop
+
+import org.codehaus.groovy.grails.cli.GrailsScriptRunner
+import org.codehaus.groovy.grails.cli.ScriptExitException
+import org.codehaus.groovy.grails.cli.ScriptNotFoundException
+import org.codehaus.groovy.grails.cli.parsing.ParseException
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * Provides the implementation of interactive mode in Grails.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class InteractiveMode {
 
@@ -70,7 +70,7 @@ class InteractiveMode {
         interactiveModeActive = true
 
         addStatus("Enter a script name to run. Use TAB for completion: ")
-        while(interactiveModeActive) {
+        while (interactiveModeActive) {
             def scriptName = showPrompt()
             try {
                 def trimmed = scriptName.trim()
@@ -129,7 +129,6 @@ class InteractiveMode {
                             error "Invalid command: ${e.message}"
                         }
                     }
-
                 }
                 else {
                     error "No script name specified"

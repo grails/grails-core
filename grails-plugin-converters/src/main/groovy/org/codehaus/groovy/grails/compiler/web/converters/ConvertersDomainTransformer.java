@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi;
  * Adds the asType method to domain classes.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class ConvertersDomainTransformer extends AbstractGrailsArtefactTransformer{

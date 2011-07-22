@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.cli.parsing;
  * Exception that is thrown in command line parsing fails.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ParseException extends RuntimeException {
 

@@ -51,8 +51,8 @@ public class GroovyPageLayoutRenderer {
         this.applicationContext = applicationContext;
     }
 
-    public void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
-                        HttpServletResponse response, ServletContext servletContext) {
+    public void render(Content content, HttpServletRequest request,
+                       HttpServletResponse response, ServletContext servletContext) {
 
         HTMLPage htmlPage = content2htmlPage(content);
         request.setAttribute(RequestConstants.PAGE, htmlPage);

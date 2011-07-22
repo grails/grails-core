@@ -1,21 +1,15 @@
 package org.codehaus.groovy.grails.web.binding
 
-import grails.test.mixin.TestFor
-import grails.test.mixin.Mock
-import grails.persistence.Entity
-import org.junit.Test
 import grails.converters.JSON
 import grails.converters.XML
+import grails.persistence.Entity
+import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 import grails.web.JSONBuilder
-import org.junit.Before
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/4/11
- * Time: 10:29 AM
- * To change this template use File | Settings | File Templates.
- */
+import org.junit.Before
+import org.junit.Test
+
 @TestFor(UserController)
 @Mock(User)
 class JSONBindingToNullTests {
@@ -41,16 +35,15 @@ class JSONBindingToNullTests {
     @Test
     void testJsonBindingToNull() {
 
-		def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
+        def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
 
         def builder = new JSONBuilder()
         request.method = 'PUT'
         request.json = builder.build { user = pebbles }
         response.format = "json"
-		params.id = pebbles.id
+        params.id = pebbles.id
 
-		controller.update()
-
+        controller.update()
 
         // if any binding errors occurred this will break
         assert response.json.id == pebbles.id
@@ -58,15 +51,14 @@ class JSONBindingToNullTests {
 
     @Test
     void testXmlBindingToNull() {
-		def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
+        def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
 
 
         request.method = 'PUT'
         request.xml = pebbles
-		params.id = pebbles.id
+        params.id = pebbles.id
 
-		controller.update()
-
+        controller.update()
 
         // if any binding errors occurred this will break
         assert response.xml.@id == pebbles.id
@@ -74,35 +66,36 @@ class JSONBindingToNullTests {
 }
 
 class UserController {
-	def update() {
-		println params
-		if(params.id) {
-			def user = User.get(params.id)
-			if(user) {
-				user.properties = params['user']
-				if(!user.hasErrors() && user.save()) {
-					println "UPDATED!"
-					withFormat {
-						//html { render(view:"show", [user:user]) }
-						xml { render user as XML }
-						json { render user as JSON }
-					}
-				} else {
-					println "ERRORS:${user.errors}"
-					withFormat {
-						//html { render(view:"update", [user:user]) }
-						xml { render user.errors as XML }
-						json { render user.errors as JSON }
-					}
-				}
-			} else {
-				response.sendError 404
-			}
-		} else {
-			response.sendError 400
-		}
-	}
+    def update() {
+        println params
+        if (params.id) {
+            def user = User.get(params.id)
+            if (user) {
+                user.properties = params['user']
+                if (!user.hasErrors() && user.save()) {
+                    println "UPDATED!"
+                    withFormat {
+                        //html { render(view:"show", [user:user]) }
+                        xml { render user as XML }
+                        json { render user as JSON }
+                    }
+                } else {
+                    println "ERRORS:${user.errors}"
+                    withFormat {
+                        //html { render(view:"update", [user:user]) }
+                        xml { render user.errors as XML }
+                        json { render user.errors as JSON }
+                    }
+                }
+            } else {
+                response.sendError 404
+            }
+        } else {
+            response.sendError 400
+        }
+    }
 }
+
 @Entity
 class User {
     String username
@@ -126,22 +119,19 @@ class User {
 
     static constraints = {
         username(nullable:false)
-		password(nullable:false)
-		firstName(nullable:false)
-		lastName(nullable:false)
-		middleName(nullable:true)
-		phone(nullable:true)
-		email(nullable:true, email:true)
-		activeDirectoryUsername(nullable:true)
-		createdBy(nullable:true)
-		lastUpdatedBy(nullable:true)
-		logonFailureCount(nullable:false)
-		activationDate(nullable:false)
-		deactivationDate(nullable:true)
-		lastUpdatedDate(nullable:true)
-		lastAccessDate(nullable:true)
+        password(nullable:false)
+        firstName(nullable:false)
+        lastName(nullable:false)
+        middleName(nullable:true)
+        phone(nullable:true)
+        email(nullable:true, email:true)
+        activeDirectoryUsername(nullable:true)
+        createdBy(nullable:true)
+        lastUpdatedBy(nullable:true)
+        logonFailureCount(nullable:false)
+        activationDate(nullable:false)
+        deactivationDate(nullable:true)
+        lastUpdatedDate(nullable:true)
+        lastAccessDate(nullable:true)
     }
 }
-
-
-

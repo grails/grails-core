@@ -41,9 +41,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         GroovyPageLayoutFinder layoutFinder = new GroovyPageLayoutFinder();
         layoutFinder.setGroovyPageLocator(pageLocator);
+        @SuppressWarnings("rawtypes")
         Map flat = config != null ?  config.flatten() : Collections.emptyMap();
         layoutFinder.setDefaultDecoratorName(flat.get("grails.sitemesh.default.layout") != null ? flat.get("grails.sitemesh.default.layout").toString(): "application");
-
 
         appCtx.registerMockBean("groovyPageLocator", pageLocator);
         appCtx.registerMockBean("groovyPageLayoutFinder", layoutFinder);

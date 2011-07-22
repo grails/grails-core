@@ -19,19 +19,20 @@ import grails.web.Action;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.util.ReflectionUtils;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Implements action invocation through Closure.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper {
 

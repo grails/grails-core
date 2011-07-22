@@ -16,7 +16,10 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Artefact;
-import grails.build.logging.GrailsConsole;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -28,15 +31,13 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * A transformation used to apply transformers to classes not located in Grails directory structure. For example
- * any class can be annotated with @Artefact("Controller") to make it into a controller no matter what the location
+ * A transformation used to apply transformers to classes not located in Grails
+ * directory structure. For example any class can be annotated with
+ * @Artefact("Controller") to make it into a controller no matter what the location.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation implements ASTTransformation {

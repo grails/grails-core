@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
  * A JLine completor for Grails' interactive mode.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class GrailsInteractiveCompletor extends SimpleCompletor {
 

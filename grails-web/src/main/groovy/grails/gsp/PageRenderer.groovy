@@ -47,9 +47,8 @@ import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPage
 /**
  * Simplified API for rendering GSP pages from services, jobs and other non-request classes.
  *
- *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
@@ -61,7 +60,6 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
     PageRenderer(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine
     }
-
 
     /**
      * Renders a page and returns the contents
@@ -115,30 +113,33 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
     private void renderViewToWriter(Map args, Writer writer) {
         def source = null
-        if(args.view) {
+        if (args.view) {
            source = groovyPageLocator.findViewByPath(args.view.toString())
         }
-        else if(args.template) {
+        else if (args.template) {
             source = groovyPageLocator.findTemplateByPath(args.template.toString())
         }
-        if (source != null) {
-            try {
-                def webRequest = new GrailsWebRequest(new PageRenderRequest(source.URI), new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)), servletContext, applicationContext)
-                RequestContextHolder.setRequestAttributes(webRequest)
-                def template = null
-                if(source instanceof GroovyPageResourceScriptSource)
-                    template = templateEngine.createTemplate(source.resource, true)
-                else if(source instanceof GroovyPageCompiledScriptSource) {
-                    template = templateEngine.createTemplate(source.compiledClass)
-                }
-                if(template != null) {
-                    final writable = template.make(args.model ?: [:])
-                    writable.writeTo(writer)
-                }
-            } finally {
-                RequestContextHolder.setRequestAttributes(null)
-            }
+        if (source == null) {
+            return
+        }
 
+        try {
+            def webRequest = new GrailsWebRequest(new PageRenderRequest(source.URI),
+                  new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
+                  servletContext, applicationContext)
+            RequestContextHolder.setRequestAttributes(webRequest)
+            def template = null
+            if (source instanceof GroovyPageResourceScriptSource) {
+                template = templateEngine.createTemplate(source.resource, true)
+            }
+            else if (source instanceof GroovyPageCompiledScriptSource) {
+                template = templateEngine.createTemplate(source.compiledClass)
+            }
+            if (template != null) {
+                template.make(args.model ?: [:]).writeTo(writer)
+            }
+        } finally {
+            RequestContextHolder.setRequestAttributes(null)
         }
     }
 
@@ -151,7 +152,6 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
      */
     class PageRenderRequest implements HttpServletRequest {
 
-
         PageRenderRequest(String requestURI) {
             this.requestURI = requestURI
         }
@@ -159,222 +159,166 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         def params = new ConcurrentHashMap()
         def attributes = new ConcurrentHashMap()
 
-
         String contentType
         String requestURI
         String characterEncoding = "UTF-8"
 
-        @Override
         String getAuthType() { null }
 
-        @Override
         Cookie[] getCookies() { return new Cookie[0] }
 
-        @Override
         long getDateHeader(String name) { -1L }
 
-        @Override
         String getHeader(String name) { null }
 
-        @Override
         Enumeration getHeaders(String name) {
             return new IteratorEnumeration([].iterator())
         }
 
-        @Override
         Enumeration getHeaderNames() {
             return new IteratorEnumeration([].iterator())
         }
 
-        @Override
         int getIntHeader(String name) { -1 }
 
-        @Override
         String getMethod() {"GET"}
 
-        @Override
         String getPathInfo() {""}
 
-        @Override
         String getPathTranslated() {""}
 
-        @Override
         String getContextPath() {"/"}
 
-        @Override
         String getQueryString() { ""}
 
-        @Override
         String getRemoteUser() { null }
 
-        @Override
         boolean isUserInRole(String role) { false }
 
-        @Override
         Principal getUserPrincipal() { null }
 
-        @Override
         String getRequestedSessionId() { null }
 
-
-        @Override
         StringBuffer getRequestURL() {
             return new StringBuffer(getRequestURI())
         }
 
-        @Override
         String getServletPath() {
             return "/"
         }
 
-        @Override
         HttpSession getSession(boolean create) { throw new UnsupportedOperationException("You cannot use the session in non-request rendering operations") }
 
-        @Override
         HttpSession getSession() { throw new UnsupportedOperationException("You cannot use the session in non-request rendering operations") }
 
-        @Override
         boolean isRequestedSessionIdValid() { true }
 
-        @Override
         boolean isRequestedSessionIdFromCookie() { false }
 
-        @Override
         boolean isRequestedSessionIdFromURL() { false }
 
-        @Override
         boolean isRequestedSessionIdFromUrl() { false }
 
-        @Override
         Object getAttribute(String name) {
             return attributes[name]
         }
 
-        @Override
         Enumeration getAttributeNames() {
             return attributes.keys()
         }
 
-
-        @Override
         int getContentLength() { 0 }
 
-
-        @Override
         ServletInputStream getInputStream() {
             throw new UnsupportedOperationException("You cannot read the input stream in non-request rendering operations")
         }
 
-        @Override
         String getParameter(String name) {
             return params[name]
         }
 
-        @Override
         Enumeration getParameterNames() {
             return params.keys()
         }
 
-        @Override
         String[] getParameterValues(String name) {
             return new String[0]
         }
 
-        @Override
         Map getParameterMap() {
             return params
         }
 
-        @Override
         String getProtocol() {
             throw new UnsupportedOperationException("You cannot read the protocol in non-request rendering operations")
         }
 
-        @Override
         String getScheme() {
             throw new UnsupportedOperationException("You cannot read the scheme in non-request rendering operations")
         }
 
-        @Override
         String getServerName() {
             throw new UnsupportedOperationException("You cannot read server name in non-request rendering operations")
         }
 
-        @Override
         int getServerPort() {
             throw new UnsupportedOperationException("You cannot read the server port in non-request rendering operations")
         }
 
-        @Override
         BufferedReader getReader() {
             throw new UnsupportedOperationException("You cannot read input in non-request rendering operations")
         }
 
-        @Override
         String getRemoteAddr() {
             throw new UnsupportedOperationException("You cannot read the remote address in non-request rendering operations")
         }
 
-        @Override
         String getRemoteHost() {
             throw new UnsupportedOperationException("You cannot read the remote host in non-request rendering operations")
         }
 
-        @Override
         void setAttribute(String name, Object o) {
             attributes[name] = o
         }
 
-        @Override
         void removeAttribute(String name) {
             attributes.remove name
         }
 
-        @Override
         Locale getLocale() {
             return Locale.getDefault()
         }
 
-        @Override
         Enumeration getLocales() {
             return new IteratorEnumeration(Locale.getAvailableLocales().iterator())
         }
 
-        @Override
         boolean isSecure() { false }
 
-        @Override
         RequestDispatcher getRequestDispatcher(String path) {
             throw new UnsupportedOperationException("You cannot use the request dispatcher in non-request rendering operations")
         }
 
-        @Override
         String getRealPath(String path) {
             return requestURI
         }
 
-        @Override
         int getRemotePort() {
             throw new UnsupportedOperationException("You cannot read the remote port in non-request rendering operations")
         }
 
-        @Override
         String getLocalName() {
             return "localhost"
         }
 
-        @Override
         String getLocalAddr() {
             return "127.0.0.1"
         }
 
-        @Override
         int getLocalPort() {
             return 80
         }
-
     }
-
 
     class PageRenderResponse implements HttpServletResponse {
 
@@ -384,115 +328,88 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         PrintWriter writer
         int bufferSize = 0
 
-
         PageRenderResponse(PrintWriter writer) {
             this.writer = writer
         }
 
-        @Override
         void addCookie(Cookie cookie) {
             // no-op
         }
 
-        @Override
         boolean containsHeader(String name) { false }
 
-        @Override
         String encodeURL(String url) { url }
 
-        @Override
         String encodeRedirectURL(String url) { url }
 
-        @Override
         String encodeUrl(String url) { url }
 
-        @Override
         String encodeRedirectUrl(String url) { url }
 
-        @Override
         void sendError(int sc, String msg) {
             // no-op
         }
 
-        @Override
         void sendError(int sc) {
             // no-op
         }
 
-        @Override
         void sendRedirect(String location) {
             // no-op
         }
 
-        @Override
         void setDateHeader(String name, long date) {
             // no-op
         }
 
-        @Override
         void addDateHeader(String name, long date) {
             // no-op
         }
 
-        @Override
         void setHeader(String name, String value) {
             // no-op
         }
 
-        @Override
         void addHeader(String name, String value) {
             // no-op
         }
 
-        @Override
         void setIntHeader(String name, int value) {
             // no-op
         }
 
-        @Override
         void addIntHeader(String name, int value) {
             // no-op
         }
 
-        @Override
         void setStatus(int sc) {
             // no-op
         }
 
-        @Override
         void setStatus(int sc, String sm) {
             // no-op
         }
 
-
-        @Override
         ServletOutputStream getOutputStream() {
             throw new UnsupportedOperationException("You cannot use the OutputStream in non-request rendering operations. Use getWriter() instead")
         }
 
-        @Override
         void setContentLength(int len) {
             // no-op
         }
 
-        @Override
         void flushBuffer() {
            // no-op
         }
 
-        @Override
         void resetBuffer() {
            // no-op
         }
 
-        @Override
         boolean isCommitted() { false }
 
-        @Override
         void reset() {
             // no-op
         }
-
-
     }
 }

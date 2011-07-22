@@ -24,10 +24,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An AST transformation that can be applied to test classes to mixin behavior from another class
+ * An AST transformation that can be applied to test classes to mixin behavior from another class.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

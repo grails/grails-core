@@ -37,10 +37,10 @@ abstract class AbstractParsingParameterCreationListener implements ParameterCrea
                 createFlattenedKeys(root,entry.value, target, "$prefix${childEntry}.",targetParent[childEntry])
             }
             else if (prefix) {
-                if(entry.value instanceof Collection) {
+                if (entry.value instanceof Collection) {
                     int i = 0
-                    for(e in entry.value) {
-                        if(e instanceof Map) {
+                    for (e in entry.value) {
+                        if (e instanceof Map) {
                             def childPrefix  = "${prefix[0..-2]}[${i++}]."
                             createFlattenedKeys(root, e, target, childPrefix, previousParent)
                         }
@@ -49,7 +49,7 @@ abstract class AbstractParsingParameterCreationListener implements ParameterCrea
                 else {
                     def entryKey = entry.key
                     def entryValue = entry.value
-                    if(previousParent != null) {
+                    if (previousParent != null) {
                         previousParent[entryKey] = entryValue
                     }
                     target["${prefix}${entryKey}"] = entryValue

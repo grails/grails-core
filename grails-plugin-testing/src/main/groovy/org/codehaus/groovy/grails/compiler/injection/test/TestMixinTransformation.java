@@ -41,10 +41,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An AST transformation to be applied to tests for adding behavior to a target test class
+ * An AST transformation to be applied to tests for adding behavior to a target test class.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class TestMixinTransformation implements ASTTransformation{

@@ -62,7 +62,7 @@ class GroovyPageWritable implements Writable {
     public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
         this.metaInfo = metaInfo;
         webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-        if(webRequest != null) {
+        if (webRequest != null) {
             request = webRequest.getCurrentRequest();
             HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
             response = wrapped != null ? wrapped : webRequest.getCurrentResponse();
@@ -130,7 +130,7 @@ class GroovyPageWritable implements Writable {
             // Set up the script context
             Binding parentBinding = null;
             boolean hasRequest = request != null;
-            if(hasRequest) {
+            if (hasRequest) {
 
                 boolean isIncludeRequest = WebUtils.isIncludeRequest(request);
                 if(!isIncludeRequest) {
@@ -158,11 +158,13 @@ class GroovyPageWritable implements Writable {
             }
 
             GroovyPageBinding binding = createBinding(parentBinding);
-            if(hasRequest)
+            if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
+            }
             if (metaInfo.getCodecClass() != null) {
-                if(hasRequest)
+                if (hasRequest) {
                     request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
+                }
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             } else {
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
@@ -171,7 +173,7 @@ class GroovyPageWritable implements Writable {
             binding.setVariableDirectly(GroovyPage.REQUEST, request);
             // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
 
-            GroovyPage page=null;
+            GroovyPage page = null;
             try {
                 page = (GroovyPage)metaInfo.getPageClass().newInstance();
             } catch (Exception e) {

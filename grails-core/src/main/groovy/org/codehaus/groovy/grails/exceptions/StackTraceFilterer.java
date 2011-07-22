@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.exceptions;
 /**
  * Improves the output of stack traces produced by exceptions in a Grails application.
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 public interface StackTraceFilterer {

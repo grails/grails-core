@@ -25,10 +25,10 @@ import org.springframework.web.context.support.StandardServletEnvironment;
 import java.util.Set;
 
 /**
- * Bridges Grails' existing environment API with the new Spring 3.1 environment profiles API
+ * Bridges Grails' existing environment API with the new Spring 3.1 environment profiles API.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsEnvironment extends StandardServletEnvironment {
 
