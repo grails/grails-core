@@ -234,6 +234,21 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     /**
+     * Resolves all dependencies for all known configurations
+     *
+     * @return A ResolveReport containing all of the configurations
+     */
+    ResolveReport resolveAllDependencies() {
+       resolveErrors = false
+        def options = new ResolveOptions(checkIfChanged: false, outputReport: true, validate: false)
+        options.confs = usedConfigurations as String[]
+
+        ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
+        resolveErrors = resolve.hasError()
+        return resolve
+    }
+
+    /**
      * Similar to resolveDependencies, but will load the resolved dependencies into the
      * application RootLoader if it exists
      *
