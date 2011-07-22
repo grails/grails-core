@@ -533,7 +533,11 @@ public class GrailsConsole {
 
         lastMessage = "";
         msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
-        return showPrompt(msg);
+        try {
+            return showPrompt(msg);
+        } finally {
+            cursorMove = 0;
+        }
     }
 
     /**
