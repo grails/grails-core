@@ -88,7 +88,7 @@ public class ScriptBindingInitializer {
          Map argsMap = new LinkedHashMap(commandLine.getUndeclaredOptions());
          argsMap.put("params", commandLine.getRemainingArgs());
          binding.setVariable("argsMap", argsMap);
-         binding.setVariable("args", commandLine.getRemainingArgsString());
+         binding.setVariable("args", commandLine.getRemainingArgsLineSeparated());
          binding.setVariable("grailsScript", c);
          binding.setVariable("grailsConsole", GrailsConsole.getInstance());
          binding.setVariable("grailsSettings", settings);
