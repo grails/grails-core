@@ -447,6 +447,7 @@ class GrailsProjectCompiler {
                 }
             }
 
+            pathelement(location: "${buildSettings.testClassesDir.absolutePath}")
             pathelement(location: "${targetClassesDir.absolutePath}")
             pathelement(location: "${targetPluginClassesDir.absolutePath}")
         }
