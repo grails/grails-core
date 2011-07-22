@@ -870,6 +870,10 @@ public class JSONArray implements JSONElement, List {
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        return  myArrayList != null ? myArrayList.hashCode() : super.hashCode();
+    }
 
     /**
      * Write the contents of the JSONArray as JSON text to a writer.

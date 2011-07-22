@@ -19,6 +19,11 @@ class JSONArrayTests {
         assertEquals(getJSONArray(), getJSONArray())
     }
 
+    @Test
+    public void testHashCode() {
+        assertEquals(getJSONArray().hashCode(), getJSONArray().hashCode())
+    }
+
     def getJSONArray() {
         return new JSONArray(['a', 'b', 'c'])
     }
