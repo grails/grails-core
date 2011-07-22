@@ -32,7 +32,7 @@ class PluginScopeInfo {
         this.scopeName = scopeName
     }
 
-    List sourceDirectories = []
+    Set<Resource> sourceDirectories = []
     Set<GrailsPluginInfo> pluginInfos = []
     Set<String> pluginNames = []
     Set<Resource> pluginDescriptors = []

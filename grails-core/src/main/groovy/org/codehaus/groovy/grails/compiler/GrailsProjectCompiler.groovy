@@ -67,11 +67,6 @@ class GrailsProjectCompiler {
     PluginBuildSettings pluginSettings
     List<String> compilerExtensions = ['groovy', 'java']
 
-    private PluginScopeInfo compileScopePluginInfo
-    private PluginScopeInfo buildScopePluginInfo
-    private PluginScopeInfo providedScopePluginInfo
-    private PluginScopeInfo testScopePluginInfo
-
     /**
      * Constructs a new GrailsProjectCompiler instance for the given PluginBuildSettings and optional classloader
      *
@@ -110,10 +105,7 @@ class GrailsProjectCompiler {
 
         initializeAntClasspaths()
 
-        compileScopePluginInfo = pluginSettings.compileScopePluginInfo
-        buildScopePluginInfo = pluginSettings.buildScopePluginInfo
-        providedScopePluginInfo = pluginSettings.providedScopePluginInfo
-        testScopePluginInfo = pluginSettings.testScopePluginInfo
+
         GrailsResourceLoader resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
         GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
     }
@@ -296,10 +288,10 @@ class GrailsProjectCompiler {
         }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        compilePluginSources(compileScopePluginInfo, classesDirPath)
-        compilePluginSources(buildScopePluginInfo, buildSettings.pluginBuildClassesDir)
-        compilePluginSources(providedScopePluginInfo, buildSettings.pluginProvidedClassesDir)
-        compilePluginSources(testScopePluginInfo, buildSettings.testClassesDir)
+        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
+        compilePluginSources(pluginSettings.buildScopePluginInfo, buildSettings.pluginBuildClassesDir)
+        compilePluginSources(pluginSettings.providedScopePluginInfo, buildSettings.pluginProvidedClassesDir)
+        compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
 
 
     }

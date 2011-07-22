@@ -120,17 +120,39 @@ class PluginBuildSettings {
 
     }
 
+    public void registerNewPluginInstall(File zip) {
+         switch(zip) {
+             case buildSettings.pluginCompileDependencies:
+                  registePluginZipWithScope(zip, compileScopePluginInfo)
+             break
+             case buildSettings.pluginRuntimeDependencies:
+                  registePluginZipWithScope(zip, compileScopePluginInfo)
+             break
+             case buildSettings.pluginTestDependencies:
+                  registePluginZipWithScope(zip, testScopePluginInfo)
+             break
+             case buildSettings.pluginProvidedDependencies:
+                  registePluginZipWithScope(zip, providedScopePluginInfo)
+             break
+             case buildSettings.pluginBuildDependencies:
+                  registePluginZipWithScope(zip, buildScopePluginInfo)
+             break
+         }
+    }
 
     private populateSourceDirectories(PluginScopeInfo compileInfo, List<File> pluginDependencies) {
 
         for (zip in pluginDependencies) {
-            def info = readPluginInfoFromZip(zip.absolutePath)
-            if (info != null) {
-                Resource dir = getPluginDirForName(info.name)
-                if (dir != null) {
-                    addPluginScopeInfoForDirAndInfo(compileInfo, info, dir)
-                }
-            }
+            registePluginZipWithScope(zip, compileInfo)
+        }
+    }
+
+    protected def registePluginZipWithScope(File pluginZip, PluginScopeInfo scopeInfo) {
+        def info = readPluginInfoFromZip(pluginZip.absolutePath)
+        if (info != null) {
+            def existingInfo = getPluginInfoForName(info.name)
+            if (existingInfo != null && existingInfo.version == info.version)
+                addPluginScopeInfoForDirAndInfo(scopeInfo, info, existingInfo.pluginDir)
         }
     }
 

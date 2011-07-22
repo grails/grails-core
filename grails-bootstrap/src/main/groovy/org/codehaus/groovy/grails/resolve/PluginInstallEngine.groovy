@@ -281,6 +281,8 @@ class PluginInstallEngine {
             runPluginScript(installScript, fullPluginName, "post-install script")
 
             registerPluginWithMetadata(pluginName, pluginVersion)
+            pluginSettings.clearCache()
+            pluginSettings.registerNewPluginInstall(pluginZip)
 
             postInstall(pluginInstallPath)
             eventHandler("PluginInstalled", fullPluginName)
