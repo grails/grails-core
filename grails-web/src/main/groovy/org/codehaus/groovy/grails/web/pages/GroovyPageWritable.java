@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -131,7 +132,10 @@ class GroovyPageWritable implements Writable {
             boolean hasRequest = request != null;
             if(hasRequest) {
 
-                parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                boolean isIncludeRequest = WebUtils.isIncludeRequest(request);
+                if(!isIncludeRequest) {
+                    parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                }
                 if (parentBinding == null) {
                     if (webRequest != null) {
                         GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
