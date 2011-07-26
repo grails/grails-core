@@ -32,8 +32,19 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
+    private static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
+    private static final String SET_ERRORS_METHOD_NAME = "setErrors";
+    private static final String GET_ERRORS_METHOD_NAME = "getErrors";
+    private static final String HAS_ERRORS_METHOD_NAME = "hasErrors";
+    private static final String CLEAR_ERRORS_METHOD_NAME = "clearErrors";
+    private static final String INIT_ERRORS_METHOD_NAME = "initErrors";
+    private static final String ERRORS_PROPERTY_NAME = "errors";
+    private static final Token EQUALS_SYMBOL = Token.newSymbol(Types.EQUALS, 0, 0);
+    private static final ClassNode ERRORS_CLASS_NODE = new ClassNode(Errors.class);
+    private static final VariableExpression ERRORS_EXPRESSION = new VariableExpression(ERRORS_PROPERTY_NAME);
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
+    private static final MethodCallExpression INIT_ERRORS_METHOD_CALL_EXPRESSION = new MethodCallExpression(THIS_EXPRESSION, INIT_ERRORS_METHOD_NAME, EMPTY_TUPLE);
 
     public void injectErrorsCode(ClassNode classNode) {
         addErrorsField(classNode);
@@ -45,25 +56,24 @@ public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
     }
 
     protected void addErrorsField(final ClassNode paramTypeClassNode) {
-        final ASTNode errorsField = paramTypeClassNode.getField("errors");
+        final ASTNode errorsField = paramTypeClassNode.getField(ERRORS_PROPERTY_NAME);
         if(errorsField == null) {
-            paramTypeClassNode.addField(new FieldNode("errors", Modifier.PUBLIC, new ClassNode(Errors.class), paramTypeClassNode, new ConstantExpression(null)));
+            paramTypeClassNode.addField(new FieldNode(ERRORS_PROPERTY_NAME, Modifier.PUBLIC, ERRORS_CLASS_NODE, paramTypeClassNode, NULL_EXPRESSION));
         }
     }
 
     protected void addInitErrorsMethod(final ClassNode paramTypeClassNode) {
-        final ASTNode initErrorsMethod = paramTypeClassNode.getMethod("initErrors", ZERO_PARAMETERS);
+        final ASTNode initErrorsMethod = paramTypeClassNode.getMethod(INIT_ERRORS_METHOD_NAME, ZERO_PARAMETERS);
         if (initErrorsMethod == null) {
             final BlockStatement initErrorsMethodCode = new BlockStatement();
 
-            final BinaryExpression errorsIsNullExpression = new BinaryExpression(new VariableExpression(
-                    "errors"), Token.newSymbol(
-                    Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null));
+            final BinaryExpression errorsIsNullExpression = new BinaryExpression(ERRORS_EXPRESSION, Token.newSymbol(
+                    Types.COMPARE_EQUAL, 0, 0), NULL_EXPRESSION);
 
             Expression beanPropertyBindingResultConstructorArgs = new ArgumentListExpression(THIS_EXPRESSION,new ConstantExpression(paramTypeClassNode.getName()));
             final Statement newEvaluatorExpression = new ExpressionStatement(
-                    new BinaryExpression(new VariableExpression("errors"),
-                            Token.newSymbol(Types.EQUALS, 0, 0),
+                    new BinaryExpression(ERRORS_EXPRESSION,
+                            EQUALS_SYMBOL,
                             new ConstructorCallExpression(new ClassNode(
                                     BeanPropertyBindingResult.class),
                                     beanPropertyBindingResultConstructorArgs)));
@@ -71,59 +81,60 @@ public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
                     new BooleanExpression(errorsIsNullExpression), newEvaluatorExpression,
                     new ExpressionStatement(new EmptyExpression()));
             initErrorsMethodCode.addStatement(initErrorsIfNullStatement);
-            paramTypeClassNode.addMethod(new MethodNode("initErrors",
+            paramTypeClassNode.addMethod(new MethodNode(INIT_ERRORS_METHOD_NAME,
                     Modifier.PRIVATE, ClassHelper.VOID_TYPE,
                     ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, initErrorsMethodCode));
         }
     }
 
     protected void addClearErrorsMethod(final ClassNode paramTypeClassNode) {
-        final ASTNode clearErrorsMethod = paramTypeClassNode.getMethod("clearErrors", ZERO_PARAMETERS);
+        final ASTNode clearErrorsMethod = paramTypeClassNode.getMethod(CLEAR_ERRORS_METHOD_NAME, ZERO_PARAMETERS);
         if (clearErrorsMethod == null) {
             final BlockStatement clearErrorsMethodCode = new BlockStatement();
-            Expression nullOutErrorsFieldExpression = new BinaryExpression(new VariableExpression("errors"),
-                    Token.newSymbol(Types.EQUALS, 0, 0), new ConstantExpression(null));
+            Expression nullOutErrorsFieldExpression = new BinaryExpression(ERRORS_EXPRESSION,
+                    EQUALS_SYMBOL, NULL_EXPRESSION);
             clearErrorsMethodCode.addStatement(new ExpressionStatement(nullOutErrorsFieldExpression));
-            paramTypeClassNode.addMethod(new MethodNode("clearErrors",
+            paramTypeClassNode.addMethod(new MethodNode(CLEAR_ERRORS_METHOD_NAME,
                     Modifier.PUBLIC, ClassHelper.VOID_TYPE,
                     ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, clearErrorsMethodCode));
         }
     }
 
     protected void addHasErrorsMethod(final ClassNode paramTypeClassNode) {
-        final ASTNode getErrorsMethod = paramTypeClassNode.getMethod("hasErrors", ZERO_PARAMETERS);
+        final ASTNode getErrorsMethod = paramTypeClassNode.getMethod(HAS_ERRORS_METHOD_NAME, ZERO_PARAMETERS);
         if (getErrorsMethod == null) {
             final BlockStatement hasErrorsMethodCode = new BlockStatement();
-            hasErrorsMethodCode.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "initErrors", EMPTY_TUPLE)));
-            final Statement returnStatement = new ReturnStatement(new BooleanExpression(new MethodCallExpression(new VariableExpression("errors"), "hasErrors", EMPTY_TUPLE)));
+            hasErrorsMethodCode.addStatement(new ExpressionStatement(INIT_ERRORS_METHOD_CALL_EXPRESSION));
+            final Statement returnStatement = new ReturnStatement(new BooleanExpression(new MethodCallExpression(ERRORS_EXPRESSION, HAS_ERRORS_METHOD_NAME, EMPTY_TUPLE)));
             hasErrorsMethodCode.addStatement(returnStatement);
-            paramTypeClassNode.addMethod(new MethodNode("hasErrors",
+            paramTypeClassNode.addMethod(new MethodNode(HAS_ERRORS_METHOD_NAME,
                     Modifier.PUBLIC, new ClassNode(Boolean.class),
                     ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, hasErrorsMethodCode));
         }
     }
 
     protected void addGetErrorsMethod(final ClassNode paramTypeClassNode) {
-        final ASTNode getErrorsMethod = paramTypeClassNode.getMethod("getErrors", ZERO_PARAMETERS);
+        final ASTNode getErrorsMethod = paramTypeClassNode.getMethod(GET_ERRORS_METHOD_NAME, ZERO_PARAMETERS);
         if (getErrorsMethod == null) {
             final BlockStatement getErrorsMethodCode = new BlockStatement();
-            getErrorsMethodCode.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "initErrors", EMPTY_TUPLE)));
-            final Statement returnStatement = new ReturnStatement(new VariableExpression("errors"));
+            getErrorsMethodCode.addStatement(new ExpressionStatement(INIT_ERRORS_METHOD_CALL_EXPRESSION));
+            final Statement returnStatement = new ReturnStatement(ERRORS_EXPRESSION);
             getErrorsMethodCode.addStatement(returnStatement);
-            paramTypeClassNode.addMethod(new MethodNode("getErrors",
-                    Modifier.PUBLIC, new ClassNode(Errors.class),
+            paramTypeClassNode.addMethod(new MethodNode(GET_ERRORS_METHOD_NAME,
+                    Modifier.PUBLIC, ERRORS_CLASS_NODE,
                     ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, getErrorsMethodCode));
         }
     }
 
     protected void addSetErrorsMethod(final ClassNode paramTypeClassNode) {
-        MethodNode setErrorsMethod = paramTypeClassNode.getMethod("setErrors", new Parameter[]{ new Parameter(new ClassNode(Errors.class), "errorsArg")});
+        final String errorsArgumentName = "$errorsArg";
+        MethodNode setErrorsMethod = paramTypeClassNode.getMethod(SET_ERRORS_METHOD_NAME, new Parameter[]{ new Parameter(ERRORS_CLASS_NODE, errorsArgumentName)});
         if(setErrorsMethod == null) {
-            final Expression assignErrorsExpression = new BinaryExpression(new VariableExpression("errors"),
-                    Token.newSymbol(Types.EQUALS, 0, 0), new VariableExpression("errorsArg"));
-            setErrorsMethod = new MethodNode("setErrors",
+            final Expression assignErrorsExpression = new BinaryExpression(ERRORS_EXPRESSION,
+                    EQUALS_SYMBOL, new VariableExpression(errorsArgumentName));
+            setErrorsMethod = new MethodNode(SET_ERRORS_METHOD_NAME,
                     Modifier.PUBLIC, ClassHelper.VOID_TYPE,
-                    new Parameter[]{new Parameter(new ClassNode(Errors.class), "errorsArg")}, EMPTY_CLASS_ARRAY, new ExpressionStatement(assignErrorsExpression));
+                    new Parameter[]{new Parameter(ERRORS_CLASS_NODE, errorsArgumentName)}, EMPTY_CLASS_ARRAY, new ExpressionStatement(assignErrorsExpression));
             paramTypeClassNode.addMethod(setErrorsMethod);
         }
     }
