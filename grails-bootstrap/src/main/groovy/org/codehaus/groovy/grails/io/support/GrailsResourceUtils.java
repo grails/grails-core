@@ -131,7 +131,7 @@ public class GrailsResourceUtils
     private static final Log LOG = LogFactory.getLog(GrailsResourceUtils.class);
 
     private static String createGrailsResourcePattern(String separator, String base) {
-        return ".+" + separator + base + separator + "(.+)\\.(groovy|java)";
+        return ".+" + separator + base + separator + "(.+)\\.(groovy|java)$";
     }
 
     /**
