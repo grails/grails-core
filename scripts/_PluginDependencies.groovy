@@ -210,6 +210,7 @@ target(loadPlugins:"Loads Grails' plugins") {
         }
     }
     catch (Exception e) {
+        PluginManagerHolder.inCreation = false        
         grailsConsole.error "Error loading plugin manager: " + e.message , e
         exit(1)
     }
