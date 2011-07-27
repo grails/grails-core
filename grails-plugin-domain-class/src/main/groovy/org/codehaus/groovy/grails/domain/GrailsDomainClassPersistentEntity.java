@@ -21,20 +21,20 @@ import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.springframework.datastore.mapping.model.AbstractClassMapping;
-import org.springframework.datastore.mapping.model.ClassMapping;
-import org.springframework.datastore.mapping.model.IdentityMapping;
-import org.springframework.datastore.mapping.model.MappingContext;
-import org.springframework.datastore.mapping.model.PersistentEntity;
-import org.springframework.datastore.mapping.model.PersistentProperty;
-import org.springframework.datastore.mapping.model.PropertyMapping;
-import org.springframework.datastore.mapping.model.lifecycle.Initializable;
-import org.springframework.datastore.mapping.model.types.Association;
-import org.springframework.datastore.mapping.model.types.Embedded;
-import org.springframework.datastore.mapping.model.types.ManyToMany;
-import org.springframework.datastore.mapping.model.types.ManyToOne;
-import org.springframework.datastore.mapping.model.types.OneToMany;
-import org.springframework.datastore.mapping.model.types.OneToOne;
+import org.grails.datastore.mapping.model.AbstractClassMapping;
+import org.grails.datastore.mapping.model.ClassMapping;
+import org.grails.datastore.mapping.model.IdentityMapping;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.PropertyMapping;
+import org.grails.datastore.mapping.model.lifecycle.Initializable;
+import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.model.types.Embedded;
+import org.grails.datastore.mapping.model.types.ManyToMany;
+import org.grails.datastore.mapping.model.types.ManyToOne;
+import org.grails.datastore.mapping.model.types.OneToMany;
+import org.grails.datastore.mapping.model.types.OneToOne;
 
 /**
  * Bridges the {@link GrailsDomainClass} interface into the {@link PersistentEntity} interface

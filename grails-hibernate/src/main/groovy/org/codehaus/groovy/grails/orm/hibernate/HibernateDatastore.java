@@ -18,9 +18,9 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.datastore.mapping.core.AbstractDatastore;
-import org.springframework.datastore.mapping.core.Session;
-import org.springframework.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.core.AbstractDatastore;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.springframework.util.Assert;
 
 import java.util.Map;

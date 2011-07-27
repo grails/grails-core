@@ -23,16 +23,16 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.springframework.datastore.mapping.model.AbstractMappingContext;
-import org.springframework.datastore.mapping.model.ClassMapping;
-import org.springframework.datastore.mapping.model.IdentityMapping;
-import org.springframework.datastore.mapping.model.MappingConfigurationStrategy;
-import org.springframework.datastore.mapping.model.MappingContext;
-import org.springframework.datastore.mapping.model.MappingFactory;
-import org.springframework.datastore.mapping.model.PersistentEntity;
-import org.springframework.datastore.mapping.model.PersistentProperty;
-import org.springframework.datastore.mapping.model.PropertyMapping;
-import org.springframework.datastore.mapping.model.types.Identity;
+import org.grails.datastore.mapping.model.AbstractMappingContext;
+import org.grails.datastore.mapping.model.ClassMapping;
+import org.grails.datastore.mapping.model.IdentityMapping;
+import org.grails.datastore.mapping.model.MappingConfigurationStrategy;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.model.MappingFactory;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.PropertyMapping;
+import org.grails.datastore.mapping.model.types.Identity;
 
 /**
  * A MappingContext that adapts the Grails domain model to the Mapping API.
@@ -70,10 +70,10 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
     protected PersistentEntity createPersistentEntity(Class javaClass) {
 
         GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, javaClass.getName());
-        if(domainClass != null) {
-            return new GrailsDomainClassPersistentEntity(domainClass, this);
+        if (domainClass == null) {
+            return null;
         }
-        return null;
+        return new GrailsDomainClassPersistentEntity(domainClass, this);
     }
 
     private class GrailsGrailsDomainMappingConfigurationStrategy implements MappingConfigurationStrategy {

@@ -2,14 +2,14 @@ dependencies {
 
     compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
 
-    // Spring/Grails Datastore APIs
-    compile("org.grails:grails-datastore-gorm:$springDatastoreVersion") {
+    // Datastore APIs
+    compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
     }
-    compile("org.springframework:spring-datastore-core:$springDatastoreVersion") {
+    compile("org.grails:grails-datastore-core:$datastoreVersion") {
         transitive = false
     }
-    compile("org.springframework:spring-datastore-simple:$springDatastoreVersion") {
+    compile("org.grails:grails-datastore-simple:$datastoreVersion") {
         transitive = false
     }
 

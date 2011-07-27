@@ -25,30 +25,29 @@ import java.util.List;
 import javax.persistence.FlushModeType;
 
 import org.codehaus.groovy.grails.orm.hibernate.query.HibernateQuery;
+import org.grails.datastore.mapping.core.AbstractAttributeStoringSession;
+import org.grails.datastore.mapping.core.Datastore;
+import org.grails.datastore.mapping.engine.Persister;
+import org.grails.datastore.mapping.model.MappingContext;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.transactions.Transaction;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.datastore.mapping.core.AbstractAttributeStoringSession;
-import org.springframework.datastore.mapping.core.Datastore;
-import org.springframework.datastore.mapping.core.Session;
-import org.springframework.datastore.mapping.engine.Persister;
-import org.springframework.datastore.mapping.model.MappingContext;
-import org.springframework.datastore.mapping.model.PersistentEntity;
-import org.springframework.datastore.mapping.query.Query;
-import org.springframework.datastore.mapping.transactions.Transaction;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
- * Session implementation that wraps a Hibernate {@link org.hibernate.Session}
+ * Session implementation that wraps a Hibernate {@link org.hibernate.Session}.
  *
  * @author Graeme Rocher
  * @since 1.0
  */
 @SuppressWarnings("rawtypes")
-public class HibernateSession extends AbstractAttributeStoringSession implements Session {
+public class HibernateSession extends AbstractAttributeStoringSession {
 
     private HibernateTemplate hibernateTemplate;
     private HibernateDatastore datastore;
@@ -203,7 +202,7 @@ public class HibernateSession extends AbstractAttributeStoringSession implements
         return new HibernateQuery(criteria, this, persistentEntity);
     }
 
-    public Object getNativeInterface() {
+    public HibernateTemplate getNativeInterface() {
         return hibernateTemplate;
     }
 
@@ -217,5 +216,10 @@ public class HibernateSession extends AbstractAttributeStoringSession implements
 
     public Datastore getDatastore() {
         return datastore;
+    }
+
+    public boolean isDirty(Object o) {
+        // not used, Hibernate manages dirty checking itself
+        return true;
     }
 }

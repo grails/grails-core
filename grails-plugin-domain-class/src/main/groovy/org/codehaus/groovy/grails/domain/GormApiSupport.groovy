@@ -16,8 +16,8 @@
 package org.codehaus.groovy.grails.domain
 
 import org.grails.datastore.gorm.GormValidationApi
-import org.springframework.datastore.mapping.core.Datastore
-import org.springframework.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.validation.Validator
 
 /**
@@ -25,7 +25,7 @@ import org.springframework.validation.Validator
  * basic validation facility.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class GormApiSupport {
 

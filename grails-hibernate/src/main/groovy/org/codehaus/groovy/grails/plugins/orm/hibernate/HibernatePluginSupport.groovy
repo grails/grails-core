@@ -55,8 +55,8 @@ import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
-import org.springframework.datastore.mapping.model.MappingContext
-import org.springframework.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
 import org.springframework.orm.hibernate3.HibernateAccessor
 import org.springframework.orm.hibernate3.HibernateCallback
@@ -447,7 +447,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
             ApplicationContext ctx, String suffix) {
 
         MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-        PlatformTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", PlatformTransactionManager )
+        PlatformTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", PlatformTransactionManager)
         final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx)
         String datasourceName = suffix ? suffix[1..-1] : GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
 
