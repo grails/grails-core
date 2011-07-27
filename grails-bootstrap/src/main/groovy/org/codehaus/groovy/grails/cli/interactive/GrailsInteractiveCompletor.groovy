@@ -76,6 +76,8 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     }
 
     static String[] getScriptNames(scriptResources) {
-        scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) } as String[]
+        final scriptNames = scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) }
+        scriptNames << "open"
+        scriptNames as String[]
     }
 }

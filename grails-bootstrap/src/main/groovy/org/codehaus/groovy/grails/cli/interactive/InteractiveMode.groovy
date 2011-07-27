@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.ScriptExitException
+import java.awt.Desktop
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -99,6 +100,21 @@ class InteractiveMode {
                             log process.inputStream.text
                         } catch (e) {
                             error "Error occurred executing process: ${e.message}"
+                        }
+                    }
+                    else if(scriptName.startsWith("open ")) {
+                        def fileName = scriptName[5..-1].trim()
+                        try {
+                            final desktop = java.awt.Desktop.getDesktop()
+                            final file = new File(fileName)
+                            if(file.exists()) {
+                                desktop.open(file)
+                            }
+                            else {
+                                error "File $fileName does not exist"
+                            }
+                        } catch (e) {
+                            error "Could not open file $fileName: ${e.message}"
                         }
                     }
                     else {
