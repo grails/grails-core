@@ -23,41 +23,41 @@ package org.codehaus.groovy.grails.exceptions;
  */
 public interface StackTraceFilterer {
 
-	String FULL_STACK_TRACE_MESSAGE = "Full Stack Trace:";
-	String SYS_PROP_DISPLAY_FULL_STACKTRACE = "grails.full.stacktrace";
+    String FULL_STACK_TRACE_MESSAGE = "Full Stack Trace:";
+    String SYS_PROP_DISPLAY_FULL_STACKTRACE = "grails.full.stacktrace";
 
-	/**
-	 * Adds a package name that should be filtered
-	 *
-	 * @param name The name of the package
-	 */
-	void addInternalPackage(String name);
+    /**
+     * Adds a package name that should be filtered
+     *
+     * @param name The name of the package
+     */
+    void addInternalPackage(String name);
 
-	/**
-	 * Sets the package where the stack trace should end
-	 * @param cutOffPackage The cut off package
-	 */
-	void setCutOffPackage(String cutOffPackage);
+    /**
+     * Sets the package where the stack trace should end
+     * @param cutOffPackage The cut off package
+     */
+    void setCutOffPackage(String cutOffPackage);
 
-	/**
-	 * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
-	 * <p>This modifies the original instance and returns it, it does not clone</p>
-	 * @param source The source exception
-	 * @param recursive Whether to recursively filter the cause
-	 * @return The exception passed in, after cleaning the stack trace
-	 */
-	Throwable filter(Throwable source, boolean recursive);
+    /**
+     * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
+     * <p>This modifies the original instance and returns it, it does not clone</p>
+     * @param source The source exception
+     * @param recursive Whether to recursively filter the cause
+     * @return The exception passed in, after cleaning the stack trace
+     */
+    Throwable filter(Throwable source, boolean recursive);
 
-	/**
-	 * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
-	 * <p>This modifies the original instance and returns it, it does not clone</p>
-	 * @param source The source exception
-	 * @return The exception passed in, after cleaning the stack trace
-	 */
-	Throwable filter(Throwable source);
+    /**
+     * <p>Remove all apparently Grails-internal trace entries from the exception instance<p>
+     * <p>This modifies the original instance and returns it, it does not clone</p>
+     * @param source The source exception
+     * @return The exception passed in, after cleaning the stack trace
+     */
+    Throwable filter(Throwable source);
 
-	/**
-	 * @param shouldFilter Whether to filter stack traces or not
-	 */
-	void setShouldFilter(boolean shouldFilter);
+    /**
+     * @param shouldFilter Whether to filter stack traces or not
+     */
+    void setShouldFilter(boolean shouldFilter);
 }

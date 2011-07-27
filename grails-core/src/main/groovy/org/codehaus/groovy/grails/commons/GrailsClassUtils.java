@@ -778,9 +778,7 @@ public class GrailsClassUtils {
     @SuppressWarnings("rawtypes")
     public static boolean isPropertyInherited(Class clz, String propertyName) {
         if (clz == null) return false;
-        if (StringUtils.isBlank(propertyName)) {
-            throw new IllegalArgumentException("Argument [propertyName] cannot be null or blank");
-        }
+        Assert.isTrue(!StringUtils.isBlank(propertyName), "Argument [propertyName] cannot be null or blank");
 
         Class<?> superClass = clz.getSuperclass();
 
@@ -1025,7 +1023,7 @@ public class GrailsClassUtils {
      */
     @Deprecated
     public static String getClassName(String logicalName, String trailingName) {
-        if (StringUtils.isBlank(logicalName)) throw new IllegalArgumentException("Argument [logicalName] cannot be null or blank");
+        Assert.isTrue(!StringUtils.isBlank(logicalName), "Argument [logicalName] cannot be null or blank");
 
         String className = logicalName.substring(0,1).toUpperCase() + logicalName.substring(1);
         if (trailingName != null) className = className + trailingName;

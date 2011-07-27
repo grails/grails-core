@@ -111,7 +111,7 @@ public abstract class RequestContextTag implements GrailsTag {
     protected abstract void doStartTagInternal();
     protected abstract void doEndTagInternal();
 
-    public final void doEndTag()  {
+    public final void doEndTag() {
         Assert.state(init, "Tag not initialised called 'init' first");
         doEndTagInternal();
     }

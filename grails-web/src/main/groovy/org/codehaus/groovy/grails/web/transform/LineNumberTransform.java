@@ -71,7 +71,6 @@ import org.springframework.util.ReflectionUtils;
  * into the line number array in the {@link LineNumber} annotation.
  *
  * @author Andrew Eisenberg
- * @created Jul 22, 2010
  */
 @GroovyASTTransformation(phase=CompilePhase.SEMANTIC_ANALYSIS)
 public class LineNumberTransform implements ASTTransformation {

@@ -9,6 +9,22 @@ import org.springframework.beans.factory.config.RuntimeBeanReference
 
 class CoreGrailsPluginTests extends AbstractGrailsMockTests {
 
+    void testComponentScan() {
+        def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
+
+        def plugin = new DefaultGrailsPlugin(pluginClass, ga)
+        def pluginManager = new MockGrailsPluginManager()
+        ctx.registerMockBean(GrailsPluginManager.BEAN_NAME, pluginManager)
+        ga.config.grails.spring.bean.packages = ['org.codehaus.groovy.grails.plugins.test']
+
+        def springConfig = new WebRuntimeSpringConfiguration(ctx)
+        springConfig.servletContext = createMockServletContext()
+
+        plugin.doWithRuntimeConfiguration(springConfig)
+
+        def appCtx = springConfig.getApplicationContext()
+
+    }
     void testCorePlugin() {
         def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
 

@@ -14,14 +14,10 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import groovy.lang.GString;
 import groovy.lang.GroovyObject;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -138,7 +134,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
         if (persistentProperty.isManyToOne() || persistentProperty.isOneToOne() || persistentProperty.isEmbedded()) {
             Object associatedObject = bean.getPropertyValue(propertyName);
-            cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
+            cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, null);
         }
         else if (persistentProperty.isOneToMany()) {
             cascadeValidationToMany(errors, bean, persistentProperty, propertyName);
@@ -159,15 +155,41 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             GrailsDomainClassProperty persistentProperty, String propertyName) {
 
         Object collection = bean.getPropertyValue(propertyName);
+        if (collection instanceof List || collection instanceof SortedSet) {
+            int idx = 0;
+             for (Object associatedObject : ((Collection)collection)) {
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]", idx);
+            }
+        }
         if (collection instanceof Collection) {
+            Integer index = 0;
             for (Object associatedObject : ((Collection)collection)) {
-                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName);
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, index++);
             }
         }
         else if (collection instanceof Map) {
-            for (Object associatedObject : ((Map)collection).values()) {
-                cascadeValidationToOne(errors, bean, associatedObject, persistentProperty, propertyName);
+
+            filterGStringKeys((Map)collection);
+            for (Object entryObject : ((Map) collection).entrySet()) {
+                @SuppressWarnings("unchecked")
+                Map.Entry entry = (Map.Entry) entryObject;
+                cascadeValidationToOne(errors, bean, entry.getValue(), persistentProperty, propertyName, entry.getKey());
             }
+        }
+    }
+
+    private void filterGStringKeys(Map collection) {
+        Set set = collection.keySet();
+        Set<GString> gstrings = new HashSet<GString>();
+        for (Object o : set) {
+            if(o instanceof GString) {
+                gstrings.add((GString) o);
+            }
+        }
+
+        for (GString gstring : gstrings) {
+            Object value = collection.remove(gstring);
+            collection.put(gstring.toString(), value);
         }
     }
 
@@ -199,10 +221,11 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      * @param associatedObject The associated object's current value
      * @param persistentProperty The GrailsDomainClassProperty instance
      * @param propertyName The name of the property
+     * @param indexOrKey
      */
     @SuppressWarnings("rawtypes")
     protected void cascadeValidationToOne(Errors errors, BeanWrapper bean, Object associatedObject,
-            GrailsDomainClassProperty persistentProperty, String propertyName) {
+            GrailsDomainClassProperty persistentProperty, String propertyName, Object indexOrKey) {
 
         if (associatedObject == null) {
             return;
@@ -224,7 +247,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         GrailsDomainClassProperty[] associatedPersistentProperties = associatedDomainClass.getPersistentProperties();
         String nestedPath = errors.getNestedPath();
         try {
-            errors.setNestedPath(nestedPath+propertyName);
+            errors.setNestedPath(buildNestedPath(nestedPath, propertyName, indexOrKey));
 
             for (GrailsDomainClassProperty associatedPersistentProperty : associatedPersistentProperties) {
                 if (associatedPersistentProperty.equals(otherSide)) continue;
@@ -248,6 +271,23 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         finally {
             errors.setNestedPath(nestedPath);
         }
+    }
+
+    private String buildNestedPath(String nestedPath, String componentName, Object indexOrKey) {
+        if (indexOrKey == null) {
+            // Component is neither part of a Collection nor Map.
+            return nestedPath + componentName;
+        }
+
+        if (indexOrKey instanceof Integer) {
+          // Component is part of a Collection. Collection access string
+          // e.g. path.object[1] will be appended to the nested path.
+            return nestedPath + componentName + "[" + indexOrKey + "]";
+        }
+
+        // Component is part of a Map. Nested path should have a key surrounded
+        // with apostrophes at the end.
+        return nestedPath + componentName + "['" + indexOrKey + "']";
     }
 
     private GrailsDomainClass getAssociatedDomainClass(Object associatedObject, GrailsDomainClassProperty persistentProperty) {

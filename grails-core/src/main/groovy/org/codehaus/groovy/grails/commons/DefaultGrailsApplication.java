@@ -741,7 +741,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param methodName The name of the method
      * @param args       The arguments to the method
      * @return The return value of the method
-     * @todo Need to add matches for add<Artefact>Class(java.lang.Class) and add<Artefact>Class(GrailsClass)
+     * TODO Need to add matches for add<Artefact>Class(java.lang.Class) and add<Artefact>Class(GrailsClass)
      */
     @Override
     public Object invokeMethod(String methodName, Object args) {

@@ -15,13 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.servlet
 
-import java.util.Collection;
-
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 /**
- * Tests for the render method
+ * Tests for the render method.
  *
  * @author Graeme Rocher
  */
@@ -31,7 +29,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     protected Collection<Class> getControllerClasses() {
         [RenderController]
     }
-    
+
     void testRenderMethodWithStatus() {
         def mockController = new RenderController()
         mockController.renderMessageWithStatus.call()
@@ -148,7 +146,8 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "render"
         mockController.renderTemplate.call()
 
@@ -164,7 +163,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${it.firstName} ${it.middleName}<br/>'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = 'render'
         mockController.renderTemplateWithCollection.call()
 
@@ -178,7 +177,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute GrailsApplicationAttributes.CONTROLLER, mockController
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource '/render/_peopleTemplate.gsp', '${person.firstName} ${person.middleName}<br/>'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = 'render'
         mockController.renderTemplateWithCollectionAndExplicitVarName.call()
 
@@ -192,7 +191,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource "/render/_xmlTemplate.gsp", '<hello>world</hello>'
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "render"
         mockController.renderXmlTemplate.call()
 
@@ -202,6 +201,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assertEquals "text/xml;charset=utf-8", response.contentType
     }
 }
+
 class RenderController {
 
     def renderBug = {
@@ -253,9 +253,9 @@ class RenderController {
         render(template:"xmlTemplate",contentType:"text/xml")
     }
 }
+
 class RenderTest {
     String foo
 
     String toString() { foo }
 }
-    

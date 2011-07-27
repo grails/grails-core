@@ -28,7 +28,9 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,6 +41,7 @@ import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
+import org.codehaus.groovy.grails.cli.parsing.CommandLine;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.springframework.util.ReflectionUtils;
 
@@ -56,8 +59,10 @@ public class ScriptBindingInitializer {
     private BuildSettings settings;
     private PluginPathDiscoverySupport pluginPathSupport;
     private boolean isInteractive;
+    private CommandLine commandLine;
 
-    public ScriptBindingInitializer(BuildSettings settings, PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
+    public ScriptBindingInitializer(CommandLine commandLine, BuildSettings settings, PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
+        this.commandLine = commandLine;
         this.settings = settings;
         this.pluginPathSupport = pluginPathSupport;
         isInteractive = interactive;
@@ -80,6 +85,10 @@ public class ScriptBindingInitializer {
      public GantBinding initBinding(final GantBinding binding, String scriptName) {
          Closure<?> c = settings.getGrailsScriptClosure();
          c.setDelegate(binding);
+         Map argsMap = new LinkedHashMap(commandLine.getUndeclaredOptions());
+         argsMap.put("params", commandLine.getRemainingArgs());
+         binding.setVariable("argsMap", argsMap);
+         binding.setVariable("args", commandLine.getRemainingArgsLineSeparated());
          binding.setVariable("grailsScript", c);
          binding.setVariable("grailsConsole", GrailsConsole.getInstance());
          binding.setVariable("grailsSettings", settings);

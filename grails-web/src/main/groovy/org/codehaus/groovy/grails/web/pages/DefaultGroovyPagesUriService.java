@@ -3,24 +3,25 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.GroovyObject;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.util.Assert;
 
 /**
- * Provides services for resolving URIs
+ * Provides services for resolving URIs.
  *
- * caches lookups in an internal ConcurrentHashMap cache
+ * Caches lookups in an internal ConcurrentMap cache.
  *
  * @author Lari Hotari , Sagire Software Oy
  */
 public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport implements GroovyPagesUriService {
 
-    ConcurrentHashMap<TupleStringKey, String> templateURICache = new ConcurrentHashMap<TupleStringKey, String>();
-    ConcurrentHashMap<TupleStringKey, String> deployedViewURICache = new ConcurrentHashMap<TupleStringKey, String>();
-    ConcurrentHashMap<ControllerObjectKey, String> controllerNameCache = new ConcurrentHashMap<ControllerObjectKey, String>();
-    ConcurrentHashMap<TupleStringKey, String> noSuffixViewURICache = new ConcurrentHashMap<TupleStringKey, String>();
+    ConcurrentMap<TupleStringKey, String> templateURICache = new ConcurrentHashMap<TupleStringKey, String>();
+    ConcurrentMap<TupleStringKey, String> deployedViewURICache = new ConcurrentHashMap<TupleStringKey, String>();
+    ConcurrentMap<ControllerObjectKey, String> controllerNameCache = new ConcurrentHashMap<ControllerObjectKey, String>();
+    ConcurrentMap<TupleStringKey, String> noSuffixViewURICache = new ConcurrentHashMap<TupleStringKey, String>();
 
     private class TupleStringKey {
         String keyPart1;
@@ -176,6 +177,7 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport implemen
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.web.pages.GroovyPagesUriService#clear()
      */
+    @Override
     public void clear() {
         templateURICache.clear();
         deployedViewURICache.clear();

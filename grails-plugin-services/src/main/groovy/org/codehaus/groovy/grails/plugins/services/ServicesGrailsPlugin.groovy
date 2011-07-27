@@ -110,7 +110,6 @@ class ServicesGrailsPlugin {
         }
     }
 
-    // TODO support multiple datasources
     def onChange = { event ->
         if (!event.source || !event.ctx) {
             return
@@ -120,15 +119,24 @@ class ServicesGrailsPlugin {
         def serviceName = "${serviceClass.propertyName}"
         def scope = serviceClass.getPropertyValue("scope")
 
-        if (shouldCreateTransactionalProxy(serviceClass) && event.ctx.containsBean("transactionManager")) {
+        String datasourceName = serviceClass.datasource
+        String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
+
+        if (shouldCreateTransactionalProxy(serviceClass) && event.ctx.containsBean("transactionManager$suffix")) {
+
+            def props = new Properties()
+            String attributes = 'PROPAGATION_REQUIRED'
+            if (application.config["dataSource$suffix"].readOnly) {
+                attributes += ',readOnly'
+            }
+            props."*" = attributes
+
             def beans = beans {
                 "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
                     targetObject = ref("grailsApplication", true)
                     targetMethod = "getArtefact"
                     arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
                 }
-                def props = new Properties()
-                props."*"="PROPAGATION_REQUIRED"
                 "${serviceName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
                     if (scope) bean.scope = scope
                     target = { innerBean ->
@@ -139,7 +147,7 @@ class ServicesGrailsPlugin {
                     }
                     proxyTargetClass = true
                     transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-                    transactionManager = ref("transactionManager")
+                    transactionManager = ref("transactionManager$suffix")
                 }
             }
             beans.registerBeans(event.ctx)

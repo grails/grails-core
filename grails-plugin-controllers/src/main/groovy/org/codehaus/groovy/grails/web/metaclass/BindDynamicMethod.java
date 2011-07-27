@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
+import org.springframework.util.Assert;
 
 /**
  * A dynamic method present in controllers allowing data binding from a map to a target instance. Example:
@@ -70,23 +71,21 @@ public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
                 if (arguments[2] instanceof String) {
                     filter = (String) arguments[2];
                 }
-                else if (!(arguments[2]  instanceof Map)) {
-                    throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
-                        "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
-                }
                 else {
+                    Assert.isInstanceOf(Map.class, arguments[2],
+                         "The 3rd Argument for method bindData must represent included and excluded properties " +
+                         "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
                     includeExclude = (Map) arguments[2];
                 }
                 break;
             case 4:
-                if (!(arguments[2] instanceof Map)) {
-                    throw new IllegalArgumentException("The 3rd Argument for method bindData must represent included and exlucded properties " +
-                        "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
-                }
+                Assert.isInstanceOf(Map.class, arguments[2],
+                    "The 3rd Argument for method bindData must represent included and excluded properties " +
+                    "and implement the interface java.util.Map or be a String and represent a prefix to filter parameters with");
                 includeExclude = (Map) arguments[2];
-                if (!(arguments[3] instanceof String)) {
-                    throw new IllegalArgumentException("Argument [prefix] for method [bindData] must be a String");
-                }
+
+                Assert.isInstanceOf(String.class, arguments[3],
+                        "Argument [prefix] for method [bindData] must be a String");
                 filter = (String) arguments[3];
                 break;
         }

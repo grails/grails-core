@@ -123,6 +123,9 @@ target(allTests: "Runs the project's tests.") {
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
+    
+    // add the test classes to the classpath
+    classLoader.addURL(grailsSettings.testClassesDir.toURL())
 
     testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
 
@@ -174,27 +177,35 @@ target(allTests: "Runs the project's tests.") {
     try {
         // Process the tests in each phase that is configured to run.
         filteredPhases.each { phase, types ->
-            currentTestPhaseName = phase
+            try {
+                currentTestPhaseName = phase
 
-            // Add a blank line before the start of this phase so that it
-            // is easier to distinguish
-            event("TestPhaseStart", [phase])
+                // Add a blank line before the start of this phase so that it
+                // is easier to distinguish
+                event("TestPhaseStart", [phase])
 
-            "${phase}TestPhasePreparation"()
+                "${phase}TestPhasePreparation"()
 
-            // Now run all the tests registered for this phase.
-            types.each(processTests)
-
-            // Perform any clean up required.
-            this."${phase}TestPhaseCleanUp"()
+                // Now run all the tests registered for this phase.
+                types.each(processTests)
+                
+            }
+            finally {
+                // Perform any clean up required.
+                this."${phase}TestPhaseCleanUp"()                
+            }
 
             event("TestPhaseEnd", [phase])
             currentTestPhaseName = null
         }
     }
+    catch(e) {
+        testsFailed = true
+        throw e
+    }
     finally {
         String label = testsFailed ? "Tests FAILED" : "Tests PASSED"
-		String msg = ""
+        String msg = ""
         if (createTestReports) {
             event("TestProduceReports", [])
             msg += " - view reports in ${testReportsDir}"
@@ -249,13 +260,14 @@ compileTests = { GrailsTestType type, File source, File dest ->
     try {
         def classpathId = "grails.test.classpath"
         ant.testc(destdir: dest, classpathref: classpathId,
-                    verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
+                  verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
             javac(classpathref: classpathId, debug: "yes")
             src(path: source)
         }
+
     }
-    catch (Exception e) {
-		grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.message}", e 
+    catch (e) {
+        grailsConsole.error "Compilation error compiling [$type.name] tests: ${e.cause ? e.cause.message : e.message}", e.cause ? e.cause : e
         exit 1
     }
 
@@ -281,8 +293,8 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             event("TestSuiteEnd", [type.name])
 
         }
-        catch (Exception e) {
-            grailsConsole.error "Error running $type.name tests: ${e.toString()}", e
+        catch (e) {
+            grailsConsole.error "Error running $type.name tests: ${e.message}", e
             testsFailed = true
         }
         finally {
@@ -298,7 +310,7 @@ initPersistenceContext = {
 }
 
 destroyPersistenceContext = {
-    if (appCtx != null) {
+    if (binding.variables.containsKey("appCtx") && appCtx != null) {
         appCtx.getBeansOfType(PersistenceContextInterceptor).values()*.destroy()
     }
 }
@@ -338,7 +350,8 @@ integrationTestPhasePreparation = {
 integrationTestPhaseCleanUp = {
     if (!(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
         destroyPersistenceContext()
-        appCtx?.close()
+        if(binding.variables.containsKey("appCtx"))
+            appCtx?.close()
     }
 }
 

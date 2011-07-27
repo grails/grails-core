@@ -48,7 +48,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
- * Enhances tag library classes with the appropriate API at compile time
+ * Enhances tag library classes with the appropriate API at compile time.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -61,14 +61,22 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
 
     private static final String ATTRS_ARGUMENT = "attrs";
     private static final String BODY_ARGUMENT = "body";
-    private static final Parameter[] MAP_CLOSURE_PARAMETERS = new Parameter[]{ new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };
-    private static final Parameter[] CLOSURE_PARAMETERS = new Parameter[]{ new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };
-    private static final Parameter[] MAP_PARAMETERS = new Parameter[]{ new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT) };
-    private static final Parameter[] MAP_CHARSEQUENCE_PARAMETERS = new Parameter[]{ new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),new Parameter(new ClassNode(CharSequence.class), BODY_ARGUMENT) };
+    private static final Parameter[] MAP_CLOSURE_PARAMETERS = new Parameter[] {
+        new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),
+        new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };
+    private static final Parameter[] CLOSURE_PARAMETERS = new Parameter[] {
+        new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };
+    private static final Parameter[] MAP_PARAMETERS = new Parameter[] {
+        new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT) };
+    private static final Parameter[] MAP_CHARSEQUENCE_PARAMETERS = new Parameter[] {
+        new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),
+        new Parameter(new ClassNode(CharSequence.class), BODY_ARGUMENT) };
     private static final ClassNode GROOVY_PAGE_CLASS_NODE = new ClassNode(GroovyPage.class);
     private static final VariableExpression ATTRS_EXPRESSION = new VariableExpression(ATTRS_ARGUMENT);
     private static final VariableExpression BODY_EXPRESSION = new VariableExpression(BODY_ARGUMENT);
-    private static final MethodCallExpression CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL = new MethodCallExpression(new ClassExpression(new ClassNode(RequestContextHolder.class)), "currentRequestAttributes", ZERO_ARGS);
+    private static final MethodCallExpression CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL =
+        new MethodCallExpression(new ClassExpression(new ClassNode(RequestContextHolder.class)),
+                "currentRequestAttributes", ZERO_ARGS);
     private static final Expression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String NAMESPACE_PROPERTY = "namespace";
     private static final ClassNode CLOSURE_CLASS_NODE = new ClassNode(Closure.class);
@@ -139,20 +147,24 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(GROOVY_PAGE_CLASS_NODE),"captureTagOutput", arguments)));
 
         if (includeBody && includeAttrs) {
-            if (!methodExists(classNode, tagName, MAP_CLOSURE_PARAMETERS))
+            if (!methodExists(classNode, tagName, MAP_CLOSURE_PARAMETERS)) {
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_CLOSURE_PARAMETERS, null, methodBody));
+            }
         }
         else if (includeAttrs && !includeBody) {
-            if (!methodExists(classNode, tagName, MAP_PARAMETERS))
+            if (!methodExists(classNode, tagName, MAP_PARAMETERS)) {
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_PARAMETERS, null, methodBody));
+            }
         }
         else if (includeBody) {
-            if (!methodExists(classNode, tagName, CLOSURE_PARAMETERS))
+            if (!methodExists(classNode, tagName, CLOSURE_PARAMETERS)) {
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, CLOSURE_PARAMETERS, null, methodBody));
+            }
         }
-        else  {
-            if (!methodExists(classNode, tagName, Parameter.EMPTY_ARRAY))
+        else {
+            if (!methodExists(classNode, tagName, Parameter.EMPTY_ARRAY)) {
                 classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, Parameter.EMPTY_ARRAY, null, methodBody));
+            }
         }
     }
 

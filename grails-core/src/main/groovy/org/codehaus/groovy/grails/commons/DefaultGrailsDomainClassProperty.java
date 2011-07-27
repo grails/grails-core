@@ -596,6 +596,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
         private boolean isPersistentProperty(PropertyDescriptor descriptor) {
             String propertyName = descriptor.getName();
+
             return GrailsDomainConfigurationUtil.isNotConfigurational(descriptor) && !transients.contains(propertyName);
         }
 

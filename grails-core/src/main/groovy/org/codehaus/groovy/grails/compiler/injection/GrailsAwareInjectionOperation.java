@@ -36,17 +36,17 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 /**
- * A Groovy compiler injection operation that uses a specified array of ClassInjector instances to
- * attempt AST injection.
+ * A Groovy compiler injection operation that uses a specified array of
+ * ClassInjector instances to attempt AST injection.
  *
  * @author Graeme Rocher
  * @since 0.6
  */
-public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation  {
+public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassNodeOperation {
 
     private static final String INJECTOR_SCAN_PACKAGE = "org.codehaus.groovy.grails.compiler";
 
-    private static ClassInjector[] classInjectors = null;
+    private static ClassInjector[] classInjectors;
     private ClassInjector[] localClassInjectors;
 
     public GrailsAwareInjectionOperation() {
@@ -54,13 +54,15 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     }
 
     public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
-        initializeState();
+        this();
         this.localClassInjectors = classInjectors;
     }
 
     /**
      * @deprecated Custom resource loader no longer supported
      */
+    @Deprecated
+    @SuppressWarnings("unused")
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
         this.localClassInjectors = classInjectors;
     }
@@ -80,46 +82,49 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     }
 
     private static void initializeState() {
-        if (classInjectors == null) {
-            BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
-            ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
-            scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
-            scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
-            scanner.scan(INJECTOR_SCAN_PACKAGE);
-
-            List<ClassInjector> classInjectorList = new ArrayList<ClassInjector>();
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            for (String beanName : registry.getBeanDefinitionNames()) {
-                try {
-                    Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
-                    if (ClassInjector.class.isAssignableFrom(injectorClass))
-                        classInjectorList.add((ClassInjector) injectorClass.newInstance());
-                } catch (ClassNotFoundException e) {
-                    // ignore
-                } catch (InstantiationException e) {
-                    // ignore
-                } catch (IllegalAccessException e) {
-                    // ignore
-                }
-            }
-            Collections.sort(classInjectorList, new Comparator<ClassInjector>() {
-                @SuppressWarnings({ "unchecked", "rawtypes" })
-                public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
-                    if (classInjectorA instanceof Comparable) {
-                        return ((Comparable)classInjectorA).compareTo(classInjectorB);
-                    }
-                    return 0;
-                }
-            });
-            classInjectors = classInjectorList.toArray(new ClassInjector[classInjectorList.size()]);
+        if (classInjectors != null) {
+            return;
         }
+
+        BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
+        scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
+        scanner.scan(INJECTOR_SCAN_PACKAGE);
+
+        List<ClassInjector> injectors = new ArrayList<ClassInjector>();
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        for (String beanName : registry.getBeanDefinitionNames()) {
+            try {
+                Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
+                if (ClassInjector.class.isAssignableFrom(injectorClass))
+                    injectors.add((ClassInjector) injectorClass.newInstance());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            } catch (InstantiationException e) {
+                // ignore
+            } catch (IllegalAccessException e) {
+                // ignore
+            }
+        }
+
+        Collections.sort(injectors, new Comparator<ClassInjector>() {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            public int compare(ClassInjector classInjectorA, ClassInjector classInjectorB) {
+                if (classInjectorA instanceof Comparable) {
+                    return ((Comparable)classInjectorA).compareTo(classInjectorB);
+                }
+                return 0;
+            }
+        });
+
+        classInjectors = injectors.toArray(new ClassInjector[injectors.size()]);
     }
 
     @Override
     public void call(SourceUnit source, GeneratorContext context, ClassNode classNode) throws CompilationFailedException {
 
-      URL url = null;
-
+        URL url = null;
         final String filename = source.getName();
         Resource resource = new FileSystemResource(filename);
         if (resource.exists()) {
@@ -129,6 +134,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
                 // ignore
             }
         }
+
         for (ClassInjector classInjector : getLocalClassInjectors()) {
             if (classInjector.shouldInject(url)) {
                 classInjector.performInjection(source, context, classNode);

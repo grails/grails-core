@@ -15,10 +15,23 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
+import grails.util.CollectionUtils;
 import groovy.lang.Closure;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
-import org.codehaus.groovy.grails.web.metaclass.*;
+import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
+import org.codehaus.groovy.grails.web.metaclass.ChainMethod;
+import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
+import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
+import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod;
+import org.codehaus.groovy.grails.web.metaclass.WithFormMethod;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
@@ -28,12 +41,6 @@ import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * API for each controller in a Grails application
@@ -202,10 +209,10 @@ public class ControllersApi extends CommonWebApi {
     }
 
     /**
-     * Redirects for the given arguments
+     * Redirects for the given arguments.
      *
      * @param args The arguments
-     * @return
+     * @return null
      */
     public Object redirect(Object instance,Map args) {
         return redirect.invoke(instance, "redirect", new Object[]{ args });
@@ -248,18 +255,14 @@ public class ControllersApi extends CommonWebApi {
         return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args});
     }
 
-    @SuppressWarnings({ "serial", "unchecked" })
     public Object bindData(Object instance, Object target, Object args, final List disallowed) {
-        return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args, new HashMap() {{
-            put("exclude", disallowed);
-        }}});
+        return bind.invoke(instance, BIND_DATA_METHOD,
+                new Object[] { target, args, CollectionUtils.newMap("exclude", disallowed) });
     }
 
-    @SuppressWarnings({ "serial", "unchecked" })
     public Object bindData(Object instance, Object target, Object args, final List disallowed, String filter) {
-        return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args, new HashMap() {{
-            put("exclude", disallowed);
-        }}, filter});
+        return bind.invoke(instance, BIND_DATA_METHOD,
+                new Object[] { target, args, CollectionUtils.newMap("exclude", disallowed), filter});
     }
 
     public Object bindData(Object instance, Object target, Object args, Map includeExclude) {

@@ -14,7 +14,22 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
+import groovy.lang.Script;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.persistence.Entity;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -23,13 +38,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-
-import javax.persistence.Entity;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * Default implementation of the {@link ConstraintsEvaluator} interface.
@@ -64,7 +72,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         return evaluate(cls.getClazz(), cls.getPersistentProperties());
     }
 
-      /**
+    /**
      * Evaluates the constraints closure to build the list of constraints
      *
      * @param theClass  The domain class to evaluate constraints for
@@ -91,9 +99,9 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             }
 
             if (c != null) {
-                    c = (Closure<?>) c.clone();
-                    c.setDelegate(delegate);
-                    c.call();
+                c = (Closure<?>) c.clone();
+                c.setDelegate(delegate);
+                c.call();
             }
             else {
                 LOG.debug("User-defined constraints not found on class [" + clazz + "], applying default constraints");
@@ -127,9 +135,21 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                 }
             }
         }
+        if (properties == null || properties.length == 0) {
+            final Set<Entry<String, ConstrainedProperty>> entrySet = constrainedProperties
+                    .entrySet();
+            for (Entry<String, ConstrainedProperty> entry : entrySet) {
+                final ConstrainedProperty constrainedProperty = entry
+                        .getValue();
+                if (!constrainedProperty
+                        .hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
+                    applyDefaultNullableConstraint(constrainedProperty);
+                }
+            }
+        }
 
         applySharedConstraints(delegate, constrainedProperties);
-
+        
         return constrainedProperties;
     }
 
@@ -140,7 +160,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             String propertyName = entry.getKey();
             ConstrainedProperty constrainedProperty = entry.getValue();
             String sharedConstraintReference = constrainedPropertyBuilder.getSharedConstraint(propertyName);
-            if (sharedConstraintReference != null) {
+            if (sharedConstraintReference != null && defaultConstraints !=  null) {
                 Object o = defaultConstraints.get(sharedConstraintReference);
                 if (o instanceof Map) {
                     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -227,11 +247,14 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
     }
 
     protected void applyDefaultNullableConstraint(GrailsDomainClassProperty p, ConstrainedProperty cp) {
-        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT,
-                Collection.class.isAssignableFrom(p.getType()) ||
-                Map.class.isAssignableFrom(p.getType()));
+        applyDefaultNullableConstraint(cp);
     }
-
+    
+    protected void applyDefaultNullableConstraint(ConstrainedProperty cp) {
+        boolean isCollection = Collection.class.isAssignableFrom(cp.getPropertyType()) || Map.class.isAssignableFrom(cp.getPropertyType());
+        cp.applyConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT, isCollection);
+    }
+    
     protected boolean canApplyNullableConstraint(String propertyName, GrailsDomainClassProperty property, ConstrainedProperty constrainedProperty) {
         if (property == null || property.getType() == null) return false;
 

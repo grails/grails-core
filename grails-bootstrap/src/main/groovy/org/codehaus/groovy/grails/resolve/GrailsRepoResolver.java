@@ -51,6 +51,7 @@ public class GrailsRepoResolver extends URLResolver{
     public GrailsRepoResolver(String name, URL repositoryRoot) {
         this.repositoryRoot = repositoryRoot;
         setName(name);
+        setRepository(new GrailsRepository());
     }
 
     public URL getRepositoryRoot() {
@@ -75,7 +76,7 @@ public class GrailsRepoResolver extends URLResolver{
             versionTag = "LATEST_RELEASE";
         }
         else {
-            versionTag = "RELEASE_" + revision.replace('.', '_');
+            versionTag = "RELEASE_[revision]";
         }
         return pattern.replace("RELEASE_*", versionTag);
     }

@@ -203,7 +203,7 @@ public interface RuntimeSpringConfiguration {
      */
     void registerBeansWithConfig(RuntimeSpringConfiguration targetSpringConfig);
 
-    /**
+    /**                                             \
      * Adds an abstract bean definition to the bean factory and returns the BeanConfiguration object.
      *
      * @param name The name of the bean

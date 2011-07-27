@@ -25,7 +25,7 @@ includeTargets << grailsScript('_GrailsBootstrap')
  */
 
 target(schemaExport: 'Run Hibernate SchemaExport') {
-    depends checkVersion, configureProxy, bootstrap
+    depends checkVersion, configureProxy, enableExpandoMetaClass, bootstrap
 
     String filename = "${grailsSettings.projectTargetDir}/ddl.sql"
     boolean export = false
@@ -40,11 +40,12 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
         }
     }
 
+    String datasourceSuffix = argsMap.datasource ? '_' + argsMap.datasource : ''
+
     def file = new File(filename)
     ant.mkdir dir: file.parentFile
 
-    // TODO need to support specifying datasource name
-    def configuration = appCtx.getBean('&sessionFactory').configuration
+    def configuration = appCtx.getBean('&sessionFactory' + datasourceSuffix).configuration
 
     def schemaExport = new HibernateSchemaExport(configuration)
         .setHaltOnError(true)
@@ -52,6 +53,8 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
         .setDelimiter(';')
 
     String action = export ? "Exporting" : "Generating script to ${file.path}"
+    String ds = argsMap.datasource ? "for DataSource '$argsMap.datasource'" : "for the default DataSource"
+    println "$action in environment '$grailsEnv' $ds"
 
     if (export) {
         // 1st drop, warning exceptions

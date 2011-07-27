@@ -16,7 +16,7 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.persistence.Entity;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -145,7 +145,6 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
         targetRegistry.registerBeanDefinition(GrailsApplication.APPLICATION_ID, grailsApplicationBean);
     }
 
-    @SuppressWarnings("serial")
     private void registerDomainBean(final Class<?> entityClass, BeanDefinitionRegistry targetRegistry, String messageSourceRef) {
         GenericBeanDefinition beanDef = new GenericBeanDefinition();
         beanDef.setBeanClass(entityClass);
@@ -155,10 +154,9 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
 
         domainDef.getPropertyValues().addPropertyValue("targetObject", new RuntimeBeanReference(GrailsApplication.APPLICATION_ID));
         domainDef.getPropertyValues().addPropertyValue("targetMethod", "getArtefact");
-        domainDef.getPropertyValues().addPropertyValue("arguments", new ArrayList<String>() {{
-            add(DomainClassArtefactHandler.TYPE);
-            add(entityClass.getName());
-        }});
+        domainDef.getPropertyValues().addPropertyValue("arguments", Arrays.asList(
+            DomainClassArtefactHandler.TYPE,
+            entityClass.getName()));
 
         final String domainRef = entityClass.getName() + "Domain";
         if (StringUtils.hasText(messageSourceRef)) {
@@ -167,15 +165,17 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
             validatorDef.getPropertyValues().addPropertyValue("messageSource", new RuntimeBeanReference(messageSourceRef));
             validatorDef.getPropertyValues().addPropertyValue("domainClass", new RuntimeBeanReference(domainRef));
             validatorDef.getPropertyValues().addPropertyValue("sessionFactory", new RuntimeBeanReference("sessionFactory"));
-            targetRegistry.registerBeanDefinition(entityClass.getName()+"Validator",validatorDef);
+            targetRegistry.registerBeanDefinition(entityClass.getName() + "Validator", validatorDef);
         }
 
         targetRegistry.registerBeanDefinition(entityClass.getName(), beanDef);
         targetRegistry.registerBeanDefinition(domainRef, domainDef);
     }
 
-    private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId, BeanDefinitionRegistry targetRegistry, ParserContext parserContext)  {
-        String sessionFactoryId = StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)) ? element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
+    private AbstractBeanDefinition parseSessionFactory(Element element, String dataSourceId,
+   		 BeanDefinitionRegistry targetRegistry, ParserContext parserContext) {
+        String sessionFactoryId = StringUtils.hasText(element.getAttribute(ID_ATTRIBUTE)) ?
+      		  element.getAttribute(ID_ATTRIBUTE) : "sessionFactory";
         AbstractBeanDefinition sessionFactoryBean = new GenericBeanDefinition();
         sessionFactoryBean.setBeanClass(ConfigurableLocalSessionFactoryBean.class);
 

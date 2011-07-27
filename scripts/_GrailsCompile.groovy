@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
-import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * Gant script that compiles Groovy and Java files in the src tree
@@ -47,10 +44,10 @@ target(compile : "Implementation of compilation phase") {
 
     profile("Compiling sources to location [$classesDirPath]") {
         try {
-            projectCompiler.compile(grailsSettings.classesDir)
+            projectCompiler.compile()
         }
         catch (Exception e) {
-            event("StatusFinal", ["Compilation error: ${e.cause.message}"])
+            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
             exit(1)
         }
 
@@ -65,7 +62,13 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
     profile("Compiling sources to location [$classesDirPath]") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        projectCompiler.compilePlugins(grailsSettings.pluginClassesDir)
+        try {
+            projectCompiler.compilePlugins()
+        }
+        catch (Exception e) {
+            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
+            exit(1)
+        }
     }
 }
 
@@ -75,5 +78,15 @@ target(compilepackage : "Compile & Compile GSP files") {
 }
 
 target(compilegsp : "Compile GSP files") {
-    projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
+    try {
+        projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
+    }
+    catch (e) {
+        if (e.cause instanceof GrailsTagException) {
+            event("StatusError", ["GSP Compilation error in file $e.cause.fileName at line $e.cause.lineNumber: $e.cause.message"])
+            exit(1)
+        }
+        event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
+        exit(1)
+    }
 }

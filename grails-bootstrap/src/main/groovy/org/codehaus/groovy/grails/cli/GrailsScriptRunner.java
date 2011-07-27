@@ -15,14 +15,38 @@
  */
 package org.codehaus.groovy.grails.cli;
 
-
 import gant.Gant;
 import grails.build.logging.GrailsConsole;
-import grails.util.*;
+import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
+import grails.util.CosineSimilarity;
+import grails.util.Environment;
+import grails.util.GrailsNameUtils;
+import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.util.AntBuilder;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.gant.GantMetaClass;
@@ -40,13 +64,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.Log4jConfigurer;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URLClassLoader;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -73,18 +90,20 @@ public class GrailsScriptRunner {
         @Override public Object call(Object... args) { return null; }
     };
     public static final String NOANSI_ARGUMENT = "plain-output";
-    private static InputStream originalIn;
-    private static PrintStream originalOut;
+    private static final String RESOLVE_DEPENDENCIES_ARGUMENT = "force-resolve";
 
+    private static InputStream originalIn;
+
+    private static PrintStream originalOut;
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
-    private PrintStream out = System.out;
 
+    private PrintStream out = System.out;
     private boolean isInteractive = true;
     private URLClassLoader classLoader;
     private GrailsConsole console = GrailsConsole.getInstance();
-    private File scriptCacheDir;
 
+    private File scriptCacheDir;
     private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
     private boolean useDefaultEnv = true;
 
@@ -142,8 +161,7 @@ public class GrailsScriptRunner {
             return;
         }
 
-		String version = System.getProperty("grails.version");
-
+        String version = System.getProperty("grails.version");
 
         ScriptAndArgs script = processArgumentsAndReturnScriptName(commandLine);
 
@@ -154,6 +172,9 @@ public class GrailsScriptRunner {
         BuildSettings build = null;
         try {
             build = new BuildSettings(new File(grailsHome));
+            if(commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+                build.setModified(true);
+            }
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
             }
@@ -187,9 +208,12 @@ public class GrailsScriptRunner {
             script.name = null;
         }
         if (script.name == null) {
-        	console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
+            console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
+            if(commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+                ClasspathConfigurer.cleanResolveCache(build);
+            }
             scriptRunner.initializeState();
             try {
                 new InteractiveMode(build, scriptRunner).run();
@@ -202,8 +226,8 @@ public class GrailsScriptRunner {
             console.verbose("Base Directory: " + build.getBaseDir().getPath());
 
             try {
-                int exitCode = scriptRunner.executeCommand(
-                        script.name, script.args, script.env);
+                int exitCode = scriptRunner.executeCommand(commandLine,
+                        script.name, script.env);
                 System.exit(exitCode);
             }
             catch (ScriptNotFoundException ex) {
@@ -218,6 +242,7 @@ public class GrailsScriptRunner {
 
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
+        parser.addOption(RESOLVE_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
         parser.addOption(VERBOSE_ARGUMENT, "Enable verbose output");
         parser.addOption(STACKTRACE_ARGUMENT, "Enable stack traces in output");
         parser.addOption(AGENT_ARGUMENT, "Enable the reloading agent");
@@ -298,13 +323,20 @@ public class GrailsScriptRunner {
             System.setProperty("grails.cli.args", "");
         }
 
+        CommandLineParser parser = getCommandLineParser();
+        CommandLine commandLine = parser.parseString(args);
+
+        return executeCommand(commandLine, scriptName, env);
+    }
+
+    private int executeCommand(CommandLine commandLine, String scriptName, String env) {
         @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
         // Load the BuildSettings file for this project if it exists. Note
         // that this does not load any environment-specific settings.
         try {
             System.setProperty("disable.grails.plugin.transform", "true");
 
-        	console.updateStatus("Loading Grails " + settings.getGrailsVersion());
+            console.updateStatus("Loading Grails " + settings.getGrailsVersion());
             settings.loadConfig();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",
@@ -312,8 +344,7 @@ public class GrailsScriptRunner {
                    settings.getPluginClassesDir().getAbsolutePath());
         }
         catch (Exception e) {
-            e.printStackTrace(System.err);
-            System.err.println("WARNING: There was an error loading the BuildConfig: " + e.getMessage());
+            console.error("There was an error loading the BuildConfig: " + e.getMessage(), e);
             System.exit(1);
         }
         finally {
@@ -326,34 +357,32 @@ public class GrailsScriptRunner {
 
         BuildSettingsHolder.setSettings(settings);
 
-        return callPluginOrGrailsScript(scriptName, env);
+        return callPluginOrGrailsScript(commandLine, scriptName, env);
     }
 
-    private void setRunningEnvironment(String env) {
+    private void setRunningEnvironment(CommandLine commandLine, String env) {
         // Get the default environment if one hasn't been set.
         System.setProperty("base.dir", settings.getBaseDir().getPath());
-        System.setProperty(Environment.KEY, env);
-        System.setProperty(Environment.DEFAULT, "true");
 
         // Add some extra binding variables that are now available.
         settings.setGrailsEnv(env);
-        settings.setDefaultEnv(useDefaultEnv);
+        settings.setDefaultEnv(!commandLine.isEnvironmentSet());
     }
 
-    private int callPluginOrGrailsScript(String scriptName, String env) {
+    private int callPluginOrGrailsScript(CommandLine commandLine, String scriptName, String env) {
         initializeState(scriptName);
-        return executeScriptWithCaching(scriptName, env);
+        return executeScriptWithCaching(commandLine,scriptName, env);
     }
 
     public int executeScriptWithCaching(CommandLine commandLine) {
         processSystemArguments(commandLine);
 
         System.setProperty("grails.cli.args", commandLine.getRemainingArgsLineSeparated());
-        return executeScriptWithCaching(GrailsNameUtils.getNameFromScript(commandLine.getCommandName()), commandLine.getEnvironment());
+        return executeScriptWithCaching(commandLine, GrailsNameUtils.getNameFromScript(commandLine.getCommandName()), commandLine.getEnvironment());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private int executeScriptWithCaching(String scriptName, String env) {
+    private int executeScriptWithCaching(CommandLine commandLine, String scriptName, String env) {
         List<Resource> potentialScripts;
         List<Resource> allScripts = getAvailableScripts();
         GantBinding binding = new GantBinding();
@@ -389,20 +418,20 @@ public class GrailsScriptRunner {
             if (!isGrailsProject() && !isExternalScript(scriptFile)) {
                 return handleScriptExecutedOutsideProjectError();
             }
-            return executeScriptFile(scriptName, env, binding, scriptFile);
+            return executeScriptFile(commandLine, scriptName, env, binding, scriptFile);
         }
 
-        return attemptPrecompiledScriptExecute(scriptName, env, binding, allScripts);
+        return attemptPrecompiledScriptExecute(commandLine, scriptName, env, binding, allScripts);
     }
 
-    private int attemptPrecompiledScriptExecute(String scriptName, String env, GantBinding binding, List<Resource> allScripts) {
+    private int attemptPrecompiledScriptExecute(CommandLine commandLine, String scriptName, String env, GantBinding binding, List<Resource> allScripts) {
         console.updateStatus("Running pre-compiled script");
 
         // Must be called before the binding is initialised.
-        setRunningEnvironment(env);
+        setRunningEnvironment(commandLine, env);
 
         // Get Gant to load the class by name using our class loader.
-        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
+        ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(commandLine,
                 settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
 
@@ -425,15 +454,15 @@ public class GrailsScriptRunner {
         return executeWithGantInstance(gant, DO_NOTHING_CLOSURE).exitCode;
     }
 
-    private int executeScriptFile(String scriptName, String env, GantBinding binding, Resource scriptFile) {
+    private int executeScriptFile(CommandLine commandLine, String scriptName, String env, GantBinding binding, Resource scriptFile) {
         // We can now safely set the default environment
         String scriptFileName = getScriptNameFromFile(scriptFile);
-        setRunningEnvironment(env);
+        setRunningEnvironment(commandLine, env);
         binding.setVariable("scriptName", scriptFileName);
 
         // Setup the script to call.
         ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
-             settings, pluginPathSupport, isInteractive);
+                commandLine, settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
         gant.setUseCache(true);
         gant.setCacheDirectory(scriptCacheDir);
@@ -495,6 +524,9 @@ public class GrailsScriptRunner {
 
         console.updateStatus("Configuring classpath");
         ClasspathConfigurer configurer = new ClasspathConfigurer(pluginPathSupport, settings, skipPlugins);
+        if("DependencyReport".equals(scriptName)) {
+            configurer.setExitOnResolveError(false);
+        }
         this.classLoader = configurer.configuredClassLoader();
         initializeLogging();
     }
@@ -705,27 +737,6 @@ public class GrailsScriptRunner {
                     scripts.add(new FileSystemResource(file));
                 }
             }
-        }
-    }
-
-
-    /**
-     * Sanitizes a stack trace using GrailsUtil.deepSanitize(). We use
-     * this method so that the GrailsUtil class is loaded from the
-     * context class loader. Basically, we don't want this class to
-     * have a direct dependency on GrailsUtil otherwise the class loader
-     * used to load this class (GrailsScriptRunner) would have to have
-     * far more libraries on its classpath than we want.
-     */
-    private static void sanitizeStacktrace(Throwable t) {
-        try {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class<?> clazz = loader.loadClass("grails.util.GrailsUtil");
-            Method method = clazz.getMethod("deepSanitize", Throwable.class);
-            method.invoke(null, t);
-        }
-        catch (Throwable ex) {
-            // cannot sanitize, ignore
         }
     }
 

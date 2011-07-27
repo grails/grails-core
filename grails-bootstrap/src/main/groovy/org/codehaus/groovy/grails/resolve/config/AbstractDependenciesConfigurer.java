@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("unchecked")
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
 
-    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile("([a-zA-Z0-9\\-/\\._+=]*?):([a-zA-Z0-9\\-/\\._+=]+?):([a-zA-Z0-9\\-/\\._+=]+)");
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile("([a-zA-Z0-9\\-/\\._+=]*?):([a-zA-Z0-9\\-/\\._+=]+?):([a-zA-Z0-9\\-/\\.,\\]\\[\\(\\)_+=]+)");
 
     public AbstractDependenciesConfigurer(DependencyConfigurationContext context) {
         super(context);

@@ -126,8 +126,7 @@ target(createArtifact: "Creates a specific Grails artifact") {
     artifactFile = "${basedir}/${artifactPath}/${pkgPath}${className}${typeName}.groovy"
 
     if (new File(artifactFile).exists()) {
-        Ant.input(addProperty: "${name}.${typeName}.overwrite", message: "${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]")
-        if (Ant.antProject.properties."${name}.${typeName}.overwrite" == "n") {
+        if ('n'.equalsIgnoreCase(grailsConsole.userInput("${artifactName} ${className}${typeName}.groovy already exists. Overwrite? [y/n]", ["y","n"] as String[]))) {
             return
         }
     }

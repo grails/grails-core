@@ -24,7 +24,9 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.control.CompilePhase;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
@@ -53,18 +55,23 @@ public class MockTransformation extends TestForTransformation{
         ClassNode classNode = (ClassNode) parent;
         String cName = classNode.getName();
         if (classNode.isInterface()) {
-            throw new RuntimeException("Error processing interface '" + cName + "'. " +
-                    MY_TYPE_NAME + " not allowed for interfaces.");
+            error(source, "Error processing interface '" + cName + "'. " + MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
         ListExpression values = getListOfClasses(node);
+        if(values != null) {
+            for (Expression expression : values.getExpressions()) {
+                if (expression instanceof ClassExpression) {
+                    ClassExpression ce = (ClassExpression) expression;
 
-        for (Expression expression : values.getExpressions()) {
-            if (expression instanceof ClassExpression) {
-                ClassExpression ce = (ClassExpression) expression;
-
-                weaveMock(classNode,ce, false);
+                    weaveMock(classNode,ce, false);
+                }
             }
         }
+        else {
+            error(source, "Error processing class '" + cName + "'. " + MY_TYPE_NAME + " annotation expects a class or a list of classes to mock");
+        }
+
     }
+
 }

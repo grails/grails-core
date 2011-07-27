@@ -115,14 +115,17 @@ public class TagLibraryApi extends CommonWebApi {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
         String usednamespace = getNamespace(instance);
         TagLibraryLookup lookup = getTagLibraryLookup();
-        Object tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName);
-        if (tagLibrary == null) {
-            tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
-            usednamespace = GroovyPage.DEFAULT_NAMESPACE;
-        }
+        if(lookup != null) {
 
-        if (tagLibrary != null) {
-            WebMetaUtils.registerMethodMissingForTags(mc, lookup, usednamespace, methodName);
+            Object tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName);
+            if (tagLibrary == null) {
+                tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
+                usednamespace = GroovyPage.DEFAULT_NAMESPACE;
+            }
+
+            if (tagLibrary != null) {
+                WebMetaUtils.registerMethodMissingForTags(mc, lookup, usednamespace, methodName);
+            }
         }
         if (mc.respondsTo(instance, methodName, args).size()>0) {
             return mc.invokeMethod(instance, methodName, args);
@@ -143,26 +146,29 @@ public class TagLibraryApi extends CommonWebApi {
      */
     public Object propertyMissing(Object instance, String name) {
         TagLibraryLookup gspTagLibraryLookup = getTagLibraryLookup();
-        Object result = gspTagLibraryLookup.lookupNamespaceDispatcher(name);
-        String namespace = getNamespace(instance);
-        if (result == null) {
-            GroovyObject tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name);
-            if (tagLibrary == null) {
-                tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name);
-            }
+        if(gspTagLibraryLookup != null) {
 
-            if (tagLibrary != null) {
-                Object tagProperty = tagLibrary.getProperty(name);
-                if (tagProperty instanceof Closure) {
-                    result = ((Closure<?>)tagProperty).clone();
+            Object result = gspTagLibraryLookup.lookupNamespaceDispatcher(name);
+            String namespace = getNamespace(instance);
+            if (result == null) {
+                GroovyObject tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name);
+                if (tagLibrary == null) {
+                    tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name);
+                }
+
+                if (tagLibrary != null) {
+                    Object tagProperty = tagLibrary.getProperty(name);
+                    if (tagProperty instanceof Closure) {
+                        result = ((Closure<?>)tagProperty).clone();
+                    }
                 }
             }
-        }
 
-        if (result != null) {
-            MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
-            WebMetaUtils.registerPropertyMissingForTag(mc, name, result);
-            return result;
+            if (result != null) {
+                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
+                WebMetaUtils.registerPropertyMissingForTag(mc, name, result);
+                return result;
+            }
         }
 
         throw new MissingPropertyException(name, instance.getClass());
@@ -182,8 +188,8 @@ public class TagLibraryApi extends CommonWebApi {
     public TagLibraryLookup getTagLibraryLookup() {
         if (this.tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);
-            if (applicationContext != null) {
-                tagLibraryLookup = applicationContext.getBean(TagLibraryLookup.class);
+            if (applicationContext != null && applicationContext.containsBean("gspTagLibraryLookup")) {
+                tagLibraryLookup = applicationContext.getBean("gspTagLibraryLookup", TagLibraryLookup.class);
             }
         }
         return tagLibraryLookup;

@@ -26,7 +26,7 @@ import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
  * factory has instantiated the underlying service and is able to determine it's class. This
  * class allows the type to be explicitly specified.
  *
- * @see org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin
+ * Used by org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin.
  */
 @SuppressWarnings("serial")
 public class TypeSpecifyableTransactionProxyFactoryBean extends TransactionProxyFactoryBean implements FactoryBean<Object> {

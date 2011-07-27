@@ -26,12 +26,26 @@ class JUnitReportProcessor implements GrailsBuildListener {
 
         def buildBinding = args[0]
         buildBinding.with {
-            ant.junitreport(todir: "${testReportsDir}") {
-                fileset(dir: testReportsDir) {
-                    include(name: "TEST-*.xml")
+            def junitReportStyleDir = variables.containsKey('junitReportStyleDir') ? junitReportStyleDir : null
+
+            try {
+                ant.junitreport(todir: "${testReportsDir}") {
+                    fileset(dir: testReportsDir) {
+                        include(name: "TEST-*.xml")
+                    }
+                    report(format: "frames", todir: "${testReportsDir}/html", *:(junitReportStyleDir ? [styledir: junitReportStyleDir] : [:]))
                 }
-                def junitReportStyleDir = variables.containsKey('junitReportStyleDir') ? junitReportStyleDir : null
-                report(format: "frames", todir: "${testReportsDir}/html", *:(junitReportStyleDir ? [styledir: junitReportStyleDir] : [:]))
+            } catch (e) {
+                try {
+                    ant.junitreport(todir: "${testReportsDir}") {
+                        fileset(dir: testReportsDir) {
+                            include(name: "TEST-*.xml")
+                        }
+                        report(format: "frames", todir: "${testReportsDir}/html", *:(junitReportStyleDir ? [styledir: "${junitReportStyleDir}/saxon"] : [:]))
+                    }
+                } catch (e2) {
+                    throw e
+                }
             }
         }
     }

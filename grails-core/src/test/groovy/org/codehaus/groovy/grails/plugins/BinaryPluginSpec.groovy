@@ -71,6 +71,36 @@ foo.bar=one
 
 
     }
+
+    def "Test load static resource from binary plugin"() {
+        given:
+            def str = '''
+    <plugin name='testBinary'>
+      <class>org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin</class>
+      <resources>
+             <resource>org.codehaus.groovy.grails.plugins.TestBinaryResource</resource>
+      </resources>
+    </plugin>
+    '''
+
+            def xml = new XmlSlurper().parseText(str)
+
+
+        when:
+            def resource = new MockBinaryPluginResource(str.bytes)
+            def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
+            resource.relativesResources['static/css/main.css'] = new ByteArrayResource(''.bytes)
+            def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
+            def cssResource = binaryPlugin.getResource("/css/main.css")
+
+        then:
+            cssResource != null
+        when:
+            cssResource = binaryPlugin.resolveView("/css/foo.css")
+
+        then:
+            cssResource == null
+    }
 }
 class TestBinaryGrailsPlugin {
     def version = 1.0

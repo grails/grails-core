@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import grails.util.CollectionUtils;
 import groovy.lang.Closure;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,13 +35,12 @@ import org.springframework.core.io.Resource;
 public interface UrlMappingEvaluator {
 
     // default HTTP method to action name mappings
-    @SuppressWarnings("serial")
-    Map<String, String> DEFAULT_REST_MAPPING = new HashMap<String, String>() {{
-        put("GET", "show");
-        put("POST", "save");
-        put("PUT", "update");
-        put("DELETE", "delete");
-    }};
+    @SuppressWarnings("unchecked")
+    Map<String, String> DEFAULT_REST_MAPPING = CollectionUtils.<String, String>newMap(
+        "GET", "show",
+        "POST", "save",
+        "PUT", "update",
+        "DELETE", "delete");
 
     /**
      * Evaluates URL mapping from the give Spring Resource

@@ -20,7 +20,6 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
-import org.springframework.beans.BeansException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
@@ -31,7 +30,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 /**
- * Tests for handler mapping in the Grails dispatcher servlet
+ * Tests for handler mapping in the Grails dispatcher servlet.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -53,9 +52,9 @@ public class GrailsDispatcherServletTests extends TestCase {
 
             appCtx.registerMockBean("controllerHandlerMappings", handlerMapping);
 
-            GrailsDispatcherServlet dispatcherServlet = new GrailsDispatcherServlet()  {
+            GrailsDispatcherServlet dispatcherServlet = new GrailsDispatcherServlet() {
                 @Override
-                protected WebApplicationContext initWebApplicationContext() throws BeansException {
+                protected WebApplicationContext initWebApplicationContext() {
                     initStrategies(appCtx);
                     return appCtx;
                 }

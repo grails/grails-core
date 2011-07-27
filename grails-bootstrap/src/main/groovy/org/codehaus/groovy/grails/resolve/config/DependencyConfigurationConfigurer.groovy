@@ -18,6 +18,13 @@ import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.apache.ivy.util.url.CredentialsStore
 
+/**
+ *
+ * Used to configure the default
+ *
+ * @author Graeme Rocher
+ * @author Luke Daley
+ */
 class DependencyConfigurationConfigurer extends AbstractDependencyManagementConfigurer {
 
     static final String WILDCARD = '*'
@@ -41,6 +48,10 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     void useOrigin(boolean b) {
         dependencyManager.ivySettings.setDefaultUseOrigin(b)
+    }
+
+    void cacheDir(String dir) {
+        dependencyManager.ivySettings.setDefaultCache(new File(dir))
     }
 
     void credentials(Closure c) {

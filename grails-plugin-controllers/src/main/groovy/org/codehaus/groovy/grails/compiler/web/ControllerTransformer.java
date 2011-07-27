@@ -18,6 +18,9 @@ package org.codehaus.groovy.grails.compiler.web;
 import java.net.URL;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
@@ -48,4 +51,32 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
+    
+    
+    @Override
+    protected void performInjectionInternal(String apiInstanceProperty,
+            SourceUnit source, ClassNode classNode) {
+        if(isControllerClassNode(classNode)) {
+            super.performInjectionInternal(apiInstanceProperty, source, classNode);
+        }
+    }
+    @Override
+    public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        if(isControllerClassNode(classNode)) {
+            super.performInjection(source, context, classNode);
+        }
+    }
+
+    @Override
+    public void performInjection(SourceUnit source, ClassNode classNode) {
+        if(isControllerClassNode(classNode)) {
+            super.performInjection(source, classNode);
+        }
+    }
+
+
+    protected boolean isControllerClassNode(ClassNode classNode) {
+        return classNode.getName().endsWith("Controller");
+    }
+    
 }

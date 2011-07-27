@@ -36,6 +36,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
+import org.springframework.orm.hibernate3.SessionFactoryBuilder;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -130,21 +131,38 @@ public class ConfigurableLocalSessionFactoryBean extends
         return (Configuration)config;
     }
 
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
+
+
+    @Override
+    public SessionFactoryBuilder setClassLoader(ClassLoader beanClassLoader) {
+        this.classLoader = beanClassLoader;
+        return super.setClassLoader(beanClassLoader);
     }
 
     @Override
-    protected SessionFactory newSessionFactory(Configuration config) throws HibernateException {
+    public void afterPropertiesSet() throws Exception {
+        Thread thread = Thread.currentThread();
+        ClassLoader cl = thread.getContextClassLoader();
         try {
-            SessionFactory sf = super.newSessionFactory(config);
+            thread.setContextClassLoader(classLoader);
+            super.afterPropertiesSet();
+        } finally {
+            thread.setContextClassLoader(cl);
+        }
+    }
+
+    @Override
+    protected SessionFactory newSessionFactory() throws HibernateException {
+        try {
+            SessionFactory sf =   super.newSessionFactory();
+
             if (!grails.util.Environment.getCurrent().isReloadEnabled() || !proxyIfReloadEnabled) {
                 return sf;
             }
 
             // if reloading is enabled in this environment then we need to use a SessionFactoryProxy instance
             SessionFactoryProxy sfp = new SessionFactoryProxy();
-            String suffix = dataSourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE ? "" : '_' + dataSourceName;
+            String suffix = dataSourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE) ? "" : '_' + dataSourceName;
             SessionFactoryHolder sessionFactoryHolder = applicationContext.getBean(
                     SessionFactoryHolder.BEAN_ID + suffix, SessionFactoryHolder.class);
             sessionFactoryHolder.setSessionFactory(sf);
@@ -165,7 +183,9 @@ public class ConfigurableLocalSessionFactoryBean extends
             }
             throw e;
         }
+
     }
+
 
     private String getCauseMessage(HibernateException e) {
         Throwable cause = e.getCause();
@@ -194,15 +214,13 @@ public class ConfigurableLocalSessionFactoryBean extends
         super.destroy();
     }
 
-    /**
-     * Merge HibernateEventListeners with the default ones
-     */
     @Override
-    protected void postProcessConfiguration(final Configuration config) throws HibernateException {
-        super.postProcessConfiguration(config);
+    protected void postProcessConfiguration() throws HibernateException {
         if (hibernateEventListeners == null || hibernateEventListeners.getListenerMap() == null) {
             return;
         }
+
+        Configuration config = getConfiguration();
 
         EventListeners listeners = config.getEventListeners();
         Map<String,Object> listenerMap = hibernateEventListeners.getListenerMap();
@@ -274,7 +292,9 @@ public class ConfigurableLocalSessionFactoryBean extends
                 listeners.getPostCollectionRemoveEventListeners(), listenerMap);
         addNewListenerToConfiguration(config, "post-collection-update", PostCollectionUpdateEventListener.class,
                 listeners.getPostCollectionUpdateEventListeners(), listenerMap);
+
     }
+
 
     @SuppressWarnings("unchecked")
     private <T> void addNewListenerToConfiguration(final Configuration config, final String listenerType,

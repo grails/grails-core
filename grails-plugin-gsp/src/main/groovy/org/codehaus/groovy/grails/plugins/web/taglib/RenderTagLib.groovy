@@ -45,6 +45,8 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 
 /**
  * Tags to help rendering of views and layouts.
@@ -57,6 +59,7 @@ class RenderTagLib implements RequestConstants {
     def out // to facilitate testing
 
     ServletConfig servletConfig
+    GrailsConventionGroovyPageLocator groovyPageLocator
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     GrailsPluginManager pluginManager
     def scaffoldingTemplateGenerator
@@ -548,30 +551,24 @@ class RenderTagLib implements RequestConstants {
         }
 
         def engine = groovyPagesTemplateEngine
-        def uri = grailsAttributes.getTemplateUri(attrs.template, request)
         def var = attrs.var
 
-        Template t
+        Template t = null
 
-        def contextPath = attrs.contextPath ? attrs.contextPath : null
-        def pluginName = attrs.plugin
-        def pluginContextFromPagescope = false
-        def pm = pluginManager
-        if (pluginName) {
-            contextPath = pm?.getPluginPath(pluginName) ?: ''
+        def uri = grailsAttributes.getTemplateUri(attrs.template, request)
+        def contextPath = attrs.contextPath ? attrs.contextPath : ''
+        def pluginName = attrs.plugin ?: ''
+
+        def templatePath = contextPath ? org.codehaus.groovy.grails.io.support.GrailsResourceUtils.appendPiecesForUri(contextPath, attrs.template.toString()) : attrs.template.toString()
+        def scriptSource = null
+        if(pluginName != null) {
+            scriptSource = groovyPageLocator.findTemplateInBinding(pluginName, templatePath, (GroovyPageBinding) pageScope)
         }
-        else if (contextPath == null) {
-            if (uri.startsWith('/plugins/')) {
-                contextPath = ''
-            }
-            else {
-                contextPath = pageScope.pluginContextPath ?: ''
-                pluginContextFromPagescope = true
-            }
+        else {
+            scriptSource = groovyPageLocator.findTemplateInBinding(templatePath, (GroovyPageBinding) pageScope)
         }
 
-        def templatePath = "${contextPath}${uri}".toString()
-        def cacheKey = "${templatePath}:${pluginContextFromPagescope}".toString()
+        def cacheKey = "$contextPath$pluginName$uri".toString()
 
         def cached = TEMPLATE_CACHE[cacheKey]
         if (cached instanceof Template) {
@@ -582,32 +579,10 @@ class RenderTagLib implements RequestConstants {
                 t = cached.template
             }
             else {
-                def templateResolveOrder
-                def templateInContextPath = GrailsResourceUtils.appendPiecesForUri(contextPath, '/grails-app/views', uri)
-                if (pluginName) {
-                    templateResolveOrder = [templatePath, templateInContextPath]
+                if(scriptSource != null) {
+                    t = engine.createTemplateForUri(scriptSource.URI)
                 }
-                else {
-                    templateResolveOrder = [uri, templatePath, templateInContextPath]
-                }
-                t = engine.createTemplateForUri(templateResolveOrder as String[])
 
-                if (t == null) {
-                    GrailsPlugin pagePlugin = pageScope.getPagePlugin()
-                    if (pagePlugin instanceof BinaryGrailsPlugin) {
-                        def binaryView = GrailsResourceUtils.appendPiecesForUri('/WEB-INF/grails-app/views', uri)
-                        def viewClass = pagePlugin.resolveView(binaryView)
-                        if (viewClass != null) {
-                            t = engine.createTemplate(viewClass)
-                        }
-                    }
-                    else if (pagePlugin != null) {
-                        def pluginPath = pm?.getPluginPath(pagePlugin.getName())
-                        if (pluginPath != null) {
-                            t = engine.createTemplateForUri(GrailsResourceUtils.appendPiecesForUri(pluginPath, '/grails-app/views', uri))
-                        }
-                    }
-                }
 
                 if (!t && scaffoldingTemplateGenerator) {
                     GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest()
@@ -706,7 +681,7 @@ class RenderTagLib implements RequestConstants {
 """
 
         def root = GrailsExceptionResolver.getRootCause(exception)
-		currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
+        currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
         currentOut << "<dt>Message</dt><dd>${exception.message?.encodeAsHTML()}</dd>"
         if (root != null && root != exception && root.message != exception.message) {
             currentOut << "<dt>Caused by</dt><dd>${root.message?.encodeAsHTML()}</dd>"
@@ -724,7 +699,7 @@ class RenderTagLib implements RequestConstants {
         }
     }
 
-	private String prettyPrintStatus(int statusCode) {
-		"$statusCode: ${WordUtils.capitalizeFully(HttpStatus.valueOf(statusCode).name().replaceAll('_', ' '))}"
-	}
+    private String prettyPrintStatus(int statusCode) {
+        "$statusCode: ${WordUtils.capitalizeFully(HttpStatus.valueOf(statusCode).name().replaceAll('_', ' '))}"
+    }
 }

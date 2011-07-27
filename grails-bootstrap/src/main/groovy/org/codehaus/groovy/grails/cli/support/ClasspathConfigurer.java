@@ -19,6 +19,7 @@ import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,19 +31,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.ivy.core.report.ResolveReport;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
+import org.codehaus.groovy.grails.resolve.ResolveException;
 
 /**
  * Support class that configures the Grails classpath when executing command line scripts
  *
- * @since 1.4
  * @author Graeme Rocher
+ * @since 1.4
  */
 public class ClasspathConfigurer {
 
     private BuildSettings settings;
     private boolean skipPlugins;
     private PluginPathDiscoverySupport pluginPathSupport;
+    private boolean exitOnResolveError = true;
 
     public ClasspathConfigurer(PluginPathDiscoverySupport pluginPathSupport, BuildSettings settings, boolean skipPlugins) {
         this.settings = settings;
@@ -70,11 +74,10 @@ public class ClasspathConfigurer {
             addUrlsToRootLoader(settings.getRootLoader(), urls);
 
             // The compiled classes of the application!
-            urls = new URL[] { settings.getClassesDir().toURI().toURL(), settings.getPluginClassesDir().toURI().toURL() };
+            urls = new URL[]{settings.getClassesDir().toURI().toURL(), settings.getPluginClassesDir().toURI().toURL()};
             classLoader = new URLClassLoader(urls, settings.getRootLoader());
             Thread.currentThread().setContextClassLoader(classLoader);
-        }
-        catch (MalformedURLException ex) {
+        } catch (MalformedURLException ex) {
             throw new RuntimeException("Invalid classpath URL", ex);
         }
         return classLoader;
@@ -85,8 +88,8 @@ public class ClasspathConfigurer {
      * application's plugin libraries on the classpath.
      */
     protected URL[] getClassLoaderUrls(@SuppressWarnings("hiding") BuildSettings settings,
-               File cacheDir, Set<String> excludes,
-               @SuppressWarnings("hiding") boolean skipPlugins) throws MalformedURLException {
+                                       File cacheDir, Set<String> excludes,
+                                       @SuppressWarnings("hiding") boolean skipPlugins) throws MalformedURLException {
         List<URL> urls = new ArrayList<URL>();
 
         // If 'grailsHome' is set, make sure the script cache directory takes precedence
@@ -104,9 +107,12 @@ public class ClasspathConfigurer {
         // Add build-only dependencies to the project
         final boolean dependenciesExternallyConfigured = settings.isDependenciesExternallyConfigured();
         // add dependencies required by the build system
-        final List<File> buildDependencies = settings.getBuildDependencies();
+        final List<File> buildDependencies;
+        buildDependencies = settings.getBuildDependencies();
         if (!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
             GrailsConsole.getInstance().error("Required Grails build dependencies were not found. Either GRAILS_HOME is not set or your dependencies are misconfigured in grails-app/conf/BuildConfig.groovy");
+            cleanResolveCache(settings);
+
             System.exit(1);
         }
         addDependenciesToURLs(excludes, urls, buildDependencies);
@@ -116,13 +122,66 @@ public class ClasspathConfigurer {
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
 
+
+        // Important, we call these so they're properly initialized!
+        settings.getRuntimeDependencies();
+
+        settings.getCompileDependencies();
+
+
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
             for (File dir : pluginPathSupport.listKnownPluginDirs()) {
                 addPluginLibs(dir, urls, settings);
             }
         }
+
+        ResolveReport buildResolveReport = settings.getBuildResolveReport();
+        if (buildResolveReport != null && buildResolveReport.hasError()) {
+            handleResolveError(settings, buildResolveReport);
+        }
+        ResolveReport compileResolveReport = settings.getCompileResolveReport();
+        if (compileResolveReport != null && compileResolveReport.hasError()) {
+            handleResolveError(settings, compileResolveReport);
+        }
+        ResolveReport runtimeResolveReport = settings.getRuntimeResolveReport();
+        if (runtimeResolveReport != null && runtimeResolveReport.hasError()) {
+            handleResolveError(settings, runtimeResolveReport);
+        }
+        ResolveReport testResolveReport = settings.getTestResolveReport();
+        if (testResolveReport != null && testResolveReport.hasError()) {
+            handleResolveError(settings, testResolveReport);
+        }
+        ResolveReport providedResolveReport = settings.getProvidedResolveReport();
+        if (providedResolveReport != null && providedResolveReport.hasError()) {
+            handleResolveError(settings, providedResolveReport);
+        }
         return urls.toArray(new URL[urls.size()]);
+    }
+
+    private void handleResolveError(BuildSettings settings, ResolveReport buildResolveReport) {
+        settings.storeDependencyCache();
+        cleanResolveCache(settings);
+        GrailsConsole.getInstance().error(new ResolveException(buildResolveReport).getMessage());
+        if (exitOnResolveError)
+            System.exit(1);
+    }
+
+    public static void cleanResolveCache(BuildSettings settings) {
+        File projectWorkDir = settings.getProjectWorkDir();
+        if (projectWorkDir != null) {
+            File[] files = projectWorkDir.listFiles(new FilenameFilter() {
+
+                public boolean accept(File file, String s) {
+                    return s.endsWith(".resolve");
+                }
+            });
+            if (files != null) {
+                for (File file : files) {
+                    file.delete();
+                }
+            }
+        }
     }
 
     protected void addDependenciesToURLs(Set<String> excludes, List<URL> urls, List<File> runtimeDeps) throws MalformedURLException {
@@ -144,12 +203,13 @@ public class ClasspathConfigurer {
 
     /**
      * Adds all the libraries in a plugin to the given list of URLs.
+     *
      * @param pluginDir The directory containing the plugin.
-     * @param urls The list of URLs to add the plugin JARs to.
+     * @param urls      The list of URLs to add the plugin JARs to.
      * @param settings
      */
     protected void addPluginLibs(File pluginDir, List<URL> urls,
-                @SuppressWarnings("hiding") BuildSettings settings) throws MalformedURLException {
+                                 @SuppressWarnings("hiding") BuildSettings settings) throws MalformedURLException {
         if (!pluginDir.exists()) return;
 
         // otherwise just add them
@@ -177,7 +237,8 @@ public class ClasspathConfigurer {
             for (Object me : excludes) {
                 String exclude = me.toString();
                 if (file.getName().contains(exclude)) {
-                    include = false; break;
+                    include = false;
+                    break;
                 }
             }
             if (include) {
@@ -198,8 +259,9 @@ public class ClasspathConfigurer {
      * <p>In other words, we can't add URLs via the addURL() method
      * because we can't "see" it from Java. Instead, we use reflection
      * to invoke it.</p>
+     *
      * @param loader The root loader whose classpath we want to extend.
-     * @param urls The URLs to add to the root loader's classpath.
+     * @param urls   The URLs to add to the root loader's classpath.
      */
     protected void addUrlsToRootLoader(URLClassLoader loader, URL[] urls) {
         try {
@@ -208,12 +270,15 @@ public class ClasspathConfigurer {
             for (URL url : urls) {
                 method.invoke(loader, url);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new RuntimeException(
                     "Cannot dynamically add URLs to GrailsScriptRunner's" +
-                    " class loader - make sure that it is loaded by Groovy's" +
-                    " RootLoader or a sub-class.");
+                            " class loader - make sure that it is loaded by Groovy's" +
+                            " RootLoader or a sub-class.");
         }
+    }
+
+    public void setExitOnResolveError(boolean exitOnResolveError) {
+        this.exitOnResolveError = exitOnResolveError;
     }
 }

@@ -30,14 +30,11 @@ import org.codehaus.groovy.tools.shell.IO
 includeTargets << grailsScript("_GrailsBootstrap")
 
 target ('default': "Load the Grails interactive shell") {
-    depends(configureProxy, packageApp, classpath)
-    shell()
+    depends(configureProxy, enableExpandoMetaClass, packageApp, classpath, shell)
 }
 
 target(shell:"The shell implementation target") {
-
-    loadApp()
-    configureApp()
+    depends(loadApp, configureApp)
 
     def b = new Binding(ctx: appCtx, grailsApplication: grailsApp)
 

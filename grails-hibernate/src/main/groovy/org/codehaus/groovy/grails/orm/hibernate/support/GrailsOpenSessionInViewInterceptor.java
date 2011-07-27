@@ -46,9 +46,8 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
 
     @Override
     public void preHandle(WebRequest request) throws DataAccessException {
-        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(
-                GrailsApplicationAttributes.WEB_REQUEST, WebRequest.SCOPE_REQUEST);
-        final boolean isFlowRequest = webRequest.isFlowRequest();
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        final boolean isFlowRequest = webRequest != null && webRequest.isFlowRequest();
         if (isFlowRequest) {
             webRequest.setAttribute(IS_FLOW_REQUEST_ATTRIBUTE, "true", WebRequest.SCOPE_REQUEST);
         }

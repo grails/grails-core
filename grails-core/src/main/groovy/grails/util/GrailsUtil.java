@@ -60,7 +60,7 @@ public class GrailsUtil {
     static {
         Package p = GrailsUtil.class.getPackage();
         String version = p != null ? p.getImplementationVersion() : null;
-        if (version==null || isBlank(version)) {
+        if (version == null || isBlank(version)) {
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
             try {
                 Resource[] manifests = resolver.getResources("classpath*:META-INF/MANIFEST.MF");
@@ -77,7 +77,7 @@ public class GrailsUtil {
                         IOUtils.closeQuietly(inputStream);
                     }
                     String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
-                    if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE))   {
+                    if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE)) {
                         grailsManifest = mf;
                         break;
                     }
@@ -161,7 +161,7 @@ public class GrailsUtil {
     /**
      * Retrieves whether the current execution environment is the development one.
      *
-     * @return True if it is the development environment
+     * @return true if it is the development environment
      */
     public static boolean isDevelopmentEnv() {
         return Environment.getCurrent().equals(Environment.DEVELOPMENT);
@@ -239,8 +239,8 @@ public class GrailsUtil {
         StackTraceElement[] trace = t.getStackTrace();
         for (StackTraceElement stackTraceElement : trace) {
             p.println("at " + stackTraceElement.getClassName() +
-                    "(" + stackTraceElement.getMethodName() +
-                    ":" + stackTraceElement.getLineNumber() + ")");
+                      "(" + stackTraceElement.getMethodName() +
+                      ":" + stackTraceElement.getLineNumber() + ")");
         }
     }
 

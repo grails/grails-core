@@ -1,12 +1,11 @@
 package grails.test
 
+import static org.junit.Assert.*
 import grails.persistence.Entity
-import grails.test.mixin.Mock;
-import grails.test.mixin.domain.DomainClassUnitTestMixin;
+import grails.test.mixin.Mock
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.junit.Test;
-import static org.junit.Assert.*
+import org.junit.Test
 
 /**
  * @author Graeme Rocher
@@ -44,7 +43,7 @@ class MagazineTests extends GrailsUnitTestCase {
 
         assertEquals 1, magazine1.articles.size()
     }
-    
+
     // check against GRAILS-7309
     void testAddToOneManyAssociation_GRAILS_7309() {
         // given
@@ -53,11 +52,11 @@ class MagazineTests extends GrailsUnitTestCase {
         mockDomain(Paragraph)
         def magazine = new Magazine()
         assertNotNull magazine.save()
-        
+
         // when
         def article = new Article()
         magazine.addToArticles(article)
-        
+
         // then
         assertNotNull article.magazine
         assertEquals magazine, article.magazine
@@ -67,18 +66,18 @@ class MagazineTests extends GrailsUnitTestCase {
 // test mockDomain using mixin
 @Mock([Magazine,Article,Paragraph])
 class MockDomainMixinTests {
-    
+
     // check against GRAILS-7309
     @Test
     void testAddToOneManyAssociation_GRAILS_7309() {
         // given
         def magazine = new Magazine()
         assertNotNull magazine.save()
-        
+
         // when
         def article = new Article()
         magazine.addToArticles(article)
-        
+
         // then
         assertNotNull article.magazine
         assertEquals magazine, article.magazine

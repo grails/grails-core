@@ -15,7 +15,10 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import groovy.lang.*;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.*;
+import org.hibernate.Interceptor;
 import org.hibernate.cache.QueryCache;
 import org.hibernate.cache.Region;
 import org.hibernate.cache.UpdateTimestampsCache;
@@ -69,7 +72,7 @@ import java.util.Set;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean {
+public class SessionFactoryProxy extends GroovyObjectSupport implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean  {
 
     private static final long serialVersionUID = 1;
 
@@ -85,6 +88,16 @@ public class SessionFactoryProxy implements SessionFactory, SessionFactoryImplem
     public void setTargetBean(String targetBean) {
         this.targetBean = targetBean;
     }
+
+    @Override
+    public Object getProperty(String property) {
+        try {
+            return super.getProperty(property);
+        } catch (MissingPropertyException e) {
+            return InvokerHelper.getProperty(getCurrentSessionFactory(), property);
+        }
+    }
+
 
     /**
      * The class to use for the current session context

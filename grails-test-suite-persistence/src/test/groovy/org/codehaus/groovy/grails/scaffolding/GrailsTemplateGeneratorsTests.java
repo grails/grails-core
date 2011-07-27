@@ -20,6 +20,8 @@ import groovy.lang.GroovyClassLoader;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -29,8 +31,6 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 
 /**
  * @author Graeme Rocher
@@ -75,17 +75,17 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         String text = sw.toString();
 
         Class controllerClass = gcl.parseClass(text);
-        BeanWrapper bean = new BeanWrapperImpl(controllerClass.newInstance());
 
         assertEquals("TestController", controllerClass.getName());
 
-        assertTrue(bean.isReadableProperty("list"));
-        assertTrue(bean.isReadableProperty("update"));
-        assertTrue(bean.isReadableProperty("create"));
-        assertTrue(bean.isReadableProperty("list"));
-        assertTrue(bean.isReadableProperty("show"));
-        assertTrue(bean.isReadableProperty("edit"));
-        assertTrue(bean.isReadableProperty("delete"));
+        verifyMethod(controllerClass, "create");
+        verifyMethod(controllerClass, "delete");
+        verifyMethod(controllerClass, "edit");
+        verifyMethod(controllerClass, "index");
+        verifyMethod(controllerClass, "list");
+        verifyMethod(controllerClass, "save");
+        verifyMethod(controllerClass, "show");
+        verifyMethod(controllerClass, "update");
 
         Object propertyValue = GrailsClassUtils.getStaticPropertyValue(controllerClass, "allowedMethods");
         assertTrue("allowedMethods property was the wrong type", propertyValue instanceof Map);
@@ -97,6 +97,14 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         assertEquals("allowedMethods had incorrect value for delete action", "POST", map.get("delete"));
         assertEquals("allowedMethods had incorrect value for save action", "POST", map.get("save"));
         assertEquals("allowedMethods had incorrect value for update action", "POST", map.get("update"));
+    }
+
+    private void verifyMethod(Class<?> controllerClass, String name) throws SecurityException, NoSuchMethodException {
+        Method method = controllerClass.getMethod(name);
+        assertTrue(Modifier.isPublic(method.getModifiers()));
+        assertFalse(Modifier.isFinal(method.getModifiers()));
+        assertSame(Object.class, method.getReturnType());
+        assertEquals(0, method.getParameterTypes().length);
     }
 
     public void testGenerateViews() throws Exception {

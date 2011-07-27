@@ -64,7 +64,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     boolean exists(String name) {
         int barIndex = name.indexOf('|')
-        if (barIndex >-1) {
+        if (barIndex > -1) {
             def refItem = name[0..barIndex-1]
             def refCategory = name[barIndex + 1..-1]
 
@@ -188,6 +188,10 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                 alias = ALIAS[alias]
             }
 
+            // Deal with aliases that include a '/'-separated path.
+            def i = alias.lastIndexOf('/')
+            if (i >= 0) alias = alias[(i + 1)..-1]
+
             buffer << "<a href=\"$contextPath/guide/single.html#${alias.encodeAsUrlFragment()}\" class=\"guide\">$view</a>"
         }
         else if (name.startsWith("api:")) {
@@ -258,7 +262,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
                 words.set(i, w + c)
             }
             else if (Character.isUpperCase(c)) {
-                if ((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1)))     {
+                if ((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1))) {
                     words.set(i, w + c)
                 }
                 else {

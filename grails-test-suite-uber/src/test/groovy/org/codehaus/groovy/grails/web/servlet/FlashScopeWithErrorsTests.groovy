@@ -15,11 +15,10 @@
 
 package org.codehaus.groovy.grails.web.servlet
 
-import java.util.Collection;
+import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.mock.web.MockHttpServletRequest
-import grails.util.GrailsWebUtil
 
 /**
 *  @author Graeme Rocher

@@ -112,7 +112,7 @@ import org.springframework.web.util.HtmlUtils;
  * <p>
  * By using the "connectTo" method, one can connect the buffer directly to a
  * target java.io.Writer. The internal buffer gets flushed automaticly to the
- * target whenever the buffer gets filled up. {@see #connectTo(Writer)}
+ * target whenever the buffer gets filled up. See connectTo(Writer).
  * </p>
  *
  * <p>
@@ -456,8 +456,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      * Writes the buffer content to a target java.io.Writer
      *
      * @param target Writer
-     * @param flushAll flush all content in buffer (if this is false, only filled chunks will be written)
      * @param flushTarget calls target.flush() before finishing
+     * @param emptyAfter empties the buffer if true
      * @throws IOException
      */
     public void writeTo(Writer target, boolean flushTarget, boolean emptyAfter) throws IOException {
@@ -535,8 +535,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     /**
-     * Reads (and empties) the buffer to a String, but caches the return value for subsequent calls.
+     * {@inheritDoc}
      *
+     * Reads (and empties) the buffer to a String, but caches the return value for subsequent calls.
      * If more content has been added between 2 calls, the returned value will be joined from the previously cached value and the data read from the buffer.
      *
      * @see java.lang.Object#toString()
@@ -561,7 +562,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     /**
-     * hashCode() uses String's hashCode to support compatibility with String instances in maps, sets, etc.
+     * {@inheritDoc}
+     *
+     * Uses String's hashCode to support compatibility with String instances in maps, sets, etc.
      *
      * @see java.lang.Object#hashCode()
      */
@@ -1751,9 +1754,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
     }
 
-    /**
-     * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-     */
     public void readExternal(ObjectInput in) throws IOException,
             ClassNotFoundException {
         String str=in.readUTF();
@@ -1763,9 +1763,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
     }
 
-    /**
-     * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-     */
     public void writeExternal(ObjectOutput out) throws IOException {
         String str=toString();
         out.writeUTF(str);

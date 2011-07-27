@@ -112,7 +112,7 @@ fi
 
 if [ ! -d "$GRAILS_HOME" ] ; then
     die "GRAILS_HOME is not a directory: $GRAILS_HOME"
-fi    
+fi
 
 # Use default groovy-conf config
 if [ -z "$STARTER_CONF" ]; then
@@ -189,7 +189,7 @@ while true; do
     shift
     break
   fi
-  
+
   if [ "$1" = "-noreloading" ]; then
     DISABLE_RELOADING=true
     shift

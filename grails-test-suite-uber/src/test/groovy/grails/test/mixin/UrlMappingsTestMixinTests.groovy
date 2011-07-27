@@ -2,16 +2,15 @@ package grails.test.mixin
 
 import grails.test.mixin.web.UrlMappingsUnitTestMixin
 import junit.framework.AssertionFailedError
+import junit.framework.ComparisonFailure
 
 import org.junit.Test
-import junit.framework.ComparisonFailure
 
 /**
  * Tests for the UrlMappingsTestMixin class
  */
 @TestMixin(UrlMappingsUnitTestMixin)
 class UrlMappingsTestMixinTests {
-
 
     @Test
     void testGRAILS5222() {
@@ -137,22 +136,24 @@ class UrlMappingsTestMixinTests {
     }
 }
 
-class AnotherUrlMappings  {
+class AnotherUrlMappings {
     static mappings = {
         "/$controller/$action?/$id?" {}
         "/alias/$param1/"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
     }
-
 }
+
 class GrailsUrlMappingsTestCaseFakeController {
    static defaultAction = 'action1'
    def action1 = {}
    def action2 = {}
    def action3 = {}
 }
+
 class UserController {
     def publicProfile = {}
 }
+
 class MyUrlMappings {
     static mappings = {
         "/action1"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
@@ -165,6 +166,7 @@ class MyUrlMappings {
         "/params/$param1/$param2?"(controller: "grailsUrlMappingsTestCaseFake", action: "action3")
     }
 }
+
 class GRAILS5222UrlMappings {
     static mappings = {
         "/user/$idText?"{

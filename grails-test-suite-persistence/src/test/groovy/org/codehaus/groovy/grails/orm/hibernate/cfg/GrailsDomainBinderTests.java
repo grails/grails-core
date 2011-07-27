@@ -217,7 +217,6 @@ public class GrailsDomainBinderTests extends TestCase {
         ExpandoMetaClass.enableGlobally();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
         PluginManagerHolder.setPluginManager(pluginManager);
-
     }
 
     @Override
@@ -377,8 +376,8 @@ public class GrailsDomainBinderTests extends TestCase {
     public void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES);
         assertEquals("Tables created", 1, getTableCount(config));
-        List expectedKeyColumns1 = Arrays.asList(new Column[]{new Column("camel_cased"),new Column("group"),new Column("login")});
-        List expectedKeyColumns2 = Arrays.asList(new Column[]{new Column("camel_cased"),new Column("group")});
+        List expectedKeyColumns1 = Arrays.asList(new Column("camel_cased"), new Column("group"), new Column("login"));
+        List expectedKeyColumns2 = Arrays.asList(new Column("camel_cased"), new Column("group"));
         Table mapping = config.getTableMappings().next();
         int cnt = 0;
         boolean found1 = false, found2 = false;
@@ -681,7 +680,7 @@ public class GrailsDomainBinderTests extends TestCase {
 
         // Verify that the correct length is set when an inList constraint is applied
         constrainedProperty = getConstrainedStringProperty();
-        List validValuesList = Arrays.asList(new String[] {"Groovy", "Java", "C++"});
+        List validValuesList = Arrays.asList("Groovy", "Java", "C++");
         constrainedProperty.applyConstraint(ConstrainedProperty.IN_LIST_CONSTRAINT, validValuesList);
         assertColumnLength(constrainedProperty, 6);
 

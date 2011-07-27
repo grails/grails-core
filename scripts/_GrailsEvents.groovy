@@ -41,7 +41,7 @@ eventListener.globalEventHooks = [
     StatusFinal: [ {message -> grailsConsole.addStatus message } ],
     StatusUpdate: [ {message -> grailsConsole.updateStatus message } ],
     StatusError: [ {message -> grailsConsole.error message } ],
-    CreatedFile: [ {file -> grailsConsole.addStatus "Created file $file" } ]
+    CreatedFile: [ {file -> grailsConsole.addStatus "Created file ${makeRelative(file)}" } ]
 ]
 
 hooksLoaded = false
@@ -59,7 +59,7 @@ event = {String name, args ->
         eventListener.triggerEvent(name, * args)
     }
     catch(e) {
-        println "Exception occurred trigger event [$name]: ${e.message}"
+        grailsConsole.error "Exception occurred trigger event [$name]: ${e.message}", e
     }
 }
 

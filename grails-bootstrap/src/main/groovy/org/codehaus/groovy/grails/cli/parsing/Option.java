@@ -16,8 +16,7 @@
 package org.codehaus.groovy.grails.cli.parsing;
 
 /**
- * Represents a command line option
- *
+ * Represents a command line option.
  *
  * @author Graeme Rocher
  * @since 1.4
@@ -28,12 +27,11 @@ public class Option {
     private String description;
 
     public Option(String name, String description) {
-        if(name != null && name.length() > 0) {
-            this.name = name;
-        }
-        else {
+        if (name == null || name.length() == 0) {
             throw new IllegalArgumentException("illegal option specified");
         }
+
+        this.name = name;
         this.description = description != null ? description : "";
     }
 

@@ -68,7 +68,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return 0; // treat all as the same by default for ordering
     }
 
-    public final void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+    public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {
@@ -223,7 +223,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      */
     public abstract Class getStaticImplementation();
 
-    public final void performInjection(SourceUnit source, ClassNode classNode) {
+    public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
 }

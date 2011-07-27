@@ -225,15 +225,18 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
                     param = params.nextElement();
                     values = request.getParameterValues(param);
 
-                    for (i = 0; i < values.length; i++) {
-                        sb.append(LINE_SEPARATOR).append(param).append(": ");
+                    if(values != null) {
+                        for (i = 0; i < values.length; i++) {
+                            sb.append(LINE_SEPARATOR).append(param).append(": ");
 
-                        if (blackList.contains(param)) {
-                            sb.append("***");
-                        } else {
-                            sb.append(values[i]);
+                            if (blackList.contains(param)) {
+                                sb.append("***");
+                            } else {
+                                sb.append(values[i]);
+                            }
                         }
                     }
+
                 }
             }
         }

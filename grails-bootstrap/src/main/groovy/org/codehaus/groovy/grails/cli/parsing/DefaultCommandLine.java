@@ -52,8 +52,12 @@ public class DefaultCommandLine implements CommandLine {
             env = env != null ? env : Environment.DEVELOPMENT.getName();
         }
         else {
-            env = environment;
+            env = environment != null ? environment : Environment.DEVELOPMENT.getName();
         }
+
+        System.setProperty(Environment.KEY, env);
+        System.setProperty(Environment.DEFAULT, String.valueOf(useDefaultEnv));
+
 
         return env;
     }
@@ -126,6 +130,10 @@ public class DefaultCommandLine implements CommandLine {
             sep = separator;
         }
         return sb.toString();
+    }
+
+    public Map<String, Object> getUndeclaredOptions() {
+        return undeclaredOptions;
     }
 
     public void addSystemProperty(String name, String value) {

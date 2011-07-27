@@ -15,6 +15,9 @@
 package org.codehaus.groovy.grails.plugins.testing
 
 import grails.artefact.ApiDelegate
+import grails.converters.JSON
+import grails.converters.XML
+import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.WebUtils
@@ -24,7 +27,6 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
-import javax.servlet.http.HttpServletRequest
 
 /**
  * A custom mock HTTP servlet request that provides the extra properties
@@ -48,6 +50,55 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
     }
 
+    /**
+     * Sets the body of the request to be a json packet
+     *
+     * @param sourceJson The source json
+     */
+    public void setJson(Object sourceJson) {
+        setContentType('application/json')
+        setFormat('json')
+        if(sourceJson instanceof String) {
+            setContent(sourceJson.bytes)
+        }
+        else if(sourceJson instanceof JSON) {
+            setContent(sourceJson.toString().bytes)
+        }
+        else {
+            JSON json = new JSON(sourceJson)
+            setContent(json.toString().bytes)
+        }
+        getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
+    }
+
+    /**
+     * Sets the body of the request to be an XML packet
+     *
+     * @param sourceXml
+     */
+    public void setXml(Object sourceXml) {
+        setContentType("text/xml")
+        setFormat("xml")
+
+        if(sourceXml instanceof String) {
+            setContent(sourceXml.bytes)
+        }
+        else {
+            XML xml = new XML(sourceXml);
+            setContent(xml.toString().bytes)
+        }
+
+
+        getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
+    }
+
+    public void setXML(Object sourceXml) {
+        setXml(sourceXml)
+    }
+
+    public void setJSON(Object sourceJson) {
+        setJson(sourceJson)
+    }
 
     /**
      * Implementation of the dynamic "forwardURI" property.

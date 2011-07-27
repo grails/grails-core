@@ -29,7 +29,7 @@ import java.util.LinkedList;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class GroovyPagesJspApplicationContext implements JspApplicationContext{
+public class GroovyPagesJspApplicationContext implements JspApplicationContext {
 
     private static final Log LOG = LogFactory.getLog(GroovyPagesJspApplicationContext.class);
 
@@ -38,7 +38,8 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext{
     private final LinkedList<ELContextListener> listeners = new LinkedList<ELContextListener>();
     private final CompositeELResolver elResolver = new CompositeELResolver();
     private final CompositeELResolver additionalResolvers = new CompositeELResolver();
-    {
+
+    public GroovyPagesJspApplicationContext() {
         elResolver.add(new ImplicitObjectELResolver());
         elResolver.add(additionalResolvers);
         elResolver.add(new MapELResolver());

@@ -16,12 +16,14 @@ package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.PluginBuildSettings;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
+import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -43,7 +45,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
     public static final String BEAN_ID = "groovyPageResourceLoader";
 
     private static final Log LOG = LogFactory.getLog(GroovyPageResourceLoader.class);
-    private static final String PLUGINS_PATH = "plugins/";
+    private static final String PLUGINS_PATH = "/plugins/";
 
     private Resource localBaseResource;
     private PluginBuildSettings pluginSettings;
@@ -64,24 +66,49 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
 
         // deal with plug-in resolving
         if (location.startsWith(PLUGINS_PATH)) {
-            Resource r = super.getResource(location.substring(1));
-            if (r.exists()) return r;
-        }
+            if (pluginSettings == null) throw new RuntimeException("'pluginsettings' has not been initialised.");
+            List<String> pluginBaseDirectories = pluginSettings.getPluginBaseDirectories();
+            DefaultGroovyPageLocator.PluginViewPathInfo pluginViewPathInfo = DefaultGroovyPageLocator.getPluginViewPathInfo(location);
+            String path = pluginViewPathInfo.basePath;
+            String pluginName = pluginViewPathInfo.pluginName;
+            String pathRelativeToPlugin = pluginViewPathInfo.path;
 
-        location = getRealLocationInProject(location);
+            for (String pluginBaseDirectory : pluginBaseDirectories) {
+                String pathToResource = pluginBaseDirectory + File.separatorChar + path;
+                Resource r = super.getResource("file:" + pathToResource);
+                if (r.exists()) {
+                    return r;
+                }
+                else {
+                    pathToResource = buildPluginViewPath(pluginBaseDirectory, pluginName, pathRelativeToPlugin);
+                    r = super.getResource(pathToResource);
+                    if(r.exists()) return r;
+                }
+            }
+
+            Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
+            for (Resource inlinePluginDirectory : inlinePluginDirectories) {
+                try {
+                    File dirFile = inlinePluginDirectory.getFile();
+                    File pageFile = new File(dirFile, pathRelativeToPlugin);
+                    if (pageFile.exists()) {
+                        return new FileSystemResource(pageFile);
+                    }
+                    else{
+                        String pathToInlinePluginView = buildPluginViewPathFromBase(dirFile.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
+                        Resource resource = super.getResource(pathToInlinePluginView);
+                        if(resource.exists()) {
+                            return resource;
+                        }
+                    }
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
 
         Resource resource = super.getResource(location);
-        if (!resource.exists() && location.startsWith(PLUGINS_PATH)) {
-            if (location.equals(PLUGINS_PATH)) {
-                if (pluginSettings == null) throw new RuntimeException("'pluginsettings' has not been initialised.");
-                return new FileSystemResource(pluginSettings.getPluginBaseDirectories().get(0));
-            }
 
-            final Resource pluginResource = lookupResourceForPluginPath(location);
-            if (pluginResource != null) {
-                resource = pluginResource;
-            }
-        }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Resolved GSP location [" + location + "] to resource [" + resource +
                     "] (exists? [" + resource.exists() + "]) using base resource [" + localBaseResource + "]");
@@ -89,39 +116,12 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         return resource;
     }
 
-    protected Resource lookupResourceForPluginPath(String location) {
-        Resource resource = null;
-        String pluginPath = location.substring(8,location.length());
-        int firstSlash = pluginPath.indexOf('/');
-        if (firstSlash > -1) {
-            String pluginName = pluginPath.substring(0, firstSlash);
-            String viewPath = pluginPath.substring(firstSlash + 1, pluginPath.length());
-            Resource pluginBase = pluginSettings.getPluginDirForName(pluginName);
-            if (pluginBase != null) {
-                try {
-                    Resource tmp = new FileSystemResource(pluginBase.getFile().getAbsolutePath() + '/' +viewPath);
-                    if (tmp.exists()) {
-                        resource = tmp;
-                    }
-                }
-                catch (IOException e) {
-                    // ignore
-                }
-            }
-        }
-        return resource;
+    protected String buildPluginViewPath(String pluginBaseDirectory, String pluginName, String pathRelativeToPlugin) {
+        StringBuilder builder = new StringBuilder("file:").append(pluginBaseDirectory).append(File.separatorChar);
+        return buildPluginViewPathFromBase(pluginName, pathRelativeToPlugin, builder);
     }
 
-    /**
-     * Retrieves the real location of a GSP within a Grails project
-     * @param location The location of the GSP at deployment time
-     * @return The location of the GSP at development time
-     */
-    protected String getRealLocationInProject(String location) {
-        if (location.startsWith(GrailsResourceUtils.WEB_INF)) {
-            return location.substring(GrailsResourceUtils.WEB_INF.length() + 1);
-        }
-
-        return GrailsResourceUtils.WEB_APP_DIR + location;
+    protected String buildPluginViewPathFromBase(String pluginBase, String pathRelativeToPlugin, StringBuilder builder) {
+        return builder.append(pluginBase).append(File.separatorChar).append("grails-app").append(File.separatorChar).append("views").append(pathRelativeToPlugin).toString();
     }
 }

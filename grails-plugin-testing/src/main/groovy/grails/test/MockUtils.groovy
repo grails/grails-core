@@ -45,7 +45,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 
- /**
+/**
  * A utility/helper class for mocking various types of Grails artifacts
  * and is one of the foundations of the Grails unit testing framework.
  *
@@ -855,9 +855,9 @@ class MockUtils {
                                 fieldFound = true
                             }
                         }
-                    } 
-                    // if back-reference is not found, try among 1-many fields 
-                    if (!fieldFound) {                    
+                    }
+                    // if back-reference is not found, try among 1-many fields
+                    if (!fieldFound) {
                         // 1-many
                         for (PropertyDescriptor pd in Introspector.getBeanInfo(instanceClass).propertyDescriptors) {
                             if (clazz.isAssignableFrom(pd.propertyType)) {
@@ -960,13 +960,13 @@ class MockUtils {
 
         // Add data binding capabilities
 
-        clazz.metaClass.constructor =  { Map params ->
+        clazz.metaClass.constructor = { Map params ->
             def obj = BeanUtils.instantiateClass(delegate)
             DataBindingUtils.bindObjectToInstance(obj,params)
             return obj
         }
 
-        clazz.metaClass.setProperties = {Object o ->
+        clazz.metaClass.setProperties = { Object o ->
             DataBindingUtils.bindObjectToInstance(delegate,o)
         }
 

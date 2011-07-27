@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.resolve;
 import groovy.lang.Closure;
 
 import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.JarDependenciesConfigurer;
 import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
@@ -30,9 +32,15 @@ import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
 public class GrailsCoreDependencies {
 
     public final String grailsVersion;
+    public final String servletVersion;
 
     public GrailsCoreDependencies(String grailsVersion) {
         this.grailsVersion = grailsVersion;
+        this.servletVersion = "2.5";
+    }
+    public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
+        this.grailsVersion = grailsVersion;
+        this.servletVersion = servletVersion != null ? servletVersion : "2.5";
     }
 
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, String... excludes) {
@@ -86,7 +94,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed by the Grails build system
 
-                        String springVersion = "3.1.0.M1";
+                        String springVersion = "3.1.0.M2";
                         String antVersion = "1.8.2";
                         String slf4jVersion = "1.6.1";
                         ModuleRevisionId[] buildDependencies = {
@@ -116,11 +124,13 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
 
+
                         // depenencies needed when creating docs
                         ModuleRevisionId[] docDependencies = {
                             ModuleRevisionId.newInstance("org.xhtmlrenderer", "core-renderer","R8"),
                             ModuleRevisionId.newInstance("com.lowagie","itext", "2.1.7"),
-                            ModuleRevisionId.newInstance("org.grails", "grails-gdoc-engine", "1.0.1")
+                            ModuleRevisionId.newInstance("org.grails", "grails-gdoc-engine", "1.0.1"),
+                            ModuleRevisionId.newInstance("org.yaml", "snakeyaml", "1.8")
                         };
                         registerDependencies(dependencyManager, "docs", docDependencies);
 
@@ -201,6 +211,14 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion)
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
+
+                        if(GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
+                            ModuleRevisionId[] servletThreeCompileDependencies = {
+                                 ModuleRevisionId.newInstance("org.grails", "grails-plugin-async", grailsVersion),
+                            };
+                            registerDependencies(dependencyManager, compileTimeDependenciesMethod, servletThreeCompileDependencies);
+                        }
+
 
                         // dependencies needed for running tests
                         ModuleRevisionId[] testDependencies = {

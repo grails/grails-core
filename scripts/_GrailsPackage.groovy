@@ -32,8 +32,10 @@ includeTargets << grailsScript("_GrailsCompile")
 includeTargets << grailsScript("_PackagePlugins")
 
 target(createConfig: "Creates the configuration object") {
-	if(!binding.variables.containsKey("config"))
-		config = projectPackager.createConfig()
+    if (!binding.variables.containsKey("configLoaded")) {
+        config = projectPackager.createConfig()
+        configLoaded = true
+    }
 }
 
 target(packageApp : "Implementation of package target") {
@@ -43,15 +45,15 @@ target(packageApp : "Implementation of package target") {
         compile()
     }
 
-	projectPackager.classLoader = classLoader
+    projectPackager.classLoader = classLoader
 
-	try {
-		config = projectPackager.packageApplication()		
-	}
-	catch(e) {
-		grailsConsole.error "Error packaging application: $e.message", e
-		exit 1
-	}
+    try {
+        config = projectPackager.packageApplication()
+    }
+    catch(e) {
+        grailsConsole.error "Error packaging application: $e.message", e
+        exit 1
+    }
 
     configureServerContextPath()
 
@@ -60,7 +62,7 @@ target(packageApp : "Implementation of package target") {
         generateWebXml()
     }
     else {
-        loadPluginsAsync()
+        loadPlugins()
     }
     event("PackagingEnd",[])
 }
@@ -84,8 +86,8 @@ target(configureServerContextPath: "Configuring server context path") {
 }
 
 target(startLogging:"Bootstraps logging") {
-	depends(createConfig)
-	projectPackager.startLogging(config)
+    depends(createConfig)
+    projectPackager.startLogging(config)
 }
 
 target(generateWebXml : "Generates the web.xml file") {
@@ -132,11 +134,11 @@ target(generateWebXml : "Generates the web.xml file") {
 }
 
 target(packageTemplates: "Packages templates into the app") {
-	projectPackager.packageTemplates(scaffoldDir)
+    projectPackager.packageTemplates(scaffoldDir)
 }
 
 target(packageTlds:"packages tld definitions for the correct servlet version") {
-	projectPackager.packageTlds()
+    projectPackager.packageTlds()
 }
 
 recompileCheck = { lastModified, callback ->

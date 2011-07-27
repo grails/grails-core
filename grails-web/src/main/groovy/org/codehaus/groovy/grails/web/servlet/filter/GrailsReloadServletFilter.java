@@ -33,10 +33,8 @@ import java.io.IOException;
 @Deprecated
 public class GrailsReloadServletFilter extends OncePerRequestFilter {
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         filterChain.doFilter(httpServletRequest,httpServletResponse);
     }
-
 }

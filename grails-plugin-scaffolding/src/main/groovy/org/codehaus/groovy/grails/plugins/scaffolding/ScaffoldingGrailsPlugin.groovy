@@ -27,8 +27,14 @@ import org.codehaus.groovy.grails.scaffolding.view.ScaffoldingViewResolver
 import org.springframework.beans.PropertyValue
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.ApplicationContext
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
+import org.codehaus.groovy.grails.compiler.injection.NamedArtefactTypeAstTransformation
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
- /**
+/**
  * Handles the configuration of dynamic scaffolding in Grails.
  *
  * @author Graeme Rocher
@@ -51,25 +57,24 @@ class ScaffoldingGrailsPlugin {
         scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader")) {
             grailsApplication = ref("grailsApplication")
         }
-        BeanDefinition beanDef = getBeanDefinition("jspViewResolver")
+        jspViewResolver(ScaffoldingViewResolver) { bean ->
+            bean.lazyInit = true
+            bean.parent = 'abstractViewResolver'
 
-        jspViewResolver(ScaffoldingViewResolver) {
             templateGenerator = scaffoldingTemplateGenerator
             scaffoldedActionMap = ref("scaffoldedActionMap")
             scaffoldedDomains = controllerToScaffoldedDomainClassMap
-            // copy values from other bean def
-            if (beanDef) {
-                for (PropertyValue pv in beanDef.getPropertyValues().getPropertyValueList()) {
-                    delegate."${pv.name}" = pv.value
-                }
-            }
         }
     }
 
     def doWithApplicationContext = { ApplicationContext ctx ->
         if (!application.warDeployed) {
-            Thread.start {
-                configureScaffolding(ctx, application)
+            try {
+                Thread.start {
+                    configureScaffolding(ctx, application)
+                }
+            } catch (e) {
+                log.error("Error configuration scaffolding: ${e.message}", e )
             }
         }
         else {
@@ -105,22 +110,23 @@ class ScaffoldingGrailsPlugin {
         scaffoldedDomains[controllerClass.logicalPropertyName] = domainClass
         String controllerSource = generateControllerSource(generator, domainClass)
         def scaffoldedInstance = createScaffoldedInstance(parentLoader, controllerSource)
+        appCtx.autowireCapableBeanFactory.autowireBean(scaffoldedInstance)
         List actionProperties = getScaffoldedActions(scaffoldedInstance)
 
         def javaClass = controllerClass.clazz
         def metaClass = javaClass.metaClass
 
-        for (MetaProperty actionProp in actionProperties) {
-            if (!actionProp) {
+        for (actionProp in actionProperties) {
+            if (actionProp == null) {
                 continue
             }
 
-            String propertyName = actionProp.name
+            String propertyName = actionProp instanceof MetaProperty ? actionProp.name : actionProp.method
             def mp = metaClass.getMetaProperty(propertyName)
             scaffoldedActionMap[controllerClass.logicalPropertyName] << propertyName
 
             if (!mp) {
-                Closure propertyValue = actionProp.getProperty(scaffoldedInstance)
+                Closure propertyValue = actionProp instanceof MetaProperty ? actionProp.getProperty(scaffoldedInstance) : actionProp
                 metaClass."${GrailsClassUtils.getGetterName(propertyName)}" = {->
                     propertyValue.delegate = delegate
                     propertyValue.resolveStrategy = Closure.DELEGATE_FIRST
@@ -161,7 +167,10 @@ class ScaffoldingGrailsPlugin {
     }
 
     private static createScaffoldedInstance(ClassLoader parentLoader, String controllerSource) {
-        def classLoader = new GroovyClassLoader(parentLoader)
+        def configuration = new CompilerConfiguration()
+        configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new NamedArtefactTypeAstTransformation(ControllerArtefactHandler.TYPE)))
+        def classLoader = new GroovyClassLoader(parentLoader, configuration)
+
         def scaffoldedControllerClass = classLoader.parseClass(controllerSource)
         return scaffoldedControllerClass.newInstance()
     }
@@ -176,6 +185,12 @@ class ScaffoldingGrailsPlugin {
                 // ignore
             }
         }
+
+        def methodActions = scaffoldedInstance.class.declaredMethods.findAll { Method m ->
+            def modifiers = m.modifiers
+            Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers) && !Modifier.isSynthetic(modifiers)
+        }.collect { Method m -> scaffoldedInstance.&"$m.name"}
+        actionProperties.addAll(methodActions)
         return actionProperties
     }
 

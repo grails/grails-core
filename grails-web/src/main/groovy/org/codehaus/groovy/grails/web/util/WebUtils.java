@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -130,7 +131,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      */
     public static String getRequestURIForGrailsDispatchURI(HttpServletRequest request) {
         UrlPathHelper pathHelper = new UrlPathHelper();
-        if (request.getRequestURI().endsWith(DISPATCH_URI_SUFFIX))  {
+        if (request.getRequestURI().endsWith(DISPATCH_URI_SUFFIX)) {
             String path = pathHelper.getPathWithinApplication(request);
             if (path.startsWith(GRAILS_DISPATCH_SERVLET_NAME)) {
                 path = path.substring(GRAILS_DISPATCH_SERVLET_NAME.length(),path.length());
@@ -378,6 +379,47 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         catch (Exception e) {
             throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Takes a query string and returns the results as a map where the values are either a single entry or a list of values
+     *
+     * @param queryString The query String
+     * @return A map
+     */
+    public static Map<String, Object> fromQueryString(String queryString) {
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        if(queryString.startsWith("?")) queryString = queryString.substring(1);
+
+        String[] pairs = queryString.split("&");
+
+        for (String pair : pairs) {
+            int i = pair.indexOf('=');
+            if(i > -1) {
+                try {
+                    String name = URLDecoder.decode(pair.substring(0, i), "UTF-8");
+                    String value = URLDecoder.decode(pair.substring(i+1, pair.length()), "UTF-8");
+
+                    Object current = result.get(name);
+                    if(current instanceof List) {
+                        ((List)current).add(value);
+                    }
+                    else if(current != null) {
+                        List multi = new ArrayList();
+                        multi.add(current);
+                        multi.add(value);
+                        result.put(name, multi);
+                    }
+                    else {
+                        result.put(name, value);
+                    }
+                } catch (UnsupportedEncodingException e) {
+                    // ignore
+                }
+            }
+        }
+
+        return result;
     }
 
     /**

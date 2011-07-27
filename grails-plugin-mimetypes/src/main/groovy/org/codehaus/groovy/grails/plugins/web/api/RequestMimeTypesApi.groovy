@@ -30,13 +30,17 @@ import org.codehaus.groovy.grails.web.servlet.HttpHeaders
  */
 class RequestMimeTypesApi {
 
-    private MimeType[] mimeTypes
-    private GrailsApplication grailsApplication
+    MimeType[] mimeTypes
+    GrailsApplication grailsApplication
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
 
     RequestMimeTypesApi() {
+    }
+
+    MimeType[] getMimeTypes() {
+        return this.mimeTypes
     }
 
     RequestMimeTypesApi(GrailsApplication application, MimeType[] mimeTypes) {
@@ -71,7 +75,7 @@ class RequestMimeTypesApi {
         MimeType[] result = request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
         if (!result) {
             def parser = new DefaultAcceptHeaderParser(grailsApplication)
-            parser.configuredMimeTypes = mimeTypes
+            parser.configuredMimeTypes = getMimeTypes()
             def header = request.contentType
             if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
             result = parser.parse(header)

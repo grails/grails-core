@@ -91,13 +91,11 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
     String viewPath = "/"
 
     protected FlowBuilderServices flowBuilderServices
-    protected FlowDefinitionLocator definitionLocator
 
     FlowBuilder(String flowId, FlowBuilderServices flowBuilderServices, FlowDefinitionLocator definitionLocator) {
         this.flowId = flowId
         Assert.notNull flowBuilderServices, "Argument [flowBuilderServices] is required!"
         this.flowBuilderServices = flowBuilderServices
-        this.definitionLocator = definitionLocator
         this.metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(FlowBuilder.class)
 
         def context = new FlowBuilderContextImpl(flowId,null, definitionLocator, flowBuilderServices)
@@ -119,7 +117,6 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
             this.flowClosure = args[0]
             flowClosure.setDelegate(this)
             flowDefiningMode = true
-            flowClosure.delegate = this
             flowClosure.call()
             flowDefiningMode = false
             initialised = true
@@ -190,8 +187,19 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                         // add action state
                         state = createActionState(name, action, trans, flowFactory, flowInfo.entryAction, flowInfo.exitAction)
                     }
-                    else if (flowInfo.subflow || flowInfo.subflowAction) {
-                        state = createSubFlow(flowInfo, flowFactory, name)
+                    else if (flowInfo.subflow) {
+                        def i = flowId.indexOf('/')
+                        def subflowClass = flowInfo.subflow.getThisObject().getClass()
+                        def controllerName = GrailsNameUtils.getLogicalPropertyName(subflowClass.name, "Controller")
+                        def subflowId = "${controllerName}/$name"
+                        FlowBuilder subFlowBuilder = new FlowBuilder(subflowId, flowBuilderServices,
+                                                                        getContext().getFlowDefinitionLocator())
+
+                        subFlowBuilder.viewPath = this.viewPath
+
+                        Flow subflow = subFlowBuilder.flow(flowInfo.subflow)
+
+                        state = createSubFlow(flowInfo, name, subflow, trans, flowFactory)
                     }
                     else {
                         String view = createViewPath(flowInfo, name)
@@ -295,31 +303,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
 
     }
 
-    private State createSubFlow(flowInfo, FlowArtifactFactory flowFactory, stateId) {
-        def subflowId
-        if (flowInfo.subflow) {
-            //backwards compatibility: only subflow closure is supplied and the containing state must have the same name as the called subflow
-            def controllerClass = flowInfo.subflow.getThisObject().getClass()
-            def controllerName = GrailsNameUtils.getLogicalPropertyName(controllerClass.name, "Controller")
-            subflowId = "${controllerName}/$stateId"
-        }
-        else {
-            //preferred way: subflow action and optional controller name are supplied
-            def controllerName
-            if (flowInfo.subflowController) {
-                controllerName = flowInfo.subflowController
-            }
-            else {
-                //assume that the subflow is defined in the same controller as the calling flow
-                Class controllerClass = flowClosure.getThisObject().getClass()
-                controllerName = GrailsNameUtils.getLogicalPropertyName(controllerClass.name, "Controller")
-            }
-            subflowId = "${controllerName}/$flowInfo.subflowAction"
-        }
-        Flow subflow = definitionLocator.getFlowDefinition(subflowId)
-
-        return flowFactory.createSubflowState(stateId, getFlow(), null, new StaticExpression(subflow),
-                new GrailsSubflowAttributeMapper(flowInfo.subflowInput), flowInfo.transitions, null, null, null)
+    private State createSubFlow(flowInfo, String stateId, Flow subflow, Transition[] trans, FlowArtifactFactory flowFactory) {
+        return flowFactory.createSubflowState(stateId, getFlow(), null, new StaticExpression(subflow),new GrailsSubflowAttributeMapper(flowInfo.subflowInput),trans, null, null, null)
     }
 
     private State createActionState(String stateId, Closure action, Transition[] transitions,
@@ -364,7 +349,7 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
         return viewFactory
     }
 
-    private Flow flow(Closure flow) {
+    Flow flow(Closure flow) {
         return invokeMethod(FLOW_METHOD, [flow] as Object[])
     }
 
@@ -422,8 +407,6 @@ class FlowInfoCapturer {
     private Closure entryAction
     private Closure exitAction
     private Closure subflow
-    private String subflowController
-    private String subflowAction
     private Map subflowInput = [:]
     private String viewName
     private applicationContext
@@ -446,8 +429,6 @@ class FlowInfoCapturer {
     Closure getEntryAction() { this.entryAction}
     Closure getExitAction() { this.exitAction}
     Closure getSubflow() { this.subflow }
-    String getSubflowController() { this.subflowController }
-    String getSubflowAction() { this.subflowAction }
     Map getSubflowInput() { this.subflowInput }
     Mapper getOutputMapper() { this.outputMapper }
 
@@ -490,12 +471,8 @@ class FlowInfoCapturer {
         this.subflow = callable
     }
 
-    void subflow(Map args) {
-        if (!args.action) {
-            throw new FlowDefinitionException("subflow action is mandatory")
-        }
-        this.subflowController = args.controller
-        this.subflowAction = args.action
+    void subflow(Map args, Closure callable) {
+        this.subflow = callable
         args.input?.each {key, value ->
             if (value instanceof Closure) {
                 this.subflowInput[key] = new ClosureExpression(value)

@@ -19,6 +19,7 @@ import javax.servlet.ServletContext;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.util.Assert;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ServletContextAware;
 
@@ -41,21 +42,17 @@ public class WebRuntimeSpringConfiguration extends DefaultRuntimeSpringConfigura
     @Override
     protected GenericApplicationContext createApplicationContext(ApplicationContext parentCtx) {
         if (parentCtx != null && beanFactory != null) {
-            if (beanFactory instanceof DefaultListableBeanFactory) {
-                return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory,parentCtx);
-            }
+            Assert.isInstanceOf(DefaultListableBeanFactory.class, beanFactory,
+                "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
 
-            throw new IllegalArgumentException(
-                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory,parentCtx);
         }
 
         if (beanFactory != null) {
-            if (beanFactory instanceof DefaultListableBeanFactory) {
-                return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory);
-            }
+            Assert.isInstanceOf(DefaultListableBeanFactory.class, beanFactory,
+                "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
 
-            throw new IllegalArgumentException(
-                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            return new GrailsWebApplicationContext((DefaultListableBeanFactory) beanFactory);
         }
 
         if (parentCtx != null) {

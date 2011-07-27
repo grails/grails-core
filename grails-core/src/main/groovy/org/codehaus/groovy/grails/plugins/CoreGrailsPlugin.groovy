@@ -96,7 +96,7 @@ class CoreGrailsPlugin {
         if (devMode) {
             shutdownHook(DevelopmentShutdownHook)
         }
-        grailsResourceLocator(DefaultResourceLocator) {
+        abstractGrailsResourceLocator {
             if(devMode) {
                 BuildSettings settings = BuildSettingsHolder.settings
                 if(settings) {
@@ -106,6 +106,9 @@ class CoreGrailsPlugin {
                 }
 
             }
+        }
+        grailsResourceLocator(DefaultResourceLocator) { bean ->
+            bean.parent = "abstractGrailsResourceLocator"
         }
 
         customEditors(CustomEditorConfigurer) {
@@ -119,7 +122,7 @@ class CoreGrailsPlugin {
         MetaClassRegistry registry = GroovySystem.metaClassRegistry
 
         def metaClass = registry.getMetaClass(Class)
-        if (!(metaClass instanceof ExpandoMetaClass)) {         
+        if (!(metaClass instanceof ExpandoMetaClass)) {
             registry.removeMetaClass(Class)
             def emc = new ExpandoMetaClass(Class, false, true)
             emc.initialize()
@@ -147,7 +150,6 @@ class CoreGrailsPlugin {
     }
 
     def onChange = { event ->
-        println "Change event: $event"
         if (event.source instanceof Resource) {
             def xmlBeans = new XmlBeanFactory(event.source)
             xmlBeans.beanDefinitionNames.each { name ->
@@ -155,9 +157,9 @@ class CoreGrailsPlugin {
             }
         }
         else if (event.source instanceof Class) {
-            println "Change event was class... reloading spring resources.groovy beans"
             RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            GrailsRuntimeConfigurator.loadSpringGroovyResourcesIntoContext(springConfig, application, event.ctx)
+            GrailsRuntimeConfigurator.reloadSpringResourcesConfig(springConfig, application, event.source)
+            springConfig.registerBeansWithContext(event.ctx)
         }
     }
 }

@@ -16,8 +16,8 @@
 
 package org.codehaus.groovy.grails.web.mapping;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import grails.util.CollectionUtils;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -43,7 +43,7 @@ public interface LinkGenerator {
     String ATTRIBUTE_EVENT = "event";
     String ATTRIBUTE_ELEMENT_ID = "elementId";
 
-    Set<String> LINK_ATTRIBUTES = new HashSet<String>(Arrays.asList(
+    Set<String> LINK_ATTRIBUTES = CollectionUtils.newSet(
        ATTRIBUTE_CONTROLLER,
        ATTRIBUTE_ACTION,
        ATTRIBUTE_URI,
@@ -55,7 +55,7 @@ public interface LinkGenerator {
        ATTRIBUTE_PARAMS,
        ATTRIBUTE_MAPPING,
        ATTRIBUTE_EVENT,
-       ATTRIBUTE_ELEMENT_ID));
+       ATTRIBUTE_ELEMENT_ID);
 
     /**
      * Generates a link to a static resource for the given named parameters.

@@ -202,7 +202,6 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     /**
      * Retrieves the association map
      */
-    @SuppressWarnings("unchecked")
     public Map getAssociationMap() {
         if (relationshipMap == null) {
             this.relationshipMap = getMergedConfigurationMap(GrailsDomainClassProperty.HAS_MANY);
@@ -210,6 +209,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         return relationshipMap;
     }
 
+    @SuppressWarnings("unchecked")
     private Map getMergedConfigurationMap(String propertyName) {
         Map configurationMap = getStaticPropertyValue(propertyName, Map.class);
         if (configurationMap == null) {

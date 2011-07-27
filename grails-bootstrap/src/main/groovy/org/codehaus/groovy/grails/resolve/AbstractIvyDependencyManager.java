@@ -14,8 +14,7 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
-import grails.util.BuildSettings;
-import grails.util.Metadata;
+import grails.util.*;
 import groovy.lang.Closure;
 
 import java.io.File;
@@ -54,7 +53,6 @@ import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext;
  * @author Graeme Rocher
  * @since 1.3
  */
-@SuppressWarnings("serial")
 public abstract class AbstractIvyDependencyManager {
 
     /*
@@ -66,40 +64,46 @@ public abstract class AbstractIvyDependencyManager {
      * - test: Dependencies needed for testing but not at runtime (see above)
      * - provided: Dependencies needed at development time, but not during WAR deployment
      */
-    public static Configuration BUILD_CONFIGURATION  = new Configuration("build",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Build system dependencies",
-                                                                new String[]{"default"},
-                                                                true, null);
+    public static Configuration BUILD_CONFIGURATION  = new Configuration(
+            "build",
+            Configuration.Visibility.PUBLIC,
+            "Build system dependencies",
+            new String[] {"default"},
+            true, null);
 
-    public static Configuration COMPILE_CONFIGURATION = new Configuration("compile",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Compile time dependencies",
-                                                                new String[]{"default" },
-                                                                true, null);
+    public static Configuration COMPILE_CONFIGURATION = new Configuration(
+            "compile",
+            Configuration.Visibility.PUBLIC,
+            "Compile time dependencies",
+            new String[] {"default" },
+            true, null);
 
-    public static Configuration RUNTIME_CONFIGURATION = new Configuration("runtime",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Runtime time dependencies",
-                                                                new String[]{"compile"},
-                                                                true, null);
+    public static Configuration RUNTIME_CONFIGURATION = new Configuration(
+            "runtime",
+            Configuration.Visibility.PUBLIC,
+            "Runtime time dependencies",
+            new String[] {"compile"},
+            true, null);
 
-    public static Configuration TEST_CONFIGURATION = new Configuration("test",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Testing dependencies",
-                                                                new String[]{"runtime"},
-                                                                true, null);
+    public static Configuration TEST_CONFIGURATION = new Configuration(
+            "test",
+            Configuration.Visibility.PUBLIC,
+            "Testing dependencies",
+            new String[] {"runtime"},
+            true, null);
 
-    public static Configuration PROVIDED_CONFIGURATION = new Configuration("provided",
-                                                                Configuration.Visibility.PUBLIC,
-                                                                "Dependencies provided by the container",
-                                                                new String[]{"default"},
-                                                                true, null);
+    public static Configuration PROVIDED_CONFIGURATION = new Configuration(
+            "provided",
+            Configuration.Visibility.PUBLIC,
+            "Dependencies provided by the container",
+            new String[] {"default"},
+            true, null);
 
-    public static Configuration DOCS_CONFIGURATION = new Configuration("docs",
+    public static Configuration DOCS_CONFIGURATION = new Configuration(
+            "docs",
             Configuration.Visibility.PUBLIC,
             "Dependencies for the documenation engine",
-            new String[]{"build"},
+            new String[] {"build"},
             true, null);
 
     public static List<Configuration> ALL_CONFIGURATIONS = Arrays.asList(
@@ -110,14 +114,14 @@ public abstract class AbstractIvyDependencyManager {
             PROVIDED_CONFIGURATION,
             DOCS_CONFIGURATION);
 
-    Map<String, List<String>> configurationMappings = new HashMap<String, List<String>>() {{
-       put("runtime", Arrays.asList("default"));
-       put("build", Arrays.asList("default"));
-       put("compile", Arrays.asList("default"));
-       put("provided", Arrays.asList("default"));
-       put("docs", Arrays.asList("default"));
-       put("test", Arrays.asList("default"));
-    }};
+    @SuppressWarnings("unchecked")
+    Map<String, List<String>> configurationMappings = CollectionUtils.<String, List<String>>newMap(
+       "runtime", Arrays.asList("default"),
+       "build", Arrays.asList("default"),
+       "compile", Arrays.asList("default"),
+       "provided", Arrays.asList("default"),
+       "docs", Arrays.asList("default"),
+       "test", Arrays.asList("default"));
 
     protected String[] configurationNames = configurationMappings.keySet().toArray(
             new String[configurationMappings.size()]);
@@ -125,7 +129,7 @@ public abstract class AbstractIvyDependencyManager {
     protected Set<ModuleRevisionId> dependencies = new HashSet<ModuleRevisionId>();
     protected Set<DependencyDescriptor> dependencyDescriptors = new HashSet<DependencyDescriptor>();
     protected Set<DependencyDescriptor> pluginDependencyDescriptors = new HashSet<DependencyDescriptor>();
-    protected Set<String> pluginDependencyNames = new HashSet<String>();
+
     protected Set<String> metadataRegisteredPluginNames = new HashSet<String>();
     protected Map<String, Collection<ModuleRevisionId>> orgToDepMap = new HashMap<String, Collection<ModuleRevisionId>>();
     protected Collection<String> usedConfigurations = new ConcurrentLinkedQueue<String>();
@@ -229,7 +233,7 @@ public abstract class AbstractIvyDependencyManager {
      * Obtains a set of plugins this application is dependent onb
      * @return A set of plugins names
      */
-    public Set<String> getPluginDependencyNames() { return pluginDependencyNames; }
+    public Set<String> getPluginDependencyNames() { return pluginNameToDescriptorMap.keySet(); }
 
     /**
      * Obtains a list of dependencies defined in the project
@@ -300,7 +304,7 @@ public abstract class AbstractIvyDependencyManager {
      */
     public boolean isPluginTransitivelyIncluded(String pluginName) {
         EnhancedDefaultDependencyDescriptor dd = (EnhancedDefaultDependencyDescriptor) pluginNameToDescriptorMap.get(pluginName);
-        return dd != null && dd.isTransitivelyIncluded();
+        return dd != null && dd.isTransitivelyIncluded() && dd.isExported();
     }
 
     /**
@@ -329,8 +333,28 @@ public abstract class AbstractIvyDependencyManager {
      * @see #registerPluginDependency(String, EnhancedDefaultDependencyDescriptor)
      */
     public void registerDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
-        registerDependencyCommon(scope, descriptor);
 
+        String plugin = descriptor.getPlugin();
+        if(plugin != null) {
+            EnhancedDefaultDependencyDescriptor pluginDependencyDescriptor = (EnhancedDefaultDependencyDescriptor) getPluginDependencyDescriptor(plugin);
+            if(pluginDependencyDescriptor != null) {
+                ExcludeRule[] excludeRules = pluginDependencyDescriptor.getExcludeRules(scope);
+                if(excludeRules != null) {
+                    for (ExcludeRule excludeRule : excludeRules) {
+                        descriptor.addExcludeRule(scope, excludeRule);
+                    }
+                }
+
+                String pluginScope = pluginDependencyDescriptor.getScope();
+                if(pluginScope != null) {
+                    if(isCompileOrRuntimeScope(scope)) {
+                       scope = pluginScope;
+                    }
+                }
+            }
+        }
+
+        registerDependencyCommon(scope, descriptor);
         ModuleRevisionId revisionId = descriptor.getDependencyRevisionId();
         modules.add(revisionId.getModuleId());
         dependencies.add(revisionId);
@@ -344,9 +368,13 @@ public abstract class AbstractIvyDependencyManager {
         }
 
         dependencyDescriptors.add(descriptor);
-        if (descriptor.isExportedToApplication()) {
+        if (shouldIncludeDependency(descriptor)) {
             moduleDescriptor.addDependency(descriptor);
         }
+    }
+
+    private boolean isCompileOrRuntimeScope(String scope) {
+        return scope.equals("runtime") || scope.equals("compile");
     }
 
     /**
@@ -355,7 +383,15 @@ public abstract class AbstractIvyDependencyManager {
      * @see #registerDependency(String, EnhancedDefaultDependencyDescriptor)
      */
     public void registerPluginDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
-        String name = descriptor.getDependencyId().getName();
+        ModuleId dependencyId = descriptor.getDependencyId();
+        String name = dependencyId.getName();
+
+        DependencyDescriptor existing = pluginNameToDescriptorMap.get(name);
+        if(existing != null && descriptor.isTransitivelyIncluded()) {
+            ModuleRevisionId dependencyRevisionId = existing.getDependencyRevisionId();
+            if(dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
+        }
+
 
         String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
         String packaging;
@@ -370,37 +406,58 @@ public abstract class AbstractIvyDependencyManager {
 
         registerDependencyCommon(scope, descriptor);
 
-        pluginDependencyNames.add(name);
-        pluginDependencyDescriptors.add(descriptor);
         pluginNameToDescriptorMap.put(name, descriptor);
+        pluginDependencyDescriptors.add(descriptor);
+        if(shouldIncludeDependency(descriptor)) {
+            moduleDescriptor.addDependency(descriptor);
+        }
+    }
+
+    private boolean shouldIncludeDependency(EnhancedDefaultDependencyDescriptor descriptor) {
+        return descriptor.isExported()|| (buildSettings.isPluginProject() && isExposedByThisPlugin(descriptor) );
+    }
+
+    private boolean isExposedByThisPlugin(EnhancedDefaultDependencyDescriptor descriptor) {
+        File basePluginDescriptor = buildSettings.getBasePluginDescriptor();
+        if(basePluginDescriptor != null) {
+            String basePluginName = GrailsNameUtils.getPluginName(basePluginDescriptor.getName());
+            String plugin = descriptor.getPlugin();
+            return plugin == null || plugin.equals(basePluginName);
+        }
+        return false;
+
     }
 
     /**
      * Parses the Ivy DSL definition
      */
     public void parseDependencies(@SuppressWarnings("rawtypes") Closure definition) {
-        if (definition != null && applicationName != null && applicationVersion != null) {
-            if (moduleDescriptor == null) {
-                setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
-            }
+        if (definition == null || applicationName == null || applicationVersion == null) {
+            return;
+        }
 
-            doParseDependencies(definition, null);
+        if (moduleDescriptor == null) {
+            setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
+        }
 
-            // The dependency config can use the pom(Boolean) method to declare
-            // that this project has a POM and it has the dependencies, which means
-            // we now have to inspect it for the dependencies to use.
-            if (readPom == true && buildSettings != null) {
-                registerPomDependencies();
-            }
+        doParseDependencies(definition, null);
 
-            // Legacy support for the old mechanism of plugin dependencies being
-            // declared in the application.properties file.
-            if (metadata != null) {
-                Map<String, String> metadataDeclaredPlugins = metadata.getInstalledPlugins();
-                if (metadataDeclaredPlugins != null) {
-                    addMetadataPluginDependencies(metadataDeclaredPlugins);
-                }
-            }
+        // The dependency config can use the pom(Boolean) method to declare
+        // that this project has a POM and it has the dependencies, which means
+        // we now have to inspect it for the dependencies to use.
+        if (readPom == true && buildSettings != null) {
+            registerPomDependencies();
+        }
+
+        if (metadata == null) {
+            return;
+        }
+
+        // Legacy support for the old mechanism of plugin dependencies being
+        // declared in the application.properties file.
+        Map<String, String> metadataDeclaredPlugins = metadata.getInstalledPlugins();
+        if (metadataDeclaredPlugins != null) {
+            addMetadataPluginDependencies(metadataDeclaredPlugins);
         }
     }
 
@@ -411,13 +468,15 @@ public abstract class AbstractIvyDependencyManager {
      * @param definition the Ivy DSL definition
      */
     public void parseDependencies(String pluginName, Closure<?> definition) throws IllegalStateException {
-        if (definition != null) {
-            if (moduleDescriptor == null) {
-                throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
-            }
-
-            doParseDependencies(definition, pluginName);
+        if (definition == null) {
+            return;
         }
+
+        if (moduleDescriptor == null) {
+            throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
+        }
+
+        doParseDependencies(definition, pluginName);
     }
 
     /**
@@ -433,10 +492,10 @@ public abstract class AbstractIvyDependencyManager {
         // Temporary while we move all of the Groovy super class here
         IvyDependencyManager dependencyManager = (IvyDependencyManager)this;
 
-        if (pluginName != null) {
-            context = DependencyConfigurationContext.forPlugin(dependencyManager, pluginName);
-        } else {
+        if (pluginName == null) {
             context = DependencyConfigurationContext.forApplication(dependencyManager);
+        } else {
+            context = DependencyConfigurationContext.forPlugin(dependencyManager, pluginName);
         }
 
         definition.setDelegate(new DependencyConfigurationConfigurer(context));
@@ -467,10 +526,12 @@ public abstract class AbstractIvyDependencyManager {
 
     private void addDefaultModuleConfigurations(EnhancedDefaultDependencyDescriptor descriptor, String configurationName) {
         List<String> mappings = configurationMappings.get(configurationName);
-        if (mappings != null) {
-            for (String m : mappings) {
-                descriptor.addDependencyConfiguration(configurationName, m);
-            }
+        if (mappings == null) {
+            return;
+        }
+
+        for (String m : mappings) {
+            descriptor.addDependencyConfiguration(configurationName, m);
         }
     }
 
@@ -496,7 +557,8 @@ public abstract class AbstractIvyDependencyManager {
         //
         @SuppressWarnings("hiding")
         DefaultModuleDescriptor moduleDescriptor =
-            DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance("org.grails.internal", applicationName, applicationVersion));
+            DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(
+                    "org.grails.internal", applicationName, applicationVersion));
 
         // TODO: make configurations extensible
         moduleDescriptor.addConfiguration(BUILD_CONFIGURATION);
@@ -530,7 +592,7 @@ public abstract class AbstractIvyDependencyManager {
     public Set<String> getPluginExcludes(String plugin) {
         Set<String> excludes = new HashSet<String>();
         DependencyDescriptor dd = pluginNameToDescriptorMap.get(plugin);
-        if (dd != null)  {
+        if (dd != null) {
             for (ExcludeRule er : dd.getAllExcludeRules()) {
                 excludes.add(er.getId().getName());
             }
@@ -560,28 +622,31 @@ public abstract class AbstractIvyDependencyManager {
 
     private void registerPomDependencies() {
         DependencyDescriptor[] pomDependencies = readDependenciesFromPOM();
-        if (pomDependencies != null) {
-            for (DependencyDescriptor dependencyDescriptor : pomDependencies) {
-                registerPomDependency(dependencyDescriptor);
-            }
+        if (pomDependencies == null) {
+            return;
+        }
+
+        for (DependencyDescriptor dependencyDescriptor : pomDependencies) {
+            registerPomDependency(dependencyDescriptor);
         }
     }
 
     private void registerPomDependency(DependencyDescriptor dependencyDescriptor) {
         ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId();
         ModuleId moduleId = moduleRevisionId.getModuleId();
-
-        String scope = Arrays.asList(dependencyDescriptor.getModuleConfigurations()).get(0);
-
-        if (!hasDependency(moduleId)) {
-            EnhancedDefaultDependencyDescriptor enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(moduleRevisionId, false, true, scope);
-            for (ExcludeRule excludeRule : dependencyDescriptor.getAllExcludeRules()) {
-                ModuleId excludedModule = excludeRule.getId().getModuleId();
-                enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope);
-            }
-
-            registerDependency(scope, enhancedDependencyDescriptor);
+        if (hasDependency(moduleId)) {
+            return;
         }
+
+        String scope = dependencyDescriptor.getModuleConfigurations()[0];
+        EnhancedDefaultDependencyDescriptor enhancedDependencyDescriptor = new EnhancedDefaultDependencyDescriptor(
+                moduleRevisionId, false, true, scope);
+        for (ExcludeRule excludeRule : dependencyDescriptor.getAllExcludeRules()) {
+            ModuleId excludedModule = excludeRule.getId().getModuleId();
+            enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope);
+        }
+
+        registerDependency(scope, enhancedDependencyDescriptor);
     }
 
     private void addMetadataPluginDependencies(Map<String, String> plugins) {
@@ -589,16 +654,22 @@ public abstract class AbstractIvyDependencyManager {
             String name = plugin.getKey();
             String version = plugin.getValue();
 
-            if (!pluginDependencyNames.contains(name)) {
-                String scope = "runtime";
-                metadataRegisteredPluginNames.add(name);
-                ModuleRevisionId mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version);
-                EnhancedDefaultDependencyDescriptor enhancedDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, true, true, scope);
-                // since the plugin dependency isn't declared but instead installed via install-plugin it should be not be exported by another plugin
-                enhancedDescriptor.setExport(false);
-
-                registerPluginDependency(scope, enhancedDescriptor);
+            if (pluginNameToDescriptorMap.containsKey(name)) {
+                continue;
             }
+
+            String scope = "runtime";
+            metadataRegisteredPluginNames.add(name);
+            ModuleRevisionId mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version);
+            EnhancedDefaultDependencyDescriptor enhancedDescriptor = new EnhancedDefaultDependencyDescriptor(
+                    mrid, true, true, scope);
+            // since the plugin dependency isn't declared but instead installed via install-plugin
+            // it should be not be exported by another plugin
+            if(buildSettings.isPluginProject()) {
+                enhancedDescriptor.setExport(false);
+            }
+
+            registerPluginDependency(scope, enhancedDescriptor);
         }
     }
 }

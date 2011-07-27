@@ -120,7 +120,7 @@ class FormTagLib {
     void testBeansWhenNotWarDeployedAndDevelopmentEnv() {
         try {
             System.setProperty("grails.env", "development")
-            def mock = [application: [config: new ConfigObject(), warDeployed: false], manager:mockManager]
+            def mock = [application: [flatConfig: new ConfigObject(), config: new ConfigObject(), warDeployed: false], manager:mockManager]
             def plugin = new GroovyPagesGrailsPlugin()
             def beans = plugin.doWithSpring
             def bb = new BeanBuilder()
@@ -133,10 +133,8 @@ class FormTagLib {
             assertEquals "file:.", beanDef.getPropertyValues().getPropertyValue('baseResource').getValue()
 
             beanDef = bb.getBeanDefinition("groovyPagesTemplateEngine")
-            assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
+            assertEquals "groovyPageLocator", beanDef.getPropertyValues().getPropertyValue("groovyPageLocator").getValue()?.beanName
 
-            beanDef = bb.getBeanDefinition("jspViewResolver")
-            assertEquals "groovyPageResourceLoader", beanDef.getPropertyValues().getPropertyValue("resourceLoader").getValue()?.beanName
         }
         finally {
             System.setProperty("grails.env", "")

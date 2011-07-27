@@ -1,11 +1,9 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import java.util.Collection;
-
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 
 /**
  * Tests the behaviour of the redirect method.
@@ -33,7 +31,7 @@ class UrlMappings {
 }
 ''')
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [NewsSignupController, RedirectController, AController, ABCController]
@@ -95,6 +93,14 @@ class UrlMappings {
         webRequest.controllerName = 'redirect'
         c.toRoot.call()
         assertEquals "/", response.redirectedUrl
+    }
+
+    void testRedirectToAbsoluteURL() {
+        def c = new RedirectController()
+        webRequest.controllerName = 'redirect'
+        c.toAbsolute()
+        assertEquals "http://google.com", response.redirectedUrl
+
     }
 
     void testRedirectWithFragment() {
@@ -250,6 +256,10 @@ class RedirectController {
     }
     def toControllerWithDuplicateArrayParams = {
         redirect(controller:'test',action:'foo', params:[one:['two','three'] as String[]])
+    }
+
+    def toAbsolute() {
+        redirect(url:"http://google.com")
     }
 }
 

@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.cli.parsing.ParseException
+import org.codehaus.groovy.grails.cli.ScriptExitException
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -112,9 +113,13 @@ class InteractiveMode {
 
                 }
                 else {
-                    error "Not script name specified"
+                    error "No script name specified"
                 }
-            } catch (ScriptNotFoundException e) {
+            }
+            catch(ScriptExitException e) {
+                // do nothing. just return to cosuming input
+            }
+            catch (ScriptNotFoundException e) {
                 error "Script not found for name $scriptName"
             } catch (Throwable e) {
                 error "Error running script $scriptName: ${e.message}", e

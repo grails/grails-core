@@ -18,12 +18,12 @@ package grails.util;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingMethodException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.util.StringUtils;
 
 /**
  * An enum that represents the current environment
@@ -31,7 +31,6 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 1.1
  */
-@SuppressWarnings("serial")
 public enum Environment {
 
     /** The development environment */
@@ -76,11 +75,11 @@ public enum Environment {
     private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
 
     private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
-    private static Map<String, String> envNameMappings = new HashMap<String, String>() {{
-        put(DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName());
-        put(PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName());
-        put(TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
-    }};
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> envNameMappings = CollectionUtils.<String, String>newMap(
+        DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
+        PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
+        TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
 
     /**
      * Returns the current environment which is typcally either DEVELOPMENT, PRODUCTION or TEST.

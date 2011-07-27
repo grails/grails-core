@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-class CircularOneToManyTests extends AbstractGrailsHibernateTests  {
+class CircularOneToManyTests extends AbstractGrailsHibernateTests {
 
     void testCircularDomain() {
         def taskDomain = ga.getDomainClass("Task")
@@ -15,7 +15,7 @@ class CircularOneToManyTests extends AbstractGrailsHibernateTests  {
         assertTrue task.isBidirectional()
     }
 
-    void onSetUp() {
+    protected void onSetUp() {
         gcl.parseClass '''
 class Task {
     Long id

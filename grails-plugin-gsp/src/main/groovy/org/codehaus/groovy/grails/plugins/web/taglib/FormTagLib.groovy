@@ -443,7 +443,22 @@ class FormTagLib {
         else {
             xdefault = null
         }
+        def years = attrs.years
+        def relativeYears = attrs.relativeYears
+        if(years != null && relativeYears != null) {
+            throwTagError 'Tag [datePicker] does not allow both the years and relativeYears attributes to be used together.'
+        }
 
+        if(relativeYears != null) {
+            if(!(relativeYears instanceof IntRange)) {
+				// allow for a syntax like relativeYears="[-2..5]".  The value there is a List containing an IntRage.
+                if((!(relativeYears instanceof List)) || (relativeYears.size() != 1) || (!(relativeYears[0] instanceof IntRange))){
+                    throwTagError 'The [datePicker] relativeYears attribute must be a range of int.'
+                } else {
+                    relativeYears = relativeYears[0]
+                }
+            }
+        }
         def value = attrs.value
         if (value.toString() == 'none') {
             value = null
@@ -459,7 +474,6 @@ class FormTagLib {
             noSelection = noSelection.entrySet().iterator().next()
         }
 
-        def years = attrs.years
 
         final PRECISION_RANKINGS = ["year": 0, "month": 10, "day": 20, "hour": 30, "minute": 40]
         def precision = (attrs.precision ? PRECISION_RANKINGS[attrs.precision] :
@@ -502,7 +516,11 @@ class FormTagLib {
             else {
                 tempyear = year
             }
-            years = (tempyear - 100)..(tempyear + 100)
+            if(relativeYears) {
+                 years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)   
+            } else {
+                years = (tempyear - 100)..(tempyear + 100)
+            }
         }
 
         out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"

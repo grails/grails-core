@@ -33,6 +33,8 @@ import org.springframework.stereotype.Component
  */
 class BeanBuilderTests extends GroovyTestCase {
 
+    private BeanBuilder bb = new BeanBuilder()
+
     @Override
     protected void setUp() {
         super.setUp()
@@ -40,7 +42,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testImportSpringXml() {
-        def bb = new BeanBuilder()
 
         bb.beans {
             importBeans "classpath:grails/spring/test.xml"
@@ -53,7 +54,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testImportBeansFromGroovy() {
-        def bb = new BeanBuilder()
 
         bb.beans {
             importBeans "file:test/resources/spring/test.groovy"
@@ -66,7 +66,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testInheritPropertiesFromAbstractBean() {
-        def bb = new BeanBuilder()
 
         bb.beans {
             myB(Bean1) {
@@ -91,7 +90,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testContextComponentScanSpringTag() {
-        def bb = new BeanBuilder()
 
         bb.beans {
             xmlns grailsContext:"http://grails.org/schema/context"
@@ -108,7 +106,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testUseSpringNamespaceAsMethod() {
-        def bb = new BeanBuilder()
 
         bb.beans {
             xmlns aop:"http://www.springframework.org/schema/aop"
@@ -141,7 +138,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testUseTwoSpringNamespaces() {
-       def bb = new BeanBuilder()
 
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder()
         try {
@@ -208,8 +204,6 @@ class BeanBuilderTests extends GroovyTestCase {
 
     void testSpringAOPSupport() {
 
-        def bb = new BeanBuilder()
-
         bb.beans {
             xmlns aop:"http://www.springframework.org/schema/aop"
 
@@ -239,7 +233,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSpringScopedProxyBean() {
-        def bb = new BeanBuilder()
 
         GenericApplicationContext appCtx = bb.getSpringConfig().getUnrefreshedApplicationContext()
         TestScope scope = new TestScope()
@@ -263,7 +256,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSpringNamespaceBean() {
-        def bb = new BeanBuilder()
 
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder()
         try {
@@ -286,7 +278,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testNamedArgumentConstructor() {
-        def bb = new BeanBuilder()
         bb.beans {
             holyGrail(HolyGrailQuest)
             knights(KnightOfTheRoundTable, "Camelot", leader:"lancelot", quest: holyGrail)
@@ -304,7 +295,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testAbstractBeanDefinition() {
-        def bb = new BeanBuilder()
         bb.beans {
             abstractBean {
                 leader = "Lancelot"
@@ -326,7 +316,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testAbstractBeanDefinitionWithClass() {
-        def bb = new BeanBuilder()
         bb.beans {
             abstractBean(KnightOfTheRoundTable) { bean ->
                 bean.'abstract' = true
@@ -349,7 +338,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testScopes() {
-        def bb = new BeanBuilder()
         bb.beans {
             myBean(ScopeTest) { bean ->
                 bean.scope = "prototype"
@@ -370,7 +358,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSimpleBean() {
-        def bb = new BeanBuilder()
         bb.beans {
             bean1(Bean1) {
                 person = "homer"
@@ -392,7 +379,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithParentRef() {
-        def bb = new BeanBuilder()
         bb.beans {
             homer(Bean1) {
                 person = "homer"
@@ -417,7 +403,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testWithAnonymousInnerBean() {
-        def bb = new BeanBuilder()
         bb.beans {
             bart(Bean1) {
                 person = "bart"
@@ -429,11 +414,12 @@ class BeanBuilderTests extends GroovyTestCase {
             }
             marge(Bean2) {
                 person = "marge"
-                bean1 =  { Bean1 b ->
-                             person = "homer"
-                            age = 45
-                            props = [overweight:true, height:"1.8m"]
-                            children = ["bart", "lisa"] }
+                bean1 = { Bean1 b ->
+                    person = "homer"
+                    age = 45
+                    props = [overweight:true, height:"1.8m"]
+                    children = ["bart", "lisa"]
+                }
                 children = [bart, lisa]
             }
         }
@@ -446,7 +432,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testAnonymousInnerBeanViaBeanMethod() {
-        def bb = new BeanBuilder()
         bb.beans {
             bart(Bean1) {
                 person = "bart"
@@ -476,7 +461,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testAnonymousInnerBeanViaBeanMethodWithConstructorArgs() {
-        def bb = new BeanBuilder()
         bb.beans {
             bart(Bean1) {
                 person = "bart"
@@ -505,7 +489,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testWithUntypedAnonymousInnerBean() {
-        def bb = new BeanBuilder()
         bb.beans {
             homer(Bean1Factory)
             bart(Bean1) {
@@ -518,10 +501,11 @@ class BeanBuilderTests extends GroovyTestCase {
             }
             marge(Bean2) {
                 person = "marge"
-                bean1 =  { bean ->
-                            bean.factoryBean = "homer"
-                            bean.factoryMethod = "newInstance"
-                            person = "homer" }
+                bean1 = { bean ->
+                    bean.factoryBean = "homer"
+                    bean.factoryMethod = "newInstance"
+                    person = "homer"
+                }
                 children = [bart, lisa]
             }
         }
@@ -534,7 +518,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanReferences() {
-        def bb = new BeanBuilder()
         bb.beans {
             homer(Bean1) {
                 person = "homer"
@@ -571,7 +554,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithConstructor() {
-        def bb = new BeanBuilder()
         bb.beans {
             homer(Bean1) {
                 person = "homer"
@@ -591,7 +573,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithFactoryMethod() {
-        def bb = new BeanBuilder()
         bb.beans {
             homer(Bean1) {
                 person = "homer"
@@ -610,7 +591,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithFactoryMethodUsingClosureArgs() {
-        def bb = new BeanBuilder()
         bb.beans {
             homer(Bean1) {
                 person = "homer"
@@ -628,7 +608,6 @@ class BeanBuilderTests extends GroovyTestCase {
         assert "marge", marge.person
     }
     void testBeanWithFactoryMethodWithConstructorArgs() {
-        def bb = new BeanBuilder()
         bb.beans {
             beanFactory(Bean1FactoryWithArgs) {}
 
@@ -659,7 +638,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testGetBeanDefinitions() {
-        def bb = new BeanBuilder()
         bb.beans {
             jeff(Bean1) {
                 person = 'jeff'
@@ -681,7 +659,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithFactoryBean() {
-        def bb = new BeanBuilder()
         bb.beans {
             myFactory(Bean1Factory)
 
@@ -700,7 +677,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testBeanWithFactoryBeanAndMethod() {
-        def bb = new BeanBuilder()
         bb.beans {
             myFactory(Bean1Factory)
 
@@ -721,7 +697,6 @@ class BeanBuilderTests extends GroovyTestCase {
         def pr = new PathMatchingResourcePatternResolver()
         def r = pr.getResource("grails/spring/resources1.groovy")
 
-        def bb = new BeanBuilder()
         bb.loadBeans(r)
 
         def ctx = bb.createApplicationContext()
@@ -732,8 +707,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testHolyGrailWiring() {
-
-        def bb = new BeanBuilder()
 
         bb.beans {
             quest(HolyGrailQuest)
@@ -751,7 +724,6 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testAbstractBeanSpecifyingClass() {
-        def bb = new BeanBuilder()
 
         bb.beans {
             abstractKnight(KnightOfTheRoundTable) { bean ->
@@ -804,7 +776,6 @@ bb.createApplicationContext()
 
     // test for GRAILS-5057
     void testRegisterBeans() {
-        def bb = new BeanBuilder()
 
         bb.beans {
            personA(AdvisedPerson) {

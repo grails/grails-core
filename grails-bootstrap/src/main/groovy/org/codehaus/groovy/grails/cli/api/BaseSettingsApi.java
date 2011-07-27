@@ -125,7 +125,7 @@ public class BaseSettingsApi {
     public String getGrailsAppName() { return grailsAppName; }
     public String getGrailsAppVersion() { return metadata.getApplicationVersion(); }
     public String getAppGrailsVersion() { return metadata.getGrailsVersion(); }
-    public String getServletVersion() { return metadata.getServletVersion() != null ? metadata.getServletVersion() : "2.5"; }
+    public String getServletVersion() { return buildSettings.getServletVersion(); }
 
     public String getPluginsHome() {
         return pluginsHome;
@@ -236,8 +236,8 @@ public class BaseSettingsApi {
         // Return the BuildSettings value if there is one, otherwise use the default.
         return value != null ? value : defaultValue;
     }
-    
-    public void updateMetadata(Metadata metadata, Map entries) {
+
+    public void updateMetadata(@SuppressWarnings("hiding") Metadata metadata, @SuppressWarnings("rawtypes") Map entries) {
         for (Object key : entries.keySet()) {
             final Object value = entries.get(key);
             if (value != null) {
@@ -278,5 +278,20 @@ public class BaseSettingsApi {
         else {
             callable.call();
         }
+    }
+
+
+    public String makeRelative(String path) {
+        if(buildSettings != null && path != null) {
+            String absolutePath = buildSettings.getBaseDir().getAbsolutePath();
+            if(path.startsWith(absolutePath)) {
+                return path.substring(absolutePath.length()+1);
+            }
+        }
+        return path;
+    }
+
+    public String makeRelative(File file) {
+        return makeRelative(file.getAbsolutePath());
     }
 }

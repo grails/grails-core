@@ -62,17 +62,30 @@ class XMLParsingParameterCreationListener extends AbstractParsingParameterCreati
         }
     }
 
-    private populateParamsFromXML(xml, map) {
+    private populateParamsFromXML(xml, map, prefix ="") {
+        int i = 0
         for (child in xml.children()) {
             // one-to-ones have ids
             if (child.@id.text()) {
-                map["${child.name()}.id"] = child.@id.text()
+                map["$prefix${child.name()}.id"] = child.@id.text()
                 def childMap = [:]
                 map[child.name()] = childMap
                 populateParamsFromXML(child, childMap)
             }
             else {
-                map[child.name()] = child.text()
+                if(child.childNodes()) {
+                    def childPrefix
+                    if(prefix) {
+                        childPrefix = "${prefix[0..-2]}[${i++}]."
+                    }
+                    else {
+                        childPrefix = "$prefix${child.name()}."
+                    }
+                    populateParamsFromXML(child, map, childPrefix)
+                }
+                else {
+                    map["$prefix${child.name()}"] = child.text()
+                }
             }
         }
     }

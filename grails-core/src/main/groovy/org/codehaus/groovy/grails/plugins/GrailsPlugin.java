@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
+import org.w3c.dom.Element;
 
 import java.util.Collection;
 import java.util.List;
@@ -195,7 +196,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      *
      * @param webXml The GPathResult representing web.xml
      */
-    void doWithWebDescriptor(GPathResult webXml);
+    void doWithWebDescriptor(Element webXml);
 
     /**
      * Makes the plugin excluded for a particular BuildScope

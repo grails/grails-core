@@ -25,7 +25,7 @@ class ColumnConfig {
     String name
     String sqlType
     String enumType = 'default'
-    String index
+    def index
     boolean unique = false
     int length = -1
     int precision = -1

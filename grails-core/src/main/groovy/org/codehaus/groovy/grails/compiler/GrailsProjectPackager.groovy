@@ -32,7 +32,6 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 /**
  * Encapsulates the logic to package a project ready for execution.
  *
- * TODO: This class is a work-in-progress port from the code in the script _GrailsPackage.groovy
  *
  * @since 1.4
  * @author Graeme Rocher
@@ -46,7 +45,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
     boolean async = true
     boolean native2ascii = true
     File configFile
-    String servletVersion = "3.0"
+    String servletVersion = "2.5"
     ClassLoader classLoader
 
     private AntBuilder ant
@@ -58,6 +57,7 @@ class GrailsProjectPackager extends BaseSettingsApi{
     GrailsProjectPackager(GrailsProjectCompiler compiler, File configFile, boolean doCompile = true) {
         super(compiler.buildSettings, false)
         projectCompiler = compiler
+        servletVersion = buildSettings.servletVersion
         classLoader = compiler.classLoader
         pluginSettings = compiler.pluginSettings
         resourcesDirPath = buildSettings.resourcesDir.path

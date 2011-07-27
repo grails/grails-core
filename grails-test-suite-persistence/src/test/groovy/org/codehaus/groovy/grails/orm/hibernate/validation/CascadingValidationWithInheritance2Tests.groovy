@@ -68,7 +68,7 @@ class ArticleRevision extends ContentRevision {
 
         assertNull "should have failed cascading validation", article.save(flush:true)
 
-        assertNotNull "title should not have been allowed to be blank", article.errors.getFieldError("revisions.title")
-        assertNotNull "body should not have been allowed to be blank", article.errors.getFieldError("revisions.body")
+        assertNotNull "title should not have been allowed to be blank", article.errors.getFieldError("revisions[0].title")
+        assertNotNull "body should not have been allowed to be blank", article.errors.getFieldError("revisions[0].body")
     }
 }

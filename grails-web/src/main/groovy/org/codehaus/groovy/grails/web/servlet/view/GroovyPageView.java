@@ -14,8 +14,14 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
-import groovy.lang.Writable;
 import groovy.text.Template;
+
+import java.io.IOException;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
@@ -27,13 +33,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.Map;
 
 /**
  * A Spring View that renders Groovy Server Pages to the reponse. It requires an instance
@@ -52,14 +51,15 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GroovyPageView extends AbstractUrlBasedView  {
+public class GroovyPageView extends AbstractUrlBasedView {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
-    public static final String EXCEPTION_MODEL_KEY = "exception";
     private GroovyPagesTemplateEngine templateEngine;
     private long createTimestamp = System.currentTimeMillis();
     private static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
     private Class<?> viewClass;
+
+    public static final String EXCEPTION_MODEL_KEY = "exception";
 
     /**
      * Delegates to renderMergedOutputModel(..)
@@ -77,7 +77,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
         // templateEngine is always same instance in context, can use cached; removed static cache in GrailsViewResolver
         Assert.state(templateEngine != null, "No GroovyPagesTemplateEngine found in ApplicationContext!");
 
-        super.exposeModelAsRequestAttributes(model, request);
+        exposeModelAsRequestAttributes(model, request);
         renderWithTemplateEngine(templateEngine,model, response, request); // new ModelExposingHttpRequestWrapper(request, model)
     }
 
@@ -136,7 +136,7 @@ public class GroovyPageView extends AbstractUrlBasedView  {
      *
      * @throws java.io.IOException Thrown when an error occurs writing the response
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unused" })
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
 
@@ -147,19 +147,18 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             Template t;
 
             try {
-                if (viewClass != null) {
-                    t = engine.createTemplate(viewClass);
+                if (viewClass == null) {
+                    t = engine.createTemplate(getUrl());
                 }
                 else {
-                    t = engine.createTemplate(getUrl());
+                    t = engine.createTemplate(viewClass);
                 }
             } catch (Exception e) {
                 out.setError();
                 handleException(e, engine);
                 return;
             }
-            Writable w = t.make(model);
-            w.writeTo(out);
+            t.make(model).writeTo(out);
         }
         catch (Exception e) {
             out.setError();
@@ -187,14 +186,12 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             throw (GroovyPagesException) exception;
         }
 
-        if(engine != null) {
-            GroovyPagesException gspException = createGroovyPageException(exception, engine, getUrl());
-            throw gspException;
-        }
-        else {
+        if (engine == null) {
             throw new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
-                    exception, -1, getUrl());
+                 exception, -1, getUrl());
         }
+
+        throw createGroovyPageException(exception, engine, getUrl());
     }
 
     public static GroovyPagesException createGroovyPageException(Exception exception, GroovyPagesTemplateEngine engine, String pageUrl) {
@@ -209,13 +206,15 @@ public class GroovyPageView extends AbstractUrlBasedView  {
             }
         }
 
-        Resource resource = engine.getResourceForUri(pageUrl);
+        Resource resource = pageUrl != null ? engine.getResourceForUri(pageUrl) : null;
         String file;
         try {
-            file = resource.exists() ? resource.getFile().getAbsolutePath() : pageUrl;
+            file = resource != null && resource.exists() ? resource.getFile().getAbsolutePath() : pageUrl;
         } catch (IOException e) {
             file = pageUrl;
         }
+
+
         return new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
                 exception, lineNumber, file);
     }

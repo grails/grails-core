@@ -70,7 +70,10 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
     protected PersistentEntity createPersistentEntity(Class javaClass) {
 
         GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, javaClass.getName());
-        return new GrailsDomainClassPersistentEntity(domainClass, this);
+        if(domainClass != null) {
+            return new GrailsDomainClassPersistentEntity(domainClass, this);
+        }
+        return null;
     }
 
     private class GrailsGrailsDomainMappingConfigurationStrategy implements MappingConfigurationStrategy {

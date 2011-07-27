@@ -14,7 +14,7 @@ class FeedsTagLib {
         out << "rss feed"
     }
 }
-class TestController  {
+class TestController {
     def feed = {
         "foo"
     }

@@ -18,6 +18,7 @@ import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.springframework.util.ClassUtils
 
 /**
  * Tags for developing javascript and ajax applications.
@@ -25,7 +26,7 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
  * @author Graeme Rocher
  */
 @Artefact("TagLibrary")
-class JavascriptTagLib  {
+class JavascriptTagLib {
 
     /**
      * Mappings to the relevant files to be included for each library.
@@ -40,7 +41,20 @@ class JavascriptTagLib  {
 
     def resourceService
 
-    /**
+    Class<JavascriptProvider> defaultProvider
+
+    JavascriptTagLib() {
+        def cl = Thread.currentThread().contextClassLoader
+        def hasJquery = ClassUtils.isPresent("org.codehaus.groovy.grails.plugins.jquery.JQueryProvider", cl)
+        if(hasJquery) {
+            try {
+                defaultProvider = cl.loadClass("org.codehaus.groovy.grails.plugins.jquery.JQueryProvider")
+            } catch (e) {
+                // ignore
+            }
+        }
+    }
+/**
      * Includes a javascript src file, library or inline script
      * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
      *
@@ -320,14 +334,17 @@ a 'params' key to the [url] attribute instead.""")
 
         // get javascript provider
         def p = getProvider()
-        def url = deepClone(attrs.url)
+        def url = attrs.url
+        if(!url instanceof String) {
+            url = deepClone(attrs.url)
+        }
 
         // prepare form settings
         p.prepareAjaxForm(attrs)
 
         def params = [onsubmit:remoteFunction(attrs) + 'return false',
-                      method: (attrs.method? attrs.method : 'POST'),
-                      action: (attrs.action? attrs.action : createLink(url))]
+                      method: (attrs.method? attrs.method : 'post'),
+                      action: (attrs.action? attrs.action : url instanceof String ? url : createLink(url))]
         attrs.remove('url')
         params.putAll(attrs)
         if (params.name && !params.id) {
@@ -413,14 +430,19 @@ a 'params' key to the [url] attribute instead.""")
         setUpRequestAttributes()
         def providerClass = PROVIDER_MAPPINGS.find { request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains(it.key) }?.value
         if (providerClass == null) {
-            throw new GrailsTagException("No javascript provider is configured")
+            if(defaultProvider != null) {
+                return defaultProvider.newInstance()
+            }
+            else {
+                throw new GrailsTagException("No javascript provider is configured")
+            }
         }
         return providerClass.newInstance()
     }
 }
 
 /**
- * Defines methods that a JavaScript provider should implement.
+ * Defines methods that a JavaScript provider must implement.
  *
  * @author Graeme Rocher
  */

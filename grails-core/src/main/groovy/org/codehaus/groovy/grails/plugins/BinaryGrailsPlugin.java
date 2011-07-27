@@ -34,7 +34,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.io.Resource;
 
 /**
- * Models a pre-compiled binary plugin
+ * Models a pre-compiled binary plugin.
  *
  * @see GrailsPlugin
  *
@@ -42,16 +42,17 @@ import org.springframework.core.io.Resource;
  * @since 1.4
  */
 @SuppressWarnings("rawtypes")
-public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
+public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
     public static final String BASE_MESSAGES_PROPERTIES = "grails-app/i18n/messages";
     public static final String VIEWS_PROPERTIES = "views.properties";
+
     private BinaryGrailsPluginDescriptor descriptor;
-    private Class[] providedArtefacts;
+    private Class[] providedArtefacts = {};
     private Map<String, Class> precompiledViewMap = new HashMap<String, Class>();
 
     /**
-     * Creates a binary plugin instance
+     * Creates a binary plugin instance.
      *
      * @param pluginClass The plugin class
      * @param descriptor The META-INF/grails-plugin.xml descriptor
@@ -77,66 +78,65 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
             // ignore
             return;
         }
-        if (viewsPropertiesResource != null && viewsPropertiesResource.exists()) {
-            Properties viewsProperties = new Properties();
-            InputStream input = null;
-            try {
-                input = viewsPropertiesResource.getInputStream();
-                viewsProperties.load(input);
-                for (Object view : viewsProperties.keySet()) {
-                    String viewName = view.toString();
-                    final String viewClassName = viewsProperties.getProperty(viewName);
-                    try {
-                        final Class<?> viewClass = application.getClassLoader().loadClass(viewClassName);
-                        precompiledViewMap.put(viewName, viewClass);
-                    } catch (ClassNotFoundException e) {
-                        LOG.error("View not found loading precompiled view from binary plugin ["+this+"]: " + e.getMessage(), e);
-                    }
-                }
-            } catch (IOException e) {
-                LOG.error("Error loading views for binary plugin ["+this+"]: " + e.getMessage(),e);
-            } finally {
+
+        if (viewsPropertiesResource == null || !viewsPropertiesResource.exists()) {
+            return;
+        }
+
+        Properties viewsProperties = new Properties();
+        InputStream input = null;
+        try {
+            input = viewsPropertiesResource.getInputStream();
+            viewsProperties.load(input);
+            for (Object view : viewsProperties.keySet()) {
+                String viewName = view.toString();
+                final String viewClassName = viewsProperties.getProperty(viewName);
                 try {
-                    if (input != null) input.close();
-                } catch (IOException e) {
-                    // ignore
+                    final Class<?> viewClass = application.getClassLoader().loadClass(viewClassName);
+                    precompiledViewMap.put(viewName, viewClass);
+                } catch (ClassNotFoundException e) {
+                    LOG.error("View not found loading precompiled view from binary plugin ["+this+"]: " + e.getMessage(), e);
                 }
+            }
+        } catch (IOException e) {
+            LOG.error("Error loading views for binary plugin ["+this+"]: " + e.getMessage(),e);
+        } finally {
+            try {
+                if (input != null) input.close();
+            } catch (IOException e) {
+                // ignore
             }
         }
     }
 
     protected void initializeProvidedArtefacts(@SuppressWarnings("hiding") GPathResult descriptor) {
 
-        @SuppressWarnings("hiding") List<Class> providedArtefacts = new ArrayList<Class>();
-        providedArtefacts.addAll(Arrays.asList(super.getProvidedArtefacts()));
+        List<Class> artefacts = new ArrayList<Class>();
         if (descriptor != null) {
             GPathResult resources = (GPathResult) descriptor.getProperty("resources");
             if (!resources.isEmpty()) {
                 GPathResult allResources = (GPathResult) resources.getProperty("resource");
                 if (!allResources.isEmpty()) {
                     final ClassLoader classLoader = application.getClassLoader();
-                    final Iterator i = allResources.nodeIterator();
-                    while (i.hasNext()) {
-                        Node child = (Node) i.next();
-                        final String className = child.text();
+                    for (Iterator i = allResources.nodeIterator(); i.hasNext(); ) {
+                        final String className = ((Node)i.next()).text();
                         try {
-                            providedArtefacts.add(classLoader.loadClass(className));
+                            artefacts.add(classLoader.loadClass(className));
                         } catch (ClassNotFoundException e) {
-                            LOG.error("Class not found loading plugin resource ["+className+"]. Resource skipped.", e);
+                            LOG.error("Class not found loading plugin resource [" + className + "]. Resource skipped.", e);
                         }
                     }
                 }
             }
         }
-
-        this.providedArtefacts = providedArtefacts.toArray(new Class[providedArtefacts.size()]);
+        artefacts.addAll(Arrays.asList(super.getProvidedArtefacts()));
+        providedArtefacts = artefacts.toArray(new Class[artefacts.size()]);
     }
 
     @Override
     public Class<?>[] getProvidedArtefacts() {
         return providedArtefacts;
     }
-
 
     /**
      * @return The META-INF/grails-plugin.xml descriptor
@@ -145,6 +145,26 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
         return descriptor;
     }
 
+
+    /**
+     * Resolves a static resource contained within this binary plugin
+     *
+     * @param path The relative path to the static resource
+     * @return The resource or null if it doesn't exist
+     */
+    public Resource getResource(String path) {
+        final Resource descriptorResource = descriptor.getResource();
+
+        try {
+            Resource resource = descriptorResource.createRelative("static" + path);
+            if(resource.exists()) {
+                return resource;
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
+    }
 
     /**
      * Obtains all properties for this binary plugin for the given locale.
@@ -163,21 +183,20 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
         } catch (IOException e) {
             return null;
         }
-        if (i18nDir != null) {
 
-            Properties properties = new Properties();
-            final String defaultName = BASE_MESSAGES_PROPERTIES;
-            attemptLoadProperties(descriptorResource, properties, defaultName);
-
-            final List<String> filenames = calculateFilenamesForLocale("grails-app/i18n/messages", locale);
-
-            for (String filename : filenames) {
-                attemptLoadProperties(descriptorResource, properties, filename);
-            }
-
-            return properties;
+        if (i18nDir == null) {
+            return null;
         }
-        return null;
+
+        Properties properties = new Properties();
+        final String defaultName = BASE_MESSAGES_PROPERTIES;
+        attemptLoadProperties(descriptorResource, properties, defaultName);
+
+        for (String filename : calculateFilenamesForLocale("grails-app/i18n/messages", locale)) {
+            attemptLoadProperties(descriptorResource, properties, filename);
+        }
+
+        return properties;
     }
 
     private void attemptLoadProperties(Resource descriptorResource, Properties properties, String defaultName)  {
@@ -187,7 +206,8 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
                 properties.load(baseMessagesProperties.getInputStream());
             }
         } catch (IOException e) {
-            LOG.debug("Failed to load plugin ["+this+"] properties for name ["+defaultName+"]: " + e.getMessage(), e);
+            LOG.debug("Failed to load plugin [" + this + "] properties for name [" +
+                    defaultName + "]: " + e.getMessage(), e);
         }
     }
 
@@ -230,12 +250,11 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin  {
     }
 
     /**
-     * Resolves a view for the given view name
+     * Resolves a view for the given view name.
      *
      * @param viewName The view name
      *
      * @return The view class which is a subclass of GroovyPage
-     *
      */
     public Class resolveView(String viewName)  {
         return precompiledViewMap.get(viewName);

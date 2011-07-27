@@ -30,7 +30,7 @@ import com.opensymphony.sitemesh.Content;
  * g:capture* tags in RenderTagLib are used to capture head, meta, title, component & body contents.
  * No html parsing is required for templating since capture tags are added at GSP compilation time.
  *
- * @see SitemeshPreprocessor
+ * @see org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
  * @author Lari Hotari, Sagire Software Oy
  */
 public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
@@ -159,7 +159,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 
     /**
      * @param name propertyName of contentBuffer (with "page." prefix)
-     * @return
+     * @return the buffer for the specified name
      */
     public Object getContentBuffer(String name) {
         if (contentBuffers == null) {

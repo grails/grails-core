@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Graeme Rocher
  */
-public class CreateDynamicMethod extends AbstractStaticMethodInvocation  {
+public class CreateDynamicMethod extends AbstractStaticMethodInvocation {
 
     public static final String METHOD_NAME = "create";
     private static final Pattern METHOD_PATTERN = Pattern.compile("^create$");

@@ -28,8 +28,9 @@ import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.core.io.Resource
 import org.springframework.web.context.WebApplicationContext
+import org.springframework.util.ClassUtils
 
- /**
+/**
  * Handles the configuration of URL mappings for Grails.
  *
  * @author Graeme Rocher
@@ -66,6 +67,9 @@ class UrlMappingsGrailsPlugin {
             filter {
                 'filter-name'('urlMapping')
                 'filter-class'(UrlMappingsFilter.name)
+                if(ClassUtils.isPresent('javax.servlet.AsyncContext', Thread.currentThread().contextClassLoader)) {
+                    'async-supported'(true)
+                }
             }
         }
 

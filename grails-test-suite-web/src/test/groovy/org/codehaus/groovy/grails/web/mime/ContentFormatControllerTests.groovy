@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.mime
 
-import java.util.Collection;
-
 import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
@@ -207,12 +205,12 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
         c.testWithFormatZeroArgs.call()
         assertEquals "html", request.format
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [ContentController]
     }
-    
+
     @Override
     protected Collection<Class> getDomainClasses() {
         [Gizmo]
@@ -268,7 +266,6 @@ class ContentController {
         }
     }
 }
-
 
 @Entity
 class Gizmo {

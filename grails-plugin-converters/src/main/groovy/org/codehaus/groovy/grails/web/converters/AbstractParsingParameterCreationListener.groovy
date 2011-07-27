@@ -28,13 +28,32 @@ abstract class AbstractParsingParameterCreationListener implements ParameterCrea
      * Populates the target map with current map using the root map to form a nested prefix
      * so that a hierarchy of maps is flattened.
      */
-    protected createFlattenedKeys(Map root, Map current, Map target, prefix ='') {
+    protected createFlattenedKeys(Map root, Map current, Map target, prefix ='', Map previousParent = null) {
         for (entry in current) {
             if (entry.value instanceof Map) {
-                createFlattenedKeys(root,entry.value, target, "${entry.key}.")
+                def childEntry = entry.key
+                def targetParent = previousParent != null ? previousParent : target
+                targetParent[childEntry] = [:]
+                createFlattenedKeys(root,entry.value, target, "$prefix${childEntry}.",targetParent[childEntry])
             }
             else if (prefix) {
-                target["${prefix}${entry.key}"] = entry.value
+                if(entry.value instanceof Collection) {
+                    int i = 0
+                    for(e in entry.value) {
+                        if(e instanceof Map) {
+                            def childPrefix  = "${prefix[0..-2]}[${i++}]."
+                            createFlattenedKeys(root, e, target, childPrefix, previousParent)
+                        }
+                    }
+                }
+                else {
+                    def entryKey = entry.key
+                    def entryValue = entry.value
+                    if(previousParent != null) {
+                        previousParent[entryKey] = entryValue
+                    }
+                    target["${prefix}${entryKey}"] = entryValue
+                }
             }
         }
     }

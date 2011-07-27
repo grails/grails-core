@@ -84,7 +84,6 @@ class InlineExplodedTomcatServer extends TomcatServer {
         }
 
         tomcat.port = httpPort
-        tomcat.connector.setAttribute("address", host)
         tomcat.connector.URIEncoding = 'UTF-8'
 
         if (httpsPort) {

@@ -94,6 +94,26 @@ class TypeConvertingMap implements Map, Cloneable {
     }
 
     /**
+     * Helper method for obtaining Character value from parameter
+     * @param name The name of the parameter
+     * @return The Character value or null if there isn't one
+     */
+    Character getChar(String name) {
+        def o = get(name)
+        if (o instanceof Character) {
+            return o
+        }
+
+        if (o != null) {
+            String string = o.toString()
+            if (string && string.size() == 1) {
+                return string.charAt(0)
+            }
+        }
+        return null
+    }
+
+    /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
      * @return The integer value or null if there isn't one

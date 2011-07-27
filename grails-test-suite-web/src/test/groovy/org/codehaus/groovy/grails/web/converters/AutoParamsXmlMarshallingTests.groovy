@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.converters
 
-import java.util.Collection;
-
 import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
@@ -47,12 +45,12 @@ import grails.persistence.*
     protected Collection<Class> getControllerClasses() {
         [TestConverterController]
     }
-    
+
     @Override
     protected Collection<Class> getDomainClasses() {
         [AutoParamsXmlMarshallingAuthor, AutoParamsXmlMarshallingBook]
     }
-    
+
     void testXmlMarshallingIntoParamsObject() {
         def controller = ga.getControllerClass(TestConverterController.name).newInstance()
 

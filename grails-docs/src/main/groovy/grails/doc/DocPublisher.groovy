@@ -15,10 +15,13 @@
 
 package grails.doc
 
-import grails.doc.internal.StringEscapeCategory
+import grails.doc.internal.*
+import groovy.io.FileType
 import groovy.text.Template
 
+import org.apache.commons.logging.LogFactory
 import org.radeox.engine.context.BaseInitialRenderContext
+import org.yaml.snakeyaml.Yaml
 
 /**
  * Coordinated the DocEngine the produce documentation based on the gdoc format.
@@ -29,6 +32,8 @@ import org.radeox.engine.context.BaseInitialRenderContext
  * @since 1.2
  */
 class DocPublisher {
+    static final String TOC_FILENAME = "toc.yml"
+    static final LOG = LogFactory.getLog(this)
 
     /** The source directory of the documentation */
     File src
@@ -70,6 +75,7 @@ class DocPublisher {
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
+    private output
     private context
     private engine
     private customMacros = []
@@ -78,9 +84,10 @@ class DocPublisher {
         this(null, null)
     }
 
-    DocPublisher(File src, File target) {
+    DocPublisher(File src, File target, out = LOG) {
         this.src = src
         this.target = target
+        this.output = out
 
         try {
             engineProperties.load(getClass().classLoader.getResourceAsStream("grails/doc/doc.properties"))
@@ -171,53 +178,58 @@ class DocPublisher {
             }
         }
 
-        def comparator = [compare: {o1, o2 ->
-            def idx1 = o1.name[0..o1.name.indexOf(' ') - 1]
-            def idx2 = o2.name[0..o2.name.indexOf(' ') - 1]
-            def nums1 = idx1.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            def nums2 = idx2.split(/\./).findAll { it.trim() != ''}*.toInteger()
-            // pad out with zeros to ensure accurate comparison
-            while (nums1.size() < nums2.size()) {
-                nums1 << 0
-            }
-            while (nums2.size() < nums1.size()) {
-                nums2 << 0
-            }
-            def result = 0
-            for (i in 0..<nums1.size()) {
-                result = nums1[i].compareTo(nums2[i])
-                if (result != 0) break
-            }
-            result
-        },
-        equals: { false }] as Comparator
-
-        def files = new File("${src}/guide").listFiles()?.findAll { it.name.endsWith(".gdoc") }?.sort(comparator) ?: []
-        def templateEngine = new groovy.text.SimpleTemplateEngine()
-
-        // A tree of book sections, where 'book' is a list of the top-level
-        // sections and each of those has a list of sub-sections and so on.
-        def book = []
-        for (f in files) {
-            // Chapter is filename - '.gdoc' suffix.
-            def chapter = f.name[0..-6]
-            def section = new Expando(title: chapter, file: f, subSections: [])
-
-            def level = 0
-            def matcher = (chapter =~ /^(\S+?)\.?\s/) // drops last '.' of "xx.yy. "
-            if (matcher) {
-                level = matcher.group(1).split(/\./).size() - 1
+        // Build the table of contents as a tree of nodes. We currently support
+        // two strategies for this:
+        //
+        //  1. From a toc.yml file
+        //  2. From the gdoc filenames
+        //
+        // The first strategy is used if the TOC file exists, otherwise we call
+        // back to the old way of doing it, which means putting the section
+        // numbers in the gdoc filenames.
+        def guideSrcDir = new File("${src}/guide")
+        def yamlTocFile = new File(guideSrcDir, TOC_FILENAME)
+        def guide
+        if (yamlTocFile.exists()) {
+            guide = new YamlTocStrategy(new FileResourceChecker(guideSrcDir)).generateToc(yamlTocFile)
+            
+            // A set of all gdoc files.
+            def files = []
+            guideSrcDir.traverse(type: FileType.FILES, nameFilter: ~/^.+\.gdoc$/) {
+                files << (it.absolutePath - guideSrcDir.absolutePath)[1..-1]
             }
 
-            // This cryptic line finds the appropriate parent section list based
-            // on the current section's level. If the level is 0, then it's 'book'.
-            def parent = (0..<level).inject(book) { sectionList, n -> sectionList[-1].subSections }
-            parent << section
+            if (!verifyToc(guideSrcDir, files, guide)) {
+                throw new RuntimeException("Encountered errors while building table of contents. Aborting.")
+            }
+
+            for (ch in guide.children) {
+                overrideAliasesFromToc(ch)
+            }
         }
+        else {
+            def files = guideSrcDir.listFiles()?.findAll { it.name.endsWith(".gdoc") } ?: []
+            guide = new LegacyTocStrategy().generateToc(files)
+        }
+
+        // When migrating from the old style docs to the new style, existing
+        // external links that use URL fragment identifiers will break. To
+        // mitigate against this problem, the user can provide a list of mappings
+        // from the new fragment identifiers to the old ones. The docs will then
+        // include both.
+        def legacyLinksFile = new File(guideSrcDir, "links.yml")
+        def legacyLinks = [:]
+        if (legacyLinksFile.exists()) {
+            legacyLinksFile.withInputStream { input ->
+                legacyLinks = new Yaml().load(input)
+            }
+        }
+
+        def templateEngine = new groovy.text.SimpleTemplateEngine()
 
         // Reference menu items.
         def sectionFilter = { it.directory && !it.name.startsWith('.') } as FileFilter
-        files = new File("${src}/ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
+        def files = new File("${src}/ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
         def refCategories = files.collect { f ->
             new Expando(
                     name: f.name,
@@ -236,14 +248,15 @@ class DocPublisher {
             authors: authors,
             version: version,
             refMenu: refCategories,
-            toc: book,
+            toc: guide,
             copyright: copyright,
             logo: injectPath(logo, pathToRoot),
             sponsorLogo: injectPath(sponsorLogo, pathToRoot),
             single: false,
             path: pathToRoot,
             prev: null,
-            next: null
+            next: null,
+            legacyLinks: legacyLinks
         ]
 
         // Build the user guide sections first.
@@ -252,15 +265,17 @@ class DocPublisher {
         def fullContents = new StringBuilder()
 
         def chapterVars
-        book.eachWithIndex{ chapter, i ->
-            chapterVars = [*:vars]
+        def chapters = guide.children
+        chapters.eachWithIndex{ chapter, i ->
+            chapterVars = [*:vars, chapterNumber: i + 1]
             if (i != 0) {
-                chapterVars['prev'] = book[i - 1]
+                chapterVars['prev'] = chapters[i - 1]
             }
-            if (i != (book.size() - 1)) {
-                chapterVars['next'] = book[i + 1]
+            if (i != (chapters.size() - 1)) {
+                chapterVars['next'] = chapters[i + 1]
             }
-            writeChapter(chapter, template, sectionTemplate, refGuideDir, fullContents, chapterVars)
+            chapterVars.sectionNumber = (i + 1).toString()
+            writeChapter(chapter, template, sectionTemplate, guideSrcDir, refGuideDir, fullContents, chapterVars)
         }
 
         files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
@@ -336,20 +351,38 @@ class DocPublisher {
         ant.echo "Built user manual at ${refDocsDir}/index.html"
     }
 
-    void writeChapter(section, Template layoutTemplate, Template sectionTemplate, String targetDir, fullContents, vars) {
-        fullContents << writePage(section, layoutTemplate, sectionTemplate, targetDir, "", "..", 0, vars)
+    void writeChapter(
+            section,
+            Template layoutTemplate,
+            Template sectionTemplate,
+            File guideSrcDir,
+            String targetDir,
+            fullContents,
+            vars) {
+        fullContents << writePage(section, layoutTemplate, sectionTemplate, guideSrcDir, targetDir, "", "..", 0, vars)
     }
 
-    String writePage(section, Template layoutTemplate, Template sectionTemplate, String targetDir, String subDir, path, level, vars) {
-        context.set(DocEngine.SOURCE_FILE, section.file)
+    String writePage(
+            section,
+            Template layoutTemplate,
+            Template sectionTemplate,
+            File guideSrcDir,
+            String targetDir,
+            String subDir,
+            path,
+            level,
+            vars) {
+        def sourceFile = new File(guideSrcDir, section.file)
+        context.set(DocEngine.SOURCE_FILE, sourceFile)
         context.set(DocEngine.CONTEXT_PATH, path)
 
         def varsCopy = [*:vars]
+        varsCopy.name = section.name
         varsCopy.title = section.title
         varsCopy.path = path
         varsCopy.level = level
-        varsCopy.sectionToc = section.subSections
-        varsCopy.content = engine.render(section.file.text, context)
+        varsCopy.sectionToc = section.children
+        varsCopy.content = engine.render(sourceFile.text, context)
 
         // First create the section content, which usually consists of a header
         // and the translated gdoc content.
@@ -362,9 +395,16 @@ class DocPublisher {
 
         // Create the sub-section pages.
         level++
-        for (s in section.subSections) {
-            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, targetDir, "pages", path, level, vars)
+        final sectionNumber = varsCopy.sectionNumber
+        int subSectionNumber = 1
+        for (s in section.children) {
+            varsCopy.sectionNumber = "$sectionNumber.$subSectionNumber"
+            accumulatedContent << writePage(s, layoutTemplate, sectionTemplate, guideSrcDir, targetDir, "pages", path, level, varsCopy)
+            subSectionNumber++
         }
+
+        // Reset the section number in the template vars.
+        varsCopy.sectionNumber = sectionNumber
 
         // TODO PAL - I don't see why these pages are necessary, plus there seems
         // to be no way to get embedded images to display properly (since the path
@@ -383,7 +423,7 @@ class DocPublisher {
             varsCopy.sponsorLogo = injectPath(sponsorLogo, varsCopy.path)
         }
 
-        new File("${targetDir}/${section.title}.html").withWriter(encoding) { writer ->
+        new File("${targetDir}/${section.name}.html").withWriter(encoding) { writer ->
             varsCopy.content = accumulatedContent.toString()
             layoutTemplate.make(varsCopy).writeTo(writer)
         }
@@ -427,6 +467,61 @@ class DocPublisher {
         }
     }
 
+    /**
+     * Checks the table of contents (a tree of {@link UserGuideNode}s) for
+     * duplicate section/alias names and invalid file paths.
+     * @return <code>false</code> if any errors are detected.
+     */
+    protected verifyToc(File baseDir, gdocFiles, toc) {
+        def hasErrors = false
+        def sectionsFound = [] as Set
+        def gdocsNotInToc = gdocFiles as Set
+        
+        // Defensive copy
+        if (gdocsNotInToc.is(gdocFiles)) gdocsNotInToc = new HashSet(gdocFiles)
+
+        for (ch in toc.children) {
+            hasErrors |= verifyTocInternal(baseDir, ch, sectionsFound, gdocsNotInToc, [])
+        }
+
+        if (gdocsNotInToc) {
+            for (gdoc in gdocsNotInToc) {
+                output.warn "No TOC entry found for '${gdoc}'"
+            }
+        }
+
+        return !hasErrors
+    }
+
+    private verifyTocInternal(File baseDir, section, existing, gdocFiles, pathElements) {
+        def hasErrors = false
+        def fullName = pathElements ? "${pathElements.join('/')}/${section.name}" : section.name
+
+        // Has this section name already been used?
+        if (section.name in existing) {
+            hasErrors = true
+            output.error "Duplicate section name: ${fullName}"
+        }
+
+        // Does the file path for the gdoc exist?
+        if (!section.file || !new File(baseDir, section.file).exists()) {
+            hasErrors = true
+            output.error "No file found for '${fullName}'"
+        }
+        else {
+            // Found this gdoc file in the TOC.
+            gdocFiles.remove section.file
+        }
+
+        existing << section.name
+
+        for (s in section.children) {
+            hasErrors |= verifyTocInternal(baseDir, s, existing, gdocFiles, pathElements + section.name)
+        }
+
+        return hasErrors
+    }
+
     private String injectPath(String source, String path) {
         if (!source) return source
 
@@ -467,6 +562,14 @@ class DocPublisher {
         finally {
             // Don't need the JAR file any more, so remove it.
             ant.delete(file: "${dir}/${src}", failonerror:false)
+        }
+    }
+
+    private overrideAliasesFromToc(node) {
+        engine.engineProperties.setProperty "alias.${node.name}", node.file - ".gdoc"
+
+        for (section in node.children) {
+            overrideAliasesFromToc(section)
         }
     }
 }

@@ -44,7 +44,8 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
     private GrailsResourceLoader grailsResourceLoader;
     private Map<String, GroovyClassLoader> innerClassLoaderMap = new ConcurrentHashMap<String, GroovyClassLoader>();
-    private Map<String,MultipleCompilationErrorsException> compilationErrors = new ConcurrentHashMap<String,MultipleCompilationErrorsException>();
+    private Map<String,MultipleCompilationErrorsException> compilationErrors =
+        new ConcurrentHashMap<String, MultipleCompilationErrorsException>();
 
     public GrailsClassLoader() {
         // default
@@ -66,44 +67,44 @@ public class GrailsClassLoader extends GroovyClassLoader {
         return null;
     }
 
-    public Class<?> reloadClass(String name)  {
+    public Class<?> reloadClass(String name) {
         try {
             Resource resourceURL = loadGroovySource(name);
-            if (resourceURL != null) {
-
-                GroovyClassLoader innerLoader = new GrailsAwareClassLoader(this);
-                InputStream inputStream = null;
-                clearCache();
-
-                String path;
-                try {
-                   path = new File(resourceURL.getURI()).getPath();
-                }
-                catch (IOException e) {
-                   // not a file-based source, so punt and use the name
-                   path = name;
-                }
-                try {
-                    inputStream = resourceURL.getInputStream();
-                    Class<?> reloadedClass = innerLoader.parseClass(
-                            DefaultGroovyMethods.getText(inputStream), path);
-                    compilationErrors.remove(name);
-                    innerClassLoaderMap.put(name, innerLoader);
-                    return reloadedClass;
-                }
-                catch (MultipleCompilationErrorsException e) {
-                    compilationErrors.put(name, e);
-                    throw e;
-                }
-                catch (IOException e) {
-                    throw new CompilationFailedException("Error opening stream to class " + name + " with URL " + resourceURL, e);
-                }
-                finally {
-                    IOUtils.closeQuietly(inputStream);
-                }
-
+            if (resourceURL == null) {
+                return null;
             }
-            return null;
+
+            GroovyClassLoader innerLoader = new GrailsAwareClassLoader(this);
+            clearCache();
+
+            String path;
+            try {
+               path = new File(resourceURL.getURI()).getPath();
+            }
+            catch (IOException e) {
+               // not a file-based source, so punt and use the name
+               path = name;
+            }
+
+            InputStream inputStream = null;
+            try {
+                inputStream = resourceURL.getInputStream();
+                Class<?> reloadedClass = innerLoader.parseClass(
+                        DefaultGroovyMethods.getText(inputStream), path);
+                compilationErrors.remove(name);
+                innerClassLoaderMap.put(name, innerLoader);
+                return reloadedClass;
+            }
+            catch (MultipleCompilationErrorsException e) {
+                compilationErrors.put(name, e);
+                throw e;
+            }
+            catch (IOException e) {
+                throw new CompilationFailedException("Error opening stream to class " + name + " with URL " + resourceURL, e);
+            }
+            finally {
+                IOUtils.closeQuietly(inputStream);
+            }
         }
         catch (MalformedURLException e) {
             throw new CompilationFailedException("Error opening stream to class " + name + ":" + e.getMessage(), e);
@@ -112,20 +113,21 @@ public class GrailsClassLoader extends GroovyClassLoader {
 
     protected Resource loadGroovySource(String name) throws MalformedURLException {
         URL resourceURL = grailsResourceLoader.loadGroovySource(name);
-        if (resourceURL != null) {
-            return new UrlResource(resourceURL);
+        if (resourceURL == null) {
+            return null;
         }
-        return null;
+
+        return new UrlResource(resourceURL);
     }
 
     @SuppressWarnings("rawtypes")
     @Override
     protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
         GroovyClassLoader innerLoader = innerClassLoaderMap.get(name);
-        if (innerLoader != null) {
-            return innerLoader.loadClass(name);
+        if (innerLoader == null) {
+            return super.loadClass(name, resolve);
         }
-        return super.loadClass(name, resolve);
+        return innerLoader.loadClass(name);
     }
 
     public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {

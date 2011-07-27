@@ -25,8 +25,6 @@ import java.io.InputStream;
  * Extends the default Spring MockMultipartFile to provide an implementation of transferTo that
  * doesn't use the file system.
  *
- * {@inheritDoc}
- *
  * @author Graeme Rocher
  * @since 1.4
  */
@@ -34,31 +32,18 @@ public class GrailsMockMultipartFile extends MockMultipartFile {
 
     private File targetFileLocation;
 
-
-    /**
-     * {@inheritDoc}
-     */
     public GrailsMockMultipartFile(String name, byte[] content) {
         super(name, content);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public GrailsMockMultipartFile(String name, InputStream contentStream) throws IOException {
         super(name, contentStream);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public GrailsMockMultipartFile(String name, String originalFilename, String contentType, byte[] content) {
         super(name, originalFilename, contentType, content);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public GrailsMockMultipartFile(String name, String originalFilename, String contentType, InputStream contentStream) throws IOException {
         super(name, originalFilename, contentType, contentStream);
     }

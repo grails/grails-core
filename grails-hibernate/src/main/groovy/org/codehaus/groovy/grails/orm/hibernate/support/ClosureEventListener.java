@@ -313,7 +313,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
     }
 
     private static abstract class ClosureCaller extends EventTriggerCaller {
-        boolean cloneFirst=false;
+        boolean cloneFirst = false;
 
         Object callClosure(Object entity, Closure callable) {
             if (cloneFirst) {
@@ -332,7 +332,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
         FieldClosureCaller(Field field) {
             this.field = field;
             if (Modifier.isStatic(field.getModifiers())) {
-                cloneFirst=true;
+                cloneFirst = true;
             }
         }
 
@@ -353,7 +353,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
         MetaPropertyClosureCaller(MetaProperty metaProperty) {
             this.metaProperty = metaProperty;
             if (Modifier.isStatic(metaProperty.getModifiers())) {
-                cloneFirst=true;
+                cloneFirst = true;
             }
         }
 

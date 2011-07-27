@@ -128,7 +128,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         // if there are errors add it to the list of errors
         Errors controllerErrors = (Errors)controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY);
         Errors errors = (Errors)argMap.get(ARGUMENT_ERRORS);
-        if (controllerErrors != null) {
+        if (controllerErrors != null && errors != null) {
             controllerErrors.addAllErrors(errors);
         }
         else {
@@ -171,7 +171,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             LOG.debug("Executing redirect with response ["+response+"]");
         }
 
-        String absoluteURL = serverBaseURL + actualUri;
+        String absoluteURL = actualUri.contains("://") ? actualUri : serverBaseURL + actualUri;
         String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
 

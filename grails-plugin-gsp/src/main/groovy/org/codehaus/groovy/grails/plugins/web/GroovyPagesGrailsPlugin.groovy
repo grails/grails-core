@@ -39,6 +39,12 @@ import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import grails.gsp.PageRenderer
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageStaticResourceLocator
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -130,32 +136,44 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-        // Setup the main templateEngine used to render GSPs
-        groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
-            classLoader = ref("classLoader")
-            if (customResourceLoader) {
+        def deployed = application.warDeployed
+        groovyPageLocator(deployed ? CachingGrailsConventionGroovyPageLocator : GrailsConventionGroovyPageLocator) { bean ->
+            bean.lazyInit = true
+            if(customResourceLoader) {
                 resourceLoader = groovyPageResourceLoader
-                bean.lazyInit = true
             }
-            if (enableReload) {
-                reloadEnabled = enableReload
-            }
-            tagLibraryLookup = gspTagLibraryLookup
-            jspTagLibraryResolver = jspTagLibraryResolver
-            if (application.warDeployed) {
+            if (deployed) {
                 precompiledGspMap = { PropertiesFactoryBean pfb ->
                     ignoreResourceNotFound = true
                     location = "classpath:gsp/views.properties"
                 }
             }
+
+        }
+        grailsResourceLocator(deployed ? CachingGroovyPageStaticResourceLocator : GroovyPageStaticResourceLocator) { bean ->
+            bean.parent = "abstractGrailsResourceLocator"
+        }
+        // Setup the main templateEngine used to render GSPs
+        groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
+            classLoader = ref("classLoader")
+            groovyPageLocator = groovyPageLocator
+            if (enableReload) {
+                reloadEnabled = enableReload
+            }
+            tagLibraryLookup = gspTagLibraryLookup
+            jspTagLibraryResolver = jspTagLibraryResolver
             cacheResources = enableCacheResources
         }
 
         groovyPageRenderer(PageRenderer, ref("groovyPagesTemplateEngine")) { bean ->
             bean.lazyInit = true
-            if(customResourceLoader) {
-                resourceLoader = groovyPageResourceLoader
-            }
+            groovyPageLocator = groovyPageLocator
+        }
+
+        groovyPageLayoutFinder(GroovyPageLayoutFinder) {
+            groovyPageLocator = groovyPageLocator
+            gspReloadEnabled = enableReload
+            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: 'application'
         }
 
         // Setup the GroovyPagesUriService
@@ -163,16 +181,17 @@ class GroovyPagesGrailsPlugin {
             bean.lazyInit = true
         }
 
-        // Configure a Spring MVC view resolver
-        jspViewResolver(GrailsViewResolver) { bean ->
-            bean.lazyInit = true
+        abstractViewResolver {
             viewClass = JstlView
             prefix = GrailsApplicationAttributes.PATH_TO_VIEWS
             suffix = ".jsp"
             templateEngine = groovyPagesTemplateEngine
-            if (developmentMode) {
-                resourceLoader = groovyPageResourceLoader
-            }
+            groovyPageLocator = groovyPageLocator
+        }
+        // Configure a Spring MVC view resolver
+        jspViewResolver(GrailsViewResolver) { bean ->
+            bean.lazyInit = true
+            bean.parent = "abstractViewResolver"
         }
 
         final pluginManager = manager
@@ -196,7 +215,7 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-		  errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
+        errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
     }
 
     static String transformToValidLocation(String location) {

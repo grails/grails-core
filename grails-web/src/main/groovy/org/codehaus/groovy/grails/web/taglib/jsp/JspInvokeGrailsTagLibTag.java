@@ -266,7 +266,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
 
         invocationCount--;
         setCurrentArgument();
-        if (invocationCount <= 0)  {
+        if (invocationCount < 1) {
             tagContent = sw.toString();
             int i = 1;
             StringBuilder buf = new StringBuilder();

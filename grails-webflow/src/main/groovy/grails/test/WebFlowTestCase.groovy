@@ -38,6 +38,7 @@ import org.springframework.webflow.test.execution.AbstractFlowExecutionTests
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.springframework.webflow.engine.builder.FlowAssembler
 import org.springframework.webflow.engine.builder.DefaultFlowHolder
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 /**
  * A test harness for testing Grails flows.
@@ -47,11 +48,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
     protected MockHttpServletRequest mockRequest
     protected MockHttpServletResponse mockResponse
     protected MockServletContext mockServletContext
-    protected FlowDefinitionRegistry flowDefinitionRegistry
     protected ApplicationContext applicationContext
-    protected FlowBuilderServices flowBuilderServices
-    protected MvcViewFactoryCreator viewCreator
-
     /**
      * Subclasses should return the flow closure that within the controller. For example:
      * <code>return new TestController().myFlow</code>.
@@ -66,6 +63,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
     protected void setUp() {
         super.setUp()
         GrailsWebRequest webRequest = RequestContextHolder.getRequestAttributes()
+
         if (webRequest) {
             mockRequest = webRequest.currentRequest
             mockResponse = webRequest.currentResponse
@@ -73,14 +71,28 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
             applicationContext = WebApplicationContextUtils.getWebApplicationContext(webRequest.getServletContext())
         }
         else {
+            applicationContext = new GrailsWebApplicationContext()
             mockRequest = new MockHttpServletRequest()
             mockResponse = new MockHttpServletResponse()
             mockServletContext = new MockServletContext()
+            RequestContextHolder.setRequestAttributes(new GrailsWebRequest(mockRequest,mockResponse,mockServletContext,applicationContext))
         }
-        if (!applicationContext) applicationContext = new GrailsWebApplicationContext()
-        flowDefinitionRegistry = new FlowDefinitionRegistryImpl()
-        flowBuilderServices = new FlowBuilderServices()
-        viewCreator = new MvcViewFactoryCreator()
+
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        mockRequest = null
+        mockResponse = null
+        mockServletContext = null
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
+
+    FlowDefinition getFlowDefinition() {
+        def flowBuilderServices = new FlowBuilderServices()
+
+        MvcViewFactoryCreator viewCreator = new MvcViewFactoryCreator()
         viewCreator.applicationContext = applicationContext
         def viewResolvers = applicationContext?.getBeansOfType(ViewResolver)
         if (viewResolvers) {
@@ -89,26 +101,15 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         flowBuilderServices.viewFactoryCreator = viewCreator
         flowBuilderServices.conversionService = new DefaultConversionService()
         flowBuilderServices.expressionParser = DefaultExpressionParserFactory.getExpressionParser()
-    }
 
-    protected void tearDown() {
-        super.tearDown()
-        mockRequest = null
-        mockResponse = null
-        mockServletContext = null
-    }
+        FlowBuilder builder = new FlowBuilder(getFlowId(), flowBuilderServices, new FlowDefinitionRegistryImpl())
+        def flow = getFlow()
 
-    FlowDefinition registerFlow(String flowId, Closure flowClosure) {
-        FlowBuilder builder = new FlowBuilder(flowId, flowClosure, flowBuilderServices, flowDefinitionRegistry)
-        builder.viewPath = "/"
-        builder.applicationContext = applicationContext
-        FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
-        flowDefinitionRegistry.registerFlowDefinition(new DefaultFlowHolder(assembler))
-        return flowDefinitionRegistry.getFlowDefinition(flowId)
-    }
-
-    FlowDefinition getFlowDefinition() {
-        return registerFlow(getFlowId(), getFlow())
+        if(flow instanceof Closure) {
+            // delegate will be controller
+            GrailsWebRequest.lookup()?.request?.setAttribute(GrailsApplicationAttributes.CONTROLLER, flow.delegate)
+            builder.flow(flow)
+        }
     }
 
     /**

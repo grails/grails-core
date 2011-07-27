@@ -39,6 +39,7 @@ class ConfigurationHelper {
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion"
 
     private static Map<Integer, ConfigObject> cachedConfigs = new ConcurrentHashMap<Integer, ConfigObject>();
+    public static final int DEV_CACHE_KEY = -1
 
     static ConfigObject loadConfigFromClasspath(String environment) {
         loadConfigFromClasspath(null, environment)
@@ -53,7 +54,7 @@ class ConfigurationHelper {
 
         ConfigObject co
         ClassLoader classLoader
-        Integer cacheKey = -1
+        Integer cacheKey = DEV_CACHE_KEY
 
         if (application != null) {
             classLoader = application.getClassLoader()
@@ -134,6 +135,9 @@ class ConfigurationHelper {
      */
     static void initConfig(ConfigObject config, ResourceLoader resourceLoader = null, ClassLoader classLoader = null) {
 
+        if(Environment.isWithinShell()) {
+            cachedConfigs.put(DEV_CACHE_KEY, config)
+        }
         def resolver = resourceLoader ?
                 new PathMatchingResourcePatternResolver(resourceLoader) :
                 new PathMatchingResourcePatternResolver()
@@ -206,7 +210,7 @@ class ConfigurationHelper {
                 }
             }
             catch (Exception e) {
-                System.err.println "Unable to load specified config location $location : ${e.message}"
+                LOG.warn "Unable to load specified config location $location : ${e.message}"
             }
         }
     }

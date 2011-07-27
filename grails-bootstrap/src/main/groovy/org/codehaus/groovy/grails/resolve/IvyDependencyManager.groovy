@@ -18,43 +18,23 @@ import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
 
+import java.util.concurrent.ConcurrentLinkedQueue
+
 import org.apache.ivy.core.event.EventManager
+import org.apache.ivy.core.module.descriptor.*
 import org.apache.ivy.core.module.id.ArtifactId
-import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.apache.ivy.core.report.*
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
-import org.apache.ivy.plugins.latest.LatestTimeStrategy
-import org.apache.ivy.plugins.matcher.ExactPatternMatcher
-import org.apache.ivy.plugins.matcher.PatternMatcher
-import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.util.Message
-
-import org.apache.ivy.core.module.descriptor.ExcludeRule
-import grails.util.GrailsNameUtils
-
-import org.apache.ivy.core.report.ArtifactDownloadReport
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor
-import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor
-
 import org.apache.ivy.util.MessageLogger
-import org.apache.ivy.core.module.descriptor.Artifact
-import org.apache.ivy.core.report.ConfigurationResolveReport
-import org.apache.ivy.core.report.DownloadReport
-import org.apache.ivy.core.report.DownloadStatus
-import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
-import org.apache.ivy.plugins.repository.TransferListener
-import java.util.concurrent.ConcurrentLinkedQueue
-
-
 import org.codehaus.groovy.grails.plugins.VersionComparator
-import org.apache.ivy.core.module.descriptor.*
-import org.apache.ivy.core.report.*
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -251,6 +231,21 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
         // return an empty resolve report
         return new ResolveReport(moduleDescriptor)
+    }
+
+    /**
+     * Resolves all dependencies for all known configurations
+     *
+     * @return A ResolveReport containing all of the configurations
+     */
+    ResolveReport resolveAllDependencies() {
+       resolveErrors = false
+        def options = new ResolveOptions(checkIfChanged: false, outputReport: true, validate: false)
+        options.confs = usedConfigurations as String[]
+
+        ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
+        resolveErrors = resolve.hasError()
+        return resolve
     }
 
     /**

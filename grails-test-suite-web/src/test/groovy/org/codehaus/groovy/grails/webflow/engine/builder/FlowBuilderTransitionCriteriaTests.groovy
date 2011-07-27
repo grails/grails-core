@@ -14,7 +14,7 @@ class FlowBuilderTransitionCriteriaTests extends AbstractGrailsTagAwareFlowExecu
                     ctx.flowScope.put("hello", "world")
                 }.to "enterShipping"
             }
-            enterShipping  {
+            enterShipping {
                 on("back").to "enterPersonalDetails"
                 on("submit").to "displayInvoice"
             }

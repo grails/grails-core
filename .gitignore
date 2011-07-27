@@ -4,6 +4,8 @@
 /conf
 /dsl-support
 *.ipr
+*.iml
+*.iws
 idea
 /lib
 /doc

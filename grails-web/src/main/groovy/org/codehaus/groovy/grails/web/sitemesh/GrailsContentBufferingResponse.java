@@ -58,6 +58,10 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
         pageResponseWrapper = (GrailsPageResponseWrapper) getResponse();
     }
 
+    public HttpServletResponse getTargetResponse() {
+        return (HttpServletResponse) pageResponseWrapper.getResponse();
+    }
+
     public boolean isUsingStream() {
         return pageResponseWrapper.isUsingStream();
     }

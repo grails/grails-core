@@ -57,6 +57,8 @@ class TagLibUnitTestCase extends MvcUnitTestCase {
         mockSession = instance.session
         mockParams = instance.params
         mockFlash = instance.flash
+
+        bindMockWebRequest(mockRequest, mockResponse)
         return instance
     }
 

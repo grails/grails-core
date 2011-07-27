@@ -14,16 +14,14 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.CollectionUtils;
 import groovy.lang.GroovyObject;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
-import org.springframework.validation.Errors;
 
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -32,7 +30,19 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import org.springframework.validation.Errors;
 
 /**
  * Utility methods used in configuring the Grails Hibernate integration.
@@ -111,38 +121,43 @@ public class GrailsDomainConfigurationUtil {
             GrailsDomainClassProperty[] props = domainClass.getPersistentProperties();
 
             for (GrailsDomainClassProperty prop : props) {
-                if (prop != null && prop.isAssociation()) {
+                if (prop == null || !prop.isAssociation()) {
+                    continue;
+                }
 
-                    GrailsDomainClass referenced = prop.getReferencedDomainClass();
-                    if (referenced != null) {
-                        boolean isOwnedBy = referenced.isOwningClass(domainClass.getClazz());
-                        prop.setOwningSide(isOwnedBy);
-                        String refPropertyName = null;
-                        try {
-                            refPropertyName = prop.getReferencedPropertyName();
+                GrailsDomainClass referenced = prop.getReferencedDomainClass();
+                if (referenced == null) {
+                    continue;
+                }
+
+                boolean isOwnedBy = referenced.isOwningClass(domainClass.getClazz());
+                prop.setOwningSide(isOwnedBy);
+                String refPropertyName = null;
+                try {
+                    refPropertyName = prop.getReferencedPropertyName();
+                }
+                catch (UnsupportedOperationException e) {
+                    // ignore (to support Hibernate entities)
+                }
+
+                if (StringUtils.isBlank(refPropertyName)) {
+                    GrailsDomainClassProperty[] referencedProperties = referenced.getPersistentProperties();
+                    for (GrailsDomainClassProperty referencedProp : referencedProperties) {
+                        // for bi-directional circular dependencies we don't want the other side
+                        // to be equal to self
+                        if (prop.equals(referencedProp) && prop.isBidirectional()) {
+                            continue;
                         }
-                        catch (UnsupportedOperationException e) {
-                            // ignore (to support Hibernate entities)
-                        }
-                        if (!StringUtils.isBlank(refPropertyName)) {
-                            GrailsDomainClassProperty otherSide = referenced.getPropertyByName(refPropertyName);
-                            prop.setOtherSide(otherSide);
-                            otherSide.setOtherSide(prop);
-                        }
-                        else {
-                            GrailsDomainClassProperty[] referencedProperties = referenced.getPersistentProperties();
-                            for (GrailsDomainClassProperty referencedProp : referencedProperties) {
-                                // for bi-directional circular dependencies we don't want the other side
-                                // to be equal to self
-                                if (prop.equals(referencedProp) && prop.isBidirectional())
-                                    continue;
-                                if (isCandidateForOtherSide(domainClass, prop, referencedProp)) {
-                                    prop.setOtherSide(referencedProp);
-                                    break;
-                                }
-                            }
+                        if (isCandidateForOtherSide(domainClass, prop, referencedProp)) {
+                            prop.setOtherSide(referencedProp);
+                            break;
                         }
                     }
+                }
+                else {
+                    GrailsDomainClassProperty otherSide = referenced.getPropertyByName(refPropertyName);
+                    prop.setOtherSide(otherSide);
+                    otherSide.setOtherSide(prop);
                 }
             }
         }
@@ -220,13 +235,12 @@ public class GrailsDomainConfigurationUtil {
      * @return True if it is basic
      */
     public static boolean isBasicType(GrailsDomainClassProperty prop) {
-        if (prop == null) return false;
-        return isBasicType(prop.getType());
+        return prop == null ? false : isBasicType(prop.getType());
     }
 
     private static final Set<String> BASIC_TYPES;
     static {
-        Set<String> basics = new HashSet<String>(Arrays.asList(
+        Set<String> basics = CollectionUtils.newSet(
                 boolean.class.getName(),
                 long.class.getName(),
                 short.class.getName(),
@@ -265,7 +279,7 @@ public class GrailsDomainConfigurationUtil {
                 Clob.class.getName(),
                 Serializable.class.getName(),
                 URI.class.getName(),
-                URL.class.getName()));
+                URL.class.getName());
         BASIC_TYPES = Collections.unmodifiableSet(basics);
     }
 
@@ -284,8 +298,13 @@ public class GrailsDomainConfigurationUtil {
      * @return True if it is configurational
      */
     public static boolean isNotConfigurational(PropertyDescriptor descriptor) {
+
         final String name = descriptor.getName();
-        return !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
+        Method readMethod = descriptor.getReadMethod();
+        Method writeMethod = descriptor.getWriteMethod();
+        return !(readMethod == null || writeMethod == null) &&
+               !(Modifier.isStatic(readMethod.getModifiers()) || Modifier.isStatic(writeMethod.getModifiers())) &&
+               !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
                !name.equals(GrailsDomainClassProperty.META_CLASS) &&
                !name.equals(GrailsDomainClassProperty.CLASS) &&
                !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
@@ -344,7 +363,8 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance, GrailsDomainClassProperty[] properties)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance,
+            GrailsDomainClassProperty[] properties) {
         return evaluateConstraints(instance, properties,null);
     }
 
@@ -358,7 +378,7 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance) {
         return evaluateConstraints(instance, null, null);
     }
 
@@ -372,7 +392,7 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass) {
         return evaluateConstraints(theClass, null, null);
     }
 
@@ -386,7 +406,8 @@ public class GrailsDomainConfigurationUtil {
      * @deprecated Use {@link DefaultConstraintEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass, GrailsDomainClassProperty[] properties)  {
+    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass,
+            GrailsDomainClassProperty[] properties) {
         return evaluateConstraints(theClass, properties, null);
     }
 

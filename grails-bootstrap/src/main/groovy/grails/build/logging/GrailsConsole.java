@@ -34,7 +34,10 @@ import jline.Terminal;
 import jline.UnsupportedTerminal;
 import jline.WindowsTerminal;
 
+import org.apache.tools.ant.BuildException;
+import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.StackTraceUtils;
@@ -59,6 +62,7 @@ public class GrailsConsole {
     public static final String SPACE = " ";
     public static final String ERROR = "Error";
     public static final String WARNING = "Warning";
+    public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -119,6 +123,8 @@ public class GrailsConsole {
         out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
 
         System.setOut(new GrailsConsolePrintStream(out));
+        System.setErr(new GrailsConsoleErrorPrintStream(new PrintStream(AnsiConsole.wrapOutputStream(System.err))));
+
 
         if (isWindows()) {
            terminal = new WindowsTerminal() {
@@ -319,38 +325,33 @@ public class GrailsConsole {
     private void outputMessage(String msg, int replaceCount) {
         if (msg == null || msg.trim().length() == 0) return;
         try {
-            if (hasNewLines(msg)) {
-                printMessageOnNewLine(msg);
-                lastMessage = "";
-            } else {
+            if (isAnsiEnabled()) {
 
-                if (isAnsiEnabled()) {
-
-                    lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
-                            .fg(Color.DEFAULT).a(msg).reset();
-                    out.println(lastStatus);
-                    cursorMove = replaceCount;
-                } else {
-                    if (lastMessage != null && lastMessage.equals(msg)) return;
-
-                    if (progressIndicatorActive) {
-                        out.println();
-                    }
-
-                    out.print(CATEGORY_SEPARATOR);
-                    out.println(msg);
+                lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
+                        .fg(Color.DEFAULT).a(msg).reset();
+                out.println(lastStatus);
+                if(userInputActive) {
+                    out.print(ansi().cursorRight(PROMPT.length()).reset());
                 }
-                lastMessage = msg;
+
+                cursorMove = replaceCount;
+            } else {
+                if (lastMessage != null && lastMessage.equals(msg)) return;
+
+                if (progressIndicatorActive) {
+                    out.println();
+                }
+
+                out.print(CATEGORY_SEPARATOR);
+                out.println(msg);
             }
+            lastMessage = msg;
         } finally {
             postPrintMessage();
         }
     }
 
     private void postPrintMessage() {
-        if (!progressIndicatorActive) {
-            replayPromptIfActive();
-        }
         progressIndicatorActive = false;
     }
 
@@ -374,6 +375,7 @@ public class GrailsConsole {
      */
     public void addStatus(String msg) {
         outputMessage(msg, 0);
+        lastMessage="";
     }
 
     /**
@@ -392,6 +394,15 @@ public class GrailsConsole {
      */
     public void warning(String msg) {
         error(WARNING, msg);
+    }
+
+    /**
+     * Prints a warn message
+     *
+     * @param msg The message
+     */
+    public void warn(String msg) {
+        warning(msg);
     }
 
     private void logSimpleError(String msg) {
@@ -416,10 +427,10 @@ public class GrailsConsole {
         try {
             if ((verbose||stacktrace) && error != null) {
                 printStackTrace(msg, error);
-                error(ERROR, msg);
+                error(ERROR, msg );
             }
             else {
-                error(ERROR, msg);
+                error(ERROR, msg + STACKTRACE_MESSAGE);
             }
         } finally {
             postPrintMessage();
@@ -437,7 +448,15 @@ public class GrailsConsole {
     }
 
     private void printStackTrace(String message, Throwable error) {
-        StackTraceUtils.deepSanitize(error);
+        if(error instanceof ScriptExitException) {
+            return; // don't bother with exit exceptions
+        }
+
+        if((error instanceof BuildException) && error.getCause() != null) {
+            error = error.getCause();
+        }
+        if(!isVerbose())
+            StackTraceUtils.deepSanitize(error);
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
         if (message != null) {
@@ -467,6 +486,15 @@ public class GrailsConsole {
         } finally {
             postPrintMessage();
         }
+    }
+
+    /**
+     * Synonym for #log
+     *
+     * @param msg The message to log
+     */
+    public void info(String msg) {
+        log(msg);
     }
 
     public void verbose(String msg) {
@@ -505,7 +533,11 @@ public class GrailsConsole {
 
         lastMessage = "";
         msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
-        return showPrompt(msg);
+        try {
+            return showPrompt(msg);
+        } finally {
+            cursorMove = 0;
+        }
     }
 
     /**
@@ -515,7 +547,7 @@ public class GrailsConsole {
      */
     private String showPrompt(String prompt) {
         try {
-            cursorMove = 0;
+            cursorMove = 1;
             userInputActive = true;
             try {
                 return reader.readLine(prompt);
@@ -612,9 +644,13 @@ public class GrailsConsole {
 
     private Ansi erasePreviousLine(String categoryName) {
         if (cursorMove > 0) {
+            int moveLeftLength = categoryName.length() + lastMessage.length();
+            if(userInputActive) {
+                moveLeftLength += PROMPT.length();
+            }
             return ansi()
                     .cursorUp(cursorMove)
-                    .cursorLeft(categoryName.length() + lastMessage.length())
+                    .cursorLeft(moveLeftLength)
                     .eraseLine(FORWARD);
 
         }
@@ -622,24 +658,26 @@ public class GrailsConsole {
     }
 
     public void error(String label, String message) {
-        cursorMove = 0;
-        try {
-            if (isAnsiEnabled()) {
-                Ansi ansi = outputErrorLabel(ansi(), label).a(message);
-                if (message.endsWith(LINE_SEPARATOR)) {
-                    out.print(ansi);
+        if(message != null) {
+            cursorMove = 0;
+            try {
+                if (isAnsiEnabled()) {
+                    Ansi ansi = outputErrorLabel(ansi(), label).a(message);
+                    if (message.endsWith(LINE_SEPARATOR)) {
+                        out.print(ansi);
+                    }
+                    else {
+                        out.println(ansi);
+                    }
                 }
                 else {
-                    out.println(ansi);
+                    out.print(label);
+                    out.print(" ");
+                    logSimpleError(message);
                 }
+            } finally {
+                postPrintMessage();
             }
-            else {
-                out.print(label);
-                out.print(" ");
-                logSimpleError(message);
-            }
-        } finally {
-            postPrintMessage();
         }
     }
 }

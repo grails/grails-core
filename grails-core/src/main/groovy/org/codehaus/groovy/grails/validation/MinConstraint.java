@@ -78,11 +78,13 @@ public class MinConstraint extends AbstractConstraint {
     }
 
     @Override
-    protected void processValidate(Object target, Object propertyValue, Errors errors)        {
-        if (minValue.compareTo(propertyValue) > 0) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue  };
-            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE,
-                    ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
+    protected void processValidate(Object target, Object propertyValue, Errors errors) {
+        if (minValue.compareTo(propertyValue) <= 0) {
+            return;
         }
+
+        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minValue };
+        rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_MESSAGE_CODE,
+                ConstrainedProperty.MIN_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
     }
 }

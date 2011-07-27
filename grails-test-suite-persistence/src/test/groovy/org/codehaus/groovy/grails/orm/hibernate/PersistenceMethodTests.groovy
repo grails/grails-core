@@ -12,8 +12,6 @@ import org.springframework.validation.Errors
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Jan 14, 2009
  */
 class PersistenceMethodTests extends AbstractGrailsHibernateTests {
 
@@ -412,6 +410,26 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
         // get john and fred by ids passed in list
         List param = [3, 1]
         returnValue = domainClass.getAll(param)
+        assertNotNull returnValue
+        assertEquals ArrayList, returnValue.getClass()
+        returnList = returnValue
+        assertEquals 2, returnList.size()
+        result = returnList[0]
+        result1 = returnList[1]
+        assertEquals 3, result.getProperty("id")
+        assertEquals 1, result1.getProperty("id")
+
+        returnValue = domainClass.getAll(3, 1)
+        assertNotNull returnValue
+        assertEquals ArrayList, returnValue.getClass()
+        returnList = returnValue
+        assertEquals 2, returnList.size()
+        result = returnList[0]
+        result1 = returnList[1]
+        assertEquals 3, result.getProperty("id")
+        assertEquals 1, result1.getProperty("id")
+
+        returnValue = domainClass.getAll(3l, 1l)
         assertNotNull returnValue
         assertEquals ArrayList, returnValue.getClass()
         returnList = returnValue
@@ -821,7 +839,7 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
             "where p.firstName=? and p.lastName=?", ["fred", "flintstone"])
         assertEquals 1, listResult.size()
         assertEquals "fred", listResult[0].getProperty("firstName")
-        
+
         def msg = shouldFail(IllegalArgumentException) {
             domainClass.executeQuery 'select distinct p from PersistentMethodTests as p where p.firstName = :firstName and p.lastName = :lastName', [firstName: null, lastName: 'King']
         }

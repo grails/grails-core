@@ -20,7 +20,7 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
         return super.getConstraint("testString", shell.evaluate(closure));
     }
 
-    public void testBooleanReturn()  {
+    public void testBooleanReturn() {
         testConstraintMessageCodes(
                 getConstraint("{val,obj -> return false}"),
                 "test",
@@ -53,7 +53,6 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
                 getConstraint("{val,obj -> return val?.trim() == ''}"),
                 "     ");
     }
-
 
     public void testStringReturn() {
         testConstraintMessageCode(

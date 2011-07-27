@@ -20,7 +20,7 @@ mappings {
 '''
 
     def mappingScript2 = '''
-mappings  {
+mappings {
     "/"(view:"/index")
 
     "/signin"(controller: "authentication") {

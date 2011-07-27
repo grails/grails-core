@@ -32,6 +32,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.StandardServletEnvironment;
 
 import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
@@ -333,7 +334,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
     }
 
     public Environment getEnvironment() {
-        return new org.springframework.web.context.support.DefaultWebEnvironment();
+        return new StandardServletEnvironment();
     }
 
     public class MockResource extends AbstractResource {

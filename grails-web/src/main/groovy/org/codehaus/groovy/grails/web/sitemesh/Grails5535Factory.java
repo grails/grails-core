@@ -119,9 +119,7 @@ public class Grails5535Factory extends BaseFactory {
         }
     }
 
-    private Element loadSitemeshXML()
-            throws ParserConfigurationException, IOException, SAXException
-    {
+    private Element loadSitemeshXML() throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -157,9 +155,7 @@ public class Grails5535Factory extends BaseFactory {
         return root;
     }
 
-    private void loadExcludes()
-            throws ParserConfigurationException, IOException, SAXException
-    {
+    private void loadExcludes() throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -282,8 +278,7 @@ public class Grails5535Factory extends BaseFactory {
      */
     private String replaceProperties(String str) {
         Set props = configProps.entrySet();
-        for (Iterator it = props.iterator(); it.hasNext();)
-        {
+        for (Iterator it = props.iterator(); it.hasNext();) {
             Map.Entry entry = (Map.Entry) it.next();
             String key = (String) entry.getKey();
             int idx;

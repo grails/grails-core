@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
+import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.web.util.UrlPathHelper;
 
@@ -180,12 +181,12 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getTemplateUri(CharSequence templateName, ServletRequest request) {
-        if (templateName == null) throw new IllegalArgumentException("Argument [template] cannot be null");
+        Assert.notNull(templateName, "Argument [template] cannot be null");
         return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName.toString());
     }
 
     public String getViewUri(String viewName, HttpServletRequest request) {
-        if (viewName == null) throw new IllegalArgumentException("Argument [view] cannot be null");
+        Assert.notNull(viewName, "Argument [view] cannot be null");
         return groovyPagesUriService.getDeployedViewURI(getControllerName(request), viewName);
     }
 

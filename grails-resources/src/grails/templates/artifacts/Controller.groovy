@@ -1,4 +1,4 @@
 @artifact.package@class @artifact.name@ {
 
-    def index = { }
+    def index() { }
 }

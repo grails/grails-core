@@ -9,18 +9,13 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.springframework.core.io.ByteArrayResource
 import spock.lang.Specification
+import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 
- /**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 29/06/2011
- * Time: 11:37
- * To change this template use File | Settings | File Templates.
- */
-class PageRendererSpec extends Specification{
+class PageRendererSpec extends Specification {
 
     SimpleMapResourceLoader resourceLoader = new SimpleMapResourceLoader()
-
 
     void "Test render simple template"() {
         given:
@@ -55,12 +50,11 @@ class PageRendererSpec extends Specification{
             contents == "Hello John"
     }
 
-    PageRenderer getPageRenderer() {
+    private PageRenderer getPageRenderer() {
         GroovyPagesTemplateEngine te = new GroovyPagesTemplateEngine()
 
         te.afterPropertiesSet()
         def renderer = new PageRenderer(te)
-
 
         def bb = new BeanBuilder().beans {
             grailsApplication(DefaultGrailsApplication)
@@ -79,7 +73,9 @@ class PageRendererSpec extends Specification{
 
         te.tagLibraryLookup = tll
 
-        renderer.addResourceLoader(resourceLoader)
+        def locator = new CachingGrailsConventionGroovyPageLocator()
+        locator.addResourceLoader(resourceLoader)
+        renderer.groovyPageLocator = locator
         return renderer
     }
 }

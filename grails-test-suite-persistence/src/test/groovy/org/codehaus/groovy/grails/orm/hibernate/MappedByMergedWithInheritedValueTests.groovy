@@ -1,12 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 6/28/11
- * Time: 9:37 AM
- * To change this template use File | Settings | File Templates.
- */
 class MappedByMergedWithInheritedValueTests extends AbstractGrailsHibernateTests{
     @Override
     protected void onSetUp() {
@@ -15,47 +8,46 @@ import grails.persistence.*
 
 @Entity
 class Document {
-	String name
+    String name
 
-	static hasMany = [
-		toRole: DocDocRole,
-		fromRole: DocDocRole
-	]
+    static hasMany = [
+        toRole: DocDocRole,
+        fromRole: DocDocRole
+    ]
 
-	static mappedBy = [
-		toRole: 'fromDocument',
-		fromRole: 'toDocument'
-	]
+    static mappedBy = [
+        toRole: 'fromDocument',
+        fromRole: 'toDocument'
+    ]
 }
 
 @Entity
 class DocDocRole {
-	String roleName
+    String roleName
 
-	Document fromDocument
-	Document toDocument
+    Document fromDocument
+    Document toDocument
 
-	static belongsTo = [
-		Document
-	]
+    static belongsTo = [
+        Document
+    ]
 
-	static mappedBy = [
-		fromDocument: 'toRole',
-		toDocument: 'fromRole'
-	]
+    static mappedBy = [
+        fromDocument: 'toRole',
+        toDocument: 'fromRole'
+    ]
 }
 
 @Entity
 class SpecialDocument extends Document {
-	String specialStatus
+    String specialStatus
 
-	static mappedBy = [
-		//some other things
-	]
+    static mappedBy = [
+        //some other things
+    ]
 }
 ''')
     }
-
 
     // test for GRAILS-6328
     void testMappedByMergedWithInheritedValue() {
@@ -67,8 +59,7 @@ class SpecialDocument extends Document {
         sd.addToFromRole(roleName:"From Role", fromDocument:SpecialDocument.newInstance(name:"From Doc", specialStatus: "special").save())
 
         sd.save(flush:true)
-        assert  sd.errors.hasErrors() == false
-
+        assert !sd.errors.hasErrors()
 
         session.clear()
 
@@ -77,7 +68,5 @@ class SpecialDocument extends Document {
         assert sd != null
         assert sd.toRole.size() == 1
         assert sd.fromRole.size() == 1
-
     }
-
 }

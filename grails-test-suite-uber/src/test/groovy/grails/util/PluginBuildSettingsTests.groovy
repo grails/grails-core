@@ -18,6 +18,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
 
     PluginBuildSettings createPluginBuildSettings(File projectDir = TEST_PROJ_DIR) {
         def settings = new BuildSettings(new File(".."), projectDir)
+        settings.enableResolve = false
         settings.loadConfig()
         return new PluginBuildSettings(settings)
     }
@@ -116,7 +117,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                 nonUserScripts << script
             }
         }
-        assertEquals 48, nonUserScripts.size()
+        assertEquals 49, nonUserScripts.size()
     }
 
     void testGetPluginScripts() {

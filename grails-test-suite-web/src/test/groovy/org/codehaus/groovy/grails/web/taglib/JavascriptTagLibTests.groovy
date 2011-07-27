@@ -39,7 +39,7 @@ class TestUrlMappings {
 
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource("/foo/_part.gsp", '<g:remoteLink controller="foo" action="list" />')
-        appCtx.groovyPagesTemplateEngine.resourceLoader = resourceLoader
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader resourceLoader
         webRequest.controllerName = "foo"
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
@@ -144,6 +144,18 @@ class TestUrlMappings {
         shouldFail(GrailsTagException) {
             applyTemplate(template)
         }
+    }
+    
+    void testFormRemoteWithStringUrl() {
+        def template = '''\
+<g:formRemote name="myForm" method="GET" url="/dirt-grails/ruleDetails/saveDynamicParameters" >\
+<g:textField name="foo" />\
+</g:formRemote>'''
+        request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+
+        assertOutputEquals('''\
+<form onsubmit="<remote>return false" method="GET"\
+ action="/dirt-grails/ruleDetails/saveDynamicParameters" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
     }
 
     /**

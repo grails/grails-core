@@ -123,7 +123,7 @@ class AssocTest {}
         assertTrue obj.others instanceof Set
     }
 
-    void testInjectBelongsToAssociation()  {
+    void testInjectBelongsToAssociation() {
         def fs = File.separator
         gcl.parseClass('''
 class AssocTest {}

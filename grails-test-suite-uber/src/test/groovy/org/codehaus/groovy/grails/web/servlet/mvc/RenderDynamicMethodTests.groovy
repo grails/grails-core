@@ -1,21 +1,15 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import java.util.Collection
-import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 
 class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
     private testCtrl
 
-    protected void tearDown() {
-        super.tearDown()
-
-    }
-
     protected void onSetUp() {
         gcl.parseClass("grails.json.legacy.builder=false", "Config")
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [RenderDynamicMethodTestController]
@@ -90,13 +84,13 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
 
 class RenderDynamicMethodTestController {
     def renderText = {
-         render "text"
+        render "text"
     }
 
     def renderStreamCharBuffer = {
-         def writer = new org.codehaus.groovy.grails.web.pages.FastStringWriter()
-         writer.write("text")
-         render writer.buffer
+        def writer = new org.codehaus.groovy.grails.web.pages.FastStringWriter()
+        writer.write("text")
+        render writer.buffer
     }
 
     def renderTextWithLayout = {
@@ -104,39 +98,39 @@ class RenderDynamicMethodTestController {
     }
 
     def renderGString = {
-         render "${'te' + 'xt'}"
+        render "${'te' + 'xt'}"
     }
 
     def renderTextWithContentType = {
-         render(text:"<foo>bar</foo>",contentType:"text/xml", encoding:"utf-16")
+        render(text:"<foo>bar</foo>",contentType:"text/xml", encoding:"utf-16")
     }
 
     def renderXml = {
-         render(contentType:"text/xml") {
-             foo {
-                 bar("hello")
-             }
-         }
-     }
+        render(contentType:"text/xml") {
+            foo {
+                bar("hello")
+            }
+        }
+    }
 
-     def renderJSON = {
-         render(contentType:"application/json") {
-             foo = [ { bar = "hello" } ]
-         }
-     }
-     def renderView ={
-         render(view:'foo')
-     }
-     def renderXmlView = {
-         render(view:'foo', contentType:'text/xml')
-     }
-     def renderXmlUtf16View = {
-         render(view:'foo', contentType:'text/xml', encoding:'utf-16')
-     }
-     def renderStatusAndText = {
-         render(status: 503, text: 'five oh three')
-     }
-     def renderStatusOnly = {
-         render(status: 404)
-     }
- }
+    def renderJSON = {
+        render(contentType:"application/json") {
+            foo = [ { bar = "hello" } ]
+        }
+    }
+    def renderView ={
+        render(view:'foo')
+    }
+    def renderXmlView = {
+        render(view:'foo', contentType:'text/xml')
+    }
+    def renderXmlUtf16View = {
+        render(view:'foo', contentType:'text/xml', encoding:'utf-16')
+    }
+    def renderStatusAndText = {
+        render(status: 503, text: 'five oh three')
+    }
+    def renderStatusOnly = {
+        render(status: 404)
+    }
+}

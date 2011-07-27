@@ -107,7 +107,6 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
             assertTrue p.children.wasInitialized()
             assertFalse p.cousins.wasInitialized()
         }
-
     }
 
     void testUserTypes() {
@@ -124,7 +123,6 @@ class MappingDslTests extends AbstractGrailsHibernateTests {
         final type = cmd.getPropertyType("firstName")
 
         assert type instanceof TextType
-
     }
 
     void testCompositeIdMapping() {
@@ -386,7 +384,7 @@ class Payment {
 }
 
 @Entity
-class CreditCardPayment extends Payment  {
+class CreditCardPayment extends Payment {
     String cardNumber
 }
 

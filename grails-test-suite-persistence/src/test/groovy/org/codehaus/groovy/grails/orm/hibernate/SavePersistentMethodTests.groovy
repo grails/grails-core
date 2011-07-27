@@ -138,7 +138,7 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigTrueWithValidationErrors() {
         ga.config.grails.gorm.failOnError = true
-		ga.configChanged()
+        ga.configChanged()
 
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
@@ -198,7 +198,7 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigIncludesMatchingPackageWithValidationErrors() {
         ga.config.grails.gorm.failOnError = ['com.foo', 'org.codehaus.groovy.grails.orm.hibernate', 'com.bar']
-		ga.configChanged()
+        ga.configChanged()
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -214,7 +214,7 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigDoesNotIncludeMatchingPackageWithValidationErrors() {
         ga.config.grails.gorm.failOnError = ['com.foo', 'com.bar']
-		ga.configChanged()
+        ga.configChanged()
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -223,7 +223,7 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigFalseWithValidationErrors() {
         ga.config.grails.gorm.failOnError = false
-		ga.configChanged()
+        ga.configChanged()
 
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
@@ -233,7 +233,7 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigTrueArgumentFalseWithValidationErrors() {
         ga.config.grails.gorm.failOnError = true
-		ga.configChanged()
+        ga.configChanged()
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']
@@ -242,7 +242,7 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigFalseArgumentTrueWithValidationErrors() {
         ga.config.grails.gorm.failOnError = true
-		ga.configChanged()
+        ga.configChanged()
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name)
         def team = teamClass.newInstance()
         team.properties = [homePage: 'invalidurl']

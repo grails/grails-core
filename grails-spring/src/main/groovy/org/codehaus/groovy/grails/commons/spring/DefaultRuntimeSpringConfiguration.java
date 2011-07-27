@@ -62,25 +62,23 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     /**
      * Creates the ApplicationContext instance. Subclasses can override to customise the used ApplicationContext
      *
-     * @param parent The parent ApplicationContext instance. Can be null.
+     * @param parentCtx The parent ApplicationContext instance. Can be null.
      *
      * @return An instance of GenericApplicationContext
      */
     protected GenericApplicationContext createApplicationContext(ApplicationContext parentCtx) {
-        if (parentCtx != null && beanFactory!=null) {
-            if (beanFactory instanceof DefaultListableBeanFactory) {
-                return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory,parentCtx);
-            }
+        if (parentCtx != null && beanFactory != null) {
+            Assert.isInstanceOf(DefaultListableBeanFactory.class, beanFactory,
+                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
 
-            throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory,parentCtx);
         }
 
         if (beanFactory != null) {
-            if (beanFactory instanceof DefaultListableBeanFactory) {
-                return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory);
-            }
+            Assert.isInstanceOf(DefaultListableBeanFactory.class, beanFactory,
+                    "ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
 
-            throw new IllegalArgumentException("ListableBeanFactory set must be a subclass of DefaultListableBeanFactory");
+            return new GrailsApplicationContext((DefaultListableBeanFactory) beanFactory);
         }
 
         if (parentCtx != null) {
@@ -129,7 +127,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         if (parent != null && classLoader == null) {
             trySettingClassLoaderOnContextIfFoundInParent(parent);
         }
-        else if (classLoader != null)  {
+        else if (classLoader != null) {
             setClassLoaderOnContext(classLoader);
         }
 

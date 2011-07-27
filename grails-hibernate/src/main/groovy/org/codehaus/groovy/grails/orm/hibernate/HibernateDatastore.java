@@ -21,6 +21,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.datastore.mapping.core.AbstractDatastore;
 import org.springframework.datastore.mapping.core.Session;
 import org.springframework.datastore.mapping.model.MappingContext;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 
@@ -55,9 +56,8 @@ public class HibernateDatastore extends AbstractDatastore {
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
-            throw new IllegalArgumentException("ApplicationContext must be an instanceof ConfigurableApplicationContext");
-        }
+        Assert.isInstanceOf(ConfigurableApplicationContext.class, applicationContext,
+            "ApplicationContext must be an instanceof ConfigurableApplicationContext");
         super.setApplicationContext((ConfigurableApplicationContext) applicationContext);
     }
 }

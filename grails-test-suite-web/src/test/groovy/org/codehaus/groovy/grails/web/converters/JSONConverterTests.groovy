@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.converters
 
-import java.util.Collection;
-
 import grails.artefact.Artefact
 import grails.converters.JSON
 
@@ -24,12 +22,12 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
     protected Collection<Class> getDomainClasses() {
         [Book]
     }
-    
+
     @Override
     protected Collection<Class> getControllerClasses() {
         [JSONConverterController]
     }
-    
+
     void testNullJSONValues() {
         def c = new JSONConverterController()
         c.testNullValues()

@@ -656,7 +656,7 @@ public class GroovyPageParser implements Tokens {
                     (c > '_' && c < 'a') || c > 'z') {
                 c = '_';
             }
-            else if (ix == 0 && c >= '0' && c <= '9')    {
+            else if (ix == 0 && c >= '0' && c <= '9') {
                 c = '_';
             }
             buf.append(c);
@@ -1146,7 +1146,7 @@ public class GroovyPageParser implements Tokens {
         while (m.find()) {
             String name = m.group(2);
             String val = m.group(4);
-            if(val == null) { 
+            if (val == null) {
                 val = m.group(5);
             }
             name = '\"' + name + '\"';

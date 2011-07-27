@@ -17,7 +17,7 @@ grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 aspectjVersion = "1.6.10"
-springVersion = "3.1.0.M1"
+springVersion = "3.1.0.M2"
 springDatastoreVersion = "1.0.0.M6"
 springLoadedVersion = "0.8.3.BUILD-SNAPSHOT"
 springWebflowVersion= "2.0.8.RELEASE"
@@ -91,9 +91,15 @@ subprojects { project ->
 
     dependencies {
         // Groovy
-        groovy( groovyDependency ) {
-            exclude module:"commons-cli"
-            exclude module:"ant"
+        if(System.getProperty('groovy.jar')) {
+            // use the jar specified in the system property (the joint build specifies its own groovy jar)...
+            groovy groovyDependency
+        } else {
+            // resolve the dependency from a repo...
+            groovy( groovyDependency ) {
+                exclude module:"commons-cli"
+                exclude module:"ant"
+            }
         }
         compile groovyDependency
 

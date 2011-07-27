@@ -35,6 +35,7 @@ import org.springframework.web.context.ServletContextAware
 import javax.servlet.ServletContext
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.beans.BeanUtils
+import org.springframework.core.io.FileSystemResourceLoader
 
 /**
  * @author Luke Daley
@@ -47,7 +48,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
 
     def assertionKeys = ["controller", "action", "view"]
 
-    def patternResolver = new PathMatchingResourcePatternResolver()
+    def patternResolver = new PathMatchingResourcePatternResolver(new FileSystemResourceLoader())
     def classLoader = new GroovyClassLoader()
     def mappingEvaluator
     def grailsApplication

@@ -61,7 +61,7 @@ createArtifact = { Map args = [:] ->
     ant.mkdir(dir: "${basedir}/${artifactPath}/${pkgPath}")
 
     // Future use of 'pkgPath' requires a trailing slash.
-    pkgPath += '/'
+    if (pkgPath) pkgPath += '/'
 
     // Convert the given name into class name and property name representations.
     className = GrailsNameUtils.getClassNameRepresentation(name)
@@ -89,12 +89,14 @@ createArtifact = { Map args = [:] ->
         }
     }
 
-	if(!templateFile.exists()) {
-		if(artifactPath.startsWith("test"))
-			templateFile = grailsResource("src/grails/$templatePath/UnitTest.groovy")
-		else
-			templateFile = grailsResource("src/grails/$templatePath/Generic.groovy")
-	}
+    if (!templateFile.exists()) {
+        if (artifactPath.startsWith("test")) {
+            templateFile = grailsResource("src/grails/$templatePath/UnitTest.groovy")
+        }
+        else {
+            templateFile = grailsResource("src/grails/$templatePath/Generic.groovy")
+        }
+    }
 
     copyGrailsResource(artifactFile, templateFile)
     ant.replace(file: artifactFile,
@@ -125,14 +127,26 @@ private createRootPackage() {
 
 createIntegrationTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GroovyTestCase"
-    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: args.testType ?: args['suffix'],
-                   path: "test/integration", superClass: superClass, templatePath:"templates/testing")
+    createArtifact(
+            name: args["name"],
+            suffix: "${args['suffix']}Tests",
+            type: args.testType ?: args['suffix'],
+            path: "test/integration",
+            superClass: superClass,
+            templatePath:"templates/testing",
+            skipPackagePrompt: args['skipPackagePrompt'])
 }
 
 createUnitTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GrailsUnitTestCase"
-    createArtifact(name: args["name"], suffix: "${args['suffix']}Tests", type: args.testType ?: args['suffix'],
-                   path: "test/unit", superClass: superClass, templatePath:"templates/testing")
+    createArtifact(
+            name: args["name"],
+            suffix: "${args['suffix']}Tests",
+            type: args.testType ?: args['suffix'],
+            path: "test/unit",
+            superClass: superClass,
+            templatePath:"templates/testing",
+            skipPackagePrompt: args['skipPackagePrompt'])
 }
 
 promptForName = { Map args = [:] ->

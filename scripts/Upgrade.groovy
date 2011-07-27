@@ -119,20 +119,20 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
             // Install application-only files if needed, exact "one file only" matches
             ['Config.groovy'].each() {template ->
                 if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.equals(template) }) {
-					copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
+                    copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
                 }
             }
 
             ['BuildConfig.groovy'].each() {template ->
                 if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.equals(template) }) {
-					copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
+                    copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
                 }
             }
-    
+
             // Install application-only files if needed, with suffix matching
             ['DataSource.groovy'].each() {template ->
                 if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.startsWith(template) }) {
-					copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
+                    copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
                 }
             }
         }
@@ -140,11 +140,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         // Both applications and plugins can have UrlMappings, but only install default if there is nothing already
         ['UrlMappings.groovy'].each() {template ->
             if (!new File(baseFile, '/grails-app/conf').listFiles().find { it.name.endsWith(template) }) {
-                copy(tofile: "${basedir}/grails-app/conf/${template}") {
-                    fileset(file: "${grailsHome}/src/grails/grails-app/conf/${template}") {
-                        present(present: "srconly", targetdir: "${basedir}/grails-app/conf")
-                    }
-                }
+                copyGrailsResource("${basedir}/grails-app/conf/${template}", grailsResource("src/grails/grails-app/conf/${template}"))
             }
         }
 

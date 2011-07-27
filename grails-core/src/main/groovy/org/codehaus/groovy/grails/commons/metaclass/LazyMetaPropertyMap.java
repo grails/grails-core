@@ -78,7 +78,7 @@ public class LazyMetaPropertyMap implements Map {
      */
     public boolean containsKey(Object propertyName) {
         if (propertyName instanceof CharSequence) propertyName = propertyName.toString();
-        if (!(propertyName instanceof String)) throw new IllegalArgumentException("This map implementation only supports String based keys!");
+        Assert.isInstanceOf(String.class, propertyName, "This map implementation only supports String based keys!");
 
         if (EXCLUDES.contains(propertyName)) return false;
         return metaClass.getMetaProperty((String)propertyName) != null;

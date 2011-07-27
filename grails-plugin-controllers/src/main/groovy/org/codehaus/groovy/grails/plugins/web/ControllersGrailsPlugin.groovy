@@ -31,8 +31,8 @@ import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipa
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
-import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
-import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
 import org.codehaus.groovy.grails.web.servlet.mvc.*
 
@@ -76,11 +76,11 @@ class ControllersGrailsPlugin {
             interceptors = handlerInterceptors
         }
         // allow @Controller annotated beans
-        annotationHandlerMapping(DefaultAnnotationHandlerMapping, interceptorsClosure)
+        annotationHandlerMapping(RequestMappingHandlerMapping, interceptorsClosure)
         // allow default controller mappings
         controllerHandlerMappings(GrailsControllerHandlerMapping, interceptorsClosure)
 
-        annotationHandlerAdapter(AnnotationMethodHandlerAdapter)
+        annotationHandlerAdapter(RequestMappingHandlerAdapter)
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
             stripLeadingSlash = false
@@ -172,8 +172,6 @@ class ControllersGrailsPlugin {
     }
 
     def doWithDynamicMethods = {ApplicationContext ctx ->
-
-        ctx.getAutowireCapableBeanFactory().addBeanPostProcessor(new CommandObjectEnablingPostProcessor(ctx))
 
         ControllersApi controllerApi = ctx.getBean("instanceControllersApi",ControllersApi)
         Object gspEnc = application.getFlatConfig().get("grails.views.gsp.encoding");

@@ -82,7 +82,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
             statement = withPotentialTimeout(method, test, statement)
             statement = withBefores(method, test, statement)
             statement = withAfters(method, test, statement)
-            
+
             statement = withRules(method, test, statement)
 
             withGrailsTestEnvironment(statement, test)
@@ -91,7 +91,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
             super.methodBlock(method)
         }
     }
-    
+
     private Statement withRules(FrameworkMethod method, Object target,
         Statement statement) {
         Statement result= statement;

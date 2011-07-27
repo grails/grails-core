@@ -1,18 +1,18 @@
 /*
-* Copyright 2004-2005 the original author or authors.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
+ * Copyright 2004-2005 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.resolve
 
 import grails.build.logging.GrailsConsole
@@ -21,17 +21,21 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
+
 import java.util.regex.Pattern
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
+import org.springframework.core.io.FileSystemResource
 
- /**
+/**
  * Manages the installation and uninstallation of plugins from a Grails project.
  *
  * @author Graeme Rocher
@@ -39,7 +43,9 @@ import org.springframework.core.io.Resource
  */
 class PluginInstallEngine {
 
-    static final CORE_PLUGINS = ['core', 'i18n','converters','mimeTypes', 'controllers','webflow', 'dataSource', 'domainClass', 'filters','logging', 'groovyPages']
+    static final CORE_PLUGINS = ['core', 'i18n','converters','mimeTypes', 'controllers',
+                                 'webflow', 'dataSource', 'domainClass', 'filters',
+                                 'logging', 'groovyPages']
 
     Closure errorHandler = { String msg -> throw new ScriptExitException(msg) }
     Closure eventHandler = { String name, String msg -> GrailsConsole.instance.updateStatus msg }
@@ -61,19 +67,19 @@ class PluginInstallEngine {
     protected ant
     protected PluginResolveEngine resolveEngine
 
-    PluginInstallEngine(grails.util.BuildSettings settings) {
+    PluginInstallEngine(BuildSettings settings) {
         this(settings, new PluginBuildSettings(settings), Metadata.current, new AntBuilder())
     }
 
-    PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs) {
         this(settings, pbs, Metadata.current, new AntBuilder())
     }
 
-    PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs, Metadata md) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md) {
         this(settings, pbs, md, new AntBuilder())
     }
 
-    PluginInstallEngine(grails.util.BuildSettings settings, grails.util.PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
         if (settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
         if (pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
         if (md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
@@ -89,9 +95,9 @@ class PluginInstallEngine {
     }
 
     /**
-    * This method will resolve the current dependencies and install any missing plugins or upgrades
-    * and remove any plugins that aren't present in the metadata but are installed
-    */
+     * This method will resolve the current dependencies and install any missing plugins or upgrades
+     * and remove any plugins that aren't present in the metadata but are installed
+     */
     void resolvePluginDependencies() {
 
         IvyDependencyManager dependencyManager = settings.dependencyManager
@@ -121,36 +127,47 @@ class PluginInstallEngine {
         checkPluginsToUninstall(pluginDescriptors)
     }
 
+    void checkPluginsToUninstall() {
+        IvyDependencyManager dependencyManager = settings.dependencyManager
+
+        // Get the plugin dependency descriptors for the max version of each applicable dependency
+        def pluginDescriptors = dependencyManager.effectivePluginDependencyDescriptors
+
+        checkPluginsToUninstall(pluginDescriptors)
+    }
     /**
      * Installs a list of plugins
      *
      * @param params A list of plugins defined each by a ModuleRevisionId
      */
     void installPlugins(Collection<EnhancedDefaultDependencyDescriptor> plugins) {
-        if (plugins) {
-            ResolveReport report = resolveEngine.resolvePlugins(plugins)
-            if (report.hasError()) {
-                errorHandler "Failed to resolve plugins."
-            }
-            else {
-                for (ArtifactDownloadReport ar in report.getArtifactsReports(null, false)) {
-                    def arName = ar.artifact.moduleRevisionId.name
-                    if (plugins.any { it.dependencyRevisionId.name == arName }) {
-                        installPlugin ar.localFile
-                    }
-                }
+        if (!plugins) {
+            return
+        }
+
+        ResolveReport report = resolveEngine.resolvePlugins(plugins)
+        if (report.hasError()) {
+            errorHandler "Failed to resolve plugins."
+            return
+        }
+
+        for (ArtifactDownloadReport ar in report.getArtifactsReports(null, false)) {
+            def arName = ar.artifact.moduleRevisionId.name
+            if (plugins.any { it.dependencyRevisionId.name == arName }) {
+                installPlugin ar.localFile
             }
         }
     }
 
     /**
-     * Installs a plugin for the given name and optional version
+     * Installs a plugin for the given name and optional version.
      *
      * @param name The plugin name
      * @param version The plugin version (optional)
      * @param globalInstall Whether to install globally or not (optional)
+     * @return true if installed and not cancelled by user
      */
-    void installPlugin(String name, String version = null, boolean globalInstall = false) {
+    boolean installPlugin(String name, String version = null, boolean globalInstall = false) {
 
         installedPlugins.clear()
         def pluginZip = resolveEngine.resolvePluginZip(name, version)
@@ -161,7 +178,7 @@ class PluginInstallEngine {
 
         try {
             (name, version) = readMetadataFromZip(pluginZip.absolutePath)
-            installPluginZipInternal(name, version, pluginZip, globalInstall)
+            return installPluginZipInternal(name, version, pluginZip, globalInstall)
         }
         catch (e) {
             errorHandler "Error installing plugin: ${e.message}"
@@ -174,15 +191,14 @@ class PluginInstallEngine {
      * @param zipFile The plugin zip file
      * @param globalInstall Whether it is a global install or not (optional)
      */
-    void installPlugin(File zipFile, boolean globalInstall = false, boolean overwrite = false) {
+    boolean installPlugin(File zipFile, boolean globalInstall = false, boolean overwrite = false) {
 
-        if (zipFile.exists()) {
-            def (name, version) = readMetadataFromZip(zipFile.absolutePath)
-            installPluginZipInternal name, version, zipFile, globalInstall, overwrite
-        }
-        else {
+        if (!zipFile.exists()) {
             errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
         }
+
+        def (name, version) = readMetadataFromZip(zipFile.absolutePath)
+        installPluginZipInternal name, version, zipFile, globalInstall, overwrite
     }
 
     /**
@@ -191,7 +207,7 @@ class PluginInstallEngine {
      * @param zipURL The zip URL
      * @param globalInstall Whether it is a global install or not (optional)
      */
-    void installPlugin(URL zipURL, boolean globalInstall = false) {
+    boolean installPlugin(URL zipURL, boolean globalInstall = false) {
         def s = zipURL.toString()
         def filename = s[s.lastIndexOf("/")..-1]
         def file = File.createTempFile(filename[0..-4], ".zip")
@@ -206,7 +222,7 @@ class PluginInstallEngine {
         installPlugin(file, globalInstall, true)
     }
 
-    protected void installPluginZipInternal(String name, String version, File pluginZip,
+    protected boolean installPluginZipInternal(String name, String version, File pluginZip,
             boolean globalInstall = false, boolean overwrite = false) {
 
         def fullPluginName = "$name-$version"
@@ -217,8 +233,7 @@ class PluginInstallEngine {
         def abort = checkExistingPluginInstall(name, version)
 
         if (abort && !overwrite) {
-            registerPluginWithMetadata(name, version)
-            return
+            return false
         }
 
         eventHandler "StatusUpdate", "Installing zip ${pluginZip.name}..."
@@ -266,11 +281,14 @@ class PluginInstallEngine {
             runPluginScript(installScript, fullPluginName, "post-install script")
 
             registerPluginWithMetadata(pluginName, pluginVersion)
-
+            pluginSettings.clearCache()
+            pluginSettings.registerNewPluginInstall(pluginZip)
 
             postInstall(pluginInstallPath)
             eventHandler("PluginInstalled", fullPluginName)
         }
+
+        true
     }
 
     /**
@@ -281,21 +299,28 @@ class PluginInstallEngine {
      * @return A list
      */
     List readMetadataFromZip(String zipLocation) {
-        try {
-            def zipFile = new ZipFile(zipLocation)
-            ZipEntry entry = zipFile.entries().find {ZipEntry entry -> entry.name == 'plugin.xml'}
-            if (entry) {
-                def pluginXml = new XmlSlurper().parse(zipFile.getInputStream(entry))
-                def name = pluginXml.'@name'.text()
-                def release = pluginXml.'@version'.text()
-                return [name, release, pluginXml]
-            }
+        def list= pluginSettings.readMetadataFromZip(zipLocation)
+        if(list == null)  {
+           errorHandler "Zip $zipLocation is not a valid plugin"
+        }
+        else {
+           return list
+        }
+    }
 
-            errorHandler("Plugin $zipLocation is not a valid Grails plugin. No plugin.xml descriptor found!")
-        }
-        catch (e) {
-            errorHandler("Error reading plugin zip [$zipLocation]. The plugin zip file may be corrupt.")
-        }
+    /**
+     * Reads plugin info from the zip file location
+     *
+     * @param zipLocation The zip location
+     * @return
+     */
+    GrailsPluginInfo readPluginInfoFromZip(String zipLocation) {
+        def (name, version, xml) = readMetadataFromZip(zipLocation)
+
+        def info = new BasicGrailsPluginInfo(new FileSystemResource(new File(zipLocation)))
+        info.name = name
+        info.version = version
+        return info
     }
 
     /**
@@ -305,32 +330,35 @@ class PluginInstallEngine {
      *
      * @param name The plugin name
      * @param version The plugin version
-     * @return True if the installation should be aborted
+     * @return true if the installation should be aborted
      */
     protected boolean checkExistingPluginInstall(String name, version) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
 
-        if (currentInstall?.exists()) {
-
-            PluginBuildSettings pluginSettings = pluginSettings
-            def pluginDir = currentInstall.file.canonicalFile
-            def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
-            // if the versions are the same no need to continue
-            if (version == pluginInfo?.version) return true
-
-            if (pluginSettings.isInlinePluginLocation(currentInstall)) {
-                errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
-                return true
-            }
-            else if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to upgrade this version?")) {
-                ant.delete(dir: currentInstall.file)
-            }
-            else {
-                eventHandler("StatusUpdate", "Plugin $name-$version install aborted");
-                return true
-            }
+        if (!currentInstall?.exists()) {
+            return false
         }
-        return false
+
+        PluginBuildSettings pluginSettings = pluginSettings
+        def pluginDir = currentInstall.file.canonicalFile
+        def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
+        // if the versions are the same no need to continue
+        if (version == pluginInfo?.version) {
+            return true
+        }
+
+        if (pluginSettings.isInlinePluginLocation(currentInstall)) {
+            errorHandler("The plugin you are trying to install [$name-${version}] is already configured as an inplace plugin in grails-app/conf/BuildConfig.groovy. You cannot overwrite inplace plugins.");
+            return true
+        }
+
+        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to update to [$name-$version]? ")) {
+            ant.delete(dir: currentInstall.file)
+            return false
+        }
+
+        eventHandler("StatusUpdate", "Plugin $name-$version install aborted");
+        return true
     }
 
     protected void assertNoExistingInlinePlugin(String name) {
@@ -472,7 +500,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 eventHandler "PluginUninstalled", "Uninstalled plugin [${name}]."
             }
             else {
-                errorHandler("No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall")
+                GrailsConsole.getInstance().warning("No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall")
             }
         }
         catch (e) {
@@ -555,7 +583,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    private boolean isCorePlugin(name)  {
+    private boolean isCorePlugin(name) {
         CORE_PLUGINS.contains(name)
     }
 
@@ -576,8 +604,14 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
         }
 
+
         pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
-            !dependencyManager.isPluginTransitivelyIncluded(pluginInfo.name) && pluginInfo.pluginDir.file != settings.baseDir
+            def pluginFullName = "${pluginInfo.name}-${pluginInfo.version}.zip".toString()
+            !settings.pluginDependencies.any {
+                it.name == pluginFullName
+            } &&
+            !dependencyManager.isPluginTransitivelyIncluded(pluginInfo.name) &&
+            pluginInfo.pluginDir.file != settings.baseDir
         }
 
         for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
@@ -586,10 +620,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             if ((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue;
 
             if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
-                registerMetadataForPluginLocation(pluginDir)
+                uninstallPlugin(pluginInfo.name, pluginInfo.version)
             }
             else {
-                registerMetadataForPluginLocation(pluginDir)
+                uninstallPlugin(pluginInfo.name, pluginInfo.version)
             }
         }
     }

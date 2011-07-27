@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.cli.parsing;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -83,4 +84,7 @@ public interface CommandLine {
      * @return The remaining args separated by the line separator char
      */
     String getRemainingArgsLineSeparated();
+
+
+    Map<String, Object> getUndeclaredOptions();
 }
