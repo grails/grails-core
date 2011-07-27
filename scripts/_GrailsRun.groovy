@@ -220,6 +220,11 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
 target(keepServerAlive: "Idles the script, ensuring that the server stays running.") {
     def keepRunning = true
     def killFile = new File("${basedir}/.kill-run-app")
+    if (killFile.exists()) {
+        grailsConsole.warning ".kill-run-app file exists - perhaps a previous server stop didn't work?. Deleting and continuing anyway."
+        killFile.delete()
+    }
+
     while (keepRunning) {
         sleep(recompileFrequency * 1000)
 
