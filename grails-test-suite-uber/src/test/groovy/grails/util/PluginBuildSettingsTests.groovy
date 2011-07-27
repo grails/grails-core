@@ -117,7 +117,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                 nonUserScripts << script
             }
         }
-        assertEquals 49, nonUserScripts.size()
+        assertEquals 50, nonUserScripts.size()
     }
 
     void testGetPluginScripts() {
