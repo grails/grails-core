@@ -281,16 +281,22 @@ class GrailsProjectCompiler {
         ant.mkdir(dir:classesDirPath)
 
 
+        final pluginClassesDir = buildSettings.pluginClassesDir
+        final pluginProvidedClassesDir = buildSettings.pluginProvidedClassesDir
+        final pluginBuildClassesDir = buildSettings.pluginBuildClassesDir
         if(classLoader instanceof URLClassLoader) {
-            classLoader.addURL(buildSettings.pluginClassesDir.toURI().toURL())
-            classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
-            classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
+            pluginBuildClassesDir.mkdirs()
+            pluginProvidedClassesDir.mkdirs()
+            pluginClassesDir.mkdirs()
+            classLoader.addURL(pluginClassesDir.toURI().toURL())
+            classLoader.addURL(pluginProvidedClassesDir.toURI().toURL())
+            classLoader.addURL(pluginBuildClassesDir.toURI().toURL())
         }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
         compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
-        compilePluginSources(pluginSettings.buildScopePluginInfo, buildSettings.pluginBuildClassesDir)
-        compilePluginSources(pluginSettings.providedScopePluginInfo, buildSettings.pluginProvidedClassesDir)
+        compilePluginSources(pluginSettings.buildScopePluginInfo, pluginBuildClassesDir)
+        compilePluginSources(pluginSettings.providedScopePluginInfo, pluginProvidedClassesDir)
         compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
 
 
