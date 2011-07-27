@@ -105,6 +105,9 @@ class InteractiveMode {
                         def parser = GrailsScriptRunner.getCommandLineParser()
                         try {
                             def commandLine = parser.parseString(scriptName)
+                            final console = GrailsConsole.instance
+                            console.stacktrace = commandLine.hasOption(GrailsScriptRunner.STACKTRACE_ARGUMENT)
+                            console.verbose = commandLine.hasOption(GrailsScriptRunner.VERBOSE_ARGUMENT)
                             scriptRunner.executeScriptWithCaching(commandLine)
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"

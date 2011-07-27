@@ -77,7 +77,7 @@ public class GrailsScriptRunner {
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
 
     public static final String VERBOSE_ARGUMENT = "verbose";
-    private static final String STACKTRACE_ARGUMENT = "stacktrace";
+    public static final String STACKTRACE_ARGUMENT = "stacktrace";
     public static final String AGENT_ARGUMENT = "reloading";
     public static final String VERSION_ARGUMENT = "version";
     public static final String HELP_ARGUMENT = "help";
