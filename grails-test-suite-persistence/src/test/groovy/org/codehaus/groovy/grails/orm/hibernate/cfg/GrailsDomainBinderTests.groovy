@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.TestClass
 import org.hibernate.cfg.ImprovedNamingStrategy
+import org.hibernate.mapping.Bag
 import org.hibernate.mapping.Column
 import org.hibernate.mapping.ForeignKey
 import org.hibernate.mapping.PersistentClass
@@ -85,6 +86,19 @@ class Pet {
 }
 '''
 
+    private static final String BAG_ONE_TO_MANY_CLASSES_DEFINITION = '''
+class Bagged {
+    Long id
+    Long version
+    String description
+}
+class Bagger {
+    Long id
+    Long version
+    Collection bagged
+    static hasMany = [bagged: Bagged]
+}'''
+
     private static final String MANY_TO_MANY_CLASSES_DEFINITION = '''
 class Specialty {
     Long id
@@ -101,6 +115,22 @@ class Vet {
     static hasMany = [specialities:Specialty]
 }
 '''
+
+    private static final String BAG_MANY_TO_MANY_CLASSES_DEFINITION = '''
+class ManyBagged {
+    Long id
+    Long version
+    String name
+    Collection baggers
+    static hasMany = [baggers: ManyBagger]
+    static belongsTo = ManyBagger
+}
+class ManyBagger {
+    Long id
+    Long version
+    Collection bagged
+    static hasMany = [bagged: ManyBagged]
+}'''
 
     private static final String MULTI_COLUMN_USER_TYPE_DEFINITION = '''
 import org.codehaus.groovy.grails.orm.hibernate.cfg.*
@@ -848,6 +878,32 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testManyToManyWithBag() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(BAG_MANY_TO_MANY_CLASSES_DEFINITION)
+
+        org.hibernate.mapping.Collection c = findCollection(config, 'ManyBagged.baggers')
+        assertNotNull c
+        assertTrue c instanceof Bag
+        assertSame getTableMapping('many_bagged', config), c.table
+
+        c = findCollection(config, 'ManyBagger.bagged')
+        assertNotNull c
+        assertTrue c instanceof Bag
+        assertSame getTableMapping('many_bagger', config), c.table
+    }
+
+    void testOneToManyWithBag() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig(BAG_ONE_TO_MANY_CLASSES_DEFINITION)
+        org.hibernate.mapping.Collection c = findCollection(config, 'Bagger.bagged')
+        assertNotNull c
+        assertTrue c instanceof Bag
+        assertSame getTableMapping('bagger', config), c.table
+    }
+
+    private org.hibernate.mapping.Collection findCollection(DefaultGrailsDomainConfiguration config, String role) {
+        config.collectionMappings.find { it.role == role }
+    }
+
     private DefaultGrailsDomainConfiguration getDomainConfig(String classesDefinition) {
         cl.parseClass(classesDefinition)
         return getDomainConfig(cl, cl.loadedClasses)
@@ -937,4 +993,3 @@ class TestManySide {
        }
    }
 }
-

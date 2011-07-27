@@ -140,6 +140,17 @@ public final class GrailsDomainBinder {
             }
         };
 
+        private static CollectionType BAG = new CollectionType(java.util.Collection.class) {
+            @Override
+            public Collection create(GrailsDomainClassProperty property, PersistentClass owner,
+                    String path, Mappings mappings, String sessionFactoryBeanName) throws MappingException {
+                Bag coll = new Bag(mappings, owner);
+                coll.setCollectionTable(owner.getTable());
+                bindCollection(property, coll, owner, mappings, path, sessionFactoryBeanName);
+                return coll;
+            }
+        };
+
         private static CollectionType MAP = new CollectionType(Map.class) {
             @Override
             public Collection create(GrailsDomainClassProperty property, PersistentClass owner,
@@ -155,6 +166,7 @@ public final class GrailsDomainBinder {
               Set.class, SET,
               SortedSet.class, SET,
               List.class, LIST,
+              java.util.Collection.class, BAG,
               Map.class, MAP);
 
         public static CollectionType collectionTypeForClass(Class<?> clazz) {
@@ -988,6 +1000,9 @@ public final class GrailsDomainBinder {
         }
         else if (collection instanceof org.hibernate.mapping.Map) {
             mappings.addSecondPass(new MapSecondPass(property, mappings, collection, sessionFactoryBeanName));
+        }
+        else { // Collection -> Bag
+            mappings.addSecondPass(new GrailsCollectionSecondPass(property, mappings, collection, sessionFactoryBeanName));
         }
     }
 
