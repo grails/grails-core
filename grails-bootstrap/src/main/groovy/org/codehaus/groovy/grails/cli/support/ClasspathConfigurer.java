@@ -156,11 +156,11 @@ public class ClasspathConfigurer {
         if (providedResolveReport != null && providedResolveReport.hasError()) {
             handleResolveError(settings, providedResolveReport);
         }
+        settings.storeDependencyCache();
         return urls.toArray(new URL[urls.size()]);
     }
 
     private void handleResolveError(@SuppressWarnings("hiding") BuildSettings settings, ResolveReport buildResolveReport) {
-        settings.storeDependencyCache();
         cleanResolveCache(settings);
         GrailsConsole.getInstance().error(new ResolveException(buildResolveReport).getMessage());
         if (exitOnResolveError) {
