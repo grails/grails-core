@@ -56,6 +56,17 @@ public interface UrlMappingsHolder {
     UrlCreator getReverseMapping(String controller, String action, Map params);
 
     /**
+     * Retrieves the best guess of a URI for the given controller, action and parameters or null if non could be found.
+     *
+     * @param controller The name of the controller
+     * @param action The name of the action or null
+     * @param params The parameters or null
+     * @return A URI for the given arguments
+     */
+    @SuppressWarnings("rawtypes")
+    UrlCreator getReverseMappingNoDefault(String controller, String action, Map params);
+
+    /**
      * Match and return the first UrlMappingInfo instance possible
      *
      * @param uri The URI to match

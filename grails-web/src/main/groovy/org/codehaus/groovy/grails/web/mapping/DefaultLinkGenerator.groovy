@@ -88,8 +88,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
                 def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
+                boolean isDefaultAction = false
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName(controller)
+                    isDefaultAction = true
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
                 def frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
@@ -103,7 +105,13 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 if (id != null) {
                     params.put(ATTRIBUTE_ID, id)
                 }
-                UrlCreator mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
+                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,params)
+                if(mapping == null && isDefaultAction) {
+                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,params)
+                }
+                if(mapping == null) {
+                    mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
+                }
 
                 if (!attrs.get(ATTRIBUTE_ABSOLUTE)) {
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
