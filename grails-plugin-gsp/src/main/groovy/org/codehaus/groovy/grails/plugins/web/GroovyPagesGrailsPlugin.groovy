@@ -137,7 +137,7 @@ class GroovyPagesGrailsPlugin {
         }
 
         def deployed = application.warDeployed
-        groovyPageLocator(deployed ? CachingGrailsConventionGroovyPageLocator : GrailsConventionGroovyPageLocator) { bean ->
+        groovyPageLocator(CachingGrailsConventionGroovyPageLocator) { bean ->
             bean.lazyInit = true
             if (customResourceLoader) {
                 resourceLoader = groovyPageResourceLoader
@@ -150,7 +150,7 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-        grailsResourceLocator(deployed ? CachingGroovyPageStaticResourceLocator : GroovyPageStaticResourceLocator) { bean ->
+        grailsResourceLocator(CachingGroovyPageStaticResourceLocator) { bean ->
             bean.parent = "abstractGrailsResourceLocator"
         }
 

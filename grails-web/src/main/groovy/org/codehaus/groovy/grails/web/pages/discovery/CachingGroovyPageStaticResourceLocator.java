@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.web.pages.discovery;
 
+import grails.util.Environment;
 import org.springframework.core.io.Resource;
 
 import java.util.Map;
@@ -37,10 +38,11 @@ public class CachingGroovyPageStaticResourceLocator extends GroovyPageStaticReso
         Resource resource = uriResolveCache.get(uri);
         if (resource == null) {
             resource = super.findResourceForURI(uri);
-            if (resource == null) {
+            if (resource == null && Environment.isWarDeployed()) {
                 resource = NULL_RESOURCE;
             }
-            uriResolveCache.put(uri, resource);
+            if(resource != null)
+                uriResolveCache.put(uri, resource);
         }
         return resource == NULL_RESOURCE ? null : resource;
     }
