@@ -27,20 +27,16 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * Support class for dealing with calls to withFormat.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class MimeTypesApiSupport {
 
     def withFormat(HttpServletRequest request, Closure callable) {
-        def formats = getDefinedFormats(callable)
-
-        return withFormatInternal(request, formats)
+        return withFormatInternal(request, getDefinedFormats(callable))
     }
 
     def withFormat(HttpServletResponse response, Closure callable) {
-        def formats = getDefinedFormats(callable)
-
-        return withFormatInternal(response, formats)
+        return withFormatInternal(response, getDefinedFormats(callable))
     }
 
     protected withFormatInternal(formatProvider, Map formats) {

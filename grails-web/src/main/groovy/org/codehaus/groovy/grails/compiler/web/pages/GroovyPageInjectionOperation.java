@@ -17,7 +17,7 @@ import java.util.List;
  * attempt AST injection.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public class GroovyPageInjectionOperation extends GrailsAwareInjectionOperation {
 

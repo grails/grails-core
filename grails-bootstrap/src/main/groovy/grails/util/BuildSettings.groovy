@@ -15,23 +15,23 @@
  */
 package grails.util
 
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.build.logging.GrailsConsole
+
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+
+import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.util.ChecksumHelper
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
+import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
-import org.codehaus.groovy.grails.resolve.ResolveException
-import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
-import org.apache.ivy.core.report.ResolveReport
-import org.apache.ivy.core.report.ArtifactDownloadReport
 
 /**
  * <p>Represents the project paths and other build settings
@@ -45,6 +45,7 @@ import org.apache.ivy.core.report.ArtifactDownloadReport
  * to ensure consistent behaviour.</p>
  */
 class BuildSettings extends AbstractBuildSettings {
+
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 
     /**
@@ -297,16 +298,13 @@ class BuildSettings extends AbstractBuildSettings {
                 if (potentialScript.exists()) {
                     return potentialScript
                 }
-                else {
-                    try {
-                        return classLoader.loadClass("${name}_")
-                    }
-                    catch (e) {
-                        return classLoader.loadClass(name)
-                    }
+                try {
+                    return classLoader.loadClass("${name}_")
+                }
+                catch (e) {
+                    return classLoader.loadClass(name)
                 }
             }
-
         }
     }
 
@@ -392,7 +390,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (internalCompileDependencies) return internalCompileDependencies
         Message.info "Resolving [compile] dependencies..."
         List<File> jarFiles
-        if(shouldResolve()) {
+        if (shouldResolve()) {
 
             def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
             jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
@@ -409,8 +407,9 @@ class BuildSettings extends AbstractBuildSettings {
     private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
         def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
         for (z in pluginZips) {
-            if (!pluginDependencies.contains(z))
+            if (!pluginDependencies.contains(z)) {
                 pluginDependencies.add(z)
+            }
         }
         scopePluginDependencies.addAll(pluginZips)
         resolveCache[scope] = jarFiles
@@ -442,7 +441,7 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultTestDependencies = {
         Message.info "Resolving [test] dependencies..."
         if (internalTestDependencies) return internalTestDependencies
-        if(shouldResolve()) {
+        if (shouldResolve()) {
 
             testResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
             def jarFiles = testResolveReport.getArtifactsReports(null, false).localFile + applicationJars
@@ -479,7 +478,7 @@ class BuildSettings extends AbstractBuildSettings {
     @Lazy List<File> defaultRuntimeDependencies = {
         Message.info "Resolving [runtime] dependencies..."
         if (internalRuntimeDependencies) return internalRuntimeDependencies
-        if(shouldResolve()) {
+        if (shouldResolve()) {
 
             runtimeResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
             def jarFiles = runtimeResolveReport.getArtifactsReports(null, false).localFile + applicationJars
@@ -488,9 +487,7 @@ class BuildSettings extends AbstractBuildSettings {
 
             return jarFiles
         }
-        else {
-            return []
-        }
+        return []
     }()
 
     private List<File> providedDependencies = []
@@ -520,7 +517,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         if (internalProvidedDependencies) return internalProvidedDependencies
 
-        if(shouldResolve()) {
+        if (shouldResolve()) {
 
             Message.info "Resolving [provided] dependencies..."
             providedResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
@@ -530,9 +527,7 @@ class BuildSettings extends AbstractBuildSettings {
             Message.debug("Resolved jars for [provided]: ${{-> jarFiles.join('\n')}}")
             return jarFiles
         }
-        else {
-            return []
-        }
+        return []
     }()
 
     private List<File> buildDependencies = []
@@ -554,9 +549,9 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginCompileDependencies() {
         // ensure initialization
-        if (!internalPluginCompileDependencies)
+        if (!internalPluginCompileDependencies) {
             getCompileDependencies()
-
+        }
 
         return internalPluginCompileDependencies
     }
@@ -568,9 +563,9 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginProvidedDependencies() {
         // ensure initialization
-        if (!internalPluginProvidedDependencies)
+        if (!internalPluginProvidedDependencies) {
             getProvidedDependencies()
-
+        }
 
         return internalPluginProvidedDependencies
     }
@@ -581,9 +576,9 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginRuntimeDependencies() {
         // ensure initialization
-        if (!internalPluginRuntimeDependencies)
+        if (!internalPluginRuntimeDependencies) {
             getRuntimeDependencies()
-
+        }
 
         return internalPluginRuntimeDependencies
     }
@@ -595,9 +590,9 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginTestDependencies() {
         // ensure initialization
-        if (!internalPluginTestDependencies)
+        if (!internalPluginTestDependencies) {
             getTestDependencies()
-
+        }
 
         return internalPluginTestDependencies
     }
@@ -609,9 +604,9 @@ class BuildSettings extends AbstractBuildSettings {
      */
     List<File> getPluginBuildDependencies() {
         // ensure initialization
-        if (!internalPluginBuildDependencies)
+        if (!internalPluginBuildDependencies) {
             getBuildDependencies()
-
+        }
 
         return internalPluginBuildDependencies
     }
@@ -622,6 +617,7 @@ class BuildSettings extends AbstractBuildSettings {
     void setBuildDependencies(List<File> deps) {
         buildDependencies = deps
     }
+
     /**
      * List containing the dependencies required for the build system only
      */
@@ -632,7 +628,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         if (internalBuildDependencies) return internalBuildDependencies
 
-        if(shouldResolve()) {
+        if (shouldResolve()) {
 
             Message.info "Resolving [build] dependencies..."
             buildResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
@@ -643,9 +639,7 @@ class BuildSettings extends AbstractBuildSettings {
 
             return jarFiles
         }
-        else {
-            return []
-        }
+        return []
     }()
 
     protected boolean shouldResolve() {
@@ -724,7 +718,7 @@ class BuildSettings extends AbstractBuildSettings {
         // Update the base directory. This triggers some extra config.
         setBaseDir(baseDir)
 
-        if(![Environment.DEVELOPMENT, Environment.TEST].contains(Environment.current)) {
+        if (![Environment.DEVELOPMENT, Environment.TEST].contains(Environment.current)) {
             modified = true
         }
 
@@ -733,23 +727,20 @@ class BuildSettings extends AbstractBuildSettings {
         // otherwise it loads the script class using the Gant classloader.
     }
 
-    public void storeDependencyCache() {
+    void storeDependencyCache() {
         projectWorkDir.mkdirs()
         if (resolveChecksum) {
             try {
-                if(resolveCache.size() == 5 && !readFromCache) {
+                if (resolveCache.size() == 5 && !readFromCache) {
                     def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
                     cachedResolve.withOutputStream { output ->
-                        def oos = new ObjectOutputStream(output)
-                        oos.writeObject(resolveCache)
-
+                        new ObjectOutputStream(output).writeObject(resolveCache)
                     }
                 }
             }
             catch (e) {
                 ClasspathConfigurer.cleanResolveCache(this)
             }
-
         }
     }
 
@@ -961,7 +952,6 @@ class BuildSettings extends AbstractBuildSettings {
             StackTraceUtils.deepSanitize e
             throw e
         }
-
     }
 
     ConfigObject loadConfig(ConfigObject config) {
@@ -1058,7 +1048,7 @@ class BuildSettings extends AbstractBuildSettings {
                             modified = true
                         }
 
-                        if(!modified) {
+                        if (!modified) {
                             readFromCache = true
                         }
                     }
@@ -1108,7 +1098,6 @@ class BuildSettings extends AbstractBuildSettings {
                 catch (e) {
                     CONSOLE.error "WARNING: Error configuring proxy settings: ${e.message}", e
                 }
-
             }
 
             settingsFileLoaded = true
@@ -1145,7 +1134,6 @@ class BuildSettings extends AbstractBuildSettings {
                     break
             }
         } as TransferListener
-
 
         def grailsConfig = config.grails
 
@@ -1230,7 +1218,6 @@ class BuildSettings extends AbstractBuildSettings {
                 catch (e) {
                     CONSOLE.error "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}", e
                 }
-
             }
         }
         return handlePluginDirectory
@@ -1352,23 +1339,25 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     protected void parseGrailsBuildListeners() {
-        if (!buildListenersSet) {
-            def listenersValue = System.getProperty(BUILD_LISTENERS) ?: config.grails.build.listeners // Anyway to use the constant to do this?
-            if (listenersValue) {
-                def add = {
-                    if (it instanceof String) {
-                        it.split(',').each { this.@buildListeners << it }
-                    } else if (it instanceof Class) {
-                        this.@buildListeners << it
-                    } else {
-                        throw new IllegalArgumentException("$it is not a valid value for $BUILD_LISTENERS")
-                    }
-                }
-
-                (listenersValue instanceof Collection) ? listenersValue.each(add) : add(listenersValue)
-            }
-            buildListenersSet = true
+        if (buildListenersSet) {
+            return
         }
+
+        def listenersValue = System.getProperty(BUILD_LISTENERS) ?: config.grails.build.listeners // Anyway to use the constant to do this?
+        if (listenersValue) {
+            def add = {
+                if (it instanceof String) {
+                    it.split(',').each { this.@buildListeners << it }
+                } else if (it instanceof Class) {
+                    this.@buildListeners << it
+                } else {
+                    throw new IllegalArgumentException("$it is not a valid value for $BUILD_LISTENERS")
+                }
+            }
+
+            (listenersValue instanceof Collection) ? listenersValue.each(add) : add(listenersValue)
+        }
+        buildListenersSet = true
     }
 
     private getPropertyValue(String propertyName, Properties props, String defaultValue) {
@@ -1430,7 +1419,7 @@ class BuildSettings extends AbstractBuildSettings {
         System.getProperty(FUNCTIONAL_BASE_URL_PROPERTY)
     }
 
-    public File getBasePluginDescriptor () {
+    File getBasePluginDescriptor() {
         File basePluginFile = baseDir?.listFiles()?.find { it.name.endsWith("GrailsPlugin.groovy")}
 
         if (basePluginFile?.exists()) {

@@ -46,7 +46,7 @@ class JavascriptTagLib {
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
         def hasJquery = ClassUtils.isPresent("org.codehaus.groovy.grails.plugins.jquery.JQueryProvider", cl)
-        if(hasJquery) {
+        if (hasJquery) {
             try {
                 defaultProvider = cl.loadClass("org.codehaus.groovy.grails.plugins.jquery.JQueryProvider")
             } catch (e) {
@@ -335,7 +335,7 @@ a 'params' key to the [url] attribute instead.""")
         // get javascript provider
         def p = getProvider()
         def url = attrs.url
-        if(!url instanceof String) {
+        if (!url instanceof String) {
             url = deepClone(attrs.url)
         }
 
@@ -430,12 +430,10 @@ a 'params' key to the [url] attribute instead.""")
         setUpRequestAttributes()
         def providerClass = PROVIDER_MAPPINGS.find { request[JavascriptTagLib.INCLUDED_LIBRARIES]?.contains(it.key) }?.value
         if (providerClass == null) {
-            if(defaultProvider != null) {
-                return defaultProvider.newInstance()
-            }
-            else {
+            if (defaultProvider == null) {
                 throw new GrailsTagException("No javascript provider is configured")
             }
+            return defaultProvider.newInstance()
         }
         return providerClass.newInstance()
     }

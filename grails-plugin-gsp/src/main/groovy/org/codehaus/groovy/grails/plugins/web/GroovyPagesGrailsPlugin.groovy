@@ -137,9 +137,9 @@ class GroovyPagesGrailsPlugin {
         }
 
         def deployed = application.warDeployed
-        groovyPageLocator(deployed ? CachingGrailsConventionGroovyPageLocator : GrailsConventionGroovyPageLocator) { bean ->
+        groovyPageLocator(CachingGrailsConventionGroovyPageLocator) { bean ->
             bean.lazyInit = true
-            if(customResourceLoader) {
+            if (customResourceLoader) {
                 resourceLoader = groovyPageResourceLoader
             }
             if (deployed) {
@@ -148,11 +148,12 @@ class GroovyPagesGrailsPlugin {
                     location = "classpath:gsp/views.properties"
                 }
             }
-
         }
-        grailsResourceLocator(deployed ? CachingGroovyPageStaticResourceLocator : GroovyPageStaticResourceLocator) { bean ->
+
+        grailsResourceLocator(CachingGroovyPageStaticResourceLocator) { bean ->
             bean.parent = "abstractGrailsResourceLocator"
         }
+
         // Setup the main templateEngine used to render GSPs
         groovyPagesTemplateEngine(GroovyPagesTemplateEngine) { bean ->
             classLoader = ref("classLoader")

@@ -41,63 +41,64 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
         controllerClass = gcl.parseClass('''
         class TestController {
-        
+
             def closureAction = { PersonCommand p ->
                 [person: p]
             }
-            
+
             def methodAction(PersonCommand p) {
                 [person: p]
             }
-            
+
             def closureActionWithArtist = { ArtistCommand a ->
                 [artist: a]
             }
-            
+
             def methodActionWithArtist(ArtistCommand a) {
                 [artist: a]
             }
-            
+
             def methodActionWithArtistSubclass(ArtistSubclass a) {
                 [artist: a]
             }
-            
+
             def closureActionWithArtistSubclass = { ArtistSubclass a ->
                 [artist: a]
             }
-            
+
             def methodActionWithDate(DateComamndObject co) {
                 [command: co]
             }
-            
+
             def closureActionWithDate = { DateComamndObject co ->
                 [command: co]
             }
-            
+
             def closureActionWithMultipleCommandObjects = { PersonCommand p, ArtistCommand a ->
                 [person: p, artist: a]
             }
-            
+
             def methodActionWithMultipleCommandObjects(PersonCommand p, ArtistCommand a)  {
                 [person: p, artist: a]
             }
         }
+
         class PersonCommand {
             String name
             def theAnswer
-            
+
             static constraints = {
                 name matches: /[A-Z]+/
             }
-            
         }
+
         class ArtistCommand {
             String name
             static constraints = {
                 name shared: 'isProg'
             }
         }
-        
+
         class ArtistSubclass extends ArtistCommand {
             String bandName
             static constraints = {
@@ -138,17 +139,17 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         when:
             controller.params.name = 'Emerson'
             def model = controller.methodActionWithMultipleCommandObjects()
-            
+
         then:
             model.person
             model.artist
             model.artist.name == 'Emerson'
             model.person.name == 'Emerson'
-            
+
         when:
             controller.params.name = 'Emerson'
             model = controller.closureActionWithMultipleCommandObjects()
-            
+
         then:
             model.person
             model.artist
@@ -161,18 +162,18 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             controller.params.person = [name: 'Emerson']
             controller.params.artist = [name: 'Lake']
             def model = controller.methodActionWithMultipleCommandObjects()
-            
+
         then:
             model.person
             model.artist
             model.artist.name == 'Lake'
             model.person.name == 'Emerson'
-            
+
         when:
             controller.params.person = [name: 'Emerson']
             controller.params.artist = [name: 'Lake']
             model = controller.closureActionWithMultipleCommandObjects()
-            
+
         then:
             model.person
             model.artist
@@ -183,50 +184,50 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
     void "Test clearErrors"() {
         when:
         def model = controller.methodActionWithArtist()
-    
+
         then:
             model.artist
             model.artist.name == null
             model.artist.hasErrors()
             model.artist.errors.errorCount == 1
-        
+
         when:
             model.artist.clearErrors()
-            
+
         then:
             !model.artist.hasErrors()
             model.artist.errors.errorCount == 0
     }
-    
+
     void "Test nullability"() {
         when:
             def model = controller.methodActionWithArtist()
             def nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
-        
+
         then:
             model.artist
             model.artist.name == null
             nameErrorCodes
             'artistCommand.name.nullable.error' in nameErrorCodes
-            
+
         when:
             model = controller.closureActionWithArtist()
             nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
-        
+
         then:
             model.artist
             model.artist.name == null
             nameErrorCodes
             'artistCommand.name.nullable.error' in nameErrorCodes
     }
-    
+
     void "Test command object gets autowired"() {
         when:
             def model = controller.methodAction()
 
         then:
             model.person.theAnswer == 42
-            
+
         when:
             model = controller.closureAction()
 
@@ -238,23 +239,23 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         when:
             controller.params.name = 'JFK'
             def model = controller.methodAction()
-        
+
         then:
             !model.person.hasErrors()
             model.person.name == 'JFK'
-            
+
         when:
             controller.params.name = 'JFK'
             model = controller.closureAction()
-        
+
         then:
             !model.person.hasErrors()
             model.person.name == 'JFK'
-            
+
         when:
             controller.params.name = 'Maynard'
             model = controller.closureAction()
-        
+
         then:
             model.person.hasErrors()
             model.person.name == 'Maynard'
@@ -262,48 +263,48 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         when:
             controller.params.name = 'Maynard'
             model = controller.methodAction()
-        
+
         then:
             model.person.hasErrors()
             model.person.name == 'Maynard'
     }
-    
+
     void "Test validation with inherited constraints"() {
 
         when:
             controller.params.name = 'Emerson'
             controller.params.bandName = 'Emerson Lake and Palmer'
             def model = controller.closureActionWithArtistSubclass()
-            
+
         then:
             model.artist
             model.artist.name == 'Emerson'
             model.artist.bandName == 'Emerson Lake and Palmer'
             !model.artist.hasErrors()
-        
+
         when:
             controller.params.name = 'Emerson'
             controller.params.bandName = 'Emerson Lake and Palmer'
             model = controller.methodActionWithArtistSubclass()
-            
+
         then:
             model.artist
             model.artist.name == 'Emerson'
             model.artist.bandName == 'Emerson Lake and Palmer'
             !model.artist.hasErrors()
-            
+
         when:
             controller.params.clear()
             model = controller.closureActionWithArtistSubclass()
-                
+
         then:
             model.artist
             model.artist.hasErrors()
             model.artist.errors.errorCount == 2
-    
+
         when:
             model = controller.methodActionWithArtistSubclass()
-                
+
         then:
             model.artist
             model.artist.hasErrors()

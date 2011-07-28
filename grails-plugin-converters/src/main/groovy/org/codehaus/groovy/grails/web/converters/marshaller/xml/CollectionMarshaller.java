@@ -38,7 +38,7 @@ public class CollectionMarshaller implements ObjectMarshaller<XML>, NameAwareMar
     public void marshalObject(Object object, XML xml) throws ConverterException {
         Collection col = (Collection) object;
         for (Object o : col) {
-            if(o != null) {
+            if (o != null) {
                 xml.startNode(xml.getElementName(o));
                 xml.convertAnother(o);
                 xml.end();

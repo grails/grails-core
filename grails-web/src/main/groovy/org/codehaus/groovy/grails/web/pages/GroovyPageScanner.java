@@ -136,12 +136,12 @@ class GroovyPageScanner implements Tokens {
             else if (!levelTokens.empty() && (c == ')' || c == '}' || c == ']') && levelTokens.peek().equals(c)) {
                 levelTokens.pop();
                 continue;
-            } else if(begin1 > 0 && (c == '{' || c == '(' || c == '[')) {
-                if(c == '{') {
+            } else if (begin1 > 0 && (c == '{' || c == '(' || c == '[')) {
+                if (c == '{') {
                     levelTokens.push('}');
-                } else if(c == '(') {
+                } else if (c == '(') {
                     levelTokens.push(')');
-                } else if(c == '[' && !levelTokens.empty()) {
+                } else if (c == '[' && !levelTokens.empty()) {
                     levelTokens.push(']');
                 }
                 continue;
@@ -256,8 +256,8 @@ class GroovyPageScanner implements Tokens {
     }
 
     private void checkValidExpressionState(char c, char c1, int left) {
-        if(isPotentialScriptletOrTag(c, left)) {
-            if(isStartScriptletBlock(c1)) {
+        if (isPotentialScriptletOrTag(c, left)) {
+            if (isStartScriptletBlock(c1)) {
                 throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
             }
 
@@ -268,7 +268,7 @@ class GroovyPageScanner implements Tokens {
                 throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
             }
         }
-        else if(isStartOfGExpression(c, c1)) {
+        else if (isStartOfGExpression(c, c1)) {
             throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
         }
     }

@@ -171,11 +171,12 @@ class LinkGeneratorSpec extends Specification {
 
     protected getGenerator(boolean cache=false) {
         def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
-        def urlMappingsHolder = [getReverseMapping:{ String controller, String action, Map params ->
+        final callable = { String controller, String action, Map params ->
             [createRelativeURL: { String c, String a, Map parameterValues, String encoding, String fragment ->
                 "/$controller/$action".toString()
             }] as UrlCreator
-        }] as UrlMappingsHolder
+        }
+        def urlMappingsHolder = [getReverseMapping: callable,getReverseMappingNoDefault: callable] as UrlMappingsHolder
 
         generator.urlMappingsHolder = urlMappingsHolder
         if (pluginManager) {

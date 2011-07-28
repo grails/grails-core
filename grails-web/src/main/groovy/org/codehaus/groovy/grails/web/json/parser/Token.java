@@ -77,7 +77,7 @@ public class Token {
      * No-argument constructor
      */
     public Token() {
-   	 // default
+        // default
     }
 
     /**

@@ -17,7 +17,6 @@
 package grails.test.mixin.web
 
 import grails.artefact.Enhanced
-import groovy.lang.Closure
 import groovy.text.Template
 
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
@@ -46,9 +45,9 @@ import org.junit.Assert
  * will be loaded on demand </p>
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
-class GroovyPageUnitTestMixin extends ControllerUnitTestMixin{
+class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
 
     /**
      * Mocks a tag library, making it available to subsequent calls to controllers mocked via

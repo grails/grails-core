@@ -41,10 +41,10 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
 
 /**
- * Adds the withFormat and other mime related methods to controllers at compile time
+ * Adds the withFormat and other mime related methods to controllers at compile time.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class MimeTypesTransformer implements GrailsArtefactClassInjector {

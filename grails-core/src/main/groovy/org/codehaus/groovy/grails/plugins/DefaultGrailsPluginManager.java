@@ -16,17 +16,18 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.Environment;
-import grails.util.Metadata;
-import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-import groovy.lang.Writable;
-import groovy.util.XmlSlurper;
-import groovy.util.slurpersupport.GPathResult;
+import groovy.xml.DOMBuilder;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -50,7 +51,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import groovy.xml.DOMBuilder;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,8 +71,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -682,7 +680,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager impl
                 }
             }
 
-            if(ClassUtils.isPresent("javax.servlet.AsyncContext", Thread.currentThread().getContextClassLoader())) {
+            if (ClassUtils.isPresent("javax.servlet.AsyncContext", Thread.currentThread().getContextClassLoader())) {
                 new Servlet3AsyncWebXmlProcessor().process(documentElement);
             }
             writeWebDescriptorResult(documentElement, target);

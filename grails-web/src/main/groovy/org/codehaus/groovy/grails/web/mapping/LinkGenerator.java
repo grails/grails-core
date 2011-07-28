@@ -25,7 +25,7 @@ import java.util.Set;
  * Generates links for a Grails application based on URL mapping rules and/or base context settings.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface LinkGenerator {
 

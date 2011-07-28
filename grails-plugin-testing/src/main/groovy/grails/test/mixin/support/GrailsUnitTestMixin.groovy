@@ -37,10 +37,10 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.context.support.StaticMessageSource
 
 /**
- * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down
+ * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class GrailsUnitTestMixin {
 

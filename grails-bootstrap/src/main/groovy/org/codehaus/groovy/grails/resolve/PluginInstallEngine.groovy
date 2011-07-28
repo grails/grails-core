@@ -300,12 +300,10 @@ class PluginInstallEngine {
      */
     List readMetadataFromZip(String zipLocation) {
         def list= pluginSettings.readMetadataFromZip(zipLocation)
-        if(list == null)  {
+        if (list == null)  {
            errorHandler "Zip $zipLocation is not a valid plugin"
         }
-        else {
-           return list
-        }
+        return list
     }
 
     /**

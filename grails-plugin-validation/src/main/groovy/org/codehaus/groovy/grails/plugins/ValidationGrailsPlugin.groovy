@@ -58,7 +58,7 @@ class ValidationGrailsPlugin {
         // make all of these classes 'validateable'
         for (validateableClass in validateables) {
             log.debug "Making Class Validateable: ${validateableClass.name}"
-            if(validateableClass instanceof Class) {
+            if (validateableClass instanceof Class) {
                 addValidationMethods(application, validateableClass, ctx)
             }
         }

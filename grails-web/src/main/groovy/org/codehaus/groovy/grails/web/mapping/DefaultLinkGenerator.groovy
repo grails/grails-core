@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * A link generating service for applications to use when generating links
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     String configuredServerBaseURL
@@ -41,7 +41,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     @Autowired
     UrlMappingsHolder urlMappingsHolder
 
-
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
         this.configuredServerBaseURL = serverBaseURL
         this.contextPath = contextPath
@@ -50,8 +49,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     DefaultLinkGenerator(String serverBaseURL) {
         this.configuredServerBaseURL = serverBaseURL
     }
-
-
 
     /**
      * {@inheritDoc }
@@ -91,8 +88,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
                 def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
+                boolean isDefaultAction = false
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName(controller)
+                    isDefaultAction = true
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
                 def frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
@@ -106,7 +105,13 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 if (id != null) {
                     params.put(ATTRIBUTE_ID, id)
                 }
-                UrlCreator mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
+                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,params)
+                if(mapping == null && isDefaultAction) {
+                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,params)
+                }
+                if(mapping == null) {
+                    mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
+                }
 
                 if (!attrs.get(ATTRIBUTE_ABSOLUTE)) {
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
@@ -129,7 +134,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             }
         }
         return writer.toString()
-
     }
 
     /**
@@ -235,8 +239,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         return u
     }
 
-
-
     String getServerBaseURL() {
         return makeServerURL()
     }
@@ -244,6 +246,4 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager
     }
-
-
 }

@@ -25,7 +25,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 /**
  * A link generator that uses a LRU cache to cache generated links.
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")

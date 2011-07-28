@@ -21,11 +21,10 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.Map;
 
 /**
- *
- * Constructs the default constraints evaluator instance
+ * Constructs the default constraints evaluator instance.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ConstraintsEvaluatorFactoryBean implements FactoryBean<ConstraintsEvaluator>, InitializingBean {
     private ConstraintsEvaluator constraintsEvaluator;

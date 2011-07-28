@@ -25,10 +25,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 
 /**
- * A GrailsPluginManager implementation that outputs profile data to a logger
+ * A GrailsPluginManager implementation that outputs profile data to a logger.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ProfilingGrailsPluginManager extends DefaultGrailsPluginManager {
 

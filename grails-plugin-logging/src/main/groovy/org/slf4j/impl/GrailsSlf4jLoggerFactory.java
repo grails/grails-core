@@ -24,10 +24,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Creates Slf4j loggers
+ * Creates Slf4j loggers.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsSlf4jLoggerFactory implements ILoggerFactory {
 

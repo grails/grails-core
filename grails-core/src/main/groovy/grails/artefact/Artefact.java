@@ -23,10 +23,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to define the artefact type for classes declared outside of Grails' usual conventions
+ * Used to define the artefact type for classes declared outside of Grails' usual conventions.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

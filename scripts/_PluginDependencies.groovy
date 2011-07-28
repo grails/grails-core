@@ -65,9 +65,9 @@ pluginsBase = "${grailsWorkDir}/plugins".toString().replaceAll('\\\\','/')
 target(resolveDependencies:"Resolve plugin dependencies") {
     depends(parseArguments, initInplacePlugins)
     def pluginZips = grailsSettings.pluginDependencies
-    
+
     def installEngine = createPluginInstallEngine()
-    for(zip in pluginZips) {
+    for (zip in pluginZips) {
         installEngine.installPlugin(zip)
     }
 
@@ -142,7 +142,7 @@ target(loadPlugins:"Loads Grails' plugins") {
         // Add the plugin manager to the binding so that it can be accessed from any target.
         pluginManager = PluginManagerHolder.pluginManager
     }
-  
+
     PluginManagerHolder.inCreation = true
     def pluginFiles = pluginSettings.getPluginDescriptorsForCurrentEnvironment()
 
@@ -210,6 +210,7 @@ target(loadPlugins:"Loads Grails' plugins") {
         }
     }
     catch (Exception e) {
+        PluginManagerHolder.inCreation = false        
         grailsConsole.error "Error loading plugin manager: " + e.message , e
         exit(1)
     }
@@ -229,7 +230,6 @@ readPluginXmlMetadata = { String pluginName ->
 readAllPluginXmlMetadata = {->
     pluginSettings.pluginXmlMetadata.findAll { it.file.exists() }.collect { new XmlSlurper().parse(it.file) }
 }
-
 
 /**
  * Runs a script contained within a plugin

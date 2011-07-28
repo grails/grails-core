@@ -22,10 +22,8 @@ import java.util.Collection;
 /**
  * Used to locate resources at development or production time.
  *
- *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
 public interface ResourceLocator {
 
@@ -42,6 +40,7 @@ public interface ResourceLocator {
      * @param searchLocations The locations to search
      */
     void setSearchLocations(Collection<String> searchLocations);
+
     /**
      * Finds a resource for the given URI
      * @param uri The URI

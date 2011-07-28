@@ -240,7 +240,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertEquals 'Tag [select] is missing required attribute [name]', message
         }
     }
-    
+
     void testDatePickerWithYearsAndRelativeYearsAttribute() {
         final StringWriter sw = new StringWriter()
         final PrintWriter pw = new PrintWriter(sw)
@@ -252,26 +252,26 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertEquals "Tag [datePicker] does not allow both the years and relativeYears attributes to be used together.", msg
         }
     }
-    
+
     void testDatePickerWithInvalidRelativeYears() {
         final StringWriter sw = new StringWriter()
         final PrintWriter pw = new PrintWriter(sw)
 
         withTag("datePicker", pw) { tag ->
-            def msg = shouldFail(GrailsTagException) { 
+            def msg = shouldFail(GrailsTagException) {
                 tag(relativeYears: 'not an integer range')
             }
             assertEquals "The [datePicker] relativeYears attribute must be a range of int.", msg
         }
     }
-    
+
     void testDatePickerWithRelativeYears() {
         def now = Calendar.instance
         def currentYear = now.get(Calendar.YEAR)
-        
+
         def template = '<g:datePicker relativeYears="[-2..5]"/>'
         def result = applyTemplate(template)
-        
+
         assertEquals(-1, result.indexOf("""<option value="${currentYear - 4}">${currentYear - 4}</option>"""))
         assertEquals(-1, result.indexOf("""<option value="${currentYear - 3}">${currentYear - 3}</option>"""))
         assertTrue result.contains("""<option value="${currentYear - 2}">${currentYear - 2}</option>""")
@@ -284,10 +284,10 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         assertTrue result.contains("""<option value="${currentYear + 5}">${currentYear + 5}</option>""")
         assertEquals(-1, result.indexOf("""<option value="${currentYear + 6}">${currentYear + 6}</option>"""))
         assertEquals(-1, result.indexOf("""<option value="${currentYear + 7}">${currentYear + 7}</option>"""))
-        
+
         template = '<g:datePicker relativeYears="${-2..5}"/>'
         result = applyTemplate(template)
-        
+
         assertEquals(-1, result.indexOf("""<option value="${currentYear - 4}">${currentYear - 4}</option>"""))
         assertEquals(-1, result.indexOf("""<option value="${currentYear - 3}">${currentYear - 3}</option>"""))
         assertTrue result.contains("""<option value="${currentYear - 2}">${currentYear - 2}</option>""")

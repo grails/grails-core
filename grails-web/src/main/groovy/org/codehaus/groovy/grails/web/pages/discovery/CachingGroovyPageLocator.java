@@ -38,12 +38,12 @@ public class CachingGroovyPageLocator extends DefaultGroovyPageLocator{
     @Override
     public GroovyPageScriptSource findPage(String uri) {
         GroovyPageScriptSource scriptSource = resourceResolveCache.get(uri);
-        if(scriptSource == null) {
+        if (scriptSource == null) {
             scriptSource = super.findPage(uri);
-            if(scriptSource == null && Environment.isWarDeployed()) {
+            if (scriptSource == null && Environment.isWarDeployed()) {
                 resourceResolveCache.put(uri, NULL_SCRIPT);
             }
-            else if(scriptSource != null){
+            else if (scriptSource != null){
                 resourceResolveCache.put(uri, scriptSource);
             }
         }
@@ -53,12 +53,12 @@ public class CachingGroovyPageLocator extends DefaultGroovyPageLocator{
     @Override
     public GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding) {
         GroovyPageScriptSource scriptSource = resourceResolveCache.get(uri);
-        if(scriptSource == null) {
+        if (scriptSource == null) {
             scriptSource = super.findPageInBinding(uri, binding);
-            if(scriptSource == null && Environment.isWarDeployed()) {
+            if (scriptSource == null && Environment.isWarDeployed()) {
                 resourceResolveCache.put(uri, NULL_SCRIPT);
             }
-            else if(scriptSource != null) {
+            else if (scriptSource != null) {
                 resourceResolveCache.put(uri, scriptSource);
             }
         }

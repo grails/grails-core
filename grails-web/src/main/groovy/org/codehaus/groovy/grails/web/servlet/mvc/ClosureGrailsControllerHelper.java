@@ -26,10 +26,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 
 /**
- * Implements action invokation throught Closure
+ * Implements action invokation throught Closure.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public class ClosureGrailsControllerHelper extends AbstractGrailsControllerHelper {
 

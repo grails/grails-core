@@ -29,14 +29,14 @@ import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNotNull
 
  /**
- * A mixin for testing URL mappings in Grails
+ * A mixin for testing URL mappings in Grails.
  *
  * @author Luke Daley
  * @author Graeme Rocher
  *
- * @since 1.4
+ * @since 2.0
  */
-class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin{
+class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
 
     private assertionKeys = ["controller", "action", "view"]
 

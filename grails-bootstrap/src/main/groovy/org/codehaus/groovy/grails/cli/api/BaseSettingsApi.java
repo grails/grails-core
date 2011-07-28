@@ -280,11 +280,10 @@ public class BaseSettingsApi {
         }
     }
 
-
     public String makeRelative(String path) {
-        if(buildSettings != null && path != null) {
+        if (buildSettings != null && path != null) {
             String absolutePath = buildSettings.getBaseDir().getAbsolutePath();
-            if(path.startsWith(absolutePath)) {
+            if (path.startsWith(absolutePath)) {
                 return path.substring(absolutePath.length()+1);
             }
         }

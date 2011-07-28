@@ -24,7 +24,7 @@ import java.io.PrintStream;
  * Used to replace default System.err with one that routes calls through GrailsConsole.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsConsoleErrorPrintStream extends PrintStream {
 

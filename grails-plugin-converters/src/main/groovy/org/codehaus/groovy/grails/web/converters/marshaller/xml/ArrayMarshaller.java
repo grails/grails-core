@@ -36,7 +36,7 @@ public class ArrayMarshaller implements ObjectMarshaller<XML>, NameAwareMarshall
         int len = Array.getLength(o);
         for (int i = 0; i < len; i++) {
             Object cur = Array.get(o, i);
-            if(cur != null) {
+            if (cur != null) {
                 xml.startNode(xml.getElementName(cur));
                 xml.convertAnother(cur);
                 xml.end();

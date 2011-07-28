@@ -77,7 +77,7 @@ public class GrailsScriptRunner {
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
 
     public static final String VERBOSE_ARGUMENT = "verbose";
-    private static final String STACKTRACE_ARGUMENT = "stacktrace";
+    public static final String STACKTRACE_ARGUMENT = "stacktrace";
     public static final String AGENT_ARGUMENT = "reloading";
     public static final String VERSION_ARGUMENT = "version";
     public static final String HELP_ARGUMENT = "help";
@@ -105,8 +105,6 @@ public class GrailsScriptRunner {
 
     private File scriptCacheDir;
     private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
-    private boolean useDefaultEnv = true;
-
 
     public GrailsScriptRunner() {
         this(new BuildSettings());
@@ -172,7 +170,7 @@ public class GrailsScriptRunner {
         BuildSettings build = null;
         try {
             build = new BuildSettings(new File(grailsHome));
-            if(commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+            if (commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
                 build.setModified(true);
             }
             if (build.getRootLoader() == null) {
@@ -211,7 +209,7 @@ public class GrailsScriptRunner {
             console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
-            if(commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+            if (commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
                 ClasspathConfigurer.cleanResolveCache(build);
             }
             scriptRunner.initializeState();
@@ -254,10 +252,12 @@ public class GrailsScriptRunner {
     }
 
     private static void exitWithError(String error, Throwable t) {
-        if(t != null)
+        if (t != null) {
             GrailsConsole.getInstance().error(error, t);
-        else
+        }
+        else {
             GrailsConsole.getInstance().error(error);
+        }
         System.exit(1);
     }
 

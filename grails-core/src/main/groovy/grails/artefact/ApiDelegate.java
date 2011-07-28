@@ -24,10 +24,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Similar to Groovy's @Delegate AST transform but instead assumes the first argument to every method is 'this'
+ * Similar to Groovy's @Delegate AST transform but instead assumes the first
+ * argument to every method is 'this'.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)

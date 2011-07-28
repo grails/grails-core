@@ -1,13 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/10/11
- * Time: 7:03 PM
- * To change this template use File | Settings | File Templates.
- */
 class AllDeleteOrphanMappingTests extends AbstractGrailsHibernateTests {
+
     @Override
     protected void onSetUp() {
         gcl.parseClass('''
@@ -63,5 +57,4 @@ class D {
         d2.addToAyes(A.get(1))
         d2 = d2.merge(flush:true)
     }
-
 }

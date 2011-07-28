@@ -66,10 +66,10 @@ class GrailsParameterMap extends TypeConvertingMap {
     GrailsParameterMap(HttpServletRequest request) {
         this.request = request
         final Map requestMap = new LinkedHashMap(request.getParameterMap())
-        if(requestMap.size() == 0 && "PUT".equals(request.getMethod()) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
+        if (requestMap.size() == 0 && "PUT".equals(request.getMethod()) && request.getAttribute(REQUEST_BODY_PARSED) == null) {
             // attempt manual parse of request body. This is here because some containers don't parse the request body automatically for PUT request
             String contentType = request.getContentType();
-            if("application/x-www-form-urlencoded".equals(contentType)) {
+            if ("application/x-www-form-urlencoded".equals(contentType)) {
                 try {
                     def contents = request.reader.text
                     request.setAttribute(REQUEST_BODY_PARSED, true)

@@ -1,26 +1,19 @@
 package org.codehaus.groovy.grails.core.io
 
-import spock.lang.Specification
-import org.springframework.core.io.ResourceLoader
-import org.codehaus.groovy.grails.support.StaticResourceLoader
-import org.codehaus.groovy.grails.support.MockResourceLoader
-import org.codehaus.groovy.grails.support.MockStringResourceLoader
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin
-import org.springframework.core.io.ByteArrayResource
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.MockBinaryPluginResource
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.TestBinaryGrailsPlugin
+import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.ResourceLoader
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/6/11
- * Time: 6:50 PM
- * To change this template use File | Settings | File Templates.
- */
-class ResourceLocatorSpec extends Specification{
+import spock.lang.Specification
+
+class ResourceLocatorSpec extends Specification {
+
     void "test find simple URI"() {
         given: "Resource locator with mock resource loader"
             def loader = new MockStringResourceLoader()
@@ -54,7 +47,6 @@ class ResourceLocatorSpec extends Specification{
 
         then: "The resource is found"
             assert res != null
-
     }
 
     BinaryGrailsPlugin getBinaryPlugin() {
@@ -72,6 +64,7 @@ class ResourceLocatorSpec extends Specification{
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
     }
 }
+
 class MockResourceLocator extends DefaultResourceLocator {
     ResourceLoader defaultResourceLoader
 }

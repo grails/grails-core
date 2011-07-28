@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
  * A JLine completor for Grails' interactive mode.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class GrailsInteractiveCompletor extends SimpleCompletor {
 
@@ -76,6 +76,8 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     }
 
     static String[] getScriptNames(scriptResources) {
-        scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) } as String[]
+        final scriptNames = scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) }
+        scriptNames << "open"
+        scriptNames as String[]
     }
 }

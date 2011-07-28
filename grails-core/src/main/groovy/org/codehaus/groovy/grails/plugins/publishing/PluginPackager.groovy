@@ -24,7 +24,7 @@ import org.springframework.core.io.Resource
 /**
  * Packages a plugin in source or binary form.
  *
- * @since 1.4
+ * @since 2.0
  */
 class PluginPackager {
 
@@ -211,7 +211,7 @@ class PluginPackager {
             copy(file:"${basedir}/plugin.xml", tofile:"${metaInf}/grails-plugin.xml")
             move(file:"${classesDir}/gsp/views.properties", todir:metaInf, failonerror:false)
             mkdir(dir:"${metaInf}/grails-app/i18n")
-            if(new File("${resourcesDir}/grails-app/i18n").exists()) {
+            if (new File("${resourcesDir}/grails-app/i18n").exists()) {
                 copy(todir:"${metaInf}/grails-app/i18n", includeEmptyDirs:false,failonerror:false) {
                     fileset(dir:"${resourcesDir}/grails-app/i18n")
                 }

@@ -23,11 +23,10 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.grails.compiler.Grailsc;
 
 /**
- * Extended compiler for automatically applying the @TestFor and @Mock annotations to tests by convention
+ * Extended compiler for automatically applying the @TestFor and @Mock annotations to tests by convention.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
 public class GrailsTestCompiler extends Grailsc {
 

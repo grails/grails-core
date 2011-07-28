@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi;
  * Enhances controller classes with a method missing implementation for tags.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTransformer {

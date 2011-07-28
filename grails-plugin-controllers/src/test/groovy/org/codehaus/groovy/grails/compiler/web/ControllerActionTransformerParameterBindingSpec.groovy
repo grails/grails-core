@@ -1,10 +1,11 @@
 package org.codehaus.groovy.grails.compiler.web
 
-import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.web.context.request.RequestContextHolder
+
 import spock.lang.Specification
 
 class ControllerActionTransformerParameterBindingSpec extends Specification {
@@ -15,19 +16,11 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
     void setupSpec() {
         def gcl = new GrailsAwareClassLoader()
         def transformer = new ControllerActionTransformer() {
-                @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
-
-            }
-         def transformer2 = new ControllerTransformer() {
-                @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
-
-            }
+            boolean shouldInject(URL url) { true }
+        }
+        def transformer2 = new ControllerTransformer() {
+            boolean shouldInject(URL url) { true }
+        }
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
         controllerClass = gcl.parseClass('''
         import grails.web.RequestParameter
@@ -111,7 +104,6 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             }
         }
         ''')
-
     }
 
     def setup() {
@@ -129,7 +121,7 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             !controller.hasErrors()
             null == model.name
             0 == model.age
-            
+
         when:
             controller.params.name = 'Herbert'
             controller.params.age = '47'
@@ -171,7 +163,7 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             !controller.hasErrors()
             'Herbert' == model.name
             47 == model.age
-            
+
         when:
             model = controller.closureActionWithRequestMapping()
 
@@ -179,7 +171,6 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             !controller.hasErrors()
             'Herbert' == model.name
             47 == model.age
-
     }
 
     void "Test binding request parameters to basic types"() {
@@ -223,10 +214,10 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             102 == model.primitiveByteParam
             'Y' == model.charParam
             'Z' == model.primitiveCharParam
-            
+
         when:
             model = controller.closureAction()
- 
+
          then:
              !controller.hasErrors()
              'Herbert' == model.stringParam
@@ -246,7 +237,6 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
              102 == model.primitiveByteParam
              'Y' == model.charParam
              'Z' == model.primitiveCharParam
- 
     }
 
     void "Test conversion errors"() {
@@ -304,14 +294,14 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             controller.errors.getFieldError('primitiveByteParam')
             controller.errors.getFieldError('charParam')
             controller.errors.getFieldError('primitiveCharParam')
-            
+
             // boolean conversions should never fail
             !controller.errors.getFieldError('booleanParam')
             !controller.errors.getFieldError('primitiveBooleanParam')
-            
+
         when:
             model = controller.closureAction()
- 
+
          then:
              null == model.stringParam
              null == model.shortParam
@@ -346,11 +336,10 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
              controller.errors.getFieldError('primitiveByteParam')
              controller.errors.getFieldError('charParam')
              controller.errors.getFieldError('primitiveCharParam')
-             
+
              // boolean conversions should never fail
              !controller.errors.getFieldError('booleanParam')
              !controller.errors.getFieldError('primitiveBooleanParam')
- 
     }
 
     void "Test uninitialized action parameters"() {
@@ -376,10 +365,10 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             0 == model.primitiveByteParam
             null == model.charParam
             0 == model.primitiveCharParam
-            
+
         when:
             model = controller.closureAction()
- 
+
         then:
             !controller.hasErrors()
             null == model.stringParam
@@ -405,4 +394,3 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
-

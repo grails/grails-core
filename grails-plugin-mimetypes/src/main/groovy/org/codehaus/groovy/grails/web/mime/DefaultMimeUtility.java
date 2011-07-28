@@ -22,7 +22,7 @@ import java.util.Map;
 
 /**
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class DefaultMimeUtility implements MimeUtility {
 
@@ -54,21 +54,24 @@ public class DefaultMimeUtility implements MimeUtility {
      * {@inheritDoc}
      */
     public MimeType getMimeTypeForExtension(String extension) {
-        if (extension != null) {
-            return extensionToMimeMap.get(extension);
+        if (extension == null) {
+            return null;
         }
-        return null;
+        return extensionToMimeMap.get(extension);
     }
 
     public MimeType getMimeTypeForURI(String uri) {
-        if (uri != null) {
-            final int i = uri.lastIndexOf('.');
-            final int length = uri.length();
-            if (i > -1 && i < length) {
-                final String extension = uri.substring(i+1, length);
-                return getMimeTypeForExtension(extension);
-            }
+        if (uri == null) {
+            return null;
         }
+
+        final int i = uri.lastIndexOf('.');
+        final int length = uri.length();
+        if (i > -1 && i < length) {
+            final String extension = uri.substring(i + 1, length);
+            return getMimeTypeForExtension(extension);
+        }
+
         return null;
     }
 }

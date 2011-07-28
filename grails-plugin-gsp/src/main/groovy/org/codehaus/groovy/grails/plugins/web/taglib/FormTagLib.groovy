@@ -445,18 +445,17 @@ class FormTagLib {
         }
         def years = attrs.years
         def relativeYears = attrs.relativeYears
-        if(years != null && relativeYears != null) {
+        if (years != null && relativeYears != null) {
             throwTagError 'Tag [datePicker] does not allow both the years and relativeYears attributes to be used together.'
         }
 
-        if(relativeYears != null) {
-            if(!(relativeYears instanceof IntRange)) {
-				// allow for a syntax like relativeYears="[-2..5]".  The value there is a List containing an IntRage.
-                if((!(relativeYears instanceof List)) || (relativeYears.size() != 1) || (!(relativeYears[0] instanceof IntRange))){
+        if (relativeYears != null) {
+            if (!(relativeYears instanceof IntRange)) {
+                // allow for a syntax like relativeYears="[-2..5]".  The value there is a List containing an IntRage.
+                if ((!(relativeYears instanceof List)) || (relativeYears.size() != 1) || (!(relativeYears[0] instanceof IntRange))){
                     throwTagError 'The [datePicker] relativeYears attribute must be a range of int.'
-                } else {
-                    relativeYears = relativeYears[0]
                 }
+                relativeYears = relativeYears[0]
             }
         }
         def value = attrs.value
@@ -473,7 +472,6 @@ class FormTagLib {
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
         }
-
 
         final PRECISION_RANKINGS = ["year": 0, "month": 10, "day": 20, "hour": 30, "minute": 40]
         def precision = (attrs.precision ? PRECISION_RANKINGS[attrs.precision] :
@@ -516,8 +514,8 @@ class FormTagLib {
             else {
                 tempyear = year
             }
-            if(relativeYears) {
-                 years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)   
+            if (relativeYears) {
+                 years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)
             } else {
                 years = (tempyear - 100)..(tempyear + 100)
             }
@@ -853,7 +851,12 @@ class FormTagLib {
                 selected = value.contains(el)
             }
         }
-        else if (keyClass && value) {
+        // GRAILS-3596: Make use of Groovy truth to handle GString <-> String
+        // and other equivalent types (such as numbers, Integer <-> Long etc.).
+        else if (keyValue == value) {
+            selected = true
+        }
+        else if (keyClass && value != null) {
             try {
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)

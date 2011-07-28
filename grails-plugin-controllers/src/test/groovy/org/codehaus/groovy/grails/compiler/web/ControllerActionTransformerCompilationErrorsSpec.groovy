@@ -10,7 +10,7 @@ import spock.lang.Specification
 
 class ControllerActionTransformerCompilationErrorsSpec extends Specification {
 
-	static gcl
+    static gcl
 
     void setupSpec() {
         gcl = new GrailsAwareClassLoader()
@@ -28,16 +28,16 @@ class ControllerActionTransformerCompilationErrorsSpec extends Specification {
                 }
         gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
     }
-	
-	@FailsWith(CompilationFailedException.class)
-	void "Test default parameter values"() {
-		expect:
-		    gcl.parseClass('''
-		    class TestController {
-		        def methodAction(int i = 42){}
-		    }
-		    ''')
-	}
+
+    @FailsWith(CompilationFailedException.class)
+    void "Test default parameter values"() {
+        expect:
+            gcl.parseClass('''
+            class TestController {
+                def methodAction(int i = 42){}
+            }
+            ''')
+    }
 
     def cleanupSpec() {
         RequestContextHolder.setRequestAttributes(null)

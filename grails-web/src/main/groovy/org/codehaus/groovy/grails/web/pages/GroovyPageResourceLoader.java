@@ -79,11 +79,10 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                 if (r.exists()) {
                     return r;
                 }
-                else {
-                    pathToResource = buildPluginViewPath(pluginBaseDirectory, pluginName, pathRelativeToPlugin);
-                    r = super.getResource(pathToResource);
-                    if(r.exists()) return r;
-                }
+
+                pathToResource = buildPluginViewPath(pluginBaseDirectory, pluginName, pathRelativeToPlugin);
+                r = super.getResource(pathToResource);
+                if (r.exists()) return r;
             }
 
             Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
@@ -94,12 +93,11 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                     if (pageFile.exists()) {
                         return new FileSystemResource(pageFile);
                     }
-                    else{
-                        String pathToInlinePluginView = buildPluginViewPathFromBase(dirFile.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
-                        Resource resource = super.getResource(pathToInlinePluginView);
-                        if(resource.exists()) {
-                            return resource;
-                        }
+
+                    String pathToInlinePluginView = buildPluginViewPathFromBase(dirFile.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
+                    Resource resource = super.getResource(pathToInlinePluginView);
+                    if (resource.exists()) {
+                        return resource;
                     }
                 } catch (IOException e) {
                     // ignore

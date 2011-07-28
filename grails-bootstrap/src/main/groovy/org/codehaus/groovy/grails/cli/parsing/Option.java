@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.cli.parsing;
  * Represents a command line option.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class Option {
 

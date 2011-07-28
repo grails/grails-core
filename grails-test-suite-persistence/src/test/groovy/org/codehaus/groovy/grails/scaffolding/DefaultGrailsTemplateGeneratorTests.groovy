@@ -92,48 +92,48 @@ class ScaffoldingTest {
             containsString('g:select name="status" from="${scaffoldingTestInstance.constraints.status.inList}" required="" value="${fieldValue(bean: scaffoldingTestInstance, field: \'status\')}" valueMessagePrefix="scaffoldingTest.status"')
     }
 
-	void testDoesNotGenerateInputForId() {
-		def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
+    void testDoesNotGenerateInputForId() {
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         templateGenerator.pluginManager = pluginManager
-		gcl.parseClass(testDomain)
-		def testClass = gcl.loadClass("ScaffoldingTest")
-		def domainClass = new DefaultGrailsDomainClass(testClass)
-		def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
-		testClass.metaClass.getConstraints = {-> constrainedProperties }
+        gcl.parseClass(testDomain)
+        def testClass = gcl.loadClass("ScaffoldingTest")
+        def domainClass = new DefaultGrailsDomainClass(testClass)
+        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
+        testClass.metaClass.getConstraints = {-> constrainedProperties }
 
-		def sw = new StringWriter()
-		templateGenerator.generateView domainClass, "_form", sw
+        def sw = new StringWriter()
+        templateGenerator.generateView domainClass, "_form", sw
 
-		assert !sw.toString().contains('name="id"'), "Should not have rendered an input for the id"
-	}
+        assert !sw.toString().contains('name="id"'), "Should not have rendered an input for the id"
+    }
 
-	void testGeneratesInputForAssignedId() {
-		def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
+    void testGeneratesInputForAssignedId() {
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         templateGenerator.pluginManager = pluginManager
-		gcl.parseClass('''
+        gcl.parseClass('''
 import grails.persistence.*
 
 @Entity
 class ScaffoldingTest {
-	String id
-	static mapping = {
-		id generator: "assigned"
-	}
+    String id
+    static mapping = {
+        id generator: "assigned"
+    }
 }
-		''')
-		def testClass = gcl.loadClass("ScaffoldingTest")
-		def domainClass = new DefaultGrailsDomainClass(testClass)
-		def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
-		testClass.metaClass.getConstraints = {-> constrainedProperties }
-		GrailsDomainBinder.evaluateMapping(domainClass)
+        ''')
+        def testClass = gcl.loadClass("ScaffoldingTest")
+        def domainClass = new DefaultGrailsDomainClass(testClass)
+        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
+        testClass.metaClass.getConstraints = {-> constrainedProperties }
+        GrailsDomainBinder.evaluateMapping(domainClass)
 
-		assert GrailsDomainBinder.getMapping(domainClass)?.identity?.generator == 'assigned'
+        assert GrailsDomainBinder.getMapping(domainClass)?.identity?.generator == 'assigned'
 
-		def sw = new StringWriter()
-		templateGenerator.generateView domainClass, "_form", sw
+        def sw = new StringWriter()
+        templateGenerator.generateView domainClass, "_form", sw
 
-		assertThat "Should have rendered an input for the id",
-				sw.toString(),
-				containsString('g:textField name="id" value="${scaffoldingTestInstance?.id}"')
-	}
+        assertThat "Should have rendered an input for the id",
+                sw.toString(),
+                containsString('g:textField name="id" value="${scaffoldingTestInstance?.id}"')
+    }
 }

@@ -67,7 +67,7 @@ class UrlMappingsGrailsPlugin {
             filter {
                 'filter-name'('urlMapping')
                 'filter-class'(UrlMappingsFilter.name)
-                if(ClassUtils.isPresent('javax.servlet.AsyncContext', Thread.currentThread().contextClassLoader)) {
+                if (ClassUtils.isPresent('javax.servlet.AsyncContext', Thread.currentThread().contextClassLoader)) {
                     'async-supported'(true)
                 }
             }

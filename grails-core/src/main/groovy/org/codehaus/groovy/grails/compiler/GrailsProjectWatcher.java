@@ -38,10 +38,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.ClassUtils;
 
 /**
- * Watches a Grails projects and re-compiles sources when they change or fires events to the pluginManager
+ * Watches a Grails projects and re-compiles sources when they change or fires events to the pluginManager.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsProjectWatcher extends DirectoryWatcher {
 
@@ -217,7 +217,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         }
         catch(BuildException e) {
             Throwable cause = e.getCause();
-            if(cause instanceof MultipleCompilationErrorsException) {
+            if (cause instanceof MultipleCompilationErrorsException) {
                 currentCompilationError = (MultipleCompilationErrorsException) cause;
             }
             LOG.error("Compilation Error: " + e.getCause().getMessage());

@@ -4,7 +4,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.datastore.gorm.GormStaticApi
-import org.springframework.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Errors
 import spock.lang.Specification
 import org.grails.datastore.gorm.GormValidationApi

@@ -69,7 +69,7 @@ public class GrailsWebUtil {
 
     /**
      * @return The currently bound GrailsApplication instance
-     * @since 1.4
+     * @since 2.0
      */
     public static GrailsApplication currentApplication() {
         final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
@@ -82,7 +82,7 @@ public class GrailsWebUtil {
 
     /**
      * @return The currently bound GrailsApplication instance
-     * @since 1.4
+     * @since 2.0
      */
     public static Map currentConfiguration() {
         GrailsApplication application = currentApplication();
@@ -91,7 +91,7 @@ public class GrailsWebUtil {
 
     /**
      * @return The currently bound GrailsApplication instance
-     * @since 1.4
+     * @since 2.0
      */
     public static Map currentFlatConfiguration() {
         GrailsApplication application = currentApplication();

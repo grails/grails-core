@@ -17,7 +17,13 @@ package org.codehaus.groovy.grails.validation;
 import groovy.lang.GString;
 import groovy.lang.GroovyObject;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -171,18 +177,18 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
 
             filterGStringKeys((Map)collection);
             for (Object entryObject : ((Map) collection).entrySet()) {
-                @SuppressWarnings("unchecked")
                 Map.Entry entry = (Map.Entry) entryObject;
                 cascadeValidationToOne(errors, bean, entry.getValue(), persistentProperty, propertyName, entry.getKey());
             }
         }
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void filterGStringKeys(Map collection) {
         Set set = collection.keySet();
         Set<GString> gstrings = new HashSet<GString>();
         for (Object o : set) {
-            if(o instanceof GString) {
+            if (o instanceof GString) {
                 gstrings.add((GString) o);
             }
         }

@@ -28,7 +28,7 @@ import java.util.List;
  * Custom input handler mechanism for Ant that ignores case of input.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class CommandLineInputHandler implements InputHandler {
 

@@ -22,10 +22,10 @@ import java.lang.annotation.Target;
 
 /**
  * A marker annotation added to methods of a test that are mixed in from a test mixin. Used
- * to differentiate methods mixed in and methods declared by the user
+ * to differentiate methods mixed in and methods declared by the user.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

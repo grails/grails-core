@@ -57,7 +57,7 @@ import java.util.Map;
  *
  * @author Graeme Rocher
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public abstract class AbstractGrailsControllerHelper implements ApplicationContextAware, ServletContextAware, GrailsApplicationAware {
 

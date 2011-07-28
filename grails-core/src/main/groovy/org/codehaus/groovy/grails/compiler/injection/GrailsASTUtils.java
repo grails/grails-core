@@ -410,7 +410,7 @@ public class GrailsASTUtils {
      * Determines if the class or interface represented by the superClass
      * argument is either the same as, or is a superclass or superinterface of,
      * the class or interface represented by the specified subClass parameter.
-     * 
+     *
      * @param superClass The super class to check
      * @param childClass The sub class the check
      * @return true if the childClass is either equal to or a sub class of the specified superClass

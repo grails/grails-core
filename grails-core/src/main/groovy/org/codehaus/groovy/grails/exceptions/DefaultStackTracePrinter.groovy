@@ -25,7 +25,7 @@ import org.springframework.web.util.NestedServletException
 /**
  * Default implementation of the {@link StackTracePrinter} interface.
  *
- * @since 1.4
+ * @since 2.0
  *
  * @author Graeme Rocher
  * @author Marc Palmer
@@ -62,7 +62,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
             def last = e.stackTrace.size()
             def prevFn
             def prevLn
-            def evenRow = false
+            boolean evenRow = false
             if (!first) {
                 printCausedByMessage(sb, e)
             }
@@ -99,7 +99,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
                     }
 
                     def padChar = (evenRow || idx == 0) ? ' ' : ' .'
-                    evenRow = evenRow ? false : true
+                    evenRow = !evenRow
 
                     def methodName = te.methodName
                     if (methodName.size() < methodNameBaseWidth) {

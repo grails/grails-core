@@ -16,10 +16,10 @@
 package org.codehaus.groovy.grails.exceptions
 
 /**
- * Defines method for pretty printing Stack traces
+ * Defines method for pretty printing Stack traces.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 interface StackTracePrinter {
 

@@ -31,14 +31,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
- * Utility methods for resource handling / figuring out class names
+ * Utility methods for resource handling / figuring out class names.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
-public class GrailsResourceUtils
-{
+public class GrailsResourceUtils {
 
     /**
      * The relative path to the WEB-INF directory
@@ -62,16 +60,16 @@ public class GrailsResourceUtils
 
     /*
      Domain path is always matched against the normalized File representation of an URL and
-    can therefore work with slashes as separators.
+     can therefore work with slashes as separators.
      */
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/"+GRAILS_APP_DIR+"/domain/(.+)\\.(groovy|java)");
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/" + GRAILS_APP_DIR + "/domain/(.+)\\.(groovy|java)");
 
     /*
      This pattern will match any resource within a given directory inside grails-app
      */
-    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/(.+?)/(.+?\\.(groovy|java))");
+    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/" + GRAILS_APP_DIR + "/(.+?)/(.+?\\.(groovy|java))");
 
-    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?/"+GRAILS_APP_DIR+"/conf/spring/(.+?\\.groovy)");
+    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?/" + GRAILS_APP_DIR + "/conf/spring/(.+?\\.groovy)");
 
     public static Pattern[] COMPILER_ROOT_PATTERNS = {
         SPRING_SCRIPTS_PATH_PATTERN,

@@ -20,13 +20,13 @@ import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 
 /**
- * Completor for the generate-controller command
+ * Completor for the generate-controller command.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
-class GenerateController extends ClassNameCompletor{
+class GenerateController extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "generate-controller" }
 
@@ -34,6 +34,4 @@ class GenerateController extends ClassNameCompletor{
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

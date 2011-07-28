@@ -22,14 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Command line parser that parses arguments to the command line. Written as a
+ * replacement for Commons CLI because it doesn't support unknown arguments and
+ * requires all arguments to be declared up front.
  *
- * Command line parser that parses arguments to the command line. Written as a replacement for Commons CLI
- * because it doesn't support unknown arguments and requires all arguments to be declared up front.
- *
- *  It also doesn't support command options with hyphens. This class gets around those problems.
+ * It also doesn't support command options with hyphens. This class gets around those problems.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class CommandLineParser {
 
@@ -57,7 +57,7 @@ public class CommandLineParser {
      */
     public void addOption(String name, String description) {
         int length = name.length();
-        if(length >longestOptionNameLength) {
+        if (length >longestOptionNameLength) {
             longestOptionNameLength = length;
         }
         declaredOptions.put(name, new Option(name, description));
@@ -71,8 +71,7 @@ public class CommandLineParser {
      */
     public CommandLine parseString(String string) {
         // stupid implementation right now that doesn't take into account quoted argument values
-        String[] args = string.split(" ");
-        return parse(args);
+        return parse(string.split(" "));
     }
 
     /**
@@ -87,25 +86,25 @@ public class CommandLineParser {
         DefaultCommandLine cl = createCommandLine();
         boolean beforeCommand = true;
         for (String arg : args) {
-            if(arg == null) continue;
+            if (arg == null) continue;
             String trimmed = arg.trim();
-            if(trimmed != null && trimmed.length()>0) {
-                if(trimmed.charAt(0) == '-') {
+            if (trimmed != null && trimmed.length()>0) {
+                if (trimmed.charAt(0) == '-') {
                     processOption(cl, trimmed);
                 }
                 else {
-                   if(beforeCommand && ENV_ARGS.containsKey(trimmed)) {
-                       cl.setEnvironment(ENV_ARGS.get(trimmed));
-                   }
-                   else {
-                      if(beforeCommand) {
-                          cl.setCommandName(trimmed);
-                          beforeCommand = false;
-                      }
-                      else {
-                          cl.addRemainingArg(trimmed);
-                      }
-                   }
+                    if (beforeCommand && ENV_ARGS.containsKey(trimmed)) {
+                        cl.setEnvironment(ENV_ARGS.get(trimmed));
+                    }
+                    else {
+                       if (beforeCommand) {
+                           cl.setCommandName(trimmed);
+                           beforeCommand = false;
+                       }
+                       else {
+                           cl.addRemainingArg(trimmed);
+                       }
+                    }
                 }
             }
         }
@@ -128,7 +127,6 @@ public class CommandLineParser {
             sb.append(DEFAULT_PADDING).append(option.getDescription()).append(ls);
         }
 
-
         return sb.toString();
     }
 
@@ -137,41 +135,42 @@ public class CommandLineParser {
     }
 
     protected void processOption(DefaultCommandLine cl, String arg) {
-        if(arg.length()>1) {
-            if(arg.charAt(1) == 'D' && arg.contains("=")) {
-                processSystemArg(cl, arg);
+        if (arg.length() < 2) {
+            return;
+        }
+
+        if (arg.charAt(1) == 'D' && arg.contains("=")) {
+            processSystemArg(cl, arg);
+            return;
+        }
+
+        arg = (arg.charAt(1) == '-' ? arg.substring(2, arg.length()) : arg.substring(1, arg.length())).trim();
+
+        if (arg.contains("=")) {
+            String[] split = arg.split("=");
+            String name = split[0].trim();
+            validateOptionName(name);
+            String value = split[1].trim();
+            if (declaredOptions.containsKey(name)) {
+                cl.addDeclaredOption(name, declaredOptions.get(name), value);
             }
             else {
-                arg = (arg.charAt(1) == '-' ? arg.substring(2, arg.length()) : arg.substring(1, arg.length())).trim();
-
-                if(arg.contains("=")) {
-                    String[] split = arg.split("=");
-                    String name = split[0].trim();
-                    valideOptionName(name);
-                    String value = split[1].trim();
-                    if(declaredOptions.containsKey(name)) {
-                        cl.addDeclaredOption(name, declaredOptions.get(name), value);
-                    }
-                    else {
-                        cl.addUndeclaredOption(name, value);
-                    }
-                }
-                else {
-                    valideOptionName(arg);
-                    if(declaredOptions.containsKey(arg)) {
-                        cl.addDeclaredOption(arg, declaredOptions.get(arg));
-                    }
-                    else {
-                        cl.addUndeclaredOption(arg);
-                    }
-                }
-
+                cl.addUndeclaredOption(name, value);
             }
+            return;
+        }
+
+        validateOptionName(arg);
+        if (declaredOptions.containsKey(arg)) {
+            cl.addDeclaredOption(arg, declaredOptions.get(arg));
+        }
+        else {
+            cl.addUndeclaredOption(arg);
         }
     }
 
-    private void valideOptionName(String name) {
-        if(name.contains(" ")) throw new ParseException("Invalid argument: " + name);
+    private void validateOptionName(String name) {
+        if (name.contains(" ")) throw new ParseException("Invalid argument: " + name);
     }
 
     protected void processSystemArg(DefaultCommandLine cl, String arg) {

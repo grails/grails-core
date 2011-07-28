@@ -17,9 +17,9 @@ import org.springframework.core.io.Resource;
 
 /**
  * A {@link org.springframework.core.io.ResourceLoader} implementation
- * that loads GSP views relative to the project base directory for unit tests
+ * that loads GSP views relative to the project base directory for unit tests.
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{

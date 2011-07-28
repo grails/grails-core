@@ -14,7 +14,10 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
-import grails.util.*;
+import grails.util.BuildSettings;
+import grails.util.CollectionUtils;
+import grails.util.GrailsNameUtils;
+import grails.util.Metadata;
 import groovy.lang.Closure;
 
 import java.io.File;
@@ -335,19 +338,19 @@ public abstract class AbstractIvyDependencyManager {
     public void registerDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
 
         String plugin = descriptor.getPlugin();
-        if(plugin != null) {
+        if (plugin != null) {
             EnhancedDefaultDependencyDescriptor pluginDependencyDescriptor = (EnhancedDefaultDependencyDescriptor) getPluginDependencyDescriptor(plugin);
-            if(pluginDependencyDescriptor != null) {
+            if (pluginDependencyDescriptor != null) {
                 ExcludeRule[] excludeRules = pluginDependencyDescriptor.getExcludeRules(scope);
-                if(excludeRules != null) {
+                if (excludeRules != null) {
                     for (ExcludeRule excludeRule : excludeRules) {
                         descriptor.addExcludeRule(scope, excludeRule);
                     }
                 }
 
                 String pluginScope = pluginDependencyDescriptor.getScope();
-                if(pluginScope != null) {
-                    if(isCompileOrRuntimeScope(scope)) {
+                if (pluginScope != null) {
+                    if (isCompileOrRuntimeScope(scope)) {
                        scope = pluginScope;
                     }
                 }
@@ -387,11 +390,10 @@ public abstract class AbstractIvyDependencyManager {
         String name = dependencyId.getName();
 
         DependencyDescriptor existing = pluginNameToDescriptorMap.get(name);
-        if(existing != null && descriptor.isTransitivelyIncluded()) {
+        if (existing != null && descriptor.isTransitivelyIncluded()) {
             ModuleRevisionId dependencyRevisionId = existing.getDependencyRevisionId();
-            if(dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
+            if (dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
         }
-
 
         String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
         String packaging;
@@ -408,18 +410,18 @@ public abstract class AbstractIvyDependencyManager {
 
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
-        if(shouldIncludeDependency(descriptor)) {
+        if (shouldIncludeDependency(descriptor)) {
             moduleDescriptor.addDependency(descriptor);
         }
     }
 
     private boolean shouldIncludeDependency(EnhancedDefaultDependencyDescriptor descriptor) {
-        return descriptor.isExported()|| (buildSettings.isPluginProject() && isExposedByThisPlugin(descriptor) );
+        return descriptor.isExported()|| (buildSettings.isPluginProject() && isExposedByThisPlugin(descriptor));
     }
 
     private boolean isExposedByThisPlugin(EnhancedDefaultDependencyDescriptor descriptor) {
         File basePluginDescriptor = buildSettings.getBasePluginDescriptor();
-        if(basePluginDescriptor != null) {
+        if (basePluginDescriptor != null) {
             String basePluginName = GrailsNameUtils.getPluginName(basePluginDescriptor.getName());
             String plugin = descriptor.getPlugin();
             return plugin == null || plugin.equals(basePluginName);
@@ -665,7 +667,7 @@ public abstract class AbstractIvyDependencyManager {
                     mrid, true, true, scope);
             // since the plugin dependency isn't declared but instead installed via install-plugin
             // it should be not be exported by another plugin
-            if(buildSettings.isPluginProject()) {
+            if (buildSettings.isPluginProject()) {
                 enhancedDescriptor.setExport(false);
             }
 

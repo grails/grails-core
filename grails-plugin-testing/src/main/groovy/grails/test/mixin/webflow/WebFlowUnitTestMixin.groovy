@@ -53,7 +53,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         } catch (MissingPropertyException mpe) {
             Assert.fail("No flow named $name found in controller $controller")
         }
-        if(webFlowClosure instanceof Closure) {
+        if (webFlowClosure instanceof Closure) {
 
             flowMap = grails.test.mixin.webflow.WebFlowUnitTestSupport.translate(webFlowClosure, {
                 lastEventName = it.event;
@@ -73,12 +73,12 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
             stateTransition = name
             return name
         }
-        else if(lastEventName && lastTransitionName) {
-            if(name == 'error') {
+        if (lastEventName && lastTransitionName) {
+            if (name == 'error') {
                 stateTransition = lastEventName
                 return name
             }
-            else if(name == 'success' && flowMap[lastEventName].on?."$lastTransitionName"?.to) {
+            if (name == 'success' && flowMap[lastEventName].on?."$lastTransitionName"?.to) {
                 stateTransition = flowMap[lastEventName].on?."$lastTransitionName"?.to
                 return name
             }

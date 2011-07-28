@@ -18,19 +18,20 @@ package org.codehaus.groovy.grails.cli.interactive
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-import grails.util.Environment
-import grails.util.GrailsNameUtils
+
+import java.awt.Desktop
+
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
-import org.codehaus.groovy.grails.cli.ScriptNotFoundException
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.ScriptExitException
+import org.codehaus.groovy.grails.cli.ScriptNotFoundException
+import org.codehaus.groovy.grails.cli.parsing.ParseException
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * Provides the implementation of interactive mode in Grails.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class InteractiveMode {
 
@@ -69,7 +70,7 @@ class InteractiveMode {
         interactiveModeActive = true
 
         addStatus("Enter a script name to run. Use TAB for completion: ")
-        while(interactiveModeActive) {
+        while (interactiveModeActive) {
             def scriptName = showPrompt()
             try {
                 def trimmed = scriptName.trim()
@@ -101,16 +102,33 @@ class InteractiveMode {
                             error "Error occurred executing process: ${e.message}"
                         }
                     }
+                    else if(scriptName.startsWith("open ")) {
+                        def fileName = scriptName[5..-1].trim()
+                        try {
+                            final desktop = java.awt.Desktop.getDesktop()
+                            final file = new File(fileName)
+                            if(file.exists()) {
+                                desktop.open(file)
+                            }
+                            else {
+                                error "File $fileName does not exist"
+                            }
+                        } catch (e) {
+                            error "Could not open file $fileName: ${e.message}"
+                        }
+                    }
                     else {
                         def parser = GrailsScriptRunner.getCommandLineParser()
                         try {
                             def commandLine = parser.parseString(scriptName)
+                            final console = GrailsConsole.instance
+                            console.stacktrace = commandLine.hasOption(GrailsScriptRunner.STACKTRACE_ARGUMENT)
+                            console.verbose = commandLine.hasOption(GrailsScriptRunner.VERBOSE_ARGUMENT)
                             scriptRunner.executeScriptWithCaching(commandLine)
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"
                         }
                     }
-
                 }
                 else {
                     error "No script name specified"

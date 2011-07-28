@@ -12,14 +12,8 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import grails.util.GrailsUtil
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 6/30/11
- * Time: 5:37 PM
- * To change this template use File | Settings | File Templates.
- */
-class GrailsConventionGroovyPageLocatorSpec extends Specification{
+class GrailsConventionGroovyPageLocatorSpec extends Specification {
+
     SimpleMapResourceLoader resourceLoader = new SimpleMapResourceLoader()
 
     void "Test find template with controller instance and view name"() {
@@ -35,7 +29,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findTemplate(new TestController(), "notThere")
         then:"source is null"
             source == null
-
     }
 
     void "Test find view with controller instance and view name"() {
@@ -51,15 +44,11 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findView(new TestController(), "notThere")
         then:"source is null"
             source == null
-
     }
 
     void "Test find view with controller instance, view name and specified response format"() {
         setup:
             def webRequest = GrailsWebUtil.bindMockWebRequest()
-
-
-
 
         when: "The controller and view name is specified as well as a response format of xml"
             resourceLoader.resources["/grails-app/views/test/bar.xml.gsp"] = new ByteArrayResource("contents".bytes)
@@ -67,6 +56,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
 
             webRequest.request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, "xml")
             def source = pageLocator.findView(new TestController(), "bar")
+
         then: "the script source for the xml view is found"
             source != null
             source.URI == '/test/bar.xml.gsp'
@@ -79,7 +69,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source != null
             source.URI == '/test/bar.gsp'
 
-
         when:"A non-existent view is queried"
             source = pageLocator.findView(new TestController(), "notThere")
         then:"source is null"
@@ -87,8 +76,8 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
 
         cleanup:
             RequestContextHolder.setRequestAttributes(null)
-
     }
+
     void "Test find view with controller instance and view name from plugin"() {
         given: "a valid path to a plugin view"
             resourceLoader.resources["/grails-app/views/plugins/core-${GrailsUtil.grailsVersion}/grails-app/views/bar.gsp"] = new ByteArrayResource("contents".bytes)
@@ -102,7 +91,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findView(new PluginController(), "notThere")
         then:"source is null"
             source == null
-
     }
 
     void "Test find view with controller name and view name"() {
@@ -118,7 +106,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findView("not", "there")
         then:"source is null"
             source == null
-
     }
 
     void "Test find view by path"() {
@@ -134,7 +121,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findViewByPath("/not/there")
         then:"source is null"
             source == null
-
     }
 
     void "Test find template by controller and template name"() {
@@ -150,7 +136,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findTemplate("not", "there")
         then:"source is null"
             source == null
-
     }
 
     void "Test find template by path"() {
@@ -166,7 +151,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
             source = pageLocator.findTemplateByPath("/not/there")
         then:"source is null"
             source == null
-
     }
 
     GrailsConventionGroovyPageLocator getPageLocator() {
@@ -179,6 +163,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification{
         return locator
     }
 }
+
 class TestController {}
 
 @GrailsPlugin(name="core", version="0.1")

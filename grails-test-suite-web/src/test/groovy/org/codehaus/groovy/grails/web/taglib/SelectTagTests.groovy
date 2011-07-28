@@ -81,6 +81,43 @@ class SelectTagTests extends AbstractGrailsTagTests {
         assertOutputContains('<option value="1" >FOO</option>', template,[objList:list])
     }
 
+    /**
+     * Test case for GRAILS-3596: GString keys and string selected values
+     * should match if they resolve to the same text.
+     */
+    void testSelectWithGStringKeysAndStringValue() {
+        def counter = 1
+        def list = [
+            "Item ${counter++}": "Item One",
+            "Item ${counter++}": "Item Two",
+            "Item ${counter++}": "Item Three" ]
+        def template = '<g:select optionKey="key" optionValue="value" name="foo" from="${objList}" value="Item 2" />'
+
+        printCompiledSource(template,[objList:list])
+        assertOutputContains('<option value="Item 2" selected="selected" >Item Two</option>', template,[objList:list])
+        assertOutputContains('<option value="Item 1" >Item One</option>', template,[objList:list])
+    }
+
+    /**
+     * Test case for GRAILS-3596: GString selected values and string keys
+     * should match if they resolve to the same text.
+     */
+    void testSelectWithStringKeysAndGStringValue() {
+        def counter = 3
+        def list = [
+            "Item 1": "Item One",
+            "Item 2": "Item Two",
+            "Item 3": "Item Three" ]
+        def template = '<g:select optionKey="key" optionValue="value" name="foo" from="${objList}" value="${value}" />'
+
+        printCompiledSource(template,[objList:list])
+        assertOutputContains(
+                '<option value="Item 3" selected="selected" >Item Three</option>',
+                template,
+                [objList: list, value: "Item $counter"])
+        assertOutputContains('<option value="Item 2" >Item Two</option>', template,[objList:list, value:"Item $counter"])
+    }
+
     void testSelectTag() {
         final StringWriter sw = new StringWriter()
         final PrintWriter pw = new PrintWriter(sw)

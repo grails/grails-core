@@ -27,11 +27,11 @@ class YamlTocStrategy {
             return process(parser.load(input))
         }
     }
-    
+
     protected UserGuideNode load(InputStream input) {
         return process(parser.load(input))
     }
-    
+
     protected UserGuideNode load(Reader input) {
         return process(parser.load(input))
     }

@@ -69,12 +69,12 @@ class ScaffoldingGrailsPlugin {
 
     def doWithApplicationContext = { ApplicationContext ctx ->
         if (!application.warDeployed) {
-            try {
-                Thread.start {
+            Thread.start {
+                try {
                     configureScaffolding(ctx, application)
+                } catch (e) {
+                    log.error("Error configuration scaffolding: ${e.message}", e )
                 }
-            } catch (e) {
-                log.error("Error configuration scaffolding: ${e.message}", e )
             }
         }
         else {

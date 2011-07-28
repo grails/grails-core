@@ -561,7 +561,7 @@ class RenderTagLib implements RequestConstants {
 
         def templatePath = contextPath ? org.codehaus.groovy.grails.io.support.GrailsResourceUtils.appendPiecesForUri(contextPath, attrs.template.toString()) : attrs.template.toString()
         def scriptSource = null
-        if(pluginName != null) {
+        if (pluginName != null) {
             scriptSource = groovyPageLocator.findTemplateInBinding(pluginName, templatePath, (GroovyPageBinding) pageScope)
         }
         else {
@@ -579,10 +579,9 @@ class RenderTagLib implements RequestConstants {
                 t = cached.template
             }
             else {
-                if(scriptSource != null) {
+                if (scriptSource != null) {
                     t = engine.createTemplateForUri(scriptSource.URI)
                 }
-
 
                 if (!t && scaffoldingTemplateGenerator) {
                     GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest()

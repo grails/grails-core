@@ -18,8 +18,8 @@ antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
 aspectjVersion = "1.6.10"
 springVersion = "3.1.0.M2"
-springDatastoreVersion = "1.0.0.M6"
-springLoadedVersion = "0.8.3.BUILD-SNAPSHOT"
+datastoreVersion = "1.0.0.M7"
+springLoadedVersion = "0.8.4"
 springWebflowVersion= "2.0.8.RELEASE"
 ivyVersion = "2.2.0"
 gantVersion = "1.9.5"
@@ -79,9 +79,7 @@ subprojects { project ->
         options.debug = true
     }
 
-
     repositories {
-        
         mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))

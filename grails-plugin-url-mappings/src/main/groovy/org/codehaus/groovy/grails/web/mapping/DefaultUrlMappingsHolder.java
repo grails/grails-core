@@ -193,7 +193,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, params);
             UrlCreator creator=urlCreatorCache.lookup(key);
             if (creator==null) {
-                creator=resolveUrlCreator(controller, action, params);
+                creator=resolveUrlCreator(controller, action, params, true);
                 creator=urlCreatorCache.putAndDecorate(key, creator);
             }
             // preserve previous side-effect, remove mappingName from params
@@ -201,12 +201,31 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             return creator;
         }
         // cache is disabled
-        return resolveUrlCreator(controller, action, params);
+        return resolveUrlCreator(controller, action, params, true);
+    }
+
+    public UrlCreator getReverseMappingNoDefault(String controller, String action, Map params) {
+        if (params == null) params = Collections.EMPTY_MAP;
+
+        if (urlCreatorCache != null) {
+            UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, params);
+            UrlCreator creator=urlCreatorCache.lookup(key);
+            if (creator==null) {
+                creator=resolveUrlCreator(controller, action, params, false);
+                if(creator != null)
+                    creator=urlCreatorCache.putAndDecorate(key, creator);
+            }
+            // preserve previous side-effect, remove mappingName from params
+            params.remove("mappingName");
+            return creator;
+        }
+        // cache is disabled
+        return resolveUrlCreator(controller, action, params, true);
     }
 
     @SuppressWarnings("unchecked")
     private UrlCreator resolveUrlCreator(final String controller,
-            final String action, Map params) {
+                                         final String action, Map params, boolean useDefault) {
         UrlMapping mapping = null;
 
         mapping = namedMappings.get(params.remove("mappingName"));
@@ -239,9 +258,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                 mapping = mappingsLookup.get(new UrlMappingKey(null, null, lookupParams));
             }
         }
-        UrlCreator creator;
+        UrlCreator creator = null;
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            creator=new DefaultUrlCreator(controller, action);
+            if(useDefault)
+                creator=new DefaultUrlCreator(controller, action);
         } else {
             creator=mapping;
         }

@@ -16,7 +16,7 @@ import grails.persistence.*
 class BaseTest {
 
     String name
-    
+
     List listTests = new ArrayList()
     Map mapTests
     Set setTests
@@ -31,13 +31,13 @@ class BaseTest {
 @Entity
 class ListTest {
     String name
-    
+
     List list2Tests = new ArrayList()
-    
+
     static belongsTo = BaseTest
- 
+
     static hasMany = [list2Tests:List2Test]
-    
+
     static constraints = {
         name nullable:false, blank:false
     }
@@ -46,9 +46,9 @@ class ListTest {
 @Entity
 class List2Test {
     String name
-    
+
     static belongsTo = ListTest
-    
+
     static constraints = {
         name nullable:false, blank:false
     }
@@ -57,13 +57,13 @@ class List2Test {
 @Entity
 class MapTest {
     String name
-    
+
     Map map2Tests
-    
+
     static belongsTo = BaseTest
-    
+
     static hasMany = [map2Tests:Map2Test]
-    
+
     static constraints = {
         name nullable:false, blank:false
     }
@@ -72,9 +72,9 @@ class MapTest {
 @Entity
 class Map2Test {
     String name
-    
+
     static belongsTo = MapTest
-    
+
     static constraints = {
         name nullable:false, blank:false
     }
@@ -83,9 +83,9 @@ class Map2Test {
 @Entity
 class SetTest {
     String name
-    
+
     static belongsTo = BaseTest
-    
+
     static constraints = {
         name nullable:false, blank:false
     }

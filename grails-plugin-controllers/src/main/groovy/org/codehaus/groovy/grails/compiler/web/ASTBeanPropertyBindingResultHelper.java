@@ -57,8 +57,9 @@ public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
 
     protected void addErrorsField(final ClassNode paramTypeClassNode) {
         final ASTNode errorsField = paramTypeClassNode.getField(ERRORS_PROPERTY_NAME);
-        if(errorsField == null) {
-            paramTypeClassNode.addField(new FieldNode(ERRORS_PROPERTY_NAME, Modifier.PUBLIC, ERRORS_CLASS_NODE, paramTypeClassNode, NULL_EXPRESSION));
+        if (errorsField == null) {
+            paramTypeClassNode.addField(new FieldNode(ERRORS_PROPERTY_NAME, Modifier.PUBLIC,
+                    ERRORS_CLASS_NODE, paramTypeClassNode, NULL_EXPRESSION));
         }
     }
 
@@ -70,7 +71,8 @@ public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
             final BinaryExpression errorsIsNullExpression = new BinaryExpression(ERRORS_EXPRESSION, Token.newSymbol(
                     Types.COMPARE_EQUAL, 0, 0), NULL_EXPRESSION);
 
-            Expression beanPropertyBindingResultConstructorArgs = new ArgumentListExpression(THIS_EXPRESSION,new ConstantExpression(paramTypeClassNode.getName()));
+            Expression beanPropertyBindingResultConstructorArgs = new ArgumentListExpression(
+                    THIS_EXPRESSION, new ConstantExpression(paramTypeClassNode.getName()));
             final Statement newEvaluatorExpression = new ExpressionStatement(
                     new BinaryExpression(ERRORS_EXPRESSION,
                             EQUALS_SYMBOL,
@@ -128,8 +130,9 @@ public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
 
     protected void addSetErrorsMethod(final ClassNode paramTypeClassNode) {
         final String errorsArgumentName = "$errorsArg";
-        MethodNode setErrorsMethod = paramTypeClassNode.getMethod(SET_ERRORS_METHOD_NAME, new Parameter[]{ new Parameter(ERRORS_CLASS_NODE, errorsArgumentName)});
-        if(setErrorsMethod == null) {
+        MethodNode setErrorsMethod = paramTypeClassNode.getMethod(SET_ERRORS_METHOD_NAME,
+             new Parameter[] { new Parameter(ERRORS_CLASS_NODE, errorsArgumentName)});
+        if (setErrorsMethod == null) {
             final Expression assignErrorsExpression = new BinaryExpression(ERRORS_EXPRESSION,
                     EQUALS_SYMBOL, new VariableExpression(errorsArgumentName));
             setErrorsMethod = new MethodNode(SET_ERRORS_METHOD_NAME,

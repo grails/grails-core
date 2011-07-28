@@ -16,11 +16,52 @@ package org.codehaus.groovy.grails.web.binding;
 
 import grails.util.GrailsNameUtils;
 import grails.validation.DeferredBindingActions;
-import groovy.lang.*;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.MetaProperty;
+import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
+
+import java.beans.PropertyEditor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TimeZone;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.json.JSONObject;
@@ -29,8 +70,18 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
-import org.springframework.beans.*;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.ConfigurablePropertyAccessor;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.beans.MutablePropertyValues;
+import org.springframework.beans.PropertyAccessor;
+import org.springframework.beans.PropertyAccessorUtils;
+import org.springframework.beans.PropertyEditorRegistrar;
+import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.PropertyValues;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
@@ -44,18 +95,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
 import org.springframework.web.servlet.support.RequestContextUtils;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import java.beans.PropertyEditor;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * A data binder that handles binding dates that are specified with a "struct"-like syntax in request parameters.
@@ -434,7 +473,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private void filterNestedParameterMaps(MutablePropertyValues mpvs) {
         for (PropertyValue pv : mpvs.getPropertyValues()) {
             final Object value = pv.getValue();
-            if(JSONObject.NULL.getClass().isInstance(value)) {
+            if (JSONObject.NULL.getClass().isInstance(value)) {
                 mpvs.removePropertyValue(pv);
             }
             if (isNotCandidateForBinding(value)) {
@@ -472,7 +511,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValue[] pvs = mpvs.getPropertyValues();
         for (PropertyValue pv : pvs) {
             String propertyName = pv.getName();
-            if(!isAllowed(propertyName)) continue;
+            if (!isAllowed(propertyName)) continue;
             if (propertyName.indexOf(PATH_SEPARATOR) > -1) {
                 String[] propertyNames = propertyName.split("\\.");
                 BeanWrapper currentBean = bean;
@@ -496,7 +535,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     @Override
     protected boolean isAllowed(String field) {
         int i = field.indexOf('[');
-        if(i>-1) {
+        if (i>-1) {
             field = field.substring(0,i);
         }
         return super.isAllowed(field);
@@ -793,7 +832,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         Object v = pv.getValue();
         final boolean isArray = v != null && v.getClass().isArray();
 
-        if(!isArray && !(v instanceof String)) return;
+        if (!isArray && !(v instanceof String)) return;
 
         Collection collection = (Collection) bean.getPropertyValue(pv.getName());
         collection.clear();
@@ -919,18 +958,16 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 
             PropertyEditor editor = findCustomEditor(type, propertyName);
 
-            if(editor instanceof CompositeEditor) {
+            if (editor instanceof CompositeEditor) {
                 CompositeEditor composite = (CompositeEditor) editor;
                 List<PropertyEditor> propertyEditors = composite.getPropertyEditors();
                 for (PropertyEditor propertyEditor : propertyEditors) {
                     if (null == propertyEditor || !StructuredPropertyEditor.class.isAssignableFrom(propertyEditor.getClass())) {
                         continue;
                     }
-                    else {
-                        StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) propertyEditor;
-                        processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
 
-                    }
+                    StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) propertyEditor;
+                    processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
                 }
             }
             else {
@@ -941,7 +978,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 StructuredPropertyEditor structuredEditor = (StructuredPropertyEditor) editor;
                 processStructuredProperty(structuredEditor, propertyName, type, valueNames, propertyValues);
             }
-
         }
     }
 
@@ -1011,7 +1047,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             Map<String, PropertyValue> valuesByName, List<String> valueNames) {
         for (PropertyValue pv : pvs) {
             String propertyName = pv.getName();
-            if(!isAllowed(propertyName)) continue;
+            if (!isAllowed(propertyName)) continue;
             valuesByName.put(propertyName, pv);
             valueNames.add(propertyName);
         }

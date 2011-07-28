@@ -25,7 +25,7 @@ import java.security.CodeSource;
  * A class loader that is aware of Groovy Pages and injection operations.
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 public class GroovyPageClassLoader extends GroovyClassLoader {
 

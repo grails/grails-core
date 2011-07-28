@@ -25,10 +25,10 @@ import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * Methods added to {@link javax.servlet.http.HttpServletResponse} for response format handling
+ * Methods added to {@link javax.servlet.http.HttpServletResponse} for response format handling.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ResponseMimeTypesApi {
 

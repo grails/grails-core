@@ -23,7 +23,7 @@ import org.apache.ivy.plugins.resolver.util.ResolvedResource;
 /**
  * Correctly handles last modified in a resolved Ivy resource.
  *
- * @since 1.4
+ * @since 2.0
  * @author Luke Daley
  * @author Graeme Rocher
  */

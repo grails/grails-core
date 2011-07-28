@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.resolve;
 import groovy.lang.Closure;
 
 import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.JarDependenciesConfigurer;
@@ -156,7 +155,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis");
 
-                        String springDatastoreMappingVersion = "1.0.0.M6";
+                        String datastoreMappingVersion = "1.0.0.M7";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5"),
@@ -174,7 +173,9 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-resources", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-spring", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", springDatastoreMappingVersion),
+                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-core", datastoreMappingVersion),
+                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", datastoreMappingVersion),
+                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-simple", datastoreMappingVersion),
 
                             // Plugins
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-codecs", grailsVersion),
@@ -206,19 +207,16 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-tx", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-web", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", springVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-core", springDatastoreMappingVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-datastore-simple", springDatastoreMappingVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion)
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
 
-                        if(GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
+                        if (GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
                             ModuleRevisionId[] servletThreeCompileDependencies = {
                                  ModuleRevisionId.newInstance("org.grails", "grails-plugin-async", grailsVersion),
                             };
                             registerDependencies(dependencyManager, compileTimeDependenciesMethod, servletThreeCompileDependencies);
                         }
-
 
                         // dependencies needed for running tests
                         ModuleRevisionId[] testDependencies = {

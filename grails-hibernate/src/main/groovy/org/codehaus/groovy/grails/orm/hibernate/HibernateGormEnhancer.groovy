@@ -38,7 +38,7 @@ import org.hibernate.proxy.HibernateProxy
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.core.convert.ConversionService
 import org.springframework.dao.DataAccessException
-import org.springframework.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.SessionHolder
@@ -224,9 +224,9 @@ class HibernateGormStaticApi extends GormStaticApi {
         getAllInternal(ids)
     }
 
-	List getAll(Long... ids) {
-		getAllInternal(ids)
-	}
+    List getAll(Long... ids) {
+        getAllInternal(ids)
+    }
 
     @Override
     List getAll(Serializable... ids) {

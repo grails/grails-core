@@ -29,14 +29,17 @@ import org.codehaus.groovy.grails.web.filters.HiddenHttpMethodFilter
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
+import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
+import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
+import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
+import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
-import org.codehaus.groovy.grails.web.servlet.mvc.*
 
- /**
+/**
  * Handles the configuration of controllers for Grails.
  *
  * @author Graeme Rocher
@@ -76,11 +79,11 @@ class ControllersGrailsPlugin {
             interceptors = handlerInterceptors
         }
         // allow @Controller annotated beans
-        annotationHandlerMapping(RequestMappingHandlerMapping, interceptorsClosure)
+        annotationHandlerMapping(DefaultAnnotationHandlerMapping, interceptorsClosure)
         // allow default controller mappings
         controllerHandlerMappings(GrailsControllerHandlerMapping, interceptorsClosure)
 
-        annotationHandlerAdapter(RequestMappingHandlerAdapter)
+        annotationHandlerAdapter(AnnotationMethodHandlerAdapter)
 
         viewNameTranslator(DefaultRequestToViewNameTranslator) {
             stripLeadingSlash = false

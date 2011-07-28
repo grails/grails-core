@@ -21,11 +21,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- *
  * A class loader that searches the parent
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ParentDelegatingClassLoader extends ClassLoader{
 

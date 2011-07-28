@@ -22,7 +22,7 @@ import org.slf4j.helpers.BasicMarkerFactory;
  * Implementation of the StaticMarkerBinder for slf4j.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class StaticMarkerBinder {
     /**

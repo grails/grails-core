@@ -32,7 +32,7 @@ import java.util.Arrays;
  * The logic for the {@link grails.artefact.ApiDelegate} location transform.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class ApiDelegateTransformation implements ASTTransformation{

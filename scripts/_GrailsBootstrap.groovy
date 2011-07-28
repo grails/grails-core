@@ -63,13 +63,12 @@ target(loadApp:"Loads the Grails application object") {
     // evaluated against the classpath - not what we want!
     def resourceLoader = new PluginPathAwareFileSystemResourceLoader()
     def locations = new ArrayList(grailsSettings.pluginDirectories.collect { it.absolutePath })
-    locations << grailsSettings.baseDir.absolutePath    
+    locations << grailsSettings.baseDir.absolutePath
     resourceLoader.searchLocations = locations
     servletContext = new MockServletContext('web-app', resourceLoader)
     ctx.servletContext = servletContext
     grailsApp = ctx.grailsApplication
     ApplicationHolder.application = grailsApp
-    classLoader = grailsApp.classLoader
     packageApp()
     PluginManagerHolder.pluginManager = null
     loadPlugins()

@@ -135,7 +135,7 @@ class ConfigurationHelper {
      */
     static void initConfig(ConfigObject config, ResourceLoader resourceLoader = null, ClassLoader classLoader = null) {
 
-        if(Environment.isWithinShell()) {
+        if (Environment.isWithinShell()) {
             cachedConfigs.put(DEV_CACHE_KEY, config)
         }
         def resolver = resourceLoader ?

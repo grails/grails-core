@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.support
 
 /**
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class WatchPattern {
 

@@ -62,10 +62,10 @@ import java.util.Map;
 
 /**
  * Transformation used by the {@link grails.test.mixin.TestFor} annotation to signify the
- * class under test
+ * class under test.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 @SuppressWarnings("rawtypes")

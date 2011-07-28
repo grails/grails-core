@@ -63,7 +63,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         int statusCode;
 
         // Do nothing in the case of an already committed response. Assume error already handled
-        if(response.isCommitted()) return;
+        if (response.isCommitted()) return;
 
         if (request.getAttribute("javax.servlet.error.status_code") != null) {
             statusCode = Integer.parseInt(request.getAttribute("javax.servlet.error.status_code").toString());
@@ -97,8 +97,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         if (urlMappingInfo != null) {
             RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
             boolean restoreOriginalRequestAttributes = false;
-            if(requestAttributes instanceof GrailsWebRequest) {
-
+            if (requestAttributes instanceof GrailsWebRequest) {
                 final GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
                 urlMappingInfo.configure(webRequest);
             }
@@ -123,7 +122,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     if (viewResolver != null) {
                         View v;
                         try {
-                            if(!response.isCommitted()) {
+                            if (!response.isCommitted()) {
                                 response.setContentType(TEXT_HTML);
                             }
                             v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
@@ -137,7 +136,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                 }
             } finally {
                 WrappedResponseHolder.setWrappedResponse(originalResponse);
-                if(restoreOriginalRequestAttributes) {
+                if (restoreOriginalRequestAttributes) {
                     RequestContextHolder.setRequestAttributes(requestAttributes);
                 }
             }
