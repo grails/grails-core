@@ -62,11 +62,46 @@ class Log4jDslTests extends GroovyTestCase {
                 production {
                     error 'org.hibernate.SQL'
                 }
+                firstCustomEnv {
+                    warn 'org.hibernate.SQL'
+                }
+                secondCustomEnv {
+                    debug 'org.hibernate.SQL'
+                }
             }
         }
 
         def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
         assertEquals hibernateLogger.level, Level.ERROR
+    }
+
+    void testCustomEnvironment() {
+
+        System.setProperty(Environment.KEY, "firstCustomEnv")
+
+        LogManager.resetConfiguration()
+
+        Log4jConfig config = new Log4jConfig()
+        config.configure {
+            environments {
+                development {
+                    trace 'org.hibernate.SQL'
+                }
+                production {
+                    error 'org.hibernate.SQL'
+                }
+                firstCustomEnv {
+                    warn 'org.hibernate.SQL'
+                }
+                secondCustomEnv {
+                    debug 'org.hibernate.SQL'
+                }
+            }
+        }
+
+        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
+        assertEquals hibernateLogger.level, Level.WARN
+
     }
 
     void testTraceLevel() {

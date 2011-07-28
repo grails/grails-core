@@ -97,32 +97,17 @@ class Log4jConfig {
     }
 
     def environments(Closure callable) {
-        invokeCallable(callable)
+        callable.delegate = new EnvironmentsLog4JConfig(this)
+        callable.resolveStrategy = Closure.DELEGATE_FIRST
+        callable.call()
     }
 
-    private invokeCallable(Closure callable) {
+    def invokeCallable(Closure callable) {
         callable.delegate = this
         callable.resolveStrategy = Closure.DELEGATE_FIRST
         callable.call()
     }
 
-    def development(Closure callable) {
-        if (Environment.current == Environment.DEVELOPMENT) {
-            invokeCallable(callable)
-        }
-    }
-
-    def production(Closure callable) {
-        if (Environment.current == Environment.PRODUCTION) {
-            invokeCallable(callable)
-        }
-    }
-
-    def test(Closure callable) {
-        if (Environment.current == Environment.TEST) {
-            invokeCallable(callable)
-        }
-    }
 
     /**
      * Configure Log4J from a map whose values are DSL closures.  This simply
@@ -421,5 +406,45 @@ class RootLog4jConfig {
 
     void setProperty(String s, Object o) {
         root."$s" = o
+    }
+}
+
+class EnvironmentsLog4JConfig {
+    Log4jConfig config
+
+    def EnvironmentsLog4JConfig(Log4jConfig config) {
+        this.config = config
+    }
+
+    def development(Closure callable) {
+        if (Environment.current == Environment.DEVELOPMENT) {
+            config.invokeCallable(callable)
+        }
+    }
+
+    def production(Closure callable) {
+        if (Environment.current == Environment.PRODUCTION) {
+            config.invokeCallable(callable)
+        }
+    }
+
+    def test(Closure callable) {
+        if (Environment.current == Environment.TEST) {
+            config.invokeCallable(callable)
+        }
+    }
+
+    def methodMissing(String name, args) {
+        if(args && args[0] instanceof Closure) {
+            // treat all method calls that take a closure as custom environment
+            // names
+            if(Environment.current == Environment.CUSTOM &&
+                Environment.current.name == name) {
+                config.invokeCallable(args[0])
+            }
+        }
+        else {
+            LogLog.error "Method missing when configuring log4j: $name"
+        }
     }
 }

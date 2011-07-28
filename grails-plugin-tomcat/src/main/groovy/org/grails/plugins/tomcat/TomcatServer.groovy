@@ -20,7 +20,7 @@ import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
  /**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
@@ -38,7 +38,9 @@ abstract class TomcatServer implements EmbeddableServer {
     protected final boolean usingUserKeystore
     protected final File keystoreFile
     protected final String keyPassword
-
+ 	protected String truststore
+ 	protected File truststoreFile
+ 	protected String trustPassword
 
     // These are set from the outside in _GrailsRun
     def grailsConfig
@@ -61,6 +63,10 @@ abstract class TomcatServer implements EmbeddableServer {
             keystoreFile = getWorkDirFile("ssl/keystore")
             keyPassword = "123456"
         }
+
+        truststore = "${buildSettings.grailsWorkDir}/ssl/truststore"
+        truststoreFile = new File(truststore)
+        trustPassword = "123456"
 
         System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
 
@@ -129,7 +135,7 @@ abstract class TomcatServer implements EmbeddableServer {
     }
 
     protected createSSLCertificate() {
-        println 'Creating SSL Certificate...'
+        CONSOLE.updateStatus 'Creating SSL Certificate...'
 
         def keystoreDir = keystoreFile.parentFile
         if (!keystoreDir.exists() && !keystoreDir.mkdir()) {

@@ -524,7 +524,7 @@ public class GrailsScriptRunner {
 
         console.updateStatus("Configuring classpath");
         ClasspathConfigurer configurer = new ClasspathConfigurer(pluginPathSupport, settings, skipPlugins);
-        if("DependencyReport".equals(scriptName)) {
+        if("DependencyReport".equals(scriptName) || "Upgrade".equals(scriptName)) {
             configurer.setExitOnResolveError(false);
         }
         this.classLoader = configurer.configuredClassLoader();
