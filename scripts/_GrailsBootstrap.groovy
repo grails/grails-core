@@ -69,7 +69,6 @@ target(loadApp:"Loads the Grails application object") {
     ctx.servletContext = servletContext
     grailsApp = ctx.grailsApplication
     ApplicationHolder.application = grailsApp
-    classLoader = grailsApp.classLoader
     packageApp()
     PluginManagerHolder.pluginManager = null
     loadPlugins()
