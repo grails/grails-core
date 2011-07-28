@@ -16,33 +16,48 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.*;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.ThrowStatement;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
- * Abstract transformer that takes an implementation class and creates methods in a target ClassNode that delegate to that
- * implementation class. Subclasses should override to provide the implementation class details
+ * Abstract transformer that takes an implementation class and creates methods
+ * in a target ClassNode that delegate to that implementation class. Subclasses
+ * should override to provide the implementation class details
  *
- * @since 1.4
+ * @since 2.0
  * @author  Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable{
+public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable {
 
-
-    protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
-    protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
+
+    protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
+    protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
+
     public static final int PUBLIC_STATIC_MODIFIER = Modifier.PUBLIC | Modifier.STATIC;
     public static final String CURRENT_PREFIX = "current";
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
@@ -50,8 +65,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     public String getArtefactType() {
         String simpleName = getClass().getSimpleName();
-        if (simpleName.length()>11) {
-            return simpleName.substring(0, simpleName.length()-11);
+        if (simpleName.length() > 11) {
+            return simpleName.substring(0, simpleName.length() - 11);
         }
         return simpleName;
     }
@@ -60,7 +75,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      * Used for ordering not equality.
      *
      * Note: this class has a natural ordering that is inconsistent with equals.
-     *
      *
      * @see Comparable#compareTo(Object)
      */

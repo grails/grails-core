@@ -24,10 +24,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to indicate the class under test. Triggers the @TestMixin AST transform for the given artefact type
+ * Used to indicate the class under test. Triggers the @TestMixin AST transform for the given artefact type.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

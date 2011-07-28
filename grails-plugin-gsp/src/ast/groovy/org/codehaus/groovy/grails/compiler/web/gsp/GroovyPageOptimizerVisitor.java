@@ -21,7 +21,7 @@ import java.util.Stack;
  * Scan MethodCallExpression in GSP to convert callsite calls into static calls (printHtmlPart ...)
  *
  * @author Stephane Maldini
- * @since 1.4
+ * @since 2.0
  */
 class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
 

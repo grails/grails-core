@@ -68,7 +68,7 @@ import java.util.Set;
  *
  * <p>NOTE: This class is not for production use and is development time only!</p>
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")

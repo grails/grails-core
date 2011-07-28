@@ -43,10 +43,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * API for each controller in a Grails application
+ * API for each controller in a Grails application.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @SuppressWarnings("rawtypes")
 public class ControllersApi extends CommonWebApi {
@@ -205,7 +205,7 @@ public class ControllersApi extends CommonWebApi {
      */
     public boolean hasErrors(Object instance) {
         final Errors errors = getErrors(instance);
-        return errors != null && errors.hasErrors() ? true : false;
+        return errors != null && errors.hasErrors();
     }
 
     /**

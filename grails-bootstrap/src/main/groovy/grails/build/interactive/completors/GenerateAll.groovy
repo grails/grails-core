@@ -20,13 +20,13 @@ import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 
 /**
- * Completor for the generate-all command
+ * Completor for the generate-all command.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
-class GenerateAll extends ClassNameCompletor{
+class GenerateAll extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "generate-all" }
 
@@ -34,6 +34,4 @@ class GenerateAll extends ClassNameCompletor{
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

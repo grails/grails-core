@@ -1,5 +1,1 @@
-class PluginTwoGrailsPlugin {
-
-    
-
-}
+class PluginTwoGrailsPlugin {}

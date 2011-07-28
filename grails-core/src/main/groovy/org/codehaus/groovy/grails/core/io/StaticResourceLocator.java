@@ -26,7 +26,7 @@ import java.util.Map;
  * A static resource locator that uses an internal map to locate resources. Used largely for testing.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class StaticResourceLocator implements ResourceLocator{
     private Map<String,Resource> classToResourceMap = new HashMap<String,Resource>();

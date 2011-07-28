@@ -30,7 +30,7 @@ import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
 
 /**
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public abstract class BaseApiProvider {
 

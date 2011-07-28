@@ -46,11 +46,10 @@ import org.codehaus.groovy.runtime.MethodClosure;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * Configures the binding used when running Grails scripts
+ * Configures the binding used when running Grails scripts.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
 public class ScriptBindingInitializer {
 
@@ -82,9 +81,11 @@ public class ScriptBindingInitializer {
       * will load the "Init" script from $GRAILS_HOME/scripts if it
       * exists there; otherwise it will load the Init class.
       */
-     public GantBinding initBinding(final GantBinding binding, String scriptName) {
+     @SuppressWarnings("unchecked")
+    public GantBinding initBinding(final GantBinding binding, String scriptName) {
          Closure<?> c = settings.getGrailsScriptClosure();
          c.setDelegate(binding);
+         @SuppressWarnings("rawtypes")
          Map argsMap = new LinkedHashMap(commandLine.getUndeclaredOptions());
          argsMap.put("params", commandLine.getRemainingArgs());
          binding.setVariable("argsMap", argsMap);

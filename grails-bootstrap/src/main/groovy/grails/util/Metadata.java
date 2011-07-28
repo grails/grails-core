@@ -216,6 +216,7 @@ public class Metadata extends Properties {
      *
      * @deprecated Use {@link BuildSettings#servletVersion} instead
      */
+    @Deprecated
     public String getServletVersion() {
         final String servletVersion = (String) get(SERVLET_VERSION);
         if (servletVersion == null) {

@@ -20,13 +20,13 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.springframework.core.io.Resource
 
 /**
- * Completor for the generate-views command
+ * Completor for the generate-views command.
  *
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
-class GenerateViews extends ClassNameCompletor{
+class GenerateViews extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "generate-views" }
 
@@ -34,6 +34,4 @@ class GenerateViews extends ClassNameCompletor{
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

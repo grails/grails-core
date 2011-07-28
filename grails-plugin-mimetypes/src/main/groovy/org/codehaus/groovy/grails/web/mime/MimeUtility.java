@@ -16,10 +16,11 @@
 
 package org.codehaus.groovy.grails.web.mime;
 
+import java.util.List;
+
 /**
  * @author Graeme Rocher
- * @since 1.4
- *
+ * @since 2.0
  */
 public interface MimeUtility {
 
@@ -28,8 +29,7 @@ public interface MimeUtility {
      *
      * @return An array of MimeType instances
      */
-    java.util.List<MimeType> getKnownMimeTypes();
-
+    List<MimeType> getKnownMimeTypes();
 
     /**
      * Obtains a MimeType for the given extension

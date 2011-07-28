@@ -110,9 +110,10 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                     }
                     String parameterName = (String) entry.getKey();
                     Object parameterValue = entry.getValue();
-                    if(parameterValue == null) {
+                    if (parameterValue == null) {
                         throw new IllegalArgumentException("Named parameter [" + entry.getKey() + "] value may not be null");
-                    } else if (Collection.class.isAssignableFrom(parameterValue.getClass())) {
+                    }
+                    if (Collection.class.isAssignableFrom(parameterValue.getClass())) {
                         q.setParameterList(parameterName, (Collection) parameterValue);
                     }
                     else if (parameterValue.getClass().isArray()) {

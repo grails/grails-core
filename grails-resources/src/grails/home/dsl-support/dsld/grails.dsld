@@ -25,11 +25,11 @@ import org.codehaus.groovy.ast.expr.MapExpression;
 /**
  * DSL support for the Grails Framework when editing inside of STS.  Requires STS 2.7.0 or later.
  * @author Andrew Eisenberg
- * @since 1.4
+ * @since 2.0
  */
 
-def grailsArtifact = { String folder -> 
-	sourceFolderOfCurrentType("grails-app/" + folder) & 
+def grailsArtifact = { String folder ->
+	sourceFolderOfCurrentType("grails-app/" + folder) &
 	nature("grails") & (~isScript())
 }
 
@@ -43,15 +43,15 @@ def domainClass = grailsArtifact("domain")
 
 // constraints
 // The constraints DSL is only applicable inside of the static "constraints" field declaration
-(domainClass & 
-	inClosure() & 
-	enclosingField(name("constraints") & isStatic()) & 
-	currentTypeIsEnclosingType() & 
+(domainClass &
+	inClosure() &
+	enclosingField(name("constraints") & isStatic()) &
+	currentTypeIsEnclosingType() &
 	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
 	).accept {
 
 	provider = "Grails Constraints DSL"  // this value will appear in content assist
- 
+
 	// FIXJB : ensure that all constraints are correct below
 	// FIXJB : add documentation
 	// for each non-static property, there are numerous constraints "methods" that are available
@@ -81,11 +81,10 @@ def domainClass = grailsArtifact("domain")
 		method isStatic: true, name: prop.name, params: [range:Range], useNamedArgs:true
 		method isStatic: true, name: prop.name, params: [inList:List], useNamedArgs:true
 	}
-	
+
 	// FIXJB : add the id property (type long)
-	
 }
-		
+
 // criteria queries
 domainClass.accept {
 	provider = "Criteria builder DSL"
@@ -96,7 +95,7 @@ domainClass.accept {
 }
 currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	provider = "Criteria builder DSL"
-	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure] 
+	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
@@ -108,9 +107,9 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 domainClass.accept {
 	provider = "GORM Static API"
 	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<" + currentType.name + ">", isStatic:true, except:["withCriteria", "createCriteria"]
-}  
+}
 
-// hasMany 
+// hasMany
 domainClass & currentType(props : properties(isStatic() & name("hasMany"))).accept {
 	provider = "Grails hasMany"
 	props.each { PropertyNode hasMany ->
@@ -143,7 +142,7 @@ domainClass & currentType(props : properties(isStatic() & name("belongsTo"))).ac
 				belongsTo.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
 					property name : entry.keyExpression, type : entry.valueExpression.type
 				}
-			} else if(belongsTo.initialExpression instanceof ClassExpression) {
+			} else if (belongsTo.initialExpression instanceof ClassExpression) {
 				property name : toPropertyName(belongsTo.type.nameWithoutPackage), type : belongsTo.type
 			}
 		}
@@ -152,11 +151,11 @@ domainClass & currentType(props : properties(isStatic() & name("belongsTo"))).ac
 // mapping ---orm DSL
 // FIXJB : Ensure nothing is missed
 // FIXJB : Add documentation
-domainClass & currentType(properties(isStatic() & name("mapping")) & 
+domainClass & currentType(properties(isStatic() & name("mapping")) &
 	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
 	).accept {
 	provider = "Grails ORM DSL"
-	
+
 	method name:"table", type:Void, params: [tableName: String], useNamedArgs:true, isStatic:true
 	method name:"groups", type:Void, params: [column:String], useNamedArgs:true, isStatic:true
 	method name:"tablePerHierarchy", type:Void, params: [val:Boolean], isStatic:true
@@ -165,32 +164,32 @@ domainClass & currentType(properties(isStatic() & name("mapping")) &
 	method name:"version", type:Void, params: [shouldVersion:Boolean], isStatic:true
 	method name:"sort", type:Void, params: [propertyName:String], isStatic:true
 	method name:"column", type:Void, params: [name:String, index:String, unique:Boolean, sqlType:String], isStatic:true
-	
-	props.each { PropertyNode prop -> 
-		method name: prop.name, type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true	
-		method name: prop.name, type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true	
-		method name: prop.name, type: Void, params:[type:Class], useNamedArgs:true, isStatic:true	
-		method name: prop.name, type: Void, params:[type:String], useNamedArgs:true, isStatic:true	
-		method name: prop.name, type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true	
-		method name: prop.name, type: Void, params:[formula:String], useNamedArgs:true, isStatic:true	
-		method name: prop.name, type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], 
+
+	props.each { PropertyNode prop ->
+		method name: prop.name, type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, params:[type:Class], useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, params:[type:String], useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, params:[formula:String], useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"],
 				useNamedArgs:true, isStatic:true
 	}
-	
+
 	// now do the same for id
-	method name: 'id', type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true	
-	method name: 'id', type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true	
-	method name: 'id', type: Void, params:[type:Class], useNamedArgs:true, isStatic:true	
-	method name: 'id', type: Void, params:[type:String], useNamedArgs:true, isStatic:true	
-	method name: 'id', type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true	
+	method name: 'id', type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true
+	method name: 'id', type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true
+	method name: 'id', type: Void, params:[type:Class], useNamedArgs:true, isStatic:true
+	method name: 'id', type: Void, params:[type:String], useNamedArgs:true, isStatic:true
+	method name: 'id', type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true
 	method name: 'id', type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], useNamedArgs:true, isStatic:true
-	method name: 'id', type :Void, params:[composite:"java.util.List<java.lang.String>"], useNamedArgs:true, isStatic:true	
+	method name: 'id', type :Void, params:[composite:"java.util.List<java.lang.String>"], useNamedArgs:true, isStatic:true
 }
 
 def toPropertyName(String typeName) {
     // Check whether the name begins with two upper case letters.
     if (typeName.length() > 1
-		&& Character.isUpperCase(typeName.charAt(0)) 
+		&& Character.isUpperCase(typeName.charAt(0))
 		&& Character.isUpperCase(typeName.charAt(1)))  {
         	return typeName
     }

@@ -2,13 +2,17 @@ package org.codehaus.groovy.grails.cli.parsing;
 
 import grails.util.Environment;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * Implementation of the {@link CommandLine} interface
+ * Implementation of the {@link CommandLine} interface.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class DefaultCommandLine implements CommandLine {
 
@@ -95,11 +99,11 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public Object optionValue(String name) {
-        if(declaredOptions.containsKey(name)) {
+        if (declaredOptions.containsKey(name)) {
             SpecifiedOption specifiedOption = declaredOptions.get(name);
             return specifiedOption.value;
         }
-        else if(undeclaredOptions.containsKey(name)) {
+        if (undeclaredOptions.containsKey(name)) {
             return undeclaredOptions.get(name);
         }
         return null;

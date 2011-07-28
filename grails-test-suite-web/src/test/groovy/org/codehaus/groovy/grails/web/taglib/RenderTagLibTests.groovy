@@ -17,17 +17,16 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
 
-import com.opensymphony.module.sitemesh.RequestConstants
-import com.opensymphony.module.sitemesh.html.util.CharArray
-import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
-
-import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib;
+import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import com.opensymphony.module.sitemesh.RequestConstants
+import com.opensymphony.module.sitemesh.html.util.CharArray
+import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 
 /**
  * Tests for the RenderTagLib.groovy file which contains tags for rendering.
@@ -35,6 +34,7 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
  * @author Marcel Overdijk
  */
 class RenderTagLibTests extends AbstractGrailsTagTests {
+
     // test for GRAILS-5376
     void testPaginateTag() {
          def template = '<g:paginate controller="book" total="" offset="" />'
@@ -60,7 +60,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     void testTemplateNamespace() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/table/_tableRow.gsp', '<tr><td class="prop">${label}</td><td class="value">${value}</td></tr>')
-        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
         webRequest.controllerName = "table"
 
@@ -74,7 +74,6 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
     }
-
 
     void testRenderWithNonExistantTemplate() {
         def template = '<g:render template="bad" />'
@@ -91,7 +90,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     void testRenderTagWithContextPath() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/amazon/book/_book.gsp', 'content ${foo}: ${body()}')
-        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
         def template = '<g:render contextPath="/amazon" template="/book/book" model="[foo: \'bar\']">hello</g:render>'
 
@@ -118,7 +117,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     void testRenderTagWithBody() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', 'content ${foo}: ${body()}')
-        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
         def template = '<g:render template="/book/book" model="[foo: \'bar\']">hello</g:render>'
         assertOutputEquals 'content bar: hello', template
@@ -128,7 +127,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         RenderTagLib.TEMPLATE_CACHE.clear()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', '[book = ${string} it=${it} foo=${foo}]')
-        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
         def template = '<g:render template="/book/book" collection="${books}" model="[foo: \'bar\']" />'
 
@@ -139,7 +138,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource("/foo/_part.gsp", "test")
-        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader( resourceLoader )
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
         webRequest.controllerName = "foo"
         def template = '''<p>id: ${foo1.id},name: ${foo1.name}</p><g:render template="part" model="['foo1':foo2]" /><p>id: ${foo1.id},name: ${foo1.name}</p>'''
 

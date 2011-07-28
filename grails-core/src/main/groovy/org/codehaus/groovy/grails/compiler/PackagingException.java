@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.compiler;
  * Exception thrown when there was an error in the packing process of an application.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class PackagingException extends RuntimeException {
 

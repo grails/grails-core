@@ -15,19 +15,21 @@
 package grails.util
 
 import groovy.util.slurpersupport.GPathResult
+
 import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+
 import org.apache.commons.lang.ArrayUtils
+import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
+import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.AntPathMatcher
-import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
-import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -100,54 +102,53 @@ class PluginBuildSettings {
         this.pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
         this.pluginLocations = buildSettings?.config?.grails?.plugin?.location
 
-        if(buildSettings != null) {
-            populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginCompileDependencies)
-            populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginRuntimeDependencies)
-
-            final inlinePlugins = getInlinePluginDirectories()
-            for(pluginDir in inlinePlugins) {
-                final pluginInfo = getPluginInfo(pluginDir.file.absolutePath)
-                if(pluginInfo != null) {
-                    addPluginScopeInfoForDirAndInfo(compileScopePluginInfo, pluginInfo, pluginDir)
-                }
-            }
-
-            populateSourceDirectories(buildScopePluginInfo,  buildSettings.pluginBuildDependencies)
-            populateSourceDirectories(providedScopePluginInfo,  buildSettings.pluginProvidedDependencies)
-            populateSourceDirectories(testScopePluginInfo,  buildSettings.pluginTestDependencies)
-            testScopePluginInfo = testScopePluginInfo - compileScopePluginInfo
+        if (buildSettings == null) {
+            return
         }
 
+        populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginCompileDependencies)
+        populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginRuntimeDependencies)
+
+        for (pluginDir in getInlinePluginDirectories()) {
+            final pluginInfo = getPluginInfo(pluginDir.file.absolutePath)
+            if (pluginInfo != null) {
+                addPluginScopeInfoForDirAndInfo(compileScopePluginInfo, pluginInfo, pluginDir)
+            }
+        }
+
+        populateSourceDirectories(buildScopePluginInfo,  buildSettings.pluginBuildDependencies)
+        populateSourceDirectories(providedScopePluginInfo,  buildSettings.pluginProvidedDependencies)
+        populateSourceDirectories(testScopePluginInfo,  buildSettings.pluginTestDependencies)
+        testScopePluginInfo = testScopePluginInfo - compileScopePluginInfo
     }
 
-    public void registerNewPluginInstall(File zip) {
+    void registerNewPluginInstall(File zip) {
          switch(zip) {
              case buildSettings.pluginCompileDependencies:
-                  registePluginZipWithScope(zip, compileScopePluginInfo)
-             break
+                  registerPluginZipWithScope(zip, compileScopePluginInfo)
+                  break
              case buildSettings.pluginRuntimeDependencies:
-                  registePluginZipWithScope(zip, compileScopePluginInfo)
-             break
+                  registerPluginZipWithScope(zip, compileScopePluginInfo)
+                  break
              case buildSettings.pluginTestDependencies:
-                  registePluginZipWithScope(zip, testScopePluginInfo)
-             break
+                  registerPluginZipWithScope(zip, testScopePluginInfo)
+                  break
              case buildSettings.pluginProvidedDependencies:
-                  registePluginZipWithScope(zip, providedScopePluginInfo)
-             break
+                  registerPluginZipWithScope(zip, providedScopePluginInfo)
+                  break
              case buildSettings.pluginBuildDependencies:
-                  registePluginZipWithScope(zip, buildScopePluginInfo)
-             break
+                  registerPluginZipWithScope(zip, buildScopePluginInfo)
+                  break
          }
     }
 
     private populateSourceDirectories(PluginScopeInfo compileInfo, List<File> pluginDependencies) {
-
         for (zip in pluginDependencies) {
-            registePluginZipWithScope(zip, compileInfo)
+            registerPluginZipWithScope(zip, compileInfo)
         }
     }
 
-    protected def registePluginZipWithScope(File pluginZip, PluginScopeInfo scopeInfo) {
+    protected registerPluginZipWithScope(File pluginZip, PluginScopeInfo scopeInfo) {
         def info = readPluginInfoFromZip(pluginZip.absolutePath)
         if (info != null) {
             def existingInfo = getPluginInfoForName(info.name)
@@ -163,8 +164,7 @@ class PluginBuildSettings {
         compileInfo.sourceDirectories.addAll(
                 getPluginSourceDirectories(dir.file.canonicalFile).findAll {
                     !excludedPaths.contains(it.file.name) && it.file.isDirectory()
-                }
-        )
+                })
         compileInfo.pluginDescriptors << getPluginDescriptor(dir)
         compileInfo.artefactResources.addAll(getArtefactResourcesForOne(dir.file.absolutePath))
     }
@@ -316,7 +316,7 @@ class PluginBuildSettings {
 
         Resource pluginDir = getPluginDirForName(pluginName)
         GPathResult result = getMetadataForPlugin(pluginDir)
-        if(result != null) {
+        if (result != null) {
             pluginMetaDataMap[pluginName] = result
         }
         return result
@@ -539,10 +539,10 @@ class PluginBuildSettings {
      */
     List<Resource> getCompileScopedArtefactResources() {
         List<Resource> artefactResources = cache['compileScopedArtefactResources']
-        if(artefactResources == null) {
+        if (artefactResources == null) {
             artefactResources = []
             artefactResources.addAll compileScopePluginInfo.artefactResources
-            artefactResources.addAll( getArtefactResourcesForOne(buildSettings.baseDir.path) )
+            artefactResources.addAll getArtefactResourcesForOne(buildSettings.baseDir.path)
             cache['compileScopedArtefactResources'] = artefactResources
         }
         return artefactResources
@@ -553,7 +553,7 @@ class PluginBuildSettings {
      */
     List<GrailsPluginInfo> getCompileScopedSupportedPluginInfos() {
         List<GrailsPluginInfo> compileScopePluginInfos = cache['compileScopePluginInfos']
-        if(compileScopePluginInfos == null) {
+        if (compileScopePluginInfos == null) {
             def pluginInfos = supportedPluginInfos
             compileScopePluginInfos = []
             compileScopePluginInfos.addAll compileScopePluginInfo.pluginInfos
@@ -570,18 +570,18 @@ class PluginBuildSettings {
      */
     Resource[] getArtefactResourcesForCurrentEnvironment() {
         def artefactResources = cache['allArtefactResourcesForEnvironment']
-        if(artefactResources == null) {
+        if (artefactResources == null) {
 
             artefactResources = []
             artefactResources.addAll compileScopePluginInfo.getArtefactResources()
             artefactResources.addAll providedScopePluginInfo.getArtefactResources()
-            artefactResources.addAll( getArtefactResourcesForOne(buildSettings.baseDir.path))
-            if(Environment.getCurrent() == Environment.TEST) {
+            artefactResources.addAll getArtefactResourcesForOne(buildSettings.baseDir.path)
+            if (Environment.getCurrent() == Environment.TEST) {
                 artefactResources.addAll testScopePluginInfo.getArtefactResources()
             }
             def inlineDirectories = getInlinePluginDirectories()
-            for(dir in inlineDirectories) {
-                artefactResources.addAll( getArtefactResourcesForOne(dir.file.absolutePath))
+            for (dir in inlineDirectories) {
+                artefactResources.addAll getArtefactResourcesForOne(dir.file.absolutePath)
             }
 
             artefactResources = artefactResources as Resource[];
@@ -601,7 +601,7 @@ class PluginBuildSettings {
 
     Resource[] getPluginDescriptorsForCurrentEnvironment() {
         def descriptorList  = cache['pluginDescriptorsForCurrentEnvironment']
-        if(descriptorList  == null) {
+        if (descriptorList  == null) {
 
             if (Environment.current == Environment.TEST) {
                 descriptorList = pluginScopeInfoMap.values()*.pluginDescriptors.flatten()
@@ -614,8 +614,7 @@ class PluginBuildSettings {
             if (baseDescriptor != null) {
                 descriptorList << baseDescriptor
             }
-            def inlinePlugins = getInlinePluginDirectories()
-            for (inlinePluginDir in inlinePlugins) {
+            for (inlinePluginDir in getInlinePluginDirectories()) {
                 descriptorList << getPluginDescriptor(inlinePluginDir)
             }
 
@@ -750,10 +749,10 @@ class PluginBuildSettings {
     GrailsPluginInfo readPluginInfoFromZip(String zipLocation) {
         def key = "pluginInfo:$zipLocation".toString()
         GrailsPluginInfo info = cache[key]
-        if(info == null) {
+        if (info == null) {
 
             def result = readMetadataFromZip(zipLocation)
-            if(result != null) {
+            if (result != null) {
 
                 def (name, version, xml) = result
 

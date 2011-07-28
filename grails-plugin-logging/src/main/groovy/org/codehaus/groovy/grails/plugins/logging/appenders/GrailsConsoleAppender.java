@@ -36,7 +36,7 @@ import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
  * Not for use in production/WAR deployed scenarios!
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class GrailsConsoleAppender extends AppenderSkeleton {
 

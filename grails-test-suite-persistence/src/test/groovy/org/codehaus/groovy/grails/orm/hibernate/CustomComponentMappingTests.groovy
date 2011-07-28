@@ -1,12 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/12/11
- * Time: 2:16 PM
- * To change this template use File | Settings | File Templates.
- */
 class CustomComponentMappingTests extends  AbstractGrailsHibernateTests {
     @Override
     protected void onSetUp() {
@@ -42,11 +35,9 @@ class CustomComponentMappingComponent {
 
         p = Parent.get(p.id)
 
-
         assert p.component != null
         assert p.component.property == 10
 
         session.connection().prepareStatement("select prop from custom_component_mapping_parent").execute()
     }
-
 }

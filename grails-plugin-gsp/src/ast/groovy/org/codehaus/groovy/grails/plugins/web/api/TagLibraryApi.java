@@ -40,10 +40,10 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
- * API for Tag libraries in a Grails application
+ * API for Tag libraries in a Grails application.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class TagLibraryApi extends CommonWebApi {
 
@@ -115,7 +115,7 @@ public class TagLibraryApi extends CommonWebApi {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
         String usednamespace = getNamespace(instance);
         TagLibraryLookup lookup = getTagLibraryLookup();
-        if(lookup != null) {
+        if (lookup != null) {
 
             Object tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName);
             if (tagLibrary == null) {
@@ -146,7 +146,7 @@ public class TagLibraryApi extends CommonWebApi {
      */
     public Object propertyMissing(Object instance, String name) {
         TagLibraryLookup gspTagLibraryLookup = getTagLibraryLookup();
-        if(gspTagLibraryLookup != null) {
+        if (gspTagLibraryLookup != null) {
 
             Object result = gspTagLibraryLookup.lookupNamespaceDispatcher(name);
             String namespace = getNamespace(instance);

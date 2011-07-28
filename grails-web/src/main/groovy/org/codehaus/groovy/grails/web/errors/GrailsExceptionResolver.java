@@ -225,7 +225,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
                     param = params.nextElement();
                     values = request.getParameterValues(param);
 
-                    if(values != null) {
+                    if (values != null) {
                         for (i = 0; i < values.length; i++) {
                             sb.append(LINE_SEPARATOR).append(param).append(": ");
 
@@ -236,7 +236,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
                             }
                         }
                     }
-
                 }
             }
         }

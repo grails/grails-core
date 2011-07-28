@@ -14,11 +14,13 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import java.util.List;
+
 /**
- * Interface for domains capable of supporting components
+ * Interface for domains capable of supporting components.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface ComponentCapableDomainClass {
 
@@ -34,6 +36,5 @@ public interface ComponentCapableDomainClass {
      *
      * @return The list of components
      */
-    java.util.List<GrailsDomainClass> getComponents();
-
+    List<GrailsDomainClass> getComponents();
 }

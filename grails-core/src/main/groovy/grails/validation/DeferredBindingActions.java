@@ -27,7 +27,7 @@ import java.util.List;
  * Binding operations that are deferred until either validate() or save() are called.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class DeferredBindingActions {
 

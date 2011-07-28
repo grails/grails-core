@@ -22,9 +22,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.sitemesh.Content;
-import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.BootstrapArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
@@ -65,6 +62,9 @@ import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapt
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.util.NestedServletException;
 
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.sitemesh.Content;
+
 /**
  * Handles incoming requests for Grails.
  * <p/>
@@ -79,12 +79,14 @@ import org.springframework.web.util.NestedServletException;
 public class GrailsDispatcherServlet extends DispatcherServlet {
 
     private static final long serialVersionUID = 8295472557856192662L;
+    private static final String EXCEPTION_ATTRIBUTE = "exception";
+
     private GrailsApplication application;
-    protected HandlerInterceptor[] interceptors;
-    protected MultipartResolver multipartResolver;
     private LocaleResolver localeResolver;
     private StackTraceFilterer stackFilterer;
-    private static final String EXCEPTION_ATTRIBUTE = "exception";
+
+    protected HandlerInterceptor[] interceptors;
+    protected MultipartResolver multipartResolver;
 
     /**
      * Constructor.
@@ -299,9 +301,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 // if this is an async request that has been resumed, then don't execute the action again instead try get the model and view and continue
 
-                if(isAsyncRequest) {
+                if (isAsyncRequest) {
                     Object modelAndViewO = processedRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW);
-                    if(modelAndViewO != null) {
+                    if (modelAndViewO != null) {
                         mv = (ModelAndView) modelAndViewO;
                     }
                     else {
@@ -313,7 +315,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
                     mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
                     // if an async request was started simply return
-                    if(processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
+                    if (processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
                         processedRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mv);
                         return;
                     }
@@ -322,7 +324,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     if ((ha instanceof AnnotationMethodHandlerAdapter) && mv != null && !mv.hasView()) {
                         mv.setViewName(getDefaultViewName(request));
                     }
-
                 }
 
                 // Apply postHandle methods of registered interceptors.
@@ -354,13 +355,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 try {
                     render(mv, processedRequest, response);
-                    if(isAsyncRequest && (response instanceof GrailsContentBufferingResponse)) {
+                    if (isAsyncRequest && (response instanceof GrailsContentBufferingResponse)) {
                         GroovyPageLayoutFinder groovyPageLayoutFinder = getWebApplicationContext().getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
                         GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
                         HttpServletResponse targetResponse = bufferingResponse.getTargetResponse();
                         Content content = bufferingResponse.getContent();
                         if (content != null) {
-
                             Decorator decorator = groovyPageLayoutFinder.findLayout(request, content);
                             if (decorator != null) {
                                 GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator, requestAttributes.getAttributes().getPagesTemplateEngine(), getWebApplicationContext());
@@ -368,7 +368,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                             } else {
                                 content.writeOriginal(targetResponse.getWriter());
                             }
-
                         }
                     }
                     if (errorView) {
@@ -408,7 +407,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
             }
 
-
             // Trigger after-completion for successful outcome.
             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, handlerException);
         }
@@ -435,7 +433,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             // Reset thread-bound holders
             if (requestAttributes != null) {
                 requestAttributes.requestCompleted();
-                if(previousRequestAttributes instanceof GrailsWebRequest) {
+                if (previousRequestAttributes instanceof GrailsWebRequest) {
                     WebUtils.storeGrailsWebRequest((GrailsWebRequest) previousRequestAttributes);
                 }
                 else {
@@ -459,14 +457,15 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void copyParamsFromPreviousRequest(RequestAttributes previousRequestAttributes, GrailsWebRequest requestAttributes) {
-        if(previousRequestAttributes instanceof GrailsWebRequest) {
-            GrailsWebRequest previousWebRequest = (GrailsWebRequest) previousRequestAttributes;
-            Map previousParams = previousWebRequest.getParams();
-            Map params =  requestAttributes.getParams();
-            for (Object o : previousParams.keySet()) {
-                String name = (String) o;
-                params.put(name, previousParams.get(name));
-            }
+        if (!(previousRequestAttributes instanceof GrailsWebRequest)) {
+            return;
+        }
+
+        Map previousParams = ((GrailsWebRequest)previousRequestAttributes).getParams();
+        Map params =  requestAttributes.getParams();
+        for (Object o : previousParams.keySet()) {
+            String name = (String) o;
+            params.put(name, previousParams.get(name));
         }
     }
 

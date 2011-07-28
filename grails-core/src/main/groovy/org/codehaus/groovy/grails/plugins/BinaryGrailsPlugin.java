@@ -39,7 +39,7 @@ import org.springframework.core.io.Resource;
  * @see GrailsPlugin
  *
  * @author  Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @SuppressWarnings("rawtypes")
 public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
@@ -118,7 +118,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
                 GPathResult allResources = (GPathResult) resources.getProperty("resource");
                 if (!allResources.isEmpty()) {
                     final ClassLoader classLoader = application.getClassLoader();
-                    for (Iterator i = allResources.nodeIterator(); i.hasNext(); ) {
+                    for (Iterator i = allResources.nodeIterator(); i.hasNext();) {
                         final String className = ((Node)i.next()).text();
                         try {
                             artefacts.add(classLoader.loadClass(className));
@@ -157,7 +157,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
         try {
             Resource resource = descriptorResource.createRelative("static" + path);
-            if(resource.exists()) {
+            if (resource.exists()) {
                 return resource;
             }
         } catch (IOException e) {

@@ -1,21 +1,13 @@
 package grails.test.mixin
 
-import grails.test.mixin.webflow.WebFlowUnitTestMixin
-import org.junit.Test
-import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.persistence.Entity
+import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.test.mixin.webflow.WebFlowUnitTestMixin
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/12/11
- * Time: 3:32 PM
- * To change this template use File | Settings | File Templates.
- */
+import org.junit.Test
+
 @TestMixin([WebFlowUnitTestMixin, DomainClassUnitTestMixin])
 class WebFlowUnitTestMixinTests {
-
-
 
     @Test
     void testEatBreakfast_EggsFailValidation() {
@@ -59,7 +51,6 @@ class WebFlowUnitTestMixinTests {
         assert conversation.meal.id
     }
 
-
     @Test
     void testChooseMainDish_TransitionNothingAction_BadReason() {
         mockDomain(Meal)
@@ -101,7 +92,6 @@ class WebFlowUnitTestMixinTests {
 
         assert !breakfastFlow.end.on
     }
-
 }
 
 @Entity
@@ -121,6 +111,7 @@ class Meal {
         }
     }
 }
+
 class MealController {
 
     def mealService = [prepareForBreakfast:{ new Meal() }, addHotSauce:{ },addButter:{} ]
@@ -150,7 +141,7 @@ class MealController {
             on('toast').to('prepareToast')
             on('nothing'){
                 conversation.meal.skip(params.reason)
-                if(!conversation.meal.save()) {
+                if (!conversation.meal.save()) {
                     return error()
                 }
                 return success()
@@ -172,15 +163,14 @@ class MealController {
         eatBreakfast {
             action {
                 def meal = conversation.meal
-                if(meal.isEggs()) {
+                if (meal.isEggs()) {
                     mealService.addHotSauce(meal)
-                } else if(meal.isToast()) {
+                } else if (meal.isToast()) {
                     mealService.addButter(meal)
                 }
 
-
                 def valid = meal.validate()
-                if(!valid) {
+                if (!valid) {
                     return unableToEatBreakfast()
                 }
                 return success()

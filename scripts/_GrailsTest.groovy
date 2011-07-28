@@ -123,7 +123,7 @@ target(allTests: "Runs the project's tests.") {
     // If we are to run the tests that failed, replace the list of
     // test names with the failed ones.
     if (reRunTests) testNames = getFailedTests()
-    
+
     // add the test classes to the classpath
     classLoader.addURL(grailsSettings.testClassesDir.toURL())
 
@@ -188,11 +188,10 @@ target(allTests: "Runs the project's tests.") {
 
                 // Now run all the tests registered for this phase.
                 types.each(processTests)
-                
             }
             finally {
                 // Perform any clean up required.
-                this."${phase}TestPhaseCleanUp"()                
+                this."${phase}TestPhaseCleanUp"()
             }
 
             event("TestPhaseEnd", [phase])
@@ -350,8 +349,9 @@ integrationTestPhasePreparation = {
 integrationTestPhaseCleanUp = {
     if (!(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
         destroyPersistenceContext()
-        if(binding.variables.containsKey("appCtx"))
+        if (binding.variables.containsKey("appCtx")) {
             appCtx?.close()
+        }
     }
 }
 

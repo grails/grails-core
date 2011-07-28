@@ -18,7 +18,11 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.BuildScope;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
-import groovy.util.slurpersupport.GPathResult;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
@@ -27,10 +31,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.w3c.dom.Element;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>Plugin interface that adds Spring {@link org.springframework.beans.factory.config.BeanDefinition}s

@@ -31,7 +31,7 @@ import org.apache.naming.resources.DirContextURLStreamHandlerFactory
  * A loader instance used for the embedded version of Tomcat 7.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class TomcatLoader extends LifecycleBase implements Loader, Lifecycle {
 

@@ -2,14 +2,8 @@ package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/7/11
- * Time: 11:56 AM
- * To change this template use File | Settings | File Templates.
- */
 class GrailsVersionUtils {
+
     /**
      * Get the name of the a plugin for a particular class.
      */
@@ -102,6 +96,7 @@ class GrailsVersionUtils {
         return tokens.findAll { it ==~ /\d+/ || it =='*'}.join(".")
     }
 }
+
 class VersionComparator implements Comparator {
 
     static private final SNAPSHOT_SUFFIXES = ["-SNAPSHOT", ".BUILD-SNAPSHOT"].asImmutable()
@@ -187,4 +182,3 @@ class VersionComparator implements Comparator {
         SNAPSHOT_SUFFIXES.any { version.endsWith(it) }
     }
 }
-

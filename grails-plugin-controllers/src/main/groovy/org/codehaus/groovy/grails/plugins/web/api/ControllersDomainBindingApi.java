@@ -28,10 +28,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.validation.BindingResult;
 
 /**
- * Enhancements made to domain classes to for data binding
+ * Enhancements made to domain classes to for data binding.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @SuppressWarnings("rawtypes")
 public class ControllersDomainBindingApi {

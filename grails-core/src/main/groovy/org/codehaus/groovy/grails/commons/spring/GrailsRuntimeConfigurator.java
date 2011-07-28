@@ -323,7 +323,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * Loads any external Spring configuration into the given RuntimeSpringConfiguration object.
      * @param config The config instance
      */
-    @SuppressWarnings("rawtypes")
     public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, final GrailsApplication application) {
         if (springGroovyResourcesBeanBuilder == null) {
             try {
@@ -358,7 +357,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         Script script = (Script) groovySpringResourcesClass.newInstance();
         script.run();
         Object beans = script.getProperty("beans");
-        springGroovyResourcesBeanBuilder.beans((Closure) beans);
+        springGroovyResourcesBeanBuilder.beans((Closure<?>)beans);
         return springGroovyResourcesBeanBuilder;
     }
 

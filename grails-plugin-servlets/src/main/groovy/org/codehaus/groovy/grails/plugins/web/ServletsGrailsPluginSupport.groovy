@@ -24,10 +24,10 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
 
 /**
- * Support class for the Servlets Grails plugin
+ * Support class for the Servlets Grails plugin.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ServletsGrailsPluginSupport {
 

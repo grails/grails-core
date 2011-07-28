@@ -30,10 +30,10 @@ import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
- * A Log4j adapter that produces cleaner, more informative stack traces
+ * A Log4j adapter that produces cleaner, more informative stack traces,
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @SuppressWarnings("serial")
 public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.slf4j.Logger {

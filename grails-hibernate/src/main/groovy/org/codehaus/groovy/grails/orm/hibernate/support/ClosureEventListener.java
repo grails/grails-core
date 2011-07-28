@@ -78,16 +78,12 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
     MetaMethod validateMethod;
 
     public ClosureEventListener(Class<?> domainClazz, boolean failOnError, List failOnErrorPackages) {
-        initialize(domainClazz, failOnError, failOnErrorPackages);
-    }
-
-    private void initialize(Class<?> domainClazz, boolean failOnError, List failOnErrorPackages) {
         domainMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(domainClazz);
         dateCreatedProperty = domainMetaClass.getMetaProperty(GrailsDomainClassProperty.DATE_CREATED);
         lastUpdatedProperty = domainMetaClass.getMetaProperty(GrailsDomainClassProperty.LAST_UPDATED);
         if (dateCreatedProperty != null || lastUpdatedProperty != null) {
             Mapping m = GrailsDomainBinder.getMapping(domainClazz);
-            shouldTimestamp = (m != null && !m.isAutoTimestamp()) ? false : true;
+            shouldTimestamp = m == null || m.isAutoTimestamp();
         }
 
         saveOrUpdateCaller = buildCaller(domainClazz, ClosureEventTriggeringInterceptor.ONLOAD_SAVE);

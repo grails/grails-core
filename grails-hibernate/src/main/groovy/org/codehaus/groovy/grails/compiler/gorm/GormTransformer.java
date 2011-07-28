@@ -43,7 +43,7 @@ import org.grails.datastore.gorm.GormStaticApi;
  * Transforms GORM entities making the GORM API available to Java.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class GormTransformer extends AbstractGrailsArtefactTransformer {

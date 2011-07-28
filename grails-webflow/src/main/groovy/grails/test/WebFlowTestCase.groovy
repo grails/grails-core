@@ -105,7 +105,7 @@ abstract class WebFlowTestCase extends AbstractFlowExecutionTests {
         FlowBuilder builder = new FlowBuilder(getFlowId(), flowBuilderServices, new FlowDefinitionRegistryImpl())
         def flow = getFlow()
 
-        if(flow instanceof Closure) {
+        if (flow instanceof Closure) {
             // delegate will be controller
             GrailsWebRequest.lookup()?.request?.setAttribute(GrailsApplicationAttributes.CONTROLLER, flow.delegate)
             builder.flow(flow)

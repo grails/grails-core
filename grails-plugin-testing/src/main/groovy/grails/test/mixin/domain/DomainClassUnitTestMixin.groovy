@@ -32,11 +32,11 @@ import org.grails.datastore.gorm.events.DomainEventListener
 import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
-import org.springframework.datastore.mapping.core.Datastore
-import org.springframework.datastore.mapping.core.DatastoreUtils
-import org.springframework.datastore.mapping.core.Session
-import org.springframework.datastore.mapping.model.PersistentEntity
-import org.springframework.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.core.DatastoreUtils
+import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
 
  /**
@@ -62,7 +62,7 @@ import org.springframework.validation.Validator
  * </p>
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 

@@ -152,9 +152,9 @@ public class GSPResponseWriter extends GrailsPrintWriter {
             }
             flushResponse();
         }
-        else if(!trouble) {
+        else if (!trouble) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if(webRequest != null && webRequest.getCurrentRequest().getAttribute(RequestConstants.PAGE) != null) {
+            if (webRequest != null && webRequest.getCurrentRequest().getAttribute(RequestConstants.PAGE) != null) {
                 // flush the response if its a layout
                 flushResponse();
             }

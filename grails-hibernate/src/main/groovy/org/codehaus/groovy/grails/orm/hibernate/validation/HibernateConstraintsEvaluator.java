@@ -26,7 +26,7 @@ import java.util.Map;
  * Extends default implementation to add Hibernate specific exceptions.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class HibernateConstraintsEvaluator extends DefaultConstraintEvaluator{
 

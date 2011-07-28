@@ -24,11 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility methods for plugin discovery when running the Grails command line
+ * Utility methods for plugin discovery when running the Grails command line.
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
- *
  */
 public class PluginPathDiscoverySupport {
 

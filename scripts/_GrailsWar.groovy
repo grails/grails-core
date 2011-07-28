@@ -195,8 +195,6 @@ target (war: "The implementation target") {
         def compileScopePluginInfo = ps.compileScopePluginInfo
         def compileScopePluginInfos = ps.getCompileScopedSupportedPluginInfos()
         def resourceList = ps.getCompileScopedArtefactResources()
-        
-
 
         if (includeJars) {
             if (compileScopePluginInfos) {
@@ -339,7 +337,7 @@ target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails
 }
 
 protected def createDescriptorInternal(pluginInfos, resourceList) {
-    
+
     return new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
         def xml = new MarkupBuilder(writer)
         xml.grails {

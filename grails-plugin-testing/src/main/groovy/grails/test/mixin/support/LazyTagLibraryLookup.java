@@ -33,10 +33,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Lazy implementation of the tag library lookup class designed for testing purposes
+ * Lazy implementation of the tag library lookup class designed for testing purposes.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class LazyTagLibraryLookup extends TagLibraryLookup{

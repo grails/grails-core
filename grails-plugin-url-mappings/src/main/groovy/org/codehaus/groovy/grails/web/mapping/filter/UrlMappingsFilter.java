@@ -263,9 +263,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             return;
         }
 
-        if(request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
+        if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
         MultipleCompilationErrorsException compilationError = GrailsProjectWatcher.getCurrentCompilationError();
-        if(compilationError != null) {
+        if (compilationError != null) {
             throw compilationError;
         }
     }
@@ -273,7 +273,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
         // Lookup from request attribute. The resolver that handles MultiPartRequest is dealt with earlier inside DefaultUrlMappingInfo with Grails
         HttpServletRequest resolvedRequest = (HttpServletRequest) request.getAttribute(MultipartHttpServletRequest.class.getName());
-        if (resolvedRequest!=null) return resolvedRequest;
+        if (resolvedRequest != null) return resolvedRequest;
         return request;
     }
 

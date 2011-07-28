@@ -36,10 +36,10 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.grails.resolve.ResolveException;
 
 /**
- * Support class that configures the Grails classpath when executing command line scripts
+ * Support class that configures the Grails classpath when executing command line scripts.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ClasspathConfigurer {
 
@@ -159,12 +159,13 @@ public class ClasspathConfigurer {
         return urls.toArray(new URL[urls.size()]);
     }
 
-    private void handleResolveError(BuildSettings settings, ResolveReport buildResolveReport) {
+    private void handleResolveError(@SuppressWarnings("hiding") BuildSettings settings, ResolveReport buildResolveReport) {
         settings.storeDependencyCache();
         cleanResolveCache(settings);
         GrailsConsole.getInstance().error(new ResolveException(buildResolveReport).getMessage());
-        if (exitOnResolveError)
+        if (exitOnResolveError) {
             System.exit(1);
+        }
     }
 
     public static void cleanResolveCache(BuildSettings settings) {

@@ -54,7 +54,7 @@ public class GroovyPageLayoutFinder {
     private GrailsConventionGroovyPageLocator groovyPageLocator;
     private String defaultDecoratorName;
     private boolean gspReloadEnabled;
-    private boolean cacheEnabled = (Environment.getCurrent() != Environment.DEVELOPMENT);;
+    private boolean cacheEnabled = (Environment.getCurrent() != Environment.DEVELOPMENT);
 
     public void setGroovyPageLocator(GrailsConventionGroovyPageLocator groovyPageLocator) {
         this.groovyPageLocator = groovyPageLocator;
@@ -82,7 +82,7 @@ public class GroovyPageLayoutFinder {
         Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
         String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
 
-        if(layoutName == null) {
+        if (layoutName == null) {
             layoutName = page.getProperty("meta.layout");
         }
 
@@ -151,14 +151,14 @@ public class GroovyPageLayoutFinder {
 
         GroovyPageScriptSource scriptSource = null;
 
-        if(controller != null) {
+        if (controller != null) {
             scriptSource = groovyPageLocator.findLayout(controller, name);
         }
         else {
             scriptSource = groovyPageLocator.findLayout(name);
         }
 
-        if(scriptSource != null) {
+        if (scriptSource != null) {
             d =  createDecorator(name, scriptSource.getURI());
         }
 

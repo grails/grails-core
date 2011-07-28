@@ -26,6 +26,7 @@ import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
+import groovy.xml.dom.DOMCategory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import groovy.xml.dom.DOMCategory;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +56,6 @@ import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -625,18 +624,20 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
 
     @Override
     public void doWithWebDescriptor(final Element webXml) {
-        if (pluginBean.isReadableProperty(DO_WITH_WEB_DESCRIPTOR)) {
-            final Closure c = (Closure)plugin.getProperty(DO_WITH_WEB_DESCRIPTOR);
-            c.setResolveStrategy(Closure.DELEGATE_FIRST);
-            c.setDelegate(this);
-            DefaultGroovyMethods.use(this, DOMCategory.class, new Closure<Object>(this) {
-                @Override
-                public Object call(Object... args) {
-                    return c.call(webXml);
-                }
-            });
-
+        if (!pluginBean.isReadableProperty(DO_WITH_WEB_DESCRIPTOR)) {
+            return;
         }
+
+        final Closure c = (Closure)plugin.getProperty(DO_WITH_WEB_DESCRIPTOR);
+        c.setResolveStrategy(Closure.DELEGATE_FIRST);
+        c.setDelegate(this);
+        DefaultGroovyMethods.use(this, DOMCategory.class, new Closure<Object>(this) {
+            private static final long serialVersionUID = 1;
+            @Override
+            public Object call(Object... args) {
+                return c.call(webXml);
+            }
+        });
     }
 
     /**

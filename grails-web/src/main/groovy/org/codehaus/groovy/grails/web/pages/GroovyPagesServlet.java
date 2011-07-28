@@ -117,7 +117,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 
-        if(isSecurePath(pageName)) {
+        if (isSecurePath(pageName)) {
             sendNotFound(response, pageName);
         }
         else {

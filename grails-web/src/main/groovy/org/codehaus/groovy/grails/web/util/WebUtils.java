@@ -387,24 +387,25 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @param queryString The query String
      * @return A map
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Map<String, Object> fromQueryString(String queryString) {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
-        if(queryString.startsWith("?")) queryString = queryString.substring(1);
+        if (queryString.startsWith("?")) queryString = queryString.substring(1);
 
         String[] pairs = queryString.split("&");
 
         for (String pair : pairs) {
             int i = pair.indexOf('=');
-            if(i > -1) {
+            if (i > -1) {
                 try {
                     String name = URLDecoder.decode(pair.substring(0, i), "UTF-8");
                     String value = URLDecoder.decode(pair.substring(i+1, pair.length()), "UTF-8");
 
                     Object current = result.get(name);
-                    if(current instanceof List) {
+                    if (current instanceof List) {
                         ((List)current).add(value);
                     }
-                    else if(current != null) {
+                    else if (current != null) {
                         List multi = new ArrayList();
                         multi.add(current);
                         multi.add(value);

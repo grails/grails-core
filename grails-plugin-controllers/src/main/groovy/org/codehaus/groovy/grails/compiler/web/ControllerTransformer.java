@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
  * Enhances controller classes with the appropriate API at compile time.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
@@ -51,32 +51,29 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
-    
-    
+
     @Override
     protected void performInjectionInternal(String apiInstanceProperty,
             SourceUnit source, ClassNode classNode) {
-        if(isControllerClassNode(classNode)) {
+        if (isControllerClassNode(classNode)) {
             super.performInjectionInternal(apiInstanceProperty, source, classNode);
         }
     }
     @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        if(isControllerClassNode(classNode)) {
+        if (isControllerClassNode(classNode)) {
             super.performInjection(source, context, classNode);
         }
     }
 
     @Override
     public void performInjection(SourceUnit source, ClassNode classNode) {
-        if(isControllerClassNode(classNode)) {
+        if (isControllerClassNode(classNode)) {
             super.performInjection(source, classNode);
         }
     }
 
-
     protected boolean isControllerClassNode(ClassNode classNode) {
         return classNode.getName().endsWith("Controller");
     }
-    
 }

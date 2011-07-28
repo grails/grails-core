@@ -20,11 +20,11 @@ import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.springframework.core.io.Resource
 
- /**
- * Customized Stack trace output for the errors view
+/**
+ * Customized Stack trace output for the errors view.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
 
@@ -32,32 +32,26 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
         super(resourceLocator)
     }
 
-    @Override protected boolean shouldSkipNextCause(Throwable e) {
+    @Override
+    protected boolean shouldSkipNextCause(Throwable e) {
         return super.shouldSkipNextCause(e)
     }
 
     @Override
     String prettyPrint(Throwable t) {
-        if(t instanceof GrailsWrappedRuntimeException) {
+        if (t instanceof GrailsWrappedRuntimeException) {
             return super.prettyPrint(t.cause)
         }
-        else {
-            return super.prettyPrint(t)
-        }
+        return super.prettyPrint(t)
     }
 
     @Override
     String prettyPrintCodeSnippet(Throwable exception) {
-        if(exception instanceof GrailsWrappedRuntimeException) {
+        if (exception instanceof GrailsWrappedRuntimeException) {
             return super.prettyPrintCodeSnippet(exception.cause)
         }
-        else {
-            return super.prettyPrintCodeSnippet(exception)
-        }
+        return super.prettyPrintCodeSnippet(exception)
     }
-
-
-
 
     @Override
     String formatCodeSnippetStart(Resource resource, int lineNumber) {
@@ -66,7 +60,7 @@ class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
         try {
             def abs = resource.file.absolutePath
             def i = abs.indexOf(GrailsResourceUtils.GRAILS_APP_DIR)
-            if(i > -1) {
+            if (i > -1) {
                 path = abs[i..-1]
             }
         } catch (e) {

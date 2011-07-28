@@ -24,7 +24,7 @@ import org.springframework.context.ApplicationContextAware;
 /**
  * The API for converting objects to target types such as XML.
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 public class ConvertersApi implements ApplicationContextAware {

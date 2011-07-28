@@ -19,7 +19,7 @@ import org.slf4j.spi.MDCAdapter;
 
 /**
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class StaticMDCBinder {
 

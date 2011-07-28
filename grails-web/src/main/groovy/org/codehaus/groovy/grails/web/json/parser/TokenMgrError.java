@@ -7,13 +7,13 @@ package org.codehaus.groovy.grails.web.json.parser;
  */
 public class TokenMgrError extends Error {
 
-	private static final long serialVersionUID = -1178356779103776805L;
+    private static final long serialVersionUID = -1178356779103776805L;
 
     /*
     * Ordinals for various reasons why an Error of this type can be thrown.
     */
 
-	/**
+    /**
      * Lexical error occurred.
      */
     static final int LEXICAL_ERROR = 0;
@@ -129,7 +129,7 @@ public class TokenMgrError extends Error {
      * No arg constructor.
      */
     public TokenMgrError() {
-   	 // default
+        // default
     }
 
     /**

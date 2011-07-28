@@ -17,7 +17,9 @@ package org.codehaus.groovy.grails.plugins.testing
 import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import grails.converters.XML
+
 import javax.servlet.http.HttpServletRequest
+
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.WebUtils
@@ -55,18 +57,17 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      *
      * @param sourceJson The source json
      */
-    public void setJson(Object sourceJson) {
+    void setJson(Object sourceJson) {
         setContentType('application/json')
         setFormat('json')
-        if(sourceJson instanceof String) {
+        if (sourceJson instanceof String) {
             setContent(sourceJson.bytes)
         }
-        else if(sourceJson instanceof JSON) {
+        else if (sourceJson instanceof JSON) {
             setContent(sourceJson.toString().bytes)
         }
         else {
-            JSON json = new JSON(sourceJson)
-            setContent(json.toString().bytes)
+            setContent(new JSON(sourceJson).toString().bytes)
         }
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
@@ -76,11 +77,11 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      *
      * @param sourceXml
      */
-    public void setXml(Object sourceXml) {
+    void setXml(Object sourceXml) {
         setContentType("text/xml")
         setFormat("xml")
 
-        if(sourceXml instanceof String) {
+        if (sourceXml instanceof String) {
             setContent(sourceXml.bytes)
         }
         else {
@@ -88,15 +89,14 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
             setContent(xml.toString().bytes)
         }
 
-
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
 
-    public void setXML(Object sourceXml) {
+    void setXML(Object sourceXml) {
         setXml(sourceXml)
     }
 
-    public void setJSON(Object sourceJson) {
+    void setJSON(Object sourceJson) {
         setJson(sourceJson)
     }
 
@@ -312,12 +312,12 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * form is taken from the {@link MultipartFile#getName()}.
      * @param file multipart file to be added
      */
-    public void addFile(MultipartFile file) {
+    void addFile(MultipartFile file) {
         setMethod("POST");
         setContentType("multipart/form-data");
 
         Assert.notNull(file, "MultipartFile must not be null");
-        this.multipartFiles.add(file.getName(), file);
+        multipartFiles.add(file.getName(), file);
     }
 
     /**
@@ -326,13 +326,11 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * @param location The location
      * @param contents The bytes
      */
-    public void addFile(String location, byte[] contents) {
+    void addFile(String location, byte[] contents) {
         setMethod("POST");
         setContentType("multipart/form-data");
 
-
-        this.multipartFiles.add(location, new GrailsMockMultipartFile(location, contents));
-
+        multipartFiles.add(location, new GrailsMockMultipartFile(location, contents));
     }
 
     @Override
@@ -340,6 +338,4 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         super.clearAttributes()
         multipartFiles.clear();
     }
-
-
 }

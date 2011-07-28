@@ -384,7 +384,8 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                             grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
                         }
                     } catch (Exception e) {
-                        LOG.error("Plugin " + grailsPlugin + " could not reload changes to file ["+file+"]: " + e.getMessage(), e );
+                        LOG.error("Plugin " + grailsPlugin + " could not reload changes to file [" +
+                                file + "]: " + e.getMessage(), e);
                     }
                 }
             }

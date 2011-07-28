@@ -20,10 +20,10 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import java.util.Map;
 
 /**
- * Evaluates and returns constraints
+ * Evaluates and returns constraints.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public interface ConstraintsEvaluator {
 

@@ -30,8 +30,8 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.datastore.mapping.model.MappingContext
-import org.springframework.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator

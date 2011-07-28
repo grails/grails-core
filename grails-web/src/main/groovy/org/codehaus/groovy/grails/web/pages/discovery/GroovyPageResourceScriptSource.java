@@ -18,14 +18,8 @@ package org.codehaus.groovy.grails.web.pages.discovery;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.support.ResourceScriptSource;
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 6/30/11
- * Time: 11:11 AM
- * To change this template use File | Settings | File Templates.
- */
-public class GroovyPageResourceScriptSource extends ResourceScriptSource implements GroovyPageScriptSource{
+public class GroovyPageResourceScriptSource extends ResourceScriptSource implements GroovyPageScriptSource {
+
     private String uri;
 
     /**

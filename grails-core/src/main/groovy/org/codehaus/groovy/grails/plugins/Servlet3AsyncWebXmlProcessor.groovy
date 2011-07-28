@@ -24,20 +24,17 @@ import groovy.xml.dom.DOMCategory
  * @since 2.0
  */
 class Servlet3AsyncWebXmlProcessor {
-    public void process ( xml ) {
+    void process(xml) {
         use(DOMCategory) {
             def filters = xml.'filter'
 
-            for(filter in filters) {
-                if(filter.'async-supported'.length==0) {
+            for (filter in filters) {
+                if (filter.'async-supported'.length == 0) {
                     filter.'filter-class' + {
                         'async-supported'(true)
                     }
                 }
             }
-
         }
-
     }
-
 }

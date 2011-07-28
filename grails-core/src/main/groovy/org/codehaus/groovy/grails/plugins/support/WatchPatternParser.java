@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Parses a Grails plugin's watchedResources property value into a list of
  *
- * @since 1.4
+ * @since 2.0
  * @author Graeme Rocher
  */
 public class WatchPatternParser {
@@ -58,7 +58,7 @@ public class WatchPatternParser {
 
     private void setExtension(String pattern, WatchPattern watchPattern) {
         int i = pattern.lastIndexOf('*');
-        if(i > -1) {
+        if (i > -1) {
             watchPattern.setExtension(pattern.substring(i+1, pattern.length()));
         }
         else {
@@ -67,6 +67,5 @@ public class WatchPatternParser {
                 watchPattern.setExtension(ext);
             }
         }
-
     }
 }

@@ -68,7 +68,7 @@ import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
  * A mixin that can be applied to a unit test in order to test controllers.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
@@ -150,7 +150,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     FlashScope getFlash() {
         webRequest.getFlashScope()
     }
-
 
     @BeforeClass
     static void configureGrailsWeb() {
@@ -278,16 +277,16 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
             def result
 
-            if(metaMethod) {
-                if(!controllerArtefact.isHttpMethodAllowedForAction(delegate, request.method, name)) {
+            if (metaMethod) {
+                if (!controllerArtefact.isHttpMethodAllowedForAction(delegate, request.method, name)) {
                     response.sendError HttpServletResponse.SC_METHOD_NOT_ALLOWED
                     return
                 }
                 result = metaMethod.invoke(delegate,args)
             } else {
                 def prop = delegate.metaClass.getMetaProperty(name)
-                if(prop) {
-                if(!controllerArtefact.isHttpMethodAllowedForAction(delegate, request.method, name)) {
+                if (prop) {
+                    if (!controllerArtefact.isHttpMethodAllowedForAction(delegate, request.method, name)) {
                         response.sendError HttpServletResponse.SC_METHOD_NOT_ALLOWED
                         return
                     }
@@ -328,8 +327,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
-class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
 
+class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
 
     @Override
     MimeType[] getMimeTypes() {
@@ -337,17 +336,14 @@ class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
         factory.afterPropertiesSet()
         return factory.getObject()
     }
-
 }
 
 class TestRequestMimeTypesApi extends RequestMimeTypesApi {
 
-
     @Override
     MimeType[] getMimeTypes() {
         def factory = new MimeTypesFactoryBean(grailsApplication:grailsApplication)
         factory.afterPropertiesSet()
         return factory.getObject()
     }
-
 }

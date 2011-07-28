@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.Mock;
+
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -24,26 +25,27 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.control.CompilePhase;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
- * Used by the {@link grails.test.mixin.Mock} local transformation to add mocking capabilities for the given classes
+ * Used by the {@link grails.test.mixin.Mock} local transformation to add
+ * mocking capabilities for the given classes.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class MockTransformation extends TestForTransformation{
+public class MockTransformation extends TestForTransformation {
+
     private static final ClassNode MY_TYPE = new ClassNode(Mock.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
     @Override
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
-            throw new RuntimeException("Internal error: wrong types: $node.class / $parent.class");
+            throw new RuntimeException("Internal error: wrong types: " + astNodes[0].getClass() +
+                  " / " + astNodes[1].getClass());
         }
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
@@ -55,23 +57,21 @@ public class MockTransformation extends TestForTransformation{
         ClassNode classNode = (ClassNode) parent;
         String cName = classNode.getName();
         if (classNode.isInterface()) {
-            error(source, "Error processing interface '" + cName + "'. " + MY_TYPE_NAME + " not allowed for interfaces.");
+            error(source, "Error processing interface '" + cName + "'. " + MY_TYPE_NAME +
+                    " not allowed for interfaces.");
         }
 
         ListExpression values = getListOfClasses(node);
-        if(values != null) {
-            for (Expression expression : values.getExpressions()) {
-                if (expression instanceof ClassExpression) {
-                    ClassExpression ce = (ClassExpression) expression;
+        if (values == null) {
+            error(source, "Error processing class '" + cName + "'. " + MY_TYPE_NAME +
+                    " annotation expects a class or a list of classes to mock");
+            return;
+        }
 
-                    weaveMock(classNode,ce, false);
-                }
+        for (Expression expression : values.getExpressions()) {
+            if (expression instanceof ClassExpression) {
+                weaveMock(classNode, (ClassExpression)expression, false);
             }
         }
-        else {
-            error(source, "Error processing class '" + cName + "'. " + MY_TYPE_NAME + " annotation expects a class or a list of classes to mock");
-        }
-
     }
-
 }

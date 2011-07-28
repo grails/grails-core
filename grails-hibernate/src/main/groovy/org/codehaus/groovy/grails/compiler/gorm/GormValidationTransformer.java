@@ -44,7 +44,7 @@ import org.springframework.validation.Errors;
  * Makes the validate methods statically available via an AST transformation.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @AstTransformer
 public class GormValidationTransformer extends AbstractGrailsArtefactTransformer{

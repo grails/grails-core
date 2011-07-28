@@ -323,7 +323,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * Fire to inform the PluginManager that a particular file changes
      *
      * @param file The file that changed
-     * @since 1.4
+     * @since 2.0
      */
     void informOfFileChange(File file);
 

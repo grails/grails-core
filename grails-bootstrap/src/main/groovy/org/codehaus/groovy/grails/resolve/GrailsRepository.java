@@ -16,14 +16,6 @@
 
 package org.codehaus.groovy.grails.resolve;
 
-/**
- *
- * Repository cable of handling the Grails svn repo's repository patterns
- *
- * @author Graeme Rocher
- * @since 2.0
- */
-
 import org.apache.ivy.plugins.repository.Resource;
 import org.apache.ivy.plugins.repository.url.URLRepository;
 
@@ -32,6 +24,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Repository cable of handling the Grails svn repo's repository patterns.
+ *
+ * @author Graeme Rocher
+ * @since 2.0
+ */
 public class GrailsRepository extends URLRepository {
 
     private static final String RELEASE_TOKEN = "/RELEASE_";
@@ -52,38 +50,37 @@ public class GrailsRepository extends URLRepository {
         super.put(source, convertSource(destination, '.', '_'), overwrite);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public List list(String parent) throws IOException {
         List lst = super.list(convertSource(parent, '.', '_'));
-
-        if (lst != null) {
-            List<String> newLst = new ArrayList<String>(lst.size());
-
-            for (Object i : lst) {
-                newLst.add(convertSource((String)i, '_', '.'));
-            }
-
-            return newLst;
-        } else {
-            return lst;
+        if (lst == null) {
+            return null;
         }
+
+        List<String> newLst = new ArrayList<String>(lst.size());
+
+        for (Object i : lst) {
+            newLst.add(convertSource((String)i, '_', '.'));
+        }
+
+        return newLst;
     }
 
     private String convertSource(String source, char from, char to) {
-        StringBuffer path = new StringBuffer(source);
+        StringBuilder path = new StringBuilder(source);
 
         int startIndex = path.indexOf(RELEASE_TOKEN);
-
-        if (startIndex > -1) {
-            startIndex += RELEASE_TOKEN.length();
-            int endIndex = path.indexOf(END_TOKEN, startIndex);
-
-            String versionString = path.substring(startIndex, endIndex).replace(from, to);
-            path.replace(startIndex, endIndex, versionString);
-
-            return path.toString();
-        } else {
-            return source;
+        if (startIndex == -1) {
+           return source;
         }
+
+        startIndex += RELEASE_TOKEN.length();
+        int endIndex = path.indexOf(END_TOKEN, startIndex);
+
+        String versionString = path.substring(startIndex, endIndex).replace(from, to);
+        path.replace(startIndex, endIndex, versionString);
+
+        return path.toString();
     }
 }

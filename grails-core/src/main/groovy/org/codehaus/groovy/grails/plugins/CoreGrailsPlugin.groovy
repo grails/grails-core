@@ -97,14 +97,13 @@ class CoreGrailsPlugin {
             shutdownHook(DevelopmentShutdownHook)
         }
         abstractGrailsResourceLocator {
-            if(devMode) {
+            if (devMode) {
                 BuildSettings settings = BuildSettingsHolder.settings
-                if(settings) {
+                if (settings) {
                     def locations = new ArrayList(settings.pluginDirectories.collect { it.absolutePath })
                     locations << settings.baseDir.absolutePath
                     searchLocations = locations
                 }
-
             }
         }
         grailsResourceLocator(DefaultResourceLocator) { bean ->

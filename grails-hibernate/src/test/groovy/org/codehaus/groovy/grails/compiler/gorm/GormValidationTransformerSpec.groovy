@@ -4,7 +4,7 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.datastore.gorm.GormValidationApi
 import spock.lang.Specification
-import org.springframework.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.datastore.mapping.simple.SimpleMapDatastore
 
 class GormValidationTransformerSpec extends Specification {
 

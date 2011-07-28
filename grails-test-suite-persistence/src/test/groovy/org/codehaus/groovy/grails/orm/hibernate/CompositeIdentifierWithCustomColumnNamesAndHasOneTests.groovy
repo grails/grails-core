@@ -1,13 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 7/5/11
- * Time: 9:59 AM
- * To change this template use File | Settings | File Templates.
- */
-class CompositeIdentifierWithCustomColumnNamesAndHasOneTests extends AbstractGrailsHibernateTests{
+class CompositeIdentifierWithCustomColumnNamesAndHasOneTests extends AbstractGrailsHibernateTests {
+
     @Override
     protected void onSetUp() {
         gcl.parseClass('''
@@ -65,19 +59,15 @@ class DeliveryInstruction {
         def IntervalType = ga.getDomainClass("IntervalType").clazz
 
         def it = IntervalType.newInstance(name:"Long").save()
-
         assert it != null
 
         def iq = IntervalQuantity.newInstance(intervalType:it, quantity:5, description:"Goods")
-
         assert iq != null
 
         def di = DeliveryInstruction.newInstance(intervalType:it, intervalQuantity:iq, description:"Back door").save(flush:true)
-
         assert di != null
 
         session.clear()
-
 
         di = DeliveryInstruction.list()[0]
 
@@ -88,7 +78,5 @@ class DeliveryInstruction {
         assert di.intervalQuantity != null
         assert di.intervalQuantity.quantity == 5
         assert di.intervalQuantity.intervalType.name == "Long"
-
-
     }
 }

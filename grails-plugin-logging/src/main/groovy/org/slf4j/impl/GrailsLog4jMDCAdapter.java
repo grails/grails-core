@@ -23,7 +23,7 @@ import org.slf4j.spi.MDCAdapter;
 
 /**
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class GrailsLog4jMDCAdapter implements MDCAdapter {

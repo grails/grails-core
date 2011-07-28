@@ -32,10 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Enhances controller classes with a method missing implementation for tags at compile time
+ * Enhances controller classes with a method missing implementation for tags at compile time.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class ControllerTagLibraryApi extends CommonWebApi {
 

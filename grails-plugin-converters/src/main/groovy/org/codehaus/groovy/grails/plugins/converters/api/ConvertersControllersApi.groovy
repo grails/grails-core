@@ -22,11 +22,10 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * Additional API extensions provided to controllers via the converters plugin
- *
+ * Additional API extensions provided to controllers via the converters plugin.
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 class ConvertersControllersApi {
 

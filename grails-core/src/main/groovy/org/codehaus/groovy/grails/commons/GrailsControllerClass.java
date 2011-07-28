@@ -149,6 +149,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @deprecated This method is deprecated and will be removed in a future version of Grails
      * @return A Set of names of actions with command objects presented in this controller
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     Set getCommandObjectActions();
 
@@ -156,6 +157,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @deprecated This method is deprecated and will be removed in a future version of Grails
      * @return command object classes used by this controller
      */
+    @Deprecated
     @SuppressWarnings("rawtypes")
     Set getCommandObjectClasses();
 

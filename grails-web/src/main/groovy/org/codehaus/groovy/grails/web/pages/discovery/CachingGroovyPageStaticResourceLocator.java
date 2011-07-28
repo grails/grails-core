@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Extends {@link GroovyPageStaticResourceLocator} adding caching of the result of {@link GroovyPageStaticResourceLocator#findResourceForURI(String)}
+ * Extends {@link GroovyPageStaticResourceLocator} adding caching of the result
+ * of {@link GroovyPageStaticResourceLocator#findResourceForURI(String)}.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -34,9 +35,9 @@ public class CachingGroovyPageStaticResourceLocator extends GroovyPageStaticReso
     @Override
     public Resource findResourceForURI(String uri) {
         Resource resource = uriResolveCache.get(uri);
-        if(resource == null) {
+        if (resource == null) {
             resource = super.findResourceForURI(uri);
-            if(resource == null) {
+            if (resource == null) {
                 resource = NULL_RESOURCE;
             }
             uriResolveCache.put(uri, resource);
