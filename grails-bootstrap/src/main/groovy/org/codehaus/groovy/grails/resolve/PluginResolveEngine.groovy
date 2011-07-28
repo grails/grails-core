@@ -84,21 +84,22 @@ final class PluginResolveEngine {
         messageReporter "Resolving plugin ${pluginName}. Please wait..."
         messageReporter()
         def report = dependencyManager.resolvePluginDependencies(scope,args)
-        if (report.hasError()) {
-            messageReporter "Error resolving plugin ${resolveArgs}."
-            return null
+
+        try {
+            def reports = report.getArtifactsReports(null, false)
+            def artifactReport = reports.find { it.artifact.attributes.organisation == resolveArgs.group && it.artifact.name == resolveArgs.name && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
+            if (artifactReport == null) {
+                artifactReport = reports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
+            }
+            if (artifactReport) {
+                return artifactReport.localFile
+            }
+            messageReporter "Error resolving plugin ${resolveArgs}. Plugin not found."
+
+        } catch (e) {
+            messageReporter "Error resolving plugin ${resolveArgs}. ${e.message}"
         }
 
-        def reports = report.getArtifactsReports(null, false)
-        def artifactReport = reports.find { it.artifact.attributes.organisation == resolveArgs.group && it.artifact.name == resolveArgs.name && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-        if (artifactReport == null) {
-            artifactReport = reports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-        }
-        if (artifactReport) {
-            return artifactReport.localFile
-        }
-
-        messageReporter "Error resolving plugin ${resolveArgs}. Plugin not found."
         return null
     }
 
