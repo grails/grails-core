@@ -851,7 +851,12 @@ class FormTagLib {
                 selected = value.contains(el)
             }
         }
-        else if (keyClass && value) {
+        // GRAILS-3596: Make use of Groovy truth to handle GString <-> String
+        // and other equivalent types (such as numbers, Integer <-> Long etc.).
+        else if (keyValue == value) {
+            selected = true
+        }
+        else if (keyClass && value != null) {
             try {
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)
