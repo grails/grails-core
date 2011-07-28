@@ -15,11 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
-
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -40,6 +39,7 @@ class GroovyPageScanner implements Tokens {
     private int begin2;
     private int state = HTML;
     private int len;
+    private int level;
     private boolean str1;
     private boolean str2;
     private String lastNamespace;
@@ -47,7 +47,6 @@ class GroovyPageScanner implements Tokens {
     private List<Integer> lineNumberPositions;
     private int lastLineNumberIndex = -1;
     private String pageName = "Unknown";
-    private final Stack<Character> levelTokens = new Stack<Character>();
 
     GroovyPageScanner(String text) {
         Strip strip = new Strip(text);
@@ -133,17 +132,8 @@ class GroovyPageScanner implements Tokens {
                 else if (c == '"') str2 = false;
                 continue;
             }
-            else if (!levelTokens.empty() && (c == ')' || c == '}' || c == ']') && levelTokens.peek().equals(c)) {
-                levelTokens.pop();
-                continue;
-            } else if (begin1 > 0 && (c == '{' || c == '(' || c == '[')) {
-                if (c == '{') {
-                    levelTokens.push('}');
-                } else if (c == '(') {
-                    levelTokens.push(')');
-                } else if (c == '[' && !levelTokens.empty()) {
-                    levelTokens.push(']');
-                }
+            else if (level > 0 && (c == ')' || c == '}' || c == ']')) {
+                level--;
                 continue;
             }
 
@@ -237,17 +227,17 @@ class GroovyPageScanner implements Tokens {
                 case GEXPR:
                     checkValidExpressionState(c, c1, left);
                 case GDIRECT:
-                    if (c == '}' && !str1 && !str2 && levelTokens.empty()) {
+                    if (c == '}' && !str1 && !str2 && level == 0) {
                         return found(HTML, 1);
                     }
                     break;
                 case GSCRIPT:
-                    if (c == '}' && isStartScriptletBlock(c1) && !str1 && !str2 && levelTokens.empty()) {
+                    if (c == '}' && isStartScriptletBlock(c1) && !str1 && !str2 && level == 0) {
                         return found(HTML, 2);
                     }
                     break;
                 case GDECLAR:
-                    if (c == '}' && (c1 == '!' || isStartScriptletBlock(c1)) && !str1 && !str2 && levelTokens.empty()) {
+                    if (c == '}' && (c1 == '!' || isStartScriptletBlock(c1)) && !str1 && !str2 && level == 0) {
                         return found(HTML, 2);
                     }
                     break;
@@ -256,8 +246,8 @@ class GroovyPageScanner implements Tokens {
     }
 
     private void checkValidExpressionState(char c, char c1, int left) {
-        if (isPotentialScriptletOrTag(c, left)) {
-            if (isStartScriptletBlock(c1)) {
+        if(isPotentialScriptletOrTag(c, left)) {
+            if(isStartScriptletBlock(c1)) {
                 throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
             }
 
@@ -268,7 +258,7 @@ class GroovyPageScanner implements Tokens {
                 throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
             }
         }
-        else if (isStartOfGExpression(c, c1)) {
+        else if(isStartOfGExpression(c, c1)) {
             throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
         }
     }
@@ -329,8 +319,7 @@ class GroovyPageScanner implements Tokens {
     }
 
     void reset() {
-        end1 = begin1 = end2 = begin2 = 0;
-        levelTokens.clear();
+        end1 = begin1 = end2 = begin2 = level = 0;
         state = HTML;
         lastNamespace = null;
         lastLineNumberIndex = -1;

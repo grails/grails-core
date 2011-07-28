@@ -171,7 +171,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingNestedCurlyBraces() {
-
+		// GRAILS-7180
+		if(notYetImplemented()) return
+		
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
@@ -192,6 +194,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingParensInNestedCurlyBraces() {
+		// GRAILS-7180
+		if(notYetImplemented()) return
 
         GrailsWebUtil.bindMockWebRequest()
 
@@ -213,6 +217,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingBracketsInNestedCurlyBraces() {
+		// GRAILS-7180
+		if(notYetImplemented()) return
 
         GrailsWebUtil.bindMockWebRequest()
 
