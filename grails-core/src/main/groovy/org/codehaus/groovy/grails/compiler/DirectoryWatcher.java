@@ -103,7 +103,7 @@ public class DirectoryWatcher extends Thread {
      */
     public void addWatchDirectory(File dir, String extension) {
         List<String> fileExtensions = new ArrayList<String>();
-        if (extension == null) {
+        if (!StringUtils.hasText(extension)) {
             fileExtensions.add("*");
         }
         else {

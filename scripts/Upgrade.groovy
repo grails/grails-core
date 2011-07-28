@@ -27,6 +27,10 @@ import grails.util.Metadata
 
 includeTargets << grailsScript("_GrailsPlugins")
 
+UNMODIFIED_CHECKSUMS = [indexgsp:['e9f4d3450ba02fe92d55f4ae4b53dee8', 'e9f4d3450ba02fe92d55f4ae4b53dee8', '77f5ed5c2fca586a9ff1dc8e7beeb85b', '5313f072b2ed10129a446d5f648d8b41'],
+                        errorgsp:['473b673fb3f04a60412ace1b7bc12a8c', '473b673fb3f04a60412ace1b7bc12a8c', '473b673fb3f04a60412ace1b7bc12a8c', '473b673fb3f04a60412ace1b7bc12a8c'],
+                        maincss:['612301d27b1d5d6f670cc98905376f59','612301d27b1d5d6f670cc98905376f59', '820b415fc6e53b156b68e5a01fa5677e', '820b415fc6e53b156b68e5a01fa5677e']]
+
 target(upgrade: "main upgrade target") {
 
     depends(createStructure, parseArguments)
@@ -145,7 +149,7 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         }
 
         def dsFile = new File(baseFile, "grails-app/conf/DataSource.groovy")
-        if(dsFile.exists()) {
+        if(dsFile.exists() && argsMap.'update-data-source') {
             replace file:dsFile, token:"jdbc:hsqldb:mem:devDB", value:"jdbc:h2:mem:devDb"
             replace file:dsFile, token:"jdbc:hsqldb:mem:testDb",value: "jdbc:h2:mem:testDb"
             replace file:dsFile, token:"org.hsqldb.jdbcDriver", value:"org.h2.Driver"                        
