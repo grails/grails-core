@@ -22,7 +22,7 @@ import org.apache.coyote.http11.Http11NioProtocol
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -76,7 +76,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
         }
 
         if (getConfigParam("nio")) {
-            println "Enabling Tomcat NIO connector"
+            CONSOLE.updateStatus "Enabling Tomcat NIO connector"
             def connector = new Connector(Http11NioProtocol.name)
             connector.port = httpPort
             tomcat.service.addConnector(connector)
@@ -98,6 +98,13 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
             if (host != "localhost") {
                 sslConnector.setAttribute("address", host)
+            }
+
+            if (truststoreFile.exists()) {
+                CONSOLE.addStatus "Using truststore $truststore"
+                sslConnector.setAttribute("truststoreFile", truststore)
+                sslConnector.setAttribute("truststorePass", trustPassword)
+                sslConnector.setAttribute("clientAuth", "want")
             }
 
             tomcat.service.addConnector(sslConnector)
