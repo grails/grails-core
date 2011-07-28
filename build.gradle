@@ -127,12 +127,21 @@ subprojects { project ->
         }
     }
 
+
+
     install.doLast {
         copy {
             from(project.libsDir) {
                 include "*-${grailsVersion}.jar"
             }
             into "${rootProject.projectDir}/dist"
+        }
+    }
+
+    assemble.doLast {
+        copy {
+            from(sourcesJar.archivePath)
+            into "${rootProject.projectDir}/src"
         }
     }
 
