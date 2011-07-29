@@ -139,7 +139,9 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
             }
 
             if(resource == null || !resource.exists()) {
-                resource = defaultResourceLoader != null ? defaultResourceLoader.getResource(uri) : null;
+                Resource tmp = defaultResourceLoader != null ? defaultResourceLoader.getResource(uri) : null;
+                if(tmp != null && tmp.exists())
+                    resource = tmp;
             }
 
             if (resource != null) {
