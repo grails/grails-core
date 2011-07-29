@@ -18,14 +18,13 @@ package org.codehaus.groovy.grails.plugins.datasource
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
-
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
-
 import javax.sql.DataSource
-
 import org.apache.commons.dbcp.BasicDataSource
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
@@ -43,6 +42,7 @@ import org.springframework.util.ClassUtils
  */
 class DataSourceGrailsPlugin {
 
+    private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: GrailsUtil.getGrailsVersion()]
 
@@ -279,7 +279,7 @@ class DataSourceGrailsPlugin {
                 DriverManager.deregisterDriver(driver)
             }
             catch (e) {
-                log.error "Error deregistering JDBC driver [$driver]: $e.message", e
+                log.debug "Error deregistering JDBC driver [$driver]: $e.message", e
             }
         }
     }
