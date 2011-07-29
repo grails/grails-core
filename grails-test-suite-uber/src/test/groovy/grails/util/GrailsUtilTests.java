@@ -16,15 +16,12 @@ package grails.util;
 
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-
-import java.io.IOException;
-import java.io.StringWriter;
+import junit.framework.TestCase;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import junit.framework.TestCase;
-
-import org.xml.sax.SAXException;
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * Tests for the GrailsUtils class.
@@ -35,7 +32,7 @@ import org.xml.sax.SAXException;
 public class GrailsUtilTests extends TestCase {
 
     public void testGrailsVersion() {
-        assertEquals("2.0.0.BUILD-SNAPSHOT", GrailsUtil.getGrailsVersion());
+        assertEquals("2.0.0.M1", GrailsUtil.getGrailsVersion());
     }
 
     @Override
