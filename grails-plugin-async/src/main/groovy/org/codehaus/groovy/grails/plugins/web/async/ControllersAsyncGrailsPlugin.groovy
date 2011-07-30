@@ -18,13 +18,12 @@ package org.codehaus.groovy.grails.plugins.web.async
 import grails.util.GrailsUtil
 
 /**
- * Async support for the Grails 2.0. Doesn't do much right now, most logic handled by the compile time transform
- *
+ * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
+ * by the compile time transform.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
 class ControllersAsyncGrailsPlugin {
-
     def version = GrailsUtil.getGrailsVersion()
 }

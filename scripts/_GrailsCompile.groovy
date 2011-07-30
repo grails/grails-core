@@ -41,7 +41,6 @@ target(setCompilerSettings: "Updates the compile build settings based on args") 
 
 target(compile : "Implementation of compilation phase") {
     depends(compilePlugins)
-
     profile("Compiling sources to location [$classesDirPath]") {
         try {
             projectCompiler.compile()
