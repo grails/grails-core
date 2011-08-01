@@ -15,6 +15,8 @@ import java.util.concurrent.locks.*
  * </ul>
  */
 abstract class AbstractCliTestCase extends GroovyTestCase {
+    static final String EOL = System.getProperty("line.separator")
+    
     private final Lock lock = new ReentrantLock()
     private final Condition condition = lock.newCondition()
     private final Condition waiting = lock.newCondition()
@@ -44,12 +46,22 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
 
         // Add the path to the Grails script as the first element of
         // the command. Note that we use an absolute path.
-        def cmd = new ArrayList<String>(command.size() + 2)
-        cmd.add "${grailsHome}/bin/grails".toString()
-        if (System.getProperty("grails.work.dir")) {
-            cmd.add "-Dgrails.work.dir=${System.getProperty('grails.work.dir')}".toString()
+        def cmd = new ArrayList<String>(command.size() + 5)
+        def quoteArgs = false
+        if (windows) {
+            cmd << "cmd" << "/c"
+            cmd << "${grailsHome}\\bin\\grails.bat".toString()
+            quoteArgs = true
         }
-        cmd.addAll command
+        else {
+            cmd << "${grailsHome}/bin/grails".toString()
+        }
+        if (System.getProperty("grails.work.dir")) {
+            def arg = "-Dgrails.work.dir=${System.getProperty('grails.work.dir')}"
+            cmd.add (quoteArgs ? '"' + arg + '"' : arg.toString())
+        }
+        cmd << "--plain-output"
+        cmd.addAll command.collect { quoteArgs ? '"' + it + '"' : it }
 
         // Prepare to execute Grails as a separate process in the
         // configured working directory.
@@ -103,7 +115,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
      * when running the "create-app" command.
      */
     void enterInput(String input) {
-        process << input << "\r"
+        process << input << EOL
     }
 
     /**
@@ -145,7 +157,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
             lock.lock()
             streamsProcessed = true
             lock.unlock()
-
+            
             // Now kill the process since it appears to be stuck.
             process.destroy()
         }
@@ -196,9 +208,10 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
      * location of GRAILS_HOME.
      */
     protected void verifyHeader() {
-        assertTrue output.startsWith("""Welcome to Grails ${grailsVersion} - http://grails.org/
-Licensed under Apache Standard License 2.0
-Grails home is set to: ${grailsHome}
-""")
+        assert output.contains("|Loading Grails ${grailsVersion}")
+    }
+    
+    public boolean isWindows() {
+        return System.getProperty("os.name").startsWith("Windows")
     }
 }
