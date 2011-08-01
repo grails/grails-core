@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.compiler.web;
+package org.codehaus.groovy.grails.compiler.injection;
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
