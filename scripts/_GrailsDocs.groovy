@@ -246,7 +246,6 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         publisher.copyright = ""
         publisher.footer = ""
         publisher.engineProperties = config?.grails?.doc
-        println ">> ${config.grails.doc}"
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)
