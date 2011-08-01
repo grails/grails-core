@@ -116,11 +116,6 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
 
         obj.save()
 
-        // test query without a method
-        shouldFail {
-            domainClass.find()
-        }
-
         // test invalid query
         shouldFail(GrailsQueryException) {
             domainClass.find("from AnotherClass")
