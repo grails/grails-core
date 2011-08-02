@@ -42,7 +42,6 @@ class FooController {
 
     void testInterceptorInheritance() {
         gcl.parseClass """
-@grails.artefact.Artefact("Controller")
 abstract class ParentController {
     def beforeInterceptor = { "foo" }
     def afterInterceptor = {  "bar" }

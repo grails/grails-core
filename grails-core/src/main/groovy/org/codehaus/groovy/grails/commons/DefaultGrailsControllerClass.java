@@ -22,6 +22,7 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 
 import java.beans.FeatureDescriptor;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -88,10 +89,31 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
         controllerPath = uri + SLASH;
 
+        flowStrategy(actionNames);
         methodStrategy(actionNames);
 
         configureDefaultActionIfSet();
         configureURIsForCurrentState();
+    }
+
+
+
+    //Todo change flow resolution
+    private void flowStrategy(Collection<String> closureNames) {
+
+        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors()) {
+            Method readMethod = propertyDescriptor.getReadMethod();
+            if (readMethod != null && !Modifier.isStatic(readMethod.getModifiers())) {
+                final Class<?> propertyType = propertyDescriptor.getPropertyType();
+                if ((propertyType == Object.class || propertyType == Closure.class) && propertyDescriptor.getName().endsWith(FLOW_SUFFIX)) {
+                    String closureName = propertyDescriptor.getName();
+                    String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
+                    flows.put(flowId, propertyDescriptor);
+                    closureNames.add(flowId);
+                    configureMappingForMethodAction(flowId);
+                }
+            }
+        }
     }
 
     private void methodStrategy(Collection<String> methodNames) {
@@ -102,8 +124,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
                 String methodName = method.getName();
 
                 methodNames.add(methodName);
-
-                configureMappingForClosureProperty(methodName);
+                configureMappingForMethodAction(methodName);
             }
         }
 
@@ -128,7 +149,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         viewNames.put(defaultActionName, controllerPath + defaultActionName);
     }
 
-    private void configureMappingForClosureProperty(String closureName) {
+    private void configureMappingForMethodAction(String closureName) {
         String tmpUri = controllerPath + closureName;
         uri2methodMap.put(tmpUri,closureName);
         uri2methodMap.put(tmpUri + SLASH + "**",closureName);
@@ -304,7 +325,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public void registerMapping(String actionName) {
-        configureMappingForClosureProperty(actionName);
+        configureMappingForMethodAction(actionName);
         configureURIsForCurrentState();
     }
 }
