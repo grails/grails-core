@@ -143,7 +143,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @param uri the URI of the request
      * @return the closure property name mapped to the URI or null is no closure was found
      */
-    String getClosurePropertyName(String uri);
+    String getMethodActionName(String uri);
 
     /**
      * @deprecated This method is deprecated and will be removed in a future version of Grails

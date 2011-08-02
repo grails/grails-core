@@ -22,7 +22,6 @@ import groovy.lang.GroovyObject;
 import groovy.lang.MetaProperty;
 
 import java.beans.FeatureDescriptor;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private static final String ACTION = "action";
     private Map<String, String> uri2viewMap = new HashMap<String, String>();
-    private Map<String, String> uri2closureMap = new HashMap<String, String>();
+    private Map<String, String> uri2methodMap = new HashMap<String, String>();
     private Map<String, String> viewNames = new HashMap<String, String>();
     private String[] uris;
     private String uri;
@@ -89,40 +88,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
         controllerPath = uri + SLASH;
 
-        mixedStrategy(actionNames);
+        methodStrategy(actionNames);
 
         configureDefaultActionIfSet();
         configureURIsForCurrentState();
-    }
-
-    private void mixedStrategy(Collection<String> actionNames) {
-        closureStrategy(actionNames);
-        methodStrategy(actionNames);
-    }
-
-    private void closureStrategy(Collection<String> closureNames) {
-
-        for (PropertyDescriptor propertyDescriptor : getPropertyDescriptors()) {
-            Method readMethod = propertyDescriptor.getReadMethod();
-            if (readMethod != null && !Modifier.isStatic(readMethod.getModifiers())) {
-                final Class<?> propertyType = propertyDescriptor.getPropertyType();
-                if (propertyType == Closure.class) {
-                    String closureName = propertyDescriptor.getName();
-                    if (closureName.endsWith(FLOW_SUFFIX)) {
-                        String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
-                        flows.put(flowId, propertyDescriptor);
-                        closureName = flowId;
-                    }
-                    closureNames.add(closureName);
-
-                    configureMappingForClosureProperty(closureName);
-                }
-            }
-        }
-
-        if (!isReadableProperty(defaultActionName) && closureNames.size() == 1) {
-            defaultActionName = closureNames.iterator().next();
-        }
     }
 
     private void methodStrategy(Collection<String> methodNames) {
@@ -144,7 +113,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     private void configureURIsForCurrentState() {
-        uris = uri2closureMap.keySet().toArray(new String[uri2closureMap.keySet().size()]);
+        uris = uri2methodMap.keySet().toArray(new String[uri2methodMap.keySet().size()]);
     }
 
     private void configureDefaultActionIfSet() {
@@ -152,8 +121,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             return;
         }
 
-        uri2closureMap.put(uri, defaultActionName);
-        uri2closureMap.put(controllerPath, defaultActionName);
+        uri2methodMap.put(uri, defaultActionName);
+        uri2methodMap.put(controllerPath, defaultActionName);
         uri2viewMap.put(controllerPath, controllerPath + defaultActionName);
         uri2viewMap.put(uri, controllerPath +  defaultActionName);
         viewNames.put(defaultActionName, controllerPath + defaultActionName);
@@ -161,8 +130,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private void configureMappingForClosureProperty(String closureName) {
         String tmpUri = controllerPath + closureName;
-        uri2closureMap.put(tmpUri,closureName);
-        uri2closureMap.put(tmpUri + SLASH + "**",closureName);
+        uri2methodMap.put(tmpUri,closureName);
+        uri2methodMap.put(tmpUri + SLASH + "**",closureName);
         uri2viewMap.put(tmpUri, tmpUri);
         viewNames.put(closureName, tmpUri);
     }
@@ -184,8 +153,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return uri2viewMap.get(uri);
     }
 
-    public String getClosurePropertyName(@SuppressWarnings("hiding") String uri) {
-        return uri2closureMap.get(uri);
+    public String getMethodActionName(@SuppressWarnings("hiding") String uri) {
+        return uri2methodMap.get(uri);
     }
 
     public String getViewByName(String viewName) {

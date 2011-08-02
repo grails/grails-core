@@ -52,7 +52,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 }
 
 class Test1Controller {
-    def list = {}
+    @Action def list(){}
 
     def afterInterceptor = {
          it.put("after", "value")
@@ -78,7 +78,7 @@ class Test3Controller {
 }
 
 class Test4Controller {
-    def list = {}
+    @Action def list(){}
 
     def afterInterceptor = { model, modelAndView ->
          return false
