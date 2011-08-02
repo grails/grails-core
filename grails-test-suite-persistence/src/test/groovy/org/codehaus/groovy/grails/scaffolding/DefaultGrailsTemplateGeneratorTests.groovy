@@ -65,12 +65,8 @@ class ScaffoldingTest {
         StringWriter sw = new StringWriter()
         templateGenerator.generateView domainClass, "_form", sw
 
-        assertThat "Should have rendered a datePicker for regularDate",
-            sw.toString(),
-            containsString('g:datePicker name="regularDate" precision="day" value="${scaffoldingTestInstance?.regularDate}"')
-        assertThat "Should have rendered a datePicker for sqlDate",
-            sw.toString(),
-            containsString('datePicker name="sqlDate" precision="day" value="${scaffoldingTestInstance?.sqlDate}"')
+        assert sw.toString().contains('g:datePicker name="regularDate" precision="day"  value="${scaffoldingTestInstance?.regularDate}"') == true
+        assert sw.toString().contains('datePicker name="sqlDate" precision="day"  value="${scaffoldingTestInstance?.sqlDate}') == true
     }
 
     void testGenerateNumberSelect() {
