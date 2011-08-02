@@ -15,7 +15,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker"
     private static final def SELECT_TAG_NAME = "testSelect"
 
-    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = ["minute", null].asImmutable()
+    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = ["minute"].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = ["hour", "minute", null].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_DAY = ["day", "hour", "minute", null].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = ["month", "day", "hour", "minute", null].asImmutable()

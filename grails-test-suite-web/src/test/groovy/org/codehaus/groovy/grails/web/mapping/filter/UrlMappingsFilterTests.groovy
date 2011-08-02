@@ -68,17 +68,20 @@ mappings {
 '''
 
     def testController1 = '''
+@grails.artefact.Artefact("Controller")
 class TestController {
   def index = {}
 }
 '''
     def testController2 = '''
 package blogs
+@grails.artefact.Artefact("Controller")
 class BlogController {
   def show = {}
 }
 '''
     def testController3 = '''
+@grails.artefact.Artefact("Controller")
 class NoIndexController {
   def myAction = {}
 
@@ -87,6 +90,7 @@ class NoIndexController {
 '''
 
     def testController4 = '''
+@grails.artefact.Artefact("Controller")
 class OtherController {
   def myAction = {}
 }
@@ -191,6 +195,7 @@ mappings {
     }
 
     def testController5 = '''
+@grails.artefact.Artefact("Controller")
 class IndexAndActionController {
   def myAction = {}
 
@@ -278,6 +283,7 @@ mappings {
     def testController6 = '''
 package blogs
 
+@grails.artefact.Artefact("Controller")
 class BlogController {
     def defaultAction = "show"
     def show = {}

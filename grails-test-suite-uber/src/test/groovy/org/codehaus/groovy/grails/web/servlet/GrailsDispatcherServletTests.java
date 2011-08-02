@@ -18,7 +18,7 @@ import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -61,7 +61,7 @@ public class GrailsDispatcherServletTests extends TestCase {
                 }
             };
 
-            GroovyClassLoader cl = new GrailsClassLoader();
+            GroovyClassLoader cl = new GrailsAwareClassLoader();
             cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController {" +
                     "def action = {} " +
                     "}");

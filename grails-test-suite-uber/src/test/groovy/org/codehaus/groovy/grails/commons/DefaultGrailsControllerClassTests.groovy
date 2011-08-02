@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.commons
 
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 
 /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class DefaultGrailsControllerClassTests extends GroovyTestCase {
 
-    def gcl = new GrailsClassLoader()
+    def gcl = new GrailsAwareClassLoader()
 
     void testEvaluateFlowDefinitions() {
         gcl.parseClass """
