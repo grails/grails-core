@@ -16,8 +16,7 @@
 package grails.orm;
 
 import groovy.lang.*;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.*;
 import org.hibernate.criterion.*;
@@ -1131,7 +1130,30 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
                         // relevant to GRAILS-5692
                         criteria.setResultTransformer(resultTransformer);
                     }
-                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, targetClass, criteria, (Map)args[0]);
+                    // GRAILS-7324 look if we already have association to sort by
+                    Map argMap = (Map)args[0];
+                    final String sort = (String) argMap.get(GrailsHibernateUtil.ARGUMENT_SORT);
+                    if (sort != null) {
+                        boolean ignoreCase = true;
+                        Object caseArg = argMap.get(GrailsHibernateUtil.ARGUMENT_IGNORE_CASE);
+                        if (caseArg instanceof Boolean) {
+                            ignoreCase = (Boolean) caseArg;
+                        }
+                        final String orderParam = (String) argMap.get(GrailsHibernateUtil.ARGUMENT_ORDER);
+                        final String order = GrailsHibernateUtil.ORDER_DESC.equalsIgnoreCase(orderParam) ?
+                                GrailsHibernateUtil.ORDER_DESC : GrailsHibernateUtil.ORDER_ASC;
+                        int lastPropertyPos = sort.lastIndexOf('.');
+                        String associationForOrdering = lastPropertyPos >= 0 ? sort.substring(0, lastPropertyPos) : null;
+                        if (associationForOrdering != null && aliasMap.containsKey(associationForOrdering)) {
+                            addOrder(criteria, aliasMap.get(associationForOrdering) + "." + sort.substring(lastPropertyPos + 1),
+                                    order, ignoreCase);
+                            // remove sort from arguments map to exclude from default processing.
+                            Map argMap2 = new HashMap(argMap);
+                            argMap2.remove(GrailsHibernateUtil.ARGUMENT_SORT);
+                            argMap = argMap2;
+                        }
+                    }
+                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, targetClass, criteria, argMap);
                     PagedResultList pagedRes = new PagedResultList(criteria.list());
 
                     // Updated the paged results with the total number of records calculated previously.
@@ -1438,4 +1460,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport {
             return junction;
         }
     }
+
+    /**
+     * Add order directly to criteria.
+     */
+    private static void addOrder(Criteria c, String sort, String order, boolean ignoreCase) {
+        if (GrailsHibernateUtil.ORDER_DESC.equals(order)) {
+            c.addOrder( ignoreCase ? Order.desc(sort).ignoreCase() : Order.desc(sort));
+        }
+        else {
+            c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
+        }
+    }
+
 }

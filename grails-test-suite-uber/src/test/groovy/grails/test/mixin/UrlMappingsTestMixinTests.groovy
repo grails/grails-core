@@ -5,6 +5,7 @@ import junit.framework.AssertionFailedError
 import junit.framework.ComparisonFailure
 
 import org.junit.Test
+import grails.web.Action
 
 /**
  * Tests for the UrlMappingsTestMixin class
@@ -145,13 +146,13 @@ class AnotherUrlMappings {
 
 class GrailsUrlMappingsTestCaseFakeController {
    static defaultAction = 'action1'
-   def action1 = {}
-   def action2 = {}
-   def action3 = {}
+   @Action def action1(){}
+   @Action def action2(){}
+   @Action def action3(){}
 }
 
 class UserController {
-    def publicProfile = {}
+    @Action def publicProfile() {}
 }
 
 class MyUrlMappings {

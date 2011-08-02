@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -57,20 +58,20 @@ public class SimpleGrailsControllerTests extends TestCase {
     @Override
     protected void setUp() throws Exception {
         ExpandoMetaClass.enableGlobally();
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> testControllerClass = cl.parseClass("class TestController {\n"+
-                            " Closure test = {\n"+
+        GrailsAwareClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> testControllerClass = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController {\n"+
+                            " def test = {\n"+
                                 "return [ \"test\" : \"123\" ]\n"+
                              "}\n" +
                         "}");
 
-        Class<?> simpleControllerClass = cl.parseClass("class SimpleController {\n"+
-                " Closure test = {\n"+
+        Class<?> simpleControllerClass = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class SimpleController {\n"+
+                " def test = {\n"+
                  "}\n" +
             "}");
 
 
-        Class<?> restrictedControllerClass = cl.parseClass("class RestrictedController {\n"+
+        Class<?> restrictedControllerClass = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class RestrictedController {\n"+
                 "static allowedMethods=[action1:'POST', action3:['PUT', 'DELETE'], action4: 'pOsT', action5: ['pUt', 'DeLeTe']]\n" +
                 "def action1 = {}\n" +
                 "def action2 = {}\n" +

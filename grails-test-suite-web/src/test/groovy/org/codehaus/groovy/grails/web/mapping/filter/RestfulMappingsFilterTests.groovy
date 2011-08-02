@@ -29,6 +29,7 @@ mappings {
 '''
 
     def testController1 = '''
+@grails.artefact.Artefact("Controller")
 class BookController {
   def list = {}
   def delete = {}
