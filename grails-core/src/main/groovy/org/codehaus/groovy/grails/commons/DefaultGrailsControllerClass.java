@@ -106,7 +106,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             Method readMethod = propertyDescriptor.getReadMethod();
             if (readMethod != null && !Modifier.isStatic(readMethod.getModifiers())) {
                 final Class<?> propertyType = propertyDescriptor.getPropertyType();
-                if (propertyType == Object.class || propertyType == Closure.class) {
+                if (propertyType == Closure.class) {
                     String closureName = propertyDescriptor.getName();
                     if (closureName.endsWith(FLOW_SUFFIX)) {
                         String flowId = closureName.substring(0, closureName.length()-FLOW_SUFFIX.length());
