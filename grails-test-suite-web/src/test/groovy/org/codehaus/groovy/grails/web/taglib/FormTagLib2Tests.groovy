@@ -15,7 +15,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker"
     private static final def SELECT_TAG_NAME = "testSelect"
 
-    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = ["minute"].asImmutable()
+    private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = ["minute", null].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = ["hour", "minute", null].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_DAY = ["day", "hour", "minute", null].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_MONTH = ["month", "day", "hour", "minute", null].asImmutable()
@@ -203,6 +203,10 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     }
 
     private void validateSelectedMinuteValue(Document document, Calendar calendar, String precision) {
+
+        if(precision==null)
+            return;
+        
         final String FIELD_NAME = DATE_PICKER_TAG_NAME + "_minute"
 
         String expectedMinuteValue = "00"
@@ -240,6 +244,12 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
                 "//select[@name='" + fieldName + "']")
     }
 
+    private void assertSelectPresent(Document document, String fieldName) {
+        assertXPathExists(
+                document,
+                "//select[@name='" + fieldName + "']")
+    }
+
     private Document getDatePickerOutput(value, precision, xdefault) {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
@@ -267,7 +277,6 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
             tag.call(attrs)
 
             String enclosed = "<test>" + sw.toString() + "</test>"
-
             return parseText(enclosed)
         }
         return document
