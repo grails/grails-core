@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.web;
 
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
+import grails.util.GrailsNameUtils;
 import grails.web.Action;
 import grails.web.RequestParameter;
 
@@ -28,7 +29,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -46,17 +52,14 @@ import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.ASTBeanPropertyBindingResultHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
@@ -396,9 +399,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             final ClassNode commandObjectTypeClassNode) {
         ASTErrorsHelper errorsHelper = new ASTBeanPropertyBindingResultHelper();
         errorsHelper.injectErrorsCode(commandObjectTypeClassNode);
-        addConstraintsEvaluatorProperty(commandObjectTypeClassNode);
+        addConstraintsEvaluatorField(commandObjectTypeClassNode);
         addGetConstrainedPropertiesMethod(commandObjectTypeClassNode);
-        addMessageSourceProperty(commandObjectTypeClassNode);
+        addMessageSourceField(commandObjectTypeClassNode);
         addValidateMethod(commandObjectTypeClassNode);
     }
 
@@ -414,13 +417,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             paramTypeClassNode.addMethod(new MethodNode(
                   "validate", Modifier.PUBLIC, new ClassNode(Boolean.class),
                   ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, validateMethodCode));
-        }
-    }
-
-    protected void addMessageSourceProperty(final ClassNode paramTypeClassNode) {
-        final PropertyNode messageSourceProperty = paramTypeClassNode.getProperty("messageSource");
-        if (messageSourceProperty == null) {
-            paramTypeClassNode.addProperty("messageSource", Modifier.PUBLIC, new ClassNode(MessageSource.class), null, null, null);
         }
     }
 
@@ -456,9 +452,40 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
     }
 
-    protected void addConstraintsEvaluatorProperty(
-            final ClassNode paramTypeClassNode) {
-        paramTypeClassNode.addProperty(ConstraintsEvaluator.BEAN_NAME, Modifier.PUBLIC, new ClassNode(ConstraintsEvaluator.class), null, null, null);
+    protected void addMessageSourceField(final ClassNode paramTypeClassNode) {
+        addFieldWithSetterMethod(paramTypeClassNode, 
+                                 "messageSource",
+                                 MessageSource.class);
+    }
+
+    protected void addConstraintsEvaluatorField(final ClassNode paramTypeClassNode) {
+        addFieldWithSetterMethod(paramTypeClassNode,
+                                 ConstraintsEvaluator.BEAN_NAME,
+                                 ConstraintsEvaluator.class);
+    }
+
+    protected void addFieldWithSetterMethod(final ClassNode classNode,
+            final String fieldName, final Class<?> fieldType) {
+        final FieldNode existingFieldNode = classNode.getField(fieldName);
+        final ClassNode fieldTypeClassNode = new ClassNode(fieldType);
+        if(existingFieldNode == null) {
+            classNode.addField(fieldName, Modifier.PRIVATE, fieldTypeClassNode, new ConstantExpression(null));
+        }
+        final String methodArgumentName = "setterArgumentName";
+        final String setterMethodName = GrailsNameUtils.getSetterName(fieldName);
+        MethodNode setterMethod = classNode.getMethod(setterMethodName, new Parameter[]{new Parameter(fieldTypeClassNode, methodArgumentName)});
+        if(setterMethod == null) {
+            final BinaryExpression assignArgumentToFieldExpression = new BinaryExpression(new VariableExpression(
+                    fieldName), Token.newSymbol(
+                    Types.EQUALS, 0, 0), new VariableExpression(methodArgumentName));
+            setterMethod = new MethodNode(setterMethodName,
+                                          Modifier.PUBLIC,
+                                          ClassHelper.VOID_TYPE,
+                                          new Parameter[]{new Parameter(fieldTypeClassNode, methodArgumentName)},
+                                          EMPTY_CLASS_ARRAY,
+                                          new ExpressionStatement(assignArgumentToFieldExpression));
+            classNode.addMethod(setterMethod);
+        }
     }
 
     protected Statement getCommandObjectDataBindingStatement(
