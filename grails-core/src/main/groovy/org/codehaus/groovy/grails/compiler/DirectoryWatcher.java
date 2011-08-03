@@ -199,6 +199,9 @@ public class DirectoryWatcher extends Thread {
 
     private void addExtensions(Collection<String> toAdd) {
         for (String extension : toAdd) {
+        	if (extension.startsWith(".")) {
+                extension = extension.substring(1);
+        	}
             if (!extensions.contains(extension)) {
                 extensions.add(extension);
             }
