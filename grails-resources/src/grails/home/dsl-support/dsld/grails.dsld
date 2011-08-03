@@ -86,12 +86,22 @@ def domainClass = grailsArtifact("domain")
 }
 
 // criteria queries
+// GormStaticAPI
+// GormInstanceAPI
+// GormValidationAPI
 domainClass.accept {
 	provider = "Criteria builder DSL"
 	method name:"createCriteria", type:"grails.orm.HibernateCriteriaBuilder",
 		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
 	method name:"withCriteria", type:List, params: [query : Closure],
 		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+		
+	provider = "GORM Static API"
+	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<" + currentType.name + ">", isStatic:true, except:["withCriteria", "createCriteria"]
+	provider = "GORM Instance API"
+	delegatesTo type:"org.grails.datastore.gorm.GormInstanceApi<" + currentType.name + ">", asCategory:true
+	provider = "GORM Validation API"
+	delegatesTo type:"org.grails.datastore.gorm.GormValidationApi<" + currentType.name + ">", asCategory:true	
 }
 currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	provider = "Criteria builder DSL"
@@ -101,13 +111,6 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 }
 
-// GormStaticAPI
-// Persistence providers can add more.
-// FIXJB : Any possibility to include the source for GormStaticAPI in projects?
-domainClass.accept {
-	provider = "GORM Static API"
-	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<" + currentType.name + ">", isStatic:true, except:["withCriteria", "createCriteria"]
-}
 
 // hasMany
 domainClass & currentType(props : properties(isStatic() & name("hasMany"))).accept {
@@ -194,4 +197,40 @@ def toPropertyName(String typeName) {
         	return typeName
     }
     return typeName[0].toLowerCase(Locale.ENGLISH) + typeName.substring(1);
+}
+
+
+// For unit tests
+def grailsUnitTestArtifact = 
+	sourceFolderOfCurrentType("test/unit") &
+	nature("grails")
+
+contribution(grailsUnitTestArtifact & 
+		enclosingClass(annotatedBy(name("grails.test.mixin.TestFor") & 
+		hasAttribute(types : value())))) {
+	types.each { String className ->
+		 if (className.contains("Controller")) {
+			 provider = "Controller unit test DSL"
+			 // assume controller test
+			 property name: "controller", type: className, doc: "The controller class under test"
+			 property name: "request", type: "javax.servlet.http.HttpServletRequest", doc: "The HTTP request object"
+			 property name: "response", type: "org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse", doc: "The HTTP response object"
+			 property name: "flash", type: "java.util.Map<java.lang.String,java.lang.String>"
+			 property name: "params", type: "java.util.Map<java.lang.String,java.lang.String>"
+			 property name: "view", type: "org.springframework.web.servlet.View"
+			 property name: "model", type: Map
+			 property name: "modelAndView", type: "org.springframework.web.servlet.ModelAndView"
+			 
+			 // FIXADE probably should be broken up into several contributions
+			 method name: "render", useNamedArgs: true, 
+			 	params: [template: String, view:String, model:"java.util.Map<java.lang.String,java.lang.Object>", action: String]
+			 
+		 	 method name:"defineBeans", params:[beans:Closure]
+		 }
+		 
+		 if (className.contains("TagLib")) {
+			 // assume tag lib
+			 method name: "applyTemplate", type:String, params:[tag:String]
+		 }
+	}
 }
