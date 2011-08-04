@@ -239,6 +239,11 @@
 	}
 
 	private boolean isOptional() {
-		cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	    if(!cp) {
+	        return false
+	    }
+	    else {
+	        cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	    }
 	}
 %>
