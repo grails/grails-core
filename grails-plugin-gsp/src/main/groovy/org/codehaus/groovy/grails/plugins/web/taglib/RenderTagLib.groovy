@@ -490,8 +490,13 @@ class RenderTagLib implements RequestConstants {
         // add sorting property and params to link params
         def linkParams = [:]
         if (params.id) linkParams.put("id", params.id)
-        if (attrs.params) linkParams.putAll(attrs.remove("params"))
+        def paramsAttr = attrs.remove("params")
+        if (paramsAttr) linkParams.putAll(paramsAttr)
         linkParams.sort = property
+
+        // propagate "max" and "offset" standard params
+        if (params.max) linkParams.max = params.max
+        if (params.offset) linkParams.offset = params.offset
 
         // determine and add sorting order for this column to link params
         attrs.class = (attrs.class ? "${attrs.class} sortable" : "sortable")
@@ -521,7 +526,7 @@ class RenderTagLib implements RequestConstants {
         writer << "<th "
         // process remaining attributes
         attrs.each { k, v ->
-            writer << "${k}=\"${v.encodeAsHTML()}\" "
+            writer << "${k}=\"${v?.encodeAsHTML()}\" "
         }
         writer << ">${link(action: action, params: linkParams) { title }}</th>"
     }
