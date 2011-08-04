@@ -25,9 +25,11 @@ class UrlMappings {
 }'''
 
         gcl.parseClass '''
+@grails.artefact.Artefact("Controller")
 class ContentController {
     def view = {}
 }
+@grails.artefact.Artefact("Controller")
 class TestController {
     def foo = {}
     def index = {}

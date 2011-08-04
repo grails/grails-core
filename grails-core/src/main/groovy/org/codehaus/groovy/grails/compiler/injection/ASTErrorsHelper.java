@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.compiler.web;
+package org.codehaus.groovy.grails.compiler.injection;
 
 import org.codehaus.groovy.ast.ClassNode;
 
