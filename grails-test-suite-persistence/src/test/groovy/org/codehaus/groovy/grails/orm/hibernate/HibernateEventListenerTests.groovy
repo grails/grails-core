@@ -4,6 +4,8 @@ import org.hibernate.event.PostDeleteEvent
 import org.hibernate.event.PostDeleteEventListener
 import org.hibernate.event.PostInsertEvent
 import org.hibernate.event.PostInsertEventListener
+import org.hibernate.event.SaveOrUpdateEvent
+import org.hibernate.event.SaveOrUpdateEventListener
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 
 /**
@@ -28,6 +30,7 @@ class HibernateEventListenerTests extends AbstractGrailsHibernateTests {
         def eventListeners = appCtx.sessionFactory.eventListeners
         assertTrue eventListeners.postInsertEventListeners.any { it instanceof TestAuditListener }
         assertTrue eventListeners.postDeleteEventListeners.any { it instanceof TestAuditListener }
+        assertTrue eventListeners.saveOrUpdateEventListeners.any { it instanceof TestAuditListener }
         assertFalse eventListeners.postUpdateEventListeners.any { it instanceof TestAuditListener }
     }
 }
@@ -38,12 +41,14 @@ class EventListenerGrailsPlugin {
         testAuditListener(TestAuditListener)
         hibernateEventListeners(HibernateEventListeners) {
             listenerMap = ['post-insert': testAuditListener,
-                           'post-delete': testAuditListener]
+                           'post-delete': testAuditListener,
+                           'save-update': testAuditListener]
         }
     }
 }
 
-class TestAuditListener implements PostInsertEventListener, PostDeleteEventListener {
+class TestAuditListener implements PostInsertEventListener, PostDeleteEventListener, SaveOrUpdateEventListener {
     void onPostInsert(PostInsertEvent event) {}
     void onPostDelete(PostDeleteEvent event) {}
+    void onSaveOrUpdate(SaveOrUpdateEvent event) {}
 }
