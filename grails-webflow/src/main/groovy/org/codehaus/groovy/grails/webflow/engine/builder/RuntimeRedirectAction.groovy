@@ -70,12 +70,3 @@ class RuntimeRedirectAction extends AbstractAction {
         return success()
     }
 }
-
-/**
- * Used for evaluating PropertyExpression instances
- */
-class ExpressionDelegate extends AbstractDelegate {
-    ExpressionDelegate(RequestContext context) {
-        super(context)
-    }
-}
