@@ -512,19 +512,30 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
      * @param pluginVersion the version of the plugin
      */
     void registerPluginWithMetadata(String pluginName, pluginVersion) {
-        IvyDependencyManager dependencyManager = settings.getDependencyManager()
+        if (alreadyRegisteredInMetadata(pluginName) || notDefinedInBuildConfig(pluginName)) {
+            addToMetadata(pluginName, pluginVersion)
+        }
+    }
 
-        // only register in metadata if not specified in BuildConfig.groovy
-        if (dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)) {
-            metadata['plugins.' + pluginName] = pluginVersion
-            metadata.persist()
+    private boolean alreadyRegisteredInMetadata(String pluginName) {
+        IvyDependencyManager dependencyManager = settings.getDependencyManager()
+        return dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)
+    }
+
+    private boolean notDefinedInBuildConfig(String pluginName) {
+        IvyDependencyManager dependencyManager = settings.getDependencyManager()
+        def descriptors = dependencyManager.pluginDependencyDescriptors.findAll {EnhancedDefaultDependencyDescriptor desc ->
+            def nonTransitive = !desc.plugin
+            def exported = desc.exportedToApplication
+            nonTransitive || exported
         }
-        else {
-            if (!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
-                metadata['plugins.' + pluginName] = pluginVersion
-                metadata.persist()
-            }
-        }
+        def defined = descriptors*.dependencyId*.name.contains(pluginName)
+        return !defined
+    }
+
+    private def addToMetadata(pluginName, pluginVersion) {
+        metadata['plugins.' + pluginName] = pluginVersion
+        metadata.persist()
     }
 
     private void runPluginScript(File scriptFile, fullPluginName, msg) {
