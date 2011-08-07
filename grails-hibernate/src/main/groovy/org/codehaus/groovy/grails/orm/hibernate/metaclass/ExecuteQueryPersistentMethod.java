@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,11 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.FlushMode;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
@@ -52,6 +53,19 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
     public static SimpleTypeConverter converter = new SimpleTypeConverter();
     private static final String METHOD_SIGNATURE = "executeQuery";
     private static final Pattern METHOD_PATTERN = Pattern.compile("^executeQuery$");
+    
+    @SuppressWarnings("serial")
+    private static final List<String> QUERY_META_PARAMS = Collections.unmodifiableList(
+            new ArrayList<String>() {{
+                add(GrailsHibernateUtil.ARGUMENT_MAX);
+                add(GrailsHibernateUtil.ARGUMENT_OFFSET);
+                add(GrailsHibernateUtil.ARGUMENT_CACHE);
+                add(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE);
+                add(GrailsHibernateUtil.ARGUMENT_TIMEOUT);
+                add(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE);
+                add(GrailsHibernateUtil.ARGUMENT_READ_ONLY);
+            }}
+    );
 
     public ExecuteQueryPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
         super(sessionFactory, classLoader, METHOD_PATTERN);
@@ -77,31 +91,32 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                     q.setMaxResults(maxParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_OFFSET)) {
-                    Integer offsetParam = converter.convertIfNecessary(queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_OFFSET), Integer.class);
+                    Integer offsetParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_OFFSET), Integer.class);
                     q.setFirstResult(offsetParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) {
-                    q.setCacheable(((Boolean)queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_CACHE)).booleanValue());
+                    q.setCacheable(((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_CACHE)).booleanValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE)) {
-                    Integer fetchSizeParam = converter.convertIfNecessary(queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE), Integer.class);
+                    Integer fetchSizeParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE), Integer.class);
                     q.setFetchSize(fetchSizeParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_TIMEOUT)) {
-                    Integer timeoutParam = converter.convertIfNecessary(queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_TIMEOUT), Integer.class);
+                    Integer timeoutParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_TIMEOUT), Integer.class);
                     q.setFetchSize(timeoutParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) {
-                    q.setReadOnly(((Boolean) queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_READ_ONLY)).booleanValue());
+                    q.setReadOnly(((Boolean) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_READ_ONLY)).booleanValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE)) {
-                    q.setFlushMode((FlushMode) queryMetaParams.remove(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
+                    q.setFlushMode((FlushMode) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
                 }
                 // process positional HQL params
                 int index = 0;
                 for (Object parameter : positionalParams) {
                     q.setParameter(index++, parameter instanceof CharSequence ? parameter.toString() : parameter);
                 }
+                
                 // process named HQL params
                 for (Object o : namedParams.entrySet()) {
                     Map.Entry entry = (Map.Entry) o;
@@ -109,21 +124,23 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                         throw new GrailsQueryException("Named parameter's name must be of type String");
                     }
                     String parameterName = (String) entry.getKey();
-                    Object parameterValue = entry.getValue();
-                    if (parameterValue == null) {
-                        throw new IllegalArgumentException("Named parameter [" + entry.getKey() + "] value may not be null");
-                    }
-                    if (Collection.class.isAssignableFrom(parameterValue.getClass())) {
-                        q.setParameterList(parameterName, (Collection) parameterValue);
-                    }
-                    else if (parameterValue.getClass().isArray()) {
-                        q.setParameterList(parameterName, (Object[]) parameterValue);
-                    }
-                    else if (parameterValue instanceof CharSequence) {
-                        q.setParameter(parameterName, parameterValue.toString());
-                    }
-                    else {
-                        q.setParameter(parameterName, parameterValue);
+                    if(!QUERY_META_PARAMS.contains(parameterName)) {
+                        Object parameterValue = entry.getValue();
+                        if (parameterValue == null) {
+                            throw new IllegalArgumentException("Named parameter [" + entry.getKey() + "] value may not be null");
+                        }
+                        if (Collection.class.isAssignableFrom(parameterValue.getClass())) {
+                            q.setParameterList(parameterName, (Collection) parameterValue);
+                        }
+                        else if (parameterValue.getClass().isArray()) {
+                            q.setParameterList(parameterName, (Object[]) parameterValue);
+                        }
+                        else if (parameterValue instanceof CharSequence) {
+                            q.setParameter(parameterName, parameterValue.toString());
+                        }
+                        else {
+                            q.setParameter(parameterName, parameterValue);
+                        }
                     }
                 }
                 return q.list();
@@ -149,13 +166,11 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         else if (arguments.length == 3) metaParamsIndex = 2;
         if (metaParamsIndex > 0) {
             Map sourceMap = (Map) arguments[metaParamsIndex];
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) result.put(GrailsHibernateUtil.ARGUMENT_MAX, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_MAX));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_OFFSET)) result.put(GrailsHibernateUtil.ARGUMENT_OFFSET, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_OFFSET));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) result.put(GrailsHibernateUtil.ARGUMENT_CACHE, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_CACHE));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE)) result.put(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_TIMEOUT)) result.put(GrailsHibernateUtil.ARGUMENT_TIMEOUT, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_TIMEOUT));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE)) result.put(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE));
-            if (sourceMap.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) result.put(GrailsHibernateUtil.ARGUMENT_READ_ONLY, sourceMap.remove(GrailsHibernateUtil.ARGUMENT_READ_ONLY));
+            for(String queryMetaParam : QUERY_META_PARAMS) {
+                if (sourceMap.containsKey(queryMetaParam)) {
+                    result.put(queryMetaParam, sourceMap.get(queryMetaParam));
+                }
+            }
         }
         return result;
     }
