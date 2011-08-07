@@ -264,13 +264,16 @@ public class GrailsASTUtils {
         if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
             declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
         }
-        MethodNode methodNode = new MethodNode(declaredMethodName,
+        MethodNode methodNode = classNode.getMethod(declaredMethodName, parameterTypes);
+        if(methodNode == null || !classNode.equals(methodNode.getDeclaringClass())) {
+            methodNode = new MethodNode(declaredMethodName,
                 Modifier.PUBLIC | Modifier.STATIC,
                 returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
-        methodNode.addAnnotations(delegateMethod.getAnnotations());
+            methodNode.addAnnotations(delegateMethod.getAnnotations());
 
-        classNode.addMethod(methodNode);
+            classNode.addMethod(methodNode);
+        }
         return methodNode;
     }
 

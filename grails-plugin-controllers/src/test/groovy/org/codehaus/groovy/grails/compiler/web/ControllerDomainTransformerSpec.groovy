@@ -63,6 +63,20 @@ class ControllerDomainTransformerSpec extends Specification{
         then:
             test.age == 10
     }
+    
+    void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
+          when:
+              def cls = classLoader.parseClass('''
+@grails.persistence.Entity
+class TestEntity {
+    Long id
+}
+  ''')
+
+          then:
+             cls
+    }
+
 
     Class getTestClass() {
         def cls = classLoader.parseClass('''
