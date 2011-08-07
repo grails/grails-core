@@ -264,8 +264,8 @@ public class GrailsASTUtils {
         if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
             declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
         }
-        MethodNode methodNode = classNode.getMethod(declaredMethodName, parameterTypes);
-        if(methodNode == null || !classNode.equals(methodNode.getDeclaringClass())) {
+        MethodNode methodNode = classNode.getDeclaredMethod(declaredMethodName, parameterTypes);
+        if(methodNode == null) {
             methodNode = new MethodNode(declaredMethodName,
                 Modifier.PUBLIC | Modifier.STATIC,
                 returnType, copyParameters(parameterTypes),
