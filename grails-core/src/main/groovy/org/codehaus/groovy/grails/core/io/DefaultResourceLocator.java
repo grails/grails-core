@@ -138,6 +138,12 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                 resource = findResourceInBinaryPlugins(info);
             }
 
+            if(resource == null || !resource.exists()) {
+                Resource tmp = defaultResourceLoader != null ? defaultResourceLoader.getResource(uri) : null;
+                if(tmp != null && tmp.exists())
+                    resource = tmp;
+            }
+
             if (resource != null) {
                 uriToResourceCache.put(uri, resource);
             }
@@ -226,9 +232,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     }
 
     public void setResourceLoader(ResourceLoader resourceLoader) {
-        if (Environment.isWarDeployed()) {
-            this.defaultResourceLoader = resourceLoader;
-        }
+        this.defaultResourceLoader = resourceLoader;
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {

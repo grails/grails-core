@@ -127,7 +127,10 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
             public void onNew(File file) {
                 LOG.info("File [" + file + "] added. Applying changes to application.");
-                sleep(5000);
+                if (!file.getName().toLowerCase().endsWith(".properties")) {
+                	// only sleep for source files, not i18n files
+                    sleep(5000);
+                }
                 compileIfSource(file);
                 informPluginManager(file, true);
             }

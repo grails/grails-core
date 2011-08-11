@@ -137,7 +137,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             throw new UnknownControllerException("No controller found for URI [" + uri + "]!");
         }
 
-        String actionName = controllerClass.getClosurePropertyName(uri);
+        String actionName = controllerClass.getMethodActionName(uri);
         grailsWebRequest.setActionName(actionName);
 
         if (LOG.isDebugEnabled()) {

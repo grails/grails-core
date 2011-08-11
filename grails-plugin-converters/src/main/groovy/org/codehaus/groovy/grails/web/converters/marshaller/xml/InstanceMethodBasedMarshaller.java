@@ -39,7 +39,7 @@ public class InstanceMethodBasedMarshaller implements ObjectMarshaller<XML> {
         MetaMethod method = getToXMLMethod(object);
         try {
             Object result = method.invoke(object, new Object[]{ converter });
-            if (result != null && !(result instanceof JSON) && !(result instanceof JSONWriter)) {
+            if (result != null && !(result instanceof XML)) {
                 converter.convertAnother(result);
             }
         }

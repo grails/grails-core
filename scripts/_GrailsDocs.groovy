@@ -50,7 +50,11 @@ target(docs: "Produces documentation for a Grails project") {
     if (argsMap.init) {
         ant.mkdir(dir:"${basedir}/src/docs/guide")
         ant.mkdir(dir:"${basedir}/src/docs/ref/Items")
-        new File("${basedir}/src/docs/guide/1. Introduction.gdoc").write '''
+        new File("${basedir}/src/docs/guide/toc.yml").write '''\
+introduction: Introduction
+'''
+
+        new File("${basedir}/src/docs/guide/introduction.gdoc").write '''\
 This is an example documentation template. The syntax format is similar to "Textile":http://textile.thresholdstate.com/.
 
 You can apply formatting such as *bold*, _italic_ and @code@. Bullets are possible too:
@@ -63,10 +67,10 @@ As well as numbered lists:
 # Number 1
 # Number 2
 
-The documentation also handles links to [guide items|guide:1. Introduction] as well as [reference|items]
-        '''
+The documentation also handles links to [guide items|guide:introduction] as well as [reference|items]
+'''
 
-        new File("${basedir}/src/docs/ref/Items/reference.gdoc").write '''
+        new File("${basedir}/src/docs/ref/Items/reference.gdoc").write '''\
 h1. example
 
 h2. Purpose
@@ -84,7 +88,7 @@ def example = new Example()
 h2. Description
 
 And provide a detailed description
-        '''
+'''
 
         grailsConsole.updateStatus "Example documentation created in ${basedir}/src/docs. Use 'grails doc' to publish."
     }
@@ -246,7 +250,6 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         publisher.copyright = ""
         publisher.footer = ""
         publisher.engineProperties = config?.grails?.doc
-        println ">> ${config.grails.doc}"
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)

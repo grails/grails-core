@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.util.Stack;
 
 import jline.ConsoleReader;
@@ -126,16 +127,21 @@ public class GrailsConsole {
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(new PrintStream(AnsiConsole.wrapOutputStream(System.err))));
 
+        reader = new ConsoleReader();
+        reader.setBellEnabled(false);
+        reader.setCompletionHandler(new CandidateListCompletionHandler());
+
         if (isWindows()) {
-           terminal = new WindowsTerminal() {
-               @Override
-               public boolean isANSISupported() {
-                   return true;
-               }
+            terminal = new WindowsTerminal() {
+                @Override
+                public boolean isANSISupported() {
+                    return true;
+                }
             };
             try {
                 terminal.initializeTerminal();
                 terminal.enableEcho();
+                fixCtrlC();
             } catch (Exception e) {
                 terminal = new UnsupportedTerminal();
             }
@@ -144,13 +150,25 @@ public class GrailsConsole {
             terminal = Terminal.setupTerminal();
         }
 
-        reader = new ConsoleReader();
-        reader.setBellEnabled(false);
-        reader.setCompletionHandler(new CandidateListCompletionHandler());
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
         out.println();
+    }
+
+    // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
+    private void fixCtrlC() throws IOException {
+        try {
+            Field f = ConsoleReader.class.getDeclaredField("keybindings");
+            f.setAccessible(true);
+            short[] keybindings = (short[])f.get(reader);
+            if (keybindings[3] == -48) {
+                keybindings[3] = 3;
+            }
+        }
+        catch (Exception ignored) {
+            // shouldn't happen
+        }
     }
 
     private boolean isWindows() {
@@ -236,7 +254,7 @@ public class GrailsConsole {
     }
 
     /**
-     * Indicates progresss with the default progress indicator
+     * Indicates progress with the default progress indicator
      */
     public void indicateProgress() {
         progressIndicatorActive = true;
@@ -269,7 +287,7 @@ public class GrailsConsole {
     }
 
     /**
-     * Indicates progress as a precentage for the given number and total
+     * Indicates progress as a percentage for the given number and total
      *
      * @param number The number
      * @param total  The total

@@ -15,23 +15,23 @@
  */
 package org.codehaus.groovy.grails.scaffolding
 
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettingsHolder
 import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
+
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.cli.CommandLineHelper
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.springframework.context.ResourceLoaderAware
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.Assert
-import org.codehaus.groovy.grails.plugins.PluginManagerAware
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import grails.build.logging.GrailsConsole
 
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
@@ -57,7 +57,6 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
      */
     DefaultGrailsTemplateGenerator(ClassLoader classLoader) {
         engine = new SimpleTemplateEngine(classLoader)
-
     }
 
     /**

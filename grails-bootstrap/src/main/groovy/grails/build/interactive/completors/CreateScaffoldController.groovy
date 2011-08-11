@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.async
+package grails.build.interactive.completors
 
-import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.cli.interactive.completors.ClassNameCompletor
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
+import org.springframework.core.io.Resource
 
 /**
- * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
- * by the compile time transform.
- *
- * @author Graeme Rocher
- * @since 2.0
+ * A completor for the create-scaffold-controller command
  */
-class ControllersAsyncGrailsPlugin {
-    def version = GrailsUtil.getGrailsVersion()
+class CreateScaffoldController extends ClassNameCompletor {
+    @Override
+    String getCommandName() { "create-scaffold-controller" }
+
+    @Override
+    boolean shouldInclude(Resource res) {
+        GrailsResourceUtils.isDomainClass(res.getURL())
+    }
+
+
 }

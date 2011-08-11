@@ -50,6 +50,62 @@ class PageRendererSpec extends Specification {
             contents == "Hello John"
     }
 
+    void "Test render page with embedded JavaScript function call"() {
+        given:
+            resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""
+            <h1>\${person}</h1>
+            <script type="text/javascript">
+            alert("\${person}");
+            </script>
+            """.bytes))
+        when:
+            def contents = pageRenderer.render(template:"/foo/bar", model:[person:"John"])
+        then:
+            contents != null
+            contents == """
+            <h1>John</h1>
+            <script type="text/javascript">
+            alert("John");
+            </script>
+            """
+    }
+
+	void "Test render page with curly braces in parens"() {
+        given:
+            resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource('''
+                <g:each var="formatter" in="${formatters}">
+                  <h2>${formatter.object} (${formatter.options})</h2>
+                </g:each>'''.bytes))
+        when:
+            def contents = pageRenderer.render(template:"/foo/bar", model:[formatters:[[object: 'obj1', options: 'opt1'], [object: 'obj2', options: 'opt2']]])
+        then:
+        
+        println "C: $contents"
+            contents != null
+			
+            contents == '''
+                
+                  <h2>obj1 (opt1)</h2>
+                
+                  <h2>obj2 (opt2)</h2>
+                '''
+	}
+	
+    void "Test render page with brackets in HTML"() {
+        given:
+            resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""
+				{<% if(something) { %> \${message} ({[<% } %>)
+            """.bytes))
+        when:
+            def contents = pageRenderer.render(template:"/foo/bar", model:[something:true,message:"hello, world"])
+        then:
+            contents != null
+			
+            contents == """
+				{ hello, world ({[)
+            """
+    }
+
     private PageRenderer getPageRenderer() {
         GroovyPagesTemplateEngine te = new GroovyPagesTemplateEngine()
 

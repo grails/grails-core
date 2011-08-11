@@ -197,7 +197,11 @@
                 cp.attributes.each { k, v ->
                     sb << "${k}=\"${v}\" "
                 }
-                sb << "precision=\"${precision}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
+                if (!cp.attributes.precision){
+                    sb << "precision=\"${precision}\" "
+                }
+                sb << " value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
+
                 return sb.toString()
             }
         }
@@ -235,6 +239,11 @@
 	}
 
 	private boolean isOptional() {
-		cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	    if(!cp) {
+	        return false
+	    }
+	    else {
+	        cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	    }
 	}
 %>

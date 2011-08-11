@@ -37,6 +37,7 @@ target
 /grails-crud/bin/
 /grails-docs/bin/
 /grails-hibernate/bin/
+/grails-plugin-async/bin/
 /grails-plugin-codecs/bin/
 /grails-plugin-controllers/bin/
 /grails-plugin-converters/bin/

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import org.springframework.core.io.FileSystemResource
 import grails.util.GrailsNameUtils
+
+import org.springframework.core.io.FileSystemResource
 
 /**
  * Gant script for creating Grails artifacts of all sorts.
@@ -115,8 +116,6 @@ createArtifact = { Map args = [:] ->
 
     event("CreatedFile", [artifactFile])
     event("CreatedArtefact", [ artifactFile, className])
-
-
 }
 
 private createRootPackage() {

@@ -21,11 +21,6 @@ import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-
-import java.security.AccessControlException;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -38,6 +33,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
+import java.security.AccessControlException;
 
 /**
  * @author graemerocher
@@ -106,11 +104,12 @@ public class GrailsContextLoader extends ContextLoader {
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         }
         catch (Throwable e) {
-            if (Environment.isDevelopmentMode()) {
+            if (Environment.isDevelopmentMode() && !Environment.isWarDeployed()) {
                 LOG.error("Error executing bootstraps: " + e.getMessage(), e);
                 // bail out early in order to show appropriate error
-                System.exit(1);
-                return null;
+                if(System.getProperty("grails.disable.exit") == null) {
+                    System.exit(1);
+                }
             }
 
             if (e instanceof BeansException) throw (BeansException)e;

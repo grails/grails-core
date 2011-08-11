@@ -656,7 +656,10 @@ public final class GrailsDomainBinder {
                         typeName = type.getName();
                     }
                 }
-                if (typeName == null) throw new MappingException("Type ["+typeName+"] is not a basic type or a domain class and cannot be mapped. Either specify a type within the [mapping] block or use a basic type (String, Integer etc.)");
+                if (typeName == null) {
+                    String domainName = property.getDomainClass().getName();
+                    throw new MappingException("Missing type or column for column["+columnName+"] on domain["+domainName+"] referencing["+className+"]");
+                }
 
                 bindSimpleValue(typeName, element,true, columnName, mappings);
                 if (hasJoinColumnMapping) {

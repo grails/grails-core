@@ -16,14 +16,15 @@
 package org.codehaus.groovy.grails.plugins.web.async.api
 
 import javax.servlet.AsyncContext
+import javax.servlet.http.HttpServletRequest
+
+import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
-import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
 
 /**
- * Support API for async request processing
+ * Support API for async request processing.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -35,8 +36,7 @@ class ControllersAsyncApi {
      *
      * @return
      */
-
-    public AsyncContext startAsync(instance) {
+    AsyncContext startAsync(instance) {
         GrailsWebRequest webRequest = RequestContextHolder.currentRequestAttributes()
         HttpServletRequest request = webRequest.currentRequest
         def ctx = request.startAsync(request, webRequest.currentResponse)

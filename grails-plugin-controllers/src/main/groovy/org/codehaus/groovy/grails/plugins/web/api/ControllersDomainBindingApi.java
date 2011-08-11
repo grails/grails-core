@@ -15,17 +15,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import java.util.Map;
-
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindingResult;
+
+import java.util.Map;
 
 /**
  * Enhancements made to domain classes to for data binding.
@@ -95,7 +92,11 @@ public class ControllersDomainBindingApi {
         if (domainClass == null) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
             if (webRequest != null) {
-                GrailsApplication grailsApplication = webRequest.getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+                ApplicationContext applicationContext = webRequest.getApplicationContext();
+
+                GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
+                                                        applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) :
+                                                            null;
                 if (grailsApplication != null) {
                     domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
                 }
