@@ -275,7 +275,12 @@ class FormTagLib {
      */
     Closure form = { attrs, body ->
 
-        def useToken = attrs.remove('useToken')
+        def useToken = false
+        if(attrs.containsKey('useToken')) {
+            useToken = attrs.boolean('useToken')
+            attrs.remove('useToken')
+        }
+
         def writer = getOut()
 
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
