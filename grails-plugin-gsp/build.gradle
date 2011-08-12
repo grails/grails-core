@@ -15,7 +15,7 @@ sourceSets {
         resources.srcDirs = []
     }
     test {
-        compileClasspath = files(configurations.compile, ast.classes, configurations.testCompile)
+        compileClasspath = files(ast.classes, configurations.testCompile)
         runtimeClasspath = files(ast.classes, configurations.testCompile, test.classes)
     }
 }
