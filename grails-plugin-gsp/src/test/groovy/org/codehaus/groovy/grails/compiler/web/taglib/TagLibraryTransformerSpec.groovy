@@ -34,11 +34,8 @@ class TagLibraryTransformerSpec extends Specification {
         ''')
     }
 
-    void 'Test tag method creation'() {
+    void 'Test tag methods are created for properties which are tags'() {
         expect:
-           numberOfMethods == myTagLibClass.methods.findAll { methodName == it.name }.size()
-
-         where:
              /*
               * Tag methods are overloaded with these argument combinations:
               *    tagName()
@@ -47,12 +44,17 @@ class TagLibraryTransformerSpec extends Specification {
               *    tagName(Map, Closure)
               *    tagName(Map, CharSequence)
               */
-             numberOfMethods | methodName
-             5 | 'closureTagWithNoExplicitArgs'
-             5 | 'closureTagWithOneArg'
-             5 | 'closureTagWithOneArg'
-             5 | 'closureTagWithTwoArgs'
-             0 | 'closureTagWithThreeArgs'
-             0 | 'closureTagWithFourArgs'
+           5 == myTagLibClass.methods.findAll { methodName == it.name }.size()
+
+         where:
+             methodName << ['closureTagWithNoExplicitArgs', 'closureTagWithOneArg', 'closureTagWithTwoArgs']
+    }
+
+    void 'Test tag methods are not created for properties which are not tags'() {
+        expect:
+           0 == myTagLibClass.methods.findAll { methodName == it.name }.size()
+
+         where:
+             methodName << ['closureTagWithThreeArgs', 'closureTagWithFourArgs']
     }
 }
