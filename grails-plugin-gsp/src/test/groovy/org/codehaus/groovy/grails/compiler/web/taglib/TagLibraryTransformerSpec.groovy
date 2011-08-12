@@ -29,7 +29,7 @@ class TagLibraryTransformerSpec extends Specification {
             def closureTagWithOneArg = { attrs -> }
             def closureTagWithTwoArgs = { attrs, body -> }
             def closureTagWithThreeArgs = { attrs, body, extra -> }
-            def closureTagWithFourArgs = { attrs, body, extra, anotherExtr -> }
+            def closureTagWithFourArgs = { attrs, body, extra, anotherExtra -> }
         }
         ''')
     }
