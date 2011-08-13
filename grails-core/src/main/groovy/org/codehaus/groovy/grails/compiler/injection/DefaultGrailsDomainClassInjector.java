@@ -158,14 +158,33 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             MapExpression me = (MapExpression) e;
             for (MapEntryExpression mee : me.getMapEntryExpressions()) {
                 String key = mee.getKeyExpression().getText();
-                addAssociationForKey(key, properties, classNode);
+                addAssociationForKey(key, properties, classNode, findPropertyType(mee.getKeyExpression()));
             }
         }
         return properties;
     }
 
-    private void addAssociationForKey(String key, List<PropertyNode> properties, ClassNode classNode) {
-        properties.add(new PropertyNode(key, Modifier.PUBLIC, new ClassNode(Set.class), classNode, null, null, null));
+    /**
+     * Finds the type of the generated property.  The type will be a {@link Set} that is parameterized
+     * by the type of the expression passed in.
+     * @param expression the expression used to parameterize the {@link Set}.  Only used if a {@link ClassExpression}.  Otherwise ignored.
+     * @return A {@link ClassNode} of type {@link Set} that is possibly parameterized by the expression that is passed in.
+     */
+    private ClassNode findPropertyType(Expression expression) {
+        ClassNode set = new ClassNode(Set.class);
+        if (expression instanceof ClassExpression) {
+            ClassNode newSet = ClassHelper.makeWithoutCaching(set.getName());
+            newSet.setRedirect(set);
+            GenericsType[] genericsTypes = new GenericsType[1];
+            genericsTypes[0] = new GenericsType(expression.getType());
+            newSet.setGenericsTypes(genericsTypes);
+            set = newSet;
+        }
+        return set;
+    }
+
+    private void addAssociationForKey(String key, List<PropertyNode> properties, ClassNode declaringType, ClassNode propertyType) {
+        properties.add(new PropertyNode(key, Modifier.PUBLIC, propertyType, declaringType, null, null, null));
     }
 
     private void injectToStringMethod(ClassNode classNode) {
