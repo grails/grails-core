@@ -480,4 +480,26 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 		webRequest.params.someparam = '2'
 		assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 2'
 	}
+	
+	void testGspContentTypeSetting() {
+		RenderTagLib.TEMPLATE_CACHE.clear()
+		def resourceLoader = new MockStringResourceLoader()
+		resourceLoader.registerMockResource('/_test.gsp', 'hello')
+		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+
+		def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
+		assertEquals g.render(template:'/test'), 'hello'
+
+		def template = '<%@ page contentType="my/contenttype" %>hello world'
+		assertOutputEquals 'hello world', template
+		
+		assertEquals 'my/contenttype', response.getContentType()		
+	}
+
+	void testGspContentTypeSetting2() {
+		assertEquals null, response.getContentType()
+		def template = '<%@ page contentType="my/contenttype" %>hello world'
+		assertOutputEquals 'hello world', template
+		assertEquals 'my/contenttype', response.getContentType()
+	}
 }

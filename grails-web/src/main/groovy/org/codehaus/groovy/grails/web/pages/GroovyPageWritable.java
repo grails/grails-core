@@ -54,13 +54,15 @@ class GroovyPageWritable implements Writable {
     private boolean debugTemplates;
     private AtomicInteger debugTemplatesIdCounter;
     private GrailsWebRequest webRequest;
+    private boolean allowSettingContentType;
 
     @SuppressWarnings("rawtypes")
     private Map additionalBinding = new HashMap();
     private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
 
-    public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
+    public GroovyPageWritable(GroovyPageMetaInfo metaInfo, boolean allowSettingContentType) {
         this.metaInfo = metaInfo;
+        this.allowSettingContentType = allowSettingContentType;
         webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
         if (webRequest != null) {
             request = webRequest.getCurrentRequest();
@@ -133,7 +135,6 @@ class GroovyPageWritable implements Writable {
             boolean newParentCreated = false;
             
             if (hasRequest) {
-
                 boolean isIncludeRequest = WebUtils.isIncludeRequest(request);
                 if(!isIncludeRequest) {
                     parentBinding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
@@ -144,18 +145,20 @@ class GroovyPageWritable implements Writable {
                     	parentBinding.setRoot(true);
                     	newParentCreated = true;
                     }
-
-                    // only try to set content type when evaluating top level GSP
-                    boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
-                    if (!contentTypeAlreadySet) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
-                        }
-                        response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
-                    }
                 }
             }
 
+            if(allowSettingContentType && response != null) {
+	            // only try to set content type when evaluating top level GSP
+	            boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+	            if (!contentTypeAlreadySet) {
+	                if (LOG.isDebugEnabled()) {
+	                    LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+	                }
+	                response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+	            }
+            }
+            
             GroovyPageBinding binding = createBinding(parentBinding);
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);

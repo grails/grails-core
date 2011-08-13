@@ -123,6 +123,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return
         }
 
+		def oldRequestAttributes = RequestContextHolder.getRequestAttributes()
         try {
             def webRequest = new GrailsWebRequest(new PageRenderRequest(source.URI),
                   new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
@@ -139,7 +140,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
                 template.make(args.model ?: [:]).writeTo(writer)
             }
         } finally {
-            RequestContextHolder.setRequestAttributes(null)
+            RequestContextHolder.setRequestAttributes(oldRequestAttributes)
         }
     }
 
