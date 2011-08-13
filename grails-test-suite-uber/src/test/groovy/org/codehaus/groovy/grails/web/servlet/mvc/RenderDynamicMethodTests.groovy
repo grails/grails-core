@@ -57,6 +57,12 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals "<foo>bar</foo>", response.contentAsString
     }
 
+	void testRenderTextWithContentTypeAndCharset() {
+		testCtrl.renderTextWithContentTypeAndCharset()
+		assertEquals "text/xml;charset=utf-16", response.contentType
+		assertEquals "<foo>bar</foo>", response.contentAsString
+	}
+	
     void testRenderXml() {
         testCtrl.renderXml()
         assertEquals "text/xml;charset=utf-8", response.contentType
@@ -105,6 +111,10 @@ class RenderDynamicMethodTestController {
         render(text:"<foo>bar</foo>",contentType:"text/xml", encoding:"utf-16")
     }
 
+	def renderTextWithContentTypeAndCharset = {
+		render(text:"<foo>bar</foo>",contentType:"text/xml;charset=utf-16")
+	}
+	
     def renderXml = {
         render(contentType:"text/xml") {
             foo {

@@ -19,6 +19,7 @@ import groovy.util.ConfigObject;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +48,7 @@ public class GrailsWebUtil {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
     private static final String CHARSET_ATTRIBUTE = ";charset=";
+    private static final Pattern CHARSET_IN_CONTENT_TYPE_REGEXP = Pattern.compile(";\\s*charset\\s*=", Pattern.CASE_INSENSITIVE);
 
     /**
      * Looks up a GrailsApplication instance from the ServletContext.
@@ -178,7 +180,11 @@ public class GrailsWebUtil {
     }
 
     public static String getContentType(String name, String encoding) {
-        if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
-        return name + CHARSET_ATTRIBUTE + encoding;
+    	if(CHARSET_IN_CONTENT_TYPE_REGEXP.matcher(name).find()) {
+    		return name;
+    	} else {
+    		if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
+    		return name + CHARSET_ATTRIBUTE + encoding;
+    	}
     }
 }
