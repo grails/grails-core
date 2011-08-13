@@ -26,12 +26,14 @@ test {
                 "**/*\$*.class",
                 "**/ContentFormatControllerTests.class",
                 "**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class"]
+                "**/AutoParams*MarshallingTests.class",
+                "**/JSONBindingToNullTests.class",
+                "**/ControllerWithXmlConvertersTests.class"]
 }
 
 task isolatedTestsOne(type:Test) {
     includes = [
-                "**/ContentFormatControllerTests.class",
+                "**/ContentFormatControllerTests.class"
                 ]
 }
 task isolatedTestsTwo(type:Test) {
@@ -39,5 +41,11 @@ task isolatedTestsTwo(type:Test) {
                 "**/JSONBindingTests.class",
                 "**/AutoParams*MarshallingTests.class"]
 }
+task isolatedTestsThree(type:Test) {
+    includes = [
+                "**/JSONBindingToNullTests.class",
+                "**/ControllerWithXmlConvertersTests.class"
+                ]
+}
 
-test.dependsOn isolatedTestsOne, isolatedTestsTwo
+test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree
