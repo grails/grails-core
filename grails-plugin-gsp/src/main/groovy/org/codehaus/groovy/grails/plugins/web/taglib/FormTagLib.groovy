@@ -201,7 +201,10 @@ class FormTagLib {
         }
 
         boolean escapeHtml = true
-        if (attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
+        if(attrs.containsKey('escapeHtml')) {
+            escapeHtml = attrs.boolean('escapeHtml')
+            attrs.remove 'escapeHtml'
+        }
 
         out << "<textarea "
         outputAttributes(attrs, getOut())
