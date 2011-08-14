@@ -116,10 +116,11 @@ class AssocTest {}
 
         def othersField = idTestClass.getDeclaredField('others')
         assertNotNull 'others field was null', othersField
-        
+
         def genericType = othersField.genericType
         assertNotNull 'genericType was null', genericType
-        
+        assertTrue 'genericType was not a ParameterizedType', genericType instanceof java.lang.reflect.ParameterizedType
+
         def typeArguments = genericType.actualTypeArguments
         assertEquals 'wrong number of type arguments', 1, typeArguments?.size()
         assertEquals 'type argument was of the wrong type', 'AssocTest', typeArguments[0].name
