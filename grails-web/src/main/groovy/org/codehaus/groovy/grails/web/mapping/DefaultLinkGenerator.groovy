@@ -113,7 +113,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
                 }
 
-                if (!attrs.boolean(ATTRIBUTE_ABSOLUTE)) {
+                if (!Boolean.parseBoolean(attrs.get(ATTRIBUTE_ABSOLUTE))) {
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()
