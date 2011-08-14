@@ -158,7 +158,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             MapExpression me = (MapExpression) e;
             for (MapEntryExpression mee : me.getMapEntryExpressions()) {
                 String key = mee.getKeyExpression().getText();
-                addAssociationForKey(key, properties, classNode, findPropertyType(mee.getKeyExpression()));
+                addAssociationForKey(key, properties, classNode, findPropertyType(mee.getValueExpression()));
             }
         }
         return properties;
@@ -171,16 +171,13 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
      * @return A {@link ClassNode} of type {@link Set} that is possibly parameterized by the expression that is passed in.
      */
     private ClassNode findPropertyType(Expression expression) {
-        ClassNode set = new ClassNode(Set.class);
+        ClassNode setNode = new ClassNode(Set.class);
         if (expression instanceof ClassExpression) {
-            ClassNode newSet = ClassHelper.makeWithoutCaching(set.getName());
-            newSet.setRedirect(set);
             GenericsType[] genericsTypes = new GenericsType[1];
             genericsTypes[0] = new GenericsType(expression.getType());
-            newSet.setGenericsTypes(genericsTypes);
-            set = newSet;
+            setNode.setGenericsTypes(genericsTypes);
         }
-        return set;
+        return setNode;
     }
 
     private void addAssociationForKey(String key, List<PropertyNode> properties, ClassNode declaringType, ClassNode propertyType) {
