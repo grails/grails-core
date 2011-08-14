@@ -105,6 +105,26 @@ class IdTest {}
         assertEquals 2, obj.version
     }
 
+    void testHasManyAssociationIsGenericized() {
+        def fs = File.separator
+        def idTestClass = gcl.parseClass('''
+class IdTest {
+    static hasMany = [others:AssocTest]
+}
+class AssocTest {}
+''', "myapp${fs}grails-app${fs}domain${fs}IdTest.groovy")
+
+        def othersField = idTestClass.getDeclaredField('others')
+        assertNotNull 'others field was null', othersField
+        
+        def genericType = othersField.genericType
+        assertNotNull 'genericType was null', genericType
+        
+        def typeArguments = genericType.actualTypeArguments
+        assertEquals 'wrong number of type arguments', 1, typeArguments?.size()
+        assertEquals 'type argument was of the wrong type', 'AssocTest', typeArguments[0].name
+    }
+
     void testInjectHasManyAssociation() {
         def fs = File.separator
         def clz = gcl.parseClass('''
