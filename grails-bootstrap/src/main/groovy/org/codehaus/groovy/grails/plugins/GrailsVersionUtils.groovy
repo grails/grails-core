@@ -73,8 +73,8 @@ class GrailsVersionUtils {
     }
 
     static boolean supportsAtLeastVersion(String pluginVersion, String requiredVersion) {
-        def lowerVersion = GrailsPluginUtils.getLowerVersion(pluginVersion)
-        lowerVersion != '*' && GrailsPluginUtils.isValidVersion(lowerVersion, "$requiredVersion > *")
+        def lowerVersion = getLowerVersion(pluginVersion)
+        lowerVersion != '*' && isValidVersion(lowerVersion, "$requiredVersion > *")
     }
 
     private static getPluginVersionInternal(String pluginVersion, index) {
