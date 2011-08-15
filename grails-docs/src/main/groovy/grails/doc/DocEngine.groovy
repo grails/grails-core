@@ -47,6 +47,8 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     static final SOURCE_FILE = "sourceFile"
     static final BASE_DIR = "base.dir"
     static final API_BASE_PATH = "apiBasePath"
+    static final API_CONTEXT_PATH = "apiContextPath"
+    static final RESOURCES_CONTEXT_PATH = "resourcesContextPath"
 
     static EXTERNAL_DOCS = [:]
     static ALIAS = [:]
@@ -205,6 +207,8 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
             }
             else {
                 def apiBase = initialContext.get(API_BASE_PATH)
+                contextPath = initialContext.get(API_CONTEXT_PATH)
+
                 def apiDir = [ "api", "gapi" ].find { dir -> new File("${apiBase}/${dir}/${link}").exists() }
                 buffer << "<a href=\"$contextPath/$apiDir/$link${anchor ? '#' + anchor : ''}\" class=\"api\">$view</a>"
             }
@@ -345,7 +349,7 @@ class ImageFilter extends RegexTokenFilter {
             buffer << "<img border=\"0\" class=\"center\" src=\"$img\"></img>"
         }
         else {
-            def path = context.renderContext.get("contextPath") ?: "."
+            def path = context.renderContext.get(DocEngine.RESOURCES_CONTEXT_PATH) ?: "."
             buffer << "<img border=\"0\" class=\"center\" src=\"$path/img/$img\"></img>"
         }
     }
