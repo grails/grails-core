@@ -44,8 +44,11 @@ class StreamCharTagLib {
             assertTrue result instanceof StreamCharBuffer
 
             assert StreamCharMe.findByName(result) : "should have found a result when passing a StreamCharBuffer value"
+            assert StreamCharMe.findByNameLike(result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.countByName(result) : "should have found a result when passing a StreamCharBuffer value"
+            assert StreamCharMe.countByNameLike(result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.findAllByName(result) : "should have found a result when passing a StreamCharBuffer value"
+            assert StreamCharMe.findAllByNameLike(result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.findWhere(name:result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.findAllWhere(name:result) : "should have found a result when passing a StreamCharBuffer value"
             assert StreamCharMe.withCriteria{ eq 'name',result } : "should have found a result when passing a StreamCharBuffer value"
