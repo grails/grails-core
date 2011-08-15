@@ -340,7 +340,7 @@ class CodeFilter extends RegexTokenFilter {
 
 class ImageFilter extends RegexTokenFilter {
     ImageFilter() {
-        super(/!([^\n]*?\.(jpg|png|gif))!/);
+        super(/!([^\n<>=]*?\.(jpg|png|gif))!/);
     }
 
     void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
