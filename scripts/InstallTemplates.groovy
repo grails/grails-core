@@ -42,6 +42,7 @@ target ('default': "Installs the artifact and scaffolding templates") {
 
     copyGrailsResources("$targetDir/artifacts", "src/grails/templates/artifacts/*", overwrite)
     copyGrailsResources("$targetDir/scaffolding", "src/grails/templates/scaffolding/*", overwrite)
+    copyGrailsResources("$targetDir/testing", "src/grails/templates/testing/*", overwrite)
     ant.mkdir(dir:"${targetDir}/war")
     copyGrailsResource("${targetDir}/war/web.xml", grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"), overwrite)
 
