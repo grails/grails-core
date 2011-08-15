@@ -363,7 +363,7 @@ public class HibernateQuery extends Query {
         public abstract org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion);
         
         protected Object convertStringValue(Object o) {
-            if(o instanceof StreamCharBuffer) {
+            if((!(o instanceof String)) && (o instanceof StreamCharBuffer || o instanceof CharSequence)) {
                 o = o.toString();
             }
             return o;
