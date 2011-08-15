@@ -353,7 +353,7 @@ public class HibernateQuery extends Query {
         public org.hibernate.criterion.Criterion toHibernateCriterion() {
             final CriterionAdaptor criterionAdaptor = criterionAdaptors.get(criterion.getClass());
             if (criterionAdaptor != null) {
-                criterionAdaptor.toHibernateCriterion(criterion);
+                return criterionAdaptor.toHibernateCriterion(criterion);
             }
             return null;
         }
