@@ -171,6 +171,9 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     void testParsingNestedCurlyBraces() {
+        // GRAILS-7915
+        if(notYetImplemented()) return 
+        
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
