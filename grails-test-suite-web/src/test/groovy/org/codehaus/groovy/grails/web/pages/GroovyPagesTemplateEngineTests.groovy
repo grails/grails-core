@@ -188,6 +188,40 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         w.writeTo(pw)
 
         assertEquals "[Peter, Phil]", sw.toString()
+
+        src = '''
+        <g:if env="production">
+        </g:if>
+
+        <script type="text/javascript">
+        try {
+        <g:if test="${title == 'Selling England By The Pound'}">
+        ${bandName}
+        </g:if>
+        } catch( err ) {}
+        </script>
+'''
+        gpte.createTemplate(src, "hello_test")
+        t = gpte.createTemplate(src, "hello_test")
+        w = t.make(bandName: 'Genesis', title: 'Selling England By The Pound')
+
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        def expected = '''
+        
+
+        <script type="text/javascript">
+        try {
+        
+        Genesis
+        
+        } catch( err ) {}
+        </script>
+'''
+        assertEquals expected, sw.toString()
     }
 
     void testParsingParensInNestedCurlyBraces() {

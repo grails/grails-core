@@ -133,7 +133,7 @@ class GroovyPageScanner implements Tokens {
                 else if (c == '"') str2 = false;
                 continue;
             }
-            else if (!levelTokens.empty() && (c == ')' || (c == '}' && (state != GEXPR || begin2 == 0)) || c == ']') && levelTokens.peek().equals(c)) {
+            else if (!levelTokens.empty() && (c == ')' || (c == '}' && ((state != GEXPR && state != GTAG_EXPR) || begin2 == 0)) || c == ']') && levelTokens.peek().equals(c)) {
                 levelTokens.pop();
                 continue;
             } else if (begin1 > 0 && (c == '{' || c == '(' || c == '[')) {
