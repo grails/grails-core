@@ -201,7 +201,10 @@ class FormTagLib {
         }
 
         boolean escapeHtml = true
-        if (attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
+        if(attrs.containsKey('escapeHtml')) {
+            escapeHtml = attrs.boolean('escapeHtml')
+            attrs.remove 'escapeHtml'
+        }
 
         out << "<textarea "
         outputAttributes(attrs, getOut())
@@ -275,7 +278,12 @@ class FormTagLib {
      */
     Closure form = { attrs, body ->
 
-        def useToken = attrs.remove('useToken')
+        def useToken = false
+        if(attrs.containsKey('useToken')) {
+            useToken = attrs.boolean('useToken')
+            attrs.remove('useToken')
+        }
+
         def writer = getOut()
 
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)

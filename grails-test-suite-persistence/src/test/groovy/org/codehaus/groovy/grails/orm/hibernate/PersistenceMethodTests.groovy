@@ -839,6 +839,27 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
             domainClass.executeQuery 'select distinct p from PersistentMethodTests as p where p.firstName = :firstName and p.lastName = :lastName', [firstName: null, lastName: 'King']
         }
         assertEquals 'Named parameter [firstName] value may not be null', msg
+        
+        // Test that executeQuery does not mutate List and Map arguments (GRAILS-7841)
+        paginateParams = [max: 1]
+        domainClass.executeQuery("select p from PersistentMethodTests as p", paginateParams)
+        assertEquals 1, paginateParams.max
+        
+        def positionalParams = ['wilma', 'flintstone']
+        domainClass.executeQuery("select p from PersistentMethodTests as p where p.firstName = ? and p.lastName = ?", positionalParams)
+        assertEquals (['wilma', 'flintstone'], positionalParams)
+        
+        domainClass.executeQuery("select p from PersistentMethodTests as p where p.firstName = ? and p.lastName = ?", positionalParams, paginateParams)
+        assertEquals (['wilma', 'flintstone'], positionalParams)
+        assertEquals 1, paginateParams.max
+        
+        def namedParams = [ln: 'flintstone', fn: 'fred']
+        domainClass.executeQuery("select p from PersistentMethodTests as p where p.firstName = :fn and p.lastName = :ln", namedParams)
+        assertEquals ([ln: 'flintstone', fn: 'fred'], namedParams)
+
+        domainClass.executeQuery("select p from PersistentMethodTests as p where p.firstName = :fn and p.lastName = :ln", namedParams, paginateParams)
+        assertEquals ([ln: 'flintstone', fn: 'fred'], namedParams)
+        assertEquals 1, paginateParams.max
     }
 
     void testDMLOperation() {

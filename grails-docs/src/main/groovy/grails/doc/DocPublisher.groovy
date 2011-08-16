@@ -41,6 +41,8 @@ class DocPublisher {
     File target
     /** The temporary work directory */
     File workDir
+    /** Directory containing the project's API documentation. */
+    File apiDir
     /** The directory containing any images to use (will override defaults) **/
     File images
     /** The directory containing any CSS to use (will override defaults) **/
@@ -51,6 +53,8 @@ class DocPublisher {
     File style
     /** The AntBuilder instance to use */
     AntBuilder ant
+    /** The language we're generating for (gets its own sub-directory). Defaults to '' */
+    String language = ""
     /** The encoding to use (default is UTF-8) */
     String encoding = "UTF-8"
     /** The title of the documentation */
@@ -114,6 +118,8 @@ class DocPublisher {
     }
 
     void publish() {
+        // Adds encodeAsUrlPath(), encodeAsUrlFragment() and encodeAsHtml()
+        // methods to String.
         use(StringEscapeCategory) {
             catPublish()
         }
@@ -130,8 +136,8 @@ class DocPublisher {
         ant.mkdir(dir: docResources)
         unpack(dest: docResources, src: "grails-doc-files.jar")
 
-        def refDocsDir = target?.absolutePath ?: "./docs"
-        def refGuideDir = "$refDocsDir/guide"
+        def refDocsDir = calculateLanguageDir(target?.absolutePath ?: "./docs")
+        def refGuideDir = new File(refDocsDir, "guide")
         def refPagesDir = "$refGuideDir/pages"
 
         ant.mkdir(dir: refDocsDir)
@@ -187,7 +193,7 @@ class DocPublisher {
         // The first strategy is used if the TOC file exists, otherwise we call
         // back to the old way of doing it, which means putting the section
         // numbers in the gdoc filenames.
-        def guideSrcDir = new File("${src}/guide")
+        def guideSrcDir = new File(src, "guide")
         def yamlTocFile = new File(guideSrcDir, TOC_FILENAME)
         def guide
         if (yamlTocFile.exists()) {
@@ -229,7 +235,7 @@ class DocPublisher {
 
         // Reference menu items.
         def sectionFilter = { it.directory && !it.name.startsWith('.') } as FileFilter
-        def files = new File("${src}/ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
+        def files = new File(src, "ref").listFiles(sectionFilter)?.toList()?.sort() ?: []
         def refCategories = files.collect { f ->
             new Expando(
                     name: f.name,
@@ -254,6 +260,7 @@ class DocPublisher {
             sponsorLogo: injectPath(sponsorLogo, pathToRoot),
             single: false,
             path: pathToRoot,
+            resourcesPath: calculatePathToResources(pathToRoot), 
             prev: null,
             next: null,
             legacyLinks: legacyLinks
@@ -275,7 +282,7 @@ class DocPublisher {
                 chapterVars['next'] = chapters[i + 1]
             }
             chapterVars.sectionNumber = (i + 1).toString()
-            writeChapter(chapter, template, sectionTemplate, guideSrcDir, refGuideDir, fullContents, chapterVars)
+            writeChapter(chapter, template, sectionTemplate, guideSrcDir, refGuideDir.path, fullContents, chapterVars)
         }
 
         files = new File("${src}/ref").listFiles()?.toList()?.sort() ?: []
@@ -286,6 +293,7 @@ class DocPublisher {
         vars.logo = injectPath(logo, pathToRoot)
         vars.sponsorLogo = injectPath(sponsorLogo, pathToRoot)
         vars.path = pathToRoot
+        vars.resourcesPath = calculatePathToResources(pathToRoot)
 
         for (f in files) {
             if (f.directory && !f.name.startsWith(".")) {
@@ -327,6 +335,7 @@ class DocPublisher {
         vars.logo = injectPath(logo, pathToRoot)
         vars.sponsorLogo = injectPath(sponsorLogo, pathToRoot)
         vars.path = pathToRoot
+        vars.resourcesPath = calculatePathToResources(pathToRoot)
 
         template = templateEngine.createTemplate(new File("${docResources}/style/layout.html").newReader(encoding))
         new File("${refGuideDir}/single.html").withWriter(encoding) {out ->
@@ -343,6 +352,7 @@ class DocPublisher {
         vars.logo = injectPath(logo, pathToRoot)
         vars.sponsorLogo = injectPath(sponsorLogo, pathToRoot)
         vars.path = pathToRoot
+        vars.resourcesPath = calculatePathToResources(pathToRoot)
 
         new File("${refDocsDir}/index.html").withWriter(encoding) {out ->
             template.make(vars).writeTo(out)
@@ -432,8 +442,15 @@ class DocPublisher {
     }
 
     protected void initialize() {
+        if (language) {
+            src = new File(src, language)
+        }
+
         if (!workDir) {
             workDir = new File(System.getProperty("java.io.tmpdir"))
+        }
+        if (!apiDir) {
+            apiDir = target
         }
         if (!ant) {
             ant = new AntBuilder()
@@ -450,9 +467,7 @@ class DocPublisher {
         }
 
         context = new BaseInitialRenderContext()
-        context.set(DocEngine.CONTEXT_PATH, "..")
-        context.set(DocEngine.BASE_DIR, src.absolutePath)
-        context.set(DocEngine.API_BASE_PATH, target.absolutePath)
+        initContext(context, "..")
 
         engine = new DocEngine(context)
         engine.engineProperties = engineProperties
@@ -522,13 +537,32 @@ class DocPublisher {
         return hasErrors
     }
 
+    private String calculateLanguageDir(startPath, endPath = '') {
+        def elements = [startPath, language, endPath]
+        elements = elements.findAll { it }
+        return elements.join('/')
+    }
+
     private String injectPath(String source, String path) {
         if (!source) return source
 
         def templateEngine = new groovy.text.SimpleTemplateEngine()
         def out = new StringWriter()
-        templateEngine.createTemplate(source).make(path: path).writeTo(out)
+        templateEngine.createTemplate(source).make(path: calculatePathToResources(path)).writeTo(out)
         return out.toString()
+    }
+
+    private String calculatePathToResources(String pathToRoot) {
+        return language ? '../' + pathToRoot : pathToRoot  
+    }
+
+    private initContext(context, path) {
+        context.set(DocEngine.CONTEXT_PATH, path)
+        context.set(DocEngine.BASE_DIR, src.absolutePath)
+        context.set(DocEngine.API_BASE_PATH, apiDir.absolutePath)
+        context.set(DocEngine.API_CONTEXT_PATH, calculatePathToResources(path))
+        context.set(DocEngine.RESOURCES_CONTEXT_PATH, calculatePathToResources(path))
+        return context
     }
 
     private unpack(Map args) {

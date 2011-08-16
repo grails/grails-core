@@ -16,19 +16,21 @@
 package org.codehaus.groovy.grails.orm.hibernate.query;
 
 import grails.orm.RlikeExpression;
-import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.grails.datastore.mapping.model.PersistentEntity;
-import org.grails.datastore.mapping.model.PersistentProperty;
-import org.grails.datastore.mapping.model.types.Association;
-import org.grails.datastore.mapping.query.Query;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.PersistentProperty;
+import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.query.Query;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 /**
  * Bridges the Query API with the Hibernate Criteria API
@@ -81,14 +83,14 @@ public class HibernateQuery extends Query {
             public org.hibernate.criterion.Criterion toHibernateCriterion(
                     Criterion criterion) {
                 Equals eq = (Equals) criterion;
-                return Restrictions.eq(eq.getProperty(), eq.getValue());
+                return Restrictions.eq(eq.getProperty(), convertStringValue(eq.getValue()));
             }
         });
         criterionAdaptors.put(Like.class, new CriterionAdaptor() {
             public org.hibernate.criterion.Criterion toHibernateCriterion(
                     Criterion criterion) {
                 Like eq = (Like) criterion;
-                return Restrictions.like(eq.getProperty(), eq.getValue());
+                return Restrictions.like(eq.getProperty(), convertStringValue(eq.getValue()));
             }
         });
         criterionAdaptors.put(RLike.class, new CriterionAdaptor() {
@@ -351,14 +353,21 @@ public class HibernateQuery extends Query {
         public org.hibernate.criterion.Criterion toHibernateCriterion() {
             final CriterionAdaptor criterionAdaptor = criterionAdaptors.get(criterion.getClass());
             if (criterionAdaptor != null) {
-                criterionAdaptor.toHibernateCriterion(criterion);
+                return criterionAdaptor.toHibernateCriterion(criterion);
             }
             return null;
         }
     }
 
-    private static interface CriterionAdaptor {
-        public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion);
+    private static abstract class CriterionAdaptor {
+        public abstract org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion);
+        
+        protected Object convertStringValue(Object o) {
+            if((!(o instanceof String)) && (o instanceof CharSequence)) {
+                o = o.toString();
+            }
+            return o;
+        }
     }
 
     private class HibernateJunction extends Junction {

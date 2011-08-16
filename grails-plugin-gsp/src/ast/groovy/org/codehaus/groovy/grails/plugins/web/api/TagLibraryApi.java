@@ -31,13 +31,14 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
+import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 /**
  * API for Tag libraries in a Grails application.
@@ -74,11 +75,12 @@ public class TagLibraryApi extends CommonWebApi {
      * @return  The page scope instance
      */
     public GroovyPageBinding getPageScope(@SuppressWarnings("unused") Object instance) {
-        RequestAttributes request = RequestContextHolder.currentRequestAttributes();
-        GroovyPageBinding binding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
+    	GrailsWebRequest webRequest = getWebRequest(instance);
+        GroovyPageBinding binding = (GroovyPageBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
         if (binding == null) {
-            binding = new GroovyPageBinding();
-            request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding, RequestAttributes.SCOPE_REQUEST);
+            binding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));
+            binding.setRoot(true);
+            webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding, RequestAttributes.SCOPE_REQUEST);
         }
         return binding;
     }

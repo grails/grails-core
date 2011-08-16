@@ -22,7 +22,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
-import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;

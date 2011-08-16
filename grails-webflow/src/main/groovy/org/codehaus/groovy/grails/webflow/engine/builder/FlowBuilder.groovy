@@ -26,7 +26,6 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.util.Assert
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.webflow.action.ExternalRedirectAction
 import org.springframework.webflow.action.ViewFactoryActionAdapter
 import org.springframework.webflow.core.collection.LocalAttributeMap
 import org.springframework.webflow.definition.registry.FlowDefinitionLocator
@@ -167,14 +166,8 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
                     Closure action = flowInfo.action
                     State state
                     if (flowInfo.redirectUrl) {
-                        if (flowInfo.redirectUrl instanceof RuntimeRedirectAction) {
-                            state = flowFactory.createEndState(name, getFlow(), null, flowInfo.redirectUrl,
-                                null, null, null)
-                        }
-                        else {
-                            String url = flowInfo.redirectUrl
-                            state = createRedirectEndState(name, url, flowFactory, flowInfo.entryAction)
-                        }
+                        state = flowFactory.createEndState(name, getFlow(), getActionArrayOrNull(flowInfo.entryAction),
+                                        flowInfo.redirectUrl, null, null, null)
                         state.attributes.put("commit", true)
                     }
                     else if (trans.length == 0 && flowInfo.subflow == null) {
@@ -318,11 +311,6 @@ class FlowBuilder extends AbstractFlowBuilder implements GroovyObject, Applicati
             null,
             getActionArrayOrNull(customExitAction),
             null)
-    }
-
-    protected State createRedirectEndState(String stateId, String url, FlowArtifactFactory flowFactory, Closure customEntryAction=null) {
-        return flowFactory.createEndState(stateId, getFlow(), getActionArrayOrNull(customEntryAction),
-              new ExternalRedirectAction(new StaticExpression(url)), null, null, null)
     }
 
     protected State createEndState(String stateId, String viewId, FlowArtifactFactory flowFactory, Mapper outputMapper=null, Closure customEntryAction=null) {
@@ -490,8 +478,8 @@ class FlowInfoCapturer {
     }
 
     void redirect(Map args) {
-        if (args.url) redirectUrl = "externalRedirect:${args.url}"
-        else if (args.uri) redirectUrl = "externalRedirect:${args.uri}"
+        if (args.url) redirectUrl = new UriRedirectAction(uri:args.url)
+        else if (args.uri) redirectUrl = new UriRedirectAction(uri:args.uri)
         else {
             if (args.controller || args.action) {
                 def urlMapper =  applicationContext?.getBean(UrlMappingsHolder.BEAN_ID)
