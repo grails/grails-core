@@ -81,7 +81,7 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
 
-    public String getArtefactType() {
-        return ControllerArtefactHandler.TYPE;
+    public String[] getArtefactTypes() {
+        return new String[]{ControllerArtefactHandler.TYPE};
     }
 }

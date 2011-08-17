@@ -83,7 +83,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
             if (classInjector instanceof GrailsArtefactClassInjector) {
                 GrailsArtefactClassInjector gace = (GrailsArtefactClassInjector) classInjector;
 
-                if (artefactType.equals(gace.getArtefactType())) {
+                if (hasArtefactType(artefactType,gace)) {
                     injectors.add(gace);
                 }
             }
@@ -92,5 +92,14 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
             }
         }
         return injectors;
+    }
+
+    public static boolean hasArtefactType(String artefactType, GrailsArtefactClassInjector gace){
+        for(String _artefactType : gace.getArtefactTypes()){
+            if(_artefactType.equals(artefactType)){
+                return true;
+            }
+        }
+        return false;
     }
 }
