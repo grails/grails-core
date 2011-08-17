@@ -98,7 +98,7 @@ class CoreGrailsPlugin {
             shutdownHook(DevelopmentShutdownHook)
         }
         abstractGrailsResourceLocator {
-            if (warDeployed) {
+            if (!warDeployed) {
                 BuildSettings settings = BuildSettingsHolder.settings
                 if (settings) {
                     def locations = new ArrayList(settings.pluginDirectories.collect { it.absolutePath })
