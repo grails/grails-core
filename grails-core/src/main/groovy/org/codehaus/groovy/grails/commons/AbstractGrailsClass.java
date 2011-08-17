@@ -19,7 +19,6 @@ import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.web.Action;
 import groovy.lang.GroovyObject;
-import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
 import org.apache.commons.lang.ClassUtils;
@@ -304,7 +303,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      * @return the metaClass
      */
     public MetaClass getMetaClass() {
-        return GroovySystem.getMetaClassRegistry().getMetaClass(clazz);
+        return GrailsMetaClassUtils.getExpandoMetaClass(getClazz());
     }
 
     @Override
