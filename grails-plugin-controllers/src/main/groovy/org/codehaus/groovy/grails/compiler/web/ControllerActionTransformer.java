@@ -154,8 +154,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         converterEnabled = Boolean.parseBoolean(System.getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
     }
 
-    public String getArtefactType() {
-        return ControllerArtefactHandler.TYPE;
+    public String[] getArtefactTypes() {
+        return new String[]{ControllerArtefactHandler.TYPE};
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {

@@ -63,8 +63,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
 
-    public String getArtefactType() {
-        String simpleName = getClass().getSimpleName();
+    public String[] getArtefactTypes() {
+        return new String[]{getArtefactType()};
+    }
+
+    protected String getArtefactType() {
+         String simpleName = getClass().getSimpleName();
         if (simpleName.length() > 11) {
             return simpleName.substring(0, simpleName.length() - 11);
         }
