@@ -80,15 +80,15 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     public static List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();
         for (ClassInjector classInjector : classInjectors) {
-            if (classInjector instanceof GrailsArtefactClassInjector) {
+            if (classInjector instanceof AllArtefactClassInjector) {
+                injectors.add(classInjector);
+            }
+            else if (classInjector instanceof GrailsArtefactClassInjector) {
                 GrailsArtefactClassInjector gace = (GrailsArtefactClassInjector) classInjector;
 
                 if (hasArtefactType(artefactType,gace)) {
                     injectors.add(gace);
                 }
-            }
-            else if (classInjector instanceof AllArtefactClassInjector) {
-                injectors.add(classInjector);
             }
         }
         return injectors;
