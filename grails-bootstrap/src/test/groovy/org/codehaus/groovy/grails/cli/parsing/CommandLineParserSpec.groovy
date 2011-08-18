@@ -110,12 +110,9 @@ class CommandLineParserSpec extends Specification{
             parser.addOption("version", "Shows the vesrion")
 
         then:
-            parser.helpMessage == """\
-usage: grails [options] [command]
- -interactive-mode        Enabled interactive mode
- -version                 Shows the vesrion
-"""
-    }
+            String ls = System.getProperty("line.separator");
+            parser.helpMessage == "usage: grails [options] [command]${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
+       }
 
 
 
