@@ -1,5 +1,12 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import java.io.ByteArrayInputStream
+import java.io.PrintWriter
+import java.util.HashMap
+import java.util.Map
+
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
@@ -12,7 +19,11 @@ class GroovyFindAllTagTests extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
-        tag.setWriter(new PrintWriter(sw))
+        Map context = new HashMap();
+        context.put(GroovyPage.OUT, new PrintWriter(sw));
+        GroovyPageParser parser=new GroovyPageParser("test", "test", "test", new ByteArrayInputStream([] as byte[]));
+        context.put(GroovyPageParser.class, parser);
+        tag.init(context);
     }
 
     void testIsBufferWhiteSpace() {
@@ -41,7 +52,7 @@ class GroovyFindAllTagTests extends GroovyTestCase {
         tag.attributes = ['"expr"': " \${it.age > 19}", '"in"': "myObj"]
         tag.doStartTag()
 
-        assertEquals("for( "+tag.getForeachRenamedIt()+" in myObj.findAll {it.age > 19} ) {"+System.getProperty("line.separator"), sw.toString())
+        assertEquals("for( "+tag.getForeachRenamedIt()+" in evaluate('myObj.findAll {it.age > 19}', 1, it) { return myObj.findAll {it.age > 19} } ) {"+System.getProperty("line.separator"), sw.toString())
     }
 
     void testDoEndTag() {

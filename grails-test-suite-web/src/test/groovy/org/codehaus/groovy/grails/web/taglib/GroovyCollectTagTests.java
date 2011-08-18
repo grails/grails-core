@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib;
 
+import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -7,6 +8,8 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
@@ -23,7 +26,11 @@ public class GroovyCollectTagTests extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        tag.setWriter(new PrintWriter(sw));
+        Map context = new HashMap();
+        context.put(GroovyPage.OUT, new PrintWriter(sw));
+        GroovyPageParser parser=new GroovyPageParser("test", "test", "test", new ByteArrayInputStream(new byte[]{}));
+        context.put(GroovyPageParser.class, parser);
+        tag.init(context);
     }
 
     /**
@@ -59,6 +66,7 @@ public class GroovyCollectTagTests extends TestCase {
         tag.setAttributes(attrs);
         assertFalse(tag.attributes.isEmpty());
         tag.doStartTag();
-        assertEquals("for( "+tag.getForeachRenamedIt()+" in myObj.collect {it.name} ) {"+ System.getProperty("line.separator"),sw.toString());
+
+        assertEquals("for( "+tag.getForeachRenamedIt()+" in evaluate('myObj.collect {it.name}', 1, it) { return myObj.collect {it.name} } ) {"+ System.getProperty("line.separator"),sw.toString());
     }
 }
