@@ -393,7 +393,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (shouldResolve()) {
 
             def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-            jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            jarFiles = resolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
 
             jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
             Message.debug("Resolved jars for [compile]: ${{-> jarFiles.join('\n')}}")
@@ -444,7 +444,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (shouldResolve()) {
 
             testResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
-            def jarFiles = testResolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            def jarFiles = testResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
             jarFiles = findAndRemovePluginDependencies("test", jarFiles, internalPluginTestDependencies)
             Message.debug("Resolved jars for [test]: ${{-> jarFiles.join('\n')}}")
             return jarFiles
@@ -481,7 +481,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (shouldResolve()) {
 
             runtimeResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-            def jarFiles = runtimeResolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            def jarFiles = runtimeResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
             jarFiles = findAndRemovePluginDependencies("runtime", jarFiles, internalPluginRuntimeDependencies)
             Message.debug("Resolved jars for [runtime]: ${{-> jarFiles.join('\n')}}")
 
@@ -521,7 +521,7 @@ class BuildSettings extends AbstractBuildSettings {
 
             Message.info "Resolving [provided] dependencies..."
             providedResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-            def jarFiles = providedResolveReport.getArtifactsReports(null, false).localFile
+            def jarFiles = providedResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile
 
             jarFiles = findAndRemovePluginDependencies("provided", jarFiles, internalPluginProvidedDependencies)
             Message.debug("Resolved jars for [provided]: ${{-> jarFiles.join('\n')}}")
@@ -632,7 +632,7 @@ class BuildSettings extends AbstractBuildSettings {
 
             Message.info "Resolving [build] dependencies..."
             buildResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-            def jarFiles = buildResolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            def jarFiles = buildResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
 
             jarFiles = findAndRemovePluginDependencies("build", jarFiles, internalPluginBuildDependencies)
             Message.debug("Resolved jars for [build]: ${{-> jarFiles.join('\n')}}")
