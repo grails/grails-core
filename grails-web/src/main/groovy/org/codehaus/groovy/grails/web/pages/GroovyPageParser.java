@@ -912,7 +912,7 @@ public class GroovyPageParser implements Tokens {
         if (tagMetaStack.isEmpty())
             throw new GrailsTagException(
                     "Found closing Grails tag with no opening [" + tagName + "]", pageName,
-                    out.getCurrentLineNumber());
+                    getCurrentOutputLineNumber());
 
         TagMeta tm = tagMetaStack.pop();
         String lastInStack = tm.name;
@@ -936,7 +936,7 @@ public class GroovyPageParser implements Tokens {
             else {
                 throw new GrailsTagException("Grails tag [" + tagName +
                         "] was not closed", pageName,
-                        out.getCurrentLineNumber());
+                        getCurrentOutputLineNumber());
             }
         }
         else {
@@ -1039,7 +1039,7 @@ public class GroovyPageParser implements Tokens {
             throw new GrailsTagException(
                     "Unexpected end of file encountered parsing Tag [" + tagName + "] for " + className +
                     ". Are you missing a closing brace '}'?", pageName,
-                    out.getCurrentLineNumber());
+                    getCurrentOutputLineNumber());
         }
 
         flushTagBuffering();
@@ -1069,7 +1069,7 @@ public class GroovyPageParser implements Tokens {
             else if (!tag.isAllowPrecedingContent() && previousContentWasNonWhitespace) {
                 throw new GrailsTagException("Tag [" + tag.getName() +
                         "] cannot have non-whitespace characters directly preceding it.", pageName,
-                        out.getCurrentLineNumber());
+                        getCurrentOutputLineNumber());
             }
             else {
                 // If tag does not specify buffering of WS, we swallow it here
@@ -1272,4 +1272,8 @@ public class GroovyPageParser implements Tokens {
     public String getDefaultCodecDirectiveValue() {
         return defaultCodecDirectiveValue;
     }
+
+	public String getPageName() {
+		return pageName;
+	}
 }

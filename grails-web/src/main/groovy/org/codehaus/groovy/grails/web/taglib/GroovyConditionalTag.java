@@ -29,7 +29,7 @@ abstract class GroovyConditionalTag extends GroovySyntaxTag {
         if ((env == null) && (test == null)) {
             throw new GrailsTagException("Tag [" + getName() +
                     "] must have one or both of the attributes [" +
-                    ATTRIBUTE_TEST + "] or [" + ATTRIBUTE_ENV + "]");
+                    ATTRIBUTE_TEST + "] or [" + ATTRIBUTE_ENV + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         String envExpression = environmentExpressionOrTrue(env);

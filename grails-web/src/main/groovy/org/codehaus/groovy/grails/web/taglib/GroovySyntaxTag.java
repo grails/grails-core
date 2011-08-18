@@ -127,12 +127,12 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         boolean hasStatus = !StringUtils.isBlank(status);
         boolean hasVar = !StringUtils.isBlank(var);
         if (hasStatus && !hasVar) {
-            throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
+            throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS, parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         if (var.equals(status) && (hasStatus)) {
             throw new GrailsTagException("Attribute [" + ATTRIBUTE_VAR +
-                    "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]");
+                    "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         if (hasStatus){
