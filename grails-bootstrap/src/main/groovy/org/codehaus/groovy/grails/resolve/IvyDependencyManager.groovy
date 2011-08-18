@@ -234,6 +234,56 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     /**
+     * Performs a resolve of all dependencies for the given configuration,
+     * potentially going out to the internet to download jars if they are not found locally
+     */
+    ResolveReport resolveDependencies(String conf, Map args) {
+        resolveErrors = false
+        if (usedConfigurations.contains(conf) || conf == '') {
+
+            if (args.checkIfChanged == null) args.checkIfChanged = true
+            if (args.outputReport == null) args.outputReport = true
+            if (args.validate == null) args.validate = false
+
+            def options = new ResolveOptions(args)
+            if (conf) {
+                options.confs = [conf] as String[]
+            }
+
+            if(!options.download) {
+                def date = new Date()
+                def report = new ResolveReport(moduleDescriptor)
+                def ivyNodes = resolveEngine.getDependencies(moduleDescriptor, options, report)
+                for (IvyNode node in ivyNodes) {
+                    if (node.isLoaded()) {
+                        for (Artifact a in node.allArtifacts) {
+                            def origin = resolveEngine.locate(a)
+                            def cr = new ConfigurationResolveReport(resolveEngine, moduleDescriptor, conf, date, options)
+                            def dr = new DownloadReport()
+                            def adr = new ArtifactDownloadReport(a)
+                            adr.artifactOrigin = origin
+                            adr.downloadStatus = DownloadStatus.NO
+                            dr.addArtifactReport(adr)
+                            cr.addDependency(node, dr)
+                            report.addReport(conf, cr)
+                        }
+                    }
+                }
+                return report
+            }
+            else {
+
+                ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
+                resolveErrors = resolve.hasError()
+                return resolve
+            }
+        }
+
+        // return an empty resolve report
+        return new ResolveReport(moduleDescriptor)
+    }
+
+    /**
      * Resolves all dependencies for all known configurations
      *
      * @return A ResolveReport containing all of the configurations
