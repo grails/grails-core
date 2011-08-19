@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.web.filters.GrailsFiltersClass
  * @author Graeme Rocher
  */
 class FiltersConfigArtefactHandler extends ArtefactHandlerAdapter {
-    static TYPE = "Filters"
+    static String TYPE = "Filters"
 
     FiltersConfigArtefactHandler() {
         super(TYPE, GrailsFiltersClass, DefaultGrailsFiltersClass, TYPE)
