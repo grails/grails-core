@@ -4,6 +4,7 @@ dependencies {
     compile project(":grails-core"),
             project(":grails-web"),
             project(':grails-plugin-converters'),
-            project(':grails-plugin-domain-class')
+            project(':grails-plugin-domain-class'),
+            project(':grails-plugin-validation')
 }
 jar.appendix = 'plugin-controllers'
