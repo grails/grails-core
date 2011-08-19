@@ -115,6 +115,10 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         controller = controllerClass.newInstance()
     }
 
+    def cleanup() {
+        ContextLoader.@currentContext = null
+    }
+
     def initRequest() {
         def appCtx = new GrailsWebApplicationContext()
         def bb = new BeanBuilder()
