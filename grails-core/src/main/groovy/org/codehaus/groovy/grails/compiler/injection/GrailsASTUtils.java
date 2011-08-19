@@ -292,7 +292,9 @@ public class GrailsASTUtils {
                 new ClassExpression(constructorMethod.getDeclaringClass()), "initialize", arguments);
         constructCallExpression.setMethodTarget(constructorMethod);
         ExpressionStatement constructorInitExpression = new ExpressionStatement(constructCallExpression);
-        constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(classNode, GrailsArtefactClassInjector.ZERO_ARGS)));
+        if(constructorParams.length>0) {
+            constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(classNode, GrailsArtefactClassInjector.ZERO_ARGS)));
+        }
         constructorBody.addStatement(constructorInitExpression);
 
         if (constructorParams.length == 0) {
