@@ -206,6 +206,15 @@ class BuildSettings extends AbstractBuildSettings {
     boolean defaultEnv
 
     /**
+     * whether to include source attachments in a resolve
+     */
+    boolean includeSource
+    /**
+    * whether to include javadoc attachments in a resolve
+     */
+    boolean includeJavadoc
+
+    /**
      * Whether the project required build dependencies are externally configured (by Maven for example) or not
      */
     boolean dependenciesExternallyConfigured = false
@@ -392,8 +401,8 @@ class BuildSettings extends AbstractBuildSettings {
         List<File> jarFiles
         if (shouldResolve()) {
 
-            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-            jarFiles = resolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
+            compileResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
+            jarFiles = compileResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
 
             jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
             Message.debug("Resolved jars for [compile]: ${{-> jarFiles.join('\n')}}")
@@ -1123,6 +1132,9 @@ class BuildSettings extends AbstractBuildSettings {
 
         dependencyManager = new IvyDependencyManager(appName,
                 appVersion, this, metadata)
+
+        dependencyManager.includeJavadoc = includeJavadoc
+        dependencyManager.includeSource = includeSource
 
         def console = GrailsConsole.instance
         dependencyManager.transferListener = { TransferEvent e ->

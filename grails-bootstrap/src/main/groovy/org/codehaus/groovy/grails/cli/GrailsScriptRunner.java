@@ -191,6 +191,15 @@ public class GrailsScriptRunner {
 
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
+        boolean resolveDeps = commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT);
+        if(resolveDeps) {
+            if(commandLine.hasOption("include-source")) {
+                build.setIncludeSource(true);
+            }
+            if(commandLine.hasOption("include-javadoc")) {
+                build.setIncludeJavadoc(true);
+            }
+        }
         GrailsScriptRunner scriptRunner = new GrailsScriptRunner(build);
         scriptRunner.setInteractive(!commandLine.hasOption(CommandLine.NON_INTERACTIVE_ARGUMENT));
         if ("Interactive".equals(script.name)) {
@@ -201,7 +210,7 @@ public class GrailsScriptRunner {
             console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
-            if (commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT)) {
+            if (resolveDeps) {
                 ClasspathConfigurer.cleanResolveCache(build);
             }
             scriptRunner.initializeState();
