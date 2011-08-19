@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.mapping;
 
+
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
@@ -26,9 +27,11 @@ import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet
 import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
+import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
-import org.springframework.web.context.WebApplicationContext
 import org.springframework.util.ClassUtils
+import org.springframework.web.context.WebApplicationContext
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 
 /**
  * Handles the configuration of URL mappings for Grails.
@@ -140,8 +143,14 @@ class UrlMappingsGrailsPlugin {
 
             UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, event.ctx, event.manager)
 
-            HotSwappableTargetSource ts = event.ctx.getBean("urlMappingsTargetSource")
+            ApplicationContext ctx = event.ctx
+            HotSwappableTargetSource ts = ctx.getBean("urlMappingsTargetSource", HotSwappableTargetSource)
             ts.swap urlMappingsHolder
+
+            LinkGenerator linkGenerator = ctx.getBean("grailsLinkGenerator", LinkGenerator)
+            if(linkGenerator instanceof CachingLinkGenerator) {
+                linkGenerator.clearCache()
+            }
         }
     }
 
