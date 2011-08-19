@@ -77,7 +77,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
         }
-        Collection<String> actionNames = new ArrayList<String>();
+        Collection<String> actionNames = new HashSet<String>();
 
         controllerPath = uri + SLASH;
 
@@ -112,14 +112,19 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private void methodStrategy(Collection<String> methodNames) {
 
-        for (Method method : getClazz().getMethods()) {
-            if (Modifier.isPublic(method.getModifiers())
-                    && method.getAnnotation(Action.class) != null) {
-                String methodName = method.getName();
+        Class superClass = getClazz();
 
-                methodNames.add(methodName);
-                configureMappingForMethodAction(methodName);
+        while (superClass != null && superClass != Object.class && superClass != GroovyObject.class) {
+            for (Method method : superClass.getMethods()) {
+                if (Modifier.isPublic(method.getModifiers())
+                        && method.getAnnotation(Action.class) != null) {
+                    String methodName = method.getName();
+
+                    methodNames.add(methodName);
+                    configureMappingForMethodAction(methodName);
+                }
             }
+            superClass = superClass.getSuperclass();
         }
 
         if (!isActionMethod(defaultActionName) && methodNames.size() == 1) {
