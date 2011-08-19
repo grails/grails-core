@@ -17,8 +17,8 @@ package org.codehaus.groovy.grails.web.plugins.support
 
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.web.context.ContextLoader
 
 
 class ValidationSupport {
@@ -27,15 +27,15 @@ class ValidationSupport {
         if (!object.hasProperty('constrainedProperties')) {
             return true
         }
-        def ctx = GrailsWebRequest.lookup().applicationContext
+        def ctx = ContextLoader.currentWebApplicationContext
 
         def constraints = object.constrainedProperties
         if(constraints == null) {
-            def constraintsEvaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME) ?: new DefaultConstraintEvaluator()
+            def constraintsEvaluator = ctx?.getBean(ConstraintsEvaluator.BEAN_NAME) ?: new DefaultConstraintEvaluator()
             constraints = object.constrainedProperties = constraintsEvaluator.evaluate(object)
         }
         if (constraints) {
-            def messageSource = ctx.messageSource
+            def messageSource = ctx?.messageSource
             def localErrors = new BeanPropertyBindingResult(object, object.class.name)
             def originalErrors = object.errors
             for(originalError in originalErrors.allErrors) {

@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.compiler.web
 
 import grails.spring.BeanBuilder
 import grails.util.ClosureToMapPopulator
+import grails.util.GrailsWebUtil
 
 import java.util.Calendar
 
@@ -10,11 +11,8 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
-import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -130,12 +128,10 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
         beans.registerBeans(appCtx)
+        ContextLoader.@currentContext = appCtx
 
         def request = new MockHttpServletRequest();
-        def webRequest = new GrailsWebRequest(request,
-                new MockHttpServletResponse(), new MockServletContext(), appCtx);
-        request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
-        RequestContextHolder.setRequestAttributes(webRequest);
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
         
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)

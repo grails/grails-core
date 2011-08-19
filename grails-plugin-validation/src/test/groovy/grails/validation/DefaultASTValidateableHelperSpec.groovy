@@ -1,20 +1,14 @@
 package grails.validation;
 
 import static org.junit.Assert.*
-import grails.spring.WebBeanBuilder
-import grails.util.GrailsWebUtil
 
 import java.net.URL
 
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.springframework.web.context.request.RequestContextHolder
 
 import spock.lang.Specification
 
@@ -56,19 +50,6 @@ class DefaultASTValidateableHelperSpec extends Specification {
             }
         }
         ''')
-        def bb = new WebBeanBuilder()
-        bb.beans {
-            grailsApplication(DefaultGrailsApplication)
-            "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator) {
-            }
-        }
-        def applicationContext = bb.createApplicationContext()
-
-        GrailsWebUtil.bindMockWebRequest(applicationContext)
-    }
-
-    def cleanupSpec() {
-        RequestContextHolder.setRequestAttributes(null)
     }
 
     void 'Test validate method on uninitialized object'() {
