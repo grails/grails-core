@@ -79,6 +79,14 @@ public class GrailsScriptRunner {
     private static InputStream originalIn;
 
     private static PrintStream originalOut;
+    @SuppressWarnings("rawtypes")
+    public static final
+    Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
+        private static final long serialVersionUID = 1L;
+        @Override public Object call(Object arguments) { return null; }
+        @Override public Object call() { return null; }
+        @Override public Object call(Object... args) { return null; }
+    };
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
 
@@ -435,7 +443,7 @@ public class GrailsScriptRunner {
             }
         }
 
-        return executeWithGantInstance(gant, CommandLine.DO_NOTHING_CLOSURE).exitCode;
+        return executeWithGantInstance(gant, DO_NOTHING_CLOSURE).exitCode;
     }
 
     private int executeScriptFile(CommandLine commandLine, String scriptName, String env, GantBinding binding, Resource scriptFile) {
@@ -453,7 +461,7 @@ public class GrailsScriptRunner {
         GantResult result = null;
         try {
             gant.loadScript(scriptFile.getURL());
-            result = executeWithGantInstance(gant, CommandLine.DO_NOTHING_CLOSURE);
+            result = executeWithGantInstance(gant, DO_NOTHING_CLOSURE);
             return result.exitCode;
         } catch (IOException e) {
             console.error("I/O exception loading script [" + e.getMessage() + "]: " + e.getMessage());

@@ -39,14 +39,6 @@ public interface CommandLine {
     String NOANSI_ARGUMENT = "plain-output";
     String NON_INTERACTIVE_ARGUMENT = "non-interactive";
 
-    @SuppressWarnings("rawtypes")
-    Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
-        private static final long serialVersionUID = 1L;
-        @Override public Object call(Object arguments) { return null; }
-        @Override public Object call() { return null; }
-        @Override public Object call(Object... args) { return null; }
-    };
-
     /**
      *
      * @return The environment specified
