@@ -73,14 +73,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     public void setAttribute(String name, Object value) {
-        Assert.isInstanceOf(String.class, value, "A GroovySynax tag requires only string valued attributes");
+        Assert.isInstanceOf(String.class, value, "A GroovySyntax tag requires only string valued attributes");
 
-        String stringValue = (String)value;
-        if (stringValue.startsWith("${") && stringValue.endsWith("}")) {
-            stringValue = stringValue.substring(2,stringValue.length() -1);
-        }
-
-        attributes.put(name.substring(1,name.length()-1), stringValue);
+        attributes.put(name.substring(1,name.length()-1), (String)value);
     }
 
     /**
@@ -104,7 +99,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         Assert.isTrue(!StringUtils.isBlank(expr), "Argument [expr] cannot be null or blank");
 
         expr = expr.trim();
-        if (expr.startsWith("\"") && expr.endsWith("\"")) {
+        if ((expr.startsWith("\"") && expr.endsWith("\"")) ||
+        		(expr.startsWith("\'") && expr.endsWith("\'"))) {
             expr = expr.substring(1,expr.length()-1);
             expr = expr.trim();
         }
@@ -169,10 +165,10 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         if (StringUtils.isBlank(attr)) {
             return "";
         }
-        if (attr.startsWith("\"") && attr.endsWith("\"") && attr.length() > 1) {
+        if (((attr.startsWith("\"") && attr.endsWith("\"")) || (attr.startsWith("'") && attr.endsWith("'"))) && attr.length() > 1) {
             attr = attr.substring(1,attr.length()-1);
         }
-         if (attr.endsWith("?") && attr.length() > 1) {
+        if (attr.endsWith("?") && attr.length() > 1) {
             attr = attr.substring(0,attr.length()-1);
         }
         return attr;

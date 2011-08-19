@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.web.pages
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
 
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
@@ -172,11 +174,14 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testParsingNestedCurlyBraces() {
         // GRAILS-7915
-        if(notYetImplemented()) return 
+        //if(notYetImplemented()) return 
         
-        GrailsWebUtil.bindMockWebRequest()
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+		ConfigObject config=new ConfigObject()
+		config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
+		gpte.grailsApplication = [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }] as GrailsApplication
         gpte.afterPropertiesSet()
 
         def src = '${people.collect {it.firstName}}'
@@ -204,6 +209,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         } catch( err ) {}
         </script>
 '''
+		
         gpte.createTemplate(src, "hello_test")
         t = gpte.createTemplate(src, "hello_test")
         w = t.make(bandName: 'Genesis', title: 'Selling England By The Pound')
@@ -267,6 +273,30 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         assertEquals "[G, C]", sw.toString()
     }
 
+	
+	void testParsingIfs() {
+		GrailsWebUtil.bindMockWebRequest()
+
+		def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+		gpte.afterPropertiesSet()
+
+		def src = '''<g:if test="${var=='1' || var=='2'}">hello</g:if>'''
+		
+		def t = gpte.createTemplate(src, "if_test")
+
+		def w = t.make(var: '1')
+
+		def sw = new StringWriter()
+		def pw = new PrintWriter(sw)
+
+		w.writeTo(pw)
+
+		assertEquals "hello", sw.toString()
+	}
+
+	
+	
+	
     void testCreateTemplateWithBinding() {
 
         GrailsWebUtil.bindMockWebRequest()
