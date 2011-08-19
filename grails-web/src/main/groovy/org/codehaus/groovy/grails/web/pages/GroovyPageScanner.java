@@ -210,7 +210,7 @@ class GroovyPageScanner implements Tokens {
                     }
                     break;
                 case GSCRIPT:
-                    if (gexprBracketsClosed && c == '}') {
+                    if (gexprBracketsClosed && c == '}' && c1 == '%') {
                         return found(HTML, 2);
                     }
                     break;
