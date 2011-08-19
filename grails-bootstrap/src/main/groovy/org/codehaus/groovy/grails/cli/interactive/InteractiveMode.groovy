@@ -19,13 +19,12 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 
-import java.awt.Desktop
-
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.codehaus.groovy.grails.cli.parsing.CommandLine
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -122,8 +121,8 @@ class InteractiveMode {
                         try {
                             def commandLine = parser.parseString(scriptName)
                             final console = GrailsConsole.instance
-                            console.stacktrace = commandLine.hasOption(GrailsScriptRunner.STACKTRACE_ARGUMENT)
-                            console.verbose = commandLine.hasOption(GrailsScriptRunner.VERBOSE_ARGUMENT)
+                            console.stacktrace = commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)
+                            console.verbose = commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)
                             scriptRunner.executeScriptWithCaching(commandLine)
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"

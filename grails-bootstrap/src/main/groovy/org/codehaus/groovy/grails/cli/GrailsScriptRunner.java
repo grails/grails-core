@@ -76,25 +76,17 @@ public class GrailsScriptRunner {
 
     private static final Pattern scriptFilePattern = Pattern.compile("^[^_]\\w+\\.groovy$");
 
-    public static final String VERBOSE_ARGUMENT = "verbose";
-    public static final String STACKTRACE_ARGUMENT = "stacktrace";
-    public static final String AGENT_ARGUMENT = "reloading";
-    public static final String VERSION_ARGUMENT = "version";
-    public static final String HELP_ARGUMENT = "help";
-    public static final String NON_INTERACTIVE_ARGUMENT = "non-interactive";
+    private static InputStream originalIn;
+
+    private static PrintStream originalOut;
     @SuppressWarnings("rawtypes")
-    public static final Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
+    public static final
+    Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
         private static final long serialVersionUID = 1L;
         @Override public Object call(Object arguments) { return null; }
         @Override public Object call() { return null; }
         @Override public Object call(Object... args) { return null; }
     };
-    public static final String NOANSI_ARGUMENT = "plain-output";
-    private static final String RESOLVE_DEPENDENCIES_ARGUMENT = "force-resolve";
-
-    private static InputStream originalIn;
-
-    private static PrintStream originalOut;
     private PluginPathDiscoverySupport pluginPathSupport;
     private BuildSettings settings;
 
@@ -149,7 +141,7 @@ public class GrailsScriptRunner {
             }
             else {
                 commandLine = parser.parseString(args[0]);
-                if (commandLine.hasOption(NOANSI_ARGUMENT)) {
+                if (commandLine.hasOption(CommandLine.NOANSI_ARGUMENT)) {
                     console.setAnsiEnabled(false);
                 }
             }
@@ -170,7 +162,7 @@ public class GrailsScriptRunner {
         BuildSettings build = null;
         try {
             build = new BuildSettings(new File(grailsHome));
-            if (commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+            if (commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT)) {
                 build.setModified(true);
             }
             if (build.getRootLoader() == null) {
@@ -187,20 +179,29 @@ public class GrailsScriptRunner {
             exitWithError("Grails' installation directory not found: " + build.getGrailsHome(), null);
         }
 
-        if (commandLine.hasOption(VERSION_ARGUMENT)) {
+        if (commandLine.hasOption(CommandLine.VERSION_ARGUMENT)) {
             console.log("Grails version: " + build.getGrailsVersion());
             System.exit(0);
         }
 
-        if (commandLine.hasOption(HELP_ARGUMENT)) {
+        if (commandLine.hasOption(CommandLine.HELP_ARGUMENT)) {
             console.log(parser.getHelpMessage());
             System.exit(0);
         }
 
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
+        boolean resolveDeps = commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT);
+        if(resolveDeps) {
+            if(commandLine.hasOption("include-source")) {
+                build.setIncludeSource(true);
+            }
+            if(commandLine.hasOption("include-javadoc")) {
+                build.setIncludeJavadoc(true);
+            }
+        }
         GrailsScriptRunner scriptRunner = new GrailsScriptRunner(build);
-        scriptRunner.setInteractive(!commandLine.hasOption(NON_INTERACTIVE_ARGUMENT));
+        scriptRunner.setInteractive(!commandLine.hasOption(CommandLine.NON_INTERACTIVE_ARGUMENT));
         if ("Interactive".equals(script.name)) {
             console.error("The 'interactive' script is deprecated; to run in interactive mode just omit the script name");
             script.name = null;
@@ -209,7 +210,7 @@ public class GrailsScriptRunner {
             console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
 
             build.loadConfig();
-            if (commandLine.hasOption(RESOLVE_DEPENDENCIES_ARGUMENT)) {
+            if (resolveDeps) {
                 ClasspathConfigurer.cleanResolveCache(build);
             }
             scriptRunner.initializeState();
@@ -240,14 +241,14 @@ public class GrailsScriptRunner {
 
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
-        parser.addOption(RESOLVE_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
-        parser.addOption(VERBOSE_ARGUMENT, "Enable verbose output");
-        parser.addOption(STACKTRACE_ARGUMENT, "Enable stack traces in output");
-        parser.addOption(AGENT_ARGUMENT, "Enable the reloading agent");
-        parser.addOption(NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
-        parser.addOption(HELP_ARGUMENT, "Command line help");
-        parser.addOption(VERSION_ARGUMENT, "Current Grails version");
-        parser.addOption(NOANSI_ARGUMENT, "Disables ANSI output");
+        parser.addOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
+        parser.addOption(CommandLine.VERBOSE_ARGUMENT, "Enable verbose output");
+        parser.addOption(CommandLine.STACKTRACE_ARGUMENT, "Enable stack traces in output");
+        parser.addOption(CommandLine.AGENT_ARGUMENT, "Enable the reloading agent");
+        parser.addOption(CommandLine.NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
+        parser.addOption(CommandLine.HELP_ARGUMENT, "Command line help");
+        parser.addOption(CommandLine.VERSION_ARGUMENT, "Current Grails version");
+        parser.addOption(CommandLine.NOANSI_ARGUMENT, "Disables ANSI output");
         return parser;
     }
 
@@ -263,10 +264,10 @@ public class GrailsScriptRunner {
 
     private static ScriptAndArgs processArgumentsAndReturnScriptName(CommandLine commandLine) {
 
-        if (commandLine.hasOption(VERBOSE_ARGUMENT)) {
+        if (commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)) {
             GrailsConsole.getInstance().setVerbose(true);
         }
-        if (commandLine.hasOption(STACKTRACE_ARGUMENT)) {
+        if (commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)) {
             GrailsConsole.getInstance().setStacktrace(true);
         }
 
