@@ -72,11 +72,6 @@ class CoreGrailsPlugin {
             packagesToScan += beanPackages
         }
 
-        def validateablePackages = grailsConfig.validateable.packages
-        if (validateablePackages instanceof List) {
-            packagesToScan += validateablePackages
-        }
-
         if (packagesToScan) {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
