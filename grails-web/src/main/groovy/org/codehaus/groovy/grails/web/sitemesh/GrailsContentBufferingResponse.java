@@ -67,11 +67,14 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     }
 
     public boolean isActive() {
-        GrailsPageResponseWrapper superResponse= (GrailsPageResponseWrapper) getResponse();
-        return superResponse.isSitemeshActive() || superResponse.isGspSitemeshActive();
+        return pageResponseWrapper.isSitemeshActive() || pageResponseWrapper.isGspSitemeshActive();
     }
 
     public Content getContent() throws IOException {
+        if (!pageResponseWrapper.isSitemeshActive()) {
+            return null;
+        }
+    	
         GSPSitemeshPage content=(GSPSitemeshPage)webAppContext.getRequest().getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE);
         if (content != null && content.isUsed()) {
             return content;
