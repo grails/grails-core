@@ -13,26 +13,27 @@ buildscript {
 apply plugin: 'idea'
 
 
-grailsVersion = '2.0.0.BUILD-SNAPSHOT'
-antVersion = "1.8.2"
 antTraxVersion = "1.7.1"
+antVersion = "1.8.2"
 aspectjVersion = "1.6.10"
-springVersion = "3.1.0.M2"
+commonsBeanUtilsVersion = "1.8.0"
+commonsCliVersion = "1.2"
+commonsCollectionsVersion = "3.2.1"
+commonsIOVersion = "1.4"
+commonsLangVersion = "2.4"
 datastoreVersion = "1.0.0.BUILD-SNAPSHOT"
-springLoadedVersion = "0.8.5.BUILD-SNAPSHOT"
-springWebflowVersion= "2.0.8.RELEASE"
-ivyVersion = "2.2.0"
 gantVersion = "1.9.5"
+gdocEngineVersion = "1.0.1"
+grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 groovyVersion = "1.8.0"
+ivyVersion = "2.2.0"
 jansiVersion = "1.2.1"
 jlineVersion = "1.0"
 jnaVersion = "3.2.3"
-commonsCliVersion = "1.2"
-commonsCollectionsVersion = "3.2.1"
-commonsBeanUtilsVersion = "1.8.0"
-commonsIOVersion = "1.4"
-commonsLangVersion = "2.4"
 slf4jVersion = "1.6.1"
+springLoadedVersion = "0.8.5.BUILD-SNAPSHOT"
+springVersion = "3.1.0.M2"
+springWebflowVersion= "2.0.8.RELEASE"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -90,6 +91,7 @@ subprojects { project ->
     }
 
     repositories {
+        mavenLocal()
         mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
