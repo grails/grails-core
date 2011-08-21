@@ -91,7 +91,6 @@ subprojects { project ->
     }
 
     repositories {
-        mavenLocal()
         mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
