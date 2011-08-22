@@ -1479,6 +1479,29 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1 , results.size()
     }
+    
+    void testPaginationParamsWithProjection() {
+        GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            CriteriaBuilderTestClass.name)
+
+        assertNotNull(domainClass)
+
+        GroovyObject obj = domainClass.newInstance()
+        obj.setProperty("firstName", "homer")
+        obj.setProperty("lastName", "simpson")
+        obj.setProperty("age", 45)
+
+        obj.invokeMethod("save", null)
+        
+        List results = parse(".list([:]) { " +
+                    "projections { " +
+                        "property('firstName')" +
+                    "}" +
+                "}", "Test1",CriteriaBuilderTestClass.name)
+        
+        assertEquals 1 , results.size()
+        assertTrue 'Result list should contain Strings', results[0] instanceof String
+    }
 
     private Object parse(String groovy,String testClassName, String criteriaClassName, boolean uniqueResult) {
 
