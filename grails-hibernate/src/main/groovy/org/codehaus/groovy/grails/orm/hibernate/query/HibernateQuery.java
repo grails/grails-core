@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.Association;
@@ -91,6 +90,13 @@ public class HibernateQuery extends Query {
                     Criterion criterion) {
                 Like eq = (Like) criterion;
                 return Restrictions.like(eq.getProperty(), convertStringValue(eq.getValue()));
+            }
+        });
+        criterionAdaptors.put(ILike.class, new CriterionAdaptor() {
+            public org.hibernate.criterion.Criterion toHibernateCriterion(
+                    Criterion criterion) {
+                ILike eq = (ILike) criterion;
+                return Restrictions.ilike(eq.getProperty(), convertStringValue(eq.getValue()));
             }
         });
         criterionAdaptors.put(RLike.class, new CriterionAdaptor() {
@@ -315,6 +321,12 @@ public class HibernateQuery extends Query {
         return this;
     }
 
+    @Override
+    public Query ilike(String property, String expr) {
+        criteria.add(Restrictions.ilike(property, expr));
+        return this;
+    }
+    
     @Override
     public Query rlike(String property, String expr) {
         criteria.add(new RlikeExpression(property, expr));
