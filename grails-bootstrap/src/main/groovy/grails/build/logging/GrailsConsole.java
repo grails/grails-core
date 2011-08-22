@@ -16,25 +16,10 @@
 
 package grails.build.logging;
 
-import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.Ansi.Color.DEFAULT;
-import static org.fusesource.jansi.Ansi.Color.RED;
-import static org.fusesource.jansi.Ansi.Color.YELLOW;
-import static org.fusesource.jansi.Ansi.Erase.FORWARD;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.reflect.Field;
-import java.util.Stack;
-
 import jline.ConsoleReader;
 import jline.Terminal;
 import jline.UnsupportedTerminal;
 import jline.WindowsTerminal;
-
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
@@ -47,6 +32,14 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
 import org.springframework.util.StringUtils;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.Stack;
+
+import static org.fusesource.jansi.Ansi.Color.*;
+import static org.fusesource.jansi.Ansi.Erase.FORWARD;
+import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Utility class for delivering console output in a nicely formatted way.
@@ -345,14 +338,16 @@ public class GrailsConsole {
         try {
             if (isAnsiEnabled()) {
 
-                lastStatus = outputCategory(erasePreviousLine(CATEGORY_SEPARATOR), CATEGORY_SEPARATOR)
+                Ansi ansi = userInputActive ? moveDownToSkipPrompt() : erasePreviousLine(CATEGORY_SEPARATOR);
+                lastStatus = outputCategory(ansi, CATEGORY_SEPARATOR)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);
                 if (userInputActive) {
                     out.print(ansi().cursorRight(PROMPT.length()).reset());
                 }
 
-                cursorMove = replaceCount;
+                if(!userInputActive)
+                    cursorMove = replaceCount;
             } else {
                 if (lastMessage != null && lastMessage.equals(msg)) return;
 
@@ -369,8 +364,17 @@ public class GrailsConsole {
         }
     }
 
+    private Ansi moveDownToSkipPrompt() {
+           return ansi()
+                   .cursorDown(1)
+                   .cursorLeft(PROMPT.length());
+    }
+
     private void postPrintMessage() {
         progressIndicatorActive = false;
+        if(userInputActive) {
+            showPrompt();
+        }
     }
 
     /**
@@ -657,7 +661,7 @@ public class GrailsConsole {
             cursorMove = 0;
             try {
                 if (isAnsiEnabled()) {
-                    Ansi ansi = outputErrorLabel(ansi(), label).a(message);
+                    Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message);
                     if (message.endsWith(LINE_SEPARATOR)) {
                         out.print(ansi);
                     }
