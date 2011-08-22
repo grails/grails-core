@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import grails.persistence.Entity
+import grails.orm.PagedResultList
 
 import org.hibernate.NonUniqueResultException
 
@@ -206,6 +206,20 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assertNull NamedCriteriaPublication.publishedAfter(now - 5).publicationsWithBookInTitle().get(oldPaperBackWithBookInTitleId)
         assertNotNull NamedCriteriaPublication.publicationsWithBookInTitle().publishedAfter(now - 5).get(newPaperBackWithBookInTitleId)
         assertNotNull NamedCriteriaPublication.publishedAfter(now - 5).publicationsWithBookInTitle().get(newPaperBackWithBookInTitleId)
+    }
+    
+    void testPagination() {
+        // GRAILS-7945
+        if(notYetImplemented()) return
+        
+        6.times { cnt ->
+            assert new NamedCriteriaPublication(title: "Some Paperback #${cnt}",
+                      datePublished: new Date(), paperback: true).save(failOnError: true).id
+        }
+        def results = NamedCriteriaPublication.aPaperback.list([max: 2, offset: 1])
+        
+        assertEquals 2, results?.size()
+        assertTrue "results should have beean a PagedResultList but was a ${results.getClass()}", results instanceof PagedResultList
     }
 
     void testPassingParamsAndAdditionalCriteria() {
