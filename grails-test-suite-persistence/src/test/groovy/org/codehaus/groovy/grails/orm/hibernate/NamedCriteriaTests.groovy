@@ -208,10 +208,7 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assertNotNull NamedCriteriaPublication.publishedAfter(now - 5).publicationsWithBookInTitle().get(newPaperBackWithBookInTitleId)
     }
     
-    void testPagination() {
-        // GRAILS-7945
-        if(notYetImplemented()) return
-        
+    void testPaginatedQueryReturnsPagedResultList() {
         6.times { cnt ->
             assert new NamedCriteriaPublication(title: "Some Paperback #${cnt}",
                       datePublished: new Date(), paperback: true).save(failOnError: true).id
@@ -219,7 +216,8 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         def results = NamedCriteriaPublication.aPaperback.list([max: 2, offset: 1])
         
         assertEquals 2, results?.size()
-        assertTrue "results should have beean a PagedResultList but was a ${results.getClass()}", results instanceof PagedResultList
+        assertTrue "results should have been a PagedResultList but was a ${results.getClass()}", results instanceof PagedResultList
+        assertEquals 6, results.totalCount
     }
 
     void testPassingParamsAndAdditionalCriteria() {
