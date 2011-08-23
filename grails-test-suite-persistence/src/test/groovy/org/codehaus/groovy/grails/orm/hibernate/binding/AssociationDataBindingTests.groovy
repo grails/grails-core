@@ -54,6 +54,20 @@ class AssociationBindingAuthor {
         RequestContextHolder.setRequestAttributes(null)
     }
 
+    void testManyToOneBindingRespectsIncludes() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+
+        assertNotNull Author.newInstance(name:"Stephen King").save(flush:true)
+
+        def book = Book.newInstance()
+        def params = ['author.id':1, title:'The Shining']
+        book.properties['title','reviewers'] = params
+
+        assertNull "The author should not have been bound (due to includes list)", book.author
+        assertEquals "The Shining", book.title
+    }
+
 
 
     void testManyToOneBinding() {
@@ -69,6 +83,27 @@ class AssociationBindingAuthor {
 
         assertNotNull "The author should have been bound", book.author
         assertEquals "The Shining", book.title
+    }
+
+
+    void testOneToManyListBindingNewInstanceRespectsIncludes() {
+        def Book = ga.getDomainClass("AssociationBindingBook").clazz
+        def Author = ga.getDomainClass("AssociationBindingAuthor").clazz
+        def Page = ga.getDomainClass("AssociationBindingPage").clazz
+
+        def author = Author.newInstance(name: "William Gibson").save(flush: true, failOnError: true)
+        def book = Book.newInstance(title: "Pattern Recognition", author: author, pages: []).save(flush: true, failOnError: true)
+        session.clear()
+        book = book.refresh()
+
+        def params = [title:"new title", "pages[0].number": "1", "pages[1].number": "2", "pages[2].number": "3"]
+        book.properties['title', 'author'] = params
+
+        assertEquals "Should ignore excluded params", 0, book.pages.size()
+        assertEquals "Should update included params", "new title", book.title
+
+        book.save(flush: true, failOnError: true)
+        assertEquals "Should ignore excluded params", 0, Page.count()
     }
 
     void testManyToOneUnBinding() {
