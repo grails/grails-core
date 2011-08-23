@@ -101,19 +101,21 @@ class NamedCriteriaProxy {
         def listClosure = {
             queryBuilder = delegate
             invokeCriteriaClosure(additionalCriteriaClosure)
-            def paramsMap
-            if (params && params[-1] instanceof Map) {
-                paramsMap = params[-1]
-            }
-            if (paramsMap) {
-                domainClass.grailsApplication
-                GrailsHibernateUtil.populateArgumentsForCriteria domainClass.grailsApplication, domainClass.clazz, queryBuilder.instance, paramsMap
-            }
             if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }
         }
-        domainClass.clazz.withCriteria(listClosure)
+        
+        def paramsMap
+        if (params && params[-1] instanceof Map) {
+            paramsMap = params[-1]
+        }
+
+        if(paramsMap) {
+            domainClass.clazz.createCriteria().list(paramsMap, listClosure)
+        } else {
+            domainClass.clazz.withCriteria(listClosure)
+        }
     }
 
     def list(Object[] params, Closure additionalCriteriaClosure = null) {

@@ -131,6 +131,7 @@ class HibernateGormStaticApi extends GormStaticApi {
     private ExecuteUpdatePersistentMethod executeUpdateMethod
     private MergePersistentMethod mergeMethod
     private ClassLoader classLoader
+    private GrailsApplication grailsApplication;
 
     HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders,
                 ClassLoader classLoader, PlatformTransactionManager transactionManager) {
@@ -151,7 +152,7 @@ class HibernateGormStaticApi extends GormStaticApi {
         def mappingContext = datastore.mappingContext
         if (mappingContext instanceof GrailsDomainClassMappingContext) {
             GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
-            def grailsApplication = domainClassMappingContext.getGrailsApplication()
+            grailsApplication = domainClassMappingContext.getGrailsApplication()
 
             findAllMethod.grailsApplication = grailsApplication
             GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
@@ -255,7 +256,9 @@ class HibernateGormStaticApi extends GormStaticApi {
 
     @Override
     Object createCriteria() {
-        return new HibernateCriteriaBuilder(persistentClass, sessionFactory)
+        def builder = new HibernateCriteriaBuilder(persistentClass, sessionFactory)
+        builder.grailsApplication = grailsApplication
+        builder
     }
 
     @Override
