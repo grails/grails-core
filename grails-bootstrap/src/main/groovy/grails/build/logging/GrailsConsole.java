@@ -557,11 +557,18 @@ public class GrailsConsole {
     private String showPrompt(String prompt) {
         try {
             cursorMove = 0;
-            userInputActive = true;
-            try {
-                return reader.readLine(prompt);
-            } finally {
-                userInputActive = false;
+            if(!userInputActive) {
+
+                userInputActive = true;
+                try {
+                    return reader.readLine(prompt);
+                } finally {
+                    userInputActive = false;
+                }
+            }
+            else {
+                out.print(prompt);
+                return null;
             }
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
