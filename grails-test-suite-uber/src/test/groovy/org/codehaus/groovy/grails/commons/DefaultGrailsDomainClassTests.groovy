@@ -41,6 +41,33 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
         assertEquals(GrailsDomainClassProperty.FETCH_LAZY, otherDomain.getPropertyByName('anothers').getFetchMode())
     }
 
+    void testPersistentProperties() {
+        def cls = gcl.parseClass('''
+class Book {
+    Long id
+    Long version
+    String title
+    String author
+
+    static constraints = {
+        title blank: false
+        author blank: false
+    }
+
+    String getAuteur() {
+        return author
+    }
+}
+''')
+
+        def dc = new DefaultGrailsDomainClass(cls)
+
+
+        assert dc.persistentProperties.size() == 2
+        assert dc.properties.size() == 5
+        assert dc.properties.find { it.name == 'auteur'} != null
+    }
+
     void testManyToManyIntegrity() {
         gcl.parseClass """
                 class Test {

@@ -302,19 +302,24 @@ public class GrailsDomainConfigurationUtil {
         final String name = descriptor.getName();
         Method readMethod = descriptor.getReadMethod();
         Method writeMethod = descriptor.getWriteMethod();
-        return !(readMethod == null || writeMethod == null) &&
-               !(Modifier.isStatic(readMethod.getModifiers()) || Modifier.isStatic(writeMethod.getModifiers())) &&
-               !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
-               !name.equals(GrailsDomainClassProperty.META_CLASS) &&
-               !name.equals(GrailsDomainClassProperty.CLASS) &&
-               !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
-               !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
-               !name.equals(GrailsDomainClassProperty.HAS_MANY) &&
-               !name.equals(GrailsDomainClassProperty.EVANESCENT) &&
-               !name.equals(GrailsDomainClassProperty.CONSTRAINTS) &&
-               !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
-               !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
-               !name.equals(GrailsDomainClassProperty.BELONGS_TO);
+
+        if((readMethod != null && Modifier.isStatic(readMethod.getModifiers()) || (writeMethod != null && Modifier.isStatic(writeMethod.getModifiers())))) {
+            return false;
+        }
+        else {
+
+            return !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
+                    !name.equals(GrailsDomainClassProperty.META_CLASS) &&
+                    !name.equals(GrailsDomainClassProperty.CLASS) &&
+                    !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
+                    !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
+                    !name.equals(GrailsDomainClassProperty.HAS_MANY) &&
+                    !name.equals(GrailsDomainClassProperty.EVANESCENT) &&
+                    !name.equals(GrailsDomainClassProperty.CONSTRAINTS) &&
+                    !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
+                    !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
+                    !name.equals(GrailsDomainClassProperty.BELONGS_TO);
+        }
     }
 
     /**
