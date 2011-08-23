@@ -93,7 +93,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             // ignore, no app ctx in this case.
         }
 
-        LOG.error(getRequestLogMessage(request), ex);
+        LOG.error(getRequestLogMessage(ex, request), ex);
 
         if (urlMappings != null) {
             UrlMappingInfo info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
@@ -184,11 +184,13 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
     }
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    public String getRequestLogMessage(HttpServletRequest request) {
+    private String getRequestLogMessage(String exceptionName, HttpServletRequest request, String message) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Exception occurred when processing request: ");
-        sb.append("[").append(request.getMethod().toUpperCase()).append("] ");
+
+        sb.append(exceptionName)
+          .append(" occurred when processing request: ")
+          .append("[").append(request.getMethod().toUpperCase()).append("] ");
 
         if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
             sb.append(request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE));
@@ -240,10 +242,23 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             }
         }
 
-        sb.append(LINE_SEPARATOR)
-          .append("Stacktrace follows:");
+        sb.append(LINE_SEPARATOR);
+        if(message != null) {
+            sb.append(message).append(". ");
+        }
+        sb.append("Stacktrace follows:");
 
         return sb.toString();
+    }
+
+    public String getRequestLogMessage(Throwable e, HttpServletRequest request) {
+        Throwable cause = getRootCause(e);
+        String exceptionName = cause.getClass().getSimpleName();
+        return getRequestLogMessage(exceptionName, request, cause.getMessage());
+    }
+
+    public String getRequestLogMessage(HttpServletRequest request) {
+        return getRequestLogMessage("Exception", request, null);
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

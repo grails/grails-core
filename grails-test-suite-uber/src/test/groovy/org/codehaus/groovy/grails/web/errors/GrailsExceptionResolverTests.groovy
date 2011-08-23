@@ -139,6 +139,29 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
         assertFalse modelAndView.empty
     }
 
+    void testLogRequestWithException() {
+        def config = new ConfigSlurper().parse('''
+grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
+''')
+
+        def request = new MockHttpServletRequest()
+        request.setRequestURI("/execute/me")
+        request.setMethod "GET"
+        request.addParameter "foo", "bar"
+        request.addParameter "one", "two"
+        request.addParameter "jennysPhoneNumber", "8675309"
+
+        System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+        def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(new RuntimeException("bad things happened"), request)
+
+        assertEquals '''RuntimeException occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+jennysPhoneNumber: ***
+bad things happened. Stacktrace follows:'''.replaceAll('[\n\r]', ''), msg.replaceAll('[\n\r]', '')
+
+    }
+
     void testLogRequest() {
         def config = new ConfigSlurper().parse('''
 grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
