@@ -16,18 +16,18 @@
 
 package org.codehaus.groovy.grails.compiler
 
-import grails.util.BuildSettings
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import java.util.concurrent.Executors
-import java.util.concurrent.ExecutorService
-import grails.util.PluginBuildSettings
 import grails.build.logging.GrailsConsole
-import org.springframework.core.io.Resource
+import grails.util.Metadata
+import grails.util.PluginBuildSettings
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
-import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 
 /**
  * Encapsulates the logic to package a project ready for execution.
@@ -56,6 +56,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         super(compiler.buildSettings, false)
         projectCompiler = compiler
         servletVersion = buildSettings.servletVersion
+        Metadata.current[Metadata.SERVLET_VERSION] = servletVersion
         classLoader = compiler.classLoader
         pluginSettings = compiler.pluginSettings
         resourcesDirPath = buildSettings.resourcesDir.path

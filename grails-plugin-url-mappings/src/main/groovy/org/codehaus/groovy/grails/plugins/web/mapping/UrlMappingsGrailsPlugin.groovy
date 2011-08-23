@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
@@ -29,11 +30,9 @@ import org.springframework.aop.framework.ProxyFactoryBean
 import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
-import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 
-/**
+ /**
  * Handles the configuration of URL mappings for Grails.
  *
  * @author Graeme Rocher
@@ -70,9 +69,6 @@ class UrlMappingsGrailsPlugin {
             filter {
                 'filter-name'('urlMapping')
                 'filter-class'(UrlMappingsFilter.name)
-                if (ClassUtils.isPresent('javax.servlet.AsyncContext', Thread.currentThread().contextClassLoader)) {
-                    'async-supported'(true)
-                }
             }
         }
 
