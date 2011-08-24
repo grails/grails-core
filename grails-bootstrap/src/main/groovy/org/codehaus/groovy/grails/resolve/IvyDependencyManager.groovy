@@ -77,6 +77,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         ivySettings.validate = false
+        ivySettings.setDefaultCache(new File("${System.getProperty("user.home")}/.grails/ivy-cache"))
         chainResolver.settings = ivySettings
         def eventManager = new EventManager()
         def sortEngine = new SortEngine(ivySettings)
