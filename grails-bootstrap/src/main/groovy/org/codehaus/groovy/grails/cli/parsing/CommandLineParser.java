@@ -21,6 +21,8 @@ import grails.util.Environment;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.tools.ant.types.Commandline;
+
 /**
  * Command line parser that parses arguments to the command line. Written as a
  * replacement for Commons CLI because it doesn't support unknown arguments and
@@ -70,8 +72,9 @@ public class CommandLineParser {
      * @return The command line
      */
     public CommandLine parseString(String string) {
-        // stupid implementation right now that doesn't take into account quoted argument values
-        return parse(string.split(" "));
+        // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
+    	// Doesn't handle escape sequences with \
+        return parse(Commandline.translateCommandline(string));
     }
 
     /**
