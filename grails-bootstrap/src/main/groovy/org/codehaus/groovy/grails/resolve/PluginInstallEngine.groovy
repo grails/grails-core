@@ -34,6 +34,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.springframework.core.io.FileSystemResource
+import org.apache.ivy.plugins.resolver.FileSystemResolver
+import org.apache.ivy.plugins.latest.LatestTimeStrategy
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -198,6 +200,25 @@ class PluginInstallEngine {
         }
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
+
+        def parentDir = zipFile.parentFile
+        def dependencyManager = resolveEngine.createFreshDependencyManager()
+        dependencyManager.parseDependencies {
+            log "warn"
+            repositories {
+                def pluginResolver = new FileSystemResolver(name: name)
+                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/grails-[module]-[revision].[ext]")
+                pluginResolver.settings = dependencyManager.ivySettings
+                pluginResolver.latestStrategy = new LatestTimeStrategy()
+                pluginResolver.changingPattern = ".*SNAPSHOT"
+                pluginResolver.setCheckmodified(true)
+                resolver pluginResolver
+            }
+            plugins {
+                compile ":$name:$version"
+            }
+        }
+        dependencyManager.resolveDependencies()
         installPluginZipInternal name, version, zipFile, globalInstall, overwrite
     }
 
