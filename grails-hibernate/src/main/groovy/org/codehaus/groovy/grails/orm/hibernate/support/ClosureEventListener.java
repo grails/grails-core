@@ -30,7 +30,9 @@ import org.codehaus.groovy.grails.orm.hibernate.metaclass.ValidatePersistentMeth
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.hibernate.EntityMode;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.event.*;
 import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.util.ReflectionUtils;
@@ -158,114 +160,177 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
         }
     }
 
-    public void onPreLoad(PreLoadEvent event) {
+    public void onPreLoad(final PreLoadEvent event) {
         if (preLoadEventCaller != null) {
-            preLoadEventCaller.call(event.getEntity());
+            doWithManualSession(event, new Closure(this) {
+                 @Override
+                 public Object call() {
+                    preLoadEventCaller.call(event.getEntity());
+                     return null;
+                 }
+             });
+
+
         }
     }
 
-    public void onPostLoad(PostLoadEvent event) {
+    public void onPostLoad(final PostLoadEvent event) {
         if (postLoadEventListener != null) {
-            postLoadEventListener.call(event.getEntity());
+           doWithManualSession(event, new Closure(this) {
+                @Override
+                public Object call() {
+                    postLoadEventListener.call(event.getEntity());
+                    return null;
+                }
+            });
+
         }
     }
 
     public void onPostInsert(PostInsertEvent event) {
-        Object entity = event.getEntity();
+        final Object entity = event.getEntity();
         AbstractSavePersistentMethod.clearDisabledValidations(entity);
         if (postInsertEventListener != null) {
-            postInsertEventListener.call(entity);
+            doWithManualSession(event, new Closure(this) {
+                @Override
+                public Object call() {
+                    postInsertEventListener.call(entity);
+                    return null;
+                }
+            });
+
         }
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
-        Object entity = event.getEntity();
+        final Object entity = event.getEntity();
         AbstractSavePersistentMethod.clearDisabledValidations(entity);
         if (postUpdateEventListener != null) {
-            postUpdateEventListener.call(entity);
+            doWithManualSession(event, new Closure(this) {
+                @Override
+                public Object call() {
+                    postUpdateEventListener.call(entity);
+                    return null;
+                }
+            });
+
         }
     }
 
     public void onPostDelete(PostDeleteEvent event) {
-        Object entity = event.getEntity();
+        final Object entity = event.getEntity();
         AbstractSavePersistentMethod.clearDisabledValidations(entity);
         if (postDeleteEventListener != null) {
-            postDeleteEventListener.call(entity);
+            doWithManualSession(event, new Closure(this) {
+                @Override
+                public Object call() {
+                    postDeleteEventListener.call(entity);
+                    return null;
+                }
+            });
         }
     }
 
-    public boolean onPreDelete(PreDeleteEvent event) {
+    public boolean onPreDelete(final PreDeleteEvent event) {
         if (preDeleteEventListener != null) {
-            return preDeleteEventListener.call(event.getEntity());
+            return doWithManualSession(event, new Closure<Boolean>(this) {
+                @Override
+                public Boolean call() {
+                    return preDeleteEventListener.call(event.getEntity());
+                }
+            });
         }
         return false;
     }
 
-    public boolean onPreUpdate(PreUpdateEvent event) {
-        Object entity = event.getEntity();
-        boolean evict = false;
-        if (preUpdateEventListener != null) {
-            evict = preUpdateEventListener.call(entity);
-            synchronizePersisterState(entity, event.getPersister(), event.getState());
-        }
-        if (lastUpdatedProperty != null && shouldTimestamp) {
-            Object now = DefaultGroovyMethods.newInstance(lastUpdatedProperty.getType(), new Object[] { System
-                    .currentTimeMillis() });
-            event.getState()[ArrayUtils.indexOf(event.getPersister().getPropertyNames(), GrailsDomainClassProperty.LAST_UPDATED)] = now;
-            lastUpdatedProperty.setProperty(entity, now);
-        }
-        if (!AbstractSavePersistentMethod.isAutoValidationDisabled(entity)
-                && !DefaultTypeTransformation.castToBoolean(validateMethod.invoke(entity,
-                        new Object[] { validateParams }))) {
-            evict = true;
-            if (failOnErrorEnabled) {
-                Errors errors = (Errors) errorsProperty.getProperty(entity);
-                throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
-                        + "]", errors);
-            }
+    public boolean onPreUpdate(final PreUpdateEvent event) {
+        return doWithManualSession(event, new Closure<Boolean>(this) {
+            @Override
+            public Boolean call() {
+                Object entity = event.getEntity();
+                boolean evict = false;
+                if (preUpdateEventListener != null) {
+                    evict = preUpdateEventListener.call(entity);
+                    synchronizePersisterState(entity, event.getPersister(), event.getState());
+                }
+                if (lastUpdatedProperty != null && shouldTimestamp) {
+                    Object now = DefaultGroovyMethods.newInstance(lastUpdatedProperty.getType(), new Object[] { System
+                            .currentTimeMillis() });
+                    event.getState()[ArrayUtils.indexOf(event.getPersister().getPropertyNames(), GrailsDomainClassProperty.LAST_UPDATED)] = now;
+                    lastUpdatedProperty.setProperty(entity, now);
+                }
+                if (!AbstractSavePersistentMethod.isAutoValidationDisabled(entity)
+                        && !DefaultTypeTransformation.castToBoolean(validateMethod.invoke(entity,
+                                new Object[] { validateParams }))) {
+                    evict = true;
+                    if (failOnErrorEnabled) {
+                        Errors errors = (Errors) errorsProperty.getProperty(entity);
+                        throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
+                                + "]", errors);
+                    }
 
-        }
-        return evict;
+                }
+                return evict;
+            }
+        });
+
     }
 
-    public boolean onPreInsert(PreInsertEvent event) {
-        Object entity = event.getEntity();
-        boolean synchronizeState = false;
-        if (beforeInsertCaller != null) {
-            beforeInsertCaller.call(entity);
-            synchronizeState = true;
+    private <T> T doWithManualSession(AbstractEvent event, Closure<T> callable) {
+        Session session = event.getSession();
+        FlushMode current = session.getFlushMode();
+        try {
+           session.setFlushMode(FlushMode.MANUAL);
+           return callable.call();
+        } finally {
+            session.setFlushMode(current);
         }
-        if (shouldTimestamp) {
-            long time = System.currentTimeMillis();
-            if (dateCreatedProperty != null) {
-                Object now = DefaultGroovyMethods.newInstance(dateCreatedProperty.getType(), new Object[] { time });
-                dateCreatedProperty.setProperty(entity, now);
-                synchronizeState = true;
-            }
-            if (lastUpdatedProperty != null) {
-                Object now = DefaultGroovyMethods.newInstance(lastUpdatedProperty.getType(), new Object[] { time });
-                lastUpdatedProperty.setProperty(entity, now);
-                synchronizeState = true;
-            }
-        }
+    }
 
-        if (synchronizeState) {
-            synchronizePersisterState(entity, event.getPersister(), event.getState());
-        }
+    public boolean onPreInsert(final PreInsertEvent event) {
+        return doWithManualSession(event, new Closure<Boolean>(this) {
+            @Override
+            public Boolean call() {
+                Object entity = event.getEntity();
+                boolean synchronizeState = false;
+                if (beforeInsertCaller != null) {
+                    beforeInsertCaller.call(entity);
+                    synchronizeState = true;
+                }
+                if (shouldTimestamp) {
+                    long time = System.currentTimeMillis();
+                    if (dateCreatedProperty != null) {
+                        Object now = DefaultGroovyMethods.newInstance(dateCreatedProperty.getType(), new Object[] { time });
+                        dateCreatedProperty.setProperty(entity, now);
+                        synchronizeState = true;
+                    }
+                    if (lastUpdatedProperty != null) {
+                        Object now = DefaultGroovyMethods.newInstance(lastUpdatedProperty.getType(), new Object[] { time });
+                        lastUpdatedProperty.setProperty(entity, now);
+                        synchronizeState = true;
+                    }
+                }
 
-        boolean evict = false;
-        if (!AbstractSavePersistentMethod.isAutoValidationDisabled(entity)
-                && !DefaultTypeTransformation.castToBoolean(validateMethod.invoke(entity,
-                        new Object[] { validateParams }))) {
-            evict = true;
-            if (failOnErrorEnabled) {
-                Errors errors = (Errors) errorsProperty.getProperty(entity);
-                throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
-                        + "]", errors);
+                if (synchronizeState) {
+                    synchronizePersisterState(entity, event.getPersister(), event.getState());
+                }
+
+                boolean evict = false;
+                if (!AbstractSavePersistentMethod.isAutoValidationDisabled(entity)
+                        && !DefaultTypeTransformation.castToBoolean(validateMethod.invoke(entity,
+                                new Object[] { validateParams }))) {
+                    evict = true;
+                    if (failOnErrorEnabled) {
+                        Errors errors = (Errors) errorsProperty.getProperty(entity);
+                        throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
+                                + "]", errors);
+                    }
+
+                }
+                return evict;
             }
+        });
 
-        }
-        return evict;
     }
 
     private static abstract class EventTriggerCaller {
