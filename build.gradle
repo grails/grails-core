@@ -234,7 +234,7 @@ apply {
 task clean << {
     // add additional dirs
 //    delete(docs.destinationDir, libs.destinationDir)
-    delete(libs.destinationDir)
+    delete("${projectDir}/lib")
     delete(buildDir)
 }
 
