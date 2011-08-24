@@ -31,11 +31,11 @@ class ValidationSupport {
 
         def constraints = object.constrainedProperties
         if(constraints == null) {
-            def constraintsEvaluator = ctx?.getBean(ConstraintsEvaluator.BEAN_NAME) ?: new DefaultConstraintEvaluator()
+            def constraintsEvaluator = ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME) ? ctx.getBean(ConstraintsEvaluator.BEAN_NAME) : new DefaultConstraintEvaluator()
             constraints = object.constrainedProperties = constraintsEvaluator.evaluate(object)
         }
         if (constraints) {
-            def messageSource = ctx?.messageSource
+            def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
             def localErrors = new BeanPropertyBindingResult(object, object.class.name)
             def originalErrors = object.errors
             for(originalError in originalErrors.allErrors) {
