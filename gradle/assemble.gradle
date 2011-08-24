@@ -87,7 +87,7 @@ distSpec = copySpec {
         into "grails-$grailsVersion"
         include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties', 'dependencies.txt',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
-        exclude 'ant/bin'
+        exclude 'ant/bin', 'src/grails', 'src/war'
     }
     from("grails-resources") {
         into "grails-$grailsVersion"
