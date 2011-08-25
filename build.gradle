@@ -244,7 +244,7 @@ task clean << {
     delete buildDir
     delete homeBinDir
     delete homeConfDir
-    delete homeConfDir
+    delete homeDistDir
     delete homeDslSupportDir
     delete homeLibDir
     delete homeSrcDir

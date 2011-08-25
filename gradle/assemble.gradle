@@ -41,7 +41,7 @@ task populateDependencies {
 task libs(dependsOn: getTasksByName("assemble", true))  {
     doFirst dependencyCache
 
-    destinationDir = 'dist'
+    destinationDir = homeDistDir
     doLast {
         copy {
             for (project in subprojects) {
