@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // This is a little fragile, need to find a way to ask Gradle for this info.
 def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
 
-task populateDependencies(type: Copy) {
+task populateDependencies(type: Sync) {
     into homeLibDir
     from(gradleArtifactCache) {
         // Grab all dependencies of all subprojects from the gradle cache
@@ -32,11 +32,12 @@ task populateDependencies(type: Copy) {
     }
 }
 
-task libs(type: Copy, dependsOn: populateDependencies) {
+task libs(type: Sync, dependsOn: populateDependencies) {
     into homeDistDir
     from subprojects*.jar*.outputs*.files
 }
 
+// Can't use sync task here because this directory contains other things as well.
 task sourcesJars(type: Copy) {
     into homeSrcDir
     from subprojects*.sourcesJar*.outputs*.files
