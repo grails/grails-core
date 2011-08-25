@@ -35,6 +35,7 @@ import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -92,12 +93,7 @@ class DomainClassGrailsPlugin {
     }
 
     public static getDefaultConstraints(ConfigObject config) {
-        def constraints = config?.grails?.gorm?.default?.constraints
-        def defaultConstraintsMap = null
-        if (constraints instanceof Closure) {
-            defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
-        }
-        return defaultConstraintsMap
+        ConstraintEvalUtils.getDefaultConstraints(config)
     }
 
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()

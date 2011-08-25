@@ -66,6 +66,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     private boolean embedded;
     private GrailsDomainClass component;
     private boolean basicCollectionType;
+    private Map<String, Object> defaultConstraints;
 
     /**
      * Constructor.
@@ -74,6 +75,16 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     @SuppressWarnings("rawtypes")
     public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor) {
+        this(domainClass, descriptor, null);
+    }
+
+    /**
+     * Constructor.
+     * @param domainClass
+     * @param descriptor
+     */
+    @SuppressWarnings("rawtypes")
+    public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor, Map<String, Object> defaultConstraints) {
         this.domainClass = domainClass;
         name = descriptor.getName();
         naturalName = GrailsNameUtils.getNaturalName(descriptor.getName());
@@ -99,6 +110,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if (Errors.class.isAssignableFrom(type)) {
             persistent = false;
         }
+        this.defaultConstraints = defaultConstraints;
     }
 
     /**
@@ -564,8 +576,12 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             if (tmp != null) transients = tmp;
             properties = createDomainClassProperties(descriptors);
 
-            ConstraintsEvaluator constraintsEvaluator = new DefaultConstraintEvaluator();
+            ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
             constraints = constraintsEvaluator.evaluate(type, properties);
+        }
+
+        private ConstraintsEvaluator getConstraintsEvaluator() {
+            return ((DefaultGrailsDomainClass)DefaultGrailsDomainClassProperty.this.domainClass).getConstraintsEvaluator();
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {
@@ -575,7 +591,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             for (PropertyDescriptor descriptor : descriptors) {
                 if (isPersistentProperty(descriptor)) {
                     DefaultGrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(
-                            this, descriptor);
+                            this, descriptor, defaultConstraints);
                     props.add(property);
                     if (embeddedNames.contains(property.getName())) {
                         property.setEmbedded(true);
@@ -689,7 +705,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public void refreshConstraints() {
-            constraints = new DefaultConstraintEvaluator().evaluate(getClazz(), getPersistentProperties());
+            constraints =getConstraintsEvaluator().evaluate(getClazz(), getPersistentProperties());
         }
 
         public boolean hasSubClasses() {
