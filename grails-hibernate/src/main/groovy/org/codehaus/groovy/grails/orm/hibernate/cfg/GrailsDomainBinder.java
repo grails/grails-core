@@ -54,12 +54,8 @@ import org.hibernate.cfg.SecondPass;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
 import org.hibernate.mapping.Table;
-import org.hibernate.type.ForeignKeyDirection;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.TimestampType;
-import org.hibernate.type.Type;
+import org.hibernate.type.*;
+import org.hibernate.type.SerializableType;
 import org.hibernate.util.StringHelper;
 
 /**
@@ -1619,12 +1615,22 @@ public final class GrailsDomainBinder {
 
             Class<?> userType = getUserType(currentGrailsProp);
 
+
             if (collectionType != null) {
-                // create collection
-                Collection collection = collectionType.create(currentGrailsProp, persistentClass, EMPTY_PATH,
-                        mappings, sessionFactoryBeanName);
-                mappings.addCollection(collection);
-                value = collection;
+                String typeName = getTypeName(currentGrailsProp, getPropertyConfig(currentGrailsProp),gormMapping );
+                if(typeName != null && "serializable".equals(typeName)) {
+                    value = new SimpleValue(mappings,table);
+                    bindSimpleValue(typeName, (SimpleValue)value, currentGrailsProp.isOptional(), getColumnNameForPropertyAndPath(currentGrailsProp,EMPTY_PATH,null , sessionFactoryBeanName), mappings);
+
+                }
+                else {
+                    // create collection
+                    Collection collection = collectionType.create(currentGrailsProp, persistentClass, EMPTY_PATH,
+                            mappings, sessionFactoryBeanName);
+                    mappings.addCollection(collection);
+                    value = collection;
+                }
+
             }
             else if (currentGrailsProp.isEnum()) {
                 value = new SimpleValue(mappings, table);
