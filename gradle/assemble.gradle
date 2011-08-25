@@ -21,7 +21,7 @@ dependencyCache = {
             includes = dependencyIncludes as List
             exclude "org.grails/**"
         }
-        into "$projectDir/lib"
+        into homeLibDir
     }
     copy {
         from (cacheLocation) {
@@ -30,7 +30,7 @@ dependencyCache = {
                         "org.grails/grails-datastore-simple/jars/grails-datastore-simple-${datastoreVersion}.jar",
                         "org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-${gdocEngineVersion}.jar"]
         }
-        into "$projectDir/lib"
+        into homeLibDir
     }
 }
 
@@ -49,7 +49,7 @@ task libs(dependsOn: getTasksByName("assemble", true))  {
                     include "*-${grailsVersion}.jar"
                 }
             }
-            into 'dist'
+            into homeDistDir
         }
         copy {
             from("$projectDir/grails-resources") {
