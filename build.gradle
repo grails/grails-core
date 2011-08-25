@@ -240,15 +240,15 @@ apply {
     from 'gradle/assemble.gradle'
 }
 
-task clean << {
-    delete buildDir
-    delete homeBinDir
-    delete homeConfDir
-    delete homeDistDir
-    delete homeDslSupportDir
-    delete homeLibDir
-    delete homeSrcDir
-    delete libs.destinationDir
+task clean(type: Delete) {
+    delete buildDir,
+           homeBinDir,
+           homeConfDir,
+           homeDistDir,
+           homeDslSupportDir,
+           homeLibDir,
+           homeSrcDir,
+           libs.destinationDir
 }
 
 task installResources << {
