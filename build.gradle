@@ -148,13 +148,6 @@ subprojects { project ->
         }
     }
 
-    assemble.doLast {
-        copy {
-            from(sourcesJar.archivePath)
-            into homeSrcDir
-        }
-    }
-
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
     }
@@ -234,6 +227,7 @@ subprojects { project ->
     }
 }
 
+subprojects.each { evaluationDependsOn it.path }
 
 apply {
     from 'gradle/docs.gradle'
@@ -247,8 +241,7 @@ task clean(type: Delete) {
            homeDistDir,
            homeDslSupportDir,
            homeLibDir,
-           homeSrcDir,
-           libs.destinationDir
+           homeSrcDir
 }
 
 task installResources << {
