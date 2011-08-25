@@ -70,9 +70,6 @@ task pluginsFromSvn {
     }
 }
 
-binExecutables = ["cygrails", "grails", "grails-debug", "grails-debug.bat", "grails.bat"]
-
-
 task zipDist(type: Zip, dependsOn: [libs, sourcesJars]) {
     destinationDir = "${buildDir}/distributions" as File
     baseName = 'grails'
