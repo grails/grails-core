@@ -20,28 +20,28 @@ grails.gorm.default.constraints = {
 
 
     void testEmbeddedDomainWithinDomain() {
-        def p = new Person(name:"Bob")
+        def p = new PersonWithNullableAddress(name:"Bob")
 
         assert p.save(flush:true) != null
 
-        p.address = new Address()
+        p.address = new NullableAddress()
 
         assert p.save(flush:true) != null
 
         session.clear()
 
-        p = Person.get(p.id)
+        p = PersonWithNullableAddress.get(p.id)
 
         assert p.address == null
 
-        p.address = new Address(street:"Blah")
+        p.address = new NullableAddress(street:"Blah")
 
         assert p.save(flush:true) != null
 
         session.clear()
 
 
-        p = Person.get(p.id)
+        p = PersonWithNullableAddress.get(p.id)
 
         assert p.address != null
         assert p.address.street == "Blah"
@@ -49,16 +49,16 @@ grails.gorm.default.constraints = {
     }
 
     @Override protected getDomainClasses() {
-        return [Person]
+        return [PersonWithNullableAddress]
     }
 
 
 }
 @Entity
-class Person {
+class PersonWithNullableAddress {
 
 	String name
-	Address address
+	NullableAddress address
 
 	static embedded = ["address"]
 
@@ -67,7 +67,7 @@ class Person {
 }
 
 
-class Address {
+class NullableAddress {
 	String street
 	String postCode
 }
