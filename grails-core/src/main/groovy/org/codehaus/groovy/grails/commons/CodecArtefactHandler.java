@@ -30,6 +30,6 @@ public class CodecArtefactHandler extends ArtefactHandlerAdapter {
     public boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
         if (clazz == null) return false;
 
-        return clazz.getName().endsWith(DefaultGrailsCodecClass.CODEC);
+        return clazz.getName().endsWith(DefaultGrailsCodecClass.CODEC) && !DomainClassArtefactHandler.isDomainClass(clazz);
     }
 }
