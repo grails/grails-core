@@ -258,7 +258,7 @@ compileTests = { GrailsTestType type, File source, File dest ->
     ant.mkdir(dir: dest.path)
     try {
         def classpathId = "grails.test.classpath"
-        ant.testc(destdir: dest, classpathref: classpathId,
+        ant."${ type.name == 'unit' ? 'testc' : 'groovyc'}"(destdir: dest, classpathref: classpathId,
                   verbose: grailsSettings.verboseCompile, listfiles: grailsSettings.verboseCompile) {
             javac(classpathref: classpathId, debug: "yes")
             src(path: source)

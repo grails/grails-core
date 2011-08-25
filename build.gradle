@@ -38,6 +38,15 @@ springWebflowVersion= "2.0.8.RELEASE"
 archivesBaseName = 'grails'
 version = grailsVersion
 
+// directories created during the build which are related 
+// to turning the workspace root into a GRAILS_HOME
+homeDistDir = file("dist")
+homeBinDir = file("bin")
+homeConfDir = file("conf")
+homeDslSupportDir = file("dsl-support")
+homeLibDir = file("lib")
+homeSrcDir = file("src")
+
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
 // configurations, so place the dependency in a shared variable. The
 // 'compile' is required so that Groovy appears as a dependency in the
@@ -128,24 +137,6 @@ subprojects { project ->
         }
     }
 
-
-
-    install.doLast {
-        copy {
-            from(project.libsDir) {
-                include "*-${grailsVersion}.jar"
-            }
-            into "${rootProject.projectDir}/dist"
-        }
-    }
-
-    assemble.doLast {
-        copy {
-            from(sourcesJar.archivePath)
-            into "${rootProject.projectDir}/src"
-        }
-    }
-
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
     }
@@ -168,6 +159,7 @@ subprojects { project ->
 
     configurations {
         meta
+        published.extendsFrom archives, meta
     }
 
     artifacts {
@@ -175,7 +167,7 @@ subprojects { project ->
         meta javadocJar
     }
 
-    uploadArchives {
+    uploadPublished {
       repositories {
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
@@ -185,11 +177,6 @@ subprojects { project ->
 
         project.deployer = repositories.mavenDeployer {
           repository(url: url) {
-              beforeDeployment { deployment ->
-                  ["sources", "javadoc"].each { type ->
-                      deployment.addArtifact configurations.meta.artifacts.find { it.classifier == type }
-                  }
-              }
               final username = project.properties["artifactoryPublishUsername"]
               final password = project.properties["artifactoryPublishPassword"]
 
@@ -202,8 +189,6 @@ subprojects { project ->
         }
       }
     }
-
-    uploadArchives.dependsOn sourcesJar, javadocJar
 
     /*
         Install a method that can be used to fine tune the poms, e.g…
@@ -225,64 +210,20 @@ subprojects { project ->
     }
 }
 
+task clean(type: Delete) {
+    delete buildDir,
+           homeBinDir,
+           homeConfDir,
+           homeDistDir,
+           homeDslSupportDir,
+           homeLibDir,
+           homeSrcDir
+}
+
+// From this point on we need the subprojects to be fully configured, so force their full evaluation
+subprojects.each { evaluationDependsOn it.path }
 
 apply {
-    from 'gradle/docs.gradle'
-    from 'gradle/assemble.gradle'
+    from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
+    from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
 }
-
-task clean << {
-    // add additional dirs
-//    delete(docs.destinationDir, libs.destinationDir)
-    delete(libs.destinationDir)
-    delete(buildDir)
-}
-
-task installResources << {
-    copy {
-        from('grails-resources/src/grails/home/tests')
-        into('lib')
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-    }
-
-    copy {
-        from("grails-resources/src/grails/home/bash")
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
-        fileMode = 0755
-        into "bin"
-
-    }
-    // the fileMode property above should take care of the chmod work, but
-    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
-    ant.chmod(dir: 'bin', perm: '755', includes: '*')
-
-    copy {
-        from("grails-resources/src/grails/home/conf")
-        into "conf"
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
-        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
-        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
-        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
-        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
-        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
-        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
-    }
-    
-    copy {
-        from 'grails-resources/src/grails/home/dsl-support'
-        into 'dsl-support'
-    }
-    
-    copy {
-        from "grails-resources/src/war/WEB-INF"
-        into 'src/war/WEB-INF'
-    }
-}
-
-
-task install(dependsOn:[populateDependencies, installResources])
-task assemble(dependsOn:zipDist)
