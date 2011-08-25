@@ -205,5 +205,48 @@ class CommandLineParserSpec extends Specification{
             cl.optionValue('host') == "localhost"
 
     }
+	
+	void "Test that parseString handles quoted arguments with double quotes"() {
+       when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml"')
 
+        then:
+            cl.commandName == 'refresh-dependencies'
+            cl.systemProperties.size() == 0
+            cl.remainingArgs.size() == 1
+            cl.remainingArgs == ['file with spaces.xml']
+	}
+
+	void "Test that parseString handles quoted arguments with single quotes"() {
+		when:
+			 def parser = new CommandLineParser()
+			 def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml'")
+ 
+		 then:
+			 cl.commandName == 'refresh-dependencies'
+			 cl.systemProperties.size() == 0
+			 cl.remainingArgs.size() == 1
+			 cl.remainingArgs == ['file with spaces.xml']
+             cl.hasOption('include-sources')
+             cl.optionValue('include-sources') == true
+	 }
+	
+	void "Test that parseString with unbalanced double quotes throws ParseException"() {
+		when:
+			 def parser = new CommandLineParser()
+			 def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml")
+ 
+		 then:
+            thrown ParseException
+	}
+ 
+	void "Test that parseString with unbalanced single quotes throws ParseException"() {
+		when:
+			 def parser = new CommandLineParser()
+			 def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml')
+ 
+		 then:
+            thrown ParseException
+	}
 }

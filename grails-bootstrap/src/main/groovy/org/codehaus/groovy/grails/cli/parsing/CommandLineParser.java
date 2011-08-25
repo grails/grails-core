@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.tools.ant.types.Commandline;
+import org.apache.tools.ant.BuildException;
 
 /**
  * Command line parser that parses arguments to the command line. Written as a
@@ -74,7 +75,11 @@ public class CommandLineParser {
     public CommandLine parseString(String string) {
         // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
     	// Doesn't handle escape sequences with \
-        return parse(Commandline.translateCommandline(string));
+    	try {
+    		return parse(Commandline.translateCommandline(string));
+    	} catch (BuildException e) {
+    		throw new ParseException(e); //Rethrow as an error that clients can expect.
+    	}
     }
 
     /**
