@@ -139,6 +139,7 @@ class DomainClassGrailsPlugin {
     }
 
     def onConfigChange = { event ->
+        ConstraintEvalUtils.clearDefaultConstraints()
         def beans = beans {
             def defaultConstraintsMap = getDefaultConstraints(event.source)
             "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {

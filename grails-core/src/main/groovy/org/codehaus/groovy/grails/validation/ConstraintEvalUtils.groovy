@@ -28,18 +28,20 @@ class ConstraintEvalUtils {
 
     static {
         ShutdownOperations.addOperation({
-            defaultConstraintsMap = null
+            clearDefaultConstraints()
         } as Runnable)
     }
 
     private static defaultConstraintsMap = null
+    private static configId
 
     /**
      * Looks up the default configured constraints from the given configuration
      */
     public static Map<String, Object> getDefaultConstraints(ConfigObject config) {
-        if(defaultConstraintsMap == null) {
-
+        def cid = System.identityHashCode(config)
+        if(defaultConstraintsMap == null || configId != cid) {
+            configId = cid
             def constraints = config?.grails?.gorm?.default?.constraints
             if (constraints instanceof Closure) {
                 defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
@@ -49,6 +51,11 @@ class ConstraintEvalUtils {
             }
         }
         return defaultConstraintsMap
+    }
+
+    public static void clearDefaultConstraints() {
+        defaultConstraintsMap =  null
+        configId = null
     }
 
 }

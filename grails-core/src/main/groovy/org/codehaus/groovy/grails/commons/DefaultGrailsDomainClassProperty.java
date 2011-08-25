@@ -581,7 +581,13 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         private ConstraintsEvaluator getConstraintsEvaluator() {
-            return ((DefaultGrailsDomainClass)DefaultGrailsDomainClassProperty.this.domainClass).getConstraintsEvaluator();
+            GrailsDomainClass domainClass = DefaultGrailsDomainClassProperty.this.domainClass;
+            if(domainClass instanceof DefaultGrailsDomainClass) {
+                return ((DefaultGrailsDomainClass) domainClass).getConstraintsEvaluator();
+            }
+            else {
+                return new DefaultConstraintEvaluator();
+            }
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {
