@@ -8,10 +8,10 @@ dependencyCache = {
             def includeClosure = { artifact ->
                 def dependency = artifact.getResolvedDependency()
                 def file = artifact.file
-                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                }
+                dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+            }
             for (project in subprojects) {
                 project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
                 project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
