@@ -39,7 +39,6 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
 
-    @Override
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
         if(grailsApplication != null) {
