@@ -159,6 +159,7 @@ subprojects { project ->
 
     configurations {
         meta
+        published.extendsFrom archives, meta
     }
 
     artifacts {
@@ -166,7 +167,7 @@ subprojects { project ->
         meta javadocJar
     }
 
-    uploadArchives {
+    uploadPublished {
       repositories {
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
@@ -176,11 +177,6 @@ subprojects { project ->
 
         project.deployer = repositories.mavenDeployer {
           repository(url: url) {
-              beforeDeployment { deployment ->
-                  ["sources", "javadoc"].each { type ->
-                      deployment.addArtifact configurations.meta.artifacts.find { it.classifier == type }
-                  }
-              }
               final username = project.properties["artifactoryPublishUsername"]
               final password = project.properties["artifactoryPublishPassword"]
 
@@ -193,8 +189,6 @@ subprojects { project ->
         }
       }
     }
-
-    uploadArchives.dependsOn sourcesJar, javadocJar
 
     /*
         Install a method that can be used to fine tune the poms, e.g…
