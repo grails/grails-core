@@ -40,12 +40,12 @@ version = grailsVersion
 
 // directories created during the build which are related 
 // to turning the workspace root into a GRAILS_HOME
-homeDistDir = "${rootProject.projectDir}/dist"
-homeBinDir = "${rootProject.projectDir}/bin"
-homeConfDir = "${rootProject.projectDir}/conf"
-homeDslSupportDir = "${rootProject.projectDir}/dsl-support"
-homeLibDir = "${rootProject.projectDir}/lib"
-homeSrcDir = "${rootProject.projectDir}/src"
+homeDistDir = file("dist")
+homeBinDir = file("bin")
+homeConfDir = file("conf")
+homeDslSupportDir = file("dsl-support")
+homeLibDir = file("lib")
+homeSrcDir = file("src")
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
 // configurations, so place the dependency in a shared variable. The
@@ -137,17 +137,6 @@ subprojects { project ->
         }
     }
 
-
-
-    install.doLast {
-        copy {
-            from(project.libsDir) {
-                include "*-${grailsVersion}.jar"
-            }
-            into homeDistDir
-        }
-    }
-
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
     }
@@ -227,13 +216,6 @@ subprojects { project ->
     }
 }
 
-subprojects.each { evaluationDependsOn it.path }
-
-apply {
-    from 'gradle/docs.gradle'
-    from 'gradle/assemble.gradle'
-}
-
 task clean(type: Delete) {
     delete buildDir,
            homeBinDir,
@@ -244,51 +226,10 @@ task clean(type: Delete) {
            homeSrcDir
 }
 
-task installResources << {
-    copy {
-        from('grails-resources/src/grails/home/tests')
-        into(homeLibDir)
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-    }
+// From this point on we need the subprojects to be fully configured, so force their full evaluation
+subprojects.each { evaluationDependsOn it.path }
 
-    copy {
-        from("grails-resources/src/grails/home/bash")
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
-        fileMode = 0755
-        into homeBinDir
-
-    }
-    // the fileMode property above should take care of the chmod work, but
-    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
-    ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
-
-    copy {
-        from("grails-resources/src/grails/home/conf")
-        into homeConfDir
-        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
-        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
-        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
-        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
-        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
-        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
-        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
-    }
-    
-    copy {
-        from 'grails-resources/src/grails/home/dsl-support'
-        into homeDslSupportDir
-    }
-    
-    copy {
-        from "grails-resources/src/war/WEB-INF"
-        into "${homeSrcDir}/war/WEB-INF"
-    }
+apply {
+    from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
+    from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
 }
-
-
-task install(dependsOn:[populateDependencies, installResources])
-task assemble(dependsOn:zipDist)

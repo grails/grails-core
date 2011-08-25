@@ -139,3 +139,51 @@ task zipDist(type: Zip, dependsOn: [libs, sourcesJars]) {
     appendix = 'docs'
     from docs.destinationDir
 }*/
+
+task installResources(type: Copy) {
+    into projectDir // not actually used, but has to be set to something
+    
+    into(homeLibDir.name) {
+        from('grails-resources/src/grails/home/tests')
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+    }
+
+    into(homeBinDir.name) {
+        from("grails-resources/src/grails/home/bash")
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
+        fileMode = 0755
+    }
+
+    // the fileMode property above should take care of the chmod work, but
+    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
+    doLast {
+        ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
+    }
+
+    into(homeConfDir.name) {
+        from("grails-resources/src/grails/home/conf")
+        
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
+        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
+        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
+        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
+        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
+        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
+        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
+    }
+    
+    into(homeDslSupportDir.name) {
+        from 'grails-resources/src/grails/home/dsl-support'
+    }
+    
+    into ("$homeSrcDir.name/war/WEB-INF") {
+        from "grails-resources/src/war/WEB-INF"
+    }
+}
+
+task install(dependsOn: [populateDependencies, libs, installResources])
+task assemble(dependsOn: zipDist)
