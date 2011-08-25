@@ -3,15 +3,22 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // This is a little fragile, need to find a way to ask Gradle for this info.
 def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
 
-// The configurations of which we collect all the dependencies of for our lib dir
-def dependencyConfigurationNames = ["compile", "runtime", "jsp21", "agent"]
-def dependencyConfigurations = subprojects.collect { project ->
-    dependencyConfigurationNames.collect { 
-        project.configurations.findByName(it) 
+// The configurations of which we collect all the dependencies of for our lib dir.
+// Notice that we exclude all project dependencies as we do NOT want jars built by this project
+// to be part of the configuration. This also avoids building those jars when running this task.
+def libsConfigurations = []
+subprojects {
+    configurations {
+        libsConfigurations << libs { 
+            extendsFrom compile, runtime
+            ["jsp21", "agent"].collect { configurations.findByName("jsp21") }.findAll { it != null }.each { extendsFrom it }
+        }.copyRecursive {
+            !(it instanceof org.gradle.api.artifacts.ProjectDependency)
+        }
     }
-}.flatten().findAll { it != null }
+}
 
-task populateDependencies(type: Sync, dependsOn: dependencyConfigurations) {
+task populateDependencies(type: Sync, dependsOn: libsConfigurations) {
     into homeLibDir
     
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
@@ -20,23 +27,14 @@ task populateDependencies(type: Sync, dependsOn: dependencyConfigurations) {
     gradle.taskGraph.whenReady { taskGraph ->
        if (taskGraph.hasTask(':populateDependencies')) {
            from(gradleArtifactCache) {
-               dependencyConfigurations.each { configuration ->
-                   configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                       def dependency = artifact.getResolvedDependency()
+               libsConfigurations*.resolvedConfiguration*.resolvedArtifacts*.each { artifact ->
+                   def dependency = artifact.getResolvedDependency()
 
-                       if (dependency.moduleGroup != "org.grails") {
-                           def file = artifact.file
-                           include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                           include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                           include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                       }
-                   }
+                   def file = artifact.file
+                   include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                   include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                   include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
                }
-
-               include "org.grails/grails-datastore-core/jars/grails-datastore-core-${datastoreVersion}.jar",
-                       "org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-${datastoreVersion}.jar",
-                       "org.grails/grails-datastore-simple/jars/grails-datastore-simple-${datastoreVersion}.jar",
-                       "org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-${gdocEngineVersion}.jar"
            }
        }
     }
