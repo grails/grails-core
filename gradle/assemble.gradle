@@ -3,32 +3,42 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // This is a little fragile, need to find a way to ask Gradle for this info.
 def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
 
-task populateDependencies(type: Sync) {
-    into homeLibDir
-    from(gradleArtifactCache) {
-        // Grab all dependencies of all subprojects from the gradle cache
-        for (project in subprojects) {
-            ["compile", "runtime", "jsp21", "agent"].each { configurationName ->
-                def configuration = project.configurations.findByName(configurationName)
-                if (configuration) {
-                    configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                        def dependency = artifact.getResolvedDependency()
+// The configurations of which we collect all the dependencies of for our lib dir
+def dependencyConfigurationNames = ["compile", "runtime", "jsp21", "agent"]
+def dependencyConfigurations = subprojects.collect { project ->
+    dependencyConfigurationNames.collect { 
+        project.configurations.findByName(it) 
+    }
+}.flatten().findAll { it != null }
 
-                        if (dependency.moduleGroup != "org.grails") {
-                            def file = artifact.file
-                            include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                            include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                            include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                        }
-                    }
-                }
-            }
-        }
-        
-        include "org.grails/grails-datastore-core/jars/grails-datastore-core-${datastoreVersion}.jar",
-                "org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-${datastoreVersion}.jar",
-                "org.grails/grails-datastore-simple/jars/grails-datastore-simple-${datastoreVersion}.jar",
-                "org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-${gdocEngineVersion}.jar"
+task populateDependencies(type: Sync, dependsOn: dependencyConfigurations) {
+    into homeLibDir
+    
+    // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
+    // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
+    // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
+    gradle.taskGraph.whenReady { taskGraph ->
+       if (taskGraph.hasTask(':populateDependencies')) {
+           from(gradleArtifactCache) {
+               dependencyConfigurations.each { configuration ->
+                   configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                       def dependency = artifact.getResolvedDependency()
+
+                       if (dependency.moduleGroup != "org.grails") {
+                           def file = artifact.file
+                           include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                           include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                           include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                       }
+                   }
+               }
+
+               include "org.grails/grails-datastore-core/jars/grails-datastore-core-${datastoreVersion}.jar",
+                       "org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-${datastoreVersion}.jar",
+                       "org.grails/grails-datastore-simple/jars/grails-datastore-simple-${datastoreVersion}.jar",
+                       "org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-${gdocEngineVersion}.jar"
+           }
+       }
     }
 }
 
