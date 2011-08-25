@@ -11,7 +11,7 @@ subprojects {
     configurations {
         libsConfigurations << libs { 
             extendsFrom compile, runtime
-            ["jsp21", "agent"].collect { configurations.findByName("jsp21") }.findAll { it != null }.each { extendsFrom it }
+            ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
         }.copyRecursive {
             !(it instanceof org.gradle.api.artifacts.ProjectDependency)
         }
