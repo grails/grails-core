@@ -162,7 +162,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
 
         List<Class<?>> allClasses = getAllDomainClassesInHierarchy();
         for(Class currentClass : allClasses) {
-            Object transientProperty = GrailsClassUtils.getStaticPropertyValue(currentClass, TRANSIENT);
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(currentClass);
+            Object transientProperty = propertyFetcher.getPropertyValue(TRANSIENT, false);
             if(transientProperty instanceof List) {
                 List transientList = (List) transientProperty;
                 allTransientProps.addAll(transientList);
