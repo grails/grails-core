@@ -159,43 +159,30 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private List getTransients() {
         List allTransientProps = new ArrayList();
-        List<GrailsDomainClass> allClasses = resolveAllDomainClassesInHierarchy();
 
-        for (GrailsDomainClass currentDomainClass : allClasses) {
-            List transientProps = currentDomainClass.getPropertyValue(TRANSIENT, List.class);
-            if (transientProps != null) {
-                allTransientProps.addAll(transientProps);
-            }
-
-            // Undocumented feature alert! Steve insisted on this :-)
-            List evanescent = currentDomainClass.getPropertyValue(EVANESCENT, List.class);
-            if (evanescent != null) {
-                allTransientProps.addAll(evanescent);
+        List<Class<?>> allClasses = getAllDomainClassesInHierarchy();
+        for(Class currentClass : allClasses) {
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(currentClass);
+            Object transientProperty = propertyFetcher.getPropertyValue(TRANSIENT, false);
+            if(transientProperty instanceof List) {
+                List transientList = (List) transientProperty;
+                allTransientProps.addAll(transientList);
             }
         }
+        
         return allTransientProps;
     }
-
-    /**
-     * returns list of current domainclass and all of its superclasses.
-     *
-     * @return
-     */
-    private List<GrailsDomainClass> resolveAllDomainClassesInHierarchy() {
-        List<GrailsDomainClass> allClasses = new ArrayList<GrailsDomainClass>();
-        GrailsApplication application = domainClass.getGrailsApplication();
-        GrailsDomainClass currentDomainClass = domainClass;
-        while (currentDomainClass != null) {
-            allClasses.add(currentDomainClass);
-            if (application != null) {
-                currentDomainClass = (GrailsDomainClass)application.getArtefact(
-                        DomainClassArtefactHandler.TYPE, currentDomainClass.getClazz().getSuperclass().getName());
-            }
-            else {
-                currentDomainClass = null;
-            }
+    
+    private List<Class<?>> getAllDomainClassesInHierarchy() {
+        List<Class<?>> classesInHierarchy = new ArrayList<Class<?>>();
+        
+        Class<?> currentClass = domainClass.getClazz();
+        while(currentClass != null) {
+            classesInHierarchy.add(currentClass);
+            Class<?> superClass = currentClass.getSuperclass();
+            currentClass = DomainClassArtefactHandler.isDomainClass(superClass) ? superClass : null;
         }
-        return allClasses;
+        return classesInHierarchy;
     }
 
     /* (non-Javadoc)

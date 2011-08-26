@@ -40,8 +40,6 @@ class FormTagLib {
                                                    'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
                                                    'XPF', 'ILS', 'ROL', 'TRL']
 
-    def out // to facilitate testing
-
     def grailsApplication
 
     /**

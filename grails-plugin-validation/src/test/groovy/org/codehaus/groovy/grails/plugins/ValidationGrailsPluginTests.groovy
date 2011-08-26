@@ -39,6 +39,17 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
         assertFalse svc.validate()
     }
 
+    void testGroovyTruthForErrors() {
+        def svc = new SomeValidateableClass()
+        svc.name = 'Jeff'
+        svc.validate()
+        assert !svc.errors
+        
+        svc.name = 'Zack'
+        svc.validate()
+        assert svc.errors
+    }
+    
     void testInheritedConstraints() {
         if (notYetImplemented()) return
         def svc = new SomeValidateableSubclass()

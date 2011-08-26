@@ -56,8 +56,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 @Artefact("TagLibrary")
 class RenderTagLib implements RequestConstants {
 
-    def out // to facilitate testing
-
     ServletConfig servletConfig
     GrailsConventionGroovyPageLocator groovyPageLocator
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
