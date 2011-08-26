@@ -40,8 +40,6 @@ class FormTagLib {
                                                    'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
                                                    'XPF', 'ILS', 'ROL', 'TRL']
 
-    def grailsApplication
-
     /**
      * Creates a new text field.
      *
