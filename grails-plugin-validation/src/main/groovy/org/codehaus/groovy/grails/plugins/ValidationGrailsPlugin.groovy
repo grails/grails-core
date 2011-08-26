@@ -36,6 +36,10 @@ class ValidationGrailsPlugin {
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx ->
+        Errors.metaClass.asBoolean = { ->
+            delegate.hasErrors()
+        }
+        
         // grab all of the classes specified in the application config
         application.config?.grails?.validateable?.classes?.each { validateableClass ->
             if (validateableClass instanceof Class) {
