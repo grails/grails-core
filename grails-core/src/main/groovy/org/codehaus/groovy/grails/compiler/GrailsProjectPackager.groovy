@@ -316,7 +316,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
     void packageTlds() {
         // We don't know until runtime what servlet version to use, so
         // install the relevant TLDs now.
-        copyGrailsResources("${basedir}/web-app/WEB-INF/tld", "web-app/WEB-INF/tld/${servletVersion}/*", false)
+        copyGrailsResources("${basedir}/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*", false)
     }
 
     void packageTemplates(scaffoldDir) {
