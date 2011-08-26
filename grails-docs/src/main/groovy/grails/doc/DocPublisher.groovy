@@ -145,11 +145,11 @@ class DocPublisher {
         ant.mkdir(dir: refPagesDir)
         ant.mkdir(dir: "$refDocsDir/ref")
 
-        String imgsDir = "${refDocsDir}/img"
+        String imgsDir = new File(refDocsDir, calculatePathToResources("img")).path
         ant.mkdir(dir: imgsDir)
-        String cssDir = "${refDocsDir}/css"
+        String cssDir = new File(refDocsDir, calculatePathToResources("css")).path
         ant.mkdir(dir: cssDir)
-        String jsDir = "${refDocsDir}/js"
+        String jsDir = new File(refDocsDir, calculatePathToResources("js")).path
         ant.mkdir(dir: jsDir)
         ant.mkdir(dir: "${refDocsDir}/ref")
 
