@@ -448,7 +448,7 @@ public final class GrailsDomainBinder {
 
                 associatedClass = (PersistentClass) persistentClasses.get(associatedClassName);
                 if(associatedClass != null) {
-                    collection.setOrderBy(buildOrderByClause(propertyToSortBy.getName(), associatedClass, collection.getRole(), propConfig.getOrder()));
+                    collection.setOrderBy(buildOrderByClause(propertyToSortBy.getName(), associatedClass, collection.getRole(), propConfig.getOrder() != null ? propConfig.getOrder() : "asc"));
                 }
             }
         }
@@ -603,7 +603,7 @@ public final class GrailsDomainBinder {
 				// add last one ordering
 				if ( currentOrdering == null ) {
 					//default ordering
-					ordering.add( "asc" );
+					ordering.add(defaultOrder );
 				}
 				else {
 					ordering.add( currentOrdering );
