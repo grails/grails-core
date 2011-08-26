@@ -43,9 +43,7 @@ class ControllerTransformerSpec extends Specification {
         then:
             1 == getterMethods?.size()
             GrailsApplication == getterMethods[0].returnType
-            1 == setterMethods?.size()
-            1 == setterMethods[0].paramsCount
-            GrailsApplication == setterMethods[0].parameterTypes[0].theClass
+            0 == setterMethods?.size()
 
         when:
             getterMethods = grailsApplicationControllerClass.metaClass.methods.findAll { 'getGrailsApplication' == it.name }
