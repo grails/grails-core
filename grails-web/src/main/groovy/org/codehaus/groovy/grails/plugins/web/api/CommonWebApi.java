@@ -40,7 +40,7 @@ import javax.servlet.http.HttpSession;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class CommonWebApi implements ServletContextAware, ApplicationContextAware{
+public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware{
     private GrailsPluginManager pluginManager;
     private GrailsApplication grailsApplication;
     private ServletContext servletContext;
@@ -184,10 +184,10 @@ public class CommonWebApi implements ServletContextAware, ApplicationContextAwar
         return pluginPath !=null ? pluginPath : "";
     }
 
-    public void setGrailsApplication(@SuppressWarnings("unused") Object instance, GrailsApplication grailsApplication) {
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
-
+    
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
