@@ -120,8 +120,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
                         && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
 
-                    methodNames.add(methodName);
-                    configureMappingForMethodAction(methodName);
+                    if(!methodName.endsWith(FLOW_SUFFIX)) {
+
+                        methodNames.add(methodName);
+                        configureMappingForMethodAction(methodName);
+                    }
                 }
             }
             superClass = superClass.getSuperclass();
@@ -161,8 +164,8 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public boolean mapsToURI(@SuppressWarnings("hiding") String uri) {
-        for (int i = 0; i < uris.length; i++) {
-            if (pathMatcher.match(uris[i], uri)) {
+        for (String uri1 : uris) {
+            if (pathMatcher.match(uri1, uri)) {
                 return true;
             }
         }

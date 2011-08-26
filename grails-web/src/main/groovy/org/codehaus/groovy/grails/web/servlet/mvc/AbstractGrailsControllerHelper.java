@@ -138,6 +138,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
 
         String actionName = controllerClass.getMethodActionName(uri);
+        if(controllerClass.isFlowAction(actionName)) {
+            // direct access to flow action not allowed
+            return null;
+        }
         grailsWebRequest.setActionName(actionName);
 
         if (LOG.isDebugEnabled()) {
