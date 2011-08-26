@@ -181,11 +181,11 @@ public class GrailsASTUtils {
             return null;
         }
         String propertyName = GrailsClassUtils.getPropertyForGetter(methodName);
-        if(propertyName != null && classNode.hasProperty(propertyName)) {
+        if(propertyName != null && parameterTypes.length == 0 && classNode.hasProperty(propertyName)) {
             return null;
         }
         propertyName = GrailsClassUtils.getPropertyForSetter(methodName);
-        if(propertyName != null && classNode.hasProperty(propertyName)) {
+        if(propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
             return null;
         }
         
