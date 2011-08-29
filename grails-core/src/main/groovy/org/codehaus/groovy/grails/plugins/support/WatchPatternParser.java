@@ -59,7 +59,11 @@ public class WatchPatternParser {
     private void setExtension(String pattern, WatchPattern watchPattern) {
         int i = pattern.lastIndexOf('*');
         if (i > -1) {
-            watchPattern.setExtension(pattern.substring(i+1, pattern.length()));
+            String extension = pattern.substring(i + 1, pattern.length());
+            if(extension.startsWith(".")) {
+                extension = extension.substring(1);
+            }
+            watchPattern.setExtension(extension);
         }
         else {
             String ext = StringUtils.getFilenameExtension(pattern);
