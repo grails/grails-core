@@ -50,7 +50,11 @@ class GrailsUnitTestMixin {
     static ConfigObject config
     static StaticMessageSource messageSource
 
-    private static List emcEvents = []
+    private static Set changedMetaClasses = []
+    private static metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
+        GrailsUnitTestMixin.changedMetaClasses << event.getClassToUpdate()
+    } as MetaClassRegistryChangeEventListener
+
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
 
@@ -62,6 +66,7 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
+        registerMetaClassRegistryWatcher()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
@@ -90,6 +95,19 @@ class GrailsUnitTestMixin {
         grailsApplication?.clear()
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        cleanupModifiedMetaClasses()
+    }
+
+    static void registerMetaClassRegistryWatcher() {
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
+    }
+
+
+    static void cleanupModifiedMetaClasses() {
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
+        for(Class cls in changedMetaClasses) {
+            GroovySystem.metaClassRegistry.removeMetaClass(cls)
+        }
     }
 
     /**
@@ -187,21 +205,7 @@ class GrailsUnitTestMixin {
         Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
 
-    private metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
-        GrailsUnitTestMixin.emcEvents << event
-    } as MetaClassRegistryChangeEventListener
 
-    @Before
-    void registerMetaClassRegistryWatcher() {
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
-    }
-
-    @After
-    void cleanupModifiedMetaClasses() {
-        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
-        emcEvents*.clazz.each { GroovySystem.metaClassRegistry.removeMetaClass(it)}
-        emcEvents.clear()
-    }
 
     @AfterClass
     static void shutdownApplicationContext() {
@@ -213,5 +217,6 @@ class GrailsUnitTestMixin {
 
         applicationContext = null
         grailsApplication = null
+        changedMetaClasses.clear()
     }
 }
