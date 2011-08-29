@@ -922,12 +922,45 @@ class MockUtils {
         // to a domain class, then create a validator for it. This gives
         // us support for cascading validation, as well as being the
         // "real deal" (the validator used by running applications).
+        def constrainedProperties
         if (dc) {
             def v = new GrailsDomainClassValidator()
             v.domainClass = dc
+            constrainedProperties = constraintsEvaluator.evaluate(clazz, dc.properties)
+        }
+        else {
+            def constraintsBuilder = new ConstrainedPropertyBuilder(clazz)
+            // Get clazz's class hierarchy up to, but not including, Object
+            // as a linked list. The list starts with the ultimate base class
+            // and ends with "clazz".
+            LinkedList classChain = new LinkedList()
+            while (clazz != Object.class) {
+                classChain.addFirst(clazz)
+                clazz = clazz.getSuperclass()
+            }
+
+            // Now get build up our constraints from all "constraints"
+            // properties in all the classes in the hierarchy.
+            for (Iterator it = classChain.iterator(); it.hasNext();) {
+                clazz = (Class) it.next()
+                // Read the constraints.
+                def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
+
+                if (c) {
+                    c = c.clone()
+                    c.delegate = constraintsBuilder
+                    try {
+                        c.call()
+                    } finally {
+                        c.delegate = null
+                    }
+                }
+            }
+
+            constrainedProperties = constraintsBuilder.constrainedProperties
         }
 
-        def constrainedProperties = constraintsEvaluator.evaluate(clazz, dc.properties)
+
         // Attach the instantiated constraints to the domain/command
         // object.
         clazz.metaClass.getConstraints = {->
