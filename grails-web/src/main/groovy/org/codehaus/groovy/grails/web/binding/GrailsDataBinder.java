@@ -273,7 +273,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor(Locale.class, new LocaleEditor());
         binder.registerCustomEditor(TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor(URI.class, new UriEditor());
-        DefaultConversionService conversionService = new DefaultConversionService();
+        GenericConversionService conversionService = new GenericConversionService();
         conversionService.addConverter(new GenericConverter(){
 
             @Override
@@ -495,7 +495,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isNotCandidateForBinding(Object value) {
-        return value instanceof GrailsParameterMap || value instanceof JSONObject || ((value instanceof Map) && ((Map)value).isEmpty());
+        return value instanceof GrailsParameterMap || value instanceof JSONObject;
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
