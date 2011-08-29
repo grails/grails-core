@@ -34,7 +34,7 @@ class SitemeshTagLib implements RequestConstants {
 
     static namespace = 'sitemesh'
 
-    def captureTagContent(writer, tagname, attrs, body) {
+    def captureTagContent(writer, tagname, attrs, body, noEndTagForEmpty=false) {
         def content = null
         if (body != null) {
             if (body instanceof Closure) {
@@ -50,11 +50,11 @@ class SitemeshTagLib implements RequestConstants {
         }
         writer << '<'
         writer << tagname
-        def htmlClosingForEmptyTag = false
+        def useXmlClosingForEmptyTag = false
         if (attrs) {
             def xmlClosingString = attrs.remove(SitemeshPreprocessor.XML_CLOSING_FOR_EMPTY_TAG_ATTRIBUTE_NAME)
-            if (xmlClosingString!='/') {
-                htmlClosingForEmptyTag = true
+            if (xmlClosingString=='/') {
+                useXmlClosingForEmptyTag = true
             }
             attrs.each { k, v ->
                 writer << " ${k}=\"${v.encodeAsHTML()}\""
@@ -70,10 +70,19 @@ class SitemeshTagLib implements RequestConstants {
             writer << '>'
         }
         else {
-            if (htmlClosingForEmptyTag) {
+            if (!useXmlClosingForEmptyTag) {
                 writer << '>'
+				// in valid HTML , closing of an empty tag depends on the element name 
+				// for empty title, the tag must be closed properly
+				// for empty meta tag shouldn't be closed at all, see GRAILS-5696
+				if(!noEndTagForEmpty) {
+					writer << '</'
+					writer << tagname
+					writer << '>'
+				}
             }
             else {
+				// XML / XHTML empty tag
                 writer << '/>'
             }
         }
@@ -155,7 +164,7 @@ class SitemeshTagLib implements RequestConstants {
      * Captures the individual &lt;meta&gt; tags.
      */
     Closure captureMeta = { attrs, body ->
-        def content = captureTagContent(out, 'meta', attrs, body)
+        def content = captureTagContent(out, 'meta', attrs, body, true)
         GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
         def val = attrs.content?.toString()
         if (attrs && smpage && val != null) {
