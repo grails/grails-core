@@ -165,7 +165,6 @@ public class GroovyPageParser implements Tokens {
         Object instance;
         boolean isDynamic;
         boolean hasAttributes;
-        String foreachRenamedIt = null;
         int lineNumber;
         boolean emptyTag;
         @SuppressWarnings("hiding") int tagIndex;
@@ -499,17 +498,6 @@ public class GroovyPageParser implements Tokens {
         if (text.endsWith("?")) {
             text = text.substring(0, text.length() - 1);
             safeDereference = _safeDereference;
-        }
-        if (!tagMetaStack.empty()){
-            String renamedIt = tagMetaStack.peek().foreachRenamedIt;
-            if (renamedIt != null){
-               if (text.equals("it")) {
-                   text = renamedIt;
-               }
-               text = text.replaceAll("([^\\w_$])(it)([^\\w_$])","$1"+renamedIt+"$3");
-               text = text.replaceAll("^(it)([^\\w_$])+",renamedIt+"$2");
-               text = text.replaceAll("([^\\w_$])+(it)$","$1"+renamedIt);
-            }
         }
         if (!precompileMode &&
                 (environment == Environment.DEVELOPMENT || environment == Environment.TEST)) {
@@ -1079,7 +1067,6 @@ public class GroovyPageParser implements Tokens {
             tag.doStartTag();
 
             tm.instance = tag;
-            tm.foreachRenamedIt = tag.getForeachRenamedIt();
         }
         else {
             // Custom taglibs have to always flush the whitespace, there's no

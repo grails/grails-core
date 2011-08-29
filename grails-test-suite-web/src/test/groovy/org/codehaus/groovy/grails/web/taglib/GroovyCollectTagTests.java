@@ -67,6 +67,6 @@ public class GroovyCollectTagTests extends TestCase {
         assertFalse(tag.attributes.isEmpty());
         tag.doStartTag();
 
-        assertEquals("for( "+tag.getForeachRenamedIt()+" in evaluate('myObj.collect {it.name}', 1, it) { return myObj.collect {it.name} } ) {"+ System.getProperty("line.separator"),sw.toString());
+        assertEquals("for( "+tag.getForeachRenamedIt()+" in evaluate('myObj.collect {it.name}', 1, it) { return myObj.collect {it.name} } ) {"+ System.getProperty("line.separator") + "changeItVariable(" + tag.getForeachRenamedIt() + ")" + System.getProperty("line.separator"),sw.toString());
     }
 }

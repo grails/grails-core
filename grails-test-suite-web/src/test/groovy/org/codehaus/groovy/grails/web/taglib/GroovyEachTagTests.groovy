@@ -18,7 +18,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-       assertEquals("for( "+tag.getForeachRenamedIt()+" in test ) {"+ System.getProperty("line.separator"),sw.toString())
+       assertEquals("for( "+tag.getForeachRenamedIt()+" in test ) {"+ System.getProperty("line.separator")+ "changeItVariable(" + tag.getForeachRenamedIt() + ")" + System.getProperty("line.separator"),sw.toString())
     }
 
     void testSimpleEach() {
@@ -34,7 +34,7 @@ class GroovyEachTagTests extends GroovyTestCase {
 
         tag.doStartTag()
 
-        assertEquals("for( "+tag.getForeachRenamedIt()+" in test ) {"+ System.getProperty("line.separator"),sw.toString())
+        assertEquals("for( "+tag.getForeachRenamedIt()+" in test ) {"+ System.getProperty("line.separator")+ "changeItVariable(" + tag.getForeachRenamedIt() + ")" + System.getProperty("line.separator"),sw.toString())
     }
 
     void testEachWithVar() {
