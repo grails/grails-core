@@ -273,22 +273,22 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor(Locale.class, new LocaleEditor());
         binder.registerCustomEditor(TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor(URI.class, new UriEditor());
-        GenericConversionService conversionService = new GenericConversionService();
-        conversionService.addConverter(new GenericConverter(){
-
-            @Override
-            public Set<ConvertiblePair> getConvertibleTypes() {
-                return Collections.singleton(new ConvertiblePair(Map.class, Object.class));
-            }
-
-            @Override
-            public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
-                Object obj = BeanUtils.instantiate(targetType.getObjectType());
-                createBinder(obj, obj.getClass().getName()).bind(new MutablePropertyValues((Map<?, ?>) source));
-                return obj;
-            }
-        });
-        binder.setConversionService(conversionService);
+//        GenericConversionService conversionService = new GenericConversionService();
+//        conversionService.addConverter(new GenericConverter(){
+//
+//            @Override
+//            public Set<ConvertiblePair> getConvertibleTypes() {
+//                return Collections.singleton(new ConvertiblePair(Map.class, Object.class));
+//            }
+//
+//            @Override
+//            public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+//                Object obj = BeanUtils.instantiate(targetType.getObjectType());
+//                createBinder(obj, obj.getClass().getName()).bind(new MutablePropertyValues((Map<?, ?>) source));
+//                return obj;
+//            }
+//        });
+//        binder.setConversionService(conversionService);
 
 
 
@@ -495,7 +495,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isNotCandidateForBinding(Object value) {
-        return value instanceof GrailsParameterMap || value instanceof JSONObject;
+        return value instanceof Map;
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
