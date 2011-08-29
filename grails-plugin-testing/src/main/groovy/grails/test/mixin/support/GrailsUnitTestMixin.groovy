@@ -35,6 +35,7 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -97,7 +98,8 @@ class GrailsUnitTestMixin {
      * to test the constraints on the class.
      */
     void mockForConstraintsTests(Class clazz, List instances = []) {
-        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances)
+        ConstraintEvalUtils.clearDefaultConstraints()
+        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
     }
 
     /**

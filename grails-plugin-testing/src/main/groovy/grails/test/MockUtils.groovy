@@ -44,6 +44,7 @@ import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 
 /**
  * A utility/helper class for mocking various types of Grails artifacts
@@ -538,12 +539,12 @@ class MockUtils {
      * need properties that match the fields taking part in the unique
      * constraints.
      */
-    static void prepareForConstraintsTests(Class clazz, Map errorsMap, List testInstances = []) {
+    static void prepareForConstraintsTests(Class clazz, Map errorsMap, List testInstances = [], Map defaultConstraints = [:]) {
         def dc = null
         if (DomainClassArtefactHandler.isDomainClass(clazz))
-           dc = new DefaultGrailsDomainClass(clazz)
+           dc = new DefaultGrailsDomainClass(clazz, defaultConstraints)
 
-        addValidateMethod(clazz, dc, errorsMap, testInstances)
+        addValidateMethod(clazz, dc, errorsMap, testInstances, defaultConstraints)
 
         // Note that if the test instances are of type "clazz", they
         // will not have the extra dynamic methods because they were
@@ -913,8 +914,9 @@ class MockUtils {
             Class clazz,
             final GrailsDomainClass dc,
             final Map errorsMap,
-            final List testInstances = []) {
-        def constraintsBuilder = new ConstrainedPropertyBuilder(clazz.newInstance())
+            final List testInstances = [],
+            final Map defaultConstraints = [:]) {
+        def constraintsEvaluator = new DefaultConstraintEvaluator(defaultConstraints)
 
         // If we have a GrailsDomainClass, i.e. we are adding the method
         // to a domain class, then create a validator for it. This gives
@@ -925,37 +927,11 @@ class MockUtils {
             v.domainClass = dc
         }
 
-        // Get clazz's class hierarchy up to, but not including, Object
-        // as a linked list. The list starts with the ultimate base class
-        // and ends with "clazz".
-        LinkedList classChain = new LinkedList()
-        while (clazz != Object.class) {
-            classChain.addFirst(clazz)
-            clazz = clazz.getSuperclass()
-        }
-
-        // Now get build up our constraints from all "constraints"
-        // properties in all the classes in the hierarchy.
-        for (Iterator it = classChain.iterator(); it.hasNext();) {
-            clazz = (Class) it.next()
-            // Read the constraints.
-            def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
-
-            if (c) {
-                c = c.clone()
-                c.delegate = constraintsBuilder
-                try {
-                    c.call()
-                } finally {
-                    c.delegate = null
-                }
-            }
-        }
-
+        def constrainedProperties = constraintsEvaluator.evaluate(clazz, dc.properties)
         // Attach the instantiated constraints to the domain/command
         // object.
         clazz.metaClass.getConstraints = {->
-            constraintsBuilder.constrainedProperties
+            constrainedProperties
         }
 
         // Add data binding capabilities
@@ -1010,7 +986,7 @@ class MockUtils {
             // that, we also do the normal validation for the case where
             // we don't have a GDC, i.e. if we're validating a command
             // object.
-            constraintsBuilder.constrainedProperties.each { property, constraint ->
+            constrainedProperties.each { property, constraint ->
                 // Only perform the validation if we don't have a GDC
                 // (since if there is one the validation has already
                 // been done).
