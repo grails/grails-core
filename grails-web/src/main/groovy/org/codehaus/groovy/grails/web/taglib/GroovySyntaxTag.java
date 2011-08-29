@@ -46,6 +46,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     protected PrintWriter out;
     protected Map<String, String> attributes = new HashMap<String, String>();
     protected GroovyPageParser parser;
+    
 
     protected String foreachRenamedIt = null;
 
@@ -136,7 +137,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
             out.println("int "+ status +" = 0");
         }
         if (!hasVar){
-            var = "_it"+System.currentTimeMillis();
+            var = "_it"+ Math.abs(System.identityHashCode(this));
             foreachRenamedIt = var;
         }
 
@@ -145,8 +146,10 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
         out.print(" )"); // dot de-reference
         out.print(" {"); // start closure
-
         out.println();
+        if (!hasVar){
+        	out.println("changeItVariable(" + foreachRenamedIt +")" );
+        }
     }
 
     protected void endEachMethod(){
