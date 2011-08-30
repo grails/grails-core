@@ -5,6 +5,7 @@ import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassI
 
 import java.lang.reflect.Modifier;
 
+import grails.validation.ValidationErrors;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -28,7 +29,6 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
@@ -77,7 +77,7 @@ public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
                     new BinaryExpression(ERRORS_EXPRESSION,
                             EQUALS_SYMBOL,
                             new ConstructorCallExpression(new ClassNode(
-                                    BeanPropertyBindingResult.class),
+                                    ValidationErrors.class),
                                     beanPropertyBindingResultConstructorArgs)));
             final Statement initErrorsIfNullStatement = new IfStatement(
                     new BooleanExpression(errorsIsNullExpression), newEvaluatorExpression,

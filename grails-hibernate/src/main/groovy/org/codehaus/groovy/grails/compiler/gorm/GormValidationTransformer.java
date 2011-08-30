@@ -15,32 +15,22 @@
  */
 package org.codehaus.groovy.grails.compiler.gorm;
 
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.Arrays;
-
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.ASTBeanPropertyBindingResultHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.grails.datastore.gorm.GormValidationApi;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
+
+import java.net.URL;
+import java.util.Arrays;
 
 /**
  * Makes the validate methods statically available via an AST transformation.

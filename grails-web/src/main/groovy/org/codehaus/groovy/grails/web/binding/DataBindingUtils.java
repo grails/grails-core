@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import grails.validation.ValidationErrors;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
@@ -33,7 +34,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.MutablePropertyValues;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -180,7 +180,7 @@ public class DataBindingUtils {
         }
 
         if (domain != null && bindingResult != null) {
-            BindingResult newResult = new BeanPropertyBindingResult(object, object.getClass().getName());
+            BindingResult newResult = new ValidationErrors(object);
             for (Object error : bindingResult.getAllErrors()) {
                 if (error instanceof FieldError) {
                     FieldError fieldError = (FieldError)error;
