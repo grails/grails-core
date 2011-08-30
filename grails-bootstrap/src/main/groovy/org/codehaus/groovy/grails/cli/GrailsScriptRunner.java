@@ -387,6 +387,8 @@ public class GrailsScriptRunner {
         List<Resource> potentialScripts;
         List<Resource> allScripts = getAvailableScripts();
         GantBinding binding = new GantBinding();
+        binding.setVariable("scriptName", scriptName);
+
         setDefaultInputStream(binding);
 
         // Now find what scripts match the one requested by the user.
