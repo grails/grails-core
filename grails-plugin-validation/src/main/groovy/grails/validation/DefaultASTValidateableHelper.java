@@ -19,7 +19,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.grails.compiler.injection.ASTBeanPropertyBindingResultHelper;
+import org.codehaus.groovy.grails.compiler.injection.ASTValidationErrorsHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 
@@ -29,7 +29,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
 
     public void injectValidateableCode(ClassNode commandObjectTypeClassNode) {
-        ASTErrorsHelper errorsHelper = new ASTBeanPropertyBindingResultHelper();
+        ASTErrorsHelper errorsHelper = new ASTValidationErrorsHelper();
         errorsHelper.injectErrorsCode(commandObjectTypeClassNode);
         addConstraintedPropertiesProperty(commandObjectTypeClassNode);
         addValidateMethod(commandObjectTypeClassNode);
