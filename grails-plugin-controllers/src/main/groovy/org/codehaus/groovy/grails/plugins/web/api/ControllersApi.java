@@ -20,6 +20,7 @@ import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @since 2.0
  */
 @SuppressWarnings("rawtypes")
-public class ControllersApi extends CommonWebApi {
+public class ControllersApi extends CommonWebApi implements Serializable {
 
     private static final String RENDER_METHOD_NAME = "render";
     private static final String BIND_DATA_METHOD = "bindData";
