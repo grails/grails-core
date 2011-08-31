@@ -162,4 +162,22 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue("actionTwo should have accepted a DELETE", grailsClass.isHttpMethodAllowedForAction(controller, "DELETE", "actionTwo"));
         assertTrue("actionTwo should have accepted a POST", grailsClass.isHttpMethodAllowedForAction(controller, "POST", "actionTwo"));
     }
+    
+    public void testInterceptorCloning() throws Exception {
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
+        								"def someproperty='testvalue'\n" +
+                                        "static def beforeInterceptor = { someproperty }\n" +
+                                        "def list = { return 'test' }\n " +
+                                        "} ");
+        GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+        GroovyObject controller = (GroovyObject)grailsClass.newInstance();
+
+        assertTrue(grailsClass.isInterceptedBefore(controller,"list"));
+
+        Closure<?> bi = grailsClass.getBeforeInterceptor(controller);
+        assertNotNull(bi);
+        assertEquals("testvalue", bi.call());
+    }
+    
 }
