@@ -29,6 +29,8 @@ import org.grails.datastore.gorm.GormInstanceApi
 import org.grails.datastore.gorm.GormStaticApi
 import org.grails.datastore.gorm.GormValidationApi
 import org.grails.datastore.gorm.finders.CountByFinder
+import org.grails.datastore.gorm.finders.FindAllByBooleanFinder
+import org.grails.datastore.gorm.finders.FindByBooleanFinder
 import org.grails.datastore.gorm.finders.FinderMethod
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -72,11 +74,11 @@ class HibernateGormEnhancer extends GormEnhancer {
         def sessionFactory = datastore.sessionFactory
         Collections.unmodifiableList([
             new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-            new FindAllByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindAllByBooleanFinder(datastore),
             new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindOrSaveByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-            new FindByBooleanPropertyPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindByBooleanFinder(datastore),
             new CountByFinder(datastore),
             new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ])
     }
