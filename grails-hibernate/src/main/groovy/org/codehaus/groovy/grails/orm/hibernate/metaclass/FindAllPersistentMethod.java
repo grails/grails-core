@@ -88,7 +88,6 @@ import java.util.regex.Pattern;
  */
 public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 
-    public static SimpleTypeConverter converter = new SimpleTypeConverter();
     private GrailsApplication grailsApplication;
 
     public FindAllPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
@@ -225,6 +224,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                 private boolean retrieveBoolean(Object param, String key) {
                     boolean value = false;
                     if (isMapWithValue(param, key)) {
+                    	SimpleTypeConverter converter = new SimpleTypeConverter();
                         value = converter.convertIfNecessary(((Map)param).get(key), Boolean.class);
                     }
                     return value;
@@ -232,6 +232,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 
                 private int retrieveInt(Object param, String key) {
                     if (isMapWithValue(param, key)) {
+                    	SimpleTypeConverter converter = new SimpleTypeConverter();
                         Integer convertedParam = converter.convertIfNecessary(((Map) param).get(key),Integer.class);
                         return convertedParam;
                     }

@@ -273,10 +273,6 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         if (controllerClass.isInterceptedBefore(controller, actionName)) {
             Closure<?> beforeInterceptor = controllerClass.getBeforeInterceptor(controller);
             if (beforeInterceptor!= null) {
-                if (beforeInterceptor.getDelegate() != controller) {
-                    beforeInterceptor.setDelegate(controller);
-                    beforeInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
-                }
                 Object interceptorResult = beforeInterceptor.call();
                 if (interceptorResult instanceof Boolean) {
                     executeAction = ((Boolean)interceptorResult).booleanValue();
@@ -293,10 +289,6 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         Object interceptorResult = null;
         if (controllerClass.isInterceptedAfter(controller,actionName)) {
             Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
-            if (afterInterceptor.getDelegate() != controller) {
-                afterInterceptor.setDelegate(controller);
-                afterInterceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
-            }
             Map model = new HashMap();
             if (mv != null) {
                 model =    mv.getModel() != null ? mv.getModel() : new HashMap();
