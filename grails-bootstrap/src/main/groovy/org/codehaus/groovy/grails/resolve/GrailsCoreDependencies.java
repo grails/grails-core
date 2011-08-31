@@ -246,7 +246,7 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
 
                         ModuleRevisionId[] ehcacheDependencies = {
-                            ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.3.1")
+                            ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.2")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "jms", "commons-logging", "servlet-api");
 
