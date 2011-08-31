@@ -836,7 +836,6 @@ class FormTagLib {
         writer << '</select>'
     }
 
-    def typeConverter = new SimpleTypeConverter()
     private writeValueAndCheckIfSelected(keyValue, value, writer) {
         writeValueAndCheckIfSelected(keyValue, value, writer, null)
     }
@@ -862,6 +861,7 @@ class FormTagLib {
         }
         else if (keyClass && value != null) {
             try {
+				def typeConverter = new SimpleTypeConverter()
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)
             }

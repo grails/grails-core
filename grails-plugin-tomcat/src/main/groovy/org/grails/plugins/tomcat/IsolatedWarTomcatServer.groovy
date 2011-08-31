@@ -17,6 +17,7 @@ package org.grails.plugins.tomcat
 
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import grails.build.logging.GrailsConsole
+import grails.util.BuildSettings
 
 /**
  * Serves a packaged war, in a forked JVM.
@@ -50,7 +51,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
             ant.java(classname: IsolatedTomcat.name, fork: true, failonerror: false, output: outFile, error: errFile, resultproperty: resultProperty) {
 
                 classpath {
-                    for (jar in buildSettings.buildDependencies.findAll { it.name.contains("tomcat") }) {
+                    for (jar in findTomcatJars(buildSettings)) {
                         pathelement location: jar
                     }
                 }
@@ -113,6 +114,10 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
         GrailsConsole.instance.log "Tomcat Server running WAR (output written to: $outFile)"
 
+    }
+
+    protected Collection<File> findTomcatJars(BuildSettings buildSettings) {
+        return buildSettings.buildDependencies.findAll { it.name.contains("tomcat") } + buildSettings.compileDependencies.findAll { it.name.contains("tomcat") }
     }
 
     void stop() {

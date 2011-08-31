@@ -49,8 +49,6 @@ import org.springframework.orm.hibernate3.HibernateCallback;
  * @since 30-Apr-2006
  */
 public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod {
-
-    public static SimpleTypeConverter converter = new SimpleTypeConverter();
     private static final String METHOD_SIGNATURE = "executeQuery";
     private static final Pattern METHOD_PATTERN = Pattern.compile("^executeQuery$");
     
@@ -84,7 +82,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Query q = session.createQuery(query);
-
+                SimpleTypeConverter converter = new SimpleTypeConverter();
                 // process paginate params
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
                     Integer maxParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_MAX), Integer.class);

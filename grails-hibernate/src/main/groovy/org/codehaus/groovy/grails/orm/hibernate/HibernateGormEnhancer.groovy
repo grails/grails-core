@@ -174,8 +174,6 @@ class HibernateGormStaticApi extends GormStaticApi {
         }
     }
 
-    private SimpleTypeConverter typeConverter = new SimpleTypeConverter()
-
     private convertIdentifier(Serializable id) {
         final idType = identityType
         if (id != null && !idType.isAssignableFrom(id.getClass())) {
@@ -184,6 +182,7 @@ class HibernateGormStaticApi extends GormStaticApi {
                     id = id.toLong()
                 }
                 else {
+					SimpleTypeConverter typeConverter = new SimpleTypeConverter()
                     id = typeConverter.convertIfNecessary(id, idType)
                 }
             } catch (e) {

@@ -258,28 +258,34 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     public Closure getBeforeInterceptor(GroovyObject controller) {
         if (isReadableProperty(BEFORE_INTERCEPTOR)) {
-            return getInterceptor(controller.getProperty(BEFORE_INTERCEPTOR));
+            return getInterceptor(controller, controller.getProperty(BEFORE_INTERCEPTOR));
         }
         return null;
     }
 
     public Closure getAfterInterceptor(GroovyObject controller) {
         if (isReadableProperty(AFTER_INTERCEPTOR)) {
-            return getInterceptor(controller.getProperty(AFTER_INTERCEPTOR));
+            return getInterceptor(controller, controller.getProperty(AFTER_INTERCEPTOR));
         }
         return null;
     }
 
-    private Closure getInterceptor(Object ip) {
-        if (ip instanceof Map) {
+    private Closure getInterceptor(GroovyObject controller, Object ip) {
+        Closure interceptor=null;
+    	if (ip instanceof Map) {
             Map ipMap = (Map) ip;
             if (ipMap.containsKey(ACTION)) {
-                return (Closure) ipMap.get(ACTION);
+            	interceptor=(Closure) ipMap.get(ACTION);
             }
         } else if (ip instanceof Closure) {
-            return (Closure) ip;
+        	interceptor=(Closure) ip;
         }
-        return null;
+    	if(interceptor != null && interceptor.getDelegate() != controller) {
+    		interceptor = (Closure)interceptor.clone();
+    		interceptor.setDelegate(controller);
+    		interceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
+    	}
+        return interceptor;
     }
 
     /**

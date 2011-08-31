@@ -365,9 +365,16 @@ public class GrailsScriptRunner {
         // Get the default environment if one hasn't been set.
         System.setProperty("base.dir", settings.getBaseDir().getPath());
 
-        // Add some extra binding variables that are now available.
-        settings.setGrailsEnv(env);
-        settings.setDefaultEnv(!commandLine.isEnvironmentSet());
+        if(env != null) {
+            // Add some extra binding variables that are now available.
+            settings.setGrailsEnv(env);
+            settings.setDefaultEnv(false);
+        }
+        else {
+            // Add some extra binding variables that are now available.
+            settings.setGrailsEnv(commandLine.getEnvironment());
+            settings.setDefaultEnv(!commandLine.isEnvironmentSet());
+        }
     }
 
     private int callPluginOrGrailsScript(CommandLine commandLine, String scriptName, String env) {
