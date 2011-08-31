@@ -4,17 +4,16 @@ import grails.web.HyphenatedUrlConverter;
 import spock.lang.Specification
 import spock.lang.Unroll
 
-
 class HyphenatedUrlConverterSpec extends Specification {
-    
+
     @Unroll({"converting $classOrActionName to url element $expectedUrlElement"})
     def 'Test converting class and action names to url elements'() {
         given:
             def converter = new HyphenatedUrlConverter()
-            
+
         expect:
             converter.toUrlElement(classOrActionName) == expectedUrlElement
-        
+
         where:
             classOrActionName      | expectedUrlElement
             'Widget'               | 'widget'

@@ -142,7 +142,7 @@ public class GrailsConsole {
      * is controlled by the jline.terminal system property.
      */
     protected Terminal createTerminal() {
-        Terminal terminal;
+        @SuppressWarnings("hiding") Terminal terminal;
         if (isWindows()) {
             terminal = new WindowsTerminal() {
                 @Override
@@ -170,12 +170,12 @@ public class GrailsConsole {
      * like they do not understand ansi, even if we were to implement support in Eclipse to'
      * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
      */
-    protected OutputStream ansiWrap(OutputStream out) {
+    protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
         return AnsiConsole.wrapOutputStream(out);
     }
 
     // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
-    private void fixCtrlC() throws IOException {
+    private void fixCtrlC() {
         try {
             Field f = ConsoleReader.class.getDeclaredField("keybindings");
             f.setAccessible(true);
@@ -592,14 +592,13 @@ public class GrailsConsole {
      * @return The user input prompt
      */
     private String showPrompt(String prompt) {
-            cursorMove = 0;
-            if(!userInputActive) {
-                return readLine(prompt);
-            }
-            else {
-                out.print(prompt);
-                return null;
-            }
+        cursorMove = 0;
+        if (!userInputActive) {
+            return readLine(prompt);
+        }
+
+        out.print(prompt);
+        return null;
     }
 
     private String readLine(String prompt) {

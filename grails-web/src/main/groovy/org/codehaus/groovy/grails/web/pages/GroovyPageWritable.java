@@ -133,7 +133,7 @@ class GroovyPageWritable implements Writable {
             GroovyPageBinding parentBinding = null;
             boolean hasRequest = request != null;
             boolean newParentCreated = false;
-            
+
             if (hasRequest) {
                 boolean isIncludeRequest = WebUtils.isIncludeRequest(request);
                 if(!isIncludeRequest) {
@@ -141,24 +141,24 @@ class GroovyPageWritable implements Writable {
                 }
                 if (parentBinding == null) {
                     if (webRequest != null) {
-                    	parentBinding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));
-                    	parentBinding.setRoot(true);
-                    	newParentCreated = true;
+                        parentBinding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));
+                        parentBinding.setRoot(true);
+                        newParentCreated = true;
                     }
                 }
             }
 
             if(allowSettingContentType && response != null) {
-	            // only try to set content type when evaluating top level GSP
-	            boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
-	            if (!contentTypeAlreadySet) {
-	                if (LOG.isDebugEnabled()) {
-	                    LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
-	                }
-	                response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
-	            }
+                // only try to set content type when evaluating top level GSP
+                boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+                if (!contentTypeAlreadySet) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+                    }
+                    response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+                }
             }
-            
+
             GroovyPageBinding binding = createBinding(parentBinding);
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
@@ -210,12 +210,12 @@ class GroovyPageWritable implements Writable {
             }
             finally {
                 page.cleanup();
-                if(hasRequest) {
-                	if(newParentCreated) {
-                    	request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);                		
-                	} else {
-                		request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
-                	}
+                if (hasRequest) {
+                    if (newParentCreated) {
+                        request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                    } else {
+                        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
+                    }
                 }
             }
             if (debugTemplates) {

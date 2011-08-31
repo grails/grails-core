@@ -424,82 +424,82 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             assertEquals m.group(2), 'sort=title'
         }
     }
-	
-	void testMultipleRender() {
-		RenderTagLib.TEMPLATE_CACHE.clear()
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${request.someattribute}')
-		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
-		def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g') 
-		request.setAttribute('someattribute', '1')
-		assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 1'
-		request.setAttribute('someattribute', '2')
-		assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 2'
-		request.setAttribute('someattribute', '3')
-		def template = '<g:render template="/test" model="[name: \'world\']" />'
-		assertOutputEquals '[hello world] 3', template
-	}
+    void testMultipleRender() {
+        RenderTagLib.TEMPLATE_CACHE.clear()
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${request.someattribute}')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
-	void testGRAILS7887failsBeforeFixing() {
-		RenderTagLib.TEMPLATE_CACHE.clear()
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
-		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+        def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
+        request.setAttribute('someattribute', '1')
+        assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 1'
+        request.setAttribute('someattribute', '2')
+        assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 2'
+        request.setAttribute('someattribute', '3')
+        def template = '<g:render template="/test" model="[name: \'world\']" />'
+        assertOutputEquals '[hello world] 3', template
+    }
 
-		def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
-		webRequest.params.someparam = '1'
-		assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 1'
-		webRequest.params.someparam = '2'
-		def template = '<g:render template="/test" model="[name: \'world\']" />'
-		assertOutputEquals '[hello world] 2', template
-	}
+    void testGRAILS7887failsBeforeFixing() {
+        RenderTagLib.TEMPLATE_CACHE.clear()
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
-	void testGRAILS7887okBeforeFixing() {
-		RenderTagLib.TEMPLATE_CACHE.clear()
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
-		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+        def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
+        webRequest.params.someparam = '1'
+        assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 1'
+        webRequest.params.someparam = '2'
+        def template = '<g:render template="/test" model="[name: \'world\']" />'
+        assertOutputEquals '[hello world] 2', template
+    }
 
-		webRequest.params.someparam = '1'
-		def template = '<g:render template="/test" model="[name: \'world\']" />'
-		assertOutputEquals '[hello world] 1', template
-	}
+    void testGRAILS7887okBeforeFixing() {
+        RenderTagLib.TEMPLATE_CACHE.clear()
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
-	void testGRAILS7871() {
-		RenderTagLib.TEMPLATE_CACHE.clear()
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
-		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+        webRequest.params.someparam = '1'
+        def template = '<g:render template="/test" model="[name: \'world\']" />'
+        assertOutputEquals '[hello world] 1', template
+    }
 
-		webRequest.params.someparam = '1'
-		def template = '<g:render template="/test" model="[name: \'world\']" />'
-		assertOutputEquals '[hello world] 1', template
-		
-		def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
-		webRequest.params.someparam = '2'
-		assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 2'
-	}
-	
-	void testGspContentTypeSetting() {
-		RenderTagLib.TEMPLATE_CACHE.clear()
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/_test.gsp', 'hello')
-		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+    void testGRAILS7871() {
+        RenderTagLib.TEMPLATE_CACHE.clear()
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 
-		def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
-		assertEquals g.render(template:'/test'), 'hello'
+        webRequest.params.someparam = '1'
+        def template = '<g:render template="/test" model="[name: \'world\']" />'
+        assertOutputEquals '[hello world] 1', template
 
-		def template = '<%@ page contentType="my/contenttype" %>hello world'
-		assertOutputEquals 'hello world', template
-		
-		assertEquals 'my/contenttype', response.getContentType()		
-	}
+        def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
+        webRequest.params.someparam = '2'
+        assertEquals g.render(template:'/test', model: [name: 'world']), '[hello world] 2'
+    }
 
-	void testGspContentTypeSetting2() {
-		assertEquals null, response.getContentType()
-		def template = '<%@ page contentType="my/contenttype" %>hello world'
-		assertOutputEquals 'hello world', template
-		assertEquals 'my/contenttype', response.getContentType()
-	}
+    void testGspContentTypeSetting() {
+        RenderTagLib.TEMPLATE_CACHE.clear()
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_test.gsp', 'hello')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+
+        def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher('g')
+        assertEquals g.render(template:'/test'), 'hello'
+
+        def template = '<%@ page contentType="my/contenttype" %>hello world'
+        assertOutputEquals 'hello world', template
+
+        assertEquals 'my/contenttype', response.getContentType()
+    }
+
+    void testGspContentTypeSetting2() {
+        assertEquals null, response.getContentType()
+        def template = '<%@ page contentType="my/contenttype" %>hello world'
+        assertOutputEquals 'hello world', template
+        assertEquals 'my/contenttype', response.getContentType()
+    }
 }

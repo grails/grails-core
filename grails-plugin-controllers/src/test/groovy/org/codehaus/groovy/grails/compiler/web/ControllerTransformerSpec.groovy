@@ -18,10 +18,7 @@ class ControllerTransformerSpec extends Specification {
             def gcl = new GrailsAwareClassLoader()
             def transformer = new ControllerTransformer() {
                 @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
-
+                boolean shouldInject(URL url) { true }
             }
             gcl.classInjectors = [transformer] as ClassInjector[]
 
@@ -30,7 +27,7 @@ class ControllerTransformerSpec extends Specification {
                 List grailsApplication
             }
             ''')
-            
+
             def noGrailsApplicationControllerClass = gcl.parseClass('''
             class NoGrailsApplicationController {
             }
@@ -39,7 +36,7 @@ class ControllerTransformerSpec extends Specification {
         when:
             def getterMethods = noGrailsApplicationControllerClass.metaClass.methods.findAll { 'getGrailsApplication' == it.name }
             def setterMethods = noGrailsApplicationControllerClass.metaClass.methods.findAll { 'setGrailsApplication' == it.name }
-                        
+
         then:
             1 == getterMethods?.size()
             GrailsApplication == getterMethods[0].returnType
@@ -48,7 +45,7 @@ class ControllerTransformerSpec extends Specification {
         when:
             getterMethods = grailsApplicationControllerClass.metaClass.methods.findAll { 'getGrailsApplication' == it.name }
             setterMethods = grailsApplicationControllerClass.metaClass.methods.findAll { 'setGrailsApplication' == it.name }
-            
+
         then:
             1 == getterMethods?.size()
             List == getterMethods[0].returnType
@@ -60,24 +57,20 @@ class ControllerTransformerSpec extends Specification {
     void "Test get artefact type"() {
         when:
             def transformer = new ControllerTransformer()
-    
+
     then:
         transformer.artefactType == 'Controller'
     }
-    
+
     void "Test that the API is injected via AST"() {
 
         given:
             def gcl = new GrailsAwareClassLoader()
             def transformer = new ControllerTransformer() {
                 @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
-
+                boolean shouldInject(URL url) { true }
             }
             gcl.classInjectors = [transformer] as ClassInjector[]
-
 
         when:
             def cls = gcl.parseClass('''

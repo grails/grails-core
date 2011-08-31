@@ -24,11 +24,11 @@ class FooController {
 }"""
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
-        
-        def ctx = new MockApplicationContext() 
+
+        def ctx = new MockApplicationContext()
         ctx.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter())
         ga.mainContext = ctx
-        
+
         ga.initialise()
 
         def foo = ga.getControllerClass("FooController")

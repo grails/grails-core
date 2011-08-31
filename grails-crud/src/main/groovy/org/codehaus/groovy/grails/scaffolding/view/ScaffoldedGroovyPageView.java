@@ -80,9 +80,9 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
         }
 
         Template t = templateEngine.createTemplate(contents, getUrl());
-        if(t instanceof GroovyPageTemplate) {
-        	((GroovyPageTemplate)t).setAllowSettingContentType(true);
-        }        
+        if (t instanceof GroovyPageTemplate) {
+            ((GroovyPageTemplate)t).setAllowSettingContentType(true);
+        }
         Writable w = t.make(model);
         Writer out = null;
         try {

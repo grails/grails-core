@@ -120,7 +120,7 @@ mappings {
 
         gcl.parseClass(testController1)
         def app = creategGrailsApplication()
-        
+
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 
@@ -172,7 +172,7 @@ mappings {
         gcl.parseClass(testController4)
 
         def app = creategGrailsApplication()
-        
+
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
@@ -254,7 +254,7 @@ class IndexAndActionController {
         gcl.parseClass(testController2)
 
         def app = creategGrailsApplication()
-        
+
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 

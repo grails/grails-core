@@ -157,8 +157,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     @Override
     public void onSaveOrUpdate(SaveOrUpdateEvent event) throws HibernateException {
-        Object entity = event.getObject();
-        ClosureEventListener eventListener = findEventListener(entity);
+        ClosureEventListener eventListener = findEventListener(event.getObject());
         if (eventListener != null) {
             eventListener.onSaveOrUpdate(event);
         }
@@ -168,22 +167,21 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     public void onPreLoad(PreLoadEvent event) {
         Object entity = event.getEntity();
         GrailsHibernateUtil.ensureCorrectGroovyMetaClass(entity, entity.getClass());
-        ClosureEventListener eventListener=findEventListener(entity);
+        ClosureEventListener eventListener = findEventListener(entity);
         if (eventListener != null) {
             eventListener.onPreLoad(event);
         }
     }
 
     public void onPostLoad(PostLoadEvent event) {
-        Object entity = event.getEntity();
-        ClosureEventListener eventListener=findEventListener(entity);
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
             eventListener.onPostLoad(event);
         }
     }
 
     public void onPostInsert(PostInsertEvent event) {
-        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
             eventListener.onPostInsert(event);
         }
@@ -191,7 +189,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public boolean onPreInsert(PreInsertEvent event) {
         boolean evict = false;
-        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
             evict = eventListener.onPreInsert(event);
         }
@@ -200,7 +198,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
     public boolean onPreUpdate(PreUpdateEvent event) {
         boolean evict = false;
-        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
             evict = eventListener.onPreUpdate(event);
         }
@@ -208,25 +206,26 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
-        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
             eventListener.onPostUpdate(event);
         }
     }
 
     public void onPostDelete(PostDeleteEvent event) {
-        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
             eventListener.onPostDelete(event);
         }
     }
 
     public boolean onPreDelete(PreDeleteEvent event) {
-        ClosureEventListener eventListener=findEventListener(event.getEntity());
+        boolean evict = false;
+        ClosureEventListener eventListener = findEventListener(event.getEntity());
         if (eventListener != null) {
-            return eventListener.onPreDelete(event);
+            evict = eventListener.onPreDelete(event);
         }
-        return false;
+        return evict;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {

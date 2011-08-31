@@ -260,7 +260,7 @@ class DocPublisher {
             sponsorLogo: injectPath(sponsorLogo, pathToRoot),
             single: false,
             path: pathToRoot,
-            resourcesPath: calculatePathToResources(pathToRoot), 
+            resourcesPath: calculatePathToResources(pathToRoot),
             prev: null,
             next: null,
             legacyLinks: legacyLinks
@@ -553,7 +553,7 @@ class DocPublisher {
     }
 
     private String calculatePathToResources(String pathToRoot) {
-        return language ? '../' + pathToRoot : pathToRoot  
+        return language ? '../' + pathToRoot : pathToRoot
     }
 
     private initContext(context, path) {

@@ -81,7 +81,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private ViewResolver viewResolver;
     private MimeType[] mimeTypes;
     private StackTraceFilterer filterer;
-    
+
     private UrlConverter urlConverter;
 
     @Override

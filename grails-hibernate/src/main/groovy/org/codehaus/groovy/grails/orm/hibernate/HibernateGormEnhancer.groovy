@@ -68,7 +68,7 @@ class HibernateGormEnhancer extends GormEnhancer {
     HibernateGormEnhancer(HibernateDatastore datastore,
             PlatformTransactionManager transactionManager,
             GrailsApplication grailsApplication) {
-        super(datastore, transactionManager);
+        super(datastore, transactionManager)
         this.grailsApplication = grailsApplication
         classLoader = grailsApplication.classLoader
         finders = createPersistentMethods(grailsApplication, classLoader, datastore)
@@ -105,13 +105,13 @@ class HibernateGormEnhancer extends GormEnhancer {
     }
 
     @Override
-    protected void registerNamedQueries(PersistentEntity entity, Object namedQueries) {
+    protected void registerNamedQueries(PersistentEntity entity, namedQueries) {
         if (grailsApplication == null) {
             return
         }
 
         def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.name)
-        if (domainClass != null) {
+        if (domainClass) {
             new HibernateNamedQueriesBuilder(domainClass, finders).evaluate((Closure)namedQueries)
         }
     }
@@ -137,7 +137,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     private ExecuteUpdatePersistentMethod executeUpdateMethod
     private MergePersistentMethod mergeMethod
     private ClassLoader classLoader
-    private GrailsApplication grailsApplication;
+    private GrailsApplication grailsApplication
 
     HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders,
                 ClassLoader classLoader, PlatformTransactionManager transactionManager) {
@@ -173,7 +173,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     D get(Serializable id) {
         if (id || (id instanceof Number)) {
             id = convertIdentifier(id)
-            final Object result = hibernateTemplate.get(persistentClass, id)
+            final result = hibernateTemplate.get(persistentClass, id)
             return GrailsHibernateUtil.unwrapIfProxy(result)
         }
     }
@@ -186,8 +186,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
                     id = id.toLong()
                 }
                 else {
-					SimpleTypeConverter typeConverter = new SimpleTypeConverter()
-                    id = typeConverter.convertIfNecessary(id, idType)
+                    id = new SimpleTypeConverter().convertIfNecessary(id, idType)
                 }
             } catch (e) {
                 // ignore
@@ -273,7 +272,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     }
 
     @Override
-    D merge(Object o) {
+    D merge(o) {
         mergeMethod.invoke(o, "merge", [] as Object[])
     }
 
@@ -309,12 +308,12 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     }
 
     @Override
-    List<D> findAll(Object example, Map args) {
+    List<D> findAll(example, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [example, args] as Object[])
     }
 
     @Override
-    D find(Object example, Map args) {
+    D find(example, Map args) {
         findMethod.invoke(persistentClass, "find", [example, args] as Object[])
     }
 
@@ -326,9 +325,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      * @param max The maximum to return
      * @return A single result or null
      *
-     *
      * @deprecated Use Book.find('..', [foo:'bar], [max:10]) instead
      */
+    @Deprecated
     D find(String query, Map args, Integer max) {
         findMethod.invoke(persistentClass, "find", [query, args, max] as Object[])
     }
@@ -342,9 +341,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      * @param offset The offset
      * @return A single result or null
      *
-     *
      * @deprecated Use Book.find('..', [foo:'bar], [max:10, offset:5]) instead
      */
+    @Deprecated
     D find(String query, Map args, Integer max, Integer offset) {
         findMethod.invoke(persistentClass, "find", [query, args, max, offset] as Object[])
     }
@@ -356,9 +355,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      * @param max The maximum to return
      * @return A single result or null
      *
-     *
      * @deprecated Use Book.find('..', [max:10]) instead
      */
+    @Deprecated
     D find(String query, Integer max) {
         findMethod.invoke(persistentClass, "find", [query, max] as Object[])
     }
@@ -373,6 +372,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      *
      * @deprecated Use Book.find('..', [max:10, offset:5]) instead
      */
+    @Deprecated
     D find(String query, Integer max, Integer offset) {
         findMethod.invoke(persistentClass, "find", [query, max, offset] as Object[])
     }
@@ -387,6 +387,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      *
      * @deprecated Use findAll('..', [foo:'bar], [max:10]) instead
      */
+    @Deprecated
     List<D> findAll(String query, Map args, Integer max) {
         findAllMethod.invoke(persistentClass, "findAll", [query, args, max] as Object[])
     }
@@ -403,6 +404,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      *
      * @deprecated Use findAll('..', [foo:'bar], [max:10, offset:5]) instead
      */
+    @Deprecated
     List<D> findAll(String query, Map args, Integer max, Integer offset) {
         findAllMethod.invoke(persistentClass, "findAll", [query, args, max, offset] as Object[])
     }
@@ -416,6 +418,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      *
      * @deprecated Use findAll('..', [max:10]) instead
      */
+    @Deprecated
     List<D> findAll(String query, Integer max) {
         findAllMethod.invoke(persistentClass, "findAll", [query, max] as Object[])
     }
@@ -429,6 +432,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
      *
      * @deprecated Use findAll('..', [max:10, offset:5]) instead
      */
+    @Deprecated
     List<D> findAll(String query, Integer max, Integer offset) {
         findAllMethod.invoke(persistentClass, "findAll", [query, max, offset] as Object[])
     }
@@ -490,7 +494,6 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         nullNames
     }
 
-
     @Override
     Object withSession(Closure callable) {
         new HibernateTemplate(sessionFactory).execute({ session ->
@@ -529,7 +532,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query] as Object[])
     }
 
-    List<D> executeQuery(String query, Object arg) {
+    List<D> executeQuery(String query, arg) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query, arg] as Object[])
     }
 
@@ -645,7 +648,7 @@ class HibernateGormValidationApi extends GormValidationApi {
     ValidatePersistentMethod validateMethod
 
     HibernateGormValidationApi(Class persistentClass, HibernateDatastore datastore, ClassLoader classLoader) {
-        super(persistentClass, datastore);
+        super(persistentClass, datastore)
 
         this.classLoader = classLoader
 
@@ -655,42 +658,43 @@ class HibernateGormValidationApi extends GormValidationApi {
         if (mappingContext instanceof GrailsDomainClassMappingContext) {
             GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
             def grailsApplication = domainClassMappingContext.getGrailsApplication()
-            def validator = mappingContext.getEntityValidator(mappingContext.getPersistentEntity(persistentClass.name))
-            this.validateMethod = new ValidatePersistentMethod(sessionFactory,
+            def validator = mappingContext.getEntityValidator(
+                    mappingContext.getPersistentEntity(persistentClass.name))
+            validateMethod = new ValidatePersistentMethod(sessionFactory,
                     classLoader, grailsApplication, validator)
         }
     }
 
     @Override
-    boolean validate(Object instance) {
-        if (validateMethod != null) {
+    boolean validate(instance) {
+        if (validateMethod) {
             return validateMethod.invoke(instance, "validate", [] as Object[])
         }
-        return super.validate(instance);
+        return super.validate(instance)
     }
 
     @Override
-    boolean validate(Object instance, boolean evict) {
-        if (validateMethod != null) {
+    boolean validate(instance, boolean evict) {
+        if (validateMethod) {
             return validateMethod.invoke(instance, "validate", [evict] as Object[])
         }
-        return super.validate(instance, evict);
+        return super.validate(instance, evict)
     }
 
     @Override
-    boolean validate(Object instance, Map arguments) {
-        if (validateMethod != null) {
+    boolean validate(instance, Map arguments) {
+        if (validateMethod) {
             return validateMethod.invoke(instance, "validate", [arguments] as Object[])
         }
-        return super.validate(instance, arguments);
+        return super.validate(instance, arguments)
     }
 
     @Override
-    boolean validate(Object instance, List fields) {
-        if (validateMethod != null) {
+    boolean validate(instance, List fields) {
+        if (validateMethod) {
             return validateMethod.invoke(instance, "validate", [fields] as Object[])
         }
-        return super.validate(instance, arguments);
+        return super.validate(instance, arguments)
     }
 }
 
@@ -737,7 +741,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
      *
      * @return True if the field is dirty
      */
-    boolean isDirty(Object instance, String fieldName) {
+    boolean isDirty(instance, String fieldName) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session)
         if (!entry) {
@@ -756,7 +760,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
      * @param instance The instance
      * @return True if it is dirty
      */
-    boolean isDirty(Object instance) {
+    boolean isDirty(instance) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session)
         if (!entry) {
@@ -774,7 +778,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
      * @param instance The instance
      * @return A list of property names that are dirty
      */
-    List getDirtyPropertyNames(Object instance) {
+    List getDirtyPropertyNames(instance) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session)
         if (!entry) {
@@ -796,7 +800,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
      * @param fieldName The field name
      * @return The original persisted value
      */
-    Object getPersistentValue(Object instance, String fieldName) {
+    Object getPersistentValue(instance, String fieldName) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session, false)
         if (!entry) {
@@ -808,72 +812,72 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     }
 
     @Override
-    Object lock(Object instance) {
+    Object lock(instance) {
         hibernateTemplate.lock(instance, LockMode.UPGRADE)
     }
 
     @Override
-    Object refresh(Object instance) {
+    Object refresh(instance) {
         hibernateTemplate.refresh(instance)
         return instance
     }
 
     @Override
-    Object save(Object instance) {
-        if (saveMethod != null) {
+    Object save(instance) {
+        if (saveMethod) {
             return saveMethod.invoke(instance, "save", EMPTY_ARRAY)
         }
-        return super.save(instance);
+        return super.save(instance)
     }
 
-    Object save(Object instance, boolean validate) {
-        if (saveMethod != null) {
+    Object save(instance, boolean validate) {
+        if (saveMethod) {
             return saveMethod.invoke(instance, "save", [validate] as Object[])
         }
-        return super.save(instance);
+        return super.save(instance, validate)
     }
 
     @Override
-    Object merge(Object instance) {
-        if (mergeMethod != null) {
+    Object merge(instance) {
+        if (mergeMethod) {
             mergeMethod.invoke(instance, "merge", EMPTY_ARRAY)
         }
         else {
-            return super.merge(instance);
+            return super.merge(instance)
         }
     }
 
     @Override
-    Object merge(Object instance, Map params) {
-        if (mergeMethod != null) {
+    Object merge(instance, Map params) {
+        if (mergeMethod) {
             mergeMethod.invoke(instance, "merge", [params] as Object[])
         }
         else {
-            return super.merge(instance, params);
+            return super.merge(instance, params)
         }
     }
 
     @Override
-    Object save(Object instance, Map params) {
-        if (saveMethod != null) {
+    Object save(instance, Map params) {
+        if (saveMethod) {
             return saveMethod.invoke(instance, "save", [params] as Object[])
         }
-        return super.save(instance, params);
+        return super.save(instance, params)
     }
 
     @Override
-    Object attach(Object instance) {
+    Object attach(instance) {
         hibernateTemplate.lock(instance, LockMode.NONE)
         return instance
     }
 
     @Override
-    void discard(Object instance) {
+    void discard(instance) {
         hibernateTemplate.evict instance
     }
 
     @Override
-    void delete(Object instance) {
+    void delete(instance) {
         def obj = instance
         try {
             hibernateTemplate.execute({Session session ->
@@ -889,7 +893,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     }
 
     @Override
-    void delete(Object instance, Map params) {
+    void delete(instance, Map params) {
         def obj = instance
         hibernateTemplate.delete obj
         if (shouldFlush(params)) {
@@ -903,7 +907,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     }
 
     @Override
-    boolean instanceOf(Object instance, Class cls) {
+    boolean instanceOf(instance, Class cls) {
         if (instance instanceof HibernateProxy) {
             def o = GrailsHibernateUtil.unwrapProxy(instance)
             return cls.isInstance(o)
@@ -912,7 +916,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     }
 
     @Override
-    boolean isAttached(Object instance) {
+    boolean isAttached(instance) {
         hibernateTemplate.contains instance
     }
 

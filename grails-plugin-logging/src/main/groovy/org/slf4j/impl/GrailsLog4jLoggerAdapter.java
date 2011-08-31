@@ -41,7 +41,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
     static final String FQCN = GrailsLog4jLoggerAdapter.class.getName();
 
     private Logger log4jLogger;
-    private String name;
+    @SuppressWarnings("hiding") private String name;
 
     public GrailsLog4jLoggerAdapter(org.apache.log4j.Logger logger) {
         this.log4jLogger = logger;

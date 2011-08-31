@@ -42,7 +42,7 @@ class DefaultASTValidateableHelperSpec extends Specification {
             String name
             String category
             Integer count
-            
+
             static constraints = {
                 name matches: /[A-Z].*/
                 category size: 3..50
@@ -203,7 +203,7 @@ class DefaultASTValidateableHelperSpec extends Specification {
         when:
             def isValid = widget.validate([])
             def errorCount = widget.errors.errorCount
-            
+
         then:
             isValid
             0 == errorCount

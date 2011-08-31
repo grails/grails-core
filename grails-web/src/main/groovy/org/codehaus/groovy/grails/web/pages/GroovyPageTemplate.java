@@ -49,11 +49,11 @@ public class GroovyPageTemplate implements Template {
         return metaInfo;
     }
 
-	public boolean isAllowSettingContentType() {
-		return allowSettingContentType;
-	}
+    public boolean isAllowSettingContentType() {
+        return allowSettingContentType;
+    }
 
-	public void setAllowSettingContentType(boolean allowSettingContentType) {
-		this.allowSettingContentType = allowSettingContentType;
-	}
+    public void setAllowSettingContentType(boolean allowSettingContentType) {
+        this.allowSettingContentType = allowSettingContentType;
+    }
 }

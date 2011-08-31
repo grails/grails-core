@@ -2,13 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 24/08/2011
- * Time: 18:39
- * To change this template use File | Settings | File Templates.
- */
 class DomainEventsFlushingTests extends AbstractGrailsHibernateTests{
 
     void testThatSessionIsNotFlushedDuringEvent() {
@@ -27,15 +20,13 @@ class DomainEventsFlushingTests extends AbstractGrailsHibernateTests{
         t.save(flush:true)
 
         assert t.total == 1
-
     }
 
     @Override protected getDomainClasses() {
         [Toilet]
     }
-
-
 }
+
 @Entity
 class Toilet {
     String location

@@ -31,17 +31,17 @@ class GroovyPageRenderingTests extends AbstractGrailsTagTests {
     protected void onDestroy() {
         System.setProperty(Environment.KEY, "")
     }
-	
-	void testForeach() {
-		def template='<g:each in="${toplist}"><g:each var="t" in="${it.sublist}">${t}</g:each></g:each>'
-		def result=applyTemplate(template, [toplist: [[sublist:['a','b']],[sublist:['c','d']]]])
-		assertEquals 'abcd', result
-	}
+
+    void testForeach() {
+        def template='<g:each in="${toplist}"><g:each var="t" in="${it.sublist}">${t}</g:each></g:each>'
+        def result = applyTemplate(template, [toplist: [[sublist:['a','b']],[sublist:['c','d']]]])
+        assertEquals 'abcd', result
+    }
 
 
-	void testForeachRenaming() {
-		def template='<g:each in="${list}"><g:each in="${list}">.</g:each></g:each>'
-		def result=applyTemplate(template, [list: 1..10])
-		assertEquals '.' * 100, result
-	}
+    void testForeachRenaming() {
+        def template='<g:each in="${list}"><g:each in="${list}">.</g:each></g:each>'
+        def result=applyTemplate(template, [list: 1..10])
+        assertEquals '.' * 100, result
+    }
 }

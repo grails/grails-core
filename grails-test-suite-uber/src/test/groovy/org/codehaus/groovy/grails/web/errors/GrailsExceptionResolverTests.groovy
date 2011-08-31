@@ -37,7 +37,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();

@@ -29,20 +29,18 @@ import java.util.Map;
  * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware{
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
 
     public static final String TYPE = "Domain";
 
-    private GrailsApplication grailsApplication;
     private Map<String, Object> defaultConstraints;
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
-        if(grailsApplication != null) {
-            this.defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
+        if (grailsApplication != null) {
+            defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
         }
     }
 

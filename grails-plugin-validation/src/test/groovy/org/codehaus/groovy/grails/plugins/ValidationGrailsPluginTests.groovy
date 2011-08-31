@@ -19,7 +19,7 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
         super.setUp()
         MockApplicationContext mockCtx = new MockApplicationContext()
         mockCtx.registerMockBean('messageSource', new StaticMessageSource())
-        
+
         def application = [:]
         application.config = [:]
         application.config.grails = [:]

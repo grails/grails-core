@@ -861,7 +861,7 @@ class FormTagLib {
         }
         else if (keyClass && value != null) {
             try {
-				def typeConverter = new SimpleTypeConverter()
+                def typeConverter = new SimpleTypeConverter()
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)
             }

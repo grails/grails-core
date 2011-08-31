@@ -46,6 +46,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
  *
  * @since Oct 24, 2005
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
 
     private static final Log LOG = LogFactory.getLog(GrailsParameterMap.class);
@@ -76,7 +77,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             String contentType = request.getContentType();
             if ("application/x-www-form-urlencoded".equals(contentType)) {
                 try {
-                	String contents=IOUtils.toString(request.getReader());
+                    String contents=IOUtils.toString(request.getReader());
                     request.setAttribute(REQUEST_BODY_PARSED, true);
                     requestMap.putAll(org.codehaus.groovy.grails.web.util.WebUtils.fromQueryString(contents));
                 } catch (Exception e) {
@@ -96,14 +97,14 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
 
     void updateNestedKeys(Map keys) {
         for (Object keyObject : keys.keySet()) {
-        	String key = (String)keyObject;
+            String key = (String)keyObject;
             Object paramValue = getParameterValue(keys, key);
-
-            this.wrappedMap.put(key, paramValue);
-            processNestedKeys(this.request, keys, key, key, this.wrappedMap);
+            wrappedMap.put(key, paramValue);
+            processNestedKeys(keys, key, key, wrappedMap);
         }
     }
 
+    @Override
     public Object clone() {
         return new GrailsParameterMap(new LinkedHashMap(this.wrappedMap), request);
     }
@@ -124,8 +125,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
      *
      * This also allows data binding to occur for only a subset of the properties in the parameter map.
      */
-    private void processNestedKeys(HttpServletRequest request, Map requestMap, String key,
-            String nestedKey, Map nestedLevel) {
+    private void processNestedKeys(Map requestMap, String key, String nestedKey, Map nestedLevel) {
         final int nestedIndex = nestedKey.indexOf('.');
         if (nestedIndex > -1) {
             // We have at least one sub-key, so extract the first element
@@ -144,7 +144,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             if (prefixValue == null) {
                 // No value. So, since there is at least one sub-key,
                 // we create a sub-map for this prefix.
-            	
+
                 prefixValue = new GrailsParameterMap(new LinkedHashMap(), request);
                 nestedLevel.put(nestedPrefix, prefixValue);
             }
@@ -160,7 +160,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                     }
                     nestedMap.put(remainderOfKey,getParameterValue(requestMap, key));
                     if (remainderOfKey.indexOf('.') >-1) {
-                        processNestedKeys(request, requestMap, key, remainderOfKey, nestedMap);
+                        processNestedKeys(requestMap, key, remainderOfKey, nestedMap);
                     }
                 }
             }
@@ -170,12 +170,13 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
     /**
      * @return Returns the request.
      */
-    public HttpServletRequest getRequest() { 
-    	return request; 
+    public HttpServletRequest getRequest() {
+        return request;
     }
 
     private Map nestedDateMap = new LinkedHashMap();
 
+    @Override
     public Object get(Object key) {
         // removed test for String key because there
         // should be no limitations on what you shove in or take out
@@ -183,15 +184,15 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         if (nestedDateMap.containsKey(key)) {
             returnValue = nestedDateMap.get(key);
         } else {
-        	returnValue = this.wrappedMap.get(key);
-        	if (returnValue instanceof String[]) {
-	            String[] valueArray = (String[])returnValue;
-	            if (valueArray.length == 1) {
-	                returnValue = valueArray[0];
-	            } else {
-	                returnValue = valueArray;
-	            }
-        	}
+            returnValue = this.wrappedMap.get(key);
+            if (returnValue instanceof String[]) {
+                String[] valueArray = (String[])returnValue;
+                if (valueArray.length == 1) {
+                    returnValue = valueArray[0];
+                } else {
+                    returnValue = valueArray;
+                }
+            }
         }
         if ("date.struct".equals(returnValue)) {
             returnValue = lazyEvaluateDateParam(key);
@@ -204,7 +205,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         // parse date structs automatically
         Map dateParams = new LinkedHashMap();
         for (Object entryObj : entrySet()) {
-        	Map.Entry entry = (Map.Entry)entryObj;
+            Map.Entry entry = (Map.Entry)entryObj;
             Object entryKey = entry.getKey();
             if (entryKey instanceof String) {
                 String paramName = (String)entryKey;
@@ -226,20 +227,23 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         }
     }
 
+    @Override
     public Object put(Object key, Object value) {
         if (value instanceof CharSequence) value = value.toString();
         if (nestedDateMap.containsKey(key)) nestedDateMap.remove(key);
         return this.wrappedMap.put(key, value);
     }
 
+    @Override
     public Object remove(Object key) {
         nestedDateMap.remove(key);
         return this.wrappedMap.remove(key);
     }
 
+    @Override
     public void putAll(Map map) {
         for (Object entryObj : map.entrySet()) {
-        	Map.Entry entry = (Map.Entry)entryObj;
+            Map.Entry entry = (Map.Entry)entryObj;
             put(entry.getKey(), entry.getValue());
         }
     }

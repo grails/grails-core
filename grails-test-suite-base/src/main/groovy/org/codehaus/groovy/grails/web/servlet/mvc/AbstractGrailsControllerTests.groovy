@@ -98,7 +98,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter())
         ga.mainContext = mainContext
         ga.initialise()
-        
+
         ga.setApplicationContext(ctx)
         domainClasses?.each { cc -> ga.addArtefact 'Domain', cc }
         controllerClasses?.each { cc -> ga.addArtefact 'Controller', cc }
@@ -182,7 +182,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     protected Resource[] getResources(String pattern) {
         new PathMatchingResourcePatternResolver().getResources(pattern)
     }
-    
+
     protected creategGrailsApplication() {
         def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         def mainContext = new MockApplicationContext()
@@ -190,5 +190,4 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         app.mainContext = mainContext
         app
     }
-
 }

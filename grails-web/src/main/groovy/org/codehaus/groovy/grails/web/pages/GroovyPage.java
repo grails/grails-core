@@ -653,12 +653,14 @@ public abstract class GroovyPage extends Script {
         GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
         setBodyClosure(bodyClosureIndex, tagBody);
     }
-    
+
+    @SuppressWarnings("unchecked")
     public void changeItVariable(Object value) {
-    	getBinding().getVariables().put("it", value);    	
+        getBinding().getVariables().put("it", value);
     }
-    
+
+    @SuppressWarnings("rawtypes")
     public Map createGroovyPageAttributes(Map map) {
-    	return new GroovyPageAttributes(map);
+        return new GroovyPageAttributes(map);
     }
 }

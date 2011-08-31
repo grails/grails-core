@@ -62,6 +62,7 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
         return new GrailsGrailsDomainMappingConfigurationStrategy();
     }
 
+    @Override
     public MappingFactory getMappingFactory() {
         throw new UnsupportedOperationException("MappingFactory not supported by implementation. Defined by Grails itself.");
     }

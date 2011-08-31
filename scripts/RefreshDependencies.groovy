@@ -30,12 +30,10 @@ includeTargets << grailsScript("_PluginDependencies")
 target(refreshDependencies:"Refreshes application dependencies, installing any necessary plugins as necessary") {
     resolveDependencies()
 
-
-    
-    if(argsMap.params) {
+    if (argsMap.params) {
         // write data to file
         def f = new File(argsMap.params[0])
-        
+
         f.withWriter { writer ->
             def xml = new groovy.xml.MarkupBuilder(writer)
             xml.dependencies {
@@ -43,16 +41,16 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
                    handleArtifactReport(grailsSettings.buildResolveReport.allArtifactsReports, xml)
                 }
                 xml.compile {
-                   handleArtifactReport(grailsSettings.compileResolveReport.allArtifactsReports, xml)                    
+                   handleArtifactReport(grailsSettings.compileResolveReport.allArtifactsReports, xml)
                 }
                 xml.test {
-                   handleArtifactReport(grailsSettings.testResolveReport.allArtifactsReports, xml)                    
+                   handleArtifactReport(grailsSettings.testResolveReport.allArtifactsReports, xml)
                 }
                 xml.runtime {
-                   handleArtifactReport(grailsSettings.runtimeResolveReport.allArtifactsReports, xml)                    
+                   handleArtifactReport(grailsSettings.runtimeResolveReport.allArtifactsReports, xml)
                 }
                 xml.provided {
-                   handleArtifactReport(grailsSettings.providedResolveReport.allArtifactsReports, xml)                    
+                   handleArtifactReport(grailsSettings.providedResolveReport.allArtifactsReports, xml)
                 }
             }
         }
@@ -73,10 +71,10 @@ private handleArtifactReport(allReports, xml) {
                 xml.source sourceJar.localFile
             }
             def javadocJar = allReports.find { "$baseName-javadoc.jar" == it.localFile?.name}
-            if(javadocJar) {
+            if (javadocJar) {
                 xml.javadoc javadocJar.localFile
-            }                           
+            }
         }
-    }    
+    }
 }
 setDefaultTarget(refreshDependencies)

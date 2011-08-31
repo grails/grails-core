@@ -170,7 +170,7 @@ class ValidationTagLib {
     }
 
     /**
-     * Loops through each error of the specified bean or model. If no arguments 
+     * Loops through each error of the specified bean or model. If no arguments
      * are specified it will go through all model attributes and check for errors.
      *
      * @attr bean The bean to check for errors

@@ -38,9 +38,9 @@ abstract class TomcatServer implements EmbeddableServer {
     protected final boolean usingUserKeystore
     protected final File keystoreFile
     protected final String keyPassword
- 	protected String truststore
- 	protected File truststoreFile
- 	protected String trustPassword
+    protected String truststore
+    protected File truststoreFile
+    protected String trustPassword
 
     // These are set from the outside in _GrailsRun
     def grailsConfig

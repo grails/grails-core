@@ -123,7 +123,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return
         }
 
-		def oldRequestAttributes = RequestContextHolder.getRequestAttributes()
+        def oldRequestAttributes = RequestContextHolder.getRequestAttributes()
         try {
             def webRequest = new GrailsWebRequest(new PageRenderRequest(source.URI),
                   new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),

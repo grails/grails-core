@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
-import grails.converters.JSON;
 import grails.converters.XML;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -23,7 +22,6 @@ import groovy.lang.MetaMethod;
 
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-import org.codehaus.groovy.grails.web.json.JSONWriter;
 
 /**
  * @author Siegfried Puchbauer

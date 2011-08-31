@@ -43,7 +43,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
     @Autowired
     UrlMappingsHolder urlMappingsHolder
-    
+
     @Autowired
     UrlConverter grailsUrlConverter;
 
@@ -94,7 +94,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
                 def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
-                
+
                 controller = grailsUrlConverter.toUrlElement(controller)
                 boolean isDefaultAction = false
                 if (controller && !action) {

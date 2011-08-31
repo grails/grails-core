@@ -20,7 +20,19 @@ import grails.validation.ValidationException;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import org.codehaus.groovy.grails.commons.*;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
@@ -31,10 +43,6 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-
-import java.io.Serializable;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Abstract class for different implementations that perform saving to implement.
@@ -85,7 +93,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         disableAutoValidationFor.get().remove(System.identityHashCode(obj));
     }
 
-
     public static void clearDisabledValidations() {
         disableAutoValidationFor.get().clear();
     }
@@ -97,6 +104,10 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
 
         this.application = application;
+    }
+
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+       this(pattern, sessionFactory, classLoader, application, null);
     }
 
     @SuppressWarnings("rawtypes")
@@ -117,10 +128,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
             }
         }
         return shouldFail;
-    }
-
-    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        this(pattern, sessionFactory, classLoader, application,null);
     }
 
     /* (non-Javadoc)

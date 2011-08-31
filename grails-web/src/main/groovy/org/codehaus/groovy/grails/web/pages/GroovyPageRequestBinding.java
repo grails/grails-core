@@ -104,11 +104,11 @@ public class GroovyPageRequestBinding extends Binding {
 
     public GroovyPageRequestBinding(GrailsWebRequest webRequest) {
         this.webRequest = webRequest;
-        if(webRequest != null) {
-	        GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
-	        if (templateEngine != null) {
-	            this.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
-	        }
+        if (webRequest != null) {
+            GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
+            if (templateEngine != null) {
+                this.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
+            }
         }
     }
 

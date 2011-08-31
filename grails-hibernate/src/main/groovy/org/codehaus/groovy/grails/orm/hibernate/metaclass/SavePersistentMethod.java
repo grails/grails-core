@@ -41,11 +41,11 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
     public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        super(METHOD_PATTERN,sessionFactory, classLoader, application);
+        super(METHOD_PATTERN, sessionFactory, classLoader, application);
     }
 
     public SavePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass domainClass) {
-        super(METHOD_PATTERN,sessionFactory, classLoader, application, domainClass);
+        super(METHOD_PATTERN, sessionFactory, classLoader, application, domainClass);
     }
 
     @Override

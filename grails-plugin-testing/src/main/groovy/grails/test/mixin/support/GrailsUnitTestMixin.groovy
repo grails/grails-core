@@ -86,7 +86,7 @@ class GrailsUnitTestMixin {
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource")
-            
+
             def mainContext = new MockApplicationContext()
             mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
             grailsApplication.mainContext = mainContext

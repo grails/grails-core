@@ -39,7 +39,7 @@ public class GroovyPageBinding extends Binding {
     private Binding parent;
     private GroovyPage owner;
     private Set<String> cachedParentVariableNames=new HashSet<String>();
-    private boolean root; 
+    private boolean root;
 
     public GroovyPageBinding() {
         super();
@@ -104,14 +104,13 @@ public class GroovyPageBinding extends Binding {
      * @return
      */
     private Binding findBindingForVariable(String name) {
-    	if(cachedParentVariableNames.contains(name)) {
-    		if (parent instanceof GroovyPageBinding) {
-    			return ((GroovyPageBinding)parent).findBindingForVariable(name);
-    		} else {
-    			return parent;
-    		}
-    	}
-    	
+        if (cachedParentVariableNames.contains(name)) {
+            if (parent instanceof GroovyPageBinding) {
+                return ((GroovyPageBinding)parent).findBindingForVariable(name);
+            }
+            return parent;
+        }
+
         if (getVariables().containsKey(name)) {
             return this;
         }
@@ -147,7 +146,7 @@ public class GroovyPageBinding extends Binding {
                 }
             }
             bindingToUse.getVariables().put(name, value);
-            if (bindingToUse!=this && cachedParentVariableNames.contains(name)) {
+            if (bindingToUse != this && cachedParentVariableNames.contains(name)) {
                 // maintain cached value
                 getVariables().put(name, value);
             }
@@ -202,11 +201,11 @@ public class GroovyPageBinding extends Binding {
         this.owner = owner;
     }
 
-	public boolean isRoot() {
-		return root;
-	}
+    public boolean isRoot() {
+        return root;
+    }
 
-	public void setRoot(boolean root) {
-		this.root = root;
-	}
+    public void setRoot(boolean root) {
+        this.root = root;
+    }
 }

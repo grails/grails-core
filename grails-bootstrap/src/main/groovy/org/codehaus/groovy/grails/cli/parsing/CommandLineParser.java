@@ -74,12 +74,12 @@ public class CommandLineParser {
      */
     public CommandLine parseString(String string) {
         // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
-    	// Doesn't handle escape sequences with \
-    	try {
-    		return parse(Commandline.translateCommandline(string));
-    	} catch (BuildException e) {
-    		throw new ParseException(e); //Rethrow as an error that clients can expect.
-    	}
+        // Doesn't handle escape sequences with \
+        try {
+            return parse(Commandline.translateCommandline(string));
+        } catch (BuildException e) {
+            throw new ParseException(e); //Rethrow as an error that clients can expect.
+        }
     }
 
     /**

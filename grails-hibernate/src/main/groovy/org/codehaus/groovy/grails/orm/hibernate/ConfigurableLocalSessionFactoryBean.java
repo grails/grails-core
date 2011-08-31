@@ -130,8 +130,6 @@ public class ConfigurableLocalSessionFactoryBean extends
         return (Configuration)config;
     }
 
-
-
     @Override
     public SessionFactoryBuilder setClassLoader(ClassLoader beanClassLoader) {
         this.classLoader = beanClassLoader;
@@ -153,7 +151,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     @Override
     protected SessionFactory newSessionFactory() throws HibernateException {
         try {
-            SessionFactory sf =   super.newSessionFactory();
+            SessionFactory sf = super.newSessionFactory();
 
             if (!grails.util.Environment.getCurrent().isReloadEnabled() || !proxyIfReloadEnabled) {
                 return sf;
@@ -182,9 +180,7 @@ public class ConfigurableLocalSessionFactoryBean extends
             }
             throw e;
         }
-
     }
-
 
     private String getCauseMessage(HibernateException e) {
         Throwable cause = e.getCause();
@@ -291,9 +287,7 @@ public class ConfigurableLocalSessionFactoryBean extends
                 listeners.getPostCollectionRemoveEventListeners(), listenerMap);
         addNewListenerToConfiguration(config, "post-collection-update", PostCollectionUpdateEventListener.class,
                 listeners.getPostCollectionUpdateEventListeners(), listenerMap);
-
     }
-
 
     @SuppressWarnings("unchecked")
     private <T> void addNewListenerToConfiguration(final Configuration config, final String listenerType,

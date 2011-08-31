@@ -136,7 +136,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
         def request = new MockHttpServletRequest();
         def webRequest = GrailsWebUtil.bindMockWebRequest()
-        
+
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
     }

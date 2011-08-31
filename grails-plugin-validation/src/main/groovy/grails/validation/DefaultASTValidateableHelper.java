@@ -58,7 +58,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
         final MethodNode noArgValidateMethod = classNode.getMethod(VALIDATE_METHOD_NAME,ZERO_PARAMETERS);
         if (noArgValidateMethod == null) {
             final BlockStatement validateMethodCode = new BlockStatement();
-            
+
             final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression();
             validateInstanceArguments.addExpression(new CastExpression(new ClassNode(List.class), new ConstantExpression(null)));
             final Expression callListArgValidateMethod = new MethodCallExpression(THIS_EXPRESSION, VALIDATE_METHOD_NAME, validateInstanceArguments);

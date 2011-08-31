@@ -27,7 +27,7 @@ public class JspLinkTag extends JspInvokeGrailsTagLibTag {
 
     private String controller;
     private String action;
-    private String id;
+    @SuppressWarnings("hiding") private String id;
     private String url;
 
     public JspLinkTag() {

@@ -42,7 +42,7 @@ class StreamCharTagLib {
             def taglib = appCtx.getBean("StreamCharTagLib")
             def result = taglib.callMe()
             assertTrue result instanceof StreamCharBuffer
-            
+
             testQueryMethods result
         }
         finally {
@@ -68,7 +68,7 @@ class StreamCharTagLib {
             RequestContextHolder.setRequestAttributes(null)
         }
     }
-    
+
     private testQueryMethods(queryArg) {
         def someDomainClass = ga.getDomainClass('SomeDomainClass').clazz
         assert someDomainClass.findByName(queryArg) : "should have found a result when passing a ${queryArg.getClass()} value"
@@ -83,6 +83,5 @@ class StreamCharTagLib {
         assert someDomainClass.find("from SomeDomainClass s where s.name = ?", [queryArg]) : "should have found a result when passing a ${queryArg.getClass()} value"
         assert someDomainClass.findAll("from SomeDomainClass s where s.name = ?", [queryArg]) : "should have found a result when passing a ${queryArg.getClass()} value"
         assert someDomainClass.executeQuery("from SomeDomainClass s where s.name = ?", [queryArg]) : "should have found a result when passing a ${queryArg.getClass()} value"
-
     }
 }

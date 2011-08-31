@@ -4,14 +4,6 @@ import grails.test.mixin.TestFor
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 8/29/11
- * Time: 10:55 AM
- * To change this template use File | Settings | File Templates.
- */
-
 @TestFor(PersonController)
 @Mock([TargetPerson, Book])
 class BindXmlWithAssociationTests {

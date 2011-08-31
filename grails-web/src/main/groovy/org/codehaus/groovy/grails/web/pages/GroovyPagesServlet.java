@@ -186,8 +186,8 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             HttpServletResponse response, Template template) throws Exception {
         GrailsPrintWriter out = (GrailsPrintWriter) createResponseWriter(response);
         try {
-        	if(template instanceof GroovyPageTemplate) {
-            	((GroovyPageTemplate)template).setAllowSettingContentType(true);
+            if(template instanceof GroovyPageTemplate) {
+                ((GroovyPageTemplate)template).setAllowSettingContentType(true);
             }
             template.make().writeTo(out);
         }

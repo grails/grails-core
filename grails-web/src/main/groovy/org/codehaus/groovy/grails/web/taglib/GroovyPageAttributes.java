@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  * @author Lari Hotari
  * @since 1.2
  */
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
     public GroovyPageAttributes() {
         super();
@@ -37,7 +38,8 @@ public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable
         super(map);
     }
 
+    @Override
     public Object clone() {
-        return new GroovyPageAttributes(new LinkedHashMap(this.wrappedMap));
+        return new GroovyPageAttributes(new LinkedHashMap(wrappedMap));
     }
 }

@@ -5,7 +5,7 @@ import spock.lang.Specification
 /**
  * Tests for {@link CommandLineParser}
  */
-class CommandLineParserSpec extends Specification{
+class CommandLineParserSpec extends Specification {
 
     void "Test parse basic command"() {
         when:
@@ -66,11 +66,10 @@ class CommandLineParserSpec extends Specification{
 
         then:
             thrown ParseException
-
     }
 
     void "Test parse command with environment, sys props, arguments and undeclared options"() {
-       when:
+        when:
             def parser = new CommandLineParser()
             def cl = parser.parse("prod", "run-app", "-DmyProp=value", "foo", "bar", "--dev-mode")
 
@@ -83,7 +82,6 @@ class CommandLineParserSpec extends Specification{
             cl.remainingArgs == ['foo', 'bar']
             cl.hasOption('dev-mode')
             cl.optionValue('dev-mode') == true
-
     }
 
     void "Test parse command with environment, sys props, arguments and undeclared options with values"() {
@@ -100,7 +98,6 @@ class CommandLineParserSpec extends Specification{
             cl.remainingArgs == ['foo', 'bar']
             cl.hasOption('host')
             cl.optionValue('host') == "localhost"
-
     }
 
     void "Test help message with declared options"() {
@@ -112,9 +109,7 @@ class CommandLineParserSpec extends Specification{
         then:
             String ls = System.getProperty("line.separator");
             parser.helpMessage == "usage: grails [options] [command]${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
-       }
-
-
+    }
 
     // STRING tests
 
@@ -186,7 +181,6 @@ class CommandLineParserSpec extends Specification{
             cl.remainingArgs == ['foo', 'bar']
             cl.hasOption('dev-mode')
             cl.optionValue('dev-mode') == true
-
     }
 
     void "Test parse string command with environment, sys props, arguments and undeclared options with values"() {
@@ -205,8 +199,8 @@ class CommandLineParserSpec extends Specification{
             cl.optionValue('host') == "localhost"
 
     }
-	
-	void "Test that parseString handles quoted arguments with double quotes"() {
+
+    void "Test that parseString handles quoted arguments with double quotes"() {
        when:
             def parser = new CommandLineParser()
             def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml"')
@@ -216,37 +210,37 @@ class CommandLineParserSpec extends Specification{
             cl.systemProperties.size() == 0
             cl.remainingArgs.size() == 1
             cl.remainingArgs == ['file with spaces.xml']
-	}
+    }
 
-	void "Test that parseString handles quoted arguments with single quotes"() {
-		when:
-			 def parser = new CommandLineParser()
-			 def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml'")
- 
-		 then:
-			 cl.commandName == 'refresh-dependencies'
-			 cl.systemProperties.size() == 0
-			 cl.remainingArgs.size() == 1
-			 cl.remainingArgs == ['file with spaces.xml']
-             cl.hasOption('include-sources')
-             cl.optionValue('include-sources') == true
-	 }
-	
-	void "Test that parseString with unbalanced double quotes throws ParseException"() {
-		when:
-			 def parser = new CommandLineParser()
-			 def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml")
- 
-		 then:
+    void "Test that parseString handles quoted arguments with single quotes"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml'")
+
+        then:
+            cl.commandName == 'refresh-dependencies'
+            cl.systemProperties.size() == 0
+            cl.remainingArgs.size() == 1
+            cl.remainingArgs == ['file with spaces.xml']
+            cl.hasOption('include-sources')
+            cl.optionValue('include-sources') == true
+    }
+
+    void "Test that parseString with unbalanced double quotes throws ParseException"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml")
+
+        then:
             thrown ParseException
-	}
- 
-	void "Test that parseString with unbalanced single quotes throws ParseException"() {
-		when:
-			 def parser = new CommandLineParser()
-			 def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml')
- 
-		 then:
+    }
+
+    void "Test that parseString with unbalanced single quotes throws ParseException"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml')
+
+        then:
             thrown ParseException
-	}
+    }
 }

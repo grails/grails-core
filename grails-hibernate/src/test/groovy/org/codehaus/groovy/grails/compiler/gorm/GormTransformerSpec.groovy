@@ -12,22 +12,18 @@ import spock.lang.Specification
 
 class GormTransformerSpec extends Specification {
 
-    
     void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
         given:
               def gcl = new GrailsAwareClassLoader()
               def gormTransformer = new GormTransformer() {
                   @Override
-                  boolean shouldInject(URL url) {
-                      return true;
-                  }
-
+                  boolean shouldInject(URL url) { true }
               }
               gcl.classInjectors = [gormTransformer] as ClassInjector[]
 
           when:
               def cls = gcl.parseClass('''
-@grails.persistence.Entity              
+@grails.persistence.Entity
 class TestEntity {
     Long id
 }
