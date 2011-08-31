@@ -31,7 +31,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.validation.Errors;
 
-public class ASTBeanPropertyBindingResultHelper implements ASTErrorsHelper {
+public class ASTValidationErrorsHelper implements ASTErrorsHelper {
     private static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String SET_ERRORS_METHOD_NAME = "setErrors";
     private static final String GET_ERRORS_METHOD_NAME = "getErrors";

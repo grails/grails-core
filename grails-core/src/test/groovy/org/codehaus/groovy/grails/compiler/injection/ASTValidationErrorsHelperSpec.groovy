@@ -10,7 +10,7 @@ import org.springframework.validation.Errors
 import spock.lang.Specification
 
 
-class ASTBeanPropertyBindingResultHelperSpec extends Specification {
+class ASTValidationErrorsHelperSpec extends Specification {
 
     static gcl
 
@@ -23,7 +23,7 @@ class ASTBeanPropertyBindingResultHelperSpec extends Specification {
                     }
                     @Override
                     void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-                        new ASTBeanPropertyBindingResultHelper().injectErrorsCode(classNode)
+                        new ASTValidationErrorsHelper().injectErrorsCode(classNode)
                     }
                     @Override
                     boolean shouldInject(URL url) {
