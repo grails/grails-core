@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.springframework.core.io.FileSystemResource
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
+import org.apache.ivy.core.module.descriptor.Configuration
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -411,18 +412,33 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                     errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
                 }
                 else {
-                    addJarsToRootLoader resolveReport.getArtifactsReports(null, false).localFile
+                    addJarsToRootLoader dependencyConfiguration, resolveReport.getArtifactsReports(null, false).localFile
                 }
             }
         }
         def pluginJars = new File("${pluginInstallPath}/lib").listFiles().findAll { it.name.endsWith(".jar")}
-        addJarsToRootLoader(pluginJars)
+        addJarsToRootLoader(IvyDependencyManager.RUNTIME_CONFIGURATION, pluginJars)
     }
 
-    protected addJarsToRootLoader(Collection pluginJars) {
+    protected addJarsToRootLoader(Configuration dependencyConfiguration, Collection pluginJars) {
         def loader = getClass().classLoader.rootLoader
         for (File jar in pluginJars) {
             loader.addURL(jar.toURI().toURL())
+        }
+
+        switch(dependencyConfiguration) {
+            case IvyDependencyManager.RUNTIME_CONFIGURATION:
+                settings.runtimeDependencies.addAll(pluginJars)
+            break
+            case IvyDependencyManager.BUILD_CONFIGURATION:
+                settings.buildDependencies.addAll(pluginJars)
+            break
+            case IvyDependencyManager.PROVIDED_CONFIGURATION:
+                settings.providedDependencies.addAll(pluginJars)
+            break
+            case IvyDependencyManager.TEST_CONFIGURATION:
+                settings.testDependencies.addAll(pluginJars)
+            break
         }
     }
 
