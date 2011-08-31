@@ -32,6 +32,7 @@ import org.grails.datastore.gorm.finders.CountByFinder
 import org.grails.datastore.gorm.finders.FindAllByBooleanFinder
 import org.grails.datastore.gorm.finders.FindByBooleanFinder
 import org.grails.datastore.gorm.finders.FinderMethod
+import org.grails.datastore.gorm.finders.ListOrderByFinder;
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.hibernate.*
@@ -80,7 +81,7 @@ class HibernateGormEnhancer extends GormEnhancer {
             new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindByBooleanFinder(datastore),
             new CountByFinder(datastore),
-            new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ])
+            new ListOrderByFinder(datastore) ])
     }
 
     @SuppressWarnings("unchecked")
