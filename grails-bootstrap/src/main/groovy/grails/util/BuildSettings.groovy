@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 
 /**
  * <p>Represents the project paths and other build settings
@@ -1188,6 +1189,20 @@ class BuildSettings extends AbstractBuildSettings {
         return pluginDependencyHandler(dependencyManager)
     }
 
+    public boolean isRegisteredInMetadata(String pluginName) {
+        return dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)
+    }
+
+    public boolean notDefinedInBuildConfig(String pluginName) {
+        def descriptors = dependencyManager.pluginDependencyDescriptors.findAll {EnhancedDefaultDependencyDescriptor desc ->
+            def nonTransitive = !desc.plugin
+            def exported = desc.exportedToApplication
+            nonTransitive || exported
+        }
+        def defined = descriptors*.dependencyId*.name.contains(pluginName)
+        return !defined
+    }
+
     Closure pluginDependencyHandler(IvyDependencyManager dependencyManager) {
         def pluginSlurper = createConfigSlurper()
 
@@ -1195,6 +1210,10 @@ class BuildSettings extends AbstractBuildSettings {
             def pluginName = dir.name
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
             pluginName = matcher ? matcher[0][1] : pluginName
+
+            if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName)) {
+                return
+            }
 
             // Try BuildConfig.groovy first, which should work
             // work for in-place plugins.

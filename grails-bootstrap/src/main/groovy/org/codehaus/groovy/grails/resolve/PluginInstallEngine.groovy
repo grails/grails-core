@@ -23,8 +23,6 @@ import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
 
 import java.util.regex.Pattern
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
@@ -549,25 +547,9 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
      * @param pluginVersion the version of the plugin
      */
     void registerPluginWithMetadata(String pluginName, pluginVersion) {
-        if (alreadyRegisteredInMetadata(pluginName) || notDefinedInBuildConfig(pluginName)) {
+        if (settings.isRegisteredInMetadata(pluginName) || settings.notDefinedInBuildConfig(pluginName)) {
             addToMetadata(pluginName, pluginVersion)
         }
-    }
-
-    private boolean alreadyRegisteredInMetadata(String pluginName) {
-        IvyDependencyManager dependencyManager = settings.getDependencyManager()
-        return dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)
-    }
-
-    private boolean notDefinedInBuildConfig(String pluginName) {
-        IvyDependencyManager dependencyManager = settings.getDependencyManager()
-        def descriptors = dependencyManager.pluginDependencyDescriptors.findAll {EnhancedDefaultDependencyDescriptor desc ->
-            def nonTransitive = !desc.plugin
-            def exported = desc.exportedToApplication
-            nonTransitive || exported
-        }
-        def defined = descriptors*.dependencyId*.name.contains(pluginName)
-        return !defined
     }
 
     private def addToMetadata(pluginName, pluginVersion) {
