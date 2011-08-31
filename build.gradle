@@ -34,6 +34,7 @@ slf4jVersion = "1.6.1"
 springLoadedVersion = "0.8.5.BUILD-SNAPSHOT"
 springVersion = "3.1.0.M2"
 springWebflowVersion= "2.0.8.RELEASE"
+hibernateVersion = "3.6.5.Final"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -127,7 +128,7 @@ subprojects { project ->
 
         // Specs
         compile 'javax.servlet:servlet-api:2.5'
-        compile 'org.hibernate.java-persistence:jpa-api:2.0-cr-1'
+        compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.0.Final'
 
 
         // Testing
