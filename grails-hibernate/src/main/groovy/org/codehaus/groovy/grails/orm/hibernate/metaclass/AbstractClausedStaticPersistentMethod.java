@@ -77,7 +77,6 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         protected String type;
         protected Class<?> targetClass;
         private GrailsApplication application;
-        private TypeConverter converter = new SimpleTypeConverter();
 
         /**
          * Used as an indication that an expression will return no results, so stop processing and return nothing.
@@ -148,6 +147,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                     args[i] = args[i].toString();
                 }
                 else if (!prop.getType().isAssignableFrom(args[i].getClass()) && !(GrailsClassUtils.isMatchBetweenPrimativeAndWrapperTypes(prop.getType(), args[i].getClass()))) {
+                    TypeConverter converter = new SimpleTypeConverter();
                     try {
                         if (type.equals(IN_LIST)) {
                             args[i] = converter.convertIfNecessary(args[i], Collection.class);

@@ -74,7 +74,6 @@ public class GrailsHibernateUtil {
 
     private static final String DYNAMIC_FILTER_ENABLER = "dynamicFilterEnabler";
 
-    public static SimpleTypeConverter converter = new SimpleTypeConverter();
     public static final String ARGUMENT_FETCH_SIZE = "fetchSize";
     public static final String ARGUMENT_TIMEOUT = "timeout";
     public static final String ARGUMENT_READ_ONLY = "readOnly";
@@ -169,6 +168,7 @@ public class GrailsHibernateUtil {
     public static void populateArgumentsForCriteria(GrailsApplication grailsApplication, Class<?> targetClass, Criteria c, Map argMap) {
         Integer maxParam = null;
         Integer offsetParam = null;
+        SimpleTypeConverter converter = new SimpleTypeConverter();
         if (argMap.containsKey(ARGUMENT_MAX)) {
             maxParam = converter.convertIfNecessary(argMap.get(ARGUMENT_MAX),Integer.class);
         }

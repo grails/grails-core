@@ -68,7 +68,6 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 public class FindPersistentMethod extends AbstractStaticPersistentMethod {
 
     private static final String    METHOD_PATTERN    = "^find$";
-    public static SimpleTypeConverter converter = new SimpleTypeConverter();
 
     public FindPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
         super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));
@@ -164,6 +163,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
                         String key = GrailsHibernateUtil.ARGUMENT_CACHE;
                         boolean value = false;
                         if ((param instanceof Map) && ((Map)param).containsKey(key)) {
+                        	SimpleTypeConverter converter = new SimpleTypeConverter();
                             value = converter.convertIfNecessary(((Map)param).get(key), Boolean.class);
                         }
                         useCache = value;
