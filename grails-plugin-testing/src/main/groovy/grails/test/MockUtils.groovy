@@ -177,6 +177,9 @@ class MockUtils {
 
         clazz.metaClass.render = {Map map ->
             renderArgs.putAll(map)
+            if (map["status"] != null) {
+                delegate.response.status = map["status"]
+            }
             if (map["template"] != null) {
                 assert map["view"] == null : "'view' cannot be used with 'template' in render"
                 assert map["text"] == null : "'text' cannot be used with 'template' in render"
