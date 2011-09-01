@@ -17,6 +17,9 @@ package org.codehaus.groovy.grails.plugins.web.mapping;
 
 
 import grails.util.GrailsUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.HyphenatedUrlConverter
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
@@ -51,6 +54,9 @@ class UrlMappingsGrailsPlugin {
         if (configuredServerURL) {
             serverURL = configuredServerURL
         }
+        
+        def urlConverterType = application.config?.grails?.web?.url?.converter
+        "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
         grailsLinkGenerator(CachingLinkGenerator, serverURL)
         urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, createUrlMappingsHolder(application, springConfig.getUnrefreshedApplicationContext(), manager)) { bean ->
             bean.lazyInit = true

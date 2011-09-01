@@ -1,13 +1,14 @@
 package org.codehaus.groovy.grails.web.errors
 
-import grails.util.GrailsWebUtil
 import grails.util.Environment
-
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
@@ -35,6 +36,14 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     @Override
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        def mainContext = new MockApplicationContext();
+        mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
+        application.mainContext =  mainContext
     }
 
     void testGetRootCause() {
@@ -64,6 +73,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
+        mockCtx.registerMockBean 'grailsApplication', application
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext

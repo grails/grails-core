@@ -1,7 +1,11 @@
 package org.codehaus.groovy.grails.web.filters
 
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
+import org.codehaus.groovy.grails.support.MockApplicationContext
 
  /**
  * @author Graeme Rocher
@@ -95,6 +99,9 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
 
     void testDefaultActionWithControllerMatchAndActionMatch() {
         def application = new DefaultGrailsApplication([DemoController] as Class[], getClass().classLoader)
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+        application.mainContext = mainContext
         application.initialise()
         def filterAdapter = new FilterToHandlerAdapter(grailsApplication: application)
         filterAdapter.filterConfig = new Expando()

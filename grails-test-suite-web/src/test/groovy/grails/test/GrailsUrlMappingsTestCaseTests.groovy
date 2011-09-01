@@ -1,23 +1,23 @@
 package grails.test
 
 import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 import junit.framework.ComparisonFailure
 import junit.framework.TestFailure
 import junit.framework.TestResult
+
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.web.mapping.UrlMapping
-import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping
-import org.codehaus.groovy.grails.web.mapping.UrlMappingData
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.codehaus.groovy.grails.web.mapping.AbstractUrlMapping
+import org.codehaus.groovy.grails.web.mapping.UrlMapping
+import org.codehaus.groovy.grails.web.mapping.UrlMappingData
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo
+import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 /**
@@ -37,6 +37,10 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
              GrailsUrlMappingTestCaseTestsBaseController, GrailsUrlMappingTestCaseTestsSubclassController
             ] as Class[],
             new GroovyClassLoader(getClass().classLoader))
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+        
+        mockApplication.mainContext= mainContext
         mockApplication.initialise()
         mockApplication.config.disableMultipart = true
 

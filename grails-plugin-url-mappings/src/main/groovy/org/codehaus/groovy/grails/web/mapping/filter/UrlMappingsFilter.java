@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
+import grails.web.UrlConverter;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +51,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -78,6 +81,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private ViewResolver viewResolver;
     private MimeType[] mimeTypes;
     private StackTraceFilterer filterer;
+    
+    private UrlConverter urlConverter;
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -88,6 +93,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         this.handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
         this.application = WebUtils.lookupApplication(servletContext);
         this.viewResolver = WebUtils.lookupViewResolver(servletContext);
+        ApplicationContext mainContext = application.getMainContext();
+        this.urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
         if (application != null) {
             grailsConfig = new GrailsConfig(application);
         }
@@ -166,7 +173,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         viewName = info.getViewName();
                         if (viewName == null && info.getURI() == null) {
                             final String controllerName = info.getControllerName();
-                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, WebUtils.SLASH + controllerName + WebUtils.SLASH + action);
+                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action));
                             if (controller == null) {
                                 continue;
                             }

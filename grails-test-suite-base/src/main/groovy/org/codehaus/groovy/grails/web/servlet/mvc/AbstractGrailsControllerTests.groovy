@@ -2,12 +2,15 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
@@ -25,8 +28,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
@@ -93,7 +94,11 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         mockManager.doArtefactConfiguration()
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter())
+        ga.mainContext = mainContext
         ga.initialise()
+        
         ga.setApplicationContext(ctx)
         domainClasses?.each { cc -> ga.addArtefact 'Domain', cc }
         controllerClasses?.each { cc -> ga.addArtefact 'Controller', cc }
@@ -177,4 +182,13 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     protected Resource[] getResources(String pattern) {
         new PathMatchingResourcePatternResolver().getResources(pattern)
     }
+    
+    protected creategGrailsApplication() {
+        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+        app.mainContext = mainContext
+        app
+    }
+
 }
