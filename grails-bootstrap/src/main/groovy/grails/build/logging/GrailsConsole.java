@@ -338,16 +338,14 @@ public class GrailsConsole {
         try {
             if (isAnsiEnabled()) {
 
-                Ansi ansi = userInputActive ? moveDownToSkipPrompt() : erasePreviousLine(CATEGORY_SEPARATOR);
-                lastStatus = outputCategory(ansi, CATEGORY_SEPARATOR)
+
+                out.print(erasePreviousLine(CATEGORY_SEPARATOR));
+                lastStatus = outputCategory(ansi(), CATEGORY_SEPARATOR)
                         .fg(Color.DEFAULT).a(msg).reset();
                 out.println(lastStatus);
-                if (userInputActive) {
-                    out.print(ansi().cursorRight(PROMPT.length()).reset());
-                }
-
-                if(!userInputActive)
+                if (!userInputActive) {
                     cursorMove = replaceCount;
+                }
             } else {
                 if (lastMessage != null && lastMessage.equals(msg)) return;
 
@@ -543,7 +541,7 @@ public class GrailsConsole {
         lastMessage = "";
         msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
         try {
-            return showPrompt(msg);
+            return readLine(msg);
         } finally {
             cursorMove = 0;
         }
@@ -555,25 +553,27 @@ public class GrailsConsole {
      * @return The user input prompt
      */
     private String showPrompt(String prompt) {
-        try {
             cursorMove = 0;
             if(!userInputActive) {
-
-                userInputActive = true;
-                try {
-                    return reader.readLine(prompt);
-                } finally {
-                    userInputActive = false;
-                }
+                return readLine(prompt);
             }
             else {
                 out.print(prompt);
                 return null;
             }
+    }
+
+    private String readLine(String prompt) {
+        userInputActive = true;
+        try {
+            return reader.readLine(prompt);
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
+        }finally {
+            userInputActive = false;
         }
     }
+
     /**
      * Shows the prompt to request user input
      * @return The user input prompt
@@ -649,6 +649,8 @@ public class GrailsConsole {
     }
 
     private Ansi erasePreviousLine(String categoryName) {
+        int cursorMove = this.cursorMove;
+        if(userInputActive) cursorMove++;
         if (cursorMove > 0) {
             int moveLeftLength = categoryName.length() + lastMessage.length();
             if (userInputActive) {
@@ -669,6 +671,7 @@ public class GrailsConsole {
             try {
                 if (isAnsiEnabled()) {
                     Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message);
+
                     if (message.endsWith(LINE_SEPARATOR)) {
                         out.print(ansi);
                     }
