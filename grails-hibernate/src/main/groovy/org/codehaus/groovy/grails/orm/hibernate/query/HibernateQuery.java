@@ -445,5 +445,11 @@ public class HibernateQuery extends Query {
             criteria.setProjection(Projections.avg(name));
             return this;
         }
+        
+        @Override
+        public ProjectionList distinct() {
+            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+            return this;
+        }
     }
 }

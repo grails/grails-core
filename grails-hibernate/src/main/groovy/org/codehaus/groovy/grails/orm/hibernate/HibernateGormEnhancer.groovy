@@ -31,7 +31,10 @@ import org.grails.datastore.gorm.GormValidationApi
 import org.grails.datastore.gorm.finders.CountByFinder
 import org.grails.datastore.gorm.finders.FindAllByBooleanFinder
 import org.grails.datastore.gorm.finders.FindByBooleanFinder
+import org.grails.datastore.gorm.finders.FindOrCreateByFinder
+import org.grails.datastore.gorm.finders.FindOrSaveByFinder
 import org.grails.datastore.gorm.finders.FinderMethod
+import org.grails.datastore.gorm.finders.ListOrderByFinder;
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.hibernate.*
@@ -75,12 +78,12 @@ class HibernateGormEnhancer extends GormEnhancer {
         Collections.unmodifiableList([
             new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindAllByBooleanFinder(datastore),
-            new FindOrCreateByPersistentMethod(grailsApplication, sessionFactory, classLoader),
-            new FindOrSaveByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindOrCreateByFinder(datastore),
+            new FindOrSaveByFinder(datastore),
             new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
             new FindByBooleanFinder(datastore),
             new CountByFinder(datastore),
-            new ListOrderByPersistentMethod(grailsApplication, sessionFactory, classLoader) ])
+            new ListOrderByFinder(datastore) ])
     }
 
     @SuppressWarnings("unchecked")
