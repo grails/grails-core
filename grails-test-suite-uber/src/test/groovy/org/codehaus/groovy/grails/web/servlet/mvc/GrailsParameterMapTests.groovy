@@ -7,6 +7,18 @@ class GrailsParameterMapTests extends GroovyTestCase {
     GrailsParameterMap theMap
     MockHttpServletRequest mockRequest = new MockHttpServletRequest()
 
+    void testDateMethod() {
+        def request = new MockHttpServletRequest()
+        def params = new GrailsParameterMap(request)
+        params['myDate'] = '16-07-1971'
+
+        def val = params.date('myDate', 'dd-MM-yyyy')
+
+        def cal = new GregorianCalendar(1971,6,16)
+
+        assert val == cal.time
+    }
+
     void testParseRequestBodyForPutRequest() {
         def request = new MockHttpServletRequest()
         request.content = 'foo=bar&one=two'.bytes
