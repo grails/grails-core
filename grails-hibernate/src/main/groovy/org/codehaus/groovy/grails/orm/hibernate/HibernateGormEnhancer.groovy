@@ -119,7 +119,7 @@ class HibernateGormEnhancer extends GormEnhancer {
  * @author Graeme Rocher
  * @since 1.0
  */
-class HibernateGormStaticApi extends GormStaticApi {
+class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     private static final EMPTY_ARRAY = [] as Object[]
 
     private HibernateTemplate hibernateTemplate
@@ -166,7 +166,7 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object get(Serializable id) {
+    D get(Serializable id) {
         if (id || (id instanceof Number)) {
             id = convertIdentifier(id)
             final Object result = hibernateTemplate.get(persistentClass, id)
@@ -194,7 +194,7 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object read(Serializable id) {
+    D read(Serializable id) {
         if (id == null) {
             return null
         }
@@ -209,7 +209,7 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object load(Serializable id) {
+    D load(Serializable id) {
         id = convertIdentifier(id)
         if (id != null) {
             return hibernateTemplate.load(persistentClass, id)
@@ -217,22 +217,22 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    List getAll() {
+    List<D> getAll() {
         hibernateTemplate.execute({ Session session ->
             session.createCriteria(persistentClass).list()
         } as HibernateCallback)
     }
 
-    List getAll(List ids) {
+    List<D> getAll(List ids) {
         getAllInternal(ids)
     }
 
-    List getAll(Long... ids) {
+    List<D> getAll(Long... ids) {
         getAllInternal(ids)
     }
 
     @Override
-    List getAll(Serializable... ids) {
+    List<D> getAll(Serializable... ids) {
         getAllInternal(ids)
     }
 
@@ -263,13 +263,13 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object lock(Serializable id) {
+    D lock(Serializable id) {
         id = convertIdentifier(id)
         hibernateTemplate.get(persistentClass, id, LockMode.UPGRADE)
     }
 
     @Override
-    Object merge(Object o) {
+    D merge(Object o) {
         mergeMethod.invoke(o, "merge", [] as Object[])
     }
 
@@ -295,22 +295,22 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    List list(Map params) {
+    List<D> list(Map params) {
         listMethod.invoke persistentClass, "list", [params] as Object[]
     }
 
     @Override
-    List list() {
+    List<D> list() {
         listMethod.invoke persistentClass, "list", EMPTY_ARRAY
     }
 
     @Override
-    List findAll(Object example, Map args) {
+    List<D> findAll(Object example, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [example, args] as Object[])
     }
 
     @Override
-    Object find(Object example, Map args) {
+    D find(Object example, Map args) {
         findMethod.invoke(persistentClass, "find", [example, args] as Object[])
     }
 
@@ -325,7 +325,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use Book.find('..', [foo:'bar], [max:10]) instead
      */
-    Object find(String query, Map args, Integer max) {
+    D find(String query, Map args, Integer max) {
         findMethod.invoke(persistentClass, "find", [query, args, max] as Object[])
     }
 
@@ -341,7 +341,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use Book.find('..', [foo:'bar], [max:10, offset:5]) instead
      */
-    Object find(String query, Map args, Integer max, Integer offset) {
+    D find(String query, Map args, Integer max, Integer offset) {
         findMethod.invoke(persistentClass, "find", [query, args, max, offset] as Object[])
     }
 
@@ -355,7 +355,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use Book.find('..', [max:10]) instead
      */
-    Object find(String query, Integer max) {
+    D find(String query, Integer max) {
         findMethod.invoke(persistentClass, "find", [query, max] as Object[])
     }
 
@@ -369,7 +369,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use Book.find('..', [max:10, offset:5]) instead
      */
-    Object find(String query, Integer max, Integer offset) {
+    D find(String query, Integer max, Integer offset) {
         findMethod.invoke(persistentClass, "find", [query, max, offset] as Object[])
     }
 
@@ -383,7 +383,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use findAll('..', [foo:'bar], [max:10]) instead
      */
-    Object findAll(String query, Map args, Integer max) {
+    List<D> findAll(String query, Map args, Integer max) {
         findAllMethod.invoke(persistentClass, "findAll", [query, args, max] as Object[])
     }
 
@@ -399,7 +399,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use findAll('..', [foo:'bar], [max:10, offset:5]) instead
      */
-    Object findAll(String query, Map args, Integer max, Integer offset) {
+    List<D> findAll(String query, Map args, Integer max, Integer offset) {
         findAllMethod.invoke(persistentClass, "findAll", [query, args, max, offset] as Object[])
     }
 
@@ -412,7 +412,7 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use findAll('..', [max:10]) instead
      */
-    Object findAll(String query, Integer max) {
+    List<D> findAll(String query, Integer max) {
         findAllMethod.invoke(persistentClass, "findAll", [query, max] as Object[])
     }
 
@@ -425,12 +425,12 @@ class HibernateGormStaticApi extends GormStaticApi {
      *
      * @deprecated Use findAll('..', [max:10, offset:5]) instead
      */
-    Object findAll(String query, Integer max, Integer offset) {
+    List<D> findAll(String query, Integer max, Integer offset) {
         findAllMethod.invoke(persistentClass, "findAll", [query, max, offset] as Object[])
     }
 
     @Override
-    List findAllWhere(Map queryMap, Map args) {
+    List<D> findAllWhere(Map queryMap, Map args) {
         if (!queryMap) return null
         hibernateTemplate.execute({Session session ->
             Map queryArgs = filterQueryArgumentMap(queryMap)
@@ -446,7 +446,7 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    def findWhere(Map queryMap, Map args) {
+    D findWhere(Map queryMap, Map args) {
         if (!queryMap) return null
         hibernateTemplate.execute({Session session ->
             Map queryArgs = filterQueryArgumentMap(queryMap)
@@ -521,31 +521,31 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object executeQuery(String query) {
+    List<D> executeQuery(String query) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query] as Object[])
     }
 
-    Object executeQuery(String query, Object arg) {
+    List<D> executeQuery(String query, Object arg) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query, arg] as Object[])
     }
 
     @Override
-    Object executeQuery(String query, Map args) {
+    List<D> executeQuery(String query, Map args) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query, args] as Object[])
     }
 
     @Override
-    Object executeQuery(String query, Map params, Map args) {
+    List<D> executeQuery(String query, Map params, Map args) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query, params, args] as Object[])
     }
 
     @Override
-    Object executeQuery(String query, Collection params) {
+    List<D> executeQuery(String query, Collection params) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query, params] as Object[])
     }
 
     @Override
-    Object executeQuery(String query, Collection params, Map args) {
+    List<D> executeQuery(String query, Collection params, Map args) {
         executeQueryMethod.invoke(persistentClass, "executeQuery", [query, params, args] as Object[])
     }
 
@@ -575,21 +575,21 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object find(String query) {
+    D find(String query) {
         findMethod.invoke(persistentClass, "find", [query] as Object[])
     }
 
-    Object find(String query, Object[] params) {
+    D find(String query, Object[] params) {
         findMethod.invoke(persistentClass, "find", [query, params] as Object[])
     }
 
     @Override
-    Object find(String query, Map args) {
+    D find(String query, Map args) {
         findMethod.invoke(persistentClass, "find", [query, args] as Object[])
     }
 
     @Override
-    Object find(String query, Map params, Map args) {
+    D find(String query, Map params, Map args) {
         findMethod.invoke(persistentClass, "find", [query, params, args] as Object[])
     }
 
@@ -599,37 +599,37 @@ class HibernateGormStaticApi extends GormStaticApi {
     }
 
     @Override
-    Object find(String query, Collection params, Map args) {
+    D find(String query, Collection params, Map args) {
         findMethod.invoke(persistentClass, "find", [query, params, args] as Object[])
     }
 
     @Override
-    List findAll(String query) {
+    List<D> findAll(String query) {
         findAllMethod.invoke(persistentClass, "findAll", [query] as Object[])
     }
 
     @Override
-    List findAll(String query, Map args) {
+    List<D> findAll(String query, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [query, args] as Object[])
     }
 
     @Override
-    List findAll(String query, Map params, Map args) {
+    List<D> findAll(String query, Map params, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [query, params, args] as Object[])
     }
 
     @Override
-    List findAll(String query, Collection params) {
+    List<D> findAll(String query, Collection params) {
         findAllMethod.invoke(persistentClass, "findAll", [query, params] as Object[])
     }
 
     @Override
-    List findAll(String query, Collection params, Map args) {
+    List<D> findAll(String query, Collection params, Map args) {
         findAllMethod.invoke(persistentClass, "findAll", [query, params, args] as Object[])
     }
 
     @Override
-    Object create() {
+    D create() {
         return super.create()    //To change body of overridden methods use File | Settings | File Templates.
     }
 }
