@@ -498,7 +498,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     }
 
     @Override
-    Object withNewSession(Closure callable) {
+    void withNewSession(Closure callable) {
         HibernateTemplate template = new HibernateTemplate(sessionFactory)
         SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
         Session previousSession = sessionHolder?.session
