@@ -210,7 +210,7 @@ public class GORMSessionFactoryDefinitionParser implements BeanDefinitionParser 
 
         String transactionManagerRef = element.getAttribute(TRANSACTION_MANAGER_ATTRIBUTE);
         if (StringUtils.hasText(transactionManagerRef)) {
-            targetRegistry.registerAlias("transactionManager", transactionManagerRef);
+            targetRegistry.registerAlias(transactionManagerRef, "transactionManager");
         }
         else {
             GenericBeanDefinition transactionManagerBean = new GenericBeanDefinition();
