@@ -263,6 +263,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest.addParameter("name", "Dierk Koenig")
         mockRequest.addParameter("dob", "01/01/1970")
         mockRequest.addParameter("address.postCode", "345435")
+        mockRequest.addParameter("address.town", "Swindon")
         theMap = new GrailsParameterMap(mockRequest)
 
         def queryString = theMap.toQueryString()
@@ -273,6 +274,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert queryString.find { it == 'name=Dierk+Koenig' }
         assert queryString.find { it == 'dob=01%2F01%2F1970' }
         assert queryString.find { it == 'address.postCode=345435' }
+        assert queryString.find { it == 'address.town=Swindon' }
     }
 
     void testCloning() {
