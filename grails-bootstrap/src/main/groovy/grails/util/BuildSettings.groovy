@@ -1211,7 +1211,7 @@ class BuildSettings extends AbstractBuildSettings {
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
             pluginName = matcher ? matcher[0][1] : pluginName
 
-            if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName)) {
+            if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
                 return
             }
 
