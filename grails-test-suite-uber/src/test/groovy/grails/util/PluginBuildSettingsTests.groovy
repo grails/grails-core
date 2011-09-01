@@ -56,7 +56,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         super.tearDown()
         absoluteTestDir.deleteDir()
     }
-/*
+
     void testGetPluginSourceFiles() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR)
         def sourceFiles = pluginSettings.getPluginSourceFiles()
@@ -67,7 +67,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         }
         assertEquals "found $sourceFiles", 7, sourceFiles.size()
     }
-*/
+
     void testGetMetadataForPlugin() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
 
@@ -236,7 +236,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                     -> new File(pluginSettings.buildSettings.globalPluginsDir, "test/../gwt")
                 }] as Resource)
     }
-/*
+
     void testNestedInlinePlugins() {
         def pluginSettings = createPluginBuildSettings(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR)
         def inlinePluginDirs = pluginSettings.inlinePluginDirectories*.file
@@ -267,7 +267,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         def pluginTwoInSameDirAsRootApp = new File(NESTED_INLINE_PLUGIN_TEST_PROJ_DIR.parentFile, "plugin-two")
         assertTrue("should not be a plugin-two dir in same dir as root app", !pluginTwoInSameDirAsRootApp.exists())
     }
-*/
+
     void testInlinePluginsWithCommonPrefix() {
         def pluginSettings = createPluginBuildSettings(INLINE_PLUGINS_TEST_PROJ_DIR)
         def pluginInfos = pluginSettings.getPluginInfos()
