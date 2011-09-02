@@ -35,6 +35,7 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
     ant.delete(dir:targetDir, failonerror:false)
     ant.mkdir(dir:targetDir)
 
+    def ivySettings = ant.project.setProperty("ivy.cache.dir",grailsSettings.dependencyManager.ivySettings.defaultCache.absolutePath)
     grailsConsole.updateStatus "Obtaining dependency data..."
     IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
     for (conf in IvyDependencyManager.ALL_CONFIGURATIONS) {
