@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.compiler.web
+package org.codehaus.groovy.grails.compiler.injection
 
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
@@ -10,7 +10,7 @@ import org.springframework.validation.Errors
 import spock.lang.Specification
 
 
-class ASTBeanPropertyBindingResultHelperSpec extends Specification {
+class ASTValidationErrorsHelperSpec extends Specification {
 
     static gcl
 
@@ -23,7 +23,7 @@ class ASTBeanPropertyBindingResultHelperSpec extends Specification {
                     }
                     @Override
                     void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-                        new ASTBeanPropertyBindingResultHelper().injectErrorsCode(classNode)
+                        new ASTValidationErrorsHelper().injectErrorsCode(classNode)
                     }
                     @Override
                     boolean shouldInject(URL url) {

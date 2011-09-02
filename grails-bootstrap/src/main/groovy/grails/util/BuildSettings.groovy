@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 
 /**
  * <p>Represents the project paths and other build settings
@@ -204,6 +205,15 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** <code>true</code> if the default environment for a script should be used.  */
     boolean defaultEnv
+
+    /**
+     * whether to include source attachments in a resolve
+     */
+    boolean includeSource
+    /**
+    * whether to include javadoc attachments in a resolve
+     */
+    boolean includeJavadoc
 
     /**
      * Whether the project required build dependencies are externally configured (by Maven for example) or not
@@ -392,8 +402,8 @@ class BuildSettings extends AbstractBuildSettings {
         List<File> jarFiles
         if (shouldResolve()) {
 
-            def resolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
-            jarFiles = resolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            compileResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.COMPILE_CONFIGURATION)
+            jarFiles = compileResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
 
             jarFiles = findAndRemovePluginDependencies("compile", jarFiles, internalPluginCompileDependencies)
             Message.debug("Resolved jars for [compile]: ${{-> jarFiles.join('\n')}}")
@@ -444,7 +454,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (shouldResolve()) {
 
             testResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.TEST_CONFIGURATION)
-            def jarFiles = testResolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            def jarFiles = testResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
             jarFiles = findAndRemovePluginDependencies("test", jarFiles, internalPluginTestDependencies)
             Message.debug("Resolved jars for [test]: ${{-> jarFiles.join('\n')}}")
             return jarFiles
@@ -481,7 +491,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (shouldResolve()) {
 
             runtimeResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.RUNTIME_CONFIGURATION)
-            def jarFiles = runtimeResolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            def jarFiles = runtimeResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
             jarFiles = findAndRemovePluginDependencies("runtime", jarFiles, internalPluginRuntimeDependencies)
             Message.debug("Resolved jars for [runtime]: ${{-> jarFiles.join('\n')}}")
 
@@ -521,7 +531,7 @@ class BuildSettings extends AbstractBuildSettings {
 
             Message.info "Resolving [provided] dependencies..."
             providedResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.PROVIDED_CONFIGURATION)
-            def jarFiles = providedResolveReport.getArtifactsReports(null, false).localFile
+            def jarFiles = providedResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile
 
             jarFiles = findAndRemovePluginDependencies("provided", jarFiles, internalPluginProvidedDependencies)
             Message.debug("Resolved jars for [provided]: ${{-> jarFiles.join('\n')}}")
@@ -632,7 +642,7 @@ class BuildSettings extends AbstractBuildSettings {
 
             Message.info "Resolving [build] dependencies..."
             buildResolveReport = dependencyManager.resolveDependencies(IvyDependencyManager.BUILD_CONFIGURATION)
-            def jarFiles = buildResolveReport.getArtifactsReports(null, false).localFile + applicationJars
+            def jarFiles = buildResolveReport.getArtifactsReports(null, false).findAll{it.downloadStatus.toString()!= 'failed'}.localFile + applicationJars
 
             jarFiles = findAndRemovePluginDependencies("build", jarFiles, internalPluginBuildDependencies)
             Message.debug("Resolved jars for [build]: ${{-> jarFiles.join('\n')}}")
@@ -1124,6 +1134,9 @@ class BuildSettings extends AbstractBuildSettings {
         dependencyManager = new IvyDependencyManager(appName,
                 appVersion, this, metadata)
 
+        dependencyManager.includeJavadoc = includeJavadoc
+        dependencyManager.includeSource = includeSource
+
         def console = GrailsConsole.instance
         dependencyManager.transferListener = { TransferEvent e ->
             switch (e.eventType) {
@@ -1176,6 +1189,20 @@ class BuildSettings extends AbstractBuildSettings {
         return pluginDependencyHandler(dependencyManager)
     }
 
+    public boolean isRegisteredInMetadata(String pluginName) {
+        return dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)
+    }
+
+    public boolean notDefinedInBuildConfig(String pluginName) {
+        def descriptors = dependencyManager.pluginDependencyDescriptors.findAll {EnhancedDefaultDependencyDescriptor desc ->
+            def nonTransitive = !desc.plugin
+            def exported = desc.exportedToApplication
+            nonTransitive || exported
+        }
+        def defined = descriptors*.dependencyId*.name.contains(pluginName)
+        return !defined
+    }
+
     Closure pluginDependencyHandler(IvyDependencyManager dependencyManager) {
         def pluginSlurper = createConfigSlurper()
 
@@ -1183,6 +1210,10 @@ class BuildSettings extends AbstractBuildSettings {
             def pluginName = dir.name
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
             pluginName = matcher ? matcher[0][1] : pluginName
+
+            if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
+                return
+            }
 
             // Try BuildConfig.groovy first, which should work
             // work for in-place plugins.

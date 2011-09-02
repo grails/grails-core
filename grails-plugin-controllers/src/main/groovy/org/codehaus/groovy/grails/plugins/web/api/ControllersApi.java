@@ -16,14 +16,18 @@
 package org.codehaus.groovy.grails.plugins.web.api;
 
 import grails.util.CollectionUtils;
+import grails.util.Environment;
+import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
@@ -49,7 +53,7 @@ import org.springframework.web.servlet.ModelAndView;
  * @since 2.0
  */
 @SuppressWarnings("rawtypes")
-public class ControllersApi extends CommonWebApi {
+public class ControllersApi extends CommonWebApi implements Serializable {
 
     private static final String RENDER_METHOD_NAME = "render";
     private static final String BIND_DATA_METHOD = "bindData";
@@ -106,6 +110,12 @@ public class ControllersApi extends CommonWebApi {
         ApplicationContext applicationContext = getStaticApplicationContext();
         if (applicationContext != null) {
             applicationContext.getAutowireCapableBeanFactory().autowireBean(instance);
+            if(Environment.getCurrent() == Environment.TEST) {
+                GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+                if(webRequest != null) {
+                    webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(instance.getClass().getName(), ControllerArtefactHandler.TYPE));
+                }
+            }
         }
     }
 

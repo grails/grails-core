@@ -155,7 +155,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis");
 
-                        String datastoreMappingVersion = "1.0.0.M7";
+                        String datastoreMappingVersion = "1.0.0.BUILD-SNAPSHOT";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5"),
@@ -246,7 +246,7 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
 
                         ModuleRevisionId[] ehcacheDependencies = {
-                            ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.3.1")
+                            ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.2")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "jms", "commons-logging", "servlet-api");
 

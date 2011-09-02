@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.pages;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
@@ -32,7 +31,6 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  * Date: Jan 10, 2004
  */
 class GroovyPageScanner implements Tokens {
-
     private String text;
     private int end1;
     private int begin1;
@@ -40,15 +38,12 @@ class GroovyPageScanner implements Tokens {
     private int begin2;
     private int state = HTML;
     private int len;
-    private boolean str1;
-    private boolean str2;
     private String lastNamespace;
     private int exprBracketCount = 0;
     private List<Integer> lineNumberPositions;
     private int lastLineNumberIndex = -1;
     private String pageName = "Unknown";
-    private final Stack<Character> levelTokens = new Stack<Character>();
-
+    
     GroovyPageScanner(String text) {
         Strip strip = new Strip(text);
         strip.strip(0);
@@ -123,34 +118,13 @@ class GroovyPageScanner implements Tokens {
             char c = text.charAt(end1++);
             char c1 = left > 1 ? text.charAt(end1) : 0;
             char c2 = left > 2 ? text.charAt(end1 + 1) : 0;
-            if (str1) {
-                if (c == '\\') end1++;
-                else if (c == '\'') str1 = false;
-                continue;
-            }
-            else if (str2) {
-                if (c == '\\') end1++;
-                else if (c == '"') str2 = false;
-                continue;
-            }
-            else if (!levelTokens.empty() && (c == ')' || c == '}' || c == ']') && levelTokens.peek().equals(c)) {
-                levelTokens.pop();
-                continue;
-            } else if (begin1 > 0 && (c == '{' || c == '(' || c == '[')) {
-                if (c == '{') {
-                    levelTokens.push('}');
-                } else if (c == '(') {
-                    levelTokens.push(')');
-                } else if (c == '[' && !levelTokens.empty()) {
-                    levelTokens.push(']');
-                }
-                continue;
-            }
 
+            boolean gexprBracketsClosed = updateBracketState(c);            
+            
             switch (state) {
                 case HTML:
                     if (isPotentialScriptletOrTag(c, left)) {
-                        if (isStartScriptletBlock(c1)) {
+                        if (c1 == '%') {
                             if (c2 == '=') {
                                 return found(JEXPR, 3);
                             }
@@ -181,7 +155,7 @@ class GroovyPageScanner implements Tokens {
                         return found(GEXPR, 2);
                     }
 
-                    if (isStartScriptletBlock(c) && c1 == '{') {
+                    if (c == '%' && c1 == '{') {
                         if (c2 == '-' && left > 3 && text.charAt(end1 + 2) == '-') {
                             if (skipGComment()) continue;
                         }
@@ -201,7 +175,7 @@ class GroovyPageScanner implements Tokens {
                 case JSCRIPT:
                 case JDIRECT:
                 case JDECLAR:
-                    if (isStartScriptletBlock(c) && c1 == '>') {
+                    if (c == '%' && c1 == '>') {
                         return found(HTML, 2);
                     }
                     break;
@@ -224,30 +198,24 @@ class GroovyPageScanner implements Tokens {
                     break;
                 case GTAG_EXPR:
                     checkValidExpressionState(c, c1, left);
-                    if (c == '{') exprBracketCount++;
-                    else if (c == '}') {
-                        if (exprBracketCount>0) {
-                            exprBracketCount--;
-                        }
-                        else {
-                            return found(GSTART_TAG,1);
-                        }
+                    if (gexprBracketsClosed && c == '}') {
+                    	return found(GSTART_TAG,1);
                     }
                     break;
                 case GEXPR:
                     checkValidExpressionState(c, c1, left);
                 case GDIRECT:
-                    if (c == '}' && !str1 && !str2 && levelTokens.empty()) {
+                    if (gexprBracketsClosed && c == '}') {
                         return found(HTML, 1);
                     }
                     break;
                 case GSCRIPT:
-                    if (c == '}' && isStartScriptletBlock(c1) && !str1 && !str2 && levelTokens.empty()) {
+                    if (gexprBracketsClosed && c == '}' && c1 == '%') {
                         return found(HTML, 2);
                     }
                     break;
                 case GDECLAR:
-                    if (c == '}' && (c1 == '!' || isStartScriptletBlock(c1)) && !str1 && !str2 && levelTokens.empty()) {
+                    if (gexprBracketsClosed && c == '}' && (c1 == '!' || c1 == '%')) {
                         return found(HTML, 2);
                     }
                     break;
@@ -255,9 +223,33 @@ class GroovyPageScanner implements Tokens {
         }
     }
 
+	private boolean updateBracketState(char c) {
+		boolean previousBracketsClosed = (exprBracketCount==0);
+		switch (state) {
+			case GTAG_EXPR:
+			case GEXPR:
+			case GSCRIPT:
+			case GDECLAR:
+			case GDIRECT:
+				if(c == '{') {
+					exprBracketCount++;
+				} else if (c=='}') {
+					exprBracketCount--;
+				}
+				break;
+			default:
+				exprBracketCount=0;
+				return false;
+		}
+		if(exprBracketCount < -1) {
+			throw new GrailsTagException("Unmatched brackets in GSP expression", pageName, getLineNumberForToken());
+		}
+		return (exprBracketCount==0 || exprBracketCount==-1) && previousBracketsClosed;
+	}
+
     private void checkValidExpressionState(char c, char c1, int left) {
         if (isPotentialScriptletOrTag(c, left)) {
-            if (isStartScriptletBlock(c1)) {
+            if (c1 == '%') {
                 throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
             }
 
@@ -269,6 +261,7 @@ class GroovyPageScanner implements Tokens {
             }
         }
         else if (isStartOfGExpression(c, c1)) {
+        	//TODO: check this one
             throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
         }
     }
@@ -295,11 +288,7 @@ class GroovyPageScanner implements Tokens {
     }
 
     private boolean isStartComment(char c1, char c2, int left) {
-        return isStartScriptletBlock(c1) && c2 == '-' && left > 3 && text.charAt(end1 + 2) == '-';
-    }
-
-    private boolean isStartScriptletBlock(char c1) {
-        return c1 == '%';
+        return c1 == '%' && c2 == '-' && left > 3 && text.charAt(end1 + 2) == '-';
     }
 
     private boolean isStartOfGExpression(char c, char c1) {
@@ -329,8 +318,7 @@ class GroovyPageScanner implements Tokens {
     }
 
     void reset() {
-        end1 = begin1 = end2 = begin2 = 0;
-        levelTokens.clear();
+        end1 = begin1 = end2 = begin2 = exprBracketCount = 0;
         state = HTML;
         lastNamespace = null;
         lastLineNumberIndex = -1;

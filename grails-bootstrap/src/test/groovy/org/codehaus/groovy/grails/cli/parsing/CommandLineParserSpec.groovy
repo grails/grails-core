@@ -110,12 +110,9 @@ class CommandLineParserSpec extends Specification{
             parser.addOption("version", "Shows the vesrion")
 
         then:
-            parser.helpMessage == """\
-usage: grails [options] [command]
- -interactive-mode        Enabled interactive mode
- -version                 Shows the vesrion
-"""
-    }
+            String ls = System.getProperty("line.separator");
+            parser.helpMessage == "usage: grails [options] [command]${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
+       }
 
 
 
@@ -208,5 +205,48 @@ usage: grails [options] [command]
             cl.optionValue('host') == "localhost"
 
     }
+	
+	void "Test that parseString handles quoted arguments with double quotes"() {
+       when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml"')
 
+        then:
+            cl.commandName == 'refresh-dependencies'
+            cl.systemProperties.size() == 0
+            cl.remainingArgs.size() == 1
+            cl.remainingArgs == ['file with spaces.xml']
+	}
+
+	void "Test that parseString handles quoted arguments with single quotes"() {
+		when:
+			 def parser = new CommandLineParser()
+			 def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml'")
+ 
+		 then:
+			 cl.commandName == 'refresh-dependencies'
+			 cl.systemProperties.size() == 0
+			 cl.remainingArgs.size() == 1
+			 cl.remainingArgs == ['file with spaces.xml']
+             cl.hasOption('include-sources')
+             cl.optionValue('include-sources') == true
+	 }
+	
+	void "Test that parseString with unbalanced double quotes throws ParseException"() {
+		when:
+			 def parser = new CommandLineParser()
+			 def cl = parser.parseString("refresh-dependencies --include-sources 'file with spaces.xml")
+ 
+		 then:
+            thrown ParseException
+	}
+ 
+	void "Test that parseString with unbalanced single quotes throws ParseException"() {
+		when:
+			 def parser = new CommandLineParser()
+			 def cl = parser.parseString('refresh-dependencies --include-sources "file with spaces.xml')
+ 
+		 then:
+            thrown ParseException
+	}
 }

@@ -28,18 +28,19 @@ import java.util.Map;
 public class GroovyPageTemplate implements Template {
 
     private GroovyPageMetaInfo metaInfo;
+    private boolean allowSettingContentType = false;
 
     public GroovyPageTemplate(GroovyPageMetaInfo metaInfo) {
         this.metaInfo = metaInfo;
     }
 
     public Writable make() {
-        return new GroovyPageWritable(metaInfo);
+        return new GroovyPageWritable(metaInfo, allowSettingContentType);
     }
 
     @SuppressWarnings("rawtypes")
     public Writable make(Map binding) {
-        GroovyPageWritable gptw = new GroovyPageWritable(metaInfo);
+        GroovyPageWritable gptw = new GroovyPageWritable(metaInfo, allowSettingContentType);
         gptw.setBinding(binding);
         return gptw;
     }
@@ -47,4 +48,12 @@ public class GroovyPageTemplate implements Template {
     public GroovyPageMetaInfo getMetaInfo() {
         return metaInfo;
     }
+
+	public boolean isAllowSettingContentType() {
+		return allowSettingContentType;
+	}
+
+	public void setAllowSettingContentType(boolean allowSettingContentType) {
+		this.allowSettingContentType = allowSettingContentType;
+	}
 }

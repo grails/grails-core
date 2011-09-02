@@ -17,13 +17,11 @@ package org.codehaus.groovy.grails.plugins
 
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.beans.factory.GenericBeanFactoryAccessor
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
 import org.codehaus.groovy.grails.validation.Validateable
-
+import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport
 import org.springframework.context.ApplicationContext
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.validation.BeanPropertyBindingResult
@@ -34,31 +32,14 @@ class ValidationGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [:]
     def loadAfter = ['hibernate', 'controllers']
-    def typeFilters = [new AnnotationTypeFilter(Validateable)]
 
     static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx ->
-        // list of validateable classes
-        def validateables = []
-
         // grab all of the classes specified in the application config
-        application.config?.grails?.validateable?.classes?.each {
-            validateables << it
-        }
-
-        def accessor = new GenericBeanFactoryAccessor(ctx)
-        for (entry in accessor.getBeansWithAnnotation(Validateable)) {
-            Class validateable = entry?.value?.class
-            if (validateable) {
-                validateables << validateable
-            }
-        }
-
-        // make all of these classes 'validateable'
-        for (validateableClass in validateables) {
-            log.debug "Making Class Validateable: ${validateableClass.name}"
+        application.config?.grails?.validateable?.classes?.each { validateableClass ->
             if (validateableClass instanceof Class) {
+                log.debug "Making Class Validateable: ${validateableClass.name}"
                 addValidationMethods(application, validateableClass, ctx)
             }
         }
@@ -118,15 +99,15 @@ class ValidationGrailsPlugin {
             def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(validateable)
             validationClosure.setDelegate(constrainedPropertyBuilder)
             validationClosure()
-            metaClass.constraints = constrainedPropertyBuilder.constrainedProperties
+            metaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
         }
         else {
-            metaClass.constraints = [:]
+            metaClass.constrainedProperties = [:]
         }
 
         if (!metaClass.respondsTo(validateable, "validate")) {
             metaClass.validate = { ->
-                DomainClassPluginSupport.validateInstance(delegate, ctx)
+                ValidationSupport.validateInstance delegate
             }
         }
     }

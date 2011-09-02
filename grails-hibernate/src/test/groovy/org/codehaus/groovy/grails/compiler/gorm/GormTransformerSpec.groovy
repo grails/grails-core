@@ -4,12 +4,38 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.datastore.gorm.GormStaticApi
+import org.grails.datastore.gorm.GormValidationApi
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Errors
+
 import spock.lang.Specification
-import org.grails.datastore.gorm.GormValidationApi
 
 class GormTransformerSpec extends Specification {
+
+    
+    void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
+        given:
+              def gcl = new GrailsAwareClassLoader()
+              def gormTransformer = new GormTransformer() {
+                  @Override
+                  boolean shouldInject(URL url) {
+                      return true;
+                  }
+
+              }
+              gcl.classInjectors = [gormTransformer] as ClassInjector[]
+
+          when:
+              def cls = gcl.parseClass('''
+@grails.persistence.Entity              
+class TestEntity {
+    Long id
+}
+  ''')
+
+          then:
+             cls
+    }
 
     void "Test that GORM static methods are available on transformation"() {
         given:

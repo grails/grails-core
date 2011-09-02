@@ -54,13 +54,15 @@ class GroovyPageWritable implements Writable {
     private boolean debugTemplates;
     private AtomicInteger debugTemplatesIdCounter;
     private GrailsWebRequest webRequest;
+    private boolean allowSettingContentType;
 
     @SuppressWarnings("rawtypes")
     private Map additionalBinding = new HashMap();
     private static final String GROOVY_SOURCE_CONTENT_TYPE = "text/plain";
 
-    public GroovyPageWritable(GroovyPageMetaInfo metaInfo) {
+    public GroovyPageWritable(GroovyPageMetaInfo metaInfo, boolean allowSettingContentType) {
         this.metaInfo = metaInfo;
+        this.allowSettingContentType = allowSettingContentType;
         webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
         if (webRequest != null) {
             request = webRequest.getCurrentRequest();
@@ -128,35 +130,35 @@ class GroovyPageWritable implements Writable {
             }
 
             // Set up the script context
-            Binding parentBinding = null;
+            GroovyPageBinding parentBinding = null;
             boolean hasRequest = request != null;
+            boolean newParentCreated = false;
+            
             if (hasRequest) {
-
                 boolean isIncludeRequest = WebUtils.isIncludeRequest(request);
                 if(!isIncludeRequest) {
-                    parentBinding = (Binding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
+                    parentBinding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
                 }
                 if (parentBinding == null) {
                     if (webRequest != null) {
-                        GroovyPageRequestBinding pageRequestBinding = new GroovyPageRequestBinding(webRequest, response);
-                        parentBinding = pageRequestBinding;
-                        GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
-                        if (templateEngine != null) {
-                            pageRequestBinding.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
-                        }
-                    }
-
-                    // only try to set content type when evaluating top level GSP
-                    boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
-                    if (LOG.isDebugEnabled() && !contentTypeAlreadySet) {
-                        LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
-                    }
-                    if (!contentTypeAlreadySet) {
-                        response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+                    	parentBinding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));
+                    	parentBinding.setRoot(true);
+                    	newParentCreated = true;
                     }
                 }
             }
 
+            if(allowSettingContentType && response != null) {
+	            // only try to set content type when evaluating top level GSP
+	            boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
+	            if (!contentTypeAlreadySet) {
+	                if (LOG.isDebugEnabled()) {
+	                    LOG.debug("Writing response to ["+response.getClass()+"] with content type: " + metaInfo.getContentType());
+	                }
+	                response.setContentType(metaInfo.getContentType()); // must come before response.getWriter()
+	            }
+            }
+            
             GroovyPageBinding binding = createBinding(parentBinding);
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
@@ -208,7 +210,13 @@ class GroovyPageWritable implements Writable {
             }
             finally {
                 page.cleanup();
-                request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
+                if(hasRequest) {
+                	if(newParentCreated) {
+                    	request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);                		
+                	} else {
+                		request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
+                	}
+                }
             }
             if (debugTemplates) {
                 out.write("<!-- GSP #");
@@ -242,7 +250,7 @@ class GroovyPageWritable implements Writable {
         // set plugin context path for top level rendering, this means actual view + layout
         // view is top level when parent is GroovyPageRequestBinding
         // pluginContextPath is also resetted when a plugin template is overrided by an application view
-        if (parent==null || parent instanceof GroovyPageRequestBinding || "".equals(metaInfo.getPluginPath())) {
+        if (parent==null || (parent instanceof GroovyPageBinding && ((GroovyPageBinding)parent).isRoot()) || "".equals(metaInfo.getPluginPath())) {
             binding.setPluginContextPath(metaInfo.getPluginPath());
         }
         binding.setPagePlugin(metaInfo.getPagePlugin());

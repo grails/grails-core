@@ -160,17 +160,14 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         def number = 1234
         def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="false" locale="en_US"/>'
         assertOutputEquals("1234", template, [number: number])
-    }
+        template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="${false}" locale="en_US"/>'
+        assertOutputEquals("1234", template, [number: number])    }
 
     void testFormatNumberIntegerWithGrouping() {
         def number = 1234
         def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="true" locale="en_US"/>'
         assertOutputEquals("1,234", template, [number: number])
-    }
-
-    void testFormatNumberIntegerWithGroupingAsBoolean() {
-        def number = 1234
-        def template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="${true}" locale="en_US"/>'
+        template = '<g:formatNumber type="number" number="${number}" minIntegerDigits="3" groupingUsed="${true}" locale="en_US"/>'
         assertOutputEquals("1,234", template, [number: number])
     }
 

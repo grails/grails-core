@@ -63,8 +63,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
 
-    public String getArtefactType() {
-        String simpleName = getClass().getSimpleName();
+    public String[] getArtefactTypes() {
+        return new String[]{getArtefactType()};
+    }
+
+    protected String getArtefactType() {
+         String simpleName = getClass().getSimpleName();
         if (simpleName.length() > 11) {
             return simpleName.substring(0, simpleName.length() - 11);
         }
@@ -104,8 +108,11 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             }
             else {
                 final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
-                FieldNode fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);
-                classNode.addField(fieldNode);
+                FieldNode fieldNode = classNode.getField(apiInstanceProperty);
+                if(fieldNode == null) {
+                    fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);
+                    classNode.addField(fieldNode);
+                }
             }
 
             while (!implementationNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
@@ -173,9 +180,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private void createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiInstanceProperty, String lookupMethodName) {
         // if autowiring is required we add a default method that throws an exception
         // the method should be override via meta-programming in the Grails environment
-        BlockStatement methodBody = new BlockStatement();
-        MethodNode lookupMethod = populateAutowiredApiLookupMethod(implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
-        classNode.addMethod(lookupMethod);
+        MethodNode lookupMethod = classNode.getMethod(lookupMethodName, ZERO_PARAMETERS);
+        if(lookupMethod == null) {
+            BlockStatement methodBody = new BlockStatement();
+            lookupMethod = populateAutowiredApiLookupMethod(implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
+            classNode.addMethod(lookupMethod);
+        }
     }
 
     /**

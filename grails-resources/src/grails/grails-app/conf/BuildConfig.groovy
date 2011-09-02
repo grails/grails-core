@@ -18,6 +18,7 @@ grails.project.dependency.resolution = {
         grailsPlugins()
         grailsHome()
         grailsCentral()
+        mavenCentral()
 
         // uncomment these to enable remote dependency resolution from public Maven repositories
         //mavenCentral()
@@ -36,7 +37,7 @@ grails.project.dependency.resolution = {
     plugins {
         compile ":hibernate:$grailsVersion"
         compile ":jquery:1.6.1.1"
-        compile ":resources:1.0.1"
+        compile ":resources:1.0.2"
 
         build ":tomcat:$grailsVersion"
     }

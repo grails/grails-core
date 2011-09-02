@@ -66,6 +66,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     private boolean embedded;
     private GrailsDomainClass component;
     private boolean basicCollectionType;
+    private Map<String, Object> defaultConstraints;
 
     /**
      * Constructor.
@@ -74,6 +75,16 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     @SuppressWarnings("rawtypes")
     public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor) {
+        this(domainClass, descriptor, null);
+    }
+
+    /**
+     * Constructor.
+     * @param domainClass
+     * @param descriptor
+     */
+    @SuppressWarnings("rawtypes")
+    public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor, Map<String, Object> defaultConstraints) {
         this.domainClass = domainClass;
         name = descriptor.getName();
         naturalName = GrailsNameUtils.getNaturalName(descriptor.getName());
@@ -99,6 +110,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         if (Errors.class.isAssignableFrom(type)) {
             persistent = false;
         }
+        this.defaultConstraints = defaultConstraints;
     }
 
     /**
@@ -147,43 +159,30 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private List getTransients() {
         List allTransientProps = new ArrayList();
-        List<GrailsDomainClass> allClasses = resolveAllDomainClassesInHierarchy();
 
-        for (GrailsDomainClass currentDomainClass : allClasses) {
-            List transientProps = currentDomainClass.getPropertyValue(TRANSIENT, List.class);
-            if (transientProps != null) {
-                allTransientProps.addAll(transientProps);
-            }
-
-            // Undocumented feature alert! Steve insisted on this :-)
-            List evanescent = currentDomainClass.getPropertyValue(EVANESCENT, List.class);
-            if (evanescent != null) {
-                allTransientProps.addAll(evanescent);
+        List<Class<?>> allClasses = getAllDomainClassesInHierarchy();
+        for(Class currentClass : allClasses) {
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(currentClass);
+            Object transientProperty = propertyFetcher.getPropertyValue(TRANSIENT, false);
+            if(transientProperty instanceof List) {
+                List transientList = (List) transientProperty;
+                allTransientProps.addAll(transientList);
             }
         }
+        
         return allTransientProps;
     }
-
-    /**
-     * returns list of current domainclass and all of its superclasses.
-     *
-     * @return
-     */
-    private List<GrailsDomainClass> resolveAllDomainClassesInHierarchy() {
-        List<GrailsDomainClass> allClasses = new ArrayList<GrailsDomainClass>();
-        GrailsApplication application = domainClass.getGrailsApplication();
-        GrailsDomainClass currentDomainClass = domainClass;
-        while (currentDomainClass != null) {
-            allClasses.add(currentDomainClass);
-            if (application != null) {
-                currentDomainClass = (GrailsDomainClass)application.getArtefact(
-                        DomainClassArtefactHandler.TYPE, currentDomainClass.getClazz().getSuperclass().getName());
-            }
-            else {
-                currentDomainClass = null;
-            }
+    
+    private List<Class<?>> getAllDomainClassesInHierarchy() {
+        List<Class<?>> classesInHierarchy = new ArrayList<Class<?>>();
+        
+        Class<?> currentClass = domainClass.getClazz();
+        while(currentClass != null) {
+            classesInHierarchy.add(currentClass);
+            Class<?> superClass = currentClass.getSuperclass();
+            currentClass = DomainClassArtefactHandler.isDomainClass(superClass) ? superClass : null;
         }
-        return allClasses;
+        return classesInHierarchy;
     }
 
     /* (non-Javadoc)
@@ -564,8 +563,18 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             if (tmp != null) transients = tmp;
             properties = createDomainClassProperties(descriptors);
 
-            ConstraintsEvaluator constraintsEvaluator = new DefaultConstraintEvaluator();
+            ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
             constraints = constraintsEvaluator.evaluate(type, properties);
+        }
+
+        private ConstraintsEvaluator getConstraintsEvaluator() {
+            GrailsDomainClass domainClass = DefaultGrailsDomainClassProperty.this.domainClass;
+            if(domainClass instanceof DefaultGrailsDomainClass) {
+                return ((DefaultGrailsDomainClass) domainClass).getConstraintsEvaluator();
+            }
+            else {
+                return new DefaultConstraintEvaluator();
+            }
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {
@@ -575,7 +584,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             for (PropertyDescriptor descriptor : descriptors) {
                 if (isPersistentProperty(descriptor)) {
                     DefaultGrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(
-                            this, descriptor);
+                            this, descriptor, defaultConstraints);
                     props.add(property);
                     if (embeddedNames.contains(property.getName())) {
                         property.setEmbedded(true);
@@ -689,7 +698,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         public void refreshConstraints() {
-            constraints = new DefaultConstraintEvaluator().evaluate(getClazz(), getPersistentProperties());
+            constraints =getConstraintsEvaluator().evaluate(getClazz(), getPersistentProperties());
         }
 
         public boolean hasSubClasses() {

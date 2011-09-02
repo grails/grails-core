@@ -24,8 +24,7 @@ import org.codehaus.groovy.grails.plugins.web.async.api.ControllersAsyncApi;
 import java.net.URL;
 
 /**
- *
- * Adds the the controller async APIs to Grails at compile time
+ * Adds the the controller async APIs to Grails at compile time.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -44,12 +43,12 @@ public class ControllerAsyncTransformer extends AbstractGrailsArtefactTransforme
     }
 
     @Override
-    public Class getInstanceImplementation() {
+    public Class<?> getInstanceImplementation() {
         return ControllersAsyncApi.class;
     }
 
     @Override
-    public Class getStaticImplementation() {
+    public Class<?> getStaticImplementation() {
         return null;  // none
     }
 

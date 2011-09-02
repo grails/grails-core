@@ -102,6 +102,7 @@ public class DirectoryWatcher extends Thread {
      * @param extension The extension
      */
     public void addWatchDirectory(File dir, String extension) {
+        extension = removeStartingDotIfPresent(extension);
         List<String> fileExtensions = new ArrayList<String>();
         if (!StringUtils.hasText(extension)) {
             fileExtensions.add("*");
@@ -199,10 +200,18 @@ public class DirectoryWatcher extends Thread {
 
     private void addExtensions(Collection<String> toAdd) {
         for (String extension : toAdd) {
+            extension = removeStartingDotIfPresent(extension);
             if (!extensions.contains(extension)) {
                 extensions.add(extension);
             }
         }
+    }
+
+    private String removeStartingDotIfPresent(String extension) {
+        if (extension.startsWith(".")) {
+extension = extension.substring(1);
+        }
+        return extension;
     }
 
     private boolean isValidFileToMonitor(String name, Collection<String> fileExtensions) {

@@ -18,11 +18,14 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
     protected void setUp() {
         super.setUp()
         MockApplicationContext mockCtx = new MockApplicationContext()
-        mockCtx.registerMockBean("someValidateableClass", new SomeValidateableClass())
-        mockCtx.registerMockBean("someValidateableSubclass", new SomeValidateableSubclass())
         mockCtx.registerMockBean('messageSource', new StaticMessageSource())
-
-        ValidationGrailsPlugin.metaClass.getApplication = { [:] }
+        
+        def application = [:]
+        application.config = [:]
+        application.config.grails = [:]
+        application.config.grails.validateable = [:]
+        application.config.grails.validateable.classes = [SomeValidateableClass, SomeValidateableSubclass]
+        ValidationGrailsPlugin.metaClass.getApplication = { application }
         ValidationGrailsPlugin.metaClass.getLog = { [debug: {}] }
 
         new ValidationGrailsPlugin().doWithDynamicMethods(mockCtx)
@@ -48,7 +51,6 @@ public class ValidationGrailsPluginTests extends GroovyTestCase {
     }
 }
 
-@Validateable
 class SomeValidateableClass {
 
     String name
@@ -58,7 +60,6 @@ class SomeValidateableClass {
     }
 }
 
-@Validateable
 class SomeValidateableSubclass extends SomeValidateableClass {
 
     String town

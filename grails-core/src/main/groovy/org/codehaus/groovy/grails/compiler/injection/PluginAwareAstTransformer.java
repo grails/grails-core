@@ -36,7 +36,7 @@ import java.util.List;
  * @since 2.0
  */
 @AstTransformer
-public class PluginAwareAstTransformer implements ClassInjector {
+public class PluginAwareAstTransformer implements ClassInjector, AllArtefactClassInjector {
 
     PluginBuildSettings pluginBuildSettings;
 

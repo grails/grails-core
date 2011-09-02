@@ -45,3 +45,13 @@ function toggleNavSummary(hide) {
     document.getElementById("nav-summary-childs").style.display = !hide ? "block" : "none";
     document.getElementById("nav-summary").className = hide ? "" : "active";
 }
+
+var hiddenBlocksShown = false;
+function toggleHidden() {
+    var elements = document.getElementsByClassName("hidden-block");
+    for (var i = 0; i < elements.length; i++) {
+        elements[i].style.display = hiddenBlocksShown ? "none" : "block";
+    }
+
+    hiddenBlocksShown = !hiddenBlocksShown
+}

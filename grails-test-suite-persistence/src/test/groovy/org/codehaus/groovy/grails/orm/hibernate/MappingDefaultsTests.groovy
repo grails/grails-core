@@ -91,6 +91,6 @@ class MappingDefaults {
         GrailsDomainClass domain = ga.getDomainClass("MappingDefaults")
         ConstrainedProperty cp = domain.constrainedProperties['name']
         assertTrue "should have been nullable", cp.nullable
-        assertTrue "should have not have been blank", cp.blank
+        assertTrue "should have been blank", cp.blank
     }
 }

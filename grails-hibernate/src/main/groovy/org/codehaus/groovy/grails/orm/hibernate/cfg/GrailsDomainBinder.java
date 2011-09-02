@@ -16,21 +16,6 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.util.CollectionUtils;
 import groovy.lang.Closure;
-
-import java.lang.reflect.Modifier;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.SortedSet;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -47,20 +32,20 @@ import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
-import org.hibernate.cfg.ImprovedNamingStrategy;
-import org.hibernate.cfg.Mappings;
-import org.hibernate.cfg.NamingStrategy;
-import org.hibernate.cfg.SecondPass;
+import org.hibernate.cfg.*;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.mapping.*;
+import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Table;
-import org.hibernate.type.ForeignKeyDirection;
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.TimestampType;
-import org.hibernate.type.Type;
+import org.hibernate.type.*;
 import org.hibernate.util.StringHelper;
+
+import java.lang.reflect.Modifier;
+import java.sql.Types;
+import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Handles the binding Grails domain classes and properties to the Hibernate runtime meta model.
@@ -452,20 +437,19 @@ public final class GrailsDomainBinder {
 
         if (propConfig != null && !StringUtils.isBlank(propConfig.getSort())) {
             if (!property.isBidirectional() && property.isOneToMany()) {
-                String message = "WARNING: Sorting by a child property does " +
-                        "not work with unidirectional one to many relationships " +
-                        "due to http://opensource.atlassian.com/projects/hibernate/browse/HHH-4394";
-                LOG.warn(message);
+                throw new GrailsDomainException("Default sort for associations ["+property.getDomainClass().getName()+"->" + property.getName() +
+                        "] are not supported with unidirectional one to many relationships.");
             }
             GrailsDomainClass referenced = property.getReferencedDomainClass();
             if (referenced != null) {
                 GrailsDomainClassProperty propertyToSortBy = referenced.getPropertyByName(propConfig.getSort());
 
-                String columnName = getColumnNameForPropertyAndPath(propertyToSortBy, "", null, sessionFactoryBeanName);
-                if (propConfig.getOrder() != null) {
-                    columnName += " " + propConfig.getOrder();
+                String associatedClassName = property.getReferencedDomainClass().getFullName();
+
+                associatedClass = (PersistentClass) persistentClasses.get(associatedClassName);
+                if(associatedClass != null) {
+                    collection.setOrderBy(buildOrderByClause(propertyToSortBy.getName(), associatedClass, collection.getRole(), propConfig.getOrder() != null ? propConfig.getOrder() : "asc"));
                 }
-                collection.setOrderBy(columnName);
             }
         }
 
@@ -514,7 +498,7 @@ public final class GrailsDomainBinder {
         }
 
         if (isSorted(property)) {
-            collection.setSorted(true);
+           collection.setSorted(true);
         }
 
         // setup the primary key references
@@ -572,6 +556,109 @@ public final class GrailsDomainBinder {
             bindUnidirectionalOneToMany(property, mappings, collection);
         }
     }
+
+	private static String buildOrderByClause(String hqlOrderBy, PersistentClass associatedClass, String role, String defaultOrder) {
+		String orderByString = null;
+		if ( hqlOrderBy != null ) {
+			List<String> properties = new ArrayList<String>();
+			List<String> ordering = new ArrayList<String>();
+			StringBuilder orderByBuffer = new StringBuilder();
+			if ( hqlOrderBy.length() == 0 ) {
+				//order by id
+				Iterator it = associatedClass.getIdentifier().getColumnIterator();
+				while ( it.hasNext() ) {
+					Selectable col = (Selectable) it.next();
+					orderByBuffer.append( col.getText() ).append( " asc" ).append( ", " );
+				}
+			}
+			else {
+				StringTokenizer st = new StringTokenizer( hqlOrderBy, " ,", false );
+				String currentOrdering = defaultOrder;
+				//FIXME make this code decent
+				while ( st.hasMoreTokens() ) {
+					String token = st.nextToken();
+					if ( isNonPropertyToken( token ) ) {
+						if ( currentOrdering != null ) {
+							throw new GrailsDomainException(
+									"Error while parsing sort clause: " + hqlOrderBy
+											+ " (" + role + ")"
+							);
+						}
+						currentOrdering = token;
+					}
+					else {
+						//Add ordering of the previous
+						if ( currentOrdering == null ) {
+							//default ordering
+							ordering.add( "asc" );
+						}
+						else {
+							ordering.add( currentOrdering );
+							currentOrdering = null;
+						}
+						properties.add( token );
+					}
+				}
+				ordering.remove( 0 ); //first one is the algorithm starter
+				// add last one ordering
+				if ( currentOrdering == null ) {
+					//default ordering
+					ordering.add(defaultOrder );
+				}
+				else {
+					ordering.add( currentOrdering );
+					currentOrdering = null;
+				}
+				int index = 0;
+
+				for (String property : properties) {
+					Property p = BinderHelper.findPropertyByName(associatedClass, property);
+					if ( p == null ) {
+						throw new GrailsDomainException(
+								"property from sort clause not found: "
+										+ associatedClass.getEntityName() + "." + property
+						);
+					}
+					PersistentClass pc = p.getPersistentClass();
+					String table;
+					if ( pc == null ) {
+						table = "";
+					}
+
+					else if (pc == associatedClass
+							|| (associatedClass instanceof SingleTableSubclass && pc
+									.getMappedClass().isAssignableFrom(
+											associatedClass.getMappedClass()))) {
+						table = "";
+					} else {
+						table = pc.getTable().getQuotedName() + ".";
+					}
+
+					Iterator propertyColumns = p.getColumnIterator();
+					while ( propertyColumns.hasNext() ) {
+						Selectable column = (Selectable) propertyColumns.next();
+						orderByBuffer.append( table )
+								.append( column.getText() )
+								.append( " " )
+								.append( ordering.get( index ) )
+								.append( ", " );
+					}
+					index++;
+				}
+			}
+			orderByString = orderByBuffer.substring( 0, orderByBuffer.length() - 2 );
+		}
+		return orderByString;
+	}
+
+    private static boolean isNonPropertyToken(String token) {
+        if ( " ".equals( token ) ) return true;
+        if ( ",".equals( token ) ) return true;
+        if ( token.equalsIgnoreCase( "desc" ) ) return true;
+        if ( token.equalsIgnoreCase( "asc" ) ) return true;
+        return false;
+    }
+
 
     private static Set<String> buildDiscriminatorSet(GrailsDomainClass domainClass) {
         Set<String> theSet = new HashSet<String>();
@@ -656,7 +743,10 @@ public final class GrailsDomainBinder {
                         typeName = type.getName();
                     }
                 }
-                if (typeName == null) throw new MappingException("Type ["+typeName+"] is not a basic type or a domain class and cannot be mapped. Either specify a type within the [mapping] block or use a basic type (String, Integer etc.)");
+                if (typeName == null) {
+                    String domainName = property.getDomainClass().getName();
+                    throw new MappingException("Missing type or column for column["+columnName+"] on domain["+domainName+"] referencing["+className+"]");
+                }
 
                 bindSimpleValue(typeName, element,true, columnName, mappings);
                 if (hasJoinColumnMapping) {
@@ -1616,12 +1706,22 @@ public final class GrailsDomainBinder {
 
             Class<?> userType = getUserType(currentGrailsProp);
 
+
             if (collectionType != null) {
-                // create collection
-                Collection collection = collectionType.create(currentGrailsProp, persistentClass, EMPTY_PATH,
-                        mappings, sessionFactoryBeanName);
-                mappings.addCollection(collection);
-                value = collection;
+                String typeName = getTypeName(currentGrailsProp, getPropertyConfig(currentGrailsProp),gormMapping );
+                if(typeName != null && "serializable".equals(typeName)) {
+                    value = new SimpleValue(mappings,table);
+                    bindSimpleValue(typeName, (SimpleValue) value, currentGrailsProp.isOptional(), getColumnNameForPropertyAndPath(currentGrailsProp, EMPTY_PATH, null, sessionFactoryBeanName), mappings);
+
+                }
+                else {
+                    // create collection
+                    Collection collection = collectionType.create(currentGrailsProp, persistentClass, EMPTY_PATH,
+                            mappings, sessionFactoryBeanName);
+                    mappings.addCollection(collection);
+                    value = collection;
+                }
+
             }
             else if (currentGrailsProp.isEnum()) {
                 value = new SimpleValue(mappings, table);

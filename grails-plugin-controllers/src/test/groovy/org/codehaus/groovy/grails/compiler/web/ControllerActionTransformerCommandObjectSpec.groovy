@@ -11,12 +11,11 @@ import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.spockframework.runtime.ConditionNotSatisfiedError
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
-import spock.lang.FailsWith
 import spock.lang.Specification
 
 class ControllerActionTransformerCommandObjectSpec extends Specification {
@@ -116,8 +115,11 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         controller = controllerClass.newInstance()
     }
 
+    def cleanup() {
+        ContextLoader.@currentContext = null
+    }
+
     def initRequest() {
-        def webRequest = GrailsWebUtil.bindMockWebRequest()
         def appCtx = new GrailsWebApplicationContext()
         def bb = new BeanBuilder()
         def beans = bb.beans {
@@ -130,7 +132,11 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
         beans.registerBeans(appCtx)
+        ContextLoader.@currentContext = appCtx
 
+        def request = new MockHttpServletRequest();
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
     }

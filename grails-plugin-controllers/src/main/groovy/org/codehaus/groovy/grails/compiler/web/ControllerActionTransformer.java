@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.compiler.web;
 
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
+import grails.validation.ASTValidateableHelper;
+import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
 
@@ -60,15 +62,12 @@ import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
-import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.MessageSource;
 import org.springframework.validation.MapBindingResult;
+
 
 /**
  * Enhances controller classes by converting closures actions to method actions and binding
@@ -148,8 +147,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         converterEnabled = Boolean.parseBoolean(System.getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
     }
 
-    public String getArtefactType() {
-        return ControllerArtefactHandler.TYPE;
+    public String[] getArtefactTypes() {
+        return new String[]{ControllerArtefactHandler.TYPE};
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
@@ -391,71 +390,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void enhanceCommandObjectClass(
             final ClassNode commandObjectTypeClassNode) {
-        ASTErrorsHelper errorsHelper = new ASTBeanPropertyBindingResultHelper();
-        errorsHelper.injectErrorsCode(commandObjectTypeClassNode);
-        addConstraintsEvaluatorProperty(commandObjectTypeClassNode);
-        addGetConstrainedPropertiesMethod(commandObjectTypeClassNode);
-        addMessageSourceProperty(commandObjectTypeClassNode);
-        addValidateMethod(commandObjectTypeClassNode);
-    }
-
-    protected void addValidateMethod(final ClassNode paramTypeClassNode) {
-        final MethodNode validateMethod = paramTypeClassNode.getMethod("validate", new Parameter[0]);
-        if (validateMethod == null) {
-            final BlockStatement validateMethodCode = new BlockStatement();
-            final VariableExpression messageSourceExpression = new VariableExpression("messageSource");
-            final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression(THIS_EXPRESSION, messageSourceExpression);
-            final ClassNode validationSupportClassNode = new ClassNode(ValidationSupport.class);
-            final StaticMethodCallExpression invokeValidateInstanceExpression = new StaticMethodCallExpression(validationSupportClassNode, "validateInstance", validateInstanceArguments);
-            validateMethodCode.addStatement(new ExpressionStatement(invokeValidateInstanceExpression));
-            paramTypeClassNode.addMethod(new MethodNode(
-                  "validate", Modifier.PUBLIC, new ClassNode(Boolean.class),
-                  ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, validateMethodCode));
-        }
-    }
-
-    protected void addMessageSourceProperty(final ClassNode paramTypeClassNode) {
-        final PropertyNode messageSourceProperty = paramTypeClassNode.getProperty("messageSource");
-        if (messageSourceProperty == null) {
-            paramTypeClassNode.addProperty("messageSource", Modifier.PUBLIC, new ClassNode(MessageSource.class), null, null, null);
-        }
-    }
-
-    protected void addGetConstrainedPropertiesMethod(
-            final ClassNode paramTypeClassNode) {
-        final MethodNode getConstraintsMethod = paramTypeClassNode.getMethod("getConstrainedProperties", ZERO_PARAMETERS);
-        if (getConstraintsMethod == null) {
-            final BlockStatement constrainedPropertyMethodCode = new BlockStatement();
-
-            final BinaryExpression constraintsEvaluatorIsNullExpression = new BinaryExpression(new VariableExpression(
-                    ConstraintsEvaluator.BEAN_NAME), Token.newSymbol(
-                    Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null));
-            final Statement newEvaluatorExpression = new ExpressionStatement(
-                    new BinaryExpression(new VariableExpression(ConstraintsEvaluator.BEAN_NAME),
-                            Token.newSymbol(Types.EQUALS, 0, 0),
-                            new ConstructorCallExpression(new ClassNode(
-                                    DefaultConstraintEvaluator.class),
-                                    EMPTY_TUPLE)));
-            final Statement initEvaluatorIfNullStatement = new IfStatement(
-                    new BooleanExpression(constraintsEvaluatorIsNullExpression), newEvaluatorExpression,
-                    new ExpressionStatement(new EmptyExpression()));
-            constrainedPropertyMethodCode.addStatement(initEvaluatorIfNullStatement);
-
-            final MethodCallExpression evaluateConstraintsMethodCall = new MethodCallExpression(
-                    new VariableExpression(ConstraintsEvaluator.BEAN_NAME), "evaluate",
-                    new ArgumentListExpression(new VariableExpression(
-                            THIS_EXPRESSION)));
-            final ReturnStatement returnStatement = new ReturnStatement(evaluateConstraintsMethodCall);
-            constrainedPropertyMethodCode.addStatement(returnStatement);
-            paramTypeClassNode.addMethod(new MethodNode("getConstrainedProperties",
-                    Modifier.PUBLIC, new ClassNode(Object.class),
-                    ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, constrainedPropertyMethodCode));
-        }
-    }
-
-    protected void addConstraintsEvaluatorProperty(
-            final ClassNode paramTypeClassNode) {
-        paramTypeClassNode.addProperty(ConstraintsEvaluator.BEAN_NAME, Modifier.PUBLIC, new ClassNode(ConstraintsEvaluator.class), null, null, null);
+        ASTValidateableHelper h = new DefaultASTValidateableHelper();
+        h.injectValidateableCode(commandObjectTypeClassNode);
     }
 
     protected Statement getCommandObjectDataBindingStatement(

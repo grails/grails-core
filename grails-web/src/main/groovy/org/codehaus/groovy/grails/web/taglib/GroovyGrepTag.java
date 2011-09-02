@@ -47,12 +47,12 @@ public class GroovyGrepTag extends GroovySyntaxTag {
     public void doStartTag() {
         String in = attributes.get(ATTRIBUTE_IN);
         if (StringUtils.isBlank(in)) {
-            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]");
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         String filter = attributes.get(ATTRIBUTE_FILTER);
         if (StringUtils.isBlank(filter)) {
-            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_FILTER + "]");
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_FILTER + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         StringBuilder builder = new StringBuilder();

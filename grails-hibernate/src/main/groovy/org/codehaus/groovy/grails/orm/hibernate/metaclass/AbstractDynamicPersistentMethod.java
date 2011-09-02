@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.validation.ValidationErrors;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
@@ -25,7 +26,6 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
@@ -91,7 +91,7 @@ public abstract class AbstractDynamicPersistentMethod extends AbstractDynamicMet
     protected Errors setupErrorsProperty(Object target) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(target.getClass());
 
-        Errors errors = new BeanPropertyBindingResult(target, target.getClass().getName());
+        Errors errors = new ValidationErrors(target);
 
         Errors originalErrors = (Errors) mc.getProperty(target, ERRORS_PROPERTY);
         for (Object o : originalErrors.getFieldErrors()) {

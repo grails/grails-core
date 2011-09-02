@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 
 /**
  * @author Steven Devijver
@@ -41,15 +42,15 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testDefaultGrailsControllerViewNames() throws Exception {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class TestController { def action = { return null }; } ");
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { def action = { return null }; } ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 
         assertEquals("Test", grailsClass.getName());
         assertEquals("TestController", grailsClass.getFullName());
         assertEquals("/test/action", grailsClass.getViewByURI("/test/action"));
-        assertEquals("action",grailsClass.getClosurePropertyName("/test"));
-        assertEquals("action",grailsClass.getClosurePropertyName("/test/action"));
+        assertEquals("action",grailsClass.getMethodActionName("/test"));
+        assertEquals("action",grailsClass.getMethodActionName("/test/action"));
         assertEquals(4, grailsClass.getURIs().length);
         assertTrue(grailsClass.mapsToURI("/test"));
         assertTrue(grailsClass.mapsToURI("/test/action"));
@@ -57,8 +58,8 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testMappingToControllerBeginningWith2UpperCaseLetters() {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class MYdemoController { def action = { return null }; } ");
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MYdemoController { def action = { return null }; } ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
 
         assertEquals("MYdemo", grailsClass.getName());
@@ -69,8 +70,8 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testInterceptors() throws Exception {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class TestController { \n" +
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                                         "def beforeInterceptor = [action:this.&before,only:'list']\n" +
                                         "def before() { return 'success' }\n" +
                                         "def list = { return 'test' }\n " +
@@ -86,7 +87,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertEquals("success", bi.call());
         assertNull(grailsClass.getAfterInterceptor(controller));
 
-        clazz = cl.parseClass("class AfterController { \n" +
+        clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class AfterController { \n" +
                 "def afterInterceptor = [action:this.&before,except:'list']\n" +
                 "def after() { return 'success' }\n" +
                 "def list = { return 'test' }\n " +
@@ -101,8 +102,8 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testBeforeInterceptorWithNoExcept() {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class TestController { \n" +
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                                         "def beforeInterceptor = [action:this.&before]\n" +
                                         "def before() { return 'success' }\n" +
                                         "def list = { return 'test' }\n " +
@@ -116,8 +117,8 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testAllowedMethods() throws Exception {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class TestController { \n" +
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                 "static def allowedMethods = [actionTwo:'POST', actionThree:['POST', 'PUT']]\n" +
                 "def actionOne = { return 'test' }\n " +
                 "def actionTwo = { return 'test' }\n " +
@@ -143,8 +144,8 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     public void testAllowedMethodsWithNoDefinedRestrictions() throws Exception {
-        GroovyClassLoader cl = new GroovyClassLoader();
-        Class<?> clazz = cl.parseClass("class TestController { \n" +
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
                 "def actionOne = { return 'test' }\n " +
                 "def actionTwo = { return 'test' }\n " +
         "} ");
@@ -161,4 +162,22 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue("actionTwo should have accepted a DELETE", grailsClass.isHttpMethodAllowedForAction(controller, "DELETE", "actionTwo"));
         assertTrue("actionTwo should have accepted a POST", grailsClass.isHttpMethodAllowedForAction(controller, "POST", "actionTwo"));
     }
+    
+    public void testInterceptorCloning() throws Exception {
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
+        								"def someproperty='testvalue'\n" +
+                                        "static def beforeInterceptor = { someproperty }\n" +
+                                        "def list = { return 'test' }\n " +
+                                        "} ");
+        GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+        GroovyObject controller = (GroovyObject)grailsClass.newInstance();
+
+        assertTrue(grailsClass.isInterceptedBefore(controller,"list"));
+
+        Closure<?> bi = grailsClass.getBeforeInterceptor(controller);
+        assertNotNull(bi);
+        assertEquals("testvalue", bi.call());
+    }
+    
 }

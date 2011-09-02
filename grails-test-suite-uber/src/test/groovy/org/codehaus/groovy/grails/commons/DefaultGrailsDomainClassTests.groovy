@@ -41,6 +41,33 @@ class DefaultGrailsDomainClassTests extends GroovyTestCase {
         assertEquals(GrailsDomainClassProperty.FETCH_LAZY, otherDomain.getPropertyByName('anothers').getFetchMode())
     }
 
+    void testPersistentProperties() {
+        def cls = gcl.parseClass('''
+class Book {
+    Long id
+    Long version
+    String title
+    String author
+
+    static constraints = {
+        title blank: false
+        author blank: false
+    }
+
+    String getAuteur() {
+        return author
+    }
+}
+''')
+
+        def dc = new DefaultGrailsDomainClass(cls)
+
+
+        assert dc.persistentProperties.size() == 2
+        assert dc.properties.size() == 5
+        assert dc.properties.find { it.name == 'auteur'} != null
+    }
+
     void testManyToManyIntegrity() {
         gcl.parseClass """
                 class Test {
@@ -263,14 +290,19 @@ class OneToOneTest2 {
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
 
-        DefaultGrailsDomainClass topDomainClass = new DefaultGrailsDomainClass(topClass)
-        DefaultGrailsDomainClass middleDomainClass = new DefaultGrailsDomainClass(middleClass)
-        DefaultGrailsDomainClass bottomDomainClass = new DefaultGrailsDomainClass(bottomClass)
+        def topDomainClass = ga.getDomainClass('Top')
+        def middleDomainClass = ga.getDomainClass('Middle')
+        def bottomDomainClass = ga.getDomainClass('Bottom')
 
+        // topDomainClass
         GrailsDomainClassProperty topStringProperty = topDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in topDomainClass", topStringProperty)
         assertTrue("topString property was not persistent in topDomainClass", topStringProperty.isPersistent())
+        GrailsDomainClassProperty transientStringProperty = topDomainClass.getPropertyByName("transientString");
+        assertNotNull("transientString property not found in topDomainClass", transientStringProperty)
+        assertFalse("transientString property should have been transient in topDomainClass", transientStringProperty.isPersistent())
 
+        // middleDomainClass
         topStringProperty = middleDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in middleDomainClass", topStringProperty)
         assertTrue("topString property was not persistent in middleDomainClass", topStringProperty.isPersistent())
@@ -279,6 +311,15 @@ class OneToOneTest2 {
         assertNotNull("middleString property not found in middleDomainClass", middleStringProperty)
         assertTrue("middleString property was not persistent in middleDomainClass", middleStringProperty.isPersistent())
 
+        GrailsDomainClassProperty transientString2Property = middleDomainClass.getPropertyByName("transientString2");
+        assertNotNull("transientString2 property not found in middleDomainClass", transientString2Property)
+        assertFalse("transientString2 property should have been transient in middleDomainClass", transientString2Property.isPersistent())
+        
+        transientStringProperty = middleDomainClass.getPropertyByName("transientString");
+        assertNotNull("transientString property not found in middleDomainClass", transientStringProperty)
+        assertFalse("transientString property should have been transient in middleDomainClass", transientStringProperty.isPersistent())
+
+        // bottomDomainClass
         topStringProperty = bottomDomainClass.getPropertyByName("topString")
         assertNotNull("topString property not found in bottomDomainClass", topStringProperty)
         assertTrue("topString property was not persistent in bottomDomainClass", topStringProperty.isPersistent())
@@ -291,6 +332,19 @@ class OneToOneTest2 {
         GrailsDomainClassProperty bottomStringProperty = bottomDomainClass.getPropertyByName("bottomString")
         assertNotNull("bottomString property not found in bottomDomainClass", bottomStringProperty)
         assertTrue("bottomString property was not persistent in bottomDomainClass", bottomStringProperty.isPersistent())
+        
+        GrailsDomainClassProperty transientString3Property = bottomDomainClass.getPropertyByName("transientString3");
+        assertNotNull("transientString3 property not found in bottomDomainClass", transientString3Property)
+        assertFalse("transientString3 property should have been transient in bottomDomainClass", transientString3Property.isPersistent())
+        
+        transientString2Property = bottomDomainClass.getPropertyByName("transientString2")
+        assertNotNull("transientString2 property not found in bottomDomainClass", transientString2Property)
+        assertFalse("transientString2 property should have been transient in bottomDomainClass", transientString2Property.isPersistent())
+        
+        transientStringProperty = bottomDomainClass.getPropertyByName("transientString")
+        assertNotNull("transientString property not found in bottomDomainClass", transientStringProperty)
+        assertFalse("transientString property should have been transient in bottomDomainClass", transientStringProperty.isPersistent())
+
     }
 
     void testDefaultGrailsDomainClass() throws Exception {

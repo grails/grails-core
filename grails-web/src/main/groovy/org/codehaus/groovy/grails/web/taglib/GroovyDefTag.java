@@ -32,12 +32,12 @@ public class GroovyDefTag extends GroovySyntaxTag {
     public void doStartTag() {
         String expr = attributes.get(ATTRIBUTE_VALUE);
         if (StringUtils.isBlank(expr)) {
-            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VALUE + "]");
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VALUE + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         String var = attributes.get(ATTRIBUTE_VAR);
         if (StringUtils.isBlank(var)) {
-            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VAR + "]");
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VAR + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         GrailsUtil.deprecated("The tag <g:def> is deprecated and will be removed in a future release. Use <g:set> instead.");

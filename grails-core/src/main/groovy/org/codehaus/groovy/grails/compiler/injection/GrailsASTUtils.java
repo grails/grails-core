@@ -16,15 +16,27 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.GrailsNameUtils;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -164,19 +176,28 @@ public class GrailsASTUtils {
      */
     public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
         Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
-        if (classNode.hasDeclaredMethod(declaredMethod.getName(), parameterTypes)) {
+        String methodName = declaredMethod.getName();
+        if (classNode.hasDeclaredMethod(methodName, parameterTypes)) {
             return null;
         }
-
+        String propertyName = GrailsClassUtils.getPropertyForGetter(methodName);
+        if(propertyName != null && parameterTypes.length == 0 && classNode.hasProperty(propertyName)) {
+            return null;
+        }
+        propertyName = GrailsClassUtils.getPropertyForSetter(methodName);
+        if(propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
+            return null;
+        }
+        
         BlockStatement methodBody = new BlockStatement();
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, thisAsFirstArgument);
 
         ClassNode returnType = nonGeneric(declaredMethod.getReturnType());
 
-        MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, declaredMethod.getName(), arguments);
+        MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, methodName, arguments);
         methodCallExpression.setMethodTarget(declaredMethod);
         methodBody.addStatement(new ExpressionStatement(methodCallExpression));
-        MethodNode methodNode = new MethodNode(declaredMethod.getName(),
+        MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
         methodNode.addAnnotations(declaredMethod.getAnnotations());
@@ -264,13 +285,16 @@ public class GrailsASTUtils {
         if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
             declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
         }
-        MethodNode methodNode = new MethodNode(declaredMethodName,
+        MethodNode methodNode = classNode.getDeclaredMethod(declaredMethodName, parameterTypes);
+        if(methodNode == null) {
+            methodNode = new MethodNode(declaredMethodName,
                 Modifier.PUBLIC | Modifier.STATIC,
                 returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
-        methodNode.addAnnotations(delegateMethod.getAnnotations());
+            methodNode.addAnnotations(delegateMethod.getAnnotations());
 
-        classNode.addMethod(methodNode);
+            classNode.addMethod(methodNode);
+        }
         return methodNode;
     }
 
@@ -288,15 +312,25 @@ public class GrailsASTUtils {
         MethodCallExpression constructCallExpression = new MethodCallExpression(
                 new ClassExpression(constructorMethod.getDeclaringClass()), "initialize", arguments);
         constructCallExpression.setMethodTarget(constructorMethod);
-        constructorBody.addStatement(new ExpressionStatement(constructCallExpression));
+        ExpressionStatement constructorInitExpression = new ExpressionStatement(constructCallExpression);
+        if(constructorParams.length>0) {
+            constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(classNode, GrailsArtefactClassInjector.ZERO_ARGS)));
+        }
+        constructorBody.addStatement(constructorInitExpression);
 
         if (constructorParams.length == 0) {
             // handle default constructor
 
             ConstructorNode constructorNode = getDefaultConstructor(classNode);
             if (constructorNode != null) {
-                constructorBody.addStatement(constructorNode.getCode());
-                constructorNode.setCode(constructorBody);
+                Statement existingBodyCode = constructorNode.getCode();
+                if(existingBodyCode instanceof BlockStatement) {
+                    ((BlockStatement) existingBodyCode).addStatement(constructorInitExpression);
+                }
+                else {
+
+                    constructorNode.setCode(constructorBody);
+                }
             } else {
                 classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
             }

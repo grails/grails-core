@@ -271,6 +271,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
+        exposeForwardRequestAttributes(request);
+        exposeRequestAttributes(request, model);
+
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
 
         //populateParamsForMapping(info);
@@ -284,8 +287,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
         webRequest.setActionName(info.getActionName());
 
-        exposeForwardRequestAttributes(request);
-        exposeRequestAttributes(request, model);
         dispatcher.forward(request, response);
         return forwardUrl;
     }
@@ -465,9 +466,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         else if (value instanceof GrailsParameterMap) {
             GrailsParameterMap child = (GrailsParameterMap)value;
             Set nestedEntrySet = child.entrySet();
-            for (Object aNestedEntrySet : nestedEntrySet) {
-                Map.Entry childEntry = (Map.Entry) aNestedEntrySet;
+            for (Iterator i = nestedEntrySet.iterator(); i.hasNext();) {
+                Map.Entry childEntry = (Map.Entry) i.next();
                 appendEntry(childEntry, queryString, encoding, entry.getKey().toString() + '.');
+                boolean hasMore = i.hasNext();
+                if (hasMore) queryString.append('&');
             }
         }
         else {

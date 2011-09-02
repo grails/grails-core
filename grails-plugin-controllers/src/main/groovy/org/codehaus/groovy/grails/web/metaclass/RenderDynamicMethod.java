@@ -43,6 +43,7 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -227,6 +228,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 throw new ControllerExecutionException("Unable to load template for uri [" +
                         templateUri + "]. Template not found.");
             }
+            
+            if(t instanceof GroovyPageTemplate) {
+            	((GroovyPageTemplate)t).setAllowSettingContentType(true);
+            }
+            
             Map binding = new HashMap();
 
             if (argMap.containsKey(ARGUMENT_BEAN)) {

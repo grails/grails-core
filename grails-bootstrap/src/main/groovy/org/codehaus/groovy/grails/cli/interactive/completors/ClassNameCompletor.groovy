@@ -27,6 +27,8 @@ import org.springframework.core.io.Resource
  */
 abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettingsAware {
 
+    BuildSettings buildSettings
+
     ClassNameCompletor() {
         super("")
     }
@@ -36,11 +38,13 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
      */
     abstract String getCommandName()
 
-    @Override
-    void setBuildSettings(BuildSettings settings) {
-        PluginBuildSettings pluginSettings = new PluginBuildSettings(settings)
 
-        final resources = pluginSettings.getArtefactResourcesForOne(settings.baseDir.absolutePath)
+    @Override
+    int complete(String buffer, int cursor, List clist) {
+
+        PluginBuildSettings pluginSettings = new PluginBuildSettings(buildSettings)
+
+        final resources = pluginSettings.getArtefactResourcesForOne(buildSettings.baseDir.absolutePath)
         def classNames = []
         resources.each { Resource r ->
             if (shouldInclude(r)) {
@@ -49,7 +53,10 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
         }
 
         setCandidateStrings classNames as String[]
+
+        return super.complete(buffer, cursor, clist)
     }
+
 
     boolean shouldInclude(Resource res) { true }
 }

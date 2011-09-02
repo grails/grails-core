@@ -60,6 +60,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.ModelAndViewDefiningException;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.NestedServletException;
 
 import com.opensymphony.module.sitemesh.Decorator;
@@ -321,7 +322,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     }
 
                     // Do we need view name translation?
-                    if ((ha instanceof AnnotationMethodHandlerAdapter) && mv != null && !mv.hasView()) {
+                    if ((ha instanceof AnnotationMethodHandlerAdapter || ha instanceof RequestMappingHandlerAdapter) && mv != null && !mv.hasView()) {
                         mv.setViewName(getDefaultViewName(request));
                     }
                 }
@@ -423,7 +424,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         }
         finally {
             // Clean up any resources used by a multipart request.
-            if (processedRequest instanceof MultipartHttpServletRequest && processedRequest != request) {
+            if (processedRequest instanceof MultipartHttpServletRequest) {
                 if (multipartResolver != null) {
                     multipartResolver.cleanupMultipart((MultipartHttpServletRequest) processedRequest);
                 }

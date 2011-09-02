@@ -25,6 +25,8 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 
 abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
@@ -32,7 +34,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     GrailsWebRequest webRequest
     MockHttpServletRequest request
     MockHttpServletResponse response
-    GroovyClassLoader gcl = new GroovyClassLoader(getClass().classLoader)
+    GroovyClassLoader gcl = new GrailsAwareClassLoader(getClass().classLoader)
     GrailsApplication ga
     def mockManager
     MockApplicationContext ctx

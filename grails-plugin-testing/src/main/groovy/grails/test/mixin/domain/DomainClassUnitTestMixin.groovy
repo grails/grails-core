@@ -38,8 +38,9 @@ import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 
- /**
+/**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support
  * to a users test classes. Can be used in combination with {@link grails.test.mixin.web.ControllerUnitTestMixin}
  * to fully test controller interaction with domains without needing a database</p>
@@ -106,6 +107,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
      * @return An instance of the mocked domain class
      */
     def mockDomain(Class domainClassToMock, List domains = []) {
+        ConstraintEvalUtils.clearDefaultConstraints()
+        grailsApplication.getArtefactHandler(DomainClassArtefactHandler.TYPE).setGrailsApplication(grailsApplication)
         GrailsDomainClass domain = grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
         PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(domainClassToMock)
 

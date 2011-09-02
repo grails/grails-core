@@ -1,6 +1,6 @@
 <%  if (property.type == Boolean || property.type == boolean)
         out << renderBooleanEditor(domainClass, property)
-    else if (Number.isAssignableFrom(property.type) || (property.type.isPrimitive() && property.type != boolean))
+    else if (property.type && Number.isAssignableFrom(property.type) || (property.type?.isPrimitive() && property.type != boolean))
         out << renderNumberEditor(domainClass, property)
     else if (property.type == String)
         out << renderStringEditor(domainClass, property)
@@ -8,7 +8,7 @@
         out << renderDateEditor(domainClass, property)
     else if (property.type == URL)
         out << renderStringEditor(domainClass, property)
-    else if (property.isEnum())
+    else if (property.type && property.isEnum())
         out << renderEnumEditor(domainClass, property)
     else if (property.type == TimeZone)
         out << renderSelectTypeEditor("timeZone", domainClass, property)
@@ -197,7 +197,11 @@
                 cp.attributes.each { k, v ->
                     sb << "${k}=\"${v}\" "
                 }
-                sb << "precision=\"${precision}\" value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
+                if (!cp.attributes.precision){
+                    sb << "precision=\"${precision}\" "
+                }
+                sb << " value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
+
                 return sb.toString()
             }
         }
@@ -235,6 +239,11 @@
 	}
 
 	private boolean isOptional() {
-		cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	    if(!cp) {
+	        return false
+	    }
+	    else {
+	        cp.nullable || (cp.propertyType == String && cp.blank) || cp.propertyType in [boolean, Boolean]
+	    }
 	}
 %>

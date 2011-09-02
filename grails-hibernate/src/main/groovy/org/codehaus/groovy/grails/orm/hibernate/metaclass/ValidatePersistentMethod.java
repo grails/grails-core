@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.validation.ValidationErrors;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
@@ -30,7 +31,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.hibernate.SessionFactory;
 import org.springframework.util.Assert;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -143,11 +143,11 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
     private Errors filterErrors(Errors errors, Set validatedFields, Object target) {
         if (validatedFields == null) return errors;
 
-        BeanPropertyBindingResult result = new BeanPropertyBindingResult(target, target.getClass().getName());
+        ValidationErrors result = new ValidationErrors(target);
 
         final List allErrors = errors.getAllErrors();
-        for (int i = 0; i < allErrors.size(); i++) {
-            ObjectError error = (ObjectError) allErrors.get(i);
+        for (Object allError : allErrors) {
+            ObjectError error = (ObjectError) allError;
 
             if (error instanceof FieldError) {
                 FieldError fieldError = (FieldError) error;

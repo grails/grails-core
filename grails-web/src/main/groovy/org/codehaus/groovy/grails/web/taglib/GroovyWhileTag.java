@@ -29,7 +29,7 @@ public class GroovyWhileTag extends GroovySyntaxTag {
         String test = attributes.get(ATTRIBUTE_TEST);
         if (StringUtils.isBlank(test)) {
             throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" +
-                    ATTRIBUTE_TEST + "]");
+                    ATTRIBUTE_TEST + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
         out.print("while(");
         out.print(test);

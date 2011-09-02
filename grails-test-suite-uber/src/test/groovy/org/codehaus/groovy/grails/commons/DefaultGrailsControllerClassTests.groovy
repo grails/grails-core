@@ -1,14 +1,17 @@
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.commons
+
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 
 /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
  */
 class DefaultGrailsControllerClassTests extends GroovyTestCase {
 
-    def gcl = new GroovyClassLoader()
+    def gcl = new GrailsAwareClassLoader()
 
     void testEvaluateFlowDefinitions() {
         gcl.parseClass """
+@grails.artefact.Artefact("Controller")
 class FooController {
     def bookFlow = { }
     def storeFlow = { }
@@ -44,6 +47,7 @@ abstract class ParentController {
     def afterInterceptor = {  "bar" }
 }
 
+@grails.artefact.Artefact("Controller")
 class  ChildController extends ParentController {
     def index = { }
 }"""

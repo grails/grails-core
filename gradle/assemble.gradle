@@ -1,67 +1,50 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
-dependencyCache = {
-    def cacheLocation = new File(gradle.gradleUserHomeDir, "cache")
-    copy {
-        from(cacheLocation) {
-            def dependencyIncludes = [] as Set
-            def includeClosure = { artifact ->
-                def dependency = artifact.getResolvedDependency()
-                def file = artifact.file
-                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                    dependencyIncludes << "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                }
-            for (project in subprojects) {
-                project.configurations.compile.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
-                project.configurations.runtime.resolvedConfiguration.resolvedArtifacts.each(includeClosure)
-                project.configurations.findByName("jsp21")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
-                project.configurations.findByName("agent")?.resolvedConfiguration?.resolvedArtifacts?.each(includeClosure)
-            }
-            includes = dependencyIncludes as List
-            exclude "org.grails/**"
-        }
-        into "$projectDir/lib"
-    }
-    copy {
-        from (cacheLocation) {
-            includes = ['org.grails/grails-datastore-core/jars/grails-datastore-core-*.jar',
-                        'org.grails/grails-datastore-gorm/jars/grails-datastore-gorm-*.jar',
-                        'org.grails/grails-datastore-simple/jars/grails-datastore-simple-*.jar',
-                        'org.grails/grails-gdoc-engine/jars/grails-gdoc-engine-*.jar']
-        }
-        into "$projectDir/lib"
-    }
-}
+// This is a little fragile, need to find a way to ask Gradle for this info.
+def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
 
-task populateDependencies {
-    doFirst dependencyCache
-}
-
-task libs(dependsOn: getTasksByName("assemble", true))  {
-    doFirst dependencyCache
-
-    destinationDir = 'dist'
-    doLast {
-        copy {
-            for (project in subprojects) {
-                from(project.libsDir) {
-                    include "*-${grailsVersion}.jar"
-                }
-            }
-            into 'dist'
-        }
-        copy {
-            from("$projectDir/grails-resources") {
-                include 'src/grails', 'src/war'
-            }
-            into projectDir
+// The configurations of which we collect all the dependencies of for our lib dir.
+// Notice that we exclude all project dependencies as we do NOT want jars built by this project
+// to be part of the configuration. This also avoids building those jars when running this task.
+def libsConfigurations = []
+subprojects {
+    configurations {
+        libsConfigurations << libs { 
+            extendsFrom compile, runtime
+            ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
+        }.copyRecursive {
+            !(it instanceof org.gradle.api.artifacts.ProjectDependency)
         }
     }
 }
 
-libs.inputs.files(subprojects.configurations.compile, subprojects.configurations.runtime)
-libs.outputs.files(fileTree("lib"))
+task populateDependencies(type: Sync, dependsOn: libsConfigurations) {
+    into homeLibDir
+    
+    // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
+    // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
+    // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
+    gradle.taskGraph.whenReady { taskGraph ->
+       if (taskGraph.hasTask(':populateDependencies')) {
+           from(gradleArtifactCache) {
+               libsConfigurations*.resolvedConfiguration*.resolvedArtifacts*.each { artifact ->
+                   def dependency = artifact.getResolvedDependency()
+
+                   def file = artifact.file
+                   include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                   include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                   include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+               }
+           }
+       }
+    }
+}
+
+// Can't use sync task here because this directory contains other things as well.
+task sourcesJars(type: Copy) {
+    into homeSrcDir
+    from subprojects*.sourcesJar*.outputs*.files
+}
 
 task pluginsFromSvn {
     dir = "$buildDir/pluginsFromSvn"
@@ -80,14 +63,73 @@ task pluginsFromSvn {
     }
 }
 
-binExecutables = ["cygrails", "grails", "grails-debug", "grails-debug.bat", "grails.bat"]
+task installResources(type: Copy) {
+    into projectDir // not actually used, but has to be set to something
+    
+    into(homeLibDir.name) {
+        from('grails-resources/src/grails/home/tests')
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+    }
 
-distSpec = copySpec {
+    into(homeBinDir.name) {
+        from("grails-resources/src/grails/home/bash")
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
+        fileMode = 0755
+    }
+
+    // the fileMode property above should take care of the chmod work, but
+    // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
+    doLast {
+        ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
+    }
+
+    into(homeConfDir.name) {
+        from("grails-resources/src/grails/home/conf")
+        
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
+        filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
+        filter(ReplaceTokens, tokens: ['jansi.version': jansiVersion])
+        filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
+        filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
+        filter(ReplaceTokens, tokens: ['ant.version': antVersion])
+        filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
+        filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
+    }
+    
+    into(homeDslSupportDir.name) {
+        from 'grails-resources/src/grails/home/dsl-support'
+    }
+    
+    into ("$homeSrcDir.name/war/WEB-INF") {
+        from "grails-resources/src/war/WEB-INF"
+    }
+}
+
+// Make the install task for each subproject place the output jar into the dist dir
+subprojects {
+    install.doLast {
+         copy {
+             from jar.outputs.files
+             into homeDistDir
+         }
+    }
+}
+
+task install(dependsOn: [populateDependencies, installResources] + subprojects*.install)
+
+task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
+    destinationDir = "${buildDir}/distributions" as File
+    baseName = 'grails'
+    appendix = grailsVersion
+    
     from(projectDir) {
         into "grails-$grailsVersion"
         include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties', 'dependencies.txt',
                 'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
-        exclude 'ant/bin'
+        exclude 'ant/bin', 'src/grails', 'src/war'
     }
     from("grails-resources") {
         into "grails-$grailsVersion"
@@ -104,7 +146,7 @@ distSpec = copySpec {
         into "grails-$grailsVersion/doc"
     }
     exclude "**/CVS/**"
-    from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
+    from(pluginsFromSvn.outputs.files) {
         into "grails-$grailsVersion/plugins"
     }
     from('grails-resources/src/grails/home/docs/README') {
@@ -138,7 +180,7 @@ distSpec = copySpec {
         filter(ReplaceTokens, tokens: ['jna.version': jnaVersion])
         filter(ReplaceTokens, tokens: ['commons.cli.version': commonsCliVersion])
     }
-    from(libs.destinationDir) {
+    from(homeDistDir) {
         into "grails-$grailsVersion/dist"
         exclude "*.zip"
     }
@@ -151,14 +193,10 @@ distSpec = copySpec {
     }
 }
 
-task zipDist(type: Zip,dependsOn:libs) {
-    from distSpec
-    destinationDir = "${buildDir}/distributions" as File
-    baseName = 'grails'
-    appendix = grailsVersion
-}
-
 /*task zipDoc(type: Zip) {
     appendix = 'docs'
     from docs.destinationDir
 }*/
+
+
+task assemble(dependsOn: zipDist)

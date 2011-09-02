@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.Log
+import java.text.ParseException
 
 /**
  * A parameter map class that allows mixing of request parameters and controller parameters. If a controller
@@ -467,5 +468,31 @@ class GrailsParameterMap extends TypeConvertingMap {
      */
     List list(String name) {
         getList(name)
+    }
+
+    /**
+     * Obtains a date for the parameter name using the default format
+     * @param name
+     * @return
+     */
+    Date date(String name) {
+        date(name, GrailsDataBinder.DEFAULT_DATE_FORMAT)
+    }
+
+    /**
+     * Obtains a date from the parameter using the given format
+     * @param name The name
+     * @param format The format
+     * @return The date or null
+     */
+    Date date(String name, String format) {
+        final value = get(name)
+        if(value != null) {
+            try {
+                return new SimpleDateFormat(format).parse(value.toString())
+            } catch (ParseException e) {
+                // ignore
+            }
+        }
     }
 }

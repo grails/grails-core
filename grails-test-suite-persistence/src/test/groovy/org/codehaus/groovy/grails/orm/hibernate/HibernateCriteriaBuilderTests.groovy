@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
+import grails.orm.HibernateCriteriaBuilder
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -153,10 +154,41 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 1, results.size()
     }
 
+    // test for GRAILS-7324
+    void testDuplicateAliasInPaginationParams() {
+
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
+
+        def obj = domainClass.newInstance()
+        obj.firstName = "Bart"
+        obj.lastName = "Simpson"
+        obj.age = 11
+
+        def obj2 = domainClass.newInstance()
+        obj2.firstName = "Homer"
+        obj2.lastName = "Simpson"
+        obj2.age = 40
+        obj2.addToChildren(obj)
+        obj.parent = obj2
+
+        assertNotNull obj2.save(flush: true)
+
+        HibernateCriteriaBuilder hcb = new HibernateCriteriaBuilder(CriteriaBuilderTestClass, sessionFactory)
+        hcb.grailsApplication = ga
+        List results = hcb.list(sort: 'parent.firstName', order: 'asc') {
+                    eq('firstName','Bart')
+                    parent {
+                      eq('lastName','Simpson')
+                    }
+                }
+        assertEquals 1, results.size()
+    }
+
+
     void testWithGString() {
         def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
-        assertNotNull(domainClass)
+        assertNotNull(domainClass) 
 
         def obj = domainClass.newInstance()
         obj.firstName = "bart"
@@ -1446,6 +1478,29 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                     "}" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1 , results.size()
+    }
+    
+    void testPaginationParamsWithProjection() {
+        GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
+            CriteriaBuilderTestClass.name)
+
+        assertNotNull(domainClass)
+
+        GroovyObject obj = domainClass.newInstance()
+        obj.setProperty("firstName", "homer")
+        obj.setProperty("lastName", "simpson")
+        obj.setProperty("age", 45)
+
+        obj.invokeMethod("save", null)
+        
+        List results = parse(".list([:]) { " +
+                    "projections { " +
+                        "property('firstName')" +
+                    "}" +
+                "}", "Test1",CriteriaBuilderTestClass.name)
+        
+        assertEquals 1 , results.size()
+        assertTrue 'Result list should contain Strings', results[0] instanceof String
     }
 
     private Object parse(String groovy,String testClassName, String criteriaClassName, boolean uniqueResult) {

@@ -170,10 +170,11 @@ class ValidationTagLib {
     }
 
     /**
-     * Loops through each error for either field or global errors.
+     * Loops through each error of the specified bean or model. If no arguments 
+     * are specified it will go through all model attributes and check for errors.
      *
-     * @attr bean REQUIRED The bean to check for errors
-     * @attr field REQUIRED The field of the bean or model reference to check
+     * @attr bean The bean to check for errors
+     * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
     Closure eachError = { attrs, body ->

@@ -93,7 +93,12 @@ class JUnit4GrailsTestType extends GrailsTestTypeSupport {
     }
 
     protected createNotifier(eventPublisher) {
-        int total = suite.children.collect { it.children.size()}.sum()
+        int total = 0
+        if(suite.hasProperty("children")) {
+            total = suite.children.collect {
+                it.hasProperty("children") ? it.children.size() : 0
+            }.sum()
+        }
         def notifier = new GrailsTestRunNotifier(total)
         notifier.addListener(createListener(eventPublisher))
         notifier

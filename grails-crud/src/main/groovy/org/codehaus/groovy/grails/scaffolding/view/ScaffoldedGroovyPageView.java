@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.springframework.util.Assert;
@@ -79,6 +80,9 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
         }
 
         Template t = templateEngine.createTemplate(contents, getUrl());
+        if(t instanceof GroovyPageTemplate) {
+        	((GroovyPageTemplate)t).setAllowSettingContentType(true);
+        }        
         Writable w = t.make(model);
         Writer out = null;
         try {

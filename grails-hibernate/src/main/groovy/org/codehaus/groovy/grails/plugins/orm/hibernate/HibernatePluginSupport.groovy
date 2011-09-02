@@ -487,8 +487,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
 
         def classLoader = application.classLoader
 
-        def finders = HibernateGormEnhancer.createPersistentMethods(application,
-                datastore.sessionFactory, classLoader)
+        def finders = HibernateGormEnhancer.createPersistentMethods(application, classLoader, datastore)
         def staticApi = new HibernateGormStaticApi(dc.clazz, datastore, finders, classLoader, transactionManager)
         dc.metaClass.static."$getter" = { -> staticApi }
 

@@ -18,10 +18,12 @@ package org.codehaus.groovy.grails.plugins.publishing
 
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 
-/**
+ /**
  * Packages a plugin in source or binary form.
  *
  * @since 2.0
@@ -103,6 +105,7 @@ class PluginPackager {
      * @return The plugin properties
      */
     def generatePluginXml(File descriptor) {
+        this.pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor));
         def pluginBaseDir = descriptor.parentFile
         def pluginProps = pluginInfo
         // Work out what the name of the plugin is from the name of the descriptor file.

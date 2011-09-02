@@ -187,7 +187,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
             // ignore certain properties
             if (GrailsDomainConfigurationUtil.isNotConfigurational(descriptor)) {
-                GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor);
+                GrailsDomainClassProperty property = new DefaultGrailsDomainClassProperty(this, descriptor, defaultConstraints);
                 propertyMap.put(property.getName(), property);
 
                 if (property.isIdentity()) {
@@ -795,7 +795,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
         }
     }
 
-    private ConstraintsEvaluator getConstraintsEvaluator() {
+    ConstraintsEvaluator getConstraintsEvaluator() {
         if (grailsApplication != null && grailsApplication.getMainContext() != null) {
             final ApplicationContext context = grailsApplication.getMainContext();
             if (context.containsBean(ConstraintsEvaluator.BEAN_NAME)) {

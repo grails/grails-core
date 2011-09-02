@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.cli.parsing;
 
+import groovy.lang.Closure;
+import org.codehaus.groovy.grails.cli.GrailsScriptRunner;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +29,15 @@ import java.util.Properties;
  * @since 2.0
  */
 public interface CommandLine {
+
+    String VERBOSE_ARGUMENT = "verbose";
+    String STACKTRACE_ARGUMENT = "stacktrace";
+    String AGENT_ARGUMENT = "reloading";
+    String VERSION_ARGUMENT = "version";
+    String RESOLVE_DEPENDENCIES_ARGUMENT = "force-resolve";
+    String HELP_ARGUMENT = "help";
+    String NOANSI_ARGUMENT = "plain-output";
+    String NON_INTERACTIVE_ARGUMENT = "non-interactive";
 
     /**
      *

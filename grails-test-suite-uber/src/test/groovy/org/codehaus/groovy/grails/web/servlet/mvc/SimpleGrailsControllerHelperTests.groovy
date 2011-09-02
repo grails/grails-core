@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.web.Action
-
 import org.springframework.web.context.request.RequestContextHolder
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.UnknownControllerException
+import grails.artefact.Artefact
 
 class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
@@ -49,13 +50,29 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
             assert mv == null
         }
     }
+
+    void testDontHandleFlowAction() {
+        runTest {
+            shouldFail(UnknownControllerException) {
+                def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+                def mv = helper.handleURI("/test1/testFlow", webRequest)
+            }
+        }
+    }
 }
 
+@Artefact("Controller")
 class Test1Controller {
-    def list = {}
+    @Action def list(){}
 
     def afterInterceptor = {
          it.put("after", "value")
+    }
+
+    def testFlow = {
+         startFlow {
+             on "foo" to "bar"
+         }
     }
 }
 
@@ -78,7 +95,7 @@ class Test3Controller {
 }
 
 class Test4Controller {
-    def list = {}
+    @Action def list(){}
 
     def afterInterceptor = { model, modelAndView ->
          return false

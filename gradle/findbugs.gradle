@@ -1,23 +1,27 @@
 // To use findbugs you must have findbugs installed. Additionally you need a property called findbugsHome. You can define this
 // in ~/.gradle/gradle.properties
 
-task findbugs(dependsOn: tasks.withType(Jar).all) << {
+task findbugs(dependsOn: install) << {
     ant {
         taskdef(name: "findbugs", classname: "edu.umd.cs.findbugs.anttask.FindBugsTask", classpath: "$findbugsHome/lib/findbugs-ant.jar")
         mkdir dir: "$buildDir/findbugs-report"
         findbugs(home: findbugsHome, output: "xml:withMessages", outputFile: "$buildDir/findbugs-report/grails-fb.xml", jvmargs: "-Xmx768M") {
             auxClasspath() {
-                fileset(dir: "lib") {
-                    include(name: "*.jar")
-                    exclude(name: "jsp-api-2.1.jar")
-                }
-                fileset(dir: "${System.properties['JAVA_HOME']}/lib") {
-                    include(name: "tools.jar")
-                }
+                for(sub in subprojects) {
+                		pathElement(path: sub.sourceSets.main.compileClasspath.asPath)
+                }            	    
             }
-            sourcePath path: file('src/java')
+            sourcePath() {
+		    for (sub in subprojects) {
+			sub.sourceSets.main.groovy.srcDirs.each { srcDir ->
+			    if (srcDir.exists()) {
+			    	pathElement(path: srcDir.absolutePath)
+			    }
+			}
+		    }
+            }
             auxAnalyzepath() {
-                fileset dir: libsDir, includes: "grails-*.jar" 
+                fileset dir: homeDistDir, includes: "grails-*.jar" 
             }
         }
         xslt(in: "$buildDir/findbugs-report/grails-fb.xml", out: "$buildDir/findbugs-report/grails-fb.html", style: "$findbugsHome/src/xsl/fancy.xsl")
