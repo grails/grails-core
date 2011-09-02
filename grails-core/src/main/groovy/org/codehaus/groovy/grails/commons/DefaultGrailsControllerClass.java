@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.GrailsNameUtils;
 import grails.web.Action;
 import grails.web.UrlConverter;
 import groovy.lang.Closure;
@@ -173,8 +174,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         String tmpUri = controllerPath + urlConverter.toUrlElement(closureName);
         uri2methodMap.put(tmpUri, closureName);
         uri2methodMap.put(tmpUri + SLASH + "**", closureName);
-        uri2viewMap.put(tmpUri, tmpUri);
-        viewNames.put(closureName, tmpUri);
+        
+        String viewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + closureName;
+        uri2viewMap.put(tmpUri, viewPath);
+        viewNames.put(closureName, viewPath);
     }
 
     public String[] getURIs() {

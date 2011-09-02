@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.web.CamelCaseUrlConverter;
+import grails.web.HyphenatedUrlConverter;
 import grails.web.UrlConverter;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
@@ -62,6 +63,16 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue(grailsClass.mapsToURI("/test"));
         assertTrue(grailsClass.mapsToURI("/test/action"));
         assertTrue(grailsClass.mapsToURI("/test/action/**"));
+    }
+
+    public void testDefaultGrailsControllerViewNamesForHyphenatedUrls() throws Exception {
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { def someAction = { return null }; } ");
+        GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+        assignGrailsApplication(cl, grailsClass, new HyphenatedUrlConverter());
+        assertEquals("Test", grailsClass.getName());
+        assertEquals("TestController", grailsClass.getFullName());
+        assertEquals("/test/someAction", grailsClass.getViewByURI("/test/some-action"));
     }
 
     public void testMappingToControllerBeginningWith2UpperCaseLetters() {
@@ -188,14 +199,19 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     }
 
     private void assignGrailsApplication(GroovyClassLoader cl,
-            GrailsControllerClass grailsClass) {
+            GrailsControllerClass grailsClass, UrlConverter urlConverter) {
         GrailsApplication ga = new DefaultGrailsApplication(cl.getLoadedClasses(), cl);
         
         MockApplicationContext ctx = new MockApplicationContext();
-        ctx.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
+        ctx.registerMockBean(UrlConverter.BEAN_NAME, urlConverter);
         ga.setMainContext(ctx);
         ga.initialise();
         grailsClass.setGrailsApplication(ga);
+    }
+    
+    private void assignGrailsApplication(GroovyClassLoader cl,
+            GrailsControllerClass grailsClass) {
+        assignGrailsApplication(cl, grailsClass, new CamelCaseUrlConverter());
     }
     
 }
