@@ -1,11 +1,14 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
+
 import spock.lang.Specification
 
  /**
@@ -176,6 +179,7 @@ class LinkGeneratorSpec extends Specification {
                 "/$controller/$action".toString()
             }] as UrlCreator
         }
+        generator.grailsUrlConverter = new CamelCaseUrlConverter()
         def urlMappingsHolder = [getReverseMapping: callable,getReverseMappingNoDefault: callable] as UrlMappingsHolder
 
         generator.urlMappingsHolder = urlMappingsHolder
