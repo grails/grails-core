@@ -32,5 +32,6 @@ class CamelCaseUrlConverterSpec extends Specification {
             'MYUrlHelper'          | 'MYUrlHelper'
             ''                     | ''
             null                   | null
+            'one two'              | 'one two'
     }
 }
