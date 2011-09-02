@@ -742,7 +742,7 @@ class FormTagLib {
         if (value instanceof Collection && attrs.multiple == null) {
             attrs.multiple = 'multiple'
         }
-        if (value instanceof StreamCharBuffer) {
+        if (value instanceof CharSequence) {
             value = value.toString()
         }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
