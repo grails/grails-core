@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsNameUtils;
+import grails.web.UrlConverter;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -28,6 +29,7 @@ import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -54,6 +56,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
     private static final String SETTING_GRAILS_WEB_DISABLE_MULTIPART = "grails.web.disable.multipart";
     private boolean parsingRequest;
     private Object uri;
+    private UrlConverter urlConverter;
 
     @SuppressWarnings({"unchecked","rawtypes"})
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
@@ -61,6 +64,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         this.id = params.get(ID_PARAM);
         this.urlData = urlData;
         this.servletContext = servletContext;
+        GrailsApplication grailsApplication = WebUtils.lookupApplication(servletContext);
+        ApplicationContext mainContext = grailsApplication.getMainContext();
+        urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
     }
 
     @SuppressWarnings("rawtypes")
@@ -113,7 +119,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
             throw new UrlMappingException("Unable to establish controller name to dispatch for [" +
                     controllerName + "]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
         }
-        return name;
+        return urlConverter.toUrlElement(name);
     }
 
     public String getActionName() {
@@ -123,7 +129,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements Url
         if (name == null) {
             name = evaluateNameForValue(this.actionName, webRequest);
         }
-        return name;
+        return urlConverter.toUrlElement(name);
     }
 
     public String getViewName() {

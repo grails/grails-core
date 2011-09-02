@@ -20,22 +20,25 @@ import grails.test.GrailsMock
 import grails.test.MockUtils
 import grails.util.GrailsNameUtils
 import grails.validation.DeferredBindingActions
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 import junit.framework.AssertionFailedError
+
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.AfterClass
-import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -83,6 +86,10 @@ class GrailsUnitTestMixin {
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource")
+            
+            def mainContext = new MockApplicationContext()
+            mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+            grailsApplication.mainContext = mainContext
             grailsApplication.initialise()
 
             grailsApplication.applicationContext = applicationContext

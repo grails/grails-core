@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.webflow.engine.builder
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
-import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.springframework.webflow.engine.builder.support.FlowBuilderServices
-import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
-import org.springframework.binding.convert.service.DefaultConversionService
-import org.springframework.webflow.expression.DefaultExpressionParserFactory
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.springframework.binding.convert.service.DefaultConversionService
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
+import org.springframework.webflow.engine.builder.support.FlowBuilderServices
+import org.springframework.webflow.expression.DefaultExpressionParserFactory
+import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
 
 /**
  * Tests for the ControllerFlowRegistry class.
@@ -15,11 +15,9 @@ import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 * @author Graeme Rocher
 * @since 0.6
 */
-class ControllerFlowRegistryTests extends GroovyTestCase {
+class ControllerFlowRegistryTests extends AbstractGrailsControllerTests {
 
-    def gcl = new GroovyClassLoader()
-
-    void setUp() {
+    void onSetUp() {
         gcl.parseClass('''
 class FooController {
     def searchService = [executeSearch: { ['book'] }]
@@ -58,7 +56,7 @@ class FooController {
     }
 
     void testFlowRegsitry() {
-        def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def ga = creategGrailsApplication()
         ga.initialise()
 
         assertEquals 1, ga.controllerClasses.size()

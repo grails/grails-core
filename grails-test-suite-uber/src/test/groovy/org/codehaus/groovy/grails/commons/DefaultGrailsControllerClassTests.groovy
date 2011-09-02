@@ -1,6 +1,10 @@
 package org.codehaus.groovy.grails.commons
 
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
+
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.codehaus.groovy.grails.support.MockApplicationContext
 
 /**
  * Note there are more tests for DefaultGrailsDomainClass in test/persistence written in Java
@@ -20,6 +24,11 @@ class FooController {
 }"""
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        
+        def ctx = new MockApplicationContext() 
+        ctx.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter())
+        ga.mainContext = ctx
+        
         ga.initialise()
 
         def foo = ga.getControllerClass("FooController")
