@@ -466,9 +466,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         else if (value instanceof GrailsParameterMap) {
             GrailsParameterMap child = (GrailsParameterMap)value;
             Set nestedEntrySet = child.entrySet();
-            for (Object aNestedEntrySet : nestedEntrySet) {
-                Map.Entry childEntry = (Map.Entry) aNestedEntrySet;
+            for (Iterator i = nestedEntrySet.iterator(); i.hasNext();) {
+                Map.Entry childEntry = (Map.Entry) i.next();
                 appendEntry(childEntry, queryString, encoding, entry.getKey().toString() + '.');
+                boolean hasMore = i.hasNext();
+                if (hasMore) queryString.append('&');
             }
         }
         else {

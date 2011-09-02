@@ -113,7 +113,7 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 
 
 // hasMany
-domainClass & currentType(props : properties(isStatic() & name("hasMany"))).accept {
+(domainClass & currentType(props : properties(isStatic() & name("hasMany")))).accept {
 	provider = "Grails hasMany"
 	props.each { PropertyNode hasMany ->
 		if (hasMany.initialExpression instanceof MapExpression) {
@@ -127,7 +127,7 @@ domainClass & currentType(props : properties(isStatic() & name("hasMany"))).acce
 }
 
 // hasOne
-domainClass & currentType(props : properties(isStatic() & name("hasOne"))).accept {
+(domainClass & currentType(props : properties(isStatic() & name("hasOne")))).accept {
 	provider = "Grails hasOne"
 	props.each { PropertyNode hasOne ->
 		if (hasOne.initialExpression instanceof MapExpression) {
@@ -138,7 +138,7 @@ domainClass & currentType(props : properties(isStatic() & name("hasOne"))).accep
 	}
 }
 // belongsTo
-domainClass & currentType(props : properties(isStatic() & name("belongsTo"))).accept {
+(domainClass & currentType(props : properties(isStatic() & name("belongsTo")))).accept {
 	provider = "Grails belongsTo"
 	props.each { PropertyNode belongsTo ->
 			if (belongsTo.initialExpression instanceof MapExpression) {
@@ -154,9 +154,9 @@ domainClass & currentType(props : properties(isStatic() & name("belongsTo"))).ac
 // mapping ---orm DSL
 // FIXJB : Ensure nothing is missed
 // FIXJB : Add documentation
-domainClass & currentType(properties(isStatic() & name("mapping")) &
+(domainClass & currentType(properties(isStatic() & name("mapping")) &
 	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
-	).accept {
+	)).accept {
 	provider = "Grails ORM DSL"
 
 	method name:"table", type:Void, params: [tableName: String], useNamedArgs:true, isStatic:true
@@ -205,9 +205,9 @@ def grailsUnitTestArtifact =
 	sourceFolderOfCurrentType("test/unit") &
 	nature("grails")
 
-contribution(grailsUnitTestArtifact & 
+(grailsUnitTestArtifact & 
 		enclosingClass(annotatedBy(name("grails.test.mixin.TestFor") & 
-		hasAttribute(types : value())))) {
+		hasAttribute(types : value())))).accept {
 	types.each { String className ->
 		 if (className.contains("Controller")) {
 			 provider = "Controller unit test DSL"

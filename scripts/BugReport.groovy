@@ -38,6 +38,7 @@ target(bugReport: "Creates a ZIP containing source artifacts for reporting bugs"
             include name: 'src/**'
             include name: 'test/**'
             include name: 'scripts/**'
+            include name: '*GrailsPlugin.groovy'
         }
         fileset file: "$basedir/application.properties"
     }
