@@ -296,7 +296,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
     }
 
-    public void reset() {
+    public final void reset() {
         reset(true);
     }
 
@@ -305,11 +305,11 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      *
      * @param resetChunkSize
      */
-    public void reset(boolean resetChunkSize) {
+    public final void reset(boolean resetChunkSize) {
         firstChunk = null;
         lastChunk = null;
         totalCharsInList = 0;
-        totalCharsInDynamicChunks = 0;
+        totalCharsInDynamicChunks = -1;
         if (resetChunkSize) {
             chunkSize = firstChunkSize;
             totalChunkSize = 0;
@@ -487,7 +487,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             firstChunk = null;
             lastChunk = null;
             totalCharsInList = 0;
-            totalCharsInDynamicChunks = 0;
+            totalCharsInDynamicChunks = -1;
             dynamicChunkMap.clear();
         }
         allocBuffer.writeTo(target);
@@ -632,8 +632,58 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         total += allocBuffer.charsUsed();
         return total;
     }
+    
+    public boolean isEmpty() {
+    	return !isNotEmpty();
+    }
+    
+    boolean isNotEmpty() {
+    	if(totalCharsInList > 0) {
+    		return true;
+    	}
+    	if(totalCharsInDynamicChunks > 0) {
+    		return true;
+    	}
+        if(allocBuffer.charsUsed() > 0) {
+        	return true;
+        }
+        if (totalCharsInDynamicChunks == -1) {
+            for (StreamCharBufferSubChunk chunk : dynamicChunkMap.values()) {
+                if(chunk.getSubBuffer().isNotEmpty()) {
+                	return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    boolean isSizeLarger(int minSize) {
+        int total = totalCharsInList;
+        total += allocBuffer.charsUsed();
+        if(total > minSize) {
+        	return true;
+        }
+        if(totalCharsInDynamicChunks != -1) {
+        	total += totalCharsInDynamicChunks;
+            if(total > minSize) {
+            	return true;
+            }
+        } else {
+            for (StreamCharBufferSubChunk chunk : dynamicChunkMap.values()) {
+            	if(!chunk.hasCachedSize() && chunk.getSubBuffer().isSizeLarger(minSize-total)) {
+            		return true;
+            	}
+            	total += chunk.size();
+                if(total > minSize) {
+                	return true;
+                }
+            }
+        }
+        return false;
+	}
+    
 
-    protected int allocateSpace() throws IOException {
+    int allocateSpace() throws IOException {
         int spaceLeft = allocBuffer.spaceLeft();
         if (spaceLeft == 0) {
             spaceLeft = appendCharBufferChunk(true);
@@ -790,11 +840,27 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
             return isNextChunkBigEnough(len);
         }
-
+        
         private final boolean isNextChunkBigEnough(final int len) {
-            // check if allocBuffer has enough chars to flush
-            return chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 ||
-                allocBuffer.charsUsed() >= chunkMinSize || len > allocBuffer.spaceLeft();
+        	return (len > getNewChunkMinSize());
+        }
+        
+        private final int getDirectChunkMinSize() {
+            if (!isConnectedMode()) {
+                return -1;
+            }
+            if (writeDirectlyToConnectedMinSize >= 0) {
+                return writeDirectlyToConnectedMinSize;
+            }
+
+            return getNewChunkMinSize();
+        }
+
+        private final int getNewChunkMinSize() {
+        	if(chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 || allocBuffer.charsUsed() >= chunkMinSize) {
+        		return 0;
+        	}
+        	return allocBuffer.spaceLeft();
         }
 
         @Override
@@ -828,13 +894,13 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
         public final void write(StreamCharBuffer subBuffer) throws IOException {
             markUsed();
-            int len = subBuffer.size();
-            if (shouldWriteDirectly(len)) {
+            int directChunkMinSize = getDirectChunkMinSize();
+            if (directChunkMinSize != -1 && subBuffer.isSizeLarger(directChunkMinSize)) {
                 appendCharBufferChunk(true);
                 subBuffer.writeToImpl(connectedWritersWriter,false,false);
             }
             else if (subBuffer.preferSubChunkWhenWritingToOtherBuffer ||
-                    (len >= subBufferChunkMinSize && isNextChunkBigEnough(len))) {
+                    subBuffer.isSizeLarger(Math.max(subBufferChunkMinSize, getNewChunkMinSize()))) {
                 appendStreamCharBufferChunk(subBuffer);
                 subBuffer.addParentBuffer(StreamCharBuffer.this);
             }
@@ -1405,9 +1471,11 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
         public StreamCharBufferSubChunk(StreamCharBuffer streamCharBuffer) {
             this.streamCharBuffer = streamCharBuffer;
-            cachedSize = streamCharBuffer.size();
             if (totalCharsInDynamicChunks != -1) {
+                cachedSize = streamCharBuffer.size();
                 totalCharsInDynamicChunks += cachedSize;
+            } else {
+            	cachedSize = -1;
             }
         }
 
@@ -1427,6 +1495,14 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
                 cachedSize=streamCharBuffer.size();
             }
             return cachedSize;
+        }
+        
+        public boolean hasCachedSize() {
+        	return (cachedSize != -1);
+        }
+        
+        public StreamCharBuffer getSubBuffer() {
+        	return this.streamCharBuffer;
         }
 
         public boolean resetSize() {
@@ -1703,12 +1779,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         return toString().charAt(index);
     }
 
-    public int length() {
+	public int length() {
         return size();
     }
 
     public CharSequence subSequence(int start, int end) {
         return toString().subSequence(start, end);
+    }
+    
+    public boolean asBoolean() {
+    	return isNotEmpty();
     }
 
     /* methods for notifying child (sub) StreamCharBuffer changes to the parent StreamCharBuffer */
