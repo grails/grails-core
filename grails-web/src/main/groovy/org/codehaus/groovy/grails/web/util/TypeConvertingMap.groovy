@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.util
 
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.lang.builder.HashCodeBuilder
 
 /**
@@ -26,289 +29,84 @@ import org.apache.commons.lang.builder.HashCodeBuilder
  * @author Graeme Rocher
  * @since 1.2
  */
-class TypeConvertingMap implements Map, Cloneable {
+class TypeConvertingMap extends AbstractTypeConvertingMap implements Cloneable {
+	TypeConvertingMap() {
+		super()
+	}
 
-    protected Map wrappedMap
+	TypeConvertingMap(Map map) {
+		super(map)
+	}
 
-    TypeConvertingMap() {
-        this([:])
-    }
+	Object clone() {
+		new TypeConvertingMap(new LinkedHashMap(this.@wrappedMap))
+	}
 
-    TypeConvertingMap(Map map) {
-        if (map == null) map = [:]
-        wrappedMap = map
-    }
+	public Byte 'byte'(String name) {
+		return super.getByte(name);
+	}
 
-    boolean equals(that) {
-        if (this.is(that)) {
-            return true
-        }
+	public Byte 'byte'(String name, Integer defaultValue) {
+		return super.getByte(name, defaultValue);
+	}
 
-        if (that == null) {
-            return false
-        }
+	public Character 'char'(String name) {
+		return super.getChar(name);
+	}
 
-        if (getClass() != that.getClass()) {
-            return false
-        }
+	public Character 'char'(String name, Character defaultValue) {
+		return super.getChar(name, defaultValue?.charValue() as Integer);
+	}
 
-        if (this.size() != that.size()) {
-            return false
-        }
+	public Character 'char'(String name, Integer defaultValue) {
+		return super.getChar(name, defaultValue);
+	}
 
-        if (this.empty && that.empty) {
-            return true
-        }
+	public Integer 'int'(String name) {
+		return super.getInt(name);
+	}
 
-        this.entrySet() == that.entrySet()
-    }
+	public Integer 'int'(String name, Integer defaultValue) {
+		return super.getInt(name, defaultValue);
+	}
 
-    int hashCode() {
-        def builder = new HashCodeBuilder(23, 31)
-        for (entry in this.entrySet()) {
-            builder.append(entry)
-        }
-        builder.toHashCode()
-    }
+	public Long 'long'(String name) {
+		return super.getLong(name);
+	}
 
-    /**
-     * Helper method for obtaining integer value from parameter
-     * @param name The name of the parameter
-     * @return The integer value or null if there isn't one
-     */
-    Byte getByte(String name) {
-        def o = get(name)
-        if (o instanceof Number) {
-            return ((Number)o).byteValue()
-        }
+	public Long 'long'(String name, Long defaultValue) {
+		return super.getLong(name, defaultValue);
+	}
 
-        if (o != null) {
-            try {
-                String string = o.toString()
-                if (string) {
-                    return Byte.parseByte(string)
-                }
-            }
-            catch (NumberFormatException e) {}
-        }
-    }
+	public Short 'short'(String name) {
+		return super.getShort(name);
+	}
 
-    /**
-     * Helper method for obtaining Character value from parameter
-     * @param name The name of the parameter
-     * @return The Character value or null if there isn't one
-     */
-    Character getChar(String name) {
-        def o = get(name)
-        if (o instanceof Character) {
-            return o
-        }
+	public Short 'short'(String name, Integer defaultValue) {
+		return super.getShort(name, defaultValue);
+	}
 
-        if (o != null) {
-            String string = o.toString()
-            if (string && string.size() == 1) {
-                return string.charAt(0)
-            }
-        }
-        return null
-    }
+	public Double 'double'(String name) {
+		return super.getDouble(name);
+	}
 
-    /**
-     * Helper method for obtaining integer value from parameter
-     * @param name The name of the parameter
-     * @return The integer value or null if there isn't one
-     */
-    Integer getInt(String name) {
-        def o = get(name)
-        if (o instanceof Number) {
-            return o.intValue()
-        }
+	public Double 'double'(String name, Double defaultValue) {
+		return super.getDouble(name, defaultValue);
+	}
 
-        if (o != null) {
-            try {
-                String string = o.toString()
-                if (string) {
-                    return Integer.parseInt(string)
-                }
-            }
-            catch (NumberFormatException e) {}
-        }
-    }
+	public Float 'float'(String name) {
+		return super.getFloat(name);
+	}
 
-    /**
-     * Helper method for obtaining long value from parameter
-     * @param name The name of the parameter
-     * @return The long value or null if there isn't one
-     */
-    Long getLong(String name) {
-        def o = get(name)
-        if (o instanceof Number) {
-            return ((Number)o).longValue()
-        }
+	public Float 'float'(String name, Float defaultValue) {
+		return super.getFloat(name, defaultValue);
+	}
 
-        if (o != null) {
-            try {
-                return Long.parseLong(o.toString())
-            }
-            catch (NumberFormatException e) {}
-        }
-    }
+	public Boolean 'boolean'(String name) {
+		return super.getBoolean(name);
+	}
 
-    /**
-    * Helper method for obtaining short value from parameter
-    * @param name The name of the parameter
-    * @return The short value or null if there isn't one
-    */
-    Short getShort(String name) {
-        def o = get(name)
-        if (o instanceof Number) {
-            return ((Number)o).shortValue()
-        }
-
-        if (o != null) {
-            try {
-                String string = o.toString()
-                if (string) {
-                    return Short.parseShort(string)
-                }
-            }
-            catch (NumberFormatException e) {}
-        }
-    }
-
-    /**
-    * Helper method for obtaining double value from parameter
-    * @param name The name of the parameter
-    * @return The double value or null if there isn't one
-    */
-    Double getDouble(String name) {
-        def o = get(name)
-        if (o instanceof Number) {
-            return ((Number)o).doubleValue()
-        }
-
-        if (o != null) {
-            try {
-                String string = o.toString()
-                if (string) {
-                    return Double.parseDouble(string)
-                }
-            }
-            catch (NumberFormatException e) {}
-        }
-    }
-
-    /**
-     * Helper method for obtaining float value from parameter
-     * @param name The name of the parameter
-     * @return The double value or null if there isn't one
-     */
-    Float getFloat(String name) {
-        def o = get(name)
-        if (o instanceof Number) {
-            return ((Number)o).floatValue()
-        }
-
-        if (o != null) {
-            try {
-                String string = o.toString()
-                if (string) {
-                    return Float.parseFloat(string)
-                }
-            }
-            catch (NumberFormatException e) {}
-        }
-    }
-
-    /**
-     * Helper method for obtaining float value from parameter
-     * @param name The name of the parameter
-     * @return The double value or null if there isn't one
-     */
-    Boolean getBoolean(String name) {
-        def o = get(name)
-        if (o instanceof Boolean) {
-            return o
-        }
-
-        if (o != null) {
-            try {
-                String string = o.toString()
-                if (string) {
-                    return Boolean.parseBoolean(string)
-                }
-            }
-            catch (e) {}
-        }
-    }
-
-    /**
-     * Helper method for obtaining a list of values from parameter
-     * @param name The name of the parameter
-     * @return A list of values
-     */
-    List getList(String name) {
-        def paramValues = get(name)
-        if (paramValues == null) {
-            return []
-        }
-
-        if (paramValues?.getClass().isArray()) {
-            return Arrays.asList(paramValues)
-        }
-
-        if (paramValues instanceof Collection) {
-            return new ArrayList(paramValues)
-        }
-
-        return [paramValues]
-    }
-
-    Object put(Object k, Object v) {
-        wrappedMap.put(k, v)
-    }
-
-    Object remove(Object o) {
-        wrappedMap.remove(o)
-    }
-
-    int size() {
-        wrappedMap.size()
-    }
-
-    boolean isEmpty() {
-        wrappedMap.isEmpty()
-    }
-
-    boolean containsKey(Object k) {
-        wrappedMap.containsKey(k)
-    }
-
-    boolean containsValue(Object v) {
-        wrappedMap.containsValue(v)
-    }
-
-    Object get(Object k) {
-        wrappedMap.get(k)
-    }
-
-    void putAll(Map m) {
-        wrappedMap.putAll(m)
-    }
-
-    void clear() {
-        wrappedMap.clear()
-    }
-
-    Set keySet() {
-        wrappedMap.keySet()
-    }
-
-    Collection values() {
-        wrappedMap.values()
-    }
-
-    Set entrySet() {
-        wrappedMap.entrySet()
-    }
+	public Boolean 'boolean'(String name, Boolean defaultValue) {
+		return super.getBoolean(name, defaultValue);
+	}
 }
