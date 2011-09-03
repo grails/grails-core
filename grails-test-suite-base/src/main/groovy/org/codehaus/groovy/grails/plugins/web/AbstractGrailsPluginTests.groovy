@@ -1,14 +1,18 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.util.MockHttpServletResponse
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
+
 import javax.servlet.ServletContext
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.MockResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -44,6 +48,9 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx = new MockApplicationContext()
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl)
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+        ga.mainContext = mainContext
         mockManager = new MockGrailsPluginManager(ga)
         def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }

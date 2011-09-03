@@ -294,11 +294,11 @@ class WebMetaUtils {
         StreamCharBuffer.metaClass.asType = { Class clazz ->
             if (clazz == String) {
                 delegate.toString()
-            }
-            else if (clazz == char[]) {
+            } else if (clazz == char[]) {
                 delegate.toCharArray()
-            }
-            else {
+            } else if (clazz == Boolean || clazz == boolean) {
+				delegate.asBoolean()	
+			} else {
                 delegate.toString().asType(clazz)
             }
         }

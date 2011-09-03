@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -154,6 +156,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         onSetUp()
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga = grailsApplication
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+        ga.mainContext = mainContext
         grailsApplication.initialise()
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)

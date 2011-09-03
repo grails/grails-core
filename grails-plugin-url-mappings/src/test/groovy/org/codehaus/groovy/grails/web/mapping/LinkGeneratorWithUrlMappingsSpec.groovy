@@ -1,7 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import spock.lang.Specification
+import grails.web.CamelCaseUrlConverter
+
 import org.springframework.mock.web.MockServletContext
+
+import spock.lang.Specification
 
 /**
  * More tests for {@link LinkGenerator }. See Also LinkGeneratorSpec.
@@ -23,6 +26,7 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
         def generator = new DefaultLinkGenerator(baseUrl, context)
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         generator.urlMappingsHolder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(mappings ?: {}))
+        generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator
     }
 

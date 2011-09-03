@@ -53,7 +53,7 @@ class BookController {
 
         gcl.parseClass(testController1)
 
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 

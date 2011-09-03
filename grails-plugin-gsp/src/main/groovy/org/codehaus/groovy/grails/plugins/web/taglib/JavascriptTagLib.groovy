@@ -330,7 +330,7 @@ a 'params' key to the [url] attribute instead.""")
         // get javascript provider
         def p = getProvider()
         def url = attrs.url
-        if (!url instanceof String) {
+        if (!(url instanceof CharSequence)) {
             url = deepClone(attrs.url)
         }
 
@@ -339,7 +339,7 @@ a 'params' key to the [url] attribute instead.""")
 
         def params = [onsubmit:remoteFunction(attrs) + 'return false',
                       method: (attrs.method? attrs.method : 'post'),
-                      action: (attrs.action? attrs.action : url instanceof String ? url : createLink(url))]
+                      action: (attrs.action? attrs.action : url instanceof CharSequence ? url.toString() : createLink(url))]
         attrs.remove('url')
         params.putAll(attrs)
         if (params.name && !params.id) {
@@ -400,11 +400,11 @@ a 'params' key to the [url] attribute instead.""")
             out = tmp
             js = sw.toString()
         }
-        else if (body instanceof String) {
-            js = body
+        else if (body instanceof CharSequence) {
+            js = body.toString()
         }
-        else if (attrs instanceof String) {
-            js = attrs
+        else if (attrs instanceof CharSequence) {
+            js = attrs.toString()
         }
         out << js.replaceAll(/\r\n|\n|\r/, '\\\\n')
                  .replaceAll('"','\\\\"')

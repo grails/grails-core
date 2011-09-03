@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.*
 
-class UrlMappingEvaluatorTests extends GroovyTestCase {
+class UrlMappingEvaluatorTests extends AbstractGrailsControllerTests {
 
     def mappingScript = '''
 mappings {
@@ -43,7 +44,7 @@ mappings {
     void testEvaluateMappings() {
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator()
+        def evaluator = new DefaultUrlMappingEvaluator(servletContext)
         def mappings = evaluator.evaluateMappings(res)
 
         assert mappings
