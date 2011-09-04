@@ -28,7 +28,10 @@ test {
                 "**/JSONBindingTests.class",
                 "**/AutoParams*MarshallingTests.class",
                 "**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class"]
+                "**/ControllerWithXmlConvertersTests.class",
+		"**/GroovyPageAttributesTests.class",
+		"**/BindingExcludeTests.class",
+		"**/NestedXmlBindingTests.class"]
 }
 
 task isolatedTestsOne(type:Test) {
@@ -44,8 +47,26 @@ task isolatedTestsTwo(type:Test) {
 task isolatedTestsThree(type:Test) {
     includes = [
                 "**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class"
+                "**/ControllerWithXmlConvertersTests.class",
+
                 ]
 }
+task isolatedTestsFour(type:Test) {
+    includes = [
 
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree
+		"**/BindingExcludeTests.class"
+                ]
+}
+task isolatedTestsFive(type:Test) {
+    includes = [
+
+		"**/GroovyPageAttributesTests.class"
+                ]
+}
+task isolatedTestsSix(type:Test) {
+    includes = [
+
+		"**/NestedXmlBindingTests.class"
+                ]
+}
+test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix
