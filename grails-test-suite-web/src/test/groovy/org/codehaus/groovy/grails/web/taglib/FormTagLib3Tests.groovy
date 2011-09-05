@@ -138,7 +138,13 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         template = '<g:checkBox name="foo" value="${test}" checked="false"/>'
         assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="hello" id="foo"  />', template, [test:"hello"])
 
+        template = '<g:checkBox name="foo" value="${test}" checked="${false}"/>'
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" value="hello" id="foo"  />', template, [test:"hello"])
+
         template = '<g:checkBox name="foo" value="${test}" checked="${true}"/>'
+        assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])
+
+        template = '<g:checkBox name="foo" value="${test}" checked="true"/>'
         assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])
 
         template = '<g:checkBox name="foo.bar" value="${test}" checked="${true}"/>'
@@ -176,8 +182,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
     }
 
     void testNoHtmlEscapingTextAreaTag() {
-        final StringWriter sw = new StringWriter()
-        final PrintWriter pw = new PrintWriter(sw)
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
 
         withTag("textArea", pw) { tag ->
 
@@ -194,6 +200,87 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             // need to inspect this as raw text so the DocumentHelper doesn't
             // unescape anything...
             assertTrue(result.indexOf("<b>some text</b>") >= 0)
+
+            final Document document = parseText(sw.toString())
+            assertNotNull(document)
+
+            final Element inputElement = document.getDocumentElement()
+            assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
+        }
+
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
+
+        withTag("textArea", pw) { tag ->
+
+            assertNotNull(tag)
+
+            final Map attrs = new HashMap()
+            attrs.put("name","testField")
+            attrs.put("escapeHtml",false)
+            attrs.put("value", "<b>some text</b>")
+
+            tag.call(attrs, {})
+
+            final String result = sw.toString()
+            // need to inspect this as raw text so the DocumentHelper doesn't
+            // unescape anything...
+            assertTrue(result.indexOf("<b>some text</b>") >= 0)
+
+            final Document document = parseText(sw.toString())
+            assertNotNull(document)
+
+            final Element inputElement = document.getDocumentElement()
+            assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
+        }
+    }
+
+
+    void testHtmlEscapingTextAreaTag() {
+        StringWriter sw = new StringWriter()
+        PrintWriter pw = new PrintWriter(sw)
+
+        withTag("textArea", pw) { tag ->
+
+            assertNotNull(tag)
+
+            final Map attrs = new HashMap()
+            attrs.put("name","testField")
+            attrs.put("escapeHtml",true)
+            attrs.put("value", "<b>some text</b>")
+
+            tag.call(attrs, {})
+
+            final String result = sw.toString()
+            // need to inspect this as raw text so the DocumentHelper doesn't
+            // unescape anything...
+            assertTrue(result.indexOf("&lt;b&gt;some text&lt;/b&gt;") >= 0)
+
+            final Document document = parseText(sw.toString())
+            assertNotNull(document)
+
+            final Element inputElement = document.getDocumentElement()
+            assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
+        }
+        
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
+
+        withTag("textArea", pw) { tag ->
+
+            assertNotNull(tag)
+
+            final Map attrs = new HashMap()
+            attrs.put("name","testField")
+            attrs.put("escapeHtml","true")
+            attrs.put("value", "<b>some text</b>")
+
+            tag.call(attrs, {})
+
+            final String result = sw.toString()
+            // need to inspect this as raw text so the DocumentHelper doesn't
+            // unescape anything...
+            assertTrue(result.indexOf("&lt;b&gt;some text&lt;/b&gt;") >= 0)
 
             final Document document = parseText(sw.toString())
             assertNotNull(document)

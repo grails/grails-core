@@ -23,8 +23,6 @@ import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
 
 import java.util.regex.Pattern
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
@@ -34,6 +32,9 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.springframework.core.io.FileSystemResource
+import org.apache.ivy.plugins.resolver.FileSystemResolver
+import org.apache.ivy.plugins.latest.LatestTimeStrategy
+import org.apache.ivy.core.module.descriptor.Configuration
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -198,6 +199,25 @@ class PluginInstallEngine {
         }
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
+
+        def parentDir = zipFile.parentFile
+        def dependencyManager = resolveEngine.createFreshDependencyManager()
+        dependencyManager.parseDependencies {
+            log "warn"
+            repositories {
+                def pluginResolver = new FileSystemResolver(name: name)
+                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/grails-[module]-[revision].[ext]")
+                pluginResolver.settings = dependencyManager.ivySettings
+                pluginResolver.latestStrategy = new LatestTimeStrategy()
+                pluginResolver.changingPattern = ".*SNAPSHOT"
+                pluginResolver.setCheckmodified(true)
+                resolver pluginResolver
+            }
+            plugins {
+                compile ":$name:$version"
+            }
+        }
+        dependencyManager.resolveDependencies()
         installPluginZipInternal name, version, zipFile, globalInstall, overwrite
     }
 
@@ -390,18 +410,33 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                     errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
                 }
                 else {
-                    addJarsToRootLoader resolveReport.getArtifactsReports(null, false).localFile
+                    addJarsToRootLoader dependencyConfiguration, resolveReport.getArtifactsReports(null, false).localFile
                 }
             }
         }
         def pluginJars = new File("${pluginInstallPath}/lib").listFiles().findAll { it.name.endsWith(".jar")}
-        addJarsToRootLoader(pluginJars)
+        addJarsToRootLoader(IvyDependencyManager.RUNTIME_CONFIGURATION, pluginJars)
     }
 
-    protected addJarsToRootLoader(Collection pluginJars) {
+    protected addJarsToRootLoader(Configuration dependencyConfiguration, Collection pluginJars) {
         def loader = getClass().classLoader.rootLoader
         for (File jar in pluginJars) {
             loader.addURL(jar.toURI().toURL())
+        }
+
+        switch(dependencyConfiguration) {
+            case IvyDependencyManager.RUNTIME_CONFIGURATION:
+                settings.runtimeDependencies.addAll(pluginJars)
+            break
+            case IvyDependencyManager.BUILD_CONFIGURATION:
+                settings.buildDependencies.addAll(pluginJars)
+            break
+            case IvyDependencyManager.PROVIDED_CONFIGURATION:
+                settings.providedDependencies.addAll(pluginJars)
+            break
+            case IvyDependencyManager.TEST_CONFIGURATION:
+                settings.testDependencies.addAll(pluginJars)
+            break
         }
     }
 
@@ -512,19 +547,14 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
      * @param pluginVersion the version of the plugin
      */
     void registerPluginWithMetadata(String pluginName, pluginVersion) {
-        IvyDependencyManager dependencyManager = settings.getDependencyManager()
+        if (settings.isRegisteredInMetadata(pluginName) || settings.notDefinedInBuildConfig(pluginName)) {
+            addToMetadata(pluginName, pluginVersion)
+        }
+    }
 
-        // only register in metadata if not specified in BuildConfig.groovy
-        if (dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)) {
-            metadata['plugins.' + pluginName] = pluginVersion
-            metadata.persist()
-        }
-        else {
-            if (!dependencyManager.pluginDependencyNames?.contains(pluginName)) {
-                metadata['plugins.' + pluginName] = pluginVersion
-                metadata.persist()
-            }
-        }
+    private def addToMetadata(pluginName, pluginVersion) {
+        metadata['plugins.' + pluginName] = pluginVersion
+        metadata.persist()
     }
 
     private void runPluginScript(File scriptFile, fullPluginName, msg) {

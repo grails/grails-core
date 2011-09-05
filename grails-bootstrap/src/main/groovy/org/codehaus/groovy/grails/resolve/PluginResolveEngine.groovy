@@ -123,11 +123,13 @@ final class PluginResolveEngine {
         // first try resolve via plugin.xml that resides next to zip
         dependencyManager.parseDependencies {
             plugins {
-                runtime resolveArgs
+                runtime(resolveArgs) {
+                    transitive = false
+                }
             }
         }
-        def report = dependencyManager.resolvePluginDependencies('runtime', [download:false])
-        if (!report.hasError() && report.getArtifactsReports(null, false)) {
+        def report = dependencyManager.resolveDependencies("runtime", [download:false])
+        if (report.getArtifactsReports(null, false)) {
             ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
             def location = origin.location
             def parent = location[0..location.lastIndexOf('/')-1]

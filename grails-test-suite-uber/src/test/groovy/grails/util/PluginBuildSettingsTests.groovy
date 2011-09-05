@@ -108,6 +108,15 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         assertEquals 6, pluginSettings.getArtefactResources().size()
     }
 
+    void testGetAvailableScriptsNoGrailsHome() {
+        final bs = new BuildSettings()
+        bs.grailsHome  = null
+        bs.baseDir = new File("foo")
+        def ps = new PluginBuildSettings(bs)
+
+        assert 0 == ps.availableScripts.size()
+
+    }
     void testGetAvailableScripts() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
         def scripts = pluginSettings.getAvailableScripts()
@@ -117,7 +126,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                 nonUserScripts << script
             }
         }
-        assertEquals 50, nonUserScripts.size()
+        assertEquals 51, nonUserScripts.size()
     }
 
     void testGetPluginScripts() {

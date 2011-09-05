@@ -15,6 +15,8 @@
 package org.codehaus.groovy.grails.web.mapping.filter
 
 import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -117,7 +119,8 @@ mappings {
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings))
 
         gcl.parseClass(testController1)
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+        
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 
@@ -140,8 +143,9 @@ mappings {
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
 
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
         app.initialise()
+
         appCtx.registerMockBean("grailsApplication", app)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
@@ -167,7 +171,8 @@ mappings {
         gcl.parseClass(testController3)
         gcl.parseClass(testController4)
 
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+        
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
@@ -210,7 +215,8 @@ class IndexAndActionController {
 
         gcl.parseClass(testController5)
 
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
@@ -247,7 +253,8 @@ class IndexAndActionController {
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
 
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+        
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
 
@@ -299,7 +306,8 @@ class BlogController {
 
         gcl.parseClass(testController6)
 
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
@@ -321,7 +329,8 @@ class BlogController {
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings, ["/bo*"]))
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
@@ -344,7 +353,8 @@ mappings {
 
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(script.bytes))
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings))
-        def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+        def app = creategGrailsApplication()
+
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)

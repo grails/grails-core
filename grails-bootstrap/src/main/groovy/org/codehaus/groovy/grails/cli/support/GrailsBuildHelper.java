@@ -205,6 +205,11 @@ public class GrailsBuildHelper {
         invokeMethod(settings, "setCompileDependencies", new Class[] { List.class }, new Object[] { dependencies });
     }
 
+    @SuppressWarnings("rawtypes")
+    public void setBuildDependencies(List dependencies) {
+        invokeMethod(settings, "setBuildDependencies", new Class[] { List.class }, new Object[] { dependencies });
+    }
+
     public void setDependenciesExternallyConfigured(boolean b) {
         invokeMethod(settings, "setDependenciesExternallyConfigured", new Class[] { boolean.class }, new Object[] { b });
     }

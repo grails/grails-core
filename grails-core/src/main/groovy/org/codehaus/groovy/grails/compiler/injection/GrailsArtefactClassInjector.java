@@ -33,5 +33,5 @@ public interface GrailsArtefactClassInjector extends ClassInjector{
 
     Parameter[] ZERO_PARAMETERS = new Parameter[0];
 
-    String getArtefactType();
+    String[] getArtefactTypes();
 }

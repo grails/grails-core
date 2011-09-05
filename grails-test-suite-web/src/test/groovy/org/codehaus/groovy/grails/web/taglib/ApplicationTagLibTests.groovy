@@ -330,6 +330,27 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def linkGenerator = appCtx.getBean("grailsLinkGenerator")
         linkGenerator.configuredServerBaseURL="http://www.mysite.com"
         assertOutputEquals 'http://www.mysite.com/testController/testAction', template
+
+        template = '<g:createLink action="testAction" controller="testController" absolute="${true}" />'
+
+        linkGenerator = appCtx.getBean("grailsLinkGenerator")
+        linkGenerator.configuredServerBaseURL="http://www.mysite.com"
+        assertOutputEquals 'http://www.mysite.com/testController/testAction', template
+    }
+
+    void testAbsoluteFalseWithContextPath() {
+        request.contextPath = "/foo"
+        def template = '<g:createLink action="testAction" controller="testController" absolute="false" />'
+
+        def linkGenerator = appCtx.getBean("grailsLinkGenerator")
+        linkGenerator.configuredServerBaseURL="http://www.mysite.com"
+        assertOutputEquals '/foo/testController/testAction', template
+
+        template = '<g:createLink action="testAction" controller="testController" absolute="${false}" />'
+
+        linkGenerator = appCtx.getBean("grailsLinkGenerator")
+        linkGenerator.configuredServerBaseURL="http://www.mysite.com"
+        assertOutputEquals '/foo/testController/testAction', template
     }
 
     void testAbsoluteWithContextPathAndNullConfig() {
@@ -338,6 +359,20 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
         assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template
+        
+        template = '<g:createLink action="testAction" controller="testController" absolute="${true}" />'
+        assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template
+    }
+
+    void testAbsoluteFalseWithContextPathAndNullConfig() {
+        ConfigurationHolder.config = null
+        request.contextPath = "/foo"
+        request.serverPort = 8080
+        def template = '<g:createLink action="testAction" controller="testController" absolute="false" />'
+        assertOutputEquals '/foo/testController/testAction', template
+        
+        template = '<g:createLink action="testAction" controller="testController" absolute="${false}" />'
+        assertOutputEquals '/foo/testController/testAction', template
     }
 
     /**
@@ -354,6 +389,20 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:createLink absolute="true" action="testAction" controller="testController" />'
         request.serverPort = 8080
         assertOutputEquals 'http://localhost:8080/testController/testAction', template
+        
+        template = '<g:createLink absolute="${true}" action="testAction" controller="testController" />'
+        request.serverPort = 8080
+        assertOutputEquals 'http://localhost:8080/testController/testAction', template
+    }
+
+    void testCreateLinkWithAbsoluteFalse() {
+        def template = '<g:createLink absolute="false" action="testAction" controller="testController" />'
+        request.serverPort = 8080
+        assertOutputEquals '/testController/testAction', template
+        
+        template = '<g:createLink absolute="${false}" action="testAction" controller="testController" />'
+        request.serverPort = 8080
+        assertOutputEquals '/testController/testAction', template
     }
 
     void testJoinStrings() {

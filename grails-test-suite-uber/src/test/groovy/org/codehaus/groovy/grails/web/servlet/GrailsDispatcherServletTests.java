@@ -14,10 +14,14 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import grails.web.CamelCaseUrlConverter;
+import grails.web.UrlConverter;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -66,6 +70,9 @@ public class GrailsDispatcherServletTests extends TestCase {
                     "def action = {} " +
                     "}");
             final DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication(cl.getLoadedClasses(), cl);
+            MockApplicationContext mainContext = new MockApplicationContext();
+            mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
+            grailsApplication.setMainContext(mainContext);
             grailsApplication.initialise();
 
             handlerMapping.setGrailsApplication(grailsApplication);

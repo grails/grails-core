@@ -503,7 +503,7 @@ public class GrailsPrintWriter extends PrintWriter {
         Writer target = findStreamCharBufferTarget(false);
         if (target instanceof StreamCharBufferWriter) {
             StreamCharBuffer buffer=((StreamCharBufferWriter)target).getBuffer();
-            if (buffer.size() > 0) {
+            if (!buffer.isEmpty()) {
                 return true;
             }
         }

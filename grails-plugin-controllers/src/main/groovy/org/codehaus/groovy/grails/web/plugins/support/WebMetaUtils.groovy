@@ -30,9 +30,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
-import org.springframework.validation.BeanPropertyBindingResult
+
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import grails.validation.ValidationErrors
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -192,7 +193,7 @@ class WebMetaUtils {
                 def errors = RCH.currentRequestAttributes().getAttribute(
                         "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", 0)
                 if (!errors) {
-                    errors = new BeanPropertyBindingResult(delegate, delegate.getClass().getName())
+                    errors = new ValidationErrors(delegate)
                     RCH.currentRequestAttributes().setAttribute(
                             "${commandObjectClass.name}_${System.identityHashCode(delegate)}_errors", errors, 0)
                 }
@@ -214,7 +215,7 @@ class WebMetaUtils {
             commandObjectMetaClass.getConstraints = {-> constrainedProperties }
 
             commandObjectMetaClass.clearErrors = {->
-                delegate.setErrors(new BeanPropertyBindingResult(delegate, delegate.getClass().getName()))
+                delegate.setErrors(new ValidationErrors(delegate))
             }
             commandObjectMetaClass.grailsEnhanced = {-> true }
         }
@@ -293,11 +294,11 @@ class WebMetaUtils {
         StreamCharBuffer.metaClass.asType = { Class clazz ->
             if (clazz == String) {
                 delegate.toString()
-            }
-            else if (clazz == char[]) {
+            } else if (clazz == char[]) {
                 delegate.toCharArray()
-            }
-            else {
+            } else if (clazz == Boolean || clazz == boolean) {
+				delegate.asBoolean()	
+			} else {
                 delegate.toString().asType(clazz)
             }
         }

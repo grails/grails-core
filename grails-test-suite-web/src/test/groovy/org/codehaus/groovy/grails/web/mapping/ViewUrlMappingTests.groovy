@@ -23,7 +23,7 @@ mappings {
         super.setUp()
         def res = new ByteArrayResource(topLevelMapping.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator()
+        def evaluator = new DefaultUrlMappingEvaluator(servletContext)
         def mappings = evaluator.evaluateMappings(res)
 
         holder = new DefaultUrlMappingsHolder(mappings)

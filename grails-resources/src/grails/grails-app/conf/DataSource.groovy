@@ -27,6 +27,17 @@ environments {
         dataSource {
             dbCreate = "update"
             url = "jdbc:h2:prodDb"
+            // For MySQL production scenarios enable the following settings
+//          pooled = true
+//          properties {
+//               minEvictableIdleTimeMillis=1800000
+//               timeBetweenEvictionRunsMillis=1800000
+//               numTestsPerEvictionRun=3
+//               testOnBorrow=true
+//               testWhileIdle=true
+//               testOnReturn=true
+//               validationQuery="SELECT 1"
+//          }
         }
     }
 }

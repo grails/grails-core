@@ -17,12 +17,14 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.Environment
+import grails.web.UrlConverter
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
-import org.springframework.beans.factory.annotation.Autowired
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * A link generating service for applications to use when generating links
@@ -31,6 +33,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * @since 2.0
  */
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
+
     String configuredServerBaseURL
     String contextPath
 
@@ -40,6 +43,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
 
     @Autowired
     UrlMappingsHolder urlMappingsHolder
+    
+    @Autowired
+    UrlConverter grailsUrlConverter;
 
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
         this.configuredServerBaseURL = serverBaseURL
@@ -88,10 +94,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
                 def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
+                
+                controller = grailsUrlConverter.toUrlElement(controller)
                 boolean isDefaultAction = false
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName(controller)
                     isDefaultAction = true
+                }
+                if(action) {
+                    action = grailsUrlConverter.toUrlElement(action)
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
                 def frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
@@ -113,7 +124,21 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
                 }
 
-                if (!attrs.get(ATTRIBUTE_ABSOLUTE)) {
+                boolean absolute = false
+                def o = attrs.get(ATTRIBUTE_ABSOLUTE)
+                if(o instanceof Boolean) {
+                    absolute = o
+                } else {
+                    if(o != null) {
+                        try {
+                            def str = o.toString()
+                            if(str) {
+                                absolute = Boolean.parseBoolean(str)
+                            }
+                        } catch(e){}
+                    }
+                }
+                if (!absolute) {
                     url = mapping.createRelativeURL(controller, action, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()

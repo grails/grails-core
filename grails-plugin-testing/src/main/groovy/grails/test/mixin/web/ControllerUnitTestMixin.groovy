@@ -21,23 +21,29 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
 import grails.test.mixin.support.LazyTagLibraryLookup
 import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.HyphenatedUrlConverter
 
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
+import org.codehaus.groovy.grails.plugins.web.api.*
+import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.FlashScope
@@ -48,23 +54,14 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
-import org.codehaus.groovy.grails.plugins.web.api.*
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
-import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
-import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
-import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
 
-/**
+ /**
  * A mixin that can be applied to a unit test in order to test controllers.
  *
  * @author Graeme Rocher
@@ -166,7 +163,9 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             instanceControllersApi(ControllersApi)
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
 
-
+            def urlConverterType = config?.grails?.web?.url?.converter
+            "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
+    
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
 
             final classLoader = ControllerUnitTestMixin.class.getClassLoader()
@@ -207,21 +206,30 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     @Before
     void bindGrailsWebRequest() {
         if (webRequest == null) {
-            if (!applicationContext.isActive()) {
-                applicationContext.refresh()
+            webRequest = GrailsWebRequest.lookup()
+            if(webRequest == null) {
+
+                if (!applicationContext.isActive()) {
+                    applicationContext.refresh()
+                }
+
+                applicationContext.servletContext = servletContext
+
+                ServletsGrailsPluginSupport.enhanceServletApi()
+                ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
+
+                request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication))
+                response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication))
+                webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
+                request = webRequest.getCurrentRequest()
+                response = webRequest.getCurrentResponse()
+                servletContext = webRequest.getServletContext()
             }
-
-            applicationContext.servletContext = servletContext
-
-            ServletsGrailsPluginSupport.enhanceServletApi()
-            ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
-
-            request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication))
-            response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication))
-            webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
-            request = webRequest.getCurrentRequest()
-            response = webRequest.getCurrentResponse()
-            servletContext = webRequest.getServletContext()
+            else {
+                request = webRequest.currentRequest
+                response = webRequest.currentResponse
+                servletContext = webRequest.servletContext
+            }
         }
     }
 

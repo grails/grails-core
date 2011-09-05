@@ -195,6 +195,10 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity, Init
         if (isRoot()) return this;
 
         PersistentEntity parent = getParentEntity();
+        if(parent == null) {
+            return this;
+        }
+
         while (!parent.isRoot()) {
             parent = parent.getParentEntity();
         }

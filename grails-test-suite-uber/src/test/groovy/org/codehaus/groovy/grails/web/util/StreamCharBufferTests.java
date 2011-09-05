@@ -403,6 +403,20 @@ public class StreamCharBufferTests extends TestCase {
         doRemoveChunksAfterReadingTesting(buf);
     }
 
+    public void testIsEmptyAnsIsSizeLarger() throws IOException {
+        StreamCharBuffer buf=new StreamCharBuffer(3);
+        assertEquals(true, buf.isEmpty());
+        assertEquals(false, buf.isSizeLarger(0));
+        assertEquals(false, buf.isSizeLarger(4));
+        Writer writer=buf.getWriter();
+        writer.write("12345");
+        assertEquals(true, buf.isSizeLarger(4));
+        assertEquals(false, buf.isSizeLarger(5));
+        assertEquals(false, buf.isSizeLarger(100));
+        assertEquals(true, buf.isSizeLarger(0));
+        assertEquals(false, buf.isEmpty());
+    }
+    
     private void doRemoveChunksAfterReadingTesting(StreamCharBuffer buf)
             throws IOException {
         Writer writer=buf.getWriter();

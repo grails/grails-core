@@ -18,6 +18,10 @@ package org.codehaus.groovy.grails.commons;
 import grails.persistence.Entity;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils;
+
+import java.util.Map;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.
@@ -25,18 +29,27 @@ import groovy.lang.GroovyObject;
  * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter {
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware{
 
     public static final String TYPE = "Domain";
 
+    private GrailsApplication grailsApplication;
+    private Map<String, Object> defaultConstraints;
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+        if(grailsApplication != null) {
+            this.defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
+        }
     }
 
     @Override
     @SuppressWarnings("rawtypes")
     public GrailsClass newArtefactClass(Class artefactClass) {
-        return new DefaultGrailsDomainClass(artefactClass);
+        return new DefaultGrailsDomainClass(artefactClass, defaultConstraints);
     }
 
     /**

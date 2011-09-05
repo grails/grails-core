@@ -14,6 +14,10 @@ sourceSets {
         groovy.srcDirs = ['src/ast/groovy']
         resources.srcDirs = []
     }
+    test {
+        compileClasspath = files(ast.classes, configurations.testCompile)
+        runtimeClasspath = files(ast.classes, configurations.testCompile, test.classes)
+    }
 }
 test {
     maxParallelForks = 4

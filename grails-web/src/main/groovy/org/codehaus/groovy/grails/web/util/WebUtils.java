@@ -15,6 +15,27 @@
 package org.codehaus.groovy.grails.web.util;
 
 import grails.util.GrailsWebUtil;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -37,17 +58,6 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.util.UrlPathHelper;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.*;
 
 /**
  * Utility methods to access commons objects and perform common
@@ -271,6 +281,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
+        exposeForwardRequestAttributes(request);
+        exposeRequestAttributes(request, model);
+
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
 
         //populateParamsForMapping(info);
@@ -284,8 +297,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
         webRequest.setActionName(info.getActionName());
 
-        exposeForwardRequestAttributes(request);
-        exposeRequestAttributes(request, model);
         dispatcher.forward(request, response);
         return forwardUrl;
     }
@@ -465,9 +476,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         else if (value instanceof GrailsParameterMap) {
             GrailsParameterMap child = (GrailsParameterMap)value;
             Set nestedEntrySet = child.entrySet();
-            for (Object aNestedEntrySet : nestedEntrySet) {
-                Map.Entry childEntry = (Map.Entry) aNestedEntrySet;
+            for (Iterator i = nestedEntrySet.iterator(); i.hasNext();) {
+                Map.Entry childEntry = (Map.Entry) i.next();
                 appendEntry(childEntry, queryString, encoding, entry.getKey().toString() + '.');
+                boolean hasMore = i.hasNext();
+                if (hasMore) queryString.append('&');
             }
         }
         else {

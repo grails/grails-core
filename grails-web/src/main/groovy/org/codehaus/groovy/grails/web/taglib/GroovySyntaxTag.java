@@ -46,6 +46,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     protected PrintWriter out;
     protected Map<String, String> attributes = new HashMap<String, String>();
     protected GroovyPageParser parser;
+    
 
     protected String foreachRenamedIt = null;
 
@@ -73,14 +74,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     public void setAttribute(String name, Object value) {
-        Assert.isInstanceOf(String.class, value, "A GroovySynax tag requires only string valued attributes");
+        Assert.isInstanceOf(String.class, value, "A GroovySyntax tag requires only string valued attributes");
 
-        String stringValue = (String)value;
-        if (stringValue.startsWith("${") && stringValue.endsWith("}")) {
-            stringValue = stringValue.substring(2,stringValue.length() -1);
-        }
-
-        attributes.put(name.substring(1,name.length()-1), stringValue);
+        attributes.put(name.substring(1,name.length()-1), (String)value);
     }
 
     /**
@@ -104,7 +100,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         Assert.isTrue(!StringUtils.isBlank(expr), "Argument [expr] cannot be null or blank");
 
         expr = expr.trim();
-        if (expr.startsWith("\"") && expr.endsWith("\"")) {
+        if ((expr.startsWith("\"") && expr.endsWith("\"")) ||
+        		(expr.startsWith("\'") && expr.endsWith("\'"))) {
             expr = expr.substring(1,expr.length()-1);
             expr = expr.trim();
         }
@@ -127,12 +124,12 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         boolean hasStatus = !StringUtils.isBlank(status);
         boolean hasVar = !StringUtils.isBlank(var);
         if (hasStatus && !hasVar) {
-            throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS);
+            throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS, parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         if (var.equals(status) && (hasStatus)) {
             throw new GrailsTagException("Attribute [" + ATTRIBUTE_VAR +
-                    "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]");
+                    "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         if (hasStatus){
@@ -140,7 +137,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
             out.println("int "+ status +" = 0");
         }
         if (!hasVar){
-            var = "_it"+System.currentTimeMillis();
+            var = "_it"+ Math.abs(System.identityHashCode(this));
             foreachRenamedIt = var;
         }
 
@@ -149,8 +146,10 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
         out.print(" )"); // dot de-reference
         out.print(" {"); // start closure
-
         out.println();
+        if (!hasVar){
+        	out.println("changeItVariable(" + foreachRenamedIt +")" );
+        }
     }
 
     protected void endEachMethod(){
@@ -169,10 +168,10 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         if (StringUtils.isBlank(attr)) {
             return "";
         }
-        if (attr.startsWith("\"") && attr.endsWith("\"") && attr.length() > 1) {
+        if (((attr.startsWith("\"") && attr.endsWith("\"")) || (attr.startsWith("'") && attr.endsWith("'"))) && attr.length() > 1) {
             attr = attr.substring(1,attr.length()-1);
         }
-         if (attr.endsWith("?") && attr.length() > 1) {
+        if (attr.endsWith("?") && attr.length() > 1) {
             attr = attr.substring(0,attr.length()-1);
         }
         return attr;

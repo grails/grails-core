@@ -70,22 +70,16 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.beans.ConfigurablePropertyAccessor;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.beans.MutablePropertyValues;
-import org.springframework.beans.PropertyAccessor;
-import org.springframework.beans.PropertyAccessorUtils;
-import org.springframework.beans.PropertyEditorRegistrar;
-import org.springframework.beans.PropertyEditorRegistry;
-import org.springframework.beans.PropertyValue;
-import org.springframework.beans.PropertyValues;
-import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.*;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.GenericConverter;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
@@ -259,6 +253,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         registry.registerCustomEditor(Date.class, new CompositeEditor(new StructuredDateEditor(dateFormat,true), new CustomDateEditor(new SimpleDateFormat(JSON_DATE_FORMAT), true)));
         registry.registerCustomEditor(Calendar.class, new StructuredDateEditor(dateFormat,true));
 
+
         ServletContext servletContext = grailsWebRequest != null ? grailsWebRequest.getServletContext() : null;
         registerCustomEditors(servletContext, registry);
     }
@@ -278,6 +273,23 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor(Locale.class, new LocaleEditor());
         binder.registerCustomEditor(TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor(URI.class, new UriEditor());
+//        GenericConversionService conversionService = new GenericConversionService();
+//        conversionService.addConverter(new GenericConverter(){
+//
+//            @Override
+//            public Set<ConvertiblePair> getConvertibleTypes() {
+//                return Collections.singleton(new ConvertiblePair(Map.class, Object.class));
+//            }
+//
+//            @Override
+//            public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType) {
+//                Object obj = BeanUtils.instantiate(targetType.getObjectType());
+//                createBinder(obj, obj.getClass().getName()).bind(new MutablePropertyValues((Map<?, ?>) source));
+//                return obj;
+//            }
+//        });
+//        binder.setConversionService(conversionService);
+
 
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
@@ -483,7 +495,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean isNotCandidateForBinding(Object value) {
-        return value instanceof GrailsParameterMap || value instanceof JSONObject;
+        return value instanceof Map;
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {

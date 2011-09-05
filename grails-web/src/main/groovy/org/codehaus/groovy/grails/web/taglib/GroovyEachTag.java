@@ -27,7 +27,7 @@ public class GroovyEachTag extends GroovySyntaxTag {
     public void doStartTag() {
         String in = attributes.get(ATTRIBUTE_IN);
         if (StringUtils.isBlank(in)) {
-            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]");
+            throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         doEachMethod(in);

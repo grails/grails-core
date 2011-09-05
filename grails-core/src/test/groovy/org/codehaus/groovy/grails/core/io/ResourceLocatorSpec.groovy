@@ -19,7 +19,7 @@ class ResourceLocatorSpec extends Specification {
             def loader = new MockStringResourceLoader()
             loader.registerMockResource("file:./web-app/css/main.css", "dummy contents")
             def resourceLocator = new MockResourceLocator(defaultResourceLoader: loader)
-            resourceLocator.searchLocation = "."
+            resourceLocator.searchLocation = "./"
 
         when: "An existing resource is queried"
             def res = resourceLocator.findResourceForURI("/css/main.css")

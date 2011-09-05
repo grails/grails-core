@@ -19,6 +19,11 @@ import grails.util.GrailsNameUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.ReflectionUtils;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 
 /**
  * An implementation of the GrailsDomainClassProperty interface that allows Classes mapped in
@@ -58,7 +63,21 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public Class<?> getType() {
+        if(type == null) {
+            attemptResolveType();
+        }
         return type;
+    }
+
+    private void attemptResolveType() {
+        PropertyDescriptor propertyDescriptor = BeanUtils.getPropertyDescriptor(domainClass.getClazz(), name);
+        this.type = propertyDescriptor != null ? propertyDescriptor.getPropertyType() : null;
+        if(this.type == null) {
+            Field field = ReflectionUtils.findField(domainClass.getClazz(), name);
+            if(field  != null) {
+                this.type = field.getType();
+            }
+        }
     }
 
     public void setType(Class<?> type) {

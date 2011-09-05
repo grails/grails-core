@@ -424,7 +424,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         }
         finally {
             // Clean up any resources used by a multipart request.
-            if (processedRequest instanceof MultipartHttpServletRequest && processedRequest != request) {
+            if (processedRequest instanceof MultipartHttpServletRequest) {
                 if (multipartResolver != null) {
                     multipartResolver.cleanupMultipart((MultipartHttpServletRequest) processedRequest);
                 }

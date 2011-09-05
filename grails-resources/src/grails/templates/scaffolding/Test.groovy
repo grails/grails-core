@@ -8,6 +8,13 @@ import javax.servlet.http.HttpServletResponse
 @Mock(${className})
 class ${className}ControllerTests {
 
+
+    def populateValidParams(params) {
+      assert params != null
+      // TODO: Populate valid properties like...
+      //params["name"] = 'someValidName'
+    }
+
     void testIndex() {
         controller.index()
         assert "/$propertyName/list" == response.redirectedUrl
@@ -40,8 +47,7 @@ class ${className}ControllerTests {
 
         response.reset()
 
-        // TODO: Populate valid properties
-
+        populateValidParams(params)
         controller.save()
 
         assert response.redirectedUrl == '/${propertyName}/show/1'
@@ -56,9 +62,8 @@ class ${className}ControllerTests {
         assert response.redirectedUrl == '/${propertyName}/list'
 
 
-        def ${propertyName} = new ${className}()
-
-        // TODO: populate domain properties
+        populateValidParams(params)
+        def ${propertyName} = new ${className}(params)
 
         assert ${propertyName}.save() != null
 
@@ -76,9 +81,8 @@ class ${className}ControllerTests {
         assert response.redirectedUrl == '/${propertyName}/list'
 
 
-        def ${propertyName} = new ${className}()
-
-        // TODO: populate valid domain properties
+        populateValidParams(params)
+        def ${propertyName} = new ${className}(params)
 
         assert ${propertyName}.save() != null
 
@@ -104,14 +108,14 @@ class ${className}ControllerTests {
         response.reset()
 
 
-        def ${propertyName} = new ${className}()
-
-        // TODO: populate valid domain properties
+        populateValidParams(params)
+        def ${propertyName} = new ${className}(params)
 
         assert ${propertyName}.save() != null
 
         // test invalid parameters in update
         params.id = ${propertyName}.id
+        //TODO: add invalid values to params object
 
         controller.update()
 
@@ -120,10 +124,24 @@ class ${className}ControllerTests {
 
         ${propertyName}.clearErrors()
 
-        // TODO: populate valid domain form parameter
+        populateValidParams(params)
         controller.update()
 
         assert response.redirectedUrl == "/${propertyName}/show/\$${propertyName}.id"
+        assert flash.message != null
+
+        //test outdated version number
+        response.reset()
+        ${propertyName}.clearErrors()
+
+        populateValidParams(params)
+        params.id = ${propertyName}.id
+        params.version = -1
+        controller.update()
+
+        assert view == "/${propertyName}/edit"
+        assert model.${propertyName}Instance != null
+        assert model.${propertyName}Instance.errors.getFieldError('version')
         assert flash.message != null
     }
 
@@ -139,9 +157,9 @@ class ${className}ControllerTests {
 
         response.reset()
 
-        def ${propertyName} = new ${className}()
+        populateValidParams(params)
+        def ${propertyName} = new ${className}(params)
 
-        // TODO: populate valid domain properties
         assert ${propertyName}.save() != null
         assert ${className}.count() == 1
 

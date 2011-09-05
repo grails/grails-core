@@ -1,13 +1,14 @@
 package org.codehaus.groovy.grails.web.errors
 
-import grails.util.GrailsWebUtil
 import grails.util.Environment
-
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+import grails.util.GrailsWebUtil
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
@@ -35,6 +36,14 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
     @Override
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        def mainContext = new MockApplicationContext();
+        mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
+        application.mainContext =  mainContext
     }
 
     void testGetRootCause() {
@@ -64,6 +73,7 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
         mockCtx.registerMockBean UrlMappingsHolder.BEAN_ID, urlMappingsHolder
         mockCtx.registerMockBean "viewResolver", new DummyViewResolver()
+        mockCtx.registerMockBean 'grailsApplication', application
         mockContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mockCtx
 
         resolver.servletContext = mockContext
@@ -137,6 +147,29 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
         assertNotNull "should have returned a ModelAndView", modelAndView
         assertFalse modelAndView.empty
+    }
+
+    void testLogRequestWithException() {
+        def config = new ConfigSlurper().parse('''
+grails.exceptionresolver.params.exclude = ['jennysPhoneNumber']
+''')
+
+        def request = new MockHttpServletRequest()
+        request.setRequestURI("/execute/me")
+        request.setMethod "GET"
+        request.addParameter "foo", "bar"
+        request.addParameter "one", "two"
+        request.addParameter "jennysPhoneNumber", "8675309"
+
+        System.setProperty(Environment.KEY, Environment.DEVELOPMENT.name)
+        def msg = new GrailsExceptionResolver(grailsApplication:new DefaultGrailsApplication(config:config)).getRequestLogMessage(new RuntimeException("bad things happened"), request)
+
+        assertEquals '''RuntimeException occurred when processing request: [GET] /execute/me - parameters:
+foo: bar
+one: two
+jennysPhoneNumber: ***
+bad things happened. Stacktrace follows:'''.replaceAll('[\n\r]', ''), msg.replaceAll('[\n\r]', '')
+
     }
 
     void testLogRequest() {

@@ -21,8 +21,6 @@ import groovy.lang.Binding;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -35,92 +33,95 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
  * @author Lari Hotari
  */
 public class GroovyPageRequestBinding extends Binding {
-
     private static Log log = LogFactory.getLog(GroovyPageRequestBinding.class);
     private GrailsWebRequest webRequest;
-    private HttpServletResponse response;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
 
     private static Map<String, LazyRequestBasedValue> lazyRequestBasedValuesMap = new HashMap<String, LazyRequestBasedValue>();
     static {
         Map<String, LazyRequestBasedValue> m = lazyRequestBasedValuesMap;
         m.put(GroovyPage.WEB_REQUEST, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest;
             }
         });
         m.put(GroovyPage.REQUEST, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getCurrentRequest();
             }
         });
         m.put(GroovyPage.RESPONSE, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
-                return response;
+            public Object evaluate(GrailsWebRequest webRequest) {
+                return webRequest.getCurrentResponse();
             }
         });
         m.put(GroovyPage.FLASH, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getFlashScope();
             }
         });
         m.put(GroovyPage.SERVLET_CONTEXT, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getServletContext();
             }
         });
         m.put(GroovyPage.APPLICATION_CONTEXT, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getAttributes().getApplicationContext();
             }
         });
         m.put(GrailsApplication.APPLICATION_ID, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getAttributes().getGrailsApplication();
             }
         });
         m.put(GroovyPage.SESSION, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getSession();
             }
         });
         m.put(GroovyPage.PARAMS, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getParams();
             }
         });
         m.put(GroovyPage.ACTION_NAME, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getActionName();
             }
         });
         m.put(GroovyPage.CONTROLLER_NAME, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getControllerName();
             }
         });
         m.put(GrailsApplicationAttributes.CONTROLLER, new LazyRequestBasedValue() {
-            public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response) {
+            public Object evaluate(GrailsWebRequest webRequest) {
                 return webRequest.getAttributes().getController(webRequest.getCurrentRequest());
             }
         });
     }
 
-    public GroovyPageRequestBinding(GrailsWebRequest webRequest, HttpServletResponse response) {
+    public GroovyPageRequestBinding(GrailsWebRequest webRequest) {
         this.webRequest = webRequest;
-        this.response = response;
+        if(webRequest != null) {
+	        GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
+	        if (templateEngine != null) {
+	            this.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
+	        }
+        }
     }
 
     @Override
     public Object getVariable(String name) {
         Object val = getVariables().get(name);
-        if (val == null && !getVariables().containsKey(name)) {
+        if (val == null && !getVariables().containsKey(name) && webRequest != null) {
             val = webRequest.getCurrentRequest().getAttribute(name);
 
             if (val == null) {
                 LazyRequestBasedValue lazyValue = lazyRequestBasedValuesMap.get(name);
                 if (lazyValue != null) {
-                    val = lazyValue.evaluate(webRequest, response);
+                    val = lazyValue.evaluate(webRequest);
                 }
             }
 
@@ -143,6 +144,6 @@ public class GroovyPageRequestBinding extends Binding {
     }
 
     private static interface LazyRequestBasedValue {
-        public Object evaluate(GrailsWebRequest webRequest, HttpServletResponse response);
+        public Object evaluate(GrailsWebRequest webRequest);
     }
 }

@@ -152,4 +152,8 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
                                 .maximumWeightedCapacity(DEFAULT_MAX_WEIGHTED_CAPACITY)
                                 .build();
     }
+
+    public void clearCache() {
+        linkCache.clear();
+    }
 }

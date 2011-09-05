@@ -653,4 +653,12 @@ public abstract class GroovyPage extends Script {
         GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
         setBodyClosure(bodyClosureIndex, tagBody);
     }
+    
+    public void changeItVariable(Object value) {
+    	getBinding().getVariables().put("it", value);    	
+    }
+    
+    public Map createGroovyPageAttributes(Map map) {
+    	return new GroovyPageAttributes(map);
+    }
 }

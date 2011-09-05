@@ -97,7 +97,7 @@ public class GrailsResourceUtils {
         if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
 
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
-        GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"[\\w-]+"));
         GRAILS_RESOURCE_PATTERN_SEVENTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "java"));
         GRAILS_RESOURCE_PATTERN_EIGHTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "src" + fs + "groovy"));
 
@@ -109,7 +109,7 @@ public class GrailsResourceUtils {
         GRAILS_RESOURCE_PATTERN_FIFTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
         fs = "/";
         GRAILS_RESOURCE_PATTERN_SECOND_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
-        GRAILS_RESOURCE_PATTERN_FOURTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"\\w+"));
+        GRAILS_RESOURCE_PATTERN_FOURTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"[\\w-]+"));
         GRAILS_RESOURCE_PATTERN_SIXTH_MATCH = Pattern.compile(createGrailsResourcePattern(fs, "grails-tests"));
     }
 

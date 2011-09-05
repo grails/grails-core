@@ -72,11 +72,6 @@ class CoreGrailsPlugin {
             packagesToScan += beanPackages
         }
 
-        def validateablePackages = grailsConfig.validateable.packages
-        if (validateablePackages instanceof List) {
-            packagesToScan += validateablePackages
-        }
-
         if (packagesToScan) {
             grailsContext.'component-scan'('base-package':packagesToScan.join(','))
         }
@@ -98,7 +93,7 @@ class CoreGrailsPlugin {
             shutdownHook(DevelopmentShutdownHook)
         }
         abstractGrailsResourceLocator {
-            if (warDeployed) {
+            if (!warDeployed) {
                 BuildSettings settings = BuildSettingsHolder.settings
                 if (settings) {
                     def locations = new ArrayList(settings.pluginDirectories.collect { it.absolutePath })

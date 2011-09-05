@@ -14,13 +14,34 @@ dependencies {
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
-        transitive = false
+        exclude group: 'org.grails', module:'grails-bootstrap'
+        exclude group: 'org.grails', module:'grails-core'
+        exclude group: 'org.grails', module:'grails-test'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'slf4j-api'
+        exclude group: 'org.slf4j', module:'slf4j-simple'
+
     }
     compile("org.grails:grails-datastore-core:$datastoreVersion") {
-        transitive = false
+        exclude group: 'org.springframework', module:'spring-core'
+        exclude group: 'org.springframework', module:'spring-context'
+        exclude group: 'org.springframework', module:'spring-web'
+        exclude group: 'org.springframework', module:'spring-beans'
+        exclude group: 'org.springframework', module:'spring-tx'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'slf4j-api'
+        exclude group: 'org.slf4j', module:'slf4j-simple'
+        exclude group: 'org.grails', module:'grails-bootstrap'
+        exclude group: 'org.grails', module:'grails-core'
+        exclude group: 'commons-collection', module:'commons-collection'
+        exclude group: 'commons-lang', module:'commons-lang'
+        exclude group: 'javassit', module:'javassist'
+        exclude group: 'java-persistence', module:'persistence-api'
     }
     compile("org.grails:grails-datastore-simple:$datastoreVersion") {
-        transitive = false
+        exclude group: 'org.grails', module:'grails-datastore-core'
     }
 
     compile "org.springframework:spring-jdbc:${springVersion}"
@@ -28,13 +49,14 @@ dependencies {
     compile "org.springframework:spring-tx:${springVersion}"
 
     // Hibernate related
-    compile 'org.hibernate:hibernate-core:3.6.1.Final'
+    compile "org.hibernate:hibernate-core:$hibernateVersion"
     compile 'javassist:javassist:3.11.0.GA'
     compile 'javax.transaction:jta:1.1'
 
-    runtime 'net.sf.ehcache:ehcache-core:2.3.1'
+    runtime 'org.hibernate:hibernate-commons-annotations:3.2.0.Final'
+    runtime 'net.sf.ehcache:ehcache-core:2.4.2'
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',
-            'org.hibernate:hibernate-ehcache:3.6.1.Final',
+            "org.hibernate:hibernate-ehcache:$hibernateVersion",
             'antlr:antlr:2.7.6'
 }
 

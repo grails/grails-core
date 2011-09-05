@@ -40,10 +40,6 @@ class FormTagLib {
                                                    'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
                                                    'XPF', 'ILS', 'ROL', 'TRL']
 
-    def out // to facilitate testing
-
-    def grailsApplication
-
     /**
      * Creates a new text field.
      *
@@ -201,7 +197,10 @@ class FormTagLib {
         }
 
         boolean escapeHtml = true
-        if (attrs.escapeHtml) escapeHtml = Boolean.valueOf(attrs.remove('escapeHtml'))
+        if(attrs.containsKey('escapeHtml')) {
+            escapeHtml = attrs.boolean('escapeHtml')
+            attrs.remove 'escapeHtml'
+        }
 
         out << "<textarea "
         outputAttributes(attrs, getOut())
@@ -275,7 +274,12 @@ class FormTagLib {
      */
     Closure form = { attrs, body ->
 
-        def useToken = attrs.remove('useToken')
+        def useToken = false
+        if(attrs.containsKey('useToken')) {
+            useToken = attrs.boolean('useToken')
+            attrs.remove('useToken')
+        }
+
         def writer = getOut()
 
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
@@ -738,7 +742,7 @@ class FormTagLib {
         if (value instanceof Collection && attrs.multiple == null) {
             attrs.multiple = 'multiple'
         }
-        if (value instanceof StreamCharBuffer) {
+        if (value instanceof CharSequence) {
             value = value.toString()
         }
         def valueMessagePrefix = attrs.remove('valueMessagePrefix')
@@ -832,7 +836,6 @@ class FormTagLib {
         writer << '</select>'
     }
 
-    def typeConverter = new SimpleTypeConverter()
     private writeValueAndCheckIfSelected(keyValue, value, writer) {
         writeValueAndCheckIfSelected(keyValue, value, writer, null)
     }
@@ -858,6 +861,7 @@ class FormTagLib {
         }
         else if (keyClass && value != null) {
             try {
+				def typeConverter = new SimpleTypeConverter()
                 value = typeConverter.convertIfNecessary(value, keyClass)
                 selected = (keyValue == value)
             }

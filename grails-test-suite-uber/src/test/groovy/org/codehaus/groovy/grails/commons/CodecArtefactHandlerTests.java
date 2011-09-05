@@ -48,4 +48,15 @@ public class CodecArtefactHandlerTests extends TestCase {
                 "}\n");
         assertFalse("class was not a codec", handler.isArtefact(nonCodecClass));
     }
+    
+    public void testDomainClassWithNameEndingInCodecIsNotACodec() {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        Class<?> c = gcl.parseClass("class MySpecialCodec { Long id;Long version;}\n");
+
+        ArtefactHandler domainClassHandler = new DomainClassArtefactHandler();
+        assertTrue(domainClassHandler.isArtefact(c));
+        
+        ArtefactHandler codecHandler = new CodecArtefactHandler();
+        assertFalse(codecHandler.isArtefact(c));
+    }
 }

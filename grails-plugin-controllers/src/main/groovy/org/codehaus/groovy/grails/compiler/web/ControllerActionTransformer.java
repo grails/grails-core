@@ -17,7 +17,8 @@ package org.codehaus.groovy.grails.compiler.web;
 
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
-import grails.util.GrailsNameUtils;
+import grails.validation.ASTValidateableHelper;
+import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
 
@@ -29,9 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -61,18 +60,12 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.compiler.injection.ASTBeanPropertyBindingResultHelper;
-import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
-import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.MessageSource;
 import org.springframework.validation.MapBindingResult;
 
 
@@ -154,8 +147,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         converterEnabled = Boolean.parseBoolean(System.getProperty(BuildSettings.CONVERT_CLOSURES_KEY));
     }
 
-    public String getArtefactType() {
-        return ControllerArtefactHandler.TYPE;
+    public String[] getArtefactTypes() {
+        return new String[]{ControllerArtefactHandler.TYPE};
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
@@ -397,95 +390,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void enhanceCommandObjectClass(
             final ClassNode commandObjectTypeClassNode) {
-        ASTErrorsHelper errorsHelper = new ASTBeanPropertyBindingResultHelper();
-        errorsHelper.injectErrorsCode(commandObjectTypeClassNode);
-        addConstraintsEvaluatorField(commandObjectTypeClassNode);
-        addGetConstrainedPropertiesMethod(commandObjectTypeClassNode);
-        addMessageSourceField(commandObjectTypeClassNode);
-        addValidateMethod(commandObjectTypeClassNode);
-    }
-
-    protected void addValidateMethod(final ClassNode paramTypeClassNode) {
-        final MethodNode validateMethod = paramTypeClassNode.getMethod("validate", new Parameter[0]);
-        if (validateMethod == null) {
-            final BlockStatement validateMethodCode = new BlockStatement();
-            final VariableExpression messageSourceExpression = new VariableExpression("messageSource");
-            final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression(THIS_EXPRESSION, messageSourceExpression);
-            final ClassNode validationSupportClassNode = new ClassNode(ValidationSupport.class);
-            final StaticMethodCallExpression invokeValidateInstanceExpression = new StaticMethodCallExpression(validationSupportClassNode, "validateInstance", validateInstanceArguments);
-            validateMethodCode.addStatement(new ExpressionStatement(invokeValidateInstanceExpression));
-            paramTypeClassNode.addMethod(new MethodNode(
-                  "validate", Modifier.PUBLIC, new ClassNode(Boolean.class),
-                  ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, validateMethodCode));
-        }
-    }
-
-    protected void addGetConstrainedPropertiesMethod(
-            final ClassNode paramTypeClassNode) {
-        final MethodNode getConstraintsMethod = paramTypeClassNode.getMethod("getConstrainedProperties", ZERO_PARAMETERS);
-        if (getConstraintsMethod == null) {
-            final BlockStatement constrainedPropertyMethodCode = new BlockStatement();
-
-            final BinaryExpression constraintsEvaluatorIsNullExpression = new BinaryExpression(new VariableExpression(
-                    ConstraintsEvaluator.BEAN_NAME), Token.newSymbol(
-                    Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null));
-            final Statement newEvaluatorExpression = new ExpressionStatement(
-                    new BinaryExpression(new VariableExpression(ConstraintsEvaluator.BEAN_NAME),
-                            Token.newSymbol(Types.EQUALS, 0, 0),
-                            new ConstructorCallExpression(new ClassNode(
-                                    DefaultConstraintEvaluator.class),
-                                    EMPTY_TUPLE)));
-            final Statement initEvaluatorIfNullStatement = new IfStatement(
-                    new BooleanExpression(constraintsEvaluatorIsNullExpression), newEvaluatorExpression,
-                    new ExpressionStatement(new EmptyExpression()));
-            constrainedPropertyMethodCode.addStatement(initEvaluatorIfNullStatement);
-
-            final MethodCallExpression evaluateConstraintsMethodCall = new MethodCallExpression(
-                    new VariableExpression(ConstraintsEvaluator.BEAN_NAME), "evaluate",
-                    new ArgumentListExpression(new VariableExpression(
-                            THIS_EXPRESSION)));
-            final ReturnStatement returnStatement = new ReturnStatement(evaluateConstraintsMethodCall);
-            constrainedPropertyMethodCode.addStatement(returnStatement);
-            paramTypeClassNode.addMethod(new MethodNode("getConstrainedProperties",
-                    Modifier.PUBLIC, new ClassNode(Object.class),
-                    ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, constrainedPropertyMethodCode));
-        }
-    }
-
-    protected void addMessageSourceField(final ClassNode paramTypeClassNode) {
-        addFieldWithSetterMethod(paramTypeClassNode, 
-                                 "messageSource",
-                                 MessageSource.class);
-    }
-
-    protected void addConstraintsEvaluatorField(final ClassNode paramTypeClassNode) {
-        addFieldWithSetterMethod(paramTypeClassNode,
-                                 ConstraintsEvaluator.BEAN_NAME,
-                                 ConstraintsEvaluator.class);
-    }
-
-    protected void addFieldWithSetterMethod(final ClassNode classNode,
-            final String fieldName, final Class<?> fieldType) {
-        final FieldNode existingFieldNode = classNode.getField(fieldName);
-        final ClassNode fieldTypeClassNode = new ClassNode(fieldType);
-        if(existingFieldNode == null) {
-            classNode.addField(fieldName, Modifier.PRIVATE, fieldTypeClassNode, new ConstantExpression(null));
-        }
-        final String methodArgumentName = "setterArgumentName";
-        final String setterMethodName = GrailsNameUtils.getSetterName(fieldName);
-        MethodNode setterMethod = classNode.getMethod(setterMethodName, new Parameter[]{new Parameter(fieldTypeClassNode, methodArgumentName)});
-        if(setterMethod == null) {
-            final BinaryExpression assignArgumentToFieldExpression = new BinaryExpression(new VariableExpression(
-                    fieldName), Token.newSymbol(
-                    Types.EQUALS, 0, 0), new VariableExpression(methodArgumentName));
-            setterMethod = new MethodNode(setterMethodName,
-                                          Modifier.PUBLIC,
-                                          ClassHelper.VOID_TYPE,
-                                          new Parameter[]{new Parameter(fieldTypeClassNode, methodArgumentName)},
-                                          EMPTY_CLASS_ARRAY,
-                                          new ExpressionStatement(assignArgumentToFieldExpression));
-            classNode.addMethod(setterMethod);
-        }
+        ASTValidateableHelper h = new DefaultASTValidateableHelper();
+        h.injectValidateableCode(commandObjectTypeClassNode);
     }
 
     protected Statement getCommandObjectDataBindingStatement(

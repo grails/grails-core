@@ -20,18 +20,22 @@ import grails.test.GrailsMock
 import grails.test.MockUtils
 import grails.util.GrailsNameUtils
 import grails.validation.DeferredBindingActions
+import grails.web.CamelCaseUrlConverter
+import grails.web.UrlConverter
 import junit.framework.AssertionFailedError
+
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.AfterClass
-import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
@@ -49,7 +53,11 @@ class GrailsUnitTestMixin {
     static ConfigObject config
     static StaticMessageSource messageSource
 
-    private static List emcEvents = []
+    private static Set changedMetaClasses = []
+    private static metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
+        GrailsUnitTestMixin.changedMetaClasses << event.getClassToUpdate()
+    } as MetaClassRegistryChangeEventListener
+
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
 
@@ -61,6 +69,7 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
+        registerMetaClassRegistryWatcher()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
@@ -77,6 +86,10 @@ class GrailsUnitTestMixin {
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource")
+            
+            def mainContext = new MockApplicationContext()
+            mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+            grailsApplication.mainContext = mainContext
             grailsApplication.initialise()
 
             grailsApplication.applicationContext = applicationContext
@@ -89,6 +102,19 @@ class GrailsUnitTestMixin {
         grailsApplication?.clear()
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        cleanupModifiedMetaClasses()
+    }
+
+    static void registerMetaClassRegistryWatcher() {
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
+    }
+
+
+    static void cleanupModifiedMetaClasses() {
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
+        for(Class cls in changedMetaClasses) {
+            GroovySystem.metaClassRegistry.removeMetaClass(cls)
+        }
     }
 
     /**
@@ -97,7 +123,8 @@ class GrailsUnitTestMixin {
      * to test the constraints on the class.
      */
     void mockForConstraintsTests(Class clazz, List instances = []) {
-        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances)
+        ConstraintEvalUtils.clearDefaultConstraints()
+        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
     }
 
     /**
@@ -185,21 +212,7 @@ class GrailsUnitTestMixin {
         Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
 
-    private metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
-        GrailsUnitTestMixin.emcEvents << event
-    } as MetaClassRegistryChangeEventListener
 
-    @Before
-    void registerMetaClassRegistryWatcher() {
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
-    }
-
-    @After
-    void cleanupModifiedMetaClasses() {
-        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
-        emcEvents*.clazz.each { GroovySystem.metaClassRegistry.removeMetaClass(it)}
-        emcEvents.clear()
-    }
 
     @AfterClass
     static void shutdownApplicationContext() {
@@ -211,5 +224,6 @@ class GrailsUnitTestMixin {
 
         applicationContext = null
         grailsApplication = null
+        changedMetaClasses.clear()
     }
 }

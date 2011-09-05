@@ -19,28 +19,7 @@ import grails.util.CollectionUtils;
 import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
 import groovy.lang.Closure;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.apache.ivy.core.module.descriptor.Configuration;
-import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor;
-import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
-import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor;
-import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
-import org.apache.ivy.core.module.descriptor.ExcludeRule;
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
+import org.apache.ivy.core.module.descriptor.*;
 import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
@@ -49,6 +28,14 @@ import org.apache.ivy.plugins.matcher.PatternMatcher;
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Base class for IvyDependencyManager with some logic implemented in Java.
@@ -126,6 +113,8 @@ public abstract class AbstractIvyDependencyManager {
        "docs", Arrays.asList("default"),
        "test", Arrays.asList("default"));
 
+    protected boolean includeSource;
+    protected boolean includeJavadoc;
     protected String[] configurationNames = configurationMappings.keySet().toArray(
             new String[configurationMappings.size()]);
     protected Set<ModuleId> modules = new HashSet<ModuleId>();
@@ -153,6 +142,14 @@ public abstract class AbstractIvyDependencyManager {
         this.ivySettings = ivySettings;
         this.buildSettings = buildSettings;
         this.metadata = metadata;
+    }
+
+    public void setIncludeSource(boolean includeSource) {
+        this.includeSource = includeSource;
+    }
+
+    public void setIncludeJavadoc(boolean includeJavadoc) {
+        this.includeJavadoc = includeJavadoc;
     }
 
     public IvySettings getIvySettings() {
@@ -357,7 +354,7 @@ public abstract class AbstractIvyDependencyManager {
             }
         }
 
-        registerDependencyCommon(scope, descriptor);
+        registerDependencyCommon(scope, descriptor, false);
         ModuleRevisionId revisionId = descriptor.getDependencyRevisionId();
         modules.add(revisionId.getModuleId());
         dependencies.add(revisionId);
@@ -406,7 +403,7 @@ public abstract class AbstractIvyDependencyManager {
         DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(descriptor, name, packaging, packaging, null, null);
         descriptor.addDependencyArtifact(scope, artifact);
 
-        registerDependencyCommon(scope, descriptor);
+        registerDependencyCommon(scope, descriptor, true);
 
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
@@ -508,11 +505,11 @@ public abstract class AbstractIvyDependencyManager {
     /**
      * Aspects of registering a dependency common to both plugins and jar dependencies.
      */
-    private void registerDependencyCommon(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+    private void registerDependencyCommon(String scope, EnhancedDefaultDependencyDescriptor descriptor, boolean isPluginDep) {
         registerUsedConfigurationIfNecessary(scope);
 
         if (descriptor.getModuleConfigurations().length == 0) {
-            addDefaultModuleConfigurations(descriptor, scope);
+            addDefaultModuleConfigurations(descriptor, scope,isPluginDep);
         }
 
         if (!descriptor.isInherited()) {
@@ -526,10 +523,22 @@ public abstract class AbstractIvyDependencyManager {
         }
     }
 
-    private void addDefaultModuleConfigurations(EnhancedDefaultDependencyDescriptor descriptor, String configurationName) {
+    private void addDefaultModuleConfigurations(EnhancedDefaultDependencyDescriptor descriptor, String configurationName, boolean pluginDep) {
         List<String> mappings = configurationMappings.get(configurationName);
         if (mappings == null) {
             return;
+        }
+
+        if(!pluginDep && !"org.grails".equals(descriptor.getDependencyId().getOrganisation())) {
+            mappings = new ArrayList<String>(mappings);
+
+
+            if(includeJavadoc) {
+                mappings.add("javadoc");
+            }
+            if(includeSource) {
+                mappings.add("sources");
+            }
         }
 
         for (String m : mappings) {

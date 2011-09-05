@@ -344,9 +344,11 @@ class PluginBuildSettings {
 
             def scripts = []
             def userHome = System.getProperty("user.home")
-            def grailsHome = buildSettings.grailsHome.absolutePath
+            def grailsHome = buildSettings.grailsHome?.absolutePath
             def basedir = buildSettings.baseDir.absolutePath
-            resourceResolver("file:${grailsHome}/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
+            if(grailsHome != null) {
+                resourceResolver("file:${grailsHome}/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
+            }
             resourceResolver("file:${basedir}/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             pluginScripts.each { if (!it.file.name.startsWith('_')) scripts << it }
             resourceResolver("file:${userHome}/.grails/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }

@@ -71,6 +71,9 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void setCommandName(String cmd) {
+        if("refresh-dependencies".equals(cmd)) {
+            addUndeclaredOption(RESOLVE_DEPENDENCIES_ARGUMENT);
+        }
         this.commandName = cmd;
     }
 

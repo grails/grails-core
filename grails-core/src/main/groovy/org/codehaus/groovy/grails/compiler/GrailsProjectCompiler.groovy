@@ -19,9 +19,11 @@ package org.codehaus.groovy.grails.compiler
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.PluginBuildSettings
-
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.Phases
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
@@ -326,9 +328,10 @@ class GrailsProjectCompiler {
             def classesDirString = classesDirPath.toString()
             config.setTargetDirectory(classesDirString)
 
-            def cl = new GroovyClassLoader(classLoader)
+            def cl = new GrailsAwareClassLoader(classLoader)
             cl.addURL(new File(classesDirString).toURL())
             def unit = new CompilationUnit (config , null , cl)
+            unit.addPhaseOperation(new GrailsAwareInjectionOperation(), Phases.CANONICALIZATION);
             def pluginFiles = pluginCompileInfo.pluginDescriptors
 
             for (plugin in pluginFiles) {
