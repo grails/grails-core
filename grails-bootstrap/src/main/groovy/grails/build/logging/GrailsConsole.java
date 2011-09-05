@@ -132,18 +132,18 @@ public class GrailsConsole {
         out.println();
     }
 
-	protected ConsoleReader createConsoleReader() throws IOException {
+    protected ConsoleReader createConsoleReader() throws IOException {
         return new ConsoleReader();
-	}
+    }
 
-	/**
-	 * Creates the instance of Terminal used directly in GrailsConsole. Note that there is also
-	 * another terminal instance created implicitly inside of ConsoleReader. That instance
-	 * is controlled by the jline.terminal system property.
-	 */
-	protected Terminal createTerminal() {
-		Terminal terminal;
-		if (isWindows()) {
+    /**
+     * Creates the instance of Terminal used directly in GrailsConsole. Note that there is also
+     * another terminal instance created implicitly inside of ConsoleReader. That instance
+     * is controlled by the jline.terminal system property.
+     */
+    protected Terminal createTerminal() {
+        Terminal terminal;
+        if (isWindows()) {
             terminal = new WindowsTerminal() {
                 @Override
                 public boolean isANSISupported() {
@@ -161,20 +161,20 @@ public class GrailsConsole {
         else {
             terminal = Terminal.setupTerminal();
         }
-		return terminal;
-	}
+        return terminal;
+    }
 
     /**
-     * Hook method that allows controlling whether or not output streams should be wrapped by 
+     * Hook method that allows controlling whether or not output streams should be wrapped by
      * AnsiConsole.wrapOutputStream. Unfortunately, Eclipse consoles will look to the AnsiWrap
      * like they do not understand ansi, even if we were to implement support in Eclipse to'
      * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
      */
     protected OutputStream ansiWrap(OutputStream out) {
-    	return AnsiConsole.wrapOutputStream(out);
-	}
+        return AnsiConsole.wrapOutputStream(out);
+    }
 
-	// hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
+    // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
     private void fixCtrlC() throws IOException {
         try {
             Field f = ConsoleReader.class.getDeclaredField("keybindings");
@@ -208,19 +208,19 @@ public class GrailsConsole {
         return instance;
     }
 
-	public static GrailsConsole createInstance() throws IOException {
-		String className = System.getProperty("grails.console.class");
-		if (className!=null) {
-			try {
-				@SuppressWarnings("unchecked")
-				Class<? extends GrailsConsole> klass = (Class<? extends GrailsConsole>) Class.forName(className);
-				return klass.newInstance();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return new GrailsConsole();
-	}
+    public static GrailsConsole createInstance() throws IOException {
+        String className = System.getProperty("grails.console.class");
+        if (className!=null) {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends GrailsConsole> klass = (Class<? extends GrailsConsole>) Class.forName(className);
+                return klass.newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new GrailsConsole();
+    }
 
     public void setAnsiEnabled(boolean ansiEnabled) {
         this.ansiEnabled = ansiEnabled;

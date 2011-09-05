@@ -104,9 +104,9 @@ class InteractiveMode {
                     else if(scriptName.startsWith("open ")) {
                         def fileName = scriptName[5..-1].trim()
                         try {
-                            final desktop = java.awt.Desktop.getDesktop()
+                            final desktop = Desktop.getDesktop()
                             final file = new File(fileName)
-                            if(file.exists()) {
+                            if (file.exists()) {
                                 desktop.open(file)
                             }
                             else {
