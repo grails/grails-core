@@ -51,6 +51,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.grails.datastore.mapping.query.api.Criteria
 
 /**
  * Extended GORM Enhancer that fills out the remaining GORM for Hibernate methods
@@ -259,7 +260,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     }
 
     @Override
-    Object createCriteria() {
+    Criteria createCriteria() {
         def builder = new HibernateCriteriaBuilder(persistentClass, sessionFactory)
         builder.grailsApplication = grailsApplication
         builder
