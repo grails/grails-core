@@ -162,12 +162,13 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             return;
         }
+        final String defaultViewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + defaultActionName;
 
         uri2methodMap.put(uri, defaultActionName);
         uri2methodMap.put(controllerPath, defaultActionName);
-        uri2viewMap.put(controllerPath, controllerPath + defaultActionName);
-        uri2viewMap.put(uri, controllerPath + defaultActionName);
-        viewNames.put(defaultActionName, controllerPath + defaultActionName);
+        uri2viewMap.put(controllerPath, defaultViewPath);
+        uri2viewMap.put(uri, defaultViewPath);
+        viewNames.put(defaultActionName, defaultViewPath);
     }
 
     private void configureMappingForMethodAction(String closureName) {
