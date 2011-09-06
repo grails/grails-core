@@ -58,28 +58,28 @@ def domainClass = grailsArtifact("domain")
 	// define them all here
 	for (PropertyNode prop in props) {
 		if (prop.type == ClassHelper.STRING_TYPE) {
-			method isStatic: true, name: prop.name, params: [blank:Boolean], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [creditCard:Boolean], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [email:Boolean], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [url:Boolean], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [matches:String], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [blank:Boolean], useNamedArgs:true, doc: 'Validate that a String is is not blank. <a href="http://grails.org/doc/latest/ref/Constraints/blank.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [creditCard:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid credit card number. <a href="http://grails.org/doc/latest/ref/Constraints/creditCard.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [email:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid email address. <a href="http://grails.org/doc/latest/ref/Constraints/email.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [url:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid URL. <a href="http://grails.org/doc/latest/ref/Constraints/url.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [matches:String], useNamedArgs:true, doc: 'Validate that a String matches a regular expression. <a href="http://grails.org/doc/latest/ref/Constraints/matches.html">Details.</a>'
 		} else if (prop.type.name == Date.name) {
-			method isStatic: true, name: prop.name, params: [max:Date], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [min:Date], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [max:Date], useNamedArgs:true, doc: 'Validate that a Date is not after the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [min:Date], useNamedArgs:true, doc: 'Validate that a Date is not before the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
 		} else if (ClassHelper.isNumberType(prop.type)) {
-			method isStatic: true, name: prop.name, params: [max:prop.type], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [min:prop.type], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [scale:prop.type], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [max:prop.type], useNamedArgs:true, doc: 'Validate that a number is not greater than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [min:prop.type], useNamedArgs:true, doc: 'Validate that a number is not less than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [scale:prop.type], useNamedArgs:true, doc: 'Sets to the desired scale for floating point numbers. <a href="http://grails.org/doc/latest/ref/Constraints/scale.html">Details.</a>'
 		} else if (prop.type.implementsInterface(ClassHelper.LIST_TYPE)) {
-			method isStatic: true, name: prop.name, params: [maxSize:Number], useNamedArgs:true
-			method isStatic: true, name: prop.name, params: [minSize:Number], useNamedArgs:true
+			method isStatic: true, name: prop.name, params: [maxSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have more than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
+			method isStatic: true, name: prop.name, params: [minSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have fewer than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
 		}
-		method isStatic: true, name: prop.name, params: [unique:Boolean], useNamedArgs:true
-		method isStatic: true, name: prop.name, params: [size:Integer], useNamedArgs:true
-		method isStatic: true, name: prop.name, params: [notEqual:Object], useNamedArgs:true
-		method isStatic: true, name: prop.name, params: [nullable:Boolean], useNamedArgs:true
-		method isStatic: true, name: prop.name, params: [range:Range], useNamedArgs:true
-		method isStatic: true, name: prop.name, params: [inList:List], useNamedArgs:true
+		method isStatic: true, name: prop.name, params: [unique:Boolean], useNamedArgs:true, doc: 'Validate that the value is unique at the database level.  <a href="http://grails.org/doc/latest/ref/Constraints/unique.html">Details.</a>'
+		method isStatic: true, name: prop.name, params: [size:Integer], useNamedArgs:true, doc: 'Validate that the size of a value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/size.html">Details.</a>'
+		method isStatic: true, name: prop.name, params: [notEqual:Object], useNamedArgs:true, doc: 'Validate that the value is not equal to the specified value.  <a href="http://grails.org/doc/latest/ref/Constraints/notEqual.html">Details.</a>'
+		method isStatic: true, name: prop.name, params: [nullable:Boolean], useNamedArgs:true, doc: 'Specify if a value is allowed to be null.  <a href="http://grails.org/doc/latest/ref/Constraints/nullable.html">Details.</a>'
+		method isStatic: true, name: prop.name, params: [range:Range], useNamedArgs:true, doc: 'Validate that the value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/range.html">Details.</a>'
+		method isStatic: true, name: prop.name, params: [inList:List], useNamedArgs:true, doc: 'Validate that the value is with a list of specified values.  <a href="http://grails.org/doc/latest/ref/Constraints/inList.html">Details.</a>'
 	}
 
 	// FIXJB : add the id property (type long)
