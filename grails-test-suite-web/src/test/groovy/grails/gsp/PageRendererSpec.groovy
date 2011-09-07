@@ -84,9 +84,9 @@ class PageRendererSpec extends Specification {
             contents != null
 
             contents == '''
-
+                
                   <h2>obj1 (opt1)</h2>
-
+                
                   <h2>obj2 (opt2)</h2>
                 '''
     }
@@ -94,15 +94,15 @@ class PageRendererSpec extends Specification {
     void "Test render page with brackets in HTML"() {
         given:
             resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""
-                {<% if(something) { %> \${message} ({[<% } %>)
+				{<% if(something) { %> \${message} ({[<% } %>)
             """.bytes))
         when:
             def contents = pageRenderer.render(template:"/foo/bar", model:[something:true,message:"hello, world"])
         then:
             contents != null
-
+			
             contents == """
-                { hello, world ({[)
+				{ hello, world ({[)
             """
     }
 
