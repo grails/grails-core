@@ -375,14 +375,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         addProjectionToList(proj, alias);
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Projections id() {
         final IdentifierProjection proj = Projections.id();
         addProjectionToList(proj, null);
         return this;
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Projections count() {
         return rowCount();
     }
@@ -396,7 +394,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         return countDistinct(propertyName, null);
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Projections distinct() {
         return this;
     }
@@ -663,7 +660,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         return this;
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria lte(String s, Object o) {
         return le(s,o);
     }
@@ -721,19 +717,16 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         return this;
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria idEquals(Object o) {
         return idEq(o);
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria isEmpty(String property) {
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isEmpty(propertyName));
         return this;
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria isNotEmpty(String property) {
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNotEmpty(propertyName));
@@ -741,7 +734,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria isNull(String property) {
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNull(propertyName));
@@ -749,7 +741,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria isNotNull(String property) {
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNotNull(propertyName));
@@ -767,7 +758,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         return eq(propertyName, propertyValue, Collections.emptyMap());
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria idEq(Object o) {
         return eq("id", o);
     }
@@ -1150,7 +1140,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         return this;
     }
 
-    @Override
     public org.grails.datastore.mapping.query.api.Criteria gte(String s, Object o) {
         return ge(s, o);
     }
