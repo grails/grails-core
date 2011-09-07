@@ -2,13 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 25/08/2011
- * Time: 14:04
- * To change this template use File | Settings | File Templates.
- */
 class CustomTypeMappingForMapTests extends AbstractGrailsHibernateTests {
 
     void testCustomTypeWithMapMapping() {
@@ -36,8 +29,6 @@ class CustomTypeMappingForMapTests extends AbstractGrailsHibernateTests {
     @Override protected getDomainClasses() {
         [DomainWithUserTypeMappings]
     }
-
-
 }
 
 @Entity

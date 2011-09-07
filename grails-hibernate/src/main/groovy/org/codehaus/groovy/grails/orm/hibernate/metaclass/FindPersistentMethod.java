@@ -163,7 +163,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
                         String key = GrailsHibernateUtil.ARGUMENT_CACHE;
                         boolean value = false;
                         if ((param instanceof Map) && ((Map)param).containsKey(key)) {
-                        	SimpleTypeConverter converter = new SimpleTypeConverter();
+                            SimpleTypeConverter converter = new SimpleTypeConverter();
                             value = converter.convertIfNecessary(((Map)param).get(key), Boolean.class);
                         }
                         useCache = value;

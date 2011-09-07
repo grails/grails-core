@@ -43,7 +43,7 @@ class GroovyPageScanner implements Tokens {
     private List<Integer> lineNumberPositions;
     private int lastLineNumberIndex = -1;
     private String pageName = "Unknown";
-    
+
     GroovyPageScanner(String text) {
         Strip strip = new Strip(text);
         strip.strip(0);
@@ -119,8 +119,8 @@ class GroovyPageScanner implements Tokens {
             char c1 = left > 1 ? text.charAt(end1) : 0;
             char c2 = left > 2 ? text.charAt(end1 + 1) : 0;
 
-            boolean gexprBracketsClosed = updateBracketState(c);            
-            
+            boolean gexprBracketsClosed = updateBracketState(c);
+
             switch (state) {
                 case HTML:
                     if (isPotentialScriptletOrTag(c, left)) {
@@ -199,7 +199,7 @@ class GroovyPageScanner implements Tokens {
                 case GTAG_EXPR:
                     checkValidExpressionState(c, c1, left);
                     if (gexprBracketsClosed && c == '}') {
-                    	return found(GSTART_TAG,1);
+                        return found(GSTART_TAG,1);
                     }
                     break;
                 case GEXPR:
@@ -223,29 +223,29 @@ class GroovyPageScanner implements Tokens {
         }
     }
 
-	private boolean updateBracketState(char c) {
-		boolean previousBracketsClosed = (exprBracketCount==0);
-		switch (state) {
-			case GTAG_EXPR:
-			case GEXPR:
-			case GSCRIPT:
-			case GDECLAR:
-			case GDIRECT:
-				if(c == '{') {
-					exprBracketCount++;
-				} else if (c=='}') {
-					exprBracketCount--;
-				}
-				break;
-			default:
-				exprBracketCount=0;
-				return false;
-		}
-		if(exprBracketCount < -1) {
-			throw new GrailsTagException("Unmatched brackets in GSP expression", pageName, getLineNumberForToken());
-		}
-		return (exprBracketCount==0 || exprBracketCount==-1) && previousBracketsClosed;
-	}
+    private boolean updateBracketState(char c) {
+        boolean previousBracketsClosed = (exprBracketCount==0);
+        switch (state) {
+            case GTAG_EXPR:
+            case GEXPR:
+            case GSCRIPT:
+            case GDECLAR:
+            case GDIRECT:
+                if (c == '{') {
+                    exprBracketCount++;
+                } else if (c=='}') {
+                    exprBracketCount--;
+                }
+                break;
+            default:
+                exprBracketCount=0;
+                return false;
+        }
+        if (exprBracketCount < -1) {
+            throw new GrailsTagException("Unmatched brackets in GSP expression", pageName, getLineNumberForToken());
+        }
+        return (exprBracketCount==0 || exprBracketCount==-1) && previousBracketsClosed;
+    }
 
     private void checkValidExpressionState(char c, char c1, int left) {
         if (isPotentialScriptletOrTag(c, left)) {
@@ -261,7 +261,7 @@ class GroovyPageScanner implements Tokens {
             }
         }
         else if (isStartOfGExpression(c, c1)) {
-        	//TODO: check this one
+            //TODO: check this one
             throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
         }
     }

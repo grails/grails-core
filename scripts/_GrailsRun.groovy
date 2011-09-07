@@ -177,15 +177,15 @@ runServer = { Map args ->
         }
         event("StatusFinal", [message])
 
-		boolean isWindows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
-		if (isWindows) {
-			grailsConsole.reader.addTriggeredAction((char)3, new ActionListener() {
-				void actionPerformed(ActionEvent e) {
-					stopServer()
-					exit(0)
-				}
-			})
-		}
+        boolean isWindows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
+        if (isWindows) {
+            grailsConsole.reader.addTriggeredAction((char)3, new ActionListener() {
+                void actionPerformed(ActionEvent e) {
+                    stopServer()
+                    exit(0)
+                }
+            })
+        }
     }
     catch (Throwable t) {
         if (t instanceof ScriptExitException) throw t

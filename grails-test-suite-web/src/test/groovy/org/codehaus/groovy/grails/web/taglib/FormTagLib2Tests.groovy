@@ -204,9 +204,10 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
 
     private void validateSelectedMinuteValue(Document document, Calendar calendar, String precision) {
 
-        if(precision==null)
-            return;
-        
+        if (precision == null) {
+            return
+        }
+
         final String FIELD_NAME = DATE_PICKER_TAG_NAME + "_minute"
 
         String expectedMinuteValue = "00"

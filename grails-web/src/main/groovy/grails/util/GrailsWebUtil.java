@@ -180,11 +180,10 @@ public class GrailsWebUtil {
     }
 
     public static String getContentType(String name, String encoding) {
-    	if(CHARSET_IN_CONTENT_TYPE_REGEXP.matcher(name).find()) {
-    		return name;
-    	} else {
-    		if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
-    		return name + CHARSET_ATTRIBUTE + encoding;
-    	}
+        if (CHARSET_IN_CONTENT_TYPE_REGEXP.matcher(name).find()) {
+            return name;
+        }
+        if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
+        return name + CHARSET_ATTRIBUTE + encoding;
     }
 }

@@ -15,13 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.util
 
-import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.lang.builder.HashCodeBuilder
 
 /**
- * An category for use with maps that want type conversion capabilities
+ * A category for use with maps that want type conversion capabilities.
  *
  * Type converting maps have no inherent ordering. Two maps with identical entries
  * but arranged in a different order internally are considered equal.
@@ -30,83 +27,83 @@ import org.apache.commons.lang.builder.HashCodeBuilder
  * @since 1.2
  */
 class TypeConvertingMap extends AbstractTypeConvertingMap implements Cloneable {
-	TypeConvertingMap() {
-		super()
-	}
+    TypeConvertingMap() {
+        super()
+    }
 
-	TypeConvertingMap(Map map) {
-		super(map)
-	}
+    TypeConvertingMap(Map map) {
+        super(map)
+    }
 
-	Object clone() {
-		new TypeConvertingMap(new LinkedHashMap(this.@wrappedMap))
-	}
+    Object clone() {
+        new TypeConvertingMap(new LinkedHashMap(this.@wrappedMap))
+    }
 
-	public Byte 'byte'(String name) {
-		return super.getByte(name);
-	}
+    Byte 'byte'(String name) {
+        return super.getByte(name);
+    }
 
-	public Byte 'byte'(String name, Integer defaultValue) {
-		return super.getByte(name, defaultValue);
-	}
+    Byte 'byte'(String name, Integer defaultValue) {
+        return super.getByte(name, defaultValue);
+    }
 
-	public Character 'char'(String name) {
-		return super.getChar(name);
-	}
+    Character 'char'(String name) {
+        return super.getChar(name);
+    }
 
-	public Character 'char'(String name, Character defaultValue) {
-		return super.getChar(name, defaultValue?.charValue() as Integer);
-	}
+    Character 'char'(String name, Character defaultValue) {
+        return super.getChar(name, defaultValue?.charValue() as Integer);
+    }
 
-	public Character 'char'(String name, Integer defaultValue) {
-		return super.getChar(name, defaultValue);
-	}
+    Character 'char'(String name, Integer defaultValue) {
+        return super.getChar(name, defaultValue);
+    }
 
-	public Integer 'int'(String name) {
-		return super.getInt(name);
-	}
+    Integer 'int'(String name) {
+        return super.getInt(name);
+    }
 
-	public Integer 'int'(String name, Integer defaultValue) {
-		return super.getInt(name, defaultValue);
-	}
+    Integer 'int'(String name, Integer defaultValue) {
+        return super.getInt(name, defaultValue);
+    }
 
-	public Long 'long'(String name) {
-		return super.getLong(name);
-	}
+    Long 'long'(String name) {
+        return super.getLong(name);
+    }
 
-	public Long 'long'(String name, Long defaultValue) {
-		return super.getLong(name, defaultValue);
-	}
+    Long 'long'(String name, Long defaultValue) {
+        return super.getLong(name, defaultValue);
+    }
 
-	public Short 'short'(String name) {
-		return super.getShort(name);
-	}
+    Short 'short'(String name) {
+        return super.getShort(name);
+    }
 
-	public Short 'short'(String name, Integer defaultValue) {
-		return super.getShort(name, defaultValue);
-	}
+    Short 'short'(String name, Integer defaultValue) {
+        return super.getShort(name, defaultValue);
+    }
 
-	public Double 'double'(String name) {
-		return super.getDouble(name);
-	}
+    Double 'double'(String name) {
+        return super.getDouble(name);
+    }
 
-	public Double 'double'(String name, Double defaultValue) {
-		return super.getDouble(name, defaultValue);
-	}
+    Double 'double'(String name, Double defaultValue) {
+        return super.getDouble(name, defaultValue);
+    }
 
-	public Float 'float'(String name) {
-		return super.getFloat(name);
-	}
+    Float 'float'(String name) {
+        return super.getFloat(name);
+    }
 
-	public Float 'float'(String name, Float defaultValue) {
-		return super.getFloat(name, defaultValue);
-	}
+    Float 'float'(String name, Float defaultValue) {
+        return super.getFloat(name, defaultValue);
+    }
 
-	public Boolean 'boolean'(String name) {
-		return super.getBoolean(name);
-	}
+    Boolean 'boolean'(String name) {
+        return super.getBoolean(name);
+    }
 
-	public Boolean 'boolean'(String name, Boolean defaultValue) {
-		return super.getBoolean(name, defaultValue);
-	}
+    Boolean 'boolean'(String name, Boolean defaultValue) {
+        return super.getBoolean(name, defaultValue);
+    }
 }

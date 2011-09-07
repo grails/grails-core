@@ -149,10 +149,10 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         }
 
         def dsFile = new File(baseFile, "grails-app/conf/DataSource.groovy")
-        if(dsFile.exists() && argsMap.'update-data-source') {
+        if (dsFile.exists() && argsMap.'update-data-source') {
             replace file:dsFile, token:"jdbc:hsqldb:mem:devDB", value:"jdbc:h2:mem:devDb"
             replace file:dsFile, token:"jdbc:hsqldb:mem:testDb",value: "jdbc:h2:mem:testDb"
-            replace file:dsFile, token:"org.hsqldb.jdbcDriver", value:"org.h2.Driver"                        
+            replace file:dsFile, token:"org.hsqldb.jdbcDriver", value:"org.h2.Driver"
         }
         // if Config.groovy exists and it does not contain values for
         // grails.views.default.codec or grails.views.gsp.encoding then

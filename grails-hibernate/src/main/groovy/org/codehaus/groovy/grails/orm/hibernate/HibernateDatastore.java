@@ -14,31 +14,36 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import groovy.util.ConfigObject;
+
+import java.util.Map;
+
+import org.grails.datastore.mapping.core.AbstractDatastore;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.model.MappingContext;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.grails.datastore.mapping.core.AbstractDatastore;
-import org.grails.datastore.mapping.core.Session;
-import org.grails.datastore.mapping.model.MappingContext;
 import org.springframework.util.Assert;
 
-import java.util.Map;
-
 /**
- * Datastore implementation that uses a Hibernate SessionFactory underneath
+ * Datastore implementation that uses a Hibernate SessionFactory underneath.
  *
  * @author Graeme Rocher
- * @since 1.0
+ * @since 2.0
  */
 public class HibernateDatastore extends AbstractDatastore {
 
     private SessionFactory sessionFactory;
+    private ConfigObject config;
+    private EventTriggeringInterceptor eventTriggeringInterceptor;
 
-    public HibernateDatastore(MappingContext mappingContext,
-            SessionFactory sessionFactory, ApplicationContext applicationContext) {
+    public HibernateDatastore(MappingContext mappingContext, SessionFactory sessionFactory,
+            ApplicationContext applicationContext, ConfigObject config) {
         super(mappingContext);
         this.sessionFactory = sessionFactory;
+        this.config = config;
         super.initializeConverters(mappingContext);
         setApplicationContext(applicationContext);
     }
@@ -58,6 +63,22 @@ public class HibernateDatastore extends AbstractDatastore {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         Assert.isInstanceOf(ConfigurableApplicationContext.class, applicationContext,
             "ApplicationContext must be an instanceof ConfigurableApplicationContext");
-        super.setApplicationContext((ConfigurableApplicationContext) applicationContext);
+
+        ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext)applicationContext;
+        super.setApplicationContext(configurableContext);
+
+        // support for callbacks in domain classes
+        eventTriggeringInterceptor = new EventTriggeringInterceptor(this, config);
+        configurableContext.addApplicationListener(eventTriggeringInterceptor);
+    }
+
+    @Override
+    protected boolean registerValidationListener() {
+        return false;
+    }
+
+    // for testing
+    public EventTriggeringInterceptor getEventTriggeringInterceptor() {
+        return eventTriggeringInterceptor;
     }
 }

@@ -55,6 +55,8 @@ import org.springframework.web.servlet.ModelAndView;
 @SuppressWarnings("rawtypes")
 public class ControllersApi extends CommonWebApi implements Serializable {
 
+    private static final long serialVersionUID = 1;
+
     private static final String RENDER_METHOD_NAME = "render";
     private static final String BIND_DATA_METHOD = "bindData";
     private static final String SLASH = "/";

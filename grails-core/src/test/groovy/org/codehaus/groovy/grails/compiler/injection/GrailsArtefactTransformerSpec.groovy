@@ -92,7 +92,7 @@ class TestTransformer extends AbstractGrailsArtefactTransformer {
 
     boolean shouldInject(URL arg0) {
         true
-	}
+    }
 }
 
 class TestInstanceApi {

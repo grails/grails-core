@@ -155,7 +155,9 @@ Validation Error(s) occurred during save():
 
     void testFailOnErrorConfigTrueWithValidationErrorsAndAutoFlush() {
         def interceptor = appCtx.getBean("eventTriggeringInterceptor")
-        interceptor.failOnError=true
+        def datastore = interceptor.datastores.values().iterator().next()
+        datastore.getEventTriggeringInterceptor().failOnError = true
+
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name).clazz
         def team = teamClass.newInstance(name:"Manchester United", homePage:new URL("http://www.manutd.com/"))
         assertNotNull "should have saved", team.save(flush:true)
@@ -170,9 +172,12 @@ Validation Error(s) occurred during save():
     }
 
     void testFailOnErrorConfigWithPackagesAndAutoFlush() {
-        ClosureEventTriggeringInterceptor interceptor = appCtx.getBean("eventTriggeringInterceptor")
-        interceptor.failOnError=true
+        ClosureEventTriggeringInterceptor closureInterceptor = appCtx.getBean("eventTriggeringInterceptor")
+        def datastore = closureInterceptor.datastores.values().iterator().next()
+        def interceptor = datastore.getEventTriggeringInterceptor()
+        interceptor.failOnError = true
         interceptor.failOnErrorPackages = ['foo.bar']
+
         def teamClass = ga.getDomainClass(SavePersistentMethodTeam.name).clazz
         def team = teamClass.newInstance(name:"Manchester United", homePage:new URL("http://www.manutd.com/"))
         assertNotNull "should have saved", team.save(flush:true)
@@ -190,7 +195,7 @@ Validation Error(s) occurred during save():
         session.clear()
         team = teamClass.get(1)
         team.name = ''
-        // should not throw exception for the org.codehaus.groovy.grails.orm.hibernate package
+        // should throw exception for the org.codehaus.groovy.grails.orm.hibernate package
         shouldFail(ValidationException) {
             session.flush()
         }

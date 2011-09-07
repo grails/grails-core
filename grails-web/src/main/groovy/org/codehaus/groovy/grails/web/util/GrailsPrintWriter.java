@@ -37,10 +37,10 @@ public class GrailsPrintWriter extends PrintWriter {
     protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
     protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble=false;
-    protected Writer out;
+    @SuppressWarnings("hiding") protected Writer out;
     protected boolean allowUnwrappingOut=true;
-    private boolean finalTargetHere=false;
-    protected boolean usageFlag=false;
+    private boolean finalTargetHere = false;
+    protected boolean usageFlag = false;
 
     public GrailsPrintWriter(Writer out) {
         super(out);

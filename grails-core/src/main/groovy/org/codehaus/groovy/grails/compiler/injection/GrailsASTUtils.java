@@ -188,7 +188,7 @@ public class GrailsASTUtils {
         if(propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
             return null;
         }
-        
+
         BlockStatement methodBody = new BlockStatement();
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, thisAsFirstArgument);
 

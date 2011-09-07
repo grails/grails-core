@@ -89,7 +89,7 @@ import java.util.*;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager implements GrailsPluginManager {
+public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
 
     private static final Log LOG = LogFactory.getLog(DefaultGrailsPluginManager.class);
     protected static final Class<?>[] COMMON_CLASSES = {

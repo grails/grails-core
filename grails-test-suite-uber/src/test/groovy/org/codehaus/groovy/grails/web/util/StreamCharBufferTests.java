@@ -416,9 +416,8 @@ public class StreamCharBufferTests extends TestCase {
         assertEquals(true, buf.isSizeLarger(0));
         assertEquals(false, buf.isEmpty());
     }
-    
-    private void doRemoveChunksAfterReadingTesting(StreamCharBuffer buf)
-            throws IOException {
+
+    private void doRemoveChunksAfterReadingTesting(StreamCharBuffer buf) throws IOException {
         Writer writer=buf.getWriter();
         Reader reader=buf.getReader(true);
         writer.write("12345");

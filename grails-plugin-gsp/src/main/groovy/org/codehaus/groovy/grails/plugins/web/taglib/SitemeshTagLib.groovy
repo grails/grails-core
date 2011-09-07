@@ -72,17 +72,17 @@ class SitemeshTagLib implements RequestConstants {
         else {
             if (!useXmlClosingForEmptyTag) {
                 writer << '>'
-				// in valid HTML , closing of an empty tag depends on the element name 
-				// for empty title, the tag must be closed properly
-				// for empty meta tag shouldn't be closed at all, see GRAILS-5696
-				if(!noEndTagForEmpty) {
-					writer << '</'
-					writer << tagname
-					writer << '>'
-				}
+                // in valid HTML , closing of an empty tag depends on the element name
+                // for empty title, the tag must be closed properly
+                // for empty meta tag shouldn't be closed at all, see GRAILS-5696
+                if (!noEndTagForEmpty) {
+                    writer << '</'
+                    writer << tagname
+                    writer << '>'
+                }
             }
             else {
-				// XML / XHTML empty tag
+                // XML / XHTML empty tag
                 writer << '/>'
             }
         }

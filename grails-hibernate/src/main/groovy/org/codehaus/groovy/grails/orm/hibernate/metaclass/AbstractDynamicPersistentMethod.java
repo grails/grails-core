@@ -36,7 +36,7 @@ public abstract class AbstractDynamicPersistentMethod extends AbstractDynamicMet
 
     public static final String ERRORS_PROPERTY = "errors";
 
-    private ClassLoader classLoader = null;
+    private ClassLoader classLoader;
     private HibernateTemplate hibernateTemplate;
 
     public AbstractDynamicPersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader) {

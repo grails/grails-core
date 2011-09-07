@@ -20,9 +20,23 @@ import grails.validation.ValidationException;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import org.codehaus.groovy.grails.commons.*;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
+import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -31,10 +45,6 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-
-import java.io.Serializable;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Abstract class for different implementations that perform saving to implement.
@@ -45,6 +55,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersistentMethod {
 
     private GrailsApplication application;
+    private HibernateDatastore datastore;
     private static final String ARGUMENT_VALIDATE = "validate";
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_FLUSH = "flush";
@@ -52,7 +63,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
     private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.failOnError";
     private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.autoFlush";
-    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
 
     /**
      * When a domain instance is saved without validation, we put it
@@ -85,18 +95,23 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         disableAutoValidationFor.get().remove(System.identityHashCode(obj));
     }
 
-
     public static void clearDisabledValidations() {
         disableAutoValidationFor.get().clear();
     }
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
               ClassLoader classLoader, GrailsApplication application,
-              @SuppressWarnings("unused") GrailsDomainClass domainClass) {
+              @SuppressWarnings("unused") GrailsDomainClass domainClass, HibernateDatastore datastore) {
         super(pattern, sessionFactory, classLoader);
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
 
         this.application = application;
+        this.datastore = datastore;
+    }
+
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
+             ClassLoader classLoader, GrailsApplication application, HibernateDatastore datastore) {
+       this(pattern, sessionFactory, classLoader, application, null, datastore);
     }
 
     @SuppressWarnings("rawtypes")
@@ -119,10 +134,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         return shouldFail;
     }
 
-    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        this(pattern, sessionFactory, classLoader, application,null);
-    }
-
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod#doInvokeInternal(java.lang.Object, java.lang.Object[])
      */
@@ -140,7 +151,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
             Errors errors = setupErrorsProperty(target);
 
             if (validator != null) {
-                beforeValidateHelper.invokeBeforeValidate(target, null);
+                application.getMainContext().publishEvent(new ValidationEvent(datastore, target));
 
                 boolean deepValidate = true;
                 Map argsMap = null;

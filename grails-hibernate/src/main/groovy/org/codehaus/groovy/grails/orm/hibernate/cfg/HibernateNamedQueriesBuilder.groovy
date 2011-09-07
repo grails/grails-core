@@ -105,7 +105,7 @@ class NamedCriteriaProxy {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }
         }
-        
+
         def paramsMap
         if (params && params[-1] instanceof Map) {
             paramsMap = params[-1]

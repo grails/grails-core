@@ -165,7 +165,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
             def urlConverterType = config?.grails?.web?.url?.converter
             "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
-    
+
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
 
             final classLoader = ControllerUnitTestMixin.class.getClassLoader()

@@ -297,8 +297,8 @@ class WebMetaUtils {
             } else if (clazz == char[]) {
                 delegate.toCharArray()
             } else if (clazz == Boolean || clazz == boolean) {
-				delegate.asBoolean()	
-			} else {
+                delegate.asBoolean()
+            } else {
                 delegate.toString().asType(clazz)
             }
         }

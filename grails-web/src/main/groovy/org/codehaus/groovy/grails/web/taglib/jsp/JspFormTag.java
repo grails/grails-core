@@ -26,7 +26,7 @@ public class JspFormTag extends JspInvokeGrailsTagLibTag {
 
     private String controller;
     private String action;
-    private String id;
+    @SuppressWarnings("hiding") private String id;
     private String url;
     private String params;
     private String method;

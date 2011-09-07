@@ -187,7 +187,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
-    
+
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
     }

@@ -29,44 +29,29 @@ test {
                 "**/AutoParams*MarshallingTests.class",
                 "**/JSONBindingToNullTests.class",
                 "**/ControllerWithXmlConvertersTests.class",
-		"**/GroovyPageAttributesTests.class",
-		"**/BindingExcludeTests.class",
-		"**/NestedXmlBindingTests.class"]
+                "**/GroovyPageAttributesTests.class",
+                "**/BindingExcludeTests.class",
+                "**/NestedXmlBindingTests.class"]
 }
 
 task isolatedTestsOne(type:Test) {
-    includes = [
-                "**/ContentFormatControllerTests.class"
-                ]
+    includes = ["**/ContentFormatControllerTests.class"]
 }
 task isolatedTestsTwo(type:Test) {
-    includes = [
-                "**/JSONBindingTests.class",
+    includes = ["**/JSONBindingTests.class",
                 "**/AutoParams*MarshallingTests.class"]
 }
 task isolatedTestsThree(type:Test) {
-    includes = [
-                "**/JSONBindingToNullTests.class",
-                "**/ControllerWithXmlConvertersTests.class",
-
-                ]
+    includes = ["**/JSONBindingToNullTests.class",
+                "**/ControllerWithXmlConvertersTests.class"]
 }
 task isolatedTestsFour(type:Test) {
-    includes = [
-
-		"**/BindingExcludeTests.class"
-                ]
+    includes = ["**/BindingExcludeTests.class"]
 }
 task isolatedTestsFive(type:Test) {
-    includes = [
-
-		"**/GroovyPageAttributesTests.class"
-                ]
+    includes = ["**/GroovyPageAttributesTests.class"]
 }
 task isolatedTestsSix(type:Test) {
-    includes = [
-
-		"**/NestedXmlBindingTests.class"
-                ]
+    includes = ["**/NestedXmlBindingTests.class"]
 }
 test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix

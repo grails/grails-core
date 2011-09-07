@@ -1011,12 +1011,12 @@ public class GroovyPageParser implements Tokens {
         Map attrs = new LinkedHashMap();
 
         Matcher m=Pattern.compile("\\s").matcher(text);
-        
+
         if (m.find()) { // ignores carriage returns and new lines
             tagName = text.substring(0, m.start());
             if (state != EOF) {
-            	String attrTokens = text.substring(m.start(), text.length());
-            	populateMapWithAttributes(attrs, attrTokens);
+                String attrTokens = text.substring(m.start(), text.length());
+                populateMapWithAttributes(attrs, attrTokens);
             }
         } else {
             tagName = text;
@@ -1028,8 +1028,7 @@ public class GroovyPageParser implements Tokens {
                     ". Are you missing a closing brace '}'?", pageName,
                     getCurrentOutputLineNumber());
         }
-        
-        
+
         flushTagBuffering();
 
         TagMeta tm = new TagMeta();
@@ -1128,47 +1127,46 @@ public class GroovyPageParser implements Tokens {
     }
 
     private void populateMapWithAttributes(Map<String, String> attrs, String attrTokens) {
-    	attrTokens = attrTokens.trim();
-    	int startPos=0;
-    	while(startPos < attrTokens.length()) {
-    		// parse name (before '=' character)
-    		int equalsignPos = attrTokens.indexOf('=', startPos);
-    		if(equalsignPos == -1) {
-    			throw new GrailsTagException("Expecting '=' after attribute name", pageName, getCurrentOutputLineNumber());
-    		}
-    		String name = attrTokens.substring(startPos, equalsignPos).trim();
-    		
-    		// parse value
-    		startPos = equalsignPos + 1;
-    		char ch = attrTokens.charAt(startPos++);
-    		while(Character.isWhitespace(ch) && startPos < attrTokens.length()) {
-    			ch = attrTokens.charAt(startPos++);
-    		}
-    		if(!(ch=='\'' || ch=='"')) {
-    			throw new GrailsTagException("Attribute value must be quoted.", pageName, getCurrentOutputLineNumber());
-    		}
-    		char quoteChar = ch;
-    		
-    		int endQuotepos = attrTokens.indexOf(quoteChar, startPos);
-    		if(endQuotepos==-1) {
-    			throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
-    		}
-    		
-    		String val=attrTokens.substring(startPos, endQuotepos);
+        attrTokens = attrTokens.trim();
+        int startPos=0;
+        while(startPos < attrTokens.length()) {
+            // parse name (before '=' character)
+            int equalsignPos = attrTokens.indexOf('=', startPos);
+            if (equalsignPos == -1) {
+                throw new GrailsTagException("Expecting '=' after attribute name", pageName, getCurrentOutputLineNumber());
+            }
+            String name = attrTokens.substring(startPos, equalsignPos).trim();
 
-    		if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
-    		    val = val.substring(2, val.length() - 1);
-    		}
-    		else if (!(val.startsWith("[") && val.endsWith("]"))) {
-    			if(val.indexOf('"')==-1) {
-    				quoteChar = '"';
-    			}
-    		    val = quoteChar + val + quoteChar;
-    		}
-    		attrs.put("\"" + name + "\"", val);
-    		startPos = endQuotepos + 1;
-    	}
-    	
+            // parse value
+            startPos = equalsignPos + 1;
+            char ch = attrTokens.charAt(startPos++);
+            while(Character.isWhitespace(ch) && startPos < attrTokens.length()) {
+                ch = attrTokens.charAt(startPos++);
+            }
+            if (!(ch=='\'' || ch=='"')) {
+                throw new GrailsTagException("Attribute value must be quoted.", pageName, getCurrentOutputLineNumber());
+            }
+            char quoteChar = ch;
+
+            int endQuotepos = attrTokens.indexOf(quoteChar, startPos);
+            if (endQuotepos==-1) {
+                throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
+            }
+
+            String val=attrTokens.substring(startPos, endQuotepos);
+
+            if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
+                val = val.substring(2, val.length() - 1);
+            }
+            else if (!(val.startsWith("[") && val.endsWith("]"))) {
+                if (val.indexOf('"')==-1) {
+                    quoteChar = '"';
+                }
+                val = quoteChar + val + quoteChar;
+            }
+            attrs.put("\"" + name + "\"", val);
+            startPos = endQuotepos + 1;
+        }
     }
 
     private void pageImport(String value) {
@@ -1284,7 +1282,7 @@ public class GroovyPageParser implements Tokens {
         return defaultCodecDirectiveValue;
     }
 
-	public String getPageName() {
-		return pageName;
-	}
+    public String getPageName() {
+        return pageName;
+    }
 }

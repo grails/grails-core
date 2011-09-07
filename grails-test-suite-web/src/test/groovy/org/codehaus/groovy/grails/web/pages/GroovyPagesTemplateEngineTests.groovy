@@ -174,14 +174,14 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testParsingNestedCurlyBraces() {
         // GRAILS-7915
-        //if(notYetImplemented()) return 
-        
+        //if(notYetImplemented()) return
+
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-		ConfigObject config=new ConfigObject()
-		config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
-		gpte.grailsApplication = [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }] as GrailsApplication
+        ConfigObject config=new ConfigObject()
+        config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
+        gpte.grailsApplication = [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }] as GrailsApplication
         gpte.afterPropertiesSet()
 
         def src = '${people.collect {it.firstName}}'
@@ -209,7 +209,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         } catch( err ) {}
         </script>
 '''
-		
+
         gpte.createTemplate(src, "hello_test")
         t = gpte.createTemplate(src, "hello_test")
         w = t.make(bandName: 'Genesis', title: 'Selling England By The Pound')
@@ -273,30 +273,26 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         assertEquals "[G, C]", sw.toString()
     }
 
-	
-	void testParsingIfs() {
-		GrailsWebUtil.bindMockWebRequest()
+    void testParsingIfs() {
+        GrailsWebUtil.bindMockWebRequest()
 
-		def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-		gpte.afterPropertiesSet()
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
 
-		def src = '''<g:if test="${var=='1' || var=='2'}">hello</g:if>'''
-		
-		def t = gpte.createTemplate(src, "if_test")
+        def src = '''<g:if test="${var=='1' || var=='2'}">hello</g:if>'''
 
-		def w = t.make(var: '1')
+        def t = gpte.createTemplate(src, "if_test")
 
-		def sw = new StringWriter()
-		def pw = new PrintWriter(sw)
+        def w = t.make(var: '1')
 
-		w.writeTo(pw)
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
 
-		assertEquals "hello", sw.toString()
-	}
+        w.writeTo(pw)
 
-	
-	
-	
+        assertEquals "hello", sw.toString()
+    }
+
     void testCreateTemplateWithBinding() {
 
         GrailsWebUtil.bindMockWebRequest()

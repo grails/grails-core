@@ -73,7 +73,6 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @param domainClass
      * @param descriptor
      */
-    @SuppressWarnings("rawtypes")
     public DefaultGrailsDomainClassProperty(GrailsDomainClass domainClass, PropertyDescriptor descriptor) {
         this(domainClass, descriptor, null);
     }
@@ -169,13 +168,13 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
                 allTransientProps.addAll(transientList);
             }
         }
-        
+
         return allTransientProps;
     }
-    
+
     private List<Class<?>> getAllDomainClassesInHierarchy() {
         List<Class<?>> classesInHierarchy = new ArrayList<Class<?>>();
-        
+
         Class<?> currentClass = domainClass.getClazz();
         while(currentClass != null) {
             classesInHierarchy.add(currentClass);
@@ -568,13 +567,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         }
 
         private ConstraintsEvaluator getConstraintsEvaluator() {
-            GrailsDomainClass domainClass = DefaultGrailsDomainClassProperty.this.domainClass;
-            if(domainClass instanceof DefaultGrailsDomainClass) {
+            if (domainClass instanceof DefaultGrailsDomainClass) {
                 return ((DefaultGrailsDomainClass) domainClass).getConstraintsEvaluator();
             }
-            else {
-                return new DefaultConstraintEvaluator();
-            }
+            return new DefaultConstraintEvaluator();
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {

@@ -51,7 +51,7 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod {
     private static final String METHOD_SIGNATURE = "executeQuery";
     private static final Pattern METHOD_PATTERN = Pattern.compile("^executeQuery$");
-    
+
     @SuppressWarnings("serial")
     private static final List<String> QUERY_META_PARAMS = Collections.unmodifiableList(
             new ArrayList<String>() {{
@@ -114,7 +114,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                 for (Object parameter : positionalParams) {
                     q.setParameter(index++, parameter instanceof CharSequence ? parameter.toString() : parameter);
                 }
-                
+
                 // process named HQL params
                 for (Object o : namedParams.entrySet()) {
                     Map.Entry entry = (Map.Entry) o;

@@ -158,11 +158,11 @@ public class GroovyPageView extends AbstractUrlBasedView {
                 handleException(e, engine);
                 return;
             }
-            
-            if(t instanceof GroovyPageTemplate) {
-            	((GroovyPageTemplate)t).setAllowSettingContentType(true);
+
+            if (t instanceof GroovyPageTemplate) {
+                ((GroovyPageTemplate)t).setAllowSettingContentType(true);
             }
-            
+
             t.make(model).writeTo(out);
         }
         catch (Exception e) {
