@@ -38,9 +38,11 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod;
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.ValidatePersistentMethod;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -81,6 +83,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener,
     EventTriggerCaller postDeleteEventListener;
     EventTriggerCaller preDeleteEventListener;
     EventTriggerCaller preUpdateEventListener;
+    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
     boolean shouldTimestamp = false;
     MetaProperty dateCreatedProperty;
     MetaProperty lastUpdatedProperty;
@@ -344,6 +347,11 @@ public class ClosureEventListener implements SaveOrUpdateEventListener,
                 return evict;
             }
         });
+    }
+
+    public void onValidate(ValidationEvent event) {
+        beforeValidateHelper.invokeBeforeValidate(
+                event.getEntityObject(), event.getValidatedFields());
     }
 
     private static abstract class EventTriggerCaller {

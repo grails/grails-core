@@ -14,9 +14,10 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import groovy.util.ConfigObject;
+
 import java.util.Map;
 
-import org.grails.datastore.gorm.events.DomainEventListener;
 import org.grails.datastore.mapping.core.AbstractDatastore;
 import org.grails.datastore.mapping.core.Session;
 import org.grails.datastore.mapping.model.MappingContext;
@@ -35,11 +36,14 @@ import org.springframework.util.Assert;
 public class HibernateDatastore extends AbstractDatastore {
 
     private SessionFactory sessionFactory;
+    private ConfigObject config;
+    private EventTriggeringInterceptor eventTriggeringInterceptor;
 
     public HibernateDatastore(MappingContext mappingContext, SessionFactory sessionFactory,
-            ApplicationContext applicationContext) {
+            ApplicationContext applicationContext, ConfigObject config) {
         super(mappingContext);
         this.sessionFactory = sessionFactory;
+        this.config = config;
         super.initializeConverters(mappingContext);
         setApplicationContext(applicationContext);
     }
@@ -59,6 +63,22 @@ public class HibernateDatastore extends AbstractDatastore {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         Assert.isInstanceOf(ConfigurableApplicationContext.class, applicationContext,
             "ApplicationContext must be an instanceof ConfigurableApplicationContext");
-        super.setApplicationContext((ConfigurableApplicationContext) applicationContext);
+
+        ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext)applicationContext;
+        super.setApplicationContext(configurableContext);
+
+        // support for callbacks in domain classes
+        eventTriggeringInterceptor = new EventTriggeringInterceptor(this, config);
+        configurableContext.addApplicationListener(eventTriggeringInterceptor);
+    }
+
+    @Override
+    protected boolean registerValidationListener() {
+        return false;
+    }
+
+    // for testing
+    public EventTriggeringInterceptor getEventTriggeringInterceptor() {
+        return eventTriggeringInterceptor;
     }
 }

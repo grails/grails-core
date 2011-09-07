@@ -34,7 +34,9 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
+import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -53,6 +55,7 @@ import org.springframework.validation.Validator;
 public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersistentMethod {
 
     private GrailsApplication application;
+    private HibernateDatastore datastore;
     private static final String ARGUMENT_VALIDATE = "validate";
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_FLUSH = "flush";
@@ -60,7 +63,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     private static final String ARGUMENT_FAIL_ON_ERROR = "failOnError";
     private static final String FAIL_ON_ERROR_CONFIG_PROPERTY = "grails.gorm.failOnError";
     private static final String AUTO_FLUSH_CONFIG_PROPERTY = "grails.gorm.autoFlush";
-    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
 
     /**
      * When a domain instance is saved without validation, we put it
@@ -99,15 +101,17 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
               ClassLoader classLoader, GrailsApplication application,
-              @SuppressWarnings("unused") GrailsDomainClass domainClass) {
+              @SuppressWarnings("unused") GrailsDomainClass domainClass, HibernateDatastore datastore) {
         super(pattern, sessionFactory, classLoader);
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
 
         this.application = application;
+        this.datastore = datastore;
     }
 
-    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-       this(pattern, sessionFactory, classLoader, application, null);
+    public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
+             ClassLoader classLoader, GrailsApplication application, HibernateDatastore datastore) {
+       this(pattern, sessionFactory, classLoader, application, null, datastore);
     }
 
     @SuppressWarnings("rawtypes")
@@ -147,7 +151,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
             Errors errors = setupErrorsProperty(target);
 
             if (validator != null) {
-                beforeValidateHelper.invokeBeforeValidate(target, null);
+                application.getMainContext().publishEvent(new ValidationEvent(datastore, target));
 
                 boolean deepValidate = true;
                 Map argsMap = null;

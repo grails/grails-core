@@ -164,7 +164,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
             identityType = domainClass.identifier.type
 
-            this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass)
+            this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
         }
     }
@@ -661,7 +661,7 @@ class HibernateGormValidationApi extends GormValidationApi {
             def validator = mappingContext.getEntityValidator(
                     mappingContext.getPersistentEntity(persistentClass.name))
             validateMethod = new ValidatePersistentMethod(sessionFactory,
-                    classLoader, grailsApplication, validator)
+                    classLoader, grailsApplication, validator, datastore)
         }
     }
 
@@ -728,8 +728,8 @@ class HibernateGormInstanceApi extends GormInstanceApi {
             def grailsApplication = domainClassMappingContext.getGrailsApplication()
             def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
             this.config = grailsApplication.config?.grails?.gorm
-            this.saveMethod = new SavePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass)
-            this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass)
+            this.saveMethod = new SavePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
+            this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
         }
     }
 

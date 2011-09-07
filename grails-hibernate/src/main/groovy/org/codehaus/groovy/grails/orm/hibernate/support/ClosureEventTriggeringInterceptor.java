@@ -16,28 +16,20 @@
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import grails.util.CollectionUtils;
-import groovy.lang.GroovySystem;
-import groovy.util.ConfigObject;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map;
 
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryProxy;
 import org.codehaus.groovy.grails.orm.hibernate.events.SaveOrUpdateEventListener;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.grails.datastore.mapping.core.Datastore;
+import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.SessionFactory;
 import org.hibernate.action.EntityIdentityInsertAction;
 import org.hibernate.action.EntityInsertAction;
 import org.hibernate.engine.EntityKey;
@@ -57,18 +49,15 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ReflectionUtils;
 
 /**
- * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
- *
- * <p>Also deals with auto time stamping of domain classes that have properties named 'lastUpdated' and/or 'dateCreated'.
+ * Listens for Hibernate events and publishes corresponding Datastore events.
  *
  * @author Graeme Rocher
  * @author Lari Hotari
+ * @author Burt Beckwith
  * @since 1.0
  */
-@SuppressWarnings("rawtypes")
 public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
        implements ApplicationContextAware,
-                  GrailsConfigurationAware,
                   PreLoadEventListener,
                   PostLoadEventListener,
                   PostInsertEventListener,
@@ -76,9 +65,9 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                   PostDeleteEventListener,
                   PreDeleteEventListener,
                   PreUpdateEventListener,
-                  PreInsertEventListener{
+                  PreInsertEventListener {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractSaveEventListener.class);
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private static final long serialVersionUID = 1;
 
     public static final Collection<String> IGNORED = CollectionUtils.newSet("version", "id");
@@ -93,14 +82,10 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     public static final String AFTER_DELETE_EVENT = "afterDelete";
     public static final String AFTER_LOAD_EVENT = "afterLoad";
 
-    private transient ConcurrentMap<SoftKey<Class<?>>, ClosureEventListener> eventListeners =
-        new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
-    private transient ConcurrentMap<SoftKey<Class<?>>, Boolean> cachedShouldTrigger =
-        new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
-
-    boolean failOnError = false;
-    List failOnErrorPackages = Collections.EMPTY_LIST;
     private Method markInterceptorDirtyMethod;
+    private ApplicationContext ctx;
+    private Map<SessionFactory, HibernateDatastore> datastores;
+    private Collection<SessionFactory> sessionFactories;
 
     public ClosureEventTriggeringInterceptor() {
         try {
@@ -111,139 +96,93 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         }
     }
 
-    public void setConfiguration(ConfigObject co) {
-        Object failOnErrorConfig = co.flatten().get("grails.gorm.failOnError");
-        if (failOnErrorConfig instanceof List) {
-            failOnError = true;
-            failOnErrorPackages = (List)failOnErrorConfig;
-        }
-        else {
-            failOnError = DefaultTypeTransformation.castToBoolean(failOnErrorConfig);
-        }
-    }
-
-    private ClosureEventListener findEventListener(Object entity) {
-        if (entity == null) return null;
-        Class<?> clazz = entity.getClass();
-
-        SoftKey<Class<?>> key = new SoftKey<Class<?>>(clazz);
-        ClosureEventListener eventListener = eventListeners.get(key);
-        if (eventListener != null) {
-            return eventListener;
-        }
-
-        Boolean shouldTrigger = cachedShouldTrigger.get(key);
-        if (shouldTrigger == null || shouldTrigger) {
-            synchronized(clazz) {
-                eventListener = eventListeners.get(key);
-                if (eventListener == null) {
-                    shouldTrigger = (entity != null &&
-                        (GroovySystem.getMetaClassRegistry().getMetaClass(entity.getClass()) != null) &&
-                        (DomainClassArtefactHandler.isDomainClass(clazz) ||
-                              AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)));
-                    if (shouldTrigger) {
-                        eventListener = new ClosureEventListener(clazz, failOnError, failOnErrorPackages);
-                        ClosureEventListener previous = eventListeners.putIfAbsent(key, eventListener);
-                        if (previous != null) {
-                            eventListener = previous;
-                        }
-                    }
-                    cachedShouldTrigger.put(key, shouldTrigger);
-                }
-            }
-        }
-        return eventListener;
+    public void setDatastores(Map<SessionFactory, HibernateDatastore> datastores) {
+        this.datastores = datastores;
     }
 
     @Override
-    public void onSaveOrUpdate(SaveOrUpdateEvent event) throws HibernateException {
-        ClosureEventListener eventListener = findEventListener(event.getObject());
-        if (eventListener != null) {
-            eventListener.onSaveOrUpdate(event);
-        }
-        super.onSaveOrUpdate(event);
+    public void onSaveOrUpdate(SaveOrUpdateEvent hibernateEvent) throws HibernateException {
+        publishEvent(hibernateEvent, new org.grails.datastore.mapping.engine.event.SaveOrUpdateEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity()));
+        super.onSaveOrUpdate(hibernateEvent);
     }
 
-    public void onPreLoad(PreLoadEvent event) {
-        Object entity = event.getEntity();
-        GrailsHibernateUtil.ensureCorrectGroovyMetaClass(entity, entity.getClass());
-        ClosureEventListener eventListener = findEventListener(entity);
-        if (eventListener != null) {
-            eventListener.onPreLoad(event);
-        }
+    public void onPreLoad(PreLoadEvent hibernateEvent) {
+        publishEvent(hibernateEvent, new org.grails.datastore.mapping.engine.event.PreLoadEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity()));
     }
 
-    public void onPostLoad(PostLoadEvent event) {
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            eventListener.onPostLoad(event);
-        }
+    public void onPostLoad(PostLoadEvent hibernateEvent) {
+        publishEvent(hibernateEvent, new org.grails.datastore.mapping.engine.event.PostLoadEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity()));
     }
 
-    public void onPostInsert(PostInsertEvent event) {
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            eventListener.onPostInsert(event);
-        }
+    public boolean onPreInsert(PreInsertEvent hibernateEvent) {
+        AbstractPersistenceEvent event = new org.grails.datastore.mapping.engine.event.PreInsertEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity());
+        publishEvent(hibernateEvent, event);
+        return event.isCancelled();
     }
 
-    public boolean onPreInsert(PreInsertEvent event) {
-        boolean evict = false;
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            evict = eventListener.onPreInsert(event);
-        }
-        return evict;
+    public void onPostInsert(PostInsertEvent hibernateEvent) {
+        publishEvent(hibernateEvent, new org.grails.datastore.mapping.engine.event.PostInsertEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity()));
     }
 
-    public boolean onPreUpdate(PreUpdateEvent event) {
-        boolean evict = false;
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            evict = eventListener.onPreUpdate(event);
-        }
-        return evict;
+    public boolean onPreUpdate(PreUpdateEvent hibernateEvent) {
+        AbstractPersistenceEvent event = new org.grails.datastore.mapping.engine.event.PreUpdateEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity());
+        publishEvent(hibernateEvent, event);
+        return event.isCancelled();
     }
 
-    public void onPostUpdate(PostUpdateEvent event) {
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            eventListener.onPostUpdate(event);
-        }
+    public void onPostUpdate(PostUpdateEvent hibernateEvent) {
+        publishEvent(hibernateEvent, new org.grails.datastore.mapping.engine.event.PostUpdateEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity()));
     }
 
-    public void onPostDelete(PostDeleteEvent event) {
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            eventListener.onPostDelete(event);
-        }
+    public boolean onPreDelete(PreDeleteEvent hibernateEvent) {
+        AbstractPersistenceEvent event = new org.grails.datastore.mapping.engine.event.PreDeleteEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity());
+        publishEvent(hibernateEvent, event);
+        return event.isCancelled();
     }
 
-    public boolean onPreDelete(PreDeleteEvent event) {
-        boolean evict = false;
-        ClosureEventListener eventListener = findEventListener(event.getEntity());
-        if (eventListener != null) {
-            evict = eventListener.onPreDelete(event);
-        }
-        return evict;
+    public void onPostDelete(PostDeleteEvent hibernateEvent) {
+        publishEvent(hibernateEvent, new org.grails.datastore.mapping.engine.event.PostDeleteEvent(
+                findDatastore(hibernateEvent), hibernateEvent.getEntity()));
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) {
-        // not used
+        ctx = applicationContext;
     }
 
-    // Support for Serialization, not sure if Hibernate really requires Serialization support for Interceptors
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeBoolean(failOnError);
-        out.writeObject(failOnErrorPackages);
+    private void publishEvent(AbstractEvent hibernateEvent, AbstractPersistenceEvent mappingEvent) {
+        mappingEvent.setNativeEvent(hibernateEvent);
+        ctx.publishEvent(mappingEvent);
     }
 
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        failOnError = in.readBoolean();
-        failOnErrorPackages = (List)in.readObject();
-        eventListeners = new ConcurrentHashMap<SoftKey<Class<?>>, ClosureEventListener>();
-        cachedShouldTrigger = new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
+    private Datastore findDatastore(AbstractEvent hibernateEvent) {
+        SessionFactory sessionFactory = hibernateEvent.getSession().getSessionFactory();
+        if (!(sessionFactory instanceof SessionFactoryProxy)) {
+            // should always be the case
+            for (SessionFactory sf : getSessionFactories()) {
+                if (sf instanceof SessionFactoryProxy) {
+                    if (((SessionFactoryProxy)sf).getCurrentSessionFactory() == sessionFactory) {
+                        sessionFactory = sf;
+                        break;
+                    }
+                }
+            }
+        }
+        return datastores.get(sessionFactory);
+    }
+
+    private synchronized Collection<SessionFactory> getSessionFactories() {
+        if (sessionFactories == null) {
+            sessionFactories = ctx.getBeansOfType(SessionFactory.class).values();
+        }
+        return sessionFactories;
     }
 
     /*
@@ -321,7 +260,6 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
             else {
                 log.debug("delaying identity-insert due to no transaction in progress");
                 source.getActionQueue().addAction(insert);
-
                 key = insert.getDelayedEntityKey();
             }
         }
@@ -349,7 +287,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
             cascadeAfterSave(source, persister, entity, anything);
             // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
             if (markInterceptorDirtyMethod != null) {
-                ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this,new Object[]{entity, persister, source});
+                ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this, entity, persister, source);
             }
         }
 
