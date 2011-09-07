@@ -13,7 +13,6 @@ buildscript {
 apply plugin: 'idea'
 
 
-grailsVersion = '2.0.0.M2'
 antTraxVersion = "1.7.1"
 antVersion = "1.8.2"
 aspectjVersion = "1.6.10"
@@ -25,6 +24,7 @@ commonsLangVersion = "2.4"
 datastoreVersion = "1.0.0.M10"
 gantVersion = "1.9.5"
 gdocEngineVersion = "1.0.1"
+grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 groovyVersion = "1.8.2"
 ivyVersion = "2.2.0"
 jansiVersion = "1.2.1"
