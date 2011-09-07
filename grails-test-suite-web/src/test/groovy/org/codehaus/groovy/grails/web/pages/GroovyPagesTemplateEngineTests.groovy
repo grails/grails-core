@@ -220,13 +220,13 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         w.writeTo(pw)
 
         def expected = '''
-
+        
 
         <script type="text/javascript">
         try {
-
+        
         Genesis
-
+        
         } catch( err ) {}
         </script>
 '''
