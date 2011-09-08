@@ -91,7 +91,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * @author Graeme Rocher
  */
-public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org.grails.datastore.mapping.query.api.Criteria {
+public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org.grails.datastore.mapping.query.api.Criteria, org.grails.datastore.mapping.query.api.ProjectionList {
 
     public static final String AND = "and"; // builder
     public static final String IS_NULL = "isNull"; // builder
@@ -192,7 +192,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * A projection that selects a property name
      * @param propertyName The name of the property
      */
-    public org.grails.datastore.mapping.query.api.Projections property(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList property(String propertyName) {
         return property(propertyName, null);
     }
 
@@ -201,7 +201,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyName The name of the property
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections property(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList property(String propertyName, String alias) {
         final PropertyProjection propertyProjection = Projections.property(calculatePropertyName(propertyName));
         addProjectionToList(propertyProjection, alias);
         return this;
@@ -226,7 +226,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * A projection that selects a distince property name
      * @param propertyName The property name
      */
-    public org.grails.datastore.mapping.query.api.Projections distinct(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList distinct(String propertyName) {
         distinct(propertyName, null);
         return this;
     }
@@ -236,7 +236,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyName The property name
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections distinct(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList distinct(String propertyName, String alias) {
         final Projection proj = Projections.distinct(Projections.property(calculatePropertyName(propertyName)));
         addProjectionToList(proj,alias);
         return this;
@@ -248,7 +248,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyNames The list of distince property names
      */
     @SuppressWarnings("rawtypes")
-    public org.grails.datastore.mapping.query.api.Projections distinct(Collection propertyNames) {
+    public org.grails.datastore.mapping.query.api.ProjectionList distinct(Collection propertyNames) {
         return distinct(propertyNames, null);
     }
 
@@ -259,7 +259,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param alias The alias to use
      */
     @SuppressWarnings("rawtypes")
-    public org.grails.datastore.mapping.query.api.Projections distinct(Collection propertyNames, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList distinct(Collection propertyNames, String alias) {
         ProjectionList list = Projections.projectionList();
         for (Object o : propertyNames) {
             list.add(Projections.property(calculatePropertyName(o.toString())));
@@ -274,7 +274,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param propertyName The name of the property
      */
-    public org.grails.datastore.mapping.query.api.Projections avg(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList avg(String propertyName) {
         return avg(propertyName, null);
     }
 
@@ -284,7 +284,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyName The name of the property
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections avg(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList avg(String propertyName, String alias) {
         final AggregateProjection aggregateProjection = Projections.avg(calculatePropertyName(propertyName));
         addProjectionToList(aggregateProjection, alias);
         return this;
@@ -401,13 +401,13 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         addProjectionToList(proj, alias);
     }
 
-    public org.grails.datastore.mapping.query.api.Projections id() {
+    public org.grails.datastore.mapping.query.api.ProjectionList id() {
         final IdentifierProjection proj = Projections.id();
         addProjectionToList(proj, null);
         return this;
     }
 
-    public org.grails.datastore.mapping.query.api.Projections count() {
+    public org.grails.datastore.mapping.query.api.ProjectionList count() {
         return rowCount();
     }
 
@@ -416,11 +416,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param propertyName The name of the property
      */
-    public org.grails.datastore.mapping.query.api.Projections countDistinct(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList countDistinct(String propertyName) {
         return countDistinct(propertyName, null);
     }
 
-    public org.grails.datastore.mapping.query.api.Projections distinct() {
+    public org.grails.datastore.mapping.query.api.ProjectionList distinct() {
         return this;
     }
 
@@ -430,7 +430,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyName The name of the property
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections countDistinct(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList countDistinct(String propertyName, String alias) {
         final CountProjection proj = Projections.countDistinct(calculatePropertyName(propertyName));
         addProjectionToList(proj, alias);
         return this;
@@ -461,7 +461,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param propertyName The name of the property
      */
-    public org.grails.datastore.mapping.query.api.Projections max(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList max(String propertyName) {
         return max(propertyName, null);
     }
 
@@ -471,7 +471,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyName The name of the property
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections max(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList max(String propertyName, String alias) {
         final AggregateProjection proj = Projections.max(calculatePropertyName(propertyName));
         addProjectionToList(proj, alias);
         return this;
@@ -482,7 +482,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param propertyName The name of the property
      */
-    public org.grails.datastore.mapping.query.api.Projections min(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList min(String propertyName) {
         return min(propertyName, null);
     }
 
@@ -491,7 +491,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections min(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList min(String propertyName, String alias) {
         final AggregateProjection aggregateProjection = Projections.min(calculatePropertyName(propertyName));
         addProjectionToList(aggregateProjection, alias);
         return this;
@@ -501,7 +501,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * Adds a projection that allows the criteria to return the row count
      *
      */
-    public org.grails.datastore.mapping.query.api.Projections rowCount() {
+    public org.grails.datastore.mapping.query.api.ProjectionList rowCount() {
         return rowCount(null);
     }
 
@@ -510,7 +510,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections rowCount(String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList rowCount(String alias) {
         final Projection proj = Projections.rowCount();
         addProjectionToList(proj, alias);
         return this;
@@ -521,7 +521,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      *
      * @param propertyName The name of the property
      */
-    public org.grails.datastore.mapping.query.api.Projections sum(String propertyName) {
+    public org.grails.datastore.mapping.query.api.ProjectionList sum(String propertyName) {
         return sum(propertyName, null);
     }
 
@@ -531,7 +531,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param propertyName The name of the property
      * @param alias The alias to use
      */
-    public org.grails.datastore.mapping.query.api.Projections sum(String propertyName, String alias) {
+    public org.grails.datastore.mapping.query.api.ProjectionList sum(String propertyName, String alias) {
         final AggregateProjection proj = Projections.sum(calculatePropertyName(propertyName));
         addProjectionToList(proj, alias);
         return this;
