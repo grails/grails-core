@@ -93,11 +93,11 @@ class WhereMethodSpec extends GormSpec{
 
        // TODO: This is failing with Hibernate due to a bug in the way conjunction/disjunction is applied. Fix me!
 //       when:"We use a logical or to query pets combined with another top-level logical expression"
-//           query = Person.where {
+//           def query = Person.where {
 //               pets { name == "Jack" } || firstName == "Ed"
 //           }
-//           count = query.count()
-//           results = query.list(sort:"firstName")
+//           def count = query.count()
+//           def results = query.list(sort:"firstName")
 //
 //        then:"The correct results are returned"
 //            count == 2
