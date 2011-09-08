@@ -281,6 +281,9 @@ public class HibernateQuery extends Query {
 
     @Override
     public Object singleResult() {
+        if(hibernateProjectionList != null) {
+            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
+        }
         return criteria.uniqueResult();
     }
 
