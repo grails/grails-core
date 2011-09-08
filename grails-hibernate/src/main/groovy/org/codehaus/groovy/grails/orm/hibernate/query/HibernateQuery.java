@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
+import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.Association;
+import org.grails.datastore.mapping.query.AssociationQuery;
 import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.query.api.ProjectionList;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -40,124 +43,9 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 @SuppressWarnings("rawtypes")
 public class HibernateQuery extends Query {
 
-    private static final Map<Class<?>, CriterionAdaptor> criterionAdaptors = new HashMap<Class<?>, CriterionAdaptor>();
-
-    static {
-        criterionAdaptors.put(IdEquals.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                IdEquals eq = (IdEquals) criterion;
-                return Restrictions.idEq(eq.getValue());
-            }
-        });
-        criterionAdaptors.put(IsNull.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                IsNull eq = (IsNull) criterion;
-                return Restrictions.isNull(eq.getProperty());
-            }
-        });
-        criterionAdaptors.put(IsNotNull.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                IsNotNull eq = (IsNotNull) criterion;
-                return Restrictions.isNotNull(eq.getProperty());
-            }
-        });
-        criterionAdaptors.put(IsEmpty.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                IsEmpty eq = (IsEmpty) criterion;
-                return Restrictions.isEmpty(eq.getProperty());
-            }
-        });
-        criterionAdaptors.put(IsNotEmpty.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                IsNotEmpty eq = (IsNotEmpty) criterion;
-                return Restrictions.isNotEmpty(eq.getProperty());
-            }
-        });
-        criterionAdaptors.put(Equals.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                Equals eq = (Equals) criterion;
-                return Restrictions.eq(eq.getProperty(), convertStringValue(eq.getValue()));
-            }
-        });
-        criterionAdaptors.put(Like.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                Like eq = (Like) criterion;
-                return Restrictions.like(eq.getProperty(), convertStringValue(eq.getValue()));
-            }
-        });
-        criterionAdaptors.put(ILike.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                ILike eq = (ILike) criterion;
-                return Restrictions.ilike(eq.getProperty(), convertStringValue(eq.getValue()));
-            }
-        });
-        criterionAdaptors.put(RLike.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                RLike eq = (RLike) criterion;
-                return new RlikeExpression(eq.getProperty(), eq.getPattern());
-            }
-        });
-        criterionAdaptors.put(NotEquals.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                NotEquals eq = (NotEquals) criterion;
-                return Restrictions.ne(eq.getProperty(), eq.getValue());
-            }
-        });
-        criterionAdaptors.put(GreaterThan.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                GreaterThan eq = (GreaterThan) criterion;
-                return Restrictions.gt(eq.getProperty(), eq.getValue());
-            }
-        });
-        criterionAdaptors.put(GreaterThanEquals.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                GreaterThanEquals eq = (GreaterThanEquals) criterion;
-                return Restrictions.ge(eq.getProperty(), eq.getValue());
-            }
-        });
-        criterionAdaptors.put(LessThan.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                LessThan eq = (LessThan) criterion;
-                return Restrictions.lt(eq.getProperty(), eq.getValue());
-            }
-        });
-        criterionAdaptors.put(LessThanEquals.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                LessThanEquals eq = (LessThanEquals) criterion;
-                return Restrictions.le(eq.getProperty(), eq.getValue());
-            }
-        });
-        criterionAdaptors.put(In.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                In eq = (In) criterion;
-                return Restrictions.in(eq.getProperty(), eq.getValues());
-            }
-        });
-        criterionAdaptors.put(Between.class, new CriterionAdaptor() {
-            @Override
-            public org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion) {
-                Between eq = (Between) criterion;
-                return Restrictions.between(eq.getProperty(), eq.getFrom(), eq.getTo());
-            }
-        });
-    }
 
     @SuppressWarnings("hiding") private Criteria criteria;
+    private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
 
     public HibernateQuery(Criteria criteria, HibernateSession session, PersistentEntity entity) {
         super(session, entity);
@@ -190,14 +78,34 @@ public class HibernateQuery extends Query {
 
     @Override
     public ProjectionList projections() {
-        return new HibernateProjectionList();
+        hibernateProjectionList = new HibernateProjectionList();
+        return hibernateProjectionList;
     }
 
     @Override
     public void add(Criterion criterion) {
-        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdaptor(criterion).toHibernateCriterion();
+        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion).toHibernateCriterion();
         if (hibernateCriterion != null) {
             criteria.add(hibernateCriterion);
+        }
+        else if(criterion instanceof AssociationQuery) {
+            AssociationQuery associationQuery = (AssociationQuery) criterion;
+            Association<?> association = associationQuery.getAssociation();
+            Junction criteriaList = associationQuery.getCriteria();
+            handleAssociationQuery(association, criteriaList.getCriteria());
+        }
+        else if(criterion instanceof DetachedAssociationCriteria) {
+            DetachedAssociationCriteria associationCriteria = (DetachedAssociationCriteria)criterion;
+            Association<?> association = associationCriteria.getAssociation();
+            handleAssociationQuery(association, associationCriteria.getCriteria());
+        }
+    }
+
+    private void handleAssociationQuery(Association<?> association, List<Criterion> criteriaList) {
+        Criteria subCriteria = this.criteria.createCriteria(association.getName());
+        HibernateQuery subQuery = new HibernateQuery(subCriteria, (HibernateSession) getSession(), association.getAssociatedEntity());
+        for (Criterion c : criteriaList) {
+            subQuery.add(c);
         }
     }
 
@@ -279,6 +187,41 @@ public class HibernateQuery extends Query {
     }
 
     @Override
+    public Query and(Criterion a, Criterion b) {
+        HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a);
+        HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a);
+        criteria.add(Restrictions.and(aa.toHibernateCriterion(), ab.toHibernateCriterion()));
+        return this;
+    }
+
+    @Override
+    public Query or(Criterion a, Criterion b) {
+        HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a);
+        HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a);
+        criteria.add(Restrictions.or(aa.toHibernateCriterion(), ab.toHibernateCriterion()));
+        return this;
+
+    }
+
+    @Override
+    public Query allEq(Map<String, Object> values) {
+        criteria.add(Restrictions.allEq(values));
+        return this;
+    }
+
+    @Override
+    public Query ge(String property, Object value) {
+        criteria.add(Restrictions.ge(property,value));
+        return this;
+    }
+
+    @Override
+    public Query le(String property, Object value) {
+        criteria.add(Restrictions.le(property, value));
+        return this;
+    }
+
+    @Override
     public Query gte(String property, Object value) {
         criteria.add(Restrictions.ge(property, value));
         return this;
@@ -344,36 +287,12 @@ public class HibernateQuery extends Query {
     @SuppressWarnings("hiding")
     @Override
     protected List executeQuery(PersistentEntity entity, Junction criteria) {
+        if(hibernateProjectionList != null) {
+            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
+        }
         return this.criteria.list();
     }
 
-    private class HibernateCriterionAdaptor {
-
-        private Criterion criterion;
-
-        public HibernateCriterionAdaptor(Criterion criterion) {
-            this.criterion = criterion;
-        }
-
-        public org.hibernate.criterion.Criterion toHibernateCriterion() {
-            final CriterionAdaptor criterionAdaptor = criterionAdaptors.get(criterion.getClass());
-            if (criterionAdaptor != null) {
-                return criterionAdaptor.toHibernateCriterion(criterion);
-            }
-            return null;
-        }
-    }
-
-    private static abstract class CriterionAdaptor {
-        public abstract org.hibernate.criterion.Criterion toHibernateCriterion(Criterion criterion);
-
-        protected Object convertStringValue(Object o) {
-            if ((!(o instanceof String)) && (o instanceof CharSequence)) {
-                o = o.toString();
-            }
-            return o;
-        }
-    }
 
     private class HibernateJunction extends Junction {
 
@@ -386,10 +305,8 @@ public class HibernateQuery extends Query {
         @Override
         public Junction add(Criterion c) {
             if (c != null) {
-                final CriterionAdaptor criterionAdaptor = criterionAdaptors.get(c.getClass());
-                if (criterionAdaptor != null) {
-                    hibernateJunction.add(criterionAdaptor.toHibernateCriterion(c));
-                }
+                HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(c);
+                hibernateJunction.add(adapter.toHibernateCriterion());
             }
             return this;
         }
@@ -397,45 +314,69 @@ public class HibernateQuery extends Query {
 
     private class HibernateProjectionList extends ProjectionList {
 
+        org.hibernate.criterion.ProjectionList projectionList = Projections.projectionList();
+
+        public org.hibernate.criterion.ProjectionList getHibernateProjectionList() {
+            return projectionList;
+        }
+
+        @Override
+        public org.grails.datastore.mapping.query.api.ProjectionList countDistinct(String property) {
+            projectionList.add(Projections.countDistinct(property));
+            return this;
+        }
+
+        @Override
+        public org.grails.datastore.mapping.query.api.ProjectionList distinct(String property) {
+            projectionList.add(Projections.distinct(Projections.property(property)));
+            return this;
+        }
+
+        @Override
+        public org.grails.datastore.mapping.query.api.ProjectionList rowCount() {
+            projectionList.add(Projections.rowCount());
+            return this;
+        }
+
         @Override
         public ProjectionList id() {
-            criteria.setProjection(Projections.id());
+            projectionList.add(Projections.id());
             return this;
         }
 
         @Override
         public ProjectionList count() {
-            criteria.setProjection(Projections.rowCount());
+            projectionList.add(Projections.rowCount());
             return this;
         }
 
         @Override
         public ProjectionList property(String name) {
-            criteria.setProjection(Projections.property(name));
+            projectionList.add(Projections.property(name));
             return this;
         }
 
         @Override
         public ProjectionList sum(String name) {
-            criteria.setProjection(Projections.sum(name));
+            projectionList.add(Projections.sum(name));
             return this;
         }
 
         @Override
         public ProjectionList min(String name) {
-            criteria.setProjection(Projections.min(name));
+            projectionList.add(Projections.min(name));
             return this;
         }
 
         @Override
         public ProjectionList max(String name) {
-            criteria.setProjection(Projections.max(name));
+            projectionList.add(Projections.max(name));
             return this;
         }
 
         @Override
         public ProjectionList avg(String name) {
-            criteria.setProjection(Projections.avg(name));
+            projectionList.add(Projections.avg(name));
             return this;
         }
 
