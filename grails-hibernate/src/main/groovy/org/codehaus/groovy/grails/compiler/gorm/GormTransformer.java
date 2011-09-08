@@ -19,6 +19,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import grails.persistence.Entity;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
@@ -111,6 +113,7 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     @Override
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         classNode.setUsingGenerics(true);
+        classNode.addAnnotation(new AnnotationNode(new ClassNode(Entity.class)));
         final BlockStatement methodBody = new BlockStatement();
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(classNode), NEW_INSTANCE_METHOD,ZERO_ARGS)));
         MethodNode methodNode = classNode.getDeclaredMethod(CreateDynamicMethod.METHOD_NAME, ZERO_PARAMETERS);
