@@ -256,6 +256,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     private AbstractChunk lastChunk;
     private int totalCharsInList;
     private int totalCharsInDynamicChunks;
+    private int sizeAtLeast;
     private StreamCharBufferKey bufferKey = new StreamCharBufferKey();
     private Map<StreamCharBufferKey, StreamCharBufferSubChunk> dynamicChunkMap;
 
@@ -310,6 +311,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         lastChunk = null;
         totalCharsInList = 0;
         totalCharsInDynamicChunks = -1;
+        sizeAtLeast = -1;
         if (resetChunkSize) {
             chunkSize = firstChunkSize;
             totalChunkSize = 0;
@@ -488,6 +490,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             lastChunk = null;
             totalCharsInList = 0;
             totalCharsInDynamicChunks = -1;
+            sizeAtLeast = -1;
             dynamicChunkMap.clear();
         }
         allocBuffer.writeTo(target);
@@ -580,6 +583,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      */
     @Override
     public boolean equals(Object o) {
+    	if(o==this) return true;
+    	
         if (!(o instanceof CharSequence)) return false;
 
         CharSequence other = (CharSequence) o;
@@ -630,6 +635,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
         total += totalCharsInDynamicChunks;
         total += allocBuffer.charsUsed();
+        sizeAtLeast = total;
         return total;
     }
 
@@ -656,8 +662,20 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
         return false;
     }
-
+    
     boolean isSizeLarger(int minSize) {
+    	if(minSize <= sizeAtLeast) {
+    		return true;
+    	} else {
+    		boolean retval = calculateIsSizeLarger(minSize);
+    		if(retval && minSize > sizeAtLeast) {
+    			sizeAtLeast = minSize;
+    		}
+    		return retval;
+    	}
+    }
+
+    private boolean calculateIsSizeLarger(int minSize) {
         int total = totalCharsInList;
         total += allocBuffer.charsUsed();
         if(total > minSize) {
@@ -1808,6 +1826,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         // reset cached size;
         if (subChunk.resetSize()) {
             totalCharsInDynamicChunks=-1;
+            sizeAtLeast=-1;
             // notify parents too
             notifyBufferChange();
         }
