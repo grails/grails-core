@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.grails.datastore.gorm.GormInstanceApi;
 import org.grails.datastore.gorm.GormStaticApi;
@@ -113,7 +114,8 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     @Override
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         classNode.setUsingGenerics(true);
-        classNode.addAnnotation(new AnnotationNode(new ClassNode(Entity.class)));
+        GrailsASTUtils.addAnnotationIfNecessary(classNode, Entity.class);
+
         final BlockStatement methodBody = new BlockStatement();
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(classNode), NEW_INSTANCE_METHOD,ZERO_ARGS)));
         MethodNode methodNode = classNode.getDeclaredMethod(CreateDynamicMethod.METHOD_NAME, ZERO_PARAMETERS);

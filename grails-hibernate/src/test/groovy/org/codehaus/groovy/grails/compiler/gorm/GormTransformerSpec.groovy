@@ -9,9 +9,30 @@ import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Errors
 
 import spock.lang.Specification
+import grails.persistence.Entity
 
 class GormTransformerSpec extends Specification {
 
+    void "Test that only one annotation is added on already annotated entity"() {
+        given:
+              def gcl = new GrailsAwareClassLoader()
+              def gormTransformer = new GormTransformer() {
+                  @Override
+                  boolean shouldInject(URL url) { true }
+              }
+              gcl.classInjectors = [gormTransformer] as ClassInjector[]
+
+          when:
+              def cls = gcl.parseClass('''
+@grails.persistence.Entity
+class TestEntity {
+    Long id
+}
+  ''')
+
+          then:
+             cls.getAnnotation(Entity) != null
+    }
     void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
         given:
               def gcl = new GrailsAwareClassLoader()

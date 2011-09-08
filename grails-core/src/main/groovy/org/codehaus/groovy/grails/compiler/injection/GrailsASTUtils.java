@@ -15,18 +15,14 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -501,6 +497,25 @@ public class GrailsASTUtils {
         if (classNode != null && classNode.getField(fieldName) == null) {
             classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
                     new ConstructorCallExpression(fieldType, new ArgumentListExpression()));
+        }
+    }
+
+    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
+        List<AnnotationNode> annotations = classNode.getAnnotations();
+        ClassNode annotationClassNode = new ClassNode(Entity.class);
+        AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
+        if(annotations.isEmpty()) {
+            classNode.addAnnotation(annotationToAdd);
+        }
+        else {
+            boolean foundAnn = false;
+            for (AnnotationNode annotation : annotations) {
+                if(annotation.getClassNode().equals(annotationClassNode)) {
+                    foundAnn = true;
+                }
+            }
+
+            if(!foundAnn) classNode.addAnnotation(annotationToAdd);
         }
     }
 }
