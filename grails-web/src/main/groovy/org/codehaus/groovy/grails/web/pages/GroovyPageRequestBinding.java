@@ -19,7 +19,9 @@ import grails.util.Environment;
 import groovy.lang.Binding;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,7 +34,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
  *
  * @author Lari Hotari
  */
-public class GroovyPageRequestBinding extends Binding {
+public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
     private static Log log = LogFactory.getLog(GroovyPageRequestBinding.class);
     private GrailsWebRequest webRequest;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
@@ -114,8 +116,8 @@ public class GroovyPageRequestBinding extends Binding {
 
     @Override
     public Object getVariable(String name) {
-        Object val = getVariables().get(name);
-        if (val == null && !getVariables().containsKey(name) && webRequest != null) {
+        Object val = getVariablesMap().get(name);
+        if (val == null && !getVariablesMap().containsKey(name) && webRequest != null) {
             val = webRequest.getCurrentRequest().getAttribute(name);
 
             if (val == null) {
@@ -146,4 +148,16 @@ public class GroovyPageRequestBinding extends Binding {
     private static interface LazyRequestBasedValue {
         public Object evaluate(GrailsWebRequest webRequest);
     }
+
+	@Override
+	public Set<String> getVariableNames() {
+		if(getVariablesMap().size()==0) {
+			return lazyRequestBasedValuesMap.keySet();
+		} else {
+			HashSet<String> variableNames=new HashSet<String>();
+			variableNames.addAll(lazyRequestBasedValuesMap.keySet());
+			variableNames.addAll(getVariablesMap().keySet());
+			return variableNames;
+		}
+	}
 }

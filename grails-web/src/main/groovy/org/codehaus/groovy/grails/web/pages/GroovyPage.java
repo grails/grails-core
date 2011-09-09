@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.CollectionUtils;
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.Script;
@@ -176,13 +177,22 @@ public abstract class GroovyPage extends Script {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
         }
-        getBinding().getVariables().put(OUT, out);
+        setVariableDirectly(OUT, out);
         if (codecClass != null) {
             codecOut = new CodecPrintWriter(grailsApplication, out, codecClass);
         } else {
             codecOut = out;
         }
-        getBinding().getVariables().put(CODEC_OUT, codecOut);
+        setVariableDirectly(CODEC_OUT, codecOut);
+    }
+    
+    private void setVariableDirectly(String name, Object value) {
+    	Binding binding=getBinding();
+    	if(binding instanceof AbstractGroovyPageBinding) {
+    		((AbstractGroovyPageBinding)binding).setVariableDirectly(name, value);
+    	} else {
+    		binding.getVariables().put(name, value);
+    	}
     }
 
     public String getPluginContextPath() {
@@ -289,7 +299,7 @@ public abstract class GroovyPage extends Script {
             }
             if (value != null) {
                 // cache lookup for next execution
-                getBinding().getVariables().put(property, value);
+            	setVariableDirectly(property, value);
             }
         }
 
@@ -656,7 +666,7 @@ public abstract class GroovyPage extends Script {
 
     @SuppressWarnings("unchecked")
     public void changeItVariable(Object value) {
-        getBinding().getVariables().put("it", value);
+    	setVariableDirectly("it", value);
     }
 
     @SuppressWarnings("rawtypes")

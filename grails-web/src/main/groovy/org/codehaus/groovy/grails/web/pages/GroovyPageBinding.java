@@ -18,22 +18,21 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.lang.Binding;
 import groovy.lang.MetaProperty;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 
 /**
  * Script Binding that is used in GSP evaluation.
  *
  * @author Lari Hotari
  */
-public class GroovyPageBinding extends Binding {
-
+public class GroovyPageBinding extends AbstractGroovyPageBinding {
     private static final Log log = LogFactory.getLog(GroovyPageBinding.class);
 
     private Binding parent;
@@ -70,14 +69,14 @@ public class GroovyPageBinding extends Binding {
     @SuppressWarnings("unchecked")
     @Override
     public Object getVariable(String name) {
-        Object val = getVariables().get(name);
-        if (val == null && !getVariables().containsKey(name)) {
+        Object val = getVariablesMap().get(name);
+        if (val == null && !getVariablesMap().containsKey(name)) {
             if (GroovyPage.PAGE_SCOPE.equals(name)) return this;
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
                     // cache variable in this context since parent context cannot change during usage of this context
-                    getVariables().put(name, val);
+                    getVariablesMap().put(name, val);
                     cachedParentVariableNames.add(name);
                 }
             }
@@ -111,7 +110,7 @@ public class GroovyPageBinding extends Binding {
             return parent;
         }
 
-        if (getVariables().containsKey(name)) {
+        if (getVariablesMap().containsKey(name)) {
             return this;
         }
 
@@ -132,11 +131,6 @@ public class GroovyPageBinding extends Binding {
     }
 
     @SuppressWarnings("unchecked")
-    public void setVariableDirectly(String name, Object value) {
-        getVariables().put(name, value);
-    }
-
-    @SuppressWarnings("unchecked")
     private void internalSetVariable(Binding bindingToUse, String name, Object value) {
         if (!GroovyPage.isReservedName(name)) {
             if (bindingToUse == null) {
@@ -145,10 +139,15 @@ public class GroovyPageBinding extends Binding {
                     bindingToUse = this;
                 }
             }
-            bindingToUse.getVariables().put(name, value);
+            if(bindingToUse instanceof AbstractGroovyPageBinding) {
+            	((AbstractGroovyPageBinding)bindingToUse).getVariablesMap().put(name, value);            	
+            } else {
+                bindingToUse.getVariables().put(name, value);            	
+            }
+
             if (bindingToUse != this && cachedParentVariableNames.contains(name)) {
                 // maintain cached value
-                getVariables().put(name, value);
+                getVariablesMap().put(name, value);
             }
         } else {
             if (log.isDebugEnabled()) {
@@ -163,12 +162,12 @@ public class GroovyPageBinding extends Binding {
 
     @SuppressWarnings("unchecked")
     public void setPluginContextPath(String pluginContextPath) {
-        getVariables().put(GroovyPage.PLUGIN_CONTEXT_PATH, pluginContextPath);
+        getVariablesMap().put(GroovyPage.PLUGIN_CONTEXT_PATH, pluginContextPath);
     }
 
     @SuppressWarnings("unchecked")
     public void setPagePlugin(GrailsPlugin plugin) {
-        getVariables().put("pagePlugin", plugin);
+        getVariablesMap().put("pagePlugin", plugin);
     }
 
     public GrailsPlugin getPagePlugin() {
@@ -208,4 +207,19 @@ public class GroovyPageBinding extends Binding {
     public void setRoot(boolean root) {
         this.root = root;
     }
+    
+	@Override
+	public Set<String> getVariableNames() {
+		HashSet<String> variableNames=new HashSet<String>();
+		if(parent != null) {
+			if(parent instanceof AbstractGroovyPageBinding) {
+				variableNames.addAll(((AbstractGroovyPageBinding)parent).getVariableNames());
+			} else {
+				variableNames.addAll(parent.getVariables().keySet());
+			}
+		}
+		variableNames.addAll(getVariablesMap().keySet());
+		return variableNames;
+	}
 }
+
