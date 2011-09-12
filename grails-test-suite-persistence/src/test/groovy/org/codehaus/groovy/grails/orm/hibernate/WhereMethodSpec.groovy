@@ -91,18 +91,17 @@ class WhereMethodSpec extends GormSpec{
             results[0].firstName == "Fred"
             results[1].firstName == "Joe"
 
-       // TODO: This is failing with Hibernate due to a bug in the way conjunction/disjunction is applied. Fix me!
-//       when:"We use a logical or to query pets combined with another top-level logical expression"
-//           def query = Person.where {
-//               pets { name == "Jack" } || firstName == "Ed"
-//           }
-//           def count = query.count()
-//           def results = query.list(sort:"firstName")
-//
-//        then:"The correct results are returned"
-//            count == 2
-//            results[0].firstName == "Ed"
-//            results[1].firstName == "Joe"
+
+       when:"We use a logical or to query pets combined with another top-level logical expression"
+           query = Person.where {
+               pets { name == "Jack" } || firstName == "Ed"
+           }
+           count = query.count()
+           results = query.list(sort:"firstName")
+
+        then:"The correct results are returned"
+            results[0].firstName == "Ed"
+            results[1].firstName == "Joe"
    }
 
    def "Test findAll method for inline query"() {

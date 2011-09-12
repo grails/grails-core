@@ -27,7 +27,7 @@ import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.query.AssociationQuery;
 import org.grails.datastore.mapping.query.Query;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.Junction;
+import org.hibernate.criterion.CriteriaSpecification;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -88,18 +88,9 @@ public class HibernateQuery extends Query {
 
     @Override
     public void add(Criterion criterion) {
-        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion();
+        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion(this);
         if (hibernateCriterion != null) {
             addToCriteria(hibernateCriterion);
-        } else if (criterion instanceof AssociationQuery) {
-            AssociationQuery associationQuery = (AssociationQuery) criterion;
-            Association<?> association = associationQuery.getAssociation();
-            Junction criteriaList = associationQuery.getCriteria();
-            handleAssociationQuery(association, criteriaList.getCriteria());
-        } else if (criterion instanceof DetachedAssociationCriteria) {
-            DetachedAssociationCriteria associationCriteria = (DetachedAssociationCriteria) criterion;
-            Association<?> association = associationCriteria.getAssociation();
-            handleAssociationQuery(association, associationCriteria.getCriteria());
         }
     }
 
@@ -140,7 +131,7 @@ public class HibernateQuery extends Query {
     public Query and(Criterion a, Criterion b) {
         HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
         HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
-        addToCriteria(Restrictions.and(aa.toHibernateCriterion(), ab.toHibernateCriterion()));
+        addToCriteria(Restrictions.and(aa.toHibernateCriterion(this), ab.toHibernateCriterion(this)));
         return this;
     }
 
@@ -148,7 +139,7 @@ public class HibernateQuery extends Query {
     public Query or(Criterion a, Criterion b) {
         HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
         HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
-        addToCriteria(Restrictions.or(aa.toHibernateCriterion(), ab.toHibernateCriterion()));
+        addToCriteria(Restrictions.or(aa.toHibernateCriterion(this), ab.toHibernateCriterion(this)));
         return this;
 
     }
@@ -285,6 +276,7 @@ public class HibernateQuery extends Query {
 
     @Override
     public List list() {
+        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.list();
     }
 
@@ -298,6 +290,7 @@ public class HibernateQuery extends Query {
         if (hibernateProjectionList != null) {
             this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
         }
+        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.uniqueResult();
     }
 
@@ -307,20 +300,15 @@ public class HibernateQuery extends Query {
         if (hibernateProjectionList != null) {
             this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
         }
+        this.criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return this.criteria.list();
     }
 
-    private void handleAssociationQuery(Association<?> association, List<Criterion> criteriaList) {
+    String handleAssociationQuery(Association<?> association, List<Criterion> criteriaList) {
         String associationName = calculatePropertyName(association.getName(), this.alias);
         String newAlias = generateAlias(associationName);
-        Criteria subCriteria = getOrCreateAlias(associationName, alias);
-
-        HibernateQuery subQuery = new HibernateQuery(subCriteria, (HibernateSession) getSession(), association.getAssociatedEntity(), calculatePropertyName(newAlias, this.alias));
-
-        for (Criterion c : criteriaList) {
-
-            subQuery.add(c);
-        }
+        getOrCreateAlias(associationName, newAlias);
+        return newAlias;
     }
 
     private void addToCriteria(org.hibernate.criterion.Criterion criterion) {
@@ -360,7 +348,7 @@ public class HibernateQuery extends Query {
         public Junction add(Criterion c) {
             if (c != null) {
                 HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(c, this.alias);
-                org.hibernate.criterion.Criterion criterion = adapter.toHibernateCriterion();
+                org.hibernate.criterion.Criterion criterion = adapter.toHibernateCriterion(HibernateQuery.this);
                 if (criterion != null) {
                     hibernateJunction.add(criterion);
                 }
@@ -492,18 +480,9 @@ public class HibernateQuery extends Query {
 
         @Override
         public void add(Criterion criterion) {
-            final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion();
+            final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion(HibernateQuery.this);
             if (hibernateCriterion != null) {
                 addToCriteria(hibernateCriterion);
-            } else if (criterion instanceof AssociationQuery) {
-                AssociationQuery associationQuery = (AssociationQuery) criterion;
-                Association<?> association = associationQuery.getAssociation();
-                Junction criteriaList = associationQuery.getCriteria();
-                handleAssociationQuery(association, criteriaList.getCriteria());
-            } else if (criterion instanceof DetachedAssociationCriteria) {
-                DetachedAssociationCriteria associationCriteria = (DetachedAssociationCriteria) criterion;
-                Association<?> association = associationCriteria.getAssociation();
-                handleAssociationQuery(association, associationCriteria.getCriteria());
             }
         }
 
@@ -544,7 +523,7 @@ public class HibernateQuery extends Query {
         public Query and(Criterion a, Criterion b) {
             HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
             HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
-            addToCriteria(Restrictions.and(aa.toHibernateCriterion(), ab.toHibernateCriterion()));
+            addToCriteria(Restrictions.and(aa.toHibernateCriterion(HibernateQuery.this), ab.toHibernateCriterion(HibernateQuery.this)));
             return this;
         }
 
@@ -552,7 +531,7 @@ public class HibernateQuery extends Query {
         public Query or(Criterion a, Criterion b) {
             HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
             HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
-            addToCriteria(Restrictions.or(aa.toHibernateCriterion(), ab.toHibernateCriterion()));
+            addToCriteria(Restrictions.or(aa.toHibernateCriterion(HibernateQuery.this), ab.toHibernateCriterion(HibernateQuery.this)));
             return this;
 
         }
