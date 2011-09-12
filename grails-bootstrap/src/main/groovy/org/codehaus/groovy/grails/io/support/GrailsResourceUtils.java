@@ -379,20 +379,27 @@ public class GrailsResourceUtils {
      * @return a uri
      */
     public static String appendPiecesForUri(String... pieces) {
-        StringBuilder builder = new StringBuilder();
-        List<String> piecesList = Arrays.asList(pieces);
-        Iterator<String> iter = piecesList.iterator();
-        while (iter.hasNext()) {
-            String piece = iter.next();
-            builder.append(piece);
-            if (iter.hasNext() && !piece.endsWith("/")) {
-                builder.append("/");
+    	if(pieces==null || pieces.length==0) return "";
+    	
+    	// join parts && strip double slashes
+        StringBuilder builder = new StringBuilder(16 * pieces.length);
+        char previous=0;
+        for(int i=0; i < pieces.length;i++) {
+            String piece = pieces[i];
+            if(piece != null && piece.length() > 0) {
+            	for(int j=0, maxlen=piece.length();j < maxlen;j++) {
+            		char current=piece.charAt(j);
+                	if(!(previous=='/' && current=='/')) {
+                		builder.append(current);
+                    	previous = current;
+                	}
+            	}
+            	if (i + 1 < pieces.length && previous != '/') {
+            		builder.append('/');
+            		previous='/';
+            	}
             }
         }
-        String result = builder.toString();
-        while (result.contains("//")) {
-            result = result.replaceAll("//", "/");
-        }
-        return result;
+        return builder.toString();
     }
 }
