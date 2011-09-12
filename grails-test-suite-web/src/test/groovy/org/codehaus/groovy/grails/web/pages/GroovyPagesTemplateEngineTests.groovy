@@ -292,6 +292,30 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         assertEquals "hello", sw.toString()
     }
+	
+	void testParsingQuotes() {
+		GrailsWebUtil.bindMockWebRequest()
+
+		def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+		gpte.afterPropertiesSet()
+
+		def src = '''<g:if test="${var=="1" || var=="2" || var=='}' || var=="{" || var=='"' || var=="\\"" }">hello</g:if>'''
+
+		def t = gpte.createTemplate(src, "if_test")
+
+		def w = t.make(var: '1')
+		def sw = new StringWriter()
+		def pw = new PrintWriter(sw)
+		w.writeTo(pw)
+
+		assertEquals "hello", sw.toString()
+		
+		w = t.make(var: '"')
+		sw = new StringWriter()
+		pw = new PrintWriter(sw)
+		w.writeTo(pw)
+		assertEquals "hello", sw.toString()
+	}
 
     void testCreateTemplateWithBinding() {
 
