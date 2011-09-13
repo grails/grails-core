@@ -31,10 +31,10 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
     public void injectValidateableCode(ClassNode commandObjectTypeClassNode) {
         ASTErrorsHelper errorsHelper = new ASTValidationErrorsHelper();
         errorsHelper.injectErrorsCode(commandObjectTypeClassNode);
-        addConstraintedPropertiesProperty(commandObjectTypeClassNode);
+        addConstrainedPropertiesProperty(commandObjectTypeClassNode);
         addValidateMethod(commandObjectTypeClassNode);
     }
-    protected void addConstraintedPropertiesProperty(
+    protected void addConstrainedPropertiesProperty(
             final ClassNode classNode) {
         classNode.addProperty("constrainedProperties",Modifier.STATIC | Modifier.PUBLIC, new ClassNode(Object.class), null, null, null);
     }
