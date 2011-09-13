@@ -12,6 +12,41 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+   def "Test collection operations"() {
+       given:"People with pets"
+            createPeopleWithPets()
+
+       when:"We query for people with 2 pets"
+            def query = Person.where {
+                pets.size() == 2
+            }
+            def results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 2
+            results[0].firstName == "Fred"
+            results[1].firstName == "Joe"
+
+       when:"We query for people with greater than 2 pets"
+            query = Person.where {
+                pets.size() > 2
+            }
+            results = query.list(sort:"firstName")
+       then:"The correct results are returned"
+            results.size() == 1
+            results[0].firstName == "Ed"
+
+     when:"We query for people with greater than 2 pets"
+            query = Person.where {
+                pets.size() > 1 && firstName != "Joe"
+            }
+            results = query.list(sort:"firstName")
+       then:"The correct results are returned"
+            results.size() == 2
+            results[0].firstName == "Ed"
+            results[1].firstName == "Fred"
+   }
+
    def "Test subquery usage combined with logical query"() {
        given:"a bunch of people"
          createPeople()
@@ -507,7 +542,7 @@ class WhereMethodSpec extends GormSpec{
     protected def createPeopleWithPets() {
         new Person(firstName: "Joe", lastName: "Bloggs").addToPets(name: "Jack").addToPets(name: "Butch").save()
 
-        new Person(firstName: "Ed", lastName: "Floggs").addToPets(name: "Mini").addToPets(name: "Barbie").save()
+        new Person(firstName: "Ed", lastName: "Floggs").addToPets(name: "Mini").addToPets(name: "Barbie").addToPets(name:"Ken").save()
 
         new Person(firstName: "Fred", lastName: "Cloggs").addToPets(name: "Jim").addToPets(name: "Joe").save()
     }
