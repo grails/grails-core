@@ -375,11 +375,19 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         }
         if(propertyValue instanceof QueryableCriteria) {
             QueryableCriteria queryableCriteria = (QueryableCriteria) propertyValue;
-            org.hibernate.criterion.DetachedCriteria detachedCriteria = org.hibernate.criterion.DetachedCriteria.forClass(queryableCriteria.getPersistentEntity().getJavaClass());
-            populateHibernateDetachedCriteria(detachedCriteria, queryableCriteria);
-            propertyValue = detachedCriteria;
+            propertyValue = getHibernateDetachedCriteria(queryableCriteria);
+        }
+        else if(propertyValue instanceof Closure) {
+            QueryableCriteria queryableCriteria = (QueryableCriteria) new DetachedCriteria(targetClass).build((Closure) propertyValue);
+            propertyValue = getHibernateDetachedCriteria(queryableCriteria);
         }
         return propertyValue;
+    }
+
+    private org.hibernate.criterion.DetachedCriteria getHibernateDetachedCriteria(QueryableCriteria queryableCriteria) {
+        org.hibernate.criterion.DetachedCriteria detachedCriteria = org.hibernate.criterion.DetachedCriteria.forClass(queryableCriteria.getPersistentEntity().getJavaClass());
+        populateHibernateDetachedCriteria(detachedCriteria, queryableCriteria);
+        return detachedCriteria;
     }
 
     private void populateHibernateDetachedCriteria(org.hibernate.criterion.DetachedCriteria detachedCriteria, QueryableCriteria queryableCriteria) {
@@ -690,6 +698,146 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     }
 
     /**
+      * Creates a subquery criterion that ensures the given property is equal to all the given returned values
+      *
+      * @param propertyName  The property name
+      * @param propertyValue The property value
+      * @return A Criterion instance
+      */
+     public org.grails.datastore.mapping.query.api.Criteria eqAll(String propertyName, Closure propertyValue) {
+        return eqAll(propertyName, (QueryableCriteria) new DetachedCriteria(targetClass).build(propertyValue));
+     }
+
+     /**
+      * Creates a subquery criterion that ensures the given property is greater than all the given returned values
+      *
+      * @param propertyName  The property name
+      * @param propertyValue The property value
+      * @return A Criterion instance
+      */
+     public org.grails.datastore.mapping.query.api.Criteria gtAll(String propertyName, Closure propertyValue) {
+        return gtAll(propertyName, (QueryableCriteria) new DetachedCriteria(targetClass).build(propertyValue));
+     }
+
+     /**
+      * Creates a subquery criterion that ensures the given property is less than all the given returned values
+      *
+      * @param propertyName  The property name
+      * @param propertyValue The property value
+      * @return A Criterion instance
+      */
+     public org.grails.datastore.mapping.query.api.Criteria ltAll(String propertyName, Closure propertyValue) {
+        return ltAll(propertyName, (QueryableCriteria) new DetachedCriteria(targetClass).build(propertyValue));
+     }
+
+     /**
+      * Creates a subquery criterion that ensures the given property is greater than all the given returned values
+      *
+      * @param propertyName  The property name
+      * @param propertyValue The property value
+      * @return A Criterion instance
+      */
+     public org.grails.datastore.mapping.query.api.Criteria geAll(String propertyName, Closure propertyValue) {
+        return geAll(propertyName, (QueryableCriteria) new DetachedCriteria(targetClass).build(propertyValue));
+     }
+
+     /**
+      * Creates a subquery criterion that ensures the given property is less than all the given returned values
+      *
+      * @param propertyName  The property name
+      * @param propertyValue The property value
+      * @return A Criterion instance
+      */
+     public org.grails.datastore.mapping.query.api.Criteria leAll(String propertyName, Closure propertyValue) {
+        return leAll(propertyName, (QueryableCriteria) new DetachedCriteria(targetClass).build(propertyValue));
+     }
+
+
+    /**
+     * Creates a subquery criterion that ensures the given property is equal to all the given returned values
+     *
+     * @param propertyName  The property name
+     * @param propertyValue The property value
+     * @return A Criterion instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria eqAll(String propertyName, QueryableCriteria propertyValue) {
+        addToCriteria(  Property.forName(propertyName)
+                        .eqAll(
+                                getHibernateDetachedCriteria(propertyValue)
+                        )
+                     );
+        return this;
+    }
+
+    /**
+     * Creates a subquery criterion that ensures the given property is greater than all the given returned values
+     *
+     * @param propertyName  The property name
+     * @param propertyValue The property value
+     * @return A Criterion instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria gtAll(String propertyName, QueryableCriteria propertyValue) {
+        addToCriteria(  Property.forName(propertyName)
+                        .gtAll(
+                                getHibernateDetachedCriteria(propertyValue)
+                        )
+                     );
+        return this;
+
+    }
+
+    /**
+     * Creates a subquery criterion that ensures the given property is less than all the given returned values
+     *
+     * @param propertyName  The property name
+     * @param propertyValue The property value
+     * @return A Criterion instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria ltAll(String propertyName, QueryableCriteria propertyValue) {
+        addToCriteria(  Property.forName(propertyName)
+                        .ltAll(
+                                getHibernateDetachedCriteria(propertyValue)
+                        )
+                     );
+        return this;
+
+    }
+
+    /**
+     * Creates a subquery criterion that ensures the given property is greater than all the given returned values
+     *
+     * @param propertyName  The property name
+     * @param propertyValue The property value
+     * @return A Criterion instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria geAll(String propertyName, QueryableCriteria propertyValue) {
+        addToCriteria(  Property.forName(propertyName)
+                        .geAll(
+                                getHibernateDetachedCriteria(propertyValue)
+                        )
+                     );
+        return this;
+
+    }
+
+    /**
+     * Creates a subquery criterion that ensures the given property is less than all the given returned values
+     *
+     * @param propertyName  The property name
+     * @param propertyValue The property value
+     * @return A Criterion instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria leAll(String propertyName, QueryableCriteria propertyValue) {
+        addToCriteria(  Property.forName(propertyName)
+                        .leAll(
+                                getHibernateDetachedCriteria(propertyValue)
+                        )
+                     );
+        return this;
+
+    }
+
+    /**
      * Creates a "greater than" Criterion based on the specified property name and value
      * @param propertyName The property name
      * @param propertyValue The property value
@@ -789,7 +937,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion le;
         if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
-            le = Property.forName(propertyName).le((org.hibernate.criterion.DetachedCriteria)propertyValue);
+            le = Property.forName(propertyName).le((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
 
@@ -878,7 +1026,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion eq;
         if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
-            eq = Property.forName(propertyName).eq((org.hibernate.criterion.DetachedCriteria)propertyValue);
+            eq = Property.forName(propertyName).eq((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
 
