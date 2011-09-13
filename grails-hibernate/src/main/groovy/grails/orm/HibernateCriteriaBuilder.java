@@ -384,13 +384,13 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         return propertyValue;
     }
 
-    private org.hibernate.criterion.DetachedCriteria getHibernateDetachedCriteria(QueryableCriteria queryableCriteria) {
+    public static org.hibernate.criterion.DetachedCriteria getHibernateDetachedCriteria(QueryableCriteria queryableCriteria) {
         org.hibernate.criterion.DetachedCriteria detachedCriteria = org.hibernate.criterion.DetachedCriteria.forClass(queryableCriteria.getPersistentEntity().getJavaClass());
         populateHibernateDetachedCriteria(detachedCriteria, queryableCriteria);
         return detachedCriteria;
     }
 
-    private void populateHibernateDetachedCriteria(org.hibernate.criterion.DetachedCriteria detachedCriteria, QueryableCriteria queryableCriteria) {
+    private static void populateHibernateDetachedCriteria(org.hibernate.criterion.DetachedCriteria detachedCriteria, QueryableCriteria queryableCriteria) {
         List<Query.Criterion> criteriaList = queryableCriteria.getCriteria();
         for (Query.Criterion criterion : criteriaList) {
             Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion).toHibernateCriterion(null);

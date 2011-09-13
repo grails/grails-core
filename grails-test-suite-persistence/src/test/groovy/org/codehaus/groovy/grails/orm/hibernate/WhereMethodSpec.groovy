@@ -12,6 +12,41 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+   def "Test subquery usage combined with logical query"() {
+       given:"a bunch of people"
+         createPeople()
+
+       when:"We query for people greater than an average age"
+           final query = Person.where {
+               age > avg(age) && firstName != "Marge"
+           }
+           def results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 3
+            results[0].firstName == "Barney"
+            results[1].firstName == "Fred"
+            results[2].firstName == "Homer"
+   }
+
+   def "Test subquery usage"() {
+       given:"a bunch of people"
+         createPeople()
+
+       when:"We query for people greater than an average age"
+           final query = Person.where {
+               age > avg(age)
+           }
+           def results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 4
+            results[0].firstName == "Barney"
+            results[1].firstName == "Fred"
+            results[2].firstName == "Homer"
+            results[3].firstName == "Marge"
+   }
+
    String nameBart() { "Bart" }
    def "Test where method with value obtained via method call"() {
        given:"A bunch of people"

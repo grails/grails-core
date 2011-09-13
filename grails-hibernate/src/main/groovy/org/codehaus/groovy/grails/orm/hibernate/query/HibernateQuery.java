@@ -15,6 +15,7 @@
 
 package org.codehaus.groovy.grails.orm.hibernate.query;
 
+import grails.orm.HibernateCriteriaBuilder;
 import grails.orm.RlikeExpression;
 
 import java.util.*;
@@ -26,8 +27,10 @@ import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.query.AssociationQuery;
 import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -88,6 +91,13 @@ public class HibernateQuery extends Query {
 
     @Override
     public void add(Criterion criterion) {
+        if(criterion instanceof PropertyCriterion) {
+            PropertyCriterion pc = (PropertyCriterion) criterion;
+            if(pc.getValue() instanceof QueryableCriteria) {
+                DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) pc.getValue());
+                pc.setValue(hibernateDetachedCriteria);
+            }
+        }
         final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion(this);
         if (hibernateCriterion != null) {
             addToCriteria(hibernateCriterion);
