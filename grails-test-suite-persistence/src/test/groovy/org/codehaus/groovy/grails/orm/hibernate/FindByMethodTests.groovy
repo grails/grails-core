@@ -11,7 +11,7 @@ import grails.persistence.Entity
 class FindByMethodTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway]
+        [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway, Person, Pet]
     }
 
     void testNullParameters() {
@@ -156,6 +156,49 @@ class FindByMethodTests extends AbstractGrailsHibernateTests {
 
         def results = bookClass.findAllByWrittenByAndTitle('Stephen King', 'The Stand')
         assertEquals 1, results?.size()
+    }
+    
+    void testDynamicFinderWithMultipleAnd() {
+        def jakeB = new Person(firstName: 'Jake', lastName: 'Brown', age: 11).save()
+        new Person(firstName: 'Jeff', lastName: 'Brown', age: 41).save()
+        new Person(firstName: 'Zack', lastName: 'Galifianakis', age: 41).save()
+        new Person(firstName: 'Zack', lastName: 'Brown', age: 14).save()
+        
+        def people = Person.findAllByFirstNameAndLastNameInListAndAgeGreaterThan('Zack', ['Brown', 'Galifianakis'], 99)
+        assertEquals 0, people.size()
+
+        people = Person.findAllByFirstNameAndLastNameInListAndAgeGreaterThan('Zack', ['Brown', 'Galifianakis'], 25)
+        assertEquals 1, people.size()
+        
+        people = Person.findAllByFirstNameAndLastNameInListAndAgeGreaterThan('Zack', ['Brown', 'Galifianakis'], 5)
+        assertEquals 2, people.size()
+        
+        def person = Person.findByFirstNameAndLastNameAndAge('Jake', 'Brown', 41)
+        assertNull person
+        
+        person = Person.findByFirstNameAndLastNameAndAge('Jake', 'Brown', 11)
+        assertNotNull person
+        assertEquals 'Jake', person.firstName
+        assertEquals 'Brown', person.lastName
+        assertEquals 11, person.age
+        assertEquals jakeB.id, person.id
+    }
+
+    void testDynamicFinderWithMultipleOr() {
+        def jakeB = new Person(firstName: 'Jake', lastName: 'Brown', age: 11).save()
+        new Person(firstName: 'Jeff', lastName: 'Brown', age: 41).save()
+        new Person(firstName: 'Zack', lastName: 'Galifianakis', age: 41).save()
+        new Person(firstName: 'Zack', lastName: 'Brown', age: 14).save()
+
+        def people = Person.findAllByFirstNameOrLastNameOrAge('Jake', 'Galifianakis', 99)
+        assertEquals 2, people.size()
+        assertNotNull people.find { it.firstName == 'Jake' && it.lastName == 'Brown' && it.age == 11 }
+        assertNotNull people.find { it.firstName == 'Zack' && it.lastName == 'Galifianakis' && it.age == 41 }
+        
+        people = Person.findAllByFirstNameOrLastNameOrAgeInList('Bob', 'Newhard', [1, 2, 3, 41])
+        assertEquals 2, people.size()
+        assertNotNull people.find { it.firstName == 'Jeff' && it.lastName == 'Brown' && it.age == 41 }
+        assertNotNull people.find { it.firstName == 'Zack' && it.lastName == 'Galifianakis' && it.age == 41 }
     }
 }
 

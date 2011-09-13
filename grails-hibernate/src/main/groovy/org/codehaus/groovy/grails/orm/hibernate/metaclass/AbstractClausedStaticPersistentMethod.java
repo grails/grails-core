@@ -494,10 +494,8 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                 if (currentMatcher.find()) {
                     containsOperator = true;
                     operatorInUse = operators[i];
-
-                    queryParameters = new String[2];
-                    queryParameters[0] = currentMatcher.group(1);
-                    queryParameters[1] = currentMatcher.group(3) + currentMatcher.group(4);
+                    
+                    queryParameters = querySequence.split(operatorInUse);
 
                     // loop through query parameters and create expressions
                     // calculating the number of arguments required for the expression

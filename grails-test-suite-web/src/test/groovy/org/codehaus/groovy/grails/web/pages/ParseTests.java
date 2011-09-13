@@ -75,7 +75,7 @@ public class ParseTests extends TestCase {
     }
 
     public void testParseWithUnclosedSquareBracket() throws Exception {
-        String output = parseCode("myTest2", "<g:message code=\"[\"/>").generatedGsp;
+        String output = parseCode("myTest2", "<g:message code=\"testing [\"/>").generatedGsp;
         String expected = makeImports() +
             "\n" +
             "class myTest2 extends GroovyPage {\n" +
@@ -85,7 +85,7 @@ public class ParseTests extends TestCase {
             "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
 
-            "invokeTag('message','g',1,createGroovyPageAttributes(['code':evaluate('\"[\"', 1, it) { return \"[\" }]),-1)\n" +
+            "invokeTag('message','g',1,createGroovyPageAttributes(['code':evaluate('\"testing [\"', 1, it) { return \"testing [\" }]),-1)\n" +
             "}\n" + GSP_FOOTER;
 
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));

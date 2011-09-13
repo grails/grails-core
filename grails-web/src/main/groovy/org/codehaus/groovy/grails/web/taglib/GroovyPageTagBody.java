@@ -20,6 +20,7 @@ import groovy.lang.Closure;
 import java.io.Writer;
 import java.util.Map;
 
+import org.codehaus.groovy.grails.web.pages.AbstractGroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
@@ -122,8 +123,9 @@ public class GroovyPageTagBody extends Closure {
                     // Binding is only changed currently when body gets a map argument
                     changeBinding(currentBinding);
                 } else {
-                    originalIt = currentBinding.getVariables().get("it");
-                    currentBinding.getVariables().put("it", args);
+                	Map variablesMap = (currentBinding instanceof AbstractGroovyPageBinding) ? ((AbstractGroovyPageBinding)currentBinding).getVariablesMap() : currentBinding.getVariables();
+                    originalIt = variablesMap.get("it");
+                    variablesMap.put("it", args);
                     itChanged = true;
                 }
                 bodyResult = executeClosure(args);
@@ -141,7 +143,8 @@ public class GroovyPageTagBody extends Closure {
                 changeBinding(originalBinding);
             }
             if (itChanged) {
-                currentBinding.getVariables().put("it", originalIt);
+            	Map variablesMap = (currentBinding instanceof AbstractGroovyPageBinding) ? ((AbstractGroovyPageBinding)currentBinding).getVariablesMap() : currentBinding.getVariables();
+            	variablesMap.put("it", originalIt);
             }
             popCapturedOut();
         }
