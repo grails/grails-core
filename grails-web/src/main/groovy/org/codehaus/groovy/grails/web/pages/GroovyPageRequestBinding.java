@@ -133,8 +133,8 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
 
             // warn about missing variables in development mode
             if (val == null && Environment.isDevelopmentMode()) {
-                if (log.isWarnEnabled()) {
-                    log.warn("Variable '" + name + "' not found in binding or the value is null.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Variable '" + name + "' not found in binding or the value is null.");
                 }
             }
         }

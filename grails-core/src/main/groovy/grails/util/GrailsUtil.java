@@ -56,6 +56,7 @@ public class GrailsUtil {
     private static final String GRAILS_IMPLEMENTATION_TITLE = "Grails";
     private static final String GRAILS_VERSION;
     private static final StackTraceFilterer stackFilterer = new DefaultStackTraceFilterer();
+    private static final boolean LOG_DEPRECATED = Boolean.valueOf(System.getProperty("grails.log.deprecated", String.valueOf(Environment.isDevelopmentMode())));
 
     static {
         Package p = GrailsUtil.class.getPackage();
@@ -193,9 +194,11 @@ public class GrailsUtil {
      * @param version Version of Grails release in which property or method were deprecated
      */
     public static void deprecated(Class<?> clazz, String methodOrPropName, String version) {
-        deprecated("Property or method [" + methodOrPropName + "] of class [" + clazz.getName() +
-                "] is deprecated in [" + version +
-                "] and will be removed in future releases");
+    	if(LOG_DEPRECATED) {
+	        deprecated("Property or method [" + methodOrPropName + "] of class [" + clazz.getName() +
+	                "] is deprecated in [" + version +
+	                "] and will be removed in future releases");
+    	}
     }
 
     /**
@@ -204,7 +207,9 @@ public class GrailsUtil {
      * @param message Message to display
      */
     public static void deprecated(String message) {
-        LOG.warn("[DEPRECATED] " + message);
+    	if(LOG_DEPRECATED && LOG.isWarnEnabled()) {
+    		LOG.warn("[DEPRECATED] " + message);
+    	}
     }
 
     /**
@@ -213,7 +218,9 @@ public class GrailsUtil {
      * @param message Message to display
      */
     public static void warn(String message) {
-        LOG.warn("[WARNING] " + message);
+    	if(LOG.isWarnEnabled()) {
+    		LOG.warn("[WARNING] " + message);
+    	}
     }
 
     /**
