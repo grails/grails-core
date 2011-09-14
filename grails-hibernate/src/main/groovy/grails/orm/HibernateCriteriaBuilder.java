@@ -378,7 +378,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             propertyValue = getHibernateDetachedCriteria(queryableCriteria);
         }
         else if(propertyValue instanceof Closure) {
-            QueryableCriteria queryableCriteria = (QueryableCriteria) new DetachedCriteria(targetClass).build((Closure) propertyValue);
+            QueryableCriteria queryableCriteria = new DetachedCriteria(targetClass).build((Closure) propertyValue);
             propertyValue = getHibernateDetachedCriteria(queryableCriteria);
         }
         return propertyValue;
