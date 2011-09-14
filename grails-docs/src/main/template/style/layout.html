@@ -68,6 +68,9 @@ function addJsClass(el) {
                             <h1>${title.encodeAsHtml()} - Reference Documentation</h1>
                             <p><strong>Authors:</strong> ${authors}</p>
                             <p><strong>Version:</strong> ${version}</p>
+                            <% if (translators) { %>
+                            <p><strong>Translated by:</strong> ${translators}</p>
+                            <% } %>
                         </div>
 
                         <% if(toc){ %>
