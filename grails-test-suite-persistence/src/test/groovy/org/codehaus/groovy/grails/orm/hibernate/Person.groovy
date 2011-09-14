@@ -8,7 +8,7 @@ class Person {
     String lastName
     Integer age = 0
 
-    Set pets
+    Set<Pet> pets
     static hasMany = [pets:Pet]
 }
 

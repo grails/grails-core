@@ -17,10 +17,7 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.persistence.FlushModeType;
 
@@ -31,11 +28,11 @@ import org.grails.datastore.mapping.engine.Persister;
 import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.query.Query;
+import org.grails.datastore.mapping.query.api.QueryableCriteria;
+import org.grails.datastore.mapping.query.jpa.JpaQueryBuilder;
+import org.grails.datastore.mapping.query.jpa.JpaQueryInfo;
 import org.grails.datastore.mapping.transactions.Transaction;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -173,6 +170,58 @@ public class HibernateSession extends AbstractAttributeStoringSession {
 
     public void delete(Object obj) {
         hibernateTemplate.delete(obj);
+    }
+
+    /**
+     * Deletes all objects matching the given criteria
+     *
+     * @param criteria The criteria
+     * @return The total number of records deleted
+     */
+    public int deleteAll(final QueryableCriteria criteria) {
+        return hibernateTemplate.execute(new HibernateCallback<Integer>() {
+            public Integer doInHibernate(Session session) throws HibernateException, SQLException {
+                JpaQueryBuilder builder = new JpaQueryBuilder(criteria);
+                builder.setHibernateCompatible(true);
+                JpaQueryInfo jpaQueryInfo = builder.buildDelete();
+
+                org.hibernate.Query query = session.createQuery(jpaQueryInfo.getQuery());
+
+                List parameters = jpaQueryInfo.getParameters();
+                if (parameters != null) {
+                        for (int i = 0, count = parameters.size(); i < count; i++) {
+                            query.setParameter(i, parameters.get(i));
+                        }
+                }
+                return query.executeUpdate();
+            }
+        });
+    }
+
+    /**
+     * Updates all objects matching the given criteria and property values
+     *
+     * @param criteria   The criteria
+     * @param properties The properties
+     * @return The total number of records updated
+     */
+    public int updateAll(final QueryableCriteria criteria, final Map<String, Object> properties) {
+       return hibernateTemplate.execute(new HibernateCallback<Integer>() {
+            public Integer doInHibernate(Session session) throws HibernateException, SQLException {
+                JpaQueryBuilder builder = new JpaQueryBuilder(criteria);
+                builder.setHibernateCompatible(true);
+                JpaQueryInfo jpaQueryInfo = builder.buildUpdate(properties);
+
+                org.hibernate.Query query = session.createQuery(jpaQueryInfo.getQuery());
+                List parameters = jpaQueryInfo.getParameters();
+                if (parameters != null) {
+                        for (int i = 0, count = parameters.size(); i < count; i++) {
+                            query.setParameter(i, parameters.get(i));
+                        }
+                }
+                return query.executeUpdate();
+            }
+        });
     }
 
     public List retrieveAll(final Class type, final Iterable keys) {

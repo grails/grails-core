@@ -12,6 +12,40 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+    def "Test bulk delete"() {
+       given:"a bunch of people"
+         createPeople()
+
+       when:"We query for people greater than an average age"
+           final query = Person.where {
+               lastName == "Simpson"
+           }
+           def result = query.deleteAll()
+
+       then:"The correct results are returned"
+            result == 4
+            Person.count() == 2
+            query.count() == 0
+            Person.countByLastName("Simpson") == 0
+    }
+
+    def "Test bulk update"() {
+       given:"a bunch of people"
+         createPeople()
+
+       when:"We query for people greater than an average age"
+           final criteria = Person.where {
+               lastName == "Simpson"
+           }
+           int total = criteria.updateAll(lastName:"Bloggs")
+
+       then:"The correct results are returned"
+            total == 4
+            Person.count() == 6
+            criteria.count() == 0
+            Person.countByLastName("Bloggs") == 4
+    }
+
    def "Test collection operations"() {
        given:"People with pets"
             createPeopleWithPets()
