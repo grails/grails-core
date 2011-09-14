@@ -230,9 +230,16 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         List<String> excludePatterns = holder.getExcludePatterns();
         if (excludePatterns != null && excludePatterns.size() > 0) {
             for (String excludePattern : excludePatterns) {
-                if (uri.equals(excludePattern) ||
-                        (excludePattern.endsWith("*") &&
-                                excludePattern.substring(0,excludePattern.length() -1).regionMatches(0, uri, 0, excludePattern.length() - 1))) {
+            	int wildcardLen = 0;
+            	if(excludePattern.endsWith("**")) {
+            		wildcardLen = 2;
+            	} else if (excludePattern.endsWith("*")) {
+            		wildcardLen = 1;
+            	}
+            	if(wildcardLen > 0) {
+            		excludePattern = excludePattern.substring(0,excludePattern.length() - wildcardLen); 
+            	}
+                if ((wildcardLen==0 && uri.equals(excludePattern)) || (wildcardLen > 0 && uri.startsWith(excludePattern))) {
                     isExcluded = true;
                     break;
                 }
