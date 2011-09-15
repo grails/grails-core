@@ -96,7 +96,8 @@ class RenderTagLib implements RequestConstants {
      * @attr url Optional. The URL to retrieve the content from and apply a layout to
      * @attr contentType Optional. The content type to use, default is "text/html"
      * @attr encoding Optional. The encoding to use
-     * @attr params Optiona. The params to pass onto the page object
+     * @attr params Optional. The params to pass onto the page object
+     * @attr parse Optional. If true, Sitemesh parser will always be used to parse the content.
      */
     Closure applyLayout = { attrs, body ->
         if (!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
@@ -137,7 +138,7 @@ class RenderTagLib implements RequestConstants {
         }
 
         def page = null
-        if (gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        if (!attrs.parse && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
             page = gspSiteMeshPage
         }
         else {
