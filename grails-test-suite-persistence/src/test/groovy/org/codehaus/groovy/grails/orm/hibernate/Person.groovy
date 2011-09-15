@@ -10,5 +10,9 @@ class Person {
 
     Set<Pet> pets
     static hasMany = [pets:Pet]
+    static simpsons = where {
+         lastName == "Simpson"
+    }
+
 }
 
