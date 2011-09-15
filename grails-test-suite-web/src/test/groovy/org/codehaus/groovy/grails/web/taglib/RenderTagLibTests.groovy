@@ -525,5 +525,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
 		def template='<g:applyLayout name="layout" parse="${true}"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
 		assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
+		
+		template='<g:applyLayout name="layout" parse="false"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
+		assertOutputEquals '<layoutapplied> - Hello world!</layoutapplied>', template
 	}
 }

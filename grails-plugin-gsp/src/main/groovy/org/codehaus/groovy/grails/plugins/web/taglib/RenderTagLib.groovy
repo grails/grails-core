@@ -138,7 +138,7 @@ class RenderTagLib implements RequestConstants {
         }
 
         def page = null
-        if (!attrs.parse && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        if (!attrs.boolean('parse') && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
             page = gspSiteMeshPage
         }
         else {
