@@ -65,6 +65,8 @@ class DocPublisher {
     String version
     /** The authors of the documentation */
     String authors = ""
+    /** The translators of the documentation (if any) */
+    String translators = ""
     /** The documentation license */
     String license = ""
     /** The copyright message */
@@ -252,6 +254,7 @@ class DocPublisher {
             subtitle: subtitle,
             footer: footer, // TODO - add a way to specify footer
             authors: authors,
+            translators: translators,
             version: version,
             refMenu: refCategories,
             toc: guide,

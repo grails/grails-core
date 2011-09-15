@@ -23,7 +23,7 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport implemen
     ConcurrentMap<ControllerObjectKey, String> controllerNameCache = new ConcurrentHashMap<ControllerObjectKey, String>();
     ConcurrentMap<TupleStringKey, String> noSuffixViewURICache = new ConcurrentHashMap<TupleStringKey, String>();
 
-    private class TupleStringKey {
+    private static class TupleStringKey {
         String keyPart1;
         String keyPart2;
 
@@ -58,7 +58,7 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport implemen
         }
     }
 
-    private class ControllerObjectKey {
+    private static class ControllerObjectKey {
         private long controllerHashCode;
         private String controllerClassName;
 

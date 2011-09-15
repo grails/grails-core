@@ -170,6 +170,10 @@ class GroovyPagesGrailsPlugin {
             bean.lazyInit = true
             groovyPageLocator = groovyPageLocator
         }
+		
+		groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+			bean.autowire = true	
+		}
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
             groovyPageLocator = groovyPageLocator
