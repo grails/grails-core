@@ -124,7 +124,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testRenderTagCollectionAndModel() {
-        RenderTagLib.TEMPLATE_CACHE.clear()
+        appCtx.groovyPagesTemplateRenderer.clearCache()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/book/_book.gsp', '[book = ${string} it=${it} foo=${foo}]')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
@@ -426,7 +426,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testMultipleRender() {
-        RenderTagLib.TEMPLATE_CACHE.clear()
+        appCtx.groovyPagesTemplateRenderer.clearCache()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${request.someattribute}')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
@@ -442,7 +442,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testGRAILS7887failsBeforeFixing() {
-        RenderTagLib.TEMPLATE_CACHE.clear()
+        appCtx.groovyPagesTemplateRenderer.clearCache()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
@@ -456,7 +456,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testGRAILS7887okBeforeFixing() {
-        RenderTagLib.TEMPLATE_CACHE.clear()
+        appCtx.groovyPagesTemplateRenderer.clearCache()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
@@ -467,7 +467,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testGRAILS7871() {
-        RenderTagLib.TEMPLATE_CACHE.clear()
+        appCtx.groovyPagesTemplateRenderer.clearCache()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_test.gsp', '[hello ${name}] ${params.someparam}')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
@@ -482,7 +482,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testGspContentTypeSetting() {
-        RenderTagLib.TEMPLATE_CACHE.clear()
+        appCtx.groovyPagesTemplateRenderer.clearCache()
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_test.gsp', 'hello')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)

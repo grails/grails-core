@@ -42,6 +42,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.*;
+import org.springframework.scripting.ScriptSource;
+import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -353,23 +355,28 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             if (scriptSource != null) break;
         }
 
-        if (scriptSource instanceof GroovyPageResourceScriptSource) {
-            GroovyPageResourceScriptSource resourceSource = (GroovyPageResourceScriptSource) scriptSource;
+        Template t = createTemplate(scriptSource);
 
+        return t;
+    }
+
+	public Template createTemplate(ScriptSource scriptSource) {
+		if (scriptSource instanceof ResourceScriptSource) {
+			ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
             Resource resource = resourceSource.getResource();
-            if (resource.exists()) {
-                return createTemplate(resource, true);
-            }
-        }
-        else if (scriptSource instanceof GroovyPageCompiledScriptSource) {
+            return createTemplate(resource, true);
+        }  else if (scriptSource instanceof GroovyPageCompiledScriptSource) {
             // handle pre-compiled
             GroovyPageCompiledScriptSource compiledSource = (GroovyPageCompiledScriptSource) scriptSource;
-
             return createTemplateFromPrecompiled(compiledSource.getURI(),compiledSource.getCompiledClass());
+        } else {
+        	try {
+				return createTemplate(scriptSource.getScriptAsString(), scriptSource.suggestedClassName());
+			} catch (IOException e) {
+				throw new RuntimeException("IOException in createTemplate", e);
+			}
         }
-
-        return null;
-    }
+	}
 
     /**
      * Creates a Template using the given text for the Template and the given name. The name
