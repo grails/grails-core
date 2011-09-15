@@ -43,6 +43,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
@@ -192,6 +193,13 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
                 jspTagLibraryResolver = ref("jspTagLibraryResolver")
                 groovyPageLocator = ref("groovyPageLocator")
             }
+			
+			groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+				bean.lazyInit = true
+				groovyPageLocator = ref("groovyPageLocator")
+				groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
+			}
+	
         }
 
 
