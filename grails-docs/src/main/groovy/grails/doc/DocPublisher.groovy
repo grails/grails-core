@@ -81,7 +81,7 @@ class DocPublisher {
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
-    private output
+    def output
     private context
     private engine
     private customMacros = []
