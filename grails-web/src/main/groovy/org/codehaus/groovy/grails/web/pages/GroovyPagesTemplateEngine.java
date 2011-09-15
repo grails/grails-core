@@ -347,7 +347,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     public Template createTemplateForUri(String[] uris)  {
-
         GroovyPageScriptSource scriptSource = null;
 
         for (String uri : uris) {
@@ -355,9 +354,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             if (scriptSource != null) break;
         }
 
-        Template t = createTemplate(scriptSource);
-
-        return t;
+        if(scriptSource!=null) {
+        	return createTemplate(scriptSource);
+        } else {
+        	return null;
+        }
     }
 
 	public Template createTemplate(ScriptSource scriptSource) {
