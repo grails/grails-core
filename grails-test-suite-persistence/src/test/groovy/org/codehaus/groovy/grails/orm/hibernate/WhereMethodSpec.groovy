@@ -12,6 +12,109 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+     def "Test static scoped where calls"() {
+          given:"A bunch of people"
+               createPeople()
+
+          when:"We use the static simpsons property "
+               def simpsons = Person.simpsons
+
+          then:"We get the right results back"
+              simpsons.count() == 4
+      }
+
+      def "Test findAll with pagination params"() {
+          given:"A bunch of people"
+               createPeople()
+
+          when:"We use findAll with pagination params"
+               def results = Person.findAll(sort:"firstName") {
+                   lastName == "Simpson"
+               }
+
+          then:"The correct results are returned"
+            results != null
+            results.size() == 4
+            results[0].firstName == "Bart"
+      }
+
+      def "Test try catch finally"() {
+          given:"A bunch of people"
+               createPeople()
+
+          when:"We use a try catch finally block in a where query"
+            def query = Person.where {
+                def personAge = "nine"
+                try {
+                   age ==  personAge.toInteger()
+                }
+                catch(e) {
+                   age == 7
+                }
+                finally {
+                    lastName == "Simpson"
+                }
+            }
+            Person result = query.find()
+
+          then:"The correct results are returned"
+             result != null
+             result.firstName == "Lisa"
+      }
+      def "Test while loop"() {
+          given:"A bunch of people"
+               createPeople()
+
+          when:"We use a while loop in a where query"
+            def query = Person.where {
+                 def list = ["Bart", "Simpson"]
+                 int total = 0
+                 while(total < list.size()) {
+                     def name = list[total++]
+                     if(name == "Bart")
+                        firstName == name
+                     else
+                        lastName == "Simpson"
+                 }
+            }
+            Person result = query.find()
+
+          then:"The correct results are returned"
+             result != null
+             result.firstName == "Bart"
+      }
+      def "Test for loop"() {
+          given:"A bunch of people"
+               createPeople()
+
+          when:"We use a for loop in a query"
+            def query = Person.where {
+                 for(name in ["Bart", "Simpson"]) {
+                     if(name == "Bart")
+                        firstName == name
+                     else
+                        lastName == "Simpson"
+                 }
+            }
+            Person result = query.find()
+
+          then:"The correct results are returned"
+             result != null
+             result.firstName == "Bart"
+      }
+      def "Test criteria on single ended association"() {
+          given:"people and pets"
+            createPeopleWithPets()
+
+          when:"We query the single-ended association owner of pet"
+            def query = Pet.where {
+                owner.firstName == "Joe" || owner.firstName == "Fred"
+            }
+
+          then:"the correct results are returned"
+            query.count() == 4
+      }
+
    def "Test switch statement"() {
       given: "A bunch of people"
         createPeople()

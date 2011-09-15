@@ -50,7 +50,7 @@ public class HibernateQuery extends Query {
     private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
     private String alias;
     private int aliasCount;
-    private Map<String, Criteria> createdAssociationPaths = new HashMap<String, Criteria> ();
+    private Map<String, CriteriaAndAlias> createdAssociationPaths = new HashMap<String, CriteriaAndAlias> ();
     private static final String ALIAS = "_alias";
 
 
@@ -225,22 +225,23 @@ public class HibernateQuery extends Query {
         final PersistentProperty property = entity.getPropertyByName(calculatePropertyName(associationName, this.alias));
         if (property != null && (property instanceof Association)) {
             String alias = generateAlias(associationName);
-            Criteria subCriteria = getOrCreateAlias(associationName, alias);
+            CriteriaAndAlias subCriteria = getOrCreateAlias(associationName, alias);
 
             Association association = (Association) property;
-            return new HibernateAssociationQuery(subCriteria, (HibernateSession) getSession(), association.getAssociatedEntity(), association, alias);
+            return new HibernateAssociationQuery(subCriteria.criteria, (HibernateSession) getSession(), association.getAssociatedEntity(), association, alias);
         }
         throw new InvalidDataAccessApiUsageException("Cannot query association [" + calculatePropertyName(associationName, this.alias) + "] of entity [" + entity + "]. Property is not an association!");
     }
 
-    private Criteria getOrCreateAlias(String associationName, String alias) {
-        Criteria subCriteria;
+    private CriteriaAndAlias getOrCreateAlias(String associationName, String alias) {
+        CriteriaAndAlias subCriteria;
         if(createdAssociationPaths.containsKey(associationName)) {
             subCriteria = createdAssociationPaths.get(associationName);
         }
         else {
-            subCriteria = criteria.createAlias(associationName, alias);
-            createdAssociationPaths.put(associationName, subCriteria);
+            Criteria sc = criteria.createAlias(associationName, alias);
+            subCriteria = new CriteriaAndAlias(sc, alias);
+            createdAssociationPaths.put(associationName,subCriteria );
         }
         return subCriteria;
     }
@@ -317,8 +318,9 @@ public class HibernateQuery extends Query {
     String handleAssociationQuery(Association<?> association, List<Criterion> criteriaList) {
         String associationName = calculatePropertyName(association.getName(), this.alias);
         String newAlias = generateAlias(associationName);
-        getOrCreateAlias(associationName, newAlias);
-        return newAlias;
+        CriteriaAndAlias criteriaAndAlias = getOrCreateAlias(associationName, newAlias);
+
+        return criteriaAndAlias.alias;
     }
 
     private void addToCriteria(org.hibernate.criterion.Criterion criterion) {
@@ -614,6 +616,16 @@ public class HibernateQuery extends Query {
 
         public void setJunction(org.hibernate.criterion.Junction hibernateJunction) {
             this.hibernateJunction = hibernateJunction;
+        }
+    }
+
+    private class CriteriaAndAlias {
+        private Criteria criteria;
+        private String alias;
+
+        public CriteriaAndAlias(Criteria subCriteria, String alias) {
+            this.criteria = subCriteria;
+            this.alias = alias;
         }
     }
 }
