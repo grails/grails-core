@@ -17,11 +17,12 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 
 import org.apache.commons.lang.WordUtils
-import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter;
+import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
@@ -45,6 +46,7 @@ import com.opensymphony.module.sitemesh.RequestConstants
 class RenderTagLib implements RequestConstants {
 	GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
 	ErrorsViewStackTracePrinter errorsViewStackTracePrinter
+	GroovyPagesTemplateEngine groovyPagesTemplateEngine
 
     protected getPage() {
         return getRequest().getAttribute(PAGE)
@@ -120,11 +122,13 @@ class RenderTagLib implements RequestConstants {
                 }
                 if (content instanceof StreamCharBuffer) {
                     gspSiteMeshPage.setPageBuffer(content)
+					gspSiteMeshPage.setUsed(true)
                 }
                 else if (content != null) {
                     def buf = new StreamCharBuffer()
                     buf.writer.write(content)
                     gspSiteMeshPage.setPageBuffer(buf)
+					gspSiteMeshPage.setUsed(true)
                 }
             }
             finally {
