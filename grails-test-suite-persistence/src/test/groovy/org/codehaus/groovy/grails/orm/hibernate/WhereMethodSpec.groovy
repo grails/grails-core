@@ -14,8 +14,10 @@ class WhereMethodSpec extends GormSpec{
 
   def "Test function execution"() {
       given:"A bunch of people with pets"
-            createPeopleWithPets()
-            new Pet(owner:Person.get(1), birthDate: new Date() - 750, name:"Old Dog").save()
+          createPeopleWithPets()
+          def p = new Person(firstName: "Old", lastName: "Person").save()
+          new Pet(owner:p, birthDate: new Date() - 750, name:"Old Dog").save()
+
 
 
       when:"A function is used on the property"
@@ -36,6 +38,16 @@ class WhereMethodSpec extends GormSpec{
       then:"check that the results are correct"
         results.size() == 1
         results[0].name == "Old Dog"
+
+     when:"A function is used on an association"
+        query = Person.where {
+              year(pets.birthDate) == 2009
+        }
+        results = query.list()
+
+      then:"The correct results are returned"
+         results.size() == 1
+         results[0].firstName == "Old"
   }
 
      def "Test static scoped where calls"() {
