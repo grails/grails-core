@@ -85,7 +85,7 @@ public class ParseTests extends TestCase {
             "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
 
-            "invokeTag('message','g',1,createGroovyPageAttributes(['code':evaluate('\"testing [\"', 1, it) { return \"testing [\" }]),-1)\n" +
+            "invokeTag('message','g',1,['code':evaluate('\"testing [\"', 1, it) { return \"testing [\" }],-1)\n" +
             "}\n" + GSP_FOOTER;
 
         assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(output));
@@ -248,7 +248,7 @@ public class ParseTests extends TestCase {
             "Writer codecOut = getCodecOut()\n"+
             "registerSitemeshPreprocessMode()\n" +
             "createClosureForHtmlPart(0, 1)\n" +
-            "invokeTag('captureBody','sitemesh',1,createGroovyPageAttributes(['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }]),1)\n" +
+            "invokeTag('captureBody','sitemesh',1,['class':evaluate('\"${page.name} ${page.group.name.toLowerCase()}\"', 1, it) { return \"${page.name} ${page.group.name.toLowerCase()}\" }],1)\n" +
             "}\n" + GSP_FOOTER;
          assertEquals(trimAndRemoveCR(expected), trimAndRemoveCR(result.generatedGsp));
          assertEquals("text", result.htmlParts[0]);
@@ -281,7 +281,7 @@ public class ParseTests extends TestCase {
             "registerSitemeshPreprocessMode()\n" +
             "printHtmlPart(0)\n" +
             "createTagBody(1, {->\n" +
-            "invokeTag('captureMeta','sitemesh',1,createGroovyPageAttributes(['gsp_sm_xmlClosingForEmptyTag':evaluate('\"/\"', 1, it) { return \"/\" },'name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }]),-1)\n" +
+            "invokeTag('captureMeta','sitemesh',1,['gsp_sm_xmlClosingForEmptyTag':evaluate('\"/\"', 1, it) { return \"/\" },'name':evaluate('\"SomeName\"', 1, it) { return \"SomeName\" },'content':evaluate('\"${grailsApplication.config.myFirstConfig}/something/${someVar}\"', 1, it) { return \"${grailsApplication.config.myFirstConfig}/something/${someVar}\" }],-1)\n" +
             "})\n" +
             "invokeTag('captureHead','sitemesh',1,[:],1)\n" +
             "printHtmlPart(1)\n" +

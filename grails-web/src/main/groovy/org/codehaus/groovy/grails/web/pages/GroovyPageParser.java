@@ -1074,7 +1074,7 @@ public class GroovyPageParser implements Tokens {
 
             if (attrs.size() > 0) {
                 FastStringWriter buffer = new FastStringWriter();
-                buffer.print("createGroovyPageAttributes([");
+                buffer.print("[");
                 for (Iterator<?> i = attrs.keySet().iterator(); i.hasNext();) {
                     String name = (String) i.next();
                     String cleanedName=name;
@@ -1089,7 +1089,7 @@ public class GroovyPageParser implements Tokens {
                         buffer.print(',');
                     }
                     else {
-                        buffer.print("])");
+                        buffer.print("]");
                     }
                 }
                 attrsVarsMapDefinition.put(tagIndex, buffer.toString());

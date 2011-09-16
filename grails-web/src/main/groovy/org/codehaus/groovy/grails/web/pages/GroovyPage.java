@@ -375,6 +375,9 @@ public abstract class GroovyPage extends Script {
                             ((GroovyPageTagBody) body).setPreferSubChunkWhenWritingToOtherBuffer(true);
                         }
 
+                        if (!(attrs instanceof GroovyPageAttributes)) {
+                            attrs = new GroovyPageAttributes(attrs);
+                        }        
                         switch (tag.getParameterTypes().length) {
                             case 1:
                                 tagresult = tag.call(new Object[]{attrs});
@@ -667,10 +670,5 @@ public abstract class GroovyPage extends Script {
     @SuppressWarnings("unchecked")
     public void changeItVariable(Object value) {
     	setVariableDirectly("it", value);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public Map createGroovyPageAttributes(Map map) {
-        return new GroovyPageAttributes(map);
     }
 }
