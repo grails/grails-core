@@ -153,7 +153,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
             return null;
         }
 
-        if (shouldUseMavenMetadata(getWholePattern())) {        
+        if (shouldUseMavenMetadata(getWholePattern())) {
             InputStream metadataStream = null;
             try {
                 String metadataLocation = IvyPatternHelper.substitute(
@@ -163,26 +163,26 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                     metadataStream = metadata.openStream();
                     final StringBuilder timestamp = new StringBuilder();
                     final StringBuilder buildNumber = new StringBuilder();
+                    final StringBuilder lastUpdated = new StringBuilder();
                     XMLHelper.parse(metadataStream, null, new ContextualSAXHandler() {
                         @Override
-                        public void endElement(String uri, String localName, String qName)
-                                throws SAXException {
+                        public void endElement(String uri, String localName, String qName) throws SAXException {
                             if ("metadata/versioning/snapshot/timestamp".equals(getContext())) {
                                 timestamp.append(getText());
-                            }
-                            if ("metadata/versioning/snapshot/buildNumber".equals(getContext())) {
+                            } else if ("metadata/versioning/snapshot/buildNumber".equals(getContext())) {
                                 buildNumber.append(getText());
+                            } else if ("metadata/versioning/lastUpdated".equals(getContext())) {
+                                lastUpdated.append(getText());
                             }
                             super.endElement(uri, localName, qName);
                         }
                     }, null);
-                    if (timestamp.length() > 0) {
-                        // we have found a timestamp, so this is a snapshot unique version
-                        String rev = mrid.getRevision();
-                        rev = rev.substring(0, rev.length() - "-SNAPSHOT".length());
+                    if (timestamp.length() > 0) { // we have found a timestamp, so this is a snapshot unique version
+                        String snapshotRevision = mrid.getRevision();
+                        String baseRevision = snapshotRevision.substring(0, snapshotRevision.length() - "-SNAPSHOT".length());
+                        String uniqueRevisionSuffix = new StringBuffer().append(timestamp).append("-").append(buildNumber).toString();
 
-                        return new SnapshotRevision(rev, timestamp.toString(),
-                             Long.parseLong(buildNumber.toString()));
+                        return new SnapshotRevision(baseRevision, uniqueRevisionSuffix, Long.parseLong(lastUpdated.toString()));
                     }
                 } else {
                     Message.verbose("\tmaven-metadata not available: " + metadata);
@@ -211,29 +211,18 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
 
     static private class SnapshotRevision {
         public final String revision;
-
         public final String uniqueRevision;
         public final long lastModified;
 
-        private SnapshotRevision(String revision, String timestamp, long buildNumber) {        
-			this.revision = revision + "-SNAPSHOT";
-            this.uniqueRevision = revision + "-" + timestamp + "-" + buildNumber;
-            this.lastModified = calculateLastModified(Long.parseLong(timestamp.replaceAll("\\.", "")));
-        }
-
-        static public long calculateLastModified(long timestamp) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));
-            try {
-                return format.parse(Long.toString(timestamp)).getTime();
-            } catch (ParseException e) {
-                return -1;
-            }
+        private SnapshotRevision(String revision, String uniqueRevisionSuffix, long lastModified) {
+            this.revision = revision + "-SNAPSHOT";
+            this.uniqueRevision = revision + "-" + uniqueRevisionSuffix;
+            this.lastModified = lastModified;
         }
 
         @Override
         public String toString() {
-            return revision;
+            return uniqueRevision;
         }
     }
 
