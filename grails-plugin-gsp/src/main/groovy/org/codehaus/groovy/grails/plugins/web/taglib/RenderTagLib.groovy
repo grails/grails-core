@@ -17,11 +17,12 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 
 import org.apache.commons.lang.WordUtils
-import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter;
+import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
@@ -45,6 +46,7 @@ import com.opensymphony.module.sitemesh.RequestConstants
 class RenderTagLib implements RequestConstants {
 	GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
 	ErrorsViewStackTracePrinter errorsViewStackTracePrinter
+	GroovyPagesTemplateEngine groovyPagesTemplateEngine
 
     protected getPage() {
         return getRequest().getAttribute(PAGE)
@@ -94,7 +96,8 @@ class RenderTagLib implements RequestConstants {
      * @attr url Optional. The URL to retrieve the content from and apply a layout to
      * @attr contentType Optional. The content type to use, default is "text/html"
      * @attr encoding Optional. The encoding to use
-     * @attr params Optiona. The params to pass onto the page object
+     * @attr params Optional. The params to pass onto the page object
+     * @attr parse Optional. If true, Sitemesh parser will always be used to parse the content.
      */
     Closure applyLayout = { attrs, body ->
         if (!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
@@ -120,11 +123,13 @@ class RenderTagLib implements RequestConstants {
                 }
                 if (content instanceof StreamCharBuffer) {
                     gspSiteMeshPage.setPageBuffer(content)
+					gspSiteMeshPage.setUsed(true)
                 }
                 else if (content != null) {
                     def buf = new StreamCharBuffer()
                     buf.writer.write(content)
                     gspSiteMeshPage.setPageBuffer(buf)
+					gspSiteMeshPage.setUsed(true)
                 }
             }
             finally {
@@ -133,7 +138,7 @@ class RenderTagLib implements RequestConstants {
         }
 
         def page = null
-        if (gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        if (!attrs.boolean('parse') && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
             page = gspSiteMeshPage
         }
         else {

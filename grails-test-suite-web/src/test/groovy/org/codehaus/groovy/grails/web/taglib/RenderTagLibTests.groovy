@@ -17,15 +17,17 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.RequestConstants
 import com.opensymphony.module.sitemesh.html.util.CharArray
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser
 import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
 
 /**
@@ -502,4 +504,29 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals 'hello world', template
         assertEquals 'my/contenttype', response.getContentType()
     }
+	
+	void testApplyLayout() {
+		GrailsLayoutDecoratorMapper decoratorMapper=new GrailsLayoutDecoratorMapper()
+		decoratorMapper.groovyPageLayoutFinder = appCtx.groovyPageLayoutFinder
+		FactoryHolder.setFactory([getDecoratorMapper: { -> decoratorMapper}] as com.opensymphony.module.sitemesh.Factory)
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/layouts/layout.gsp', '<layoutapplied><g:layoutTitle /> - <g:layoutBody/></layoutapplied>')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+		def template='<g:applyLayout name="layout"><html><head><title>title here</title></head><body>Hello world!</body></html></g:applyLayout>'
+		assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
+	}
+
+	void testApplyLayoutParse() {
+		GrailsLayoutDecoratorMapper decoratorMapper=new GrailsLayoutDecoratorMapper()
+		decoratorMapper.groovyPageLayoutFinder = appCtx.groovyPageLayoutFinder
+		FactoryHolder.setFactory([getDecoratorMapper: { -> decoratorMapper}, getPageParser: { String contentType -> new HTMLPageParser() }] as com.opensymphony.module.sitemesh.Factory)
+		def resourceLoader = new MockStringResourceLoader()
+		resourceLoader.registerMockResource('/layouts/layout.gsp', '<layoutapplied><g:layoutTitle /> - <g:layoutBody/></layoutapplied>')
+		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+		def template='<g:applyLayout name="layout" parse="${true}"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
+		assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
+		
+		template='<g:applyLayout name="layout" parse="false"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
+		assertOutputEquals '<layoutapplied> - Hello world!</layoutapplied>', template
+	}
 }
