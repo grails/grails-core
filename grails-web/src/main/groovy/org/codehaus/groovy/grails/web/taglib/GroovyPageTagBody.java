@@ -128,10 +128,8 @@ public class GroovyPageTagBody extends Closure {
                     variablesMap.put("it", args);
                     itChanged = true;
                 }
-                bodyResult = executeClosure(args);
-            } else {
-                bodyResult = executeClosure(null);
             }
+            bodyResult = executeClosure();
 
             if (!capturedOut.isUsed() && bodyResult != null
                     && !(bodyResult instanceof Writer)) {
@@ -166,11 +164,7 @@ public class GroovyPageTagBody extends Closure {
         }
     }
 
-    private Object executeClosure(Object args) {
-        if (args != null) {
-            return bodyClosure.call(args);
-        }
-
+    private Object executeClosure() {
         return bodyClosure.call();
     }
 
