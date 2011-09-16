@@ -8,7 +8,6 @@ class Person {
     String lastName
     Integer age = 0
 
-    Set<Pet> pets
     static hasMany = [pets:Pet]
     static simpsons = where {
          lastName == "Simpson"

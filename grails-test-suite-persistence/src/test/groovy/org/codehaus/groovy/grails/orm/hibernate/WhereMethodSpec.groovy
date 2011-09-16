@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.gorm.DetachedCriteria
 import spock.lang.Ignore
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 /**
  * Tests the where method in Grails
@@ -10,6 +11,35 @@ class WhereMethodSpec extends GormSpec{
     @Override
     List getDomainClasses() {
         [Person, Pet]
+    }
+
+    def "Test error when using unknown domain property of an association"() {
+        when:"A an unknown domain class property of an association is referenced"
+           queryReferencingNonExistentPropertyOfAssociation()
+        then:
+             MultipleCompilationErrorsException e = thrown()
+             e.message.contains 'Cannot query on property "doesntExist" - no such property on class org.codehaus.groovy.grails.orm.hibernate.Pet exists.'
+    }
+
+    def queryReferencingNonExistentPropertyOfAssociation() {
+        def gcl = new GroovyClassLoader(getClass().classLoader)
+        gcl.parseClass('''
+import  org.codehaus.groovy.grails.orm.hibernate.*
+import grails.gorm.*
+import grails.persistence.*
+import org.grails.datastore.gorm.query.transform.ApplyDetachedCriteriaTransform
+
+@ApplyDetachedCriteriaTransform
+@Entity
+class CallMe {
+
+    def badQuery() {
+        Person.where {
+            pets { doesntExist == "Blah" }
+        }
+    }
+}
+''')
     }
 
   def "Test function execution"() {
