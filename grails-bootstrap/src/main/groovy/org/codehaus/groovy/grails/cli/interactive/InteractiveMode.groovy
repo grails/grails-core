@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
+import java.awt.Desktop
 
 /**
  * Provides the implementation of interactive mode in Grails.

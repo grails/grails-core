@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.orm.hibernate.query;
 import grails.orm.HibernateCriteriaBuilder;
 import grails.orm.RlikeExpression;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
@@ -28,12 +29,21 @@ import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.query.AssociationQuery;
 import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.api.QueryableCriteria;
+import org.grails.datastore.mapping.query.criteria.FunctionCallingCriterion;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.*;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.function.SQLFunction;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.persister.entity.PropertyMapping;
+import org.hibernate.type.BasicType;
+import org.hibernate.type.TypeResolver;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.util.ReflectionUtils;
 
 /**
  * Bridges the Query API with the Hibernate Criteria API
@@ -45,6 +55,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 public class HibernateQuery extends Query {
 
 
+
     @SuppressWarnings("hiding")
     private Criteria criteria;
     private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
@@ -52,11 +63,15 @@ public class HibernateQuery extends Query {
     private int aliasCount;
     private Map<String, CriteriaAndAlias> createdAssociationPaths = new HashMap<String, CriteriaAndAlias> ();
     private static final String ALIAS = "_alias";
+    private Field opField;
 
 
     public HibernateQuery(Criteria criteria, HibernateSession session, PersistentEntity entity) {
         super(session, entity);
         this.criteria = criteria;
+        this.opField = ReflectionUtils.findField(SimpleExpression.class, "op");
+        ReflectionUtils.makeAccessible(opField);
+
     }
 
     public HibernateQuery(Criteria subCriteria, HibernateSession session, PersistentEntity associatedEntity, String newAlias) {
@@ -91,7 +106,58 @@ public class HibernateQuery extends Query {
 
     @Override
     public void add(Criterion criterion) {
-        if(criterion instanceof PropertyCriterion) {
+        if(criterion instanceof FunctionCallingCriterion) {
+            HibernateTemplate hibernateSession = (HibernateTemplate) this.session.getNativeInterface();
+
+            SessionFactory sessionFactory = hibernateSession.getSessionFactory();
+            FunctionCallingCriterion fcc = (FunctionCallingCriterion) criterion;
+            String property = fcc.getProperty();
+            PropertyCriterion propertyCriterion = fcc.getPropertyCriterion();
+            PersistentProperty pp = entity.getPropertyByName(property);
+
+            if(pp == null) throw new InvalidDataAccessResourceUsageException("Cannot execute function defined in query ["+fcc.getFunctionName()+"] on non-existent property ["+property+"] of ["+entity.getJavaClass()+"]");
+
+            String functionName = fcc.getFunctionName();
+
+
+            SessionFactoryImplementor impl = (SessionFactoryImplementor) sessionFactory;
+            Dialect dialect = impl.getDialect();
+            SQLFunction sqlFunction = dialect.getFunctions().get(functionName);
+            if(sqlFunction != null) {
+                TypeResolver typeResolver = impl.getTypeResolver();
+                BasicType basic = typeResolver.basic(pp.getType().getName());
+                if(basic != null) {
+
+                    final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(propertyCriterion, alias).toHibernateCriterion(this);
+                    if(hibernateCriterion instanceof SimpleExpression) {
+                        SimpleExpression expr = (SimpleExpression) hibernateCriterion;
+                        Object op = ReflectionUtils.getField(opField, expr);
+                        PropertyMapping mapping = (PropertyMapping) impl.getEntityPersister(entity.getJavaClass().getName());
+                        String[] columns;
+                        if(this.alias != null)
+                            columns = mapping.toColumns(alias, property);
+                        else
+                            columns = mapping.toColumns(property);
+                        String root = sqlFunction.render(basic, Arrays.asList(columns), impl);
+                        Object value = propertyCriterion.getValue();
+                        if(value != null)
+                            addToCriteria(Restrictions.sqlRestriction(root + op + "?", value, typeResolver.basic(value.getClass().getName()) ));
+                        else
+                            addToCriteria(Restrictions.sqlRestriction(root + op + "?", value, basic ));
+                    }
+                    else {
+                        throw new InvalidDataAccessResourceUsageException("Unsupported function ["+functionName+"] defined in query for property ["+property+"] with type ["+pp.getType()+"]");
+                    }
+                }
+                else {
+                    throw new InvalidDataAccessResourceUsageException("Unsupported function ["+functionName+"] defined in query for property ["+property+"] with type ["+pp.getType()+"]");
+                }
+            }
+            else {
+                throw new InvalidDataAccessResourceUsageException("Unsupported function defined in query ["+functionName+"]");
+            }
+        }
+        else if(criterion instanceof PropertyCriterion) {
             PropertyCriterion pc = (PropertyCriterion) criterion;
             if(pc.getValue() instanceof QueryableCriteria) {
                 DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) pc.getValue());

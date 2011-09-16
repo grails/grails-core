@@ -13,6 +13,7 @@ import grails.persistence.Entity
 class Pet {
     String name
     Person owner
+    Date birthDate = new Date()
 
     static belongsTo = [owner:Person]
 }
