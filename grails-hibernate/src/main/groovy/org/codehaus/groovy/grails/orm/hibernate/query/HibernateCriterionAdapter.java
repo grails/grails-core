@@ -17,9 +17,11 @@ package org.codehaus.groovy.grails.orm.hibernate.query;
 import grails.orm.HibernateCriteriaBuilder;
 import grails.orm.RlikeExpression;
 import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria;
+import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.query.AssociationQuery;
 import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.api.QueryableCriteria;
+import org.grails.datastore.mapping.query.criteria.FunctionCallingCriterion;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
 
@@ -48,7 +50,7 @@ public class HibernateCriterionAdapter {
                 DetachedAssociationCriteria existing = (DetachedAssociationCriteria) criterion;
                 alias = hibernateQuery.handleAssociationQuery(existing.getAssociation(), existing.getCriteria());
                 Junction conjunction = Restrictions.conjunction();
-                applySubCriteriaToJunction(hibernateQuery, existing.getCriteria(), conjunction, alias);
+                applySubCriteriaToJunction(existing.getAssociation().getAssociatedEntity(), hibernateQuery, existing.getCriteria(), conjunction, alias);
                 return conjunction;
             }
         });
@@ -58,7 +60,7 @@ public class HibernateCriterionAdapter {
                 AssociationQuery existing = (AssociationQuery) criterion;
                 Junction conjunction = Restrictions.conjunction();
                 alias = hibernateQuery.handleAssociationQuery(existing.getAssociation(), existing.getCriteria().getCriteria());
-                applySubCriteriaToJunction(hibernateQuery, existing.getCriteria().getCriteria(), conjunction, alias);
+                applySubCriteriaToJunction(existing.getAssociation().getAssociatedEntity(), hibernateQuery, existing.getCriteria().getCriteria(), conjunction, alias);
                 return conjunction;
             }
         });
@@ -68,7 +70,7 @@ public class HibernateCriterionAdapter {
                 Query.Junction existing = (Query.Conjunction) criterion;
                 Junction conjunction = Restrictions.conjunction();
 
-                applySubCriteriaToJunction(hibernateQuery, existing.getCriteria(), conjunction, alias);
+                applySubCriteriaToJunction(hibernateQuery.getEntity(), hibernateQuery, existing.getCriteria(), conjunction, alias);
                 return conjunction;
             }
         });
@@ -78,7 +80,7 @@ public class HibernateCriterionAdapter {
                 Query.Junction existing = (Query.Junction) criterion;
                 Junction disjunction = Restrictions.disjunction();
 
-                applySubCriteriaToJunction(hibernateQuery, existing.getCriteria(), disjunction, alias);
+                applySubCriteriaToJunction(hibernateQuery.getEntity(), hibernateQuery, existing.getCriteria(), disjunction, alias);
                 return disjunction;
             }
         });
@@ -88,7 +90,7 @@ public class HibernateCriterionAdapter {
                 Query.Junction existing = (Query.Junction) criterion;
                 Junction disjunction = Restrictions.disjunction();
 
-                applySubCriteriaToJunction(hibernateQuery, existing.getCriteria(), disjunction, alias);
+                applySubCriteriaToJunction(hibernateQuery.getEntity(), hibernateQuery, existing.getCriteria(), disjunction, alias);
                 return Restrictions.not(disjunction);
             }
         });
@@ -324,8 +326,9 @@ public class HibernateCriterionAdapter {
         }
     }
 
-    private static void applySubCriteriaToJunction(HibernateQuery hibernateCriteria, List<Query.Criterion> existing, Junction conjunction, String alias) {
+    private static void applySubCriteriaToJunction(PersistentEntity entity, HibernateQuery hibernateCriteria, List<Query.Criterion> existing, Junction conjunction, String alias) {
         for (Query.Criterion subCriterion : existing) {
+
             if(subCriterion instanceof Query.PropertyCriterion) {
                 Query.PropertyCriterion pc = (Query.PropertyCriterion) subCriterion;
                 if(pc.getValue() instanceof QueryableCriteria) {
@@ -339,6 +342,12 @@ public class HibernateCriterionAdapter {
                 Criterion c = criterionAdaptor.toHibernateCriterion(hibernateCriteria, subCriterion, alias);
                 if(c != null)
                     conjunction.add(c);
+            }
+            else if(subCriterion instanceof FunctionCallingCriterion) {
+                Criterion sqlRestriction = hibernateCriteria.getRestrictionForFunctionCall((FunctionCallingCriterion) subCriterion, entity);
+                if(sqlRestriction != null) {
+                   conjunction.add(sqlRestriction);
+                }
             }
         }
     }
