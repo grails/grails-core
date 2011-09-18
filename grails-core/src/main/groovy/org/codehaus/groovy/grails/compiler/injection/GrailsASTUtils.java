@@ -508,14 +508,18 @@ public class GrailsASTUtils {
             classNode.addAnnotation(annotationToAdd);
         }
         else {
-            boolean foundAnn = false;
-            for (AnnotationNode annotation : annotations) {
-                if(annotation.getClassNode().equals(annotationClassNode)) {
-                    foundAnn = true;
-                }
-            }
-
+            boolean foundAnn = findAnnotation(annotationClassNode, annotations) != null;
             if(!foundAnn) classNode.addAnnotation(annotationToAdd);
         }
     }
+
+    public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations){
+         for (AnnotationNode annotation : annotations) {
+                if(annotation.getClassNode().equals(annotationClassNode)) {
+                    return annotation;
+                }
+            }
+        return null;
+    }
+
 }
