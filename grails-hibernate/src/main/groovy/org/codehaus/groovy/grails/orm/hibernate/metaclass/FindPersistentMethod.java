@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
@@ -69,8 +70,8 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
 
     private static final String    METHOD_PATTERN    = "^find$";
 
-    public FindPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));
+    public FindPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+        super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), application);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

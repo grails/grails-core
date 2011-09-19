@@ -139,6 +139,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     private MergePersistentMethod mergeMethod
     private ClassLoader classLoader
     private GrailsApplication grailsApplication
+	private boolean cacheQueriesByDefault = false
 
     HibernateGormStaticApi(Class persistentClass, HibernateDatastore datastore, List<FinderMethod> finders,
                 ClassLoader classLoader, PlatformTransactionManager transactionManager) {
@@ -150,10 +151,6 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         this.hibernateTemplate = new HibernateTemplate(sessionFactory)
         this.conversionService = datastore.mappingContext.conversionService
 
-        this.executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader)
-        this.executeUpdateMethod = new ExecuteUpdatePersistentMethod(sessionFactory, classLoader)
-        this.findMethod = new FindPersistentMethod(sessionFactory, classLoader)
-        this.findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader)
         identityType = persistentEntity.identity.type
 
         def mappingContext = datastore.mappingContext
@@ -161,13 +158,19 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
             grailsApplication = domainClassMappingContext.getGrailsApplication()
 
-            findAllMethod.grailsApplication = grailsApplication
             GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
             identityType = domainClass.identifier.type
 
             this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
+			this.cacheQueriesByDefault = GrailsHibernateUtil.isCacheQueriesByDefault(grailsApplication)
+			this.hibernateTemplate.setCacheQueries(this.cacheQueriesByDefault)
         }
+		
+		this.executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader, grailsApplication)
+		this.executeUpdateMethod = new ExecuteUpdatePersistentMethod(sessionFactory, classLoader, grailsApplication)
+		this.findMethod = new FindPersistentMethod(sessionFactory, classLoader, grailsApplication)
+		this.findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader, grailsApplication)
     }
 
     @Override
@@ -497,7 +500,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
     @Override
     Object withSession(Closure callable) {
-        new HibernateTemplate(sessionFactory).execute({ session ->
+        HibernateTemplate template = new HibernateTemplate(sessionFactory)
+		template.setCacheQueries(cacheQueriesByDefault)
+		template.execute({ session ->
             callable(session)
         } as HibernateCallback)
     }
@@ -505,6 +510,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     @Override
     void withNewSession(Closure callable) {
         HibernateTemplate template = new HibernateTemplate(sessionFactory)
+		template.setCacheQueries(cacheQueriesByDefault)
         SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
         Session previousSession = sessionHolder?.session
         try {
@@ -713,6 +719,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     private HibernateTemplate hibernateTemplate
     private SessionFactory sessionFactory
     private ClassLoader classLoader
+	private boolean cacheQueriesByDefault = false
 
     private config = Collections.emptyMap()
 
@@ -731,6 +738,8 @@ class HibernateGormInstanceApi extends GormInstanceApi {
             this.config = grailsApplication.config?.grails?.gorm
             this.saveMethod = new SavePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
             this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
+			this.cacheQueriesByDefault = GrailsHibernateUtil.isCacheQueriesByDefault(grailsApplication)
+			this.hibernateTemplate.setCacheQueries(this.cacheQueriesByDefault)
         }
     }
 

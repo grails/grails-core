@@ -21,6 +21,8 @@ import java.util.*;
 
 import javax.persistence.FlushModeType;
 
+import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.query.HibernateQuery;
 import org.grails.datastore.mapping.core.AbstractAttributeStoringSession;
 import org.grails.datastore.mapping.core.Datastore;
@@ -53,6 +55,12 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     public HibernateSession(HibernateDatastore hibernateDatastore, SessionFactory sessionFactory) {
         this.hibernateTemplate = new HibernateTemplate(sessionFactory);
         this.datastore = hibernateDatastore;
+        
+        if (datastore.getMappingContext() instanceof GrailsDomainClassMappingContext) {
+			this.hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault(((GrailsDomainClassMappingContext)datastore.getMappingContext()).getGrailsApplication()));
+        }
+
+        
     }
 
     @Override

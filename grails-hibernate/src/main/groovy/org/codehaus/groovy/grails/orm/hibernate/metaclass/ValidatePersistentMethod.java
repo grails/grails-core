@@ -48,7 +48,6 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
     public static final String METHOD_SIGNATURE = "validate";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
-    private GrailsApplication application;
     public static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
     private Validator validator;
@@ -60,9 +59,8 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader,
              GrailsApplication application, Validator validator, HibernateDatastore datastore) {
-        super(METHOD_PATTERN, sessionFactory, classLoader);
+        super(METHOD_PATTERN, sessionFactory, classLoader, application);
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
-        this.application = application;
         this.validator = validator;
         this.datastore = datastore;
     }

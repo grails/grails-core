@@ -41,11 +41,9 @@ import java.util.regex.Pattern;
 public class ListPersistentMethod extends AbstractStaticPersistentMethod {
 
     private static final String METHOD_PATTERN = "^list$";
-    private GrailsApplication application;
 
     public ListPersistentMethod(GrailsApplication grailsApplication, SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN));
-        application = grailsApplication;
+        super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), grailsApplication);
     }
 
     @Override

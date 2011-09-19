@@ -42,7 +42,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -54,7 +53,6 @@ import org.springframework.validation.Validator;
  */
 public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersistentMethod {
 
-    private GrailsApplication application;
     private HibernateDatastore datastore;
     private static final String ARGUMENT_VALIDATE = "validate";
     private static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
@@ -101,11 +99,9 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
               ClassLoader classLoader, GrailsApplication application,
-              @SuppressWarnings("unused") GrailsDomainClass domainClass, HibernateDatastore datastore) {
-        super(pattern, sessionFactory, classLoader);
-        Assert.notNull(application, "Constructor argument 'application' cannot be null");
+              GrailsDomainClass domainClass, HibernateDatastore datastore) {
+        super(pattern, sessionFactory, classLoader, application);
 
-        this.application = application;
         this.datastore = datastore;
     }
 

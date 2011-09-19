@@ -449,9 +449,13 @@ public class GrailsHibernateUtil {
     }
 
     public static boolean isCacheQueriesByDefault() {
-        Object o = GrailsWebUtil.currentFlatConfiguration().get(CONFIG_PROPERTY_CACHE_QUERIES);
-        return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
+    	return isCacheQueriesByDefault(GrailsWebUtil.currentApplication());
     }
+    
+    public static boolean isCacheQueriesByDefault(GrailsApplication grailsApplication) {
+        Object o = grailsApplication.getFlatConfig().get(CONFIG_PROPERTY_CACHE_QUERIES);
+        return (o != null && o instanceof Boolean)?((Boolean)o).booleanValue():false;
+    }    
 
     public static GroovyAwareJavassistProxyFactory buildProxyFactory(PersistentClass persistentClass) {
         GroovyAwareJavassistProxyFactory proxyFactory = new GroovyAwareJavassistProxyFactory();

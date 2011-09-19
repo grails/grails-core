@@ -425,7 +425,6 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
 
     private final String[] operators;
     private final Pattern[] operatorPatterns;
-    protected final GrailsApplication application;
 
     /**
      * Constructor.
@@ -436,8 +435,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
      * @param operators
      */
     public AbstractClausedStaticPersistentMethod(GrailsApplication application, SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern, String[] operators) {
-        super(sessionFactory, classLoader, pattern);
-        this.application = application;
+        super(sessionFactory, classLoader, pattern, application);
         this.operators = operators;
         operatorPatterns = new Pattern[operators.length];
         for (int i = 0; i < operators.length; i++) {

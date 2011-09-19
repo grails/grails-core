@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.FlushMode;
@@ -65,8 +66,8 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
             }}
     );
 
-    public ExecuteQueryPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(sessionFactory, classLoader, METHOD_PATTERN);
+    public ExecuteQueryPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+        super(sessionFactory, classLoader, METHOD_PATTERN, application);
     }
 
     @SuppressWarnings("rawtypes")
