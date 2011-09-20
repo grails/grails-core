@@ -24,7 +24,7 @@ class FooController {
 ''')
 
         when: "The stack trace is filtered with custom packages"
-           filterer.setCutOffPackage("org.spockframework.runtime")
+           filterer.setCutOffPackage("org.spockframework.util")
            Throwable exception
            try {
                cls.newInstance().show()
@@ -71,7 +71,7 @@ class FooService {
 ''')
 
         when: "The stack trace is filtered with custom packages"
-           filterer.setCutOffPackage("org.spockframework.runtime")
+           filterer.setCutOffPackage("org.spockframework.util")
            Throwable exception
            try {
                cls.newInstance().show()
