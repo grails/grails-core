@@ -204,7 +204,10 @@ class DocPublisher {
             // A set of all gdoc files.
             def files = []
             guideSrcDir.traverse(type: FileType.FILES, nameFilter: ~/^.+\.gdoc$/) {
-                files << (it.absolutePath - guideSrcDir.absolutePath)[1..-1]
+                // We need relative file paths with '/' separators, since those
+                // are what are stored in the UserGuideNodes.
+                files << (it.absolutePath - guideSrcDir.absolutePath)[1..-1].
+                        replace(File.separator as char, '/' as char)
             }
 
             if (!verifyToc(guideSrcDir, files, guide)) {

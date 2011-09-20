@@ -90,7 +90,7 @@ class YamlTocStrategy {
             //    intro/whatsNew/changelog/$basename.gdoc
             //
             for (i in 1..pathElements.size()) {
-                filePath = "${pathElements[-1..-i].join(File.separator)}${File.separator}${basename}.gdoc"
+                filePath = "${pathElements[-1..-i].join('/')}/${basename}.gdoc"
                 if (resourceChecker.exists(filePath)) {
                     return filePath
                 }
