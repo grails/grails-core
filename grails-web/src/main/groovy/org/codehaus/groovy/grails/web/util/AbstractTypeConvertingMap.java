@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.GroovyObjectSupport;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -43,7 +45,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * @since 1.2
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
+public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport implements Map, Cloneable {
     protected Map wrappedMap;
 
     public AbstractTypeConvertingMap() {
