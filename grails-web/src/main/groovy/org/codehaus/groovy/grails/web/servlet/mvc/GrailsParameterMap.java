@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,6 +33,8 @@ import org.codehaus.groovy.grails.web.binding.StructuredDateEditor;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -50,9 +53,11 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
 
     private static final Log LOG = LogFactory.getLog(GrailsParameterMap.class);
-    public static final String REQUEST_BODY_PARSED = "org.codehaus.groovy.grails.web.REQUEST_BODY_PARSED";
+    private static final Map<String, String> CACHED_DATE_FORMATS  = new ConcurrentHashMap<String, String>();
 
     private HttpServletRequest request;
+    public static final String REQUEST_BODY_PARSED = "org.codehaus.groovy.grails.web.REQUEST_BODY_PARSED";
+    public static final Object[] EMPTY_ARGS = new Object[0];
 
     /**
      * Does not populate the GrailsParameterMap from the request but instead uses the supplied values.
@@ -246,6 +251,41 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             Map.Entry entry = (Map.Entry)entryObj;
             put(entry.getKey(), entry.getValue());
         }
+    }
+
+    /**
+     * Obtains a date for the parameter name using the default format
+     *
+     * @param name The name of the parameter
+     * @return A date or null
+     */
+    @Override
+    public Date getDate(String name) {
+        Date date = super.getDate(name);
+        if(date == null) {
+            // try lookup format from messages.properties
+            String format = lookupFormat(name);
+            if(format != null)
+                return getDate(name, format);
+        }
+        return date;
+    }
+
+    private String lookupFormat(String name) {
+        String format = CACHED_DATE_FORMATS.get(name);
+        if(format == null) {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+            if(webRequest != null) {
+                MessageSource messageSource = webRequest.getApplicationContext();
+                if(messageSource != null) {
+                    format = messageSource.getMessage("date." + name + ".format", EMPTY_ARGS, webRequest.getLocale());
+                    if(format != null) {
+                        CACHED_DATE_FORMATS.put(name, format);
+                    }
+                }
+            }
+        }
+        return format;
     }
 
     /**
