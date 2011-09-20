@@ -204,17 +204,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     /**
-     * Creates a template from a pre-compiled view class
-     * @param viewClass The view class
-     * @return The Template instance
-     */
-    public Template createTemplate(@SuppressWarnings("rawtypes") Class viewClass) {
-        @SuppressWarnings("unchecked")
-        final GroovyPageMetaInfo metaInfo = createPreCompiledGroovyPageMetaInfo(viewClass);
-        return new GroovyPageTemplate(metaInfo);
-    }
-
-    /**
      * Creates a Template for the given Spring Resource instance
      *
      * @param resource The Resource to create the Template for
@@ -295,13 +284,13 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         return createTemplateForUri(uri);
     }
 
-    private GroovyPageTemplate createTemplateFromPrecompiled(final String uri, Class<?> gspClass) {
+    private Template createTemplateFromPrecompiled(final String uri, Class<?> gspClass) {
         GroovyPageMetaInfo meta = precompiledCache.get(uri);
         if (meta == null) {
             meta = loadPrecompiledGsp(gspClass);
             if (meta != null) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Adding GSP class GroovyPageMetaInfo in cache for uri " + uri + " classname is " + meta.getPageClass().getName());
+                    LOG.debug("Adding GSP class GroovyPageMetaInfo in cache. GSP classname is " + meta.getPageClass().getName());
                 }
                 precompiledCache.put(uri, meta);
             }
@@ -315,17 +304,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Precompiled GSP for uri " + uri + " is newer in reload location. Ignoring the precompiled GSP.");
                 }
-
                 // remove the precompiled version from caches & mapping
-                for (Iterator<Map.Entry<String, GroovyPageMetaInfo>> it=precompiledCache.entrySet().iterator(); it.hasNext();) {
-                    Map.Entry<String, GroovyPageMetaInfo> entry=it.next();
-                    if (entry.getValue() == meta) {
-                        groovyPageLocator.removePrecompiledPage(entry.getKey());
-                        it.remove();
-                    }
-                }
-
-                return null;
+                precompiledCache.remove(uri);
+                groovyPageLocator.removePrecompiledPage(uri);
+                
+                return createTemplateForUri(uri);
             }
             return new GroovyPageTemplate(meta);
         }
@@ -348,6 +331,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         meta.setJspTagLibraryResolver(jspTagLibraryResolver);
         meta.setTagLibraryLookup(tagLibraryLookup);
         meta.initialize();
+        GroovyPagesMetaUtils.registerMethodMissingForGSP(gspClass, tagLibraryLookup);
         return meta;
     }
 
@@ -684,6 +668,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
             throw new GroovyPagesException("IO exception parsing script ["+ relativePageName + "]: " + e.getMessage(), e);
         }
+        GroovyPagesMetaUtils.registerMethodMissingForGSP(scriptClass, tagLibraryLookup);
+        
         return scriptClass;
     }
 

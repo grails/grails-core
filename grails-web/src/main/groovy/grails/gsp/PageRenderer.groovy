@@ -129,13 +129,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
                   new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
                   servletContext, applicationContext)
             RequestContextHolder.setRequestAttributes(webRequest)
-            def template = null
-            if (source instanceof GroovyPageResourceScriptSource) {
-                template = templateEngine.createTemplate(source.resource, true)
-            }
-            else if (source instanceof GroovyPageCompiledScriptSource) {
-                template = templateEngine.createTemplate(source.compiledClass)
-            }
+            def template = templateEngine.createTemplate(source)
             if (template != null) {
                 template.make(args.model ?: [:]).writeTo(writer)
             }

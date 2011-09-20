@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
+import org.codehaus.groovy.grails.web.taglib.TemplateNamespacedTagDispatcher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -71,22 +72,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     }
 
     protected void registerTemplateNamespace() {
-        namespaceDispatchers.put(GroovyPage.TEMPLATE_NAMESPACE, new NamespacedTagDispatcher(GroovyPage.DEFAULT_NAMESPACE, GroovyPage.class, grailsApplication, this) {
-            @Override
-            public Object invokeMethod(final String name, Object args) {
-
-                @SuppressWarnings("unchecked")
-                Map<String, Object> attrs = CollectionUtils.<String, Object>newMap("template", name);
-                if (args != null && args instanceof Object[]) {
-                    Object[] tagArgs = ((Object[])args);
-                    if (tagArgs.length > 0 && tagArgs[0] instanceof Map) {
-                        attrs.put("model", tagArgs[0]);
-                    }
-                }
-
-                return super.invokeMethod("render", new Object[]{attrs});
-            }
-        });
+        namespaceDispatchers.put(GroovyPage.TEMPLATE_NAMESPACE, new TemplateNamespacedTagDispatcher(GroovyPage.class, grailsApplication, this));
     }
 
     /**
