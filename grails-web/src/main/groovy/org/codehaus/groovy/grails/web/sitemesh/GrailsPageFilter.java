@@ -33,8 +33,10 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
 import com.opensymphony.module.sitemesh.Config;
@@ -72,6 +74,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
     private PersistenceContextInterceptor persistenceInterceptor = new NullPersistentContextInterceptor();
     private String defaultEncoding = UTF_8_ENCODING;
     private GroovyPagesTemplateEngine templateEngine;
+    protected ViewResolver layoutViewResolver;
 
     @Override
     public void init(FilterConfig fc) {
@@ -87,6 +90,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
 
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(fc.getServletContext());
         templateEngine = applicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID, GroovyPagesTemplateEngine.class);
+        layoutViewResolver = WebUtils.lookupViewResolver(applicationContext);
 
         final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(fc.getServletContext());
         String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
@@ -207,7 +211,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
                     private void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
                                         HttpServletResponse response, ServletContext servletContext) {
 
-                        GroovyPageLayoutRenderer layoutRenderer = new GroovyPageLayoutRenderer(decorator, templateEngine, applicationContext);
+                        GroovyPageLayoutRenderer layoutRenderer = new GroovyPageLayoutRenderer(decorator, layoutViewResolver);
                         layoutRenderer.render(content, request, response, servletContext);
                     }
 

@@ -23,6 +23,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
@@ -220,10 +222,21 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         writer << '</a>'
     }
 
-    static attrsToString(Map attrs) {
+    static String attrsToString(Map attrs) {
         // Output any remaining user-specified attributes
-        final resultingAttributes = attrs.entrySet().collect { "$it.key=\"${it.value.encodeAsHTML()}\""}.join(' ')
-        return " $resultingAttributes"
+		StringBuilder sb=new StringBuilder()
+		// For some strange reason Groovy creates ClassCastExceptions internally in PogoMetaMethodSite.checkCall without this hack
+		for(Iterator i = InvokerHelper.asIterator(attrs); i.hasNext();) {
+			Map.Entry e=i.next()
+			if(e.value != null) { 
+				sb.append(' ')
+				sb.append(e.key)
+				sb.append('="')
+				sb.append(String.valueOf(e.value).encodeAsHTML())
+				sb.append('"')
+			}
+		}
+        return sb.toString()
     }
 
     static LINK_WRITERS = [
@@ -237,7 +250,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     ]
 
     static getAttributesToRender(constants, attrs) {
-        return "${constants ? attrsToString(constants) : ''}${attrs ? attrsToString(attrs) : ''}"
+		StringBuilder sb=new StringBuilder()
+		if(constants) {
+			sb.append(attrsToString(constants))
+		}
+		if(attrs) {
+			sb.append(attrsToString(attrs))
+		}
+        return sb.toString()
     }
 
     static SUPPORTED_TYPES = [

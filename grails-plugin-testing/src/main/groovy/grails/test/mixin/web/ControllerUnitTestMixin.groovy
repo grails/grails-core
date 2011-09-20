@@ -55,6 +55,7 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
@@ -331,7 +332,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         WebMetaUtils.enhanceCommandObject(applicationContext, commandClass)
 
         final instance = commandClass.newInstance()
-        applicationContext.autowireCapableBeanFactory.autowireBean(instance)
+        applicationContext.autowireCapableBeanFactory.autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         return instance
     }
 

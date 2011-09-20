@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -165,7 +166,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
                 }
             }
             if (pageClass != null) {
-                return groovyPagesTemplateEngine.createTemplate(pageClass);
+                return groovyPagesTemplateEngine.createTemplate(new GroovyPageCompiledScriptSource(pageName, pageClass));
             }
         }
         return null;

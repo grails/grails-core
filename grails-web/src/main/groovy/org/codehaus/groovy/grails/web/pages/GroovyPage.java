@@ -477,45 +477,6 @@ public abstract class GroovyPage extends Script {
         return lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
     }
 
-    /**
-     * Allows invoking of taglibs as method calls with simple bodies. The bodies should only contain text
-     *
-     * @param methodName The methodName of the tag to call or the methodName of a method on GroovPage
-     * @param args       The Arguments
-     * @return The result of the invocation
-     */
-    @SuppressWarnings("rawtypes")
-    @Override
-    public final Object invokeMethod(final String methodName, Object args) {
-        if (methodName.equals("invokeTag")) return super.invokeMethod(methodName, args);
-
-        Map attrs = null;
-        Object body = null;
-        GroovyObject tagLib = getTagLibForDefaultNamespace(methodName);
-        if (tagLib != null) {
-            // get attributes and body closure
-            if (args instanceof Object[]) {
-                Object[] argArray = (Object[]) args;
-                if (argArray.length > 0 && argArray[0] instanceof Map) {
-                    attrs = (Map) argArray[0];
-                }
-                if (argArray.length > 1) {
-                    body = argArray[1];
-                }
-            } else if (args instanceof Map) {
-                attrs = (Map) args;
-            }
-
-            if (attrs == null) {
-                attrs = new HashMap();
-            }
-
-            return captureTagOutput(gspTagLibraryLookup, DEFAULT_NAMESPACE, methodName, attrs, body, webRequest);
-        }
-
-        return super.invokeMethod(methodName, args);
-    }
-
     @SuppressWarnings("rawtypes")
     public final static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace,
                                                 String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {

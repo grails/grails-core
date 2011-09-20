@@ -92,7 +92,7 @@ class JavascriptTagLib {
                         if (!request[INCLUDED_JS].contains(it)) {
                             request[INCLUDED_JS] << it
                             def newattrs = [:] + attrs
-                            newattrs.src = it + '.js'
+                            newattrs.src = String.valueOf(it) + '.js'
                             javascriptInclude(newattrs)
                         }
                     }
@@ -103,7 +103,7 @@ class JavascriptTagLib {
                 else {
                     if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
                         def newattrs = [:] + attrs
-                        newattrs.src = newattrs.remove('library') + '.js'
+                        newattrs.src = String.valueOf(newattrs.remove('library')) + '.js'
                         javascriptInclude(newattrs)
                         request[INCLUDED_LIBRARIES] << attrs.library
                         request[INCLUDED_JS] << attrs.library

@@ -75,6 +75,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         template = '${tmpl.tableRow(label:"one", value:"two")}'
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
+		// execute twice to make sure methodMissing works
+		assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
     }
 
     void testRenderWithNonExistantTemplate() {
