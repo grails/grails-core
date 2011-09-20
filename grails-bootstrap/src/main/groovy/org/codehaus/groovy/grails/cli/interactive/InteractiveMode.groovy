@@ -75,10 +75,13 @@ class InteractiveMode {
             try {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
-                    if ("quit".equals(trimmed)) {
+                    if(trimmed.startsWith("create-app")) {
+                        error "You cannot create an application in interactive mode."
+                    }
+                    else if ("quit".equals(trimmed)) {
                         System.exit(0)
                     }
-                    if ("exit".equals(trimmed)) {
+                    else if ("exit".equals(trimmed)) {
                         if (grailsServer) {
                            try {
                                updateStatus "Stopping Grails server"
