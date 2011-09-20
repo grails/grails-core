@@ -2,11 +2,12 @@ package org.codehaus.groovy.grails.web.pages
 
 import groovy.lang.MetaClass
 
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.runtime.InvokerHelper
 
 class GroovyPagesMetaUtils {
 	public static void registerMethodMissingForGSP(Class gspClass, TagLibraryLookup gspTagLibraryLookup) {
-		registerMethodMissingForGSP(InvokerHelper.getMetaClass(gspClass), gspTagLibraryLookup)
+		registerMethodMissingForGSP(GrailsMetaClassUtils.getExpandoMetaClass(gspClass), gspTagLibraryLookup)
 	}
 	
 	public static void registerMethodMissingForGSP(MetaClass mc, TagLibraryLookup gspTagLibraryLookup) {
