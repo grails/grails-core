@@ -94,7 +94,8 @@ public enum Environment {
         	Metadata metadata = Metadata.getCurrent();	
         	if(metadata != null) {
         		envName = metadata.getEnvironment();
-        	} else {
+        	}
+        	if(isBlank(envName)) {
         		return DEVELOPMENT;
         	}
         }
