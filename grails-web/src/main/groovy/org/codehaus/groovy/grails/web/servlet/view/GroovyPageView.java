@@ -30,12 +30,13 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
+import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
 /**
- * A Spring View that renders Groovy Server Pages to the reponse. It requires an instance
+ * A Spring View that renders Groovy Server Pages to the response. It requires an instance
  * of GroovyPagesTemplateEngine to be set and will render to view returned by the getUrl()
  * method of AbstractUrlBasedView
  *
@@ -54,11 +55,11 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
 public class GroovyPageView extends AbstractUrlBasedView {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
-    private GroovyPagesTemplateEngine templateEngine;
+    protected GroovyPagesTemplateEngine templateEngine;
     private long createTimestamp = System.currentTimeMillis();
     private static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
-    private Class<?> viewClass;
-
+    private ScriptSource scriptSource;
+    protected Template template;
     public static final String EXCEPTION_MODEL_KEY = "exception";
 
     /**
@@ -143,27 +144,7 @@ public class GroovyPageView extends AbstractUrlBasedView {
         GSPResponseWriter out = null;
         try {
             out = createResponseWriter(response);
-
-            Template t;
-
-            try {
-                if (viewClass == null) {
-                    t = engine.createTemplate(getUrl());
-                }
-                else {
-                    t = engine.createTemplate(viewClass);
-                }
-            } catch (Exception e) {
-                out.setError();
-                handleException(e, engine);
-                return;
-            }
-
-            if (t instanceof GroovyPageTemplate) {
-                ((GroovyPageTemplate)t).setAllowSettingContentType(true);
-            }
-
-            t.make(model).writeTo(out);
+            template.make(model).writeTo(out);
         }
         catch (Exception e) {
             out.setError();
@@ -246,7 +227,28 @@ public class GroovyPageView extends AbstractUrlBasedView {
         return System.currentTimeMillis() - createTimestamp > LASTMODIFIED_CHECK_INTERVAL;
     }
 
-    public void setViewClass(Class<?> viewClass) {
-        this.viewClass = viewClass;
+    public void setScriptSource(ScriptSource scriptSource) {
+        this.scriptSource = scriptSource;
     }
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		super.afterPropertiesSet();
+		try {
+			initTemplate();
+		} catch(Exception e) {
+            handleException(e, templateEngine);
+        }
+	}
+	
+	protected void initTemplate() throws IOException {
+	    if (scriptSource == null) {
+	        template = templateEngine.createTemplate(getUrl());
+	    } else {
+	    	template = templateEngine.createTemplate(scriptSource);
+	    }
+		if (template instanceof GroovyPageTemplate) {
+		    ((GroovyPageTemplate)template).setAllowSettingContentType(true);
+		}
+	}
 }

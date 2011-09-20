@@ -58,6 +58,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.ModelAndViewDefiningException;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -88,6 +89,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
+    protected ViewResolver layoutViewResolver;
 
     /**
      * Constructor.
@@ -130,6 +132,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected void initStrategies(ApplicationContext context) {
         super.initStrategies(context);
         initLocaleResolver(context);
+        layoutViewResolver = WebUtils.lookupViewResolver(context);
     }
 
     // copied from base class since it's private
@@ -364,7 +367,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         if (content != null) {
                             Decorator decorator = groovyPageLayoutFinder.findLayout(request, content);
                             if (decorator != null) {
-                                GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator, requestAttributes.getAttributes().getPagesTemplateEngine(), getWebApplicationContext());
+                                GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator, layoutViewResolver);
                                 renderer.render(content, request, targetResponse, getServletContext());
                             } else {
                                 content.writeOriginal(targetResponse.getWriter());
