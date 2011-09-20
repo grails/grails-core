@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.log4j;
+package org.codehaus.groovy.grails.plugins.logging;
 
 import groovy.lang.Closure;
 import groovy.util.ConfigObject;
 import org.apache.log4j.LogManager;
+import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
 
 /**
  * Default logging initializer used for Log4j.
