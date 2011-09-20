@@ -88,15 +88,15 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
-
         String envName = System.getProperty(Environment.KEY);
-        Metadata metadata = Metadata.getCurrent();
-        if (metadata!=null && isBlank(envName)) {
-            envName = metadata.getEnvironment();
-        }
 
         if (isBlank(envName)) {
-            return DEVELOPMENT;
+        	Metadata metadata = Metadata.getCurrent();	
+        	if(metadata != null) {
+        		envName = metadata.getEnvironment();
+        	} else {
+        		return DEVELOPMENT;
+        	}
         }
 
         Environment env = getEnvironment(envName);
