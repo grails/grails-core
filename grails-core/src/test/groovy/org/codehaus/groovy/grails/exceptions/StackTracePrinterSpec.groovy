@@ -7,7 +7,7 @@ import spock.lang.Specification
 
 class StackTracePrinterSpec extends Specification {
 
-    private filterer = new DefaultStackTraceFilterer(cutOffPackage: "org.spockframework.runtime")
+    private filterer = new DefaultStackTraceFilterer(cutOffPackage: "org.spockframework.util")
 
     void "Test pretty print simple stack trace"() {
         given: "a controller that throws an exception"

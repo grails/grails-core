@@ -96,7 +96,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         // resolve .class files dynamically
         // on OC4J. If anyones knows how to fix this shout
         loadCorePlugin("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin");
+        loadCorePlugin("org.codehaus.groovy.grails.plugins.log4j.LoggingGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin");

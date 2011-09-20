@@ -23,6 +23,7 @@ import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
 import org.apache.log4j.WriterAppender
+import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig
 
 class Log4jDslTests extends GroovyTestCase {
 

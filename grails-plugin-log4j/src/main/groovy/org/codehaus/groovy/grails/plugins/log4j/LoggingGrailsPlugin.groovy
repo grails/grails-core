@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins
+package org.codehaus.groovy.grails.plugins.log4j
 
-import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 
-import org.apache.commons.logging.LogFactory
 import org.apache.log4j.LogManager
-import org.codehaus.groovy.grails.plugins.logging.Log4jConfig
+
 import org.slf4j.bridge.SLF4JBridgeHandler
+import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
 
 /**
  * Provides a lazy initialized commons logging log property for all classes.
@@ -61,7 +60,7 @@ class LoggingGrailsPlugin {
 
         mappingElement + {
             'listener' {
-                'listener-class'(org.codehaus.groovy.grails.web.util.Log4jConfigListener.name)
+                'listener-class'(Log4jConfigListener.name)
             }
         }
     }
