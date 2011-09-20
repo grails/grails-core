@@ -133,7 +133,7 @@ subprojects { project ->
 
         // Testing
         testCompile 'junit:junit:4.8.1'
-        testCompile('org.spockframework:spock-core:0.5-groovy-1.8') {
+        testCompile('org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT') {
             transitive = false
         }
     }

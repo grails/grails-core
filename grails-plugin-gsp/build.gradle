@@ -3,7 +3,7 @@ dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile project(":grails-web"),
             project(":grails-plugin-codecs"),
-            project(":grails-plugin-logging"),
+            project(":grails-logging"),
             project(":grails-plugin-controllers")
 }
 sourceSets {

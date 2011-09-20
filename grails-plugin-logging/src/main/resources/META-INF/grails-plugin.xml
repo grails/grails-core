@@ -1,3 +1,0 @@
-<plugin name='logging'>
-  <type>org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin</type>
-</plugin>

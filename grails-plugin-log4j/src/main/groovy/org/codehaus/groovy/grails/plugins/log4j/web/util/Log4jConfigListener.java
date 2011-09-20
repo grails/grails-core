@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.util;
+package org.codehaus.groovy.grails.plugins.log4j.web.util;
 
 import grails.util.Environment;
 import grails.util.GrailsWebUtil;
@@ -29,7 +29,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.LogLog;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.logging.Log4jConfig;
+import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
 
 /**
  * Configures Log4j in WAR deployment using Grails Log4j DSL.

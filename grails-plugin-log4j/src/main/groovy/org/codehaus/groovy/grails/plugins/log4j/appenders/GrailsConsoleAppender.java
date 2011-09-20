@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.plugins.logging.appenders;
+package org.codehaus.groovy.grails.plugins.log4j.appenders;
 
 import grails.build.logging.GrailsConsole;
 import groovy.util.ConfigObject;
