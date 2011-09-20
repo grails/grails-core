@@ -34,11 +34,11 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
     private static final String VALIDATE_METHOD_NAME = "validate";
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
 
-    public void injectValidateableCode(ClassNode commandObjectTypeClassNode) {
+    public void injectValidateableCode(ClassNode classNode) {
         ASTErrorsHelper errorsHelper = new ASTValidationErrorsHelper();
-        errorsHelper.injectErrorsCode(commandObjectTypeClassNode);
-        addConstrainedPropertiesProperty(commandObjectTypeClassNode);
-        addValidateMethod(commandObjectTypeClassNode);
+        errorsHelper.injectErrorsCode(classNode);
+        addConstrainedPropertiesProperty(classNode);
+        addValidateMethod(classNode);
     }
 
     protected void addConstrainedPropertiesProperty(final ClassNode classNode) {
