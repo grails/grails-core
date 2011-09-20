@@ -59,7 +59,7 @@ if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
 
 set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails
 set DISABLE_RELOADING=
-if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx512M -XX:MaxPermSize=192m -Dfile.encoding=UTF-8
+if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server "-Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
 
 @rem Get command-line arguments, handling Windows variants
 if "%@eval[2+2]" == "4" goto 4NT_args
