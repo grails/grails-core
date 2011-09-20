@@ -147,7 +147,8 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
             return null;
         }
 
-        uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
+        if(!uri.startsWith(PATH_TO_WEB_INF_VIEWS))
+            uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
         for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
             if (!(plugin instanceof BinaryGrailsPlugin)) {
                 continue;
