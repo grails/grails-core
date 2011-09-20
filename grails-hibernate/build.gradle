@@ -54,7 +54,7 @@ dependencies {
     compile 'javax.transaction:jta:1.1'
 
     runtime 'org.hibernate:hibernate-commons-annotations:3.2.0.Final'
-    runtime 'net.sf.ehcache:ehcache-core:2.4.2'
+    runtime "net.sf.ehcache:ehcache-core:$ehcacheVersion"
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',
             "org.hibernate:hibernate-ehcache:$hibernateVersion",
             'antlr:antlr:2.7.6'

@@ -95,7 +95,8 @@ public class GrailsCoreDependencies {
 
                         String springVersion = "3.1.0.M2";
                         String antVersion = "1.8.2";
-                        String slf4jVersion = "1.6.1";
+                        String slf4jVersion = "1.6.2";
+                        String junitVersion = "4.8.1";
                         ModuleRevisionId[] buildDependencies = {
                             ModuleRevisionId.newInstance("org.springframework.uaa", "org.springframework.uaa.client", "1.0.1.RELEASE"),
                             ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.3.0"),
@@ -103,10 +104,6 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcpg-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.4"),
-                            ModuleRevisionId.newInstance("org.apache.ant", "ant", antVersion),
-                            ModuleRevisionId.newInstance("org.apache.ant", "ant-launcher", antVersion),
-                            ModuleRevisionId.newInstance("org.apache.ant", "ant-junit", antVersion),
-                            ModuleRevisionId.newInstance("org.apache.ant", "ant-trax", "1.7.1"),
                             ModuleRevisionId.newInstance("jline", "jline", "1.0"),
                             ModuleRevisionId.newInstance("org.fusesource.jansi", "jansi", "1.2.1"),
                             ModuleRevisionId.newInstance("net.java.dev.jna", "jna", "3.2.3"),
@@ -119,10 +116,18 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-test", springVersion),
-                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5")
+                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5"),
+                            ModuleRevisionId.newInstance("junit", "junit", junitVersion),
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
-
+                        
+                        ModuleRevisionId[] antDependencies = {
+                                ModuleRevisionId.newInstance("org.apache.ant", "ant", antVersion),
+                                ModuleRevisionId.newInstance("org.apache.ant", "ant-launcher", antVersion),
+                                ModuleRevisionId.newInstance("org.apache.ant", "ant-junit", antVersion),
+                                ModuleRevisionId.newInstance("org.apache.ant", "ant-trax", "1.7.1"),
+                        };
+                        registerDependencies(dependencyManager, "build", antDependencies, "junit");
 
                         // depenencies needed when creating docs
                         ModuleRevisionId[] docDependencies = {
@@ -149,20 +154,20 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
 
                         ModuleRevisionId[] commonsExcludingLoggingAndXmlApis = {
-                            ModuleRevisionId.newInstance("commons-beanutils", "commons-beanutils", "1.8.0"),
+                            ModuleRevisionId.newInstance("commons-beanutils", "commons-beanutils", "1.8.3"),
                             ModuleRevisionId.newInstance("commons-el", "commons-el", "1.0"),
                             ModuleRevisionId.newInstance("commons-validator", "commons-validator", "1.3.1")
                         };
-                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis");
+                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
 
                         String datastoreMappingVersion = "1.0.0.BUILD-SNAPSHOT";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.1_jdk5"),
-                            ModuleRevisionId.newInstance("commons-codec", "commons-codec", "1.4"),
+                            ModuleRevisionId.newInstance("commons-codec", "commons-codec", "1.5"),
                             ModuleRevisionId.newInstance("commons-collections", "commons-collections", "3.2.1"),
-                            ModuleRevisionId.newInstance("commons-io", "commons-io", "1.4"),
-                            ModuleRevisionId.newInstance("commons-lang", "commons-lang", "2.4"),
+                            ModuleRevisionId.newInstance("commons-io", "commons-io", "2.0.1"),
+                            ModuleRevisionId.newInstance("commons-lang", "commons-lang", "2.6"),
                             ModuleRevisionId.newInstance("javax.transaction", "jta", "1.1"),
                             ModuleRevisionId.newInstance("org.hibernate.java-persistence", "jpa-api", "2.0-cr-1"),
                             ModuleRevisionId.newInstance("opensymphony", "sitemesh", "2.4"),
@@ -220,7 +225,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed for running tests
                         ModuleRevisionId[] testDependencies = {
-                            ModuleRevisionId.newInstance("junit", "junit", "4.8.1"),
+                            ModuleRevisionId.newInstance("junit", "junit", junitVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-testing", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-test", grailsVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-test", springVersion)
@@ -233,11 +238,11 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.aspectj", "aspectjweaver", "1.6.10"),
                             ModuleRevisionId.newInstance("org.aspectj", "aspectjrt", "1.6.10"),
                             ModuleRevisionId.newInstance("cglib", "cglib-nodep", "2.1_3"),
-                            ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.1"),
+                            ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.2"),
                             ModuleRevisionId.newInstance("oro", "oro", "2.0.8"),
                             // data source
-                            ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", "1.3"),
-                            ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.5"),
+                            ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", "1.4"),
+                            ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
                             ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
                             // JSP support
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
@@ -246,7 +251,7 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
 
                         ModuleRevisionId[] ehcacheDependencies = {
-                            ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.2")
+                            ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.5")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "jms", "commons-logging", "servlet-api");
 

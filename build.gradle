@@ -5,7 +5,7 @@ buildscript {
         mavenRepo(urls: "http://repo.grails.org/grails/core")
     }
     dependencies {
-        classpath "commons-io:commons-io:1.4"
+        classpath "commons-io:commons-io:2.0.1"
     }
 }
 
@@ -17,11 +17,11 @@ grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 antTraxVersion = "1.7.1"
 antVersion = "1.8.2"
 aspectjVersion = "1.6.10"
-commonsBeanUtilsVersion = "1.8.0"
+commonsBeanUtilsVersion = "1.8.3"
 commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
-commonsIOVersion = "1.4"
-commonsLangVersion = "2.4"
+commonsIOVersion = "2.0.1"
+commonsLangVersion = "2.6"
 datastoreVersion = "1.0.0.BUILD-SNAPSHOT"
 gantVersion = "1.9.5"
 gdocEngineVersion = "1.0.1"
@@ -30,11 +30,13 @@ ivyVersion = "2.2.0"
 jansiVersion = "1.2.1"
 jlineVersion = "1.0"
 jnaVersion = "3.2.3"
-slf4jVersion = "1.6.1"
+slf4jVersion = "1.6.2"
 springLoadedVersion = "0.9.2.BUILD-SNAPSHOT"
 springVersion = "3.1.0.M2"
 springWebflowVersion= "2.0.8.RELEASE"
 hibernateVersion = "3.6.5.Final"
+ehcacheVersion = "2.4.5"
+junitVersion = "4.8.1"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -132,7 +134,7 @@ subprojects { project ->
 
 
         // Testing
-        testCompile 'junit:junit:4.8.1'
+        testCompile "junit:junit:${junitVersion}"
         testCompile('org.spockframework:spock-core:0.5-groovy-1.8') {
             transitive = false
         }
