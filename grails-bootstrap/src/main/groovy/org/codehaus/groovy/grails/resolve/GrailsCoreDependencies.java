@@ -95,7 +95,6 @@ public class GrailsCoreDependencies {
 
                         String springVersion = "3.1.0.M2";
                         String antVersion = "1.8.2";
-                        String groovyVersion = "1.8.3-SNAPSHOT";
                         String slf4jVersion = "1.6.2";
                         String junitVersion = "4.9";
                         ModuleRevisionId[] buildDependencies = {
@@ -121,7 +120,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("junit", "junit", junitVersion),
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
-
+                        
                         ModuleRevisionId[] antDependencies = {
                                 ModuleRevisionId.newInstance("org.apache.ant", "ant", antVersion),
                                 ModuleRevisionId.newInstance("org.apache.ant", "ant-launcher", antVersion),
@@ -150,7 +149,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed at compile time
                         ModuleRevisionId[] groovyDependencies = {
-                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", groovyVersion)
+                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.2")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
 
