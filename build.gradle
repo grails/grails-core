@@ -3,15 +3,15 @@ import org.apache.tools.ant.filters.ReplaceTokens
 buildscript {
     repositories {
         mavenRepo(urls: "http://repo.grails.org/grails/core")
+	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
     dependencies {
         classpath "commons-io:commons-io:2.0.1"
+        //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
 }
 
-
 apply plugin: 'idea'
-
 
 grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 antTraxVersion = "1.7.1"
@@ -36,7 +36,7 @@ springVersion = "3.1.0.M2"
 springWebflowVersion= "2.0.8.RELEASE"
 hibernateVersion = "3.6.5.Final"
 ehcacheVersion = "2.4.5"
-junitVersion = "4.8.1"
+junitVersion = "4.9"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -67,6 +67,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
+    //apply plugin: 'duplicates'
 
     sourceCompatibility = "1.5"
     targetCompatibility = "1.5"
@@ -163,6 +164,7 @@ subprojects { project ->
     configurations {
         meta
         published.extendsFrom archives, meta
+        	all*.exclude group:'commons-logging', module: 'commons-logging'
     }
 
     artifacts {
