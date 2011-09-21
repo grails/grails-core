@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.logging.LoggingTransformer;
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator;
@@ -214,7 +215,7 @@ public class TestForTransformation extends TestMixinTransformation {
     private Map<ClassNode, List<Class>> wovenMixins = new HashMap<ClassNode, List<Class>>();
     protected MethodNode weaveMock(ClassNode classNode, ClassExpression value, boolean isClassUnderTest) {
 
-        ClassNode testTarget = value.getType();
+        ClassNode testTarget = GrailsASTUtils.nonGeneric(value.getType());
         String className = testTarget.getName();
         MethodNode testForMethod = null;
         for (String artefactType : artefactTypeToTestMap.keySet()) {
@@ -329,7 +330,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
     protected void weaveMixinClass(ClassNode classNode, Class mixinClass) {
         ListExpression listExpression = new ListExpression();
-        listExpression.addExpression(new ClassExpression(new ClassNode(mixinClass)));
+        listExpression.addExpression(new ClassExpression(ClassHelper.make(mixinClass).getPlainNodeReference()));
         weaveMixinsIntoClass(classNode,listExpression);
     }
 
