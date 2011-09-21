@@ -20,7 +20,10 @@ import grails.artefact.Artefact;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.control.CompilePhase;
@@ -38,7 +41,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation implements ASTTransformation {
-    private static final ClassNode MY_TYPE = ClassHelper.make(Artefact.class);
+    private static final ClassNode MY_TYPE = new ClassNode(Artefact.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {

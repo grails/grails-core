@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.compiler.logging;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
@@ -45,8 +44,6 @@ public class LoggingTransformer implements AllArtefactClassInjector{
     private static final String FILTERS_ARTEFACT_TYPE_SUFFIX = "Filters";
     public static final String CONF_DIR = "conf";
     public static final String FILTERS_ARTEFACT_TYPE = "filters";
-    public static final ClassNode LOG_CLASS = ClassHelper.make(Log.class).getPlainNodeReference();
-    public static final ClassExpression LOG_FACTORY_EXPRESSION = new ClassExpression(ClassHelper.make(LogFactory.class).getPlainNodeReference());
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         final FieldNode existingField = classNode.getDeclaredField(LOG_PROPERTY);
@@ -68,9 +65,9 @@ public class LoggingTransformer implements AllArtefactClassInjector{
     public static void addLogField(ClassNode classNode, String logName) {
         FieldNode logVariable = new FieldNode(LOG_PROPERTY,
                                               Modifier.STATIC | Modifier.PRIVATE,
-                                            LOG_CLASS,
+                                              new ClassNode(Log.class),
                                               classNode,
-                                              new MethodCallExpression(LOG_FACTORY_EXPRESSION, "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
+                                              new MethodCallExpression(new ClassExpression(new ClassNode(LogFactory.class)), "getLog", new ArgumentListExpression(new ConstantExpression(logName))));
 
         classNode.addField(logVariable);
     }

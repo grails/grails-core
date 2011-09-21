@@ -17,7 +17,10 @@ package org.codehaus.groovy.grails.compiler.injection;
 import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
@@ -35,7 +38,7 @@ import java.util.List;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class EntityASTTransformation implements ASTTransformation {
 
-    private static final ClassNode MY_TYPE = ClassHelper.make(Entity.class);
+    private static final ClassNode MY_TYPE = new ClassNode(Entity.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {

@@ -49,7 +49,6 @@ class Associated {
              cls.getAnnotation(Entity) != null
              cls.getDeclaredField("associated") != null
              cls.getDeclaredField("associated").genericType != null
-             println cls.getDeclaredField("associated").genericType
              cls.getDeclaredField("associated").genericType.getActualTypeArguments()[0] == gcl.loadClass("Associated")
     }
 

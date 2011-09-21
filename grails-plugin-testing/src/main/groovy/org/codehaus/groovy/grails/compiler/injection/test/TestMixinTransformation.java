@@ -48,8 +48,8 @@ import java.util.List;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class TestMixinTransformation implements ASTTransformation{
-    public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(ClassHelper.make(MixinMethod.class));
-    private static final ClassNode MY_TYPE = ClassHelper.make(TestMixin.class).getPlainNodeReference();
+    public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(new ClassNode(MixinMethod.class));
+    private static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     public static final String OBJECT_CLASS = "java.lang.Object";
     public static final String SPEC_CLASS = "spock.lang.Specification";
@@ -57,7 +57,7 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final String SET_UP_METHOD = "setUp";
     public static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     public static final String TEAR_DOWN_METHOD = "tearDown";
-    public static final ClassNode GROOVY_OBJECT_CLASS_NODE = ClassHelper.make(GroovyObjectSupport.class).getPlainNodeReference();
+    public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {

@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
+import groovy.lang.Closure;
+
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,7 +42,6 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
@@ -61,14 +62,14 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
     private static final String ATTRS_ARGUMENT = "attrs";
     private static final String BODY_ARGUMENT = "body";
     private static final Parameter[] MAP_CLOSURE_PARAMETERS = new Parameter[] {
-        new Parameter(GrailsASTUtils.MAP_CLASS, ATTRS_ARGUMENT),
-        new Parameter(GrailsASTUtils.CLOSURE_CLASS, BODY_ARGUMENT) };
+        new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),
+        new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };
     private static final Parameter[] CLOSURE_PARAMETERS = new Parameter[] {
-        new Parameter(GrailsASTUtils.CLOSURE_CLASS, BODY_ARGUMENT) };
+        new Parameter(new ClassNode(Closure.class), BODY_ARGUMENT) };
     private static final Parameter[] MAP_PARAMETERS = new Parameter[] {
-        new Parameter(GrailsASTUtils.MAP_CLASS, ATTRS_ARGUMENT) };
+        new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT) };
     private static final Parameter[] MAP_CHARSEQUENCE_PARAMETERS = new Parameter[] {
-        new Parameter(GrailsASTUtils.MAP_CLASS, ATTRS_ARGUMENT),
+        new Parameter(new ClassNode(Map.class), ATTRS_ARGUMENT),
         new Parameter(new ClassNode(CharSequence.class), BODY_ARGUMENT) };
     private static final ClassNode GROOVY_PAGE_CLASS_NODE = new ClassNode(GroovyPage.class);
     private static final VariableExpression ATTRS_EXPRESSION = new VariableExpression(ATTRS_ARGUMENT);
@@ -78,7 +79,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                 "currentRequestAttributes", ZERO_ARGS);
     private static final Expression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String NAMESPACE_PROPERTY = "namespace";
-    private static final ClassNode CLOSURE_CLASS_NODE = GrailsASTUtils.CLOSURE_CLASS;
+    private static final ClassNode CLOSURE_CLASS_NODE = new ClassNode(Closure.class);
 
     @Override
     public Class<?> getInstanceImplementation() {

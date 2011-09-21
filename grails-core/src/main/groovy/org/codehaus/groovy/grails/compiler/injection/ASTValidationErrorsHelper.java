@@ -40,14 +40,11 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
     private static final String INIT_ERRORS_METHOD_NAME = "initErrors";
     private static final String ERRORS_PROPERTY_NAME = "errors";
     private static final Token EQUALS_SYMBOL = Token.newSymbol(Types.EQUALS, 0, 0);
-    private static final ClassNode ERRORS_CLASS_NODE = ClassHelper.make(Errors.class).getPlainNodeReference();
+    private static final ClassNode ERRORS_CLASS_NODE = new ClassNode(Errors.class);
     private static final VariableExpression ERRORS_EXPRESSION = new VariableExpression(ERRORS_PROPERTY_NAME);
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
     private static final MethodCallExpression INIT_ERRORS_METHOD_CALL_EXPRESSION = new MethodCallExpression(THIS_EXPRESSION, INIT_ERRORS_METHOD_NAME, EMPTY_TUPLE);
-    public static final ClassNode PLAIN_BOOLEAN = ClassHelper.make(Boolean.class).getPlainNodeReference();
-    public static final ClassNode VALIDATION_ERRORS_CLASS = ClassHelper.make(
-            ValidationErrors.class).getPlainNodeReference();
 
     public void injectErrorsCode(ClassNode classNode) {
         addErrorsField(classNode);
@@ -79,7 +76,8 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
             final Statement newEvaluatorExpression = new ExpressionStatement(
                     new BinaryExpression(ERRORS_EXPRESSION,
                             EQUALS_SYMBOL,
-                            new ConstructorCallExpression(VALIDATION_ERRORS_CLASS,
+                            new ConstructorCallExpression(new ClassNode(
+                                    ValidationErrors.class),
                                     beanPropertyBindingResultConstructorArgs)));
             final Statement initErrorsIfNullStatement = new IfStatement(
                     new BooleanExpression(errorsIsNullExpression), newEvaluatorExpression,
@@ -112,7 +110,7 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
             final Statement returnStatement = new ReturnStatement(new BooleanExpression(new MethodCallExpression(ERRORS_EXPRESSION, HAS_ERRORS_METHOD_NAME, EMPTY_TUPLE)));
             hasErrorsMethodCode.addStatement(returnStatement);
             paramTypeClassNode.addMethod(new MethodNode(HAS_ERRORS_METHOD_NAME,
-                    Modifier.PUBLIC, PLAIN_BOOLEAN,
+                    Modifier.PUBLIC, new ClassNode(Boolean.class),
                     ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, hasErrorsMethodCode));
         }
     }

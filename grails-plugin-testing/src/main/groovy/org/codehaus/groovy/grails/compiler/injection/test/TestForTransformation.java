@@ -71,7 +71,7 @@ import java.util.Map;
 @SuppressWarnings("rawtypes")
 public class TestForTransformation extends TestMixinTransformation {
 
-    private static final ClassNode MY_TYPE = ClassHelper.make(TestFor.class).getPlainNodeReference();
+    private static final ClassNode MY_TYPE = new ClassNode(TestFor.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     private static final Token ASSIGN = Token.newSymbol("=", -1, -1);
 
@@ -85,11 +85,11 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     public static final String DOMAIN_TYPE = "Domain";
-    public static final ClassNode BEFORE_CLASS_NODE = ClassHelper.make(Before.class).getPlainNodeReference();
+    public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
     public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
 
-    public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(ClassHelper.make(Test.class).getPlainNodeReference());
-    public static final ClassNode GROOVY_TEST_CASE_CLASS = ClassHelper.make(GroovyTestCase.class).getPlainNodeReference();
+    public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
+    public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
 
     private ResourceLocator resourceLocator;
 

@@ -45,8 +45,6 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     private static final String DOMAIN_DIR = "domain";
 
     private static final String GRAILS_APP_DIR = "grails-app";
-    public static final ClassNode STRING_CLASS = ClassHelper.make(String.class).getPlainNodeReference();
-    public static final ClassNode LONG_CLASS = ClassHelper.make(Long.class).getPlainNodeReference();
 
     private List<ClassNode> classesWithInjectedToString = new ArrayList<ClassNode>();
 
@@ -139,7 +137,6 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
                     type = ClassHelper.make(expression.getText());
                 }
 
-                type = GrailsASTUtils.nonGeneric(type);
                 properties.add(new PropertyNode(key, Modifier.PUBLIC, type, classNode, null, null, null));
             }
         }
@@ -161,10 +158,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             MapExpression me = (MapExpression) e;
             for (MapEntryExpression mee : me.getMapEntryExpressions()) {
                 String key = mee.getKeyExpression().getText();
-                Expression valueExpression = mee.getValueExpression();
-                if(valueExpression instanceof ClassExpression) {
-                    addAssociationForKey(key, properties, classNode, findPropertyType(mee.getValueExpression()));
-                }
+                addAssociationForKey(key, properties, classNode, findPropertyType(mee.getValueExpression()));
             }
         }
         return properties;
@@ -177,10 +171,10 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
      * @return A {@link ClassNode} of type {@link Set} that is possibly parameterized by the expression that is passed in.
      */
     private ClassNode findPropertyType(Expression expression) {
-        ClassNode setNode = ClassHelper.make(Set.class).getPlainNodeReference();
+        ClassNode setNode = new ClassNode(Set.class);
         if (expression instanceof ClassExpression) {
             GenericsType[] genericsTypes = new GenericsType[1];
-            genericsTypes[0] = new GenericsType(GrailsASTUtils.nonGeneric(expression.getType()));
+            genericsTypes[0] = new GenericsType(expression.getType());
             setNode.setGenericsTypes(genericsTypes);
         }
         return setNode;
@@ -199,7 +193,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             ge.addString(new ConstantExpression(classNode.getName() + " : "));
             ge.addValue(new VariableExpression("id"));
             Statement s = new ReturnStatement(ge);
-            MethodNode mn = new MethodNode("toString", Modifier.PUBLIC, STRING_CLASS, new Parameter[0], new ClassNode[0], s);
+            MethodNode mn = new MethodNode("toString", Modifier.PUBLIC, new ClassNode(String.class), new Parameter[0], new ClassNode[0], s);
             classNode.addMethod(mn);
             classesWithInjectedToString.add(classNode);
         }
@@ -219,7 +213,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
         if (!hasVersion) {
             ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
-            parent.addProperty(GrailsDomainClassProperty.VERSION, Modifier.PUBLIC, LONG_CLASS, null, null, null);
+            parent.addProperty(GrailsDomainClassProperty.VERSION, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
 
@@ -230,7 +224,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             // inject into furthest relative
             ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
 
-            parent.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, LONG_CLASS, null, null, null);
+            parent.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
         }
     }
 

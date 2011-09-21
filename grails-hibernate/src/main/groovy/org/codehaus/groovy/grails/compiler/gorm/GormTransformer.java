@@ -21,7 +21,6 @@ import java.util.List;
 
 import grails.persistence.Entity;
 import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
@@ -58,7 +57,6 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     private static final List<String> EXCLUDES = Arrays.asList("create");
     private static final Class<?>[] EMPTY_JAVA_CLASS_ARRAY = {};
     private static final Class<?>[] OBJECT_CLASS_ARG = { Object.class };
-    public static final ClassNode ILLEGAL_STATE_EXCEPTION_CLASS = ClassHelper.make(IllegalStateException.class).getPlainNodeReference();
 
     @Override
     protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
@@ -109,7 +107,7 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(new ConstantExpression(MISSING_GORM_ERROR_MESSAGE));
-        methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(ILLEGAL_STATE_EXCEPTION_CLASS, arguments)));
+        methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
         return new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);
     }
 
@@ -118,7 +116,6 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
         classNode.setUsingGenerics(true);
         GrailsASTUtils.addAnnotationIfNecessary(classNode, Entity.class);
 
-        classNode = GrailsASTUtils.nonGeneric(classNode);
         final BlockStatement methodBody = new BlockStatement();
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(classNode), NEW_INSTANCE_METHOD,ZERO_ARGS)));
         MethodNode methodNode = classNode.getDeclaredMethod(CreateDynamicMethod.METHOD_NAME, ZERO_PARAMETERS);
