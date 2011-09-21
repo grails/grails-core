@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.util.PluginBuildSettings;
 import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
@@ -38,6 +39,7 @@ import java.util.List;
 @AstTransformer
 public class PluginAwareAstTransformer implements ClassInjector, AllArtefactClassInjector {
 
+    public static final ClassNode PLUGIN_ANNOTATION = ClassHelper.make(GrailsPlugin.class);
     PluginBuildSettings pluginBuildSettings;
 
     public PluginAwareAstTransformer() {
@@ -57,7 +59,7 @@ public class PluginAwareAstTransformer implements ClassInjector, AllArtefactClas
                 return;
             }
 
-            final ClassNode annotation = new ClassNode(GrailsPlugin.class);
+            final ClassNode annotation = PLUGIN_ANNOTATION;
             final List<?> list = classNode.getAnnotations(annotation);
             if (!list.isEmpty()) {
                 return;

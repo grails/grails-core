@@ -20,15 +20,12 @@ import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Map;
 
+import groovy.lang.Closure;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
@@ -44,6 +41,13 @@ public class GrailsASTUtils {
 
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
+    public static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
+    public static final TupleExpression EMPTY_TUPLE = new TupleExpression();
+    public static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
+    public static final ClassNode MAP_CLASS = ClassHelper.make(Map.class).getPlainNodeReference();
+    public static final ClassNode STRING_CLASS = ClassHelper.make(String.class).getPlainNodeReference();
+    public static final ClassNode CLOSURE_CLASS = new ClassNode(Closure.class).getPlainNodeReference();
+    public static final ClassNode LIST_CLASS = new ClassNode(List.class).getPlainNodeReference();
 
     /**
      * Returns whether a classNode has the specified property or not
@@ -412,7 +416,7 @@ public class GrailsASTUtils {
         return newParameterTypes;
     }
 
-    private static ClassNode nonGeneric(ClassNode type) {
+    public static ClassNode nonGeneric(ClassNode type) {
         if (type.isUsingGenerics()) {
             final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
             nonGen.setRedirect(type);
@@ -427,7 +431,7 @@ public class GrailsASTUtils {
             return nonGen.makeArray();
         }
 
-        return type;
+        return type.getPlainNodeReference();
     }
 
     public static boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
@@ -500,9 +504,9 @@ public class GrailsASTUtils {
         }
     }
 
-    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
+    public static void addAnnotationIfNecessary(ClassNode classNode, Class entityClass) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
-        ClassNode annotationClassNode = new ClassNode(Entity.class);
+        ClassNode annotationClassNode = ClassHelper.make(entityClass).getPlainNodeReference();
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
         if(annotations.isEmpty()) {
             classNode.addAnnotation(annotationToAdd);

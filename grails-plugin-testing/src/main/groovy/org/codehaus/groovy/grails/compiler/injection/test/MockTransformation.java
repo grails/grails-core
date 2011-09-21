@@ -17,10 +17,7 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.Mock;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
@@ -38,7 +35,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class MockTransformation extends TestForTransformation {
 
-    private static final ClassNode MY_TYPE = new ClassNode(Mock.class);
+    private static final ClassNode MY_TYPE = ClassHelper.make(Mock.class).getPlainNodeReference();
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
     @Override

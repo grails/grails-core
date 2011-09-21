@@ -20,11 +20,7 @@ import grails.artefact.Enhanced;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -52,10 +48,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
-    private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
-    private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
+    private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(ClassHelper.make(Autowired.class).getPlainNodeReference());
+    private static final ClassNode ENHANCED_CLASS_NODE = ClassHelper.make(Enhanced.class).getPlainNodeReference();
 
-    protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
+    public static final ClassNode OBJECT_CLASS = new ClassNode(Object.class).getPlainNodeReference();
     protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
 
     public static final int PUBLIC_STATIC_MODIFIER = Modifier.PUBLIC | Modifier.STATIC;
@@ -90,7 +86,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {
-            ClassNode implementationNode = new ClassNode(instanceImplementation);
+            ClassNode implementationNode = ClassHelper.make(instanceImplementation).getPlainNodeReference();
 
             String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
             Expression apiInstance = new VariableExpression(apiInstanceProperty);
@@ -133,7 +129,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         Class staticImplementation = getStaticImplementation();
 
         if (staticImplementation != null) {
-            ClassNode staticImplementationNode = new ClassNode(staticImplementation);
+            ClassNode staticImplementationNode = ClassHelper.make(staticImplementation).getPlainNodeReference();
 
             final List<MethodNode> declaredMethods = staticImplementationNode.getMethods();
             final String staticImplementationSimpleName = staticImplementation.getSimpleName();

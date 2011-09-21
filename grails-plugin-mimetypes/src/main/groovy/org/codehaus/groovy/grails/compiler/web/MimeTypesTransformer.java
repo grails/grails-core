@@ -36,6 +36,7 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
@@ -53,7 +54,7 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
               GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
 
     public static final String FIELD_MIME_TYPES_API = "mimeTypesApi";
-    public static final Parameter[] CLOSURE_PARAMETER = new Parameter[]{ new Parameter(new ClassNode(Closure.class), "callable")};
+    public static final Parameter[] CLOSURE_PARAMETER = new Parameter[]{ new Parameter(GrailsASTUtils.CLOSURE_CLASS, "callable")};
     public static final String WITH_FORMAT_METHOD = "withFormat";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {

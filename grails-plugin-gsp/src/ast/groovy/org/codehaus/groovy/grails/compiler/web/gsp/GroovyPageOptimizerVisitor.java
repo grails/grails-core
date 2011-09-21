@@ -1,14 +1,12 @@
 package org.codehaus.groovy.grails.compiler.web.gsp;
 
 import groovy.lang.Closure;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CodeVisitorSupport;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.syntax.Token;
@@ -25,9 +23,9 @@ import java.util.Stack;
  */
 class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
 
-    private static final ClassNode groovyPageClassNode = new ClassNode(GroovyPage.class);
+    private static final ClassNode groovyPageClassNode = ClassHelper.make(GroovyPage.class).getPlainNodeReference();
     private static final MethodNode writerMethodNode = new ClassNode(GrailsPrintWriter.class).getMethod("print",
-            new Parameter[]{new Parameter(new ClassNode(Object.class), "obj")});
+            new Parameter[]{new Parameter(GrailsASTUtils.OBJECT_CLASS, "obj")});
 
     private static final String THIS_RECEIVER = "this";
     private static final String THISOBJECT = "thisObject";
