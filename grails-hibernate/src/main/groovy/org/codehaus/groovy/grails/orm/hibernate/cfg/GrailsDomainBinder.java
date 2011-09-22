@@ -557,105 +557,105 @@ public final class GrailsDomainBinder {
         }
     }
 
-	private static String buildOrderByClause(String hqlOrderBy, PersistentClass associatedClass, String role, String defaultOrder) {
-		String orderByString = null;
-		if ( hqlOrderBy != null ) {
-			List<String> properties = new ArrayList<String>();
-			List<String> ordering = new ArrayList<String>();
-			StringBuilder orderByBuffer = new StringBuilder();
-			if ( hqlOrderBy.length() == 0 ) {
-				//order by id
-				Iterator it = associatedClass.getIdentifier().getColumnIterator();
-				while ( it.hasNext() ) {
-					Selectable col = (Selectable) it.next();
-					orderByBuffer.append( col.getText() ).append( " asc" ).append( ", " );
-				}
-			}
-			else {
-				StringTokenizer st = new StringTokenizer( hqlOrderBy, " ,", false );
-				String currentOrdering = defaultOrder;
-				//FIXME make this code decent
-				while ( st.hasMoreTokens() ) {
-					String token = st.nextToken();
-					if ( isNonPropertyToken( token ) ) {
-						if ( currentOrdering != null ) {
-							throw new GrailsDomainException(
-									"Error while parsing sort clause: " + hqlOrderBy
-											+ " (" + role + ")"
-							);
-						}
-						currentOrdering = token;
-					}
-					else {
-						//Add ordering of the previous
-						if ( currentOrdering == null ) {
-							//default ordering
-							ordering.add( "asc" );
-						}
-						else {
-							ordering.add( currentOrdering );
-							currentOrdering = null;
-						}
-						properties.add( token );
-					}
-				}
-				ordering.remove( 0 ); //first one is the algorithm starter
-				// add last one ordering
-				if ( currentOrdering == null ) {
-					//default ordering
-					ordering.add(defaultOrder );
-				}
-				else {
-					ordering.add( currentOrdering );
-					currentOrdering = null;
-				}
-				int index = 0;
+    @SuppressWarnings("unchecked")
+    private static String buildOrderByClause(String hqlOrderBy, PersistentClass associatedClass, String role, String defaultOrder) {
+        String orderByString = null;
+        if (hqlOrderBy != null) {
+            List<String> properties = new ArrayList<String>();
+            List<String> ordering = new ArrayList<String>();
+            StringBuilder orderByBuffer = new StringBuilder();
+            if (hqlOrderBy.length() == 0) {
+                //order by id
+                Iterator<?> it = associatedClass.getIdentifier().getColumnIterator();
+                while (it.hasNext()) {
+                    Selectable col = (Selectable) it.next();
+                    orderByBuffer.append(col.getText()).append(" asc").append(", ");
+                }
+            }
+            else {
+                StringTokenizer st = new StringTokenizer(hqlOrderBy, " ,", false);
+                String currentOrdering = defaultOrder;
+                //FIXME make this code decent
+                while (st.hasMoreTokens()) {
+                    String token = st.nextToken();
+                    if (isNonPropertyToken(token)) {
+                        if (currentOrdering != null) {
+                            throw new GrailsDomainException(
+                                    "Error while parsing sort clause: " + hqlOrderBy
+                                            + " (" + role + ")"
+                            );
+                        }
+                        currentOrdering = token;
+                    }
+                    else {
+                        //Add ordering of the previous
+                        if (currentOrdering == null) {
+                            //default ordering
+                            ordering.add("asc");
+                        }
+                        else {
+                            ordering.add(currentOrdering);
+                            currentOrdering = null;
+                        }
+                        properties.add(token);
+                    }
+                }
+                ordering.remove(0); //first one is the algorithm starter
+                // add last one ordering
+                if (currentOrdering == null) {
+                    //default ordering
+                    ordering.add(defaultOrder);
+                }
+                else {
+                    ordering.add(currentOrdering);
+                    currentOrdering = null;
+                }
+                int index = 0;
 
-				for (String property : properties) {
-					Property p = BinderHelper.findPropertyByName(associatedClass, property);
-					if ( p == null ) {
-						throw new GrailsDomainException(
-								"property from sort clause not found: "
-										+ associatedClass.getEntityName() + "." + property
-						);
-					}
-					PersistentClass pc = p.getPersistentClass();
-					String table;
-					if ( pc == null ) {
-						table = "";
-					}
+                for (String property : properties) {
+                    Property p = BinderHelper.findPropertyByName(associatedClass, property);
+                    if (p == null) {
+                        throw new GrailsDomainException(
+                                "property from sort clause not found: "
+                                        + associatedClass.getEntityName() + "." + property
+                        );
+                    }
+                    PersistentClass pc = p.getPersistentClass();
+                    String table;
+                    if (pc == null) {
+                        table = "";
+                    }
 
-					else if (pc == associatedClass
-							|| (associatedClass instanceof SingleTableSubclass && pc
-									.getMappedClass().isAssignableFrom(
-											associatedClass.getMappedClass()))) {
-						table = "";
-					} else {
-						table = pc.getTable().getQuotedName() + ".";
-					}
+                    else if (pc == associatedClass
+                            || (associatedClass instanceof SingleTableSubclass &&
+                           pc.getMappedClass().isAssignableFrom(associatedClass.getMappedClass()))) {
+                        table = "";
+                    } else {
+                        table = pc.getTable().getQuotedName() + ".";
+                    }
 
-					Iterator propertyColumns = p.getColumnIterator();
-					while ( propertyColumns.hasNext() ) {
-						Selectable column = (Selectable) propertyColumns.next();
-						orderByBuffer.append( table )
-								.append( column.getText() )
-								.append( " " )
-								.append( ordering.get( index ) )
-								.append( ", " );
-					}
-					index++;
-				}
-			}
-			orderByString = orderByBuffer.substring( 0, orderByBuffer.length() - 2 );
-		}
-		return orderByString;
-	}
+                    Iterator<?> propertyColumns = p.getColumnIterator();
+                    while (propertyColumns.hasNext()) {
+                        Selectable column = (Selectable) propertyColumns.next();
+                        orderByBuffer.append(table)
+                                .append(column.getText())
+                                .append(" ")
+                                .append(ordering.get(index))
+                                .append(", ");
+                    }
+                    index++;
+                }
+            }
+            orderByString = orderByBuffer.substring(0, orderByBuffer.length() - 2);
+        }
+        return orderByString;
+    }
 
     private static boolean isNonPropertyToken(String token) {
-        if ( " ".equals( token ) ) return true;
-        if ( ",".equals( token ) ) return true;
-        if ( token.equalsIgnoreCase( "desc" ) ) return true;
-        if ( token.equalsIgnoreCase( "asc" ) ) return true;
+        if (" ".equals(token)) return true;
+        if (",".equals(token)) return true;
+        if (token.equalsIgnoreCase("desc")) return true;
+        if (token.equalsIgnoreCase("asc")) return true;
         return false;
     }
 
@@ -1708,7 +1708,7 @@ public final class GrailsDomainBinder {
 
 
             if (collectionType != null) {
-                String typeName = getTypeName(currentGrailsProp, getPropertyConfig(currentGrailsProp),gormMapping );
+                String typeName = getTypeName(currentGrailsProp, getPropertyConfig(currentGrailsProp),gormMapping);
                 if(typeName != null && "serializable".equals(typeName)) {
                     value = new SimpleValue(mappings,table);
                     bindSimpleValue(typeName, (SimpleValue) value, currentGrailsProp.isOptional(), getColumnNameForPropertyAndPath(currentGrailsProp, EMPTY_PATH, null, sessionFactoryBeanName), mappings);

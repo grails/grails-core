@@ -47,6 +47,7 @@ import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -77,13 +78,17 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
                 .getRequiredWebApplicationContext(servletContext);
+        return lookupViewResolver(wac);
+    }
+        
+    public static ViewResolver lookupViewResolver(ApplicationContext wac) {    
         if (wac.containsBean("jspViewResolver")) {
-            return (ViewResolver) wac.getBean("jspViewResolver");
+            return wac.getBean("jspViewResolver", ViewResolver.class);
         }
         String[] beanNames = wac.getBeanNamesForType(ViewResolver.class);
         if (beanNames.length > 0) {
             String beanName = beanNames[0];
-            return (ViewResolver) wac.getBean(beanName);
+            return wac.getBean(beanName, ViewResolver.class);
         }
         return null;
     }

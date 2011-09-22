@@ -3,7 +3,7 @@ package grails.doc.internal
 class LegacyTocStrategy {
     def generateToc(files) {
         // Compares two gdoc filenames based on the section number in the
-        // form x.y.z... 
+        // form x.y.z...
         def sectionNumberComparator = [
                 compare: {o1, o2 ->
                     def idx1 = o1.name[0..o1.name.indexOf(' ') - 1]

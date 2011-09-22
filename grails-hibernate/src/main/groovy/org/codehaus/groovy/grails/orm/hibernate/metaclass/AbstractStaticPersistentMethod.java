@@ -41,13 +41,16 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
 
     private ClassLoader classLoader;
     private HibernateTemplate hibernateTemplate;
+    protected final GrailsApplication application;
 
-    protected AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern) {
+    protected AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern, GrailsApplication application) {
         Assert.notNull(sessionFactory, "Session factory is required!");
         setPattern(pattern);
         this.classLoader = classLoader;
+        Assert.notNull(application, "Constructor argument 'application' cannot be null");
+        this.application = application;
         hibernateTemplate = new HibernateTemplate(sessionFactory);
-        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault());
+        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault(this.application));
     }
 
     protected HibernateTemplate getHibernateTemplate() {

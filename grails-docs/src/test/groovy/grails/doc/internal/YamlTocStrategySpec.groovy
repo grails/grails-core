@@ -17,7 +17,7 @@ class YamlTocStrategySpec extends Specification {
                 "gettingStarted.gdoc",
                 "downloading.gdoc",
                 "upgrading.gdoc",
-                "creatingApp.gdoc"])) 
+                "creatingApp.gdoc"]))
 
       when: "A test YAML document is loaded"
         def toc = loader.load("""\

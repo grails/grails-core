@@ -4,13 +4,6 @@ import grails.persistence.Entity
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import org.junit.Test
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 8/29/11
- * Time: 3:16 PM
- * To change this template use File | Settings | File Templates.
- */
 @TestMixin(DomainClassUnitTestMixin)
 class DomainClassWithDefaultConstraintsUnitTestMixinTests {
 
@@ -31,6 +24,7 @@ class DomainClassWithDefaultConstraintsUnitTestMixinTests {
         assert new DomainWithDefaultConstraints(name:"My test",value: "My test value").save(flush:true) != null
     }
 }
+
 @Entity
 class DomainWithDefaultConstraints {
     String name

@@ -3,9 +3,36 @@ package org.codehaus.groovy.grails.orm.hibernate
 class FindOrSaveByPersistenceMethodTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [Person]
+        [Person, Pet]
     }
 
+    void testFindOrSaveByWithMultipleAndInExpression() {
+        new Person(firstName: 'Jake', lastName: 'Brown', age: 11).save()
+        new Person(firstName: 'Jeff', lastName: 'Brown', age: 41).save()
+        new Person(firstName: 'Zack', lastName: 'Galifianakis', age: 41).save()
+        def zackB = new Person(firstName: 'Zack', lastName: 'Brown', age: 14).save()
+        assertNotNull zackB.id
+
+        assertEquals 4, Person.count()
+        
+        def person = Person.findOrSaveByFirstNameAndLastNameAndAge('Zack', 'Brown', 14)
+        assertNotNull 'findOrSaveBy should not have returned null', person
+        assertEquals zackB.id, person.id
+        assertEquals 'Zack', person.firstName
+        assertEquals 'Brown', person.lastName
+        assertEquals 14, person.age 
+        
+        assertEquals 4, Person.count()
+        
+        person = Person.findOrSaveByFirstNameAndLastNameAndAge('Johnny', 'Winter', 68)
+        assertNotNull 'findOrSaveBy should not have returned null', person
+        assertEquals 'Johnny', person.firstName
+        assertEquals 'Winter', person.lastName
+        assertEquals 68, person.age
+        
+        assertEquals 5, Person.count()
+    }
+    
     void testFindOrSaveByForARecordThatDoesExistInTheDatabase() {
         def ginger = new Person(firstName: 'Ginger', lastName: 'Baker').save(flush: true)
         assertNotNull 'save should not have returned null', ginger

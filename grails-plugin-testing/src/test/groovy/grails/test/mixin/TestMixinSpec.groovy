@@ -62,9 +62,6 @@ class TestMixinSpec extends Specification {
             MyMixin.doLastCalled == true
     }
 
-    @FailsWith(
-      value = ConditionNotSatisfiedError,
-      reason = "Spock 0.5 does not support @Before etc., Spock 0.6 (not yet released) does")
     void "Test that appropriate test hooks are called for a Spock test"() {
         setup:
            MyMixin.doFirstCalled = false

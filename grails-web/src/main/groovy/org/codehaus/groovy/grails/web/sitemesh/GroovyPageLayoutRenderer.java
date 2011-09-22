@@ -15,22 +15,22 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import java.util.Collections;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
+
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.HTMLPage;
 import com.opensymphony.module.sitemesh.RequestConstants;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
 
 /**
  *
@@ -42,13 +42,11 @@ import java.util.Collections;
 public class GroovyPageLayoutRenderer {
 
     private Decorator decorator;
-    private GroovyPagesTemplateEngine templateEngine;
-    private ApplicationContext applicationContext;
+    private ViewResolver viewResolver;
 
-    public GroovyPageLayoutRenderer(Decorator decorator, GroovyPagesTemplateEngine templateEngine, ApplicationContext applicationContext) {
+    public GroovyPageLayoutRenderer(Decorator decorator, ViewResolver viewResolver) {
         this.decorator = decorator;
-        this.templateEngine = templateEngine;
-        this.applicationContext = applicationContext;
+        this.viewResolver = viewResolver;
     }
 
     public void render(Content content, HttpServletRequest request,
@@ -70,15 +68,9 @@ public class GroovyPageLayoutRenderer {
             boolean dispatched = false;
             try {
                 request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, Boolean.TRUE);
-
-                GroovyPageView gspSpringView = new GroovyPageView();
-                gspSpringView.setServletContext(servletContext);
-                gspSpringView.setUrl(decorator.getPage());
-                gspSpringView.setApplicationContext(applicationContext);
-                gspSpringView.setTemplateEngine(templateEngine);
-
                 try {
-                    gspSpringView.render(Collections.<String, Object>emptyMap(), request, response);
+                    View view = viewResolver.resolveViewName(decorator.getPage(), request.getLocale());
+                    view.render(Collections.<String, Object>emptyMap(), request, response);
                     dispatched = true;
                     if (!response.isCommitted()) {
                         response.getWriter().flush();
@@ -112,9 +104,5 @@ public class GroovyPageLayoutRenderer {
             htmlPage = new Content2HTMLPage(content);
         }
         return htmlPage;
-    }
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

@@ -102,7 +102,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                 getDefaultRMDParser(artifact.getModuleRevisionId().getModuleId()), date);
 
             if (uniqueResource != null) {
-                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.uniqueRevision, rev.lastModified);
+                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.revision, rev.lastModified);
             }
 
             pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
@@ -133,7 +133,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                     mrid, data.getDate()), getRMDParser(dd, data), data.getDate());
 
             if (uniqueResource != null) {
-                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.uniqueRevision, rev.lastModified);
+                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.revision, rev.lastModified);
             }
 
             pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
@@ -162,27 +162,27 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                 if (metadata.exists()) {
                     metadataStream = metadata.openStream();
                     final StringBuilder timestamp = new StringBuilder();
-                    final StringBuilder buildNumer = new StringBuilder();
+                    final StringBuilder buildNumber = new StringBuilder();
+                    final StringBuilder lastUpdated = new StringBuilder();
                     XMLHelper.parse(metadataStream, null, new ContextualSAXHandler() {
                         @Override
-                        public void endElement(String uri, String localName, String qName)
-                                throws SAXException {
-                            if ("metadata/versioning/lastUpdated".equals(getContext())) {
+                        public void endElement(String uri, String localName, String qName) throws SAXException {
+                            if ("metadata/versioning/snapshot/timestamp".equals(getContext())) {
                                 timestamp.append(getText());
-                            }
-                            if ("metadata/versioning/snapshot/buildNumber".equals(getContext())) {
-                                buildNumer.append(getText());
+                            } else if ("metadata/versioning/snapshot/buildNumber".equals(getContext())) {
+                                buildNumber.append(getText());
+                            } else if ("metadata/versioning/lastUpdated".equals(getContext())) {
+                                lastUpdated.append(getText());
                             }
                             super.endElement(uri, localName, qName);
                         }
                     }, null);
-                    if (timestamp.length() > 0) {
-                        // we have found a timestamp, so this is a snapshot unique version
-                        String rev = mrid.getRevision();
-                        rev = rev.substring(0, rev.length() - "-SNAPSHOT".length());
+                    if (timestamp.length() > 0) { // we have found a timestamp, so this is a snapshot unique version
+                        String snapshotRevision = mrid.getRevision();
+                        String baseRevision = snapshotRevision.substring(0, snapshotRevision.length() - "-SNAPSHOT".length());
+                        String uniqueRevisionSuffix = new StringBuffer().append(timestamp).append("-").append(buildNumber).toString();
 
-                        return new SnapshotRevision(rev, Long.parseLong(timestamp.toString()),
-                             Long.parseLong(buildNumer.toString()));
+                        return new SnapshotRevision(baseRevision, uniqueRevisionSuffix, Long.parseLong(lastUpdated.toString()));
                     }
                 } else {
                     Message.verbose("\tmaven-metadata not available: " + metadata);
@@ -211,24 +211,13 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
 
     static private class SnapshotRevision {
         public final String revision;
-
         public final String uniqueRevision;
         public final long lastModified;
 
-        private SnapshotRevision(String revision, long timestamp, long buildNumber) {
+        private SnapshotRevision(String revision, String uniqueRevisionSuffix, long lastModified) {
             this.revision = revision + "-SNAPSHOT";
-            this.uniqueRevision = revision + "-" + timestamp + "-" + buildNumber;
-            this.lastModified = calculateLastModified(timestamp);
-        }
-
-        static public long calculateLastModified(long timestamp) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-            format.setTimeZone(TimeZone.getTimeZone("UTC"));
-            try {
-                return format.parse(Long.toString(timestamp)).getTime();
-            } catch (ParseException e) {
-                return -1;
-            }
+            this.uniqueRevision = revision + "-" + uniqueRevisionSuffix;
+            this.lastModified = lastModified;
         }
 
         @Override

@@ -228,11 +228,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 throw new ControllerExecutionException("Unable to load template for uri [" +
                         templateUri + "]. Template not found.");
             }
-            
-            if(t instanceof GroovyPageTemplate) {
-            	((GroovyPageTemplate)t).setAllowSettingContentType(true);
+
+            if (t instanceof GroovyPageTemplate) {
+                ((GroovyPageTemplate)t).setAllowSettingContentType(true);
             }
-            
+
             Map binding = new HashMap();
 
             if (argMap.containsKey(ARGUMENT_BEAN)) {

@@ -14,30 +14,17 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
-import com.opensymphony.module.sitemesh.Factory
-import com.opensymphony.module.sitemesh.RequestConstants
 import grails.artefact.Artefact
-import grails.util.Environment
-import grails.util.GrailsNameUtils
-import groovy.text.Template
-import java.util.concurrent.ConcurrentHashMap
-import javax.servlet.ServletConfig
+
 import org.apache.commons.lang.WordUtils
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
@@ -45,8 +32,10 @@ import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
+
+import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.RequestConstants
 
 /**
  * Tags to help rendering of views and layouts.
@@ -55,20 +44,12 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
  */
 @Artefact("TagLibrary")
 class RenderTagLib implements RequestConstants {
-
-    ServletConfig servletConfig
-    GrailsConventionGroovyPageLocator groovyPageLocator
-    GroovyPagesTemplateEngine groovyPagesTemplateEngine
-    GrailsPluginManager pluginManager
-    def scaffoldingTemplateGenerator
-    def errorsViewStackTracePrinter
-    Map scaffoldedActionMap
-    Map controllerToScaffoldedDomainClassMap
-
-    static Map TEMPLATE_CACHE = new ConcurrentHashMap()
+	GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
+	ErrorsViewStackTracePrinter errorsViewStackTracePrinter
+	GroovyPagesTemplateEngine groovyPagesTemplateEngine
 
     protected getPage() {
-        return request[PAGE]
+        return getRequest().getAttribute(PAGE)
     }
 
     /**
@@ -115,7 +96,8 @@ class RenderTagLib implements RequestConstants {
      * @attr url Optional. The URL to retrieve the content from and apply a layout to
      * @attr contentType Optional. The content type to use, default is "text/html"
      * @attr encoding Optional. The encoding to use
-     * @attr params Optiona. The params to pass onto the page object
+     * @attr params Optional. The params to pass onto the page object
+     * @attr parse Optional. If true, Sitemesh parser will always be used to parse the content.
      */
     Closure applyLayout = { attrs, body ->
         if (!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
@@ -141,11 +123,13 @@ class RenderTagLib implements RequestConstants {
                 }
                 if (content instanceof StreamCharBuffer) {
                     gspSiteMeshPage.setPageBuffer(content)
+					gspSiteMeshPage.setUsed(true)
                 }
                 else if (content != null) {
                     def buf = new StreamCharBuffer()
                     buf.writer.write(content)
                     gspSiteMeshPage.setPageBuffer(buf)
+					gspSiteMeshPage.setUsed(true)
                 }
             }
             finally {
@@ -154,7 +138,7 @@ class RenderTagLib implements RequestConstants {
         }
 
         def page = null
-        if (gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        if (!attrs.boolean('parse') && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
             page = gspSiteMeshPage
         }
         else {
@@ -545,123 +529,7 @@ class RenderTagLib implements RequestConstants {
      * @attr plugin The plugin to look for the template in
      */
     Closure render = { attrs, body ->
-        if (!groovyPagesTemplateEngine) {
-            throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
-        }
-
-        if (!attrs.template) {
-            throwTagError("Tag [render] is missing required attribute [template]")
-        }
-
-        def engine = groovyPagesTemplateEngine
-        def var = attrs.var
-
-        Template t = null
-
-        def uri = grailsAttributes.getTemplateUri(attrs.template, request)
-        def contextPath = attrs.contextPath ? attrs.contextPath : ''
-        def pluginName = attrs.plugin ?: ''
-
-        def templatePath = contextPath ? org.codehaus.groovy.grails.io.support.GrailsResourceUtils.appendPiecesForUri(contextPath, attrs.template.toString()) : attrs.template.toString()
-        def scriptSource = null
-        if (pluginName != null) {
-            scriptSource = groovyPageLocator.findTemplateInBinding(pluginName, templatePath, (GroovyPageBinding) pageScope)
-        }
-        else {
-            scriptSource = groovyPageLocator.findTemplateInBinding(templatePath, (GroovyPageBinding) pageScope)
-        }
-
-        def cacheKey = "$contextPath$pluginName$uri".toString()
-
-        def cached = TEMPLATE_CACHE[cacheKey]
-        if (cached instanceof Template) {
-            t = cached
-        }
-        else {
-            if (cached != null && System.currentTimeMillis() - cached.timestamp < GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL) {
-                t = cached.template
-            }
-            else {
-                if (scriptSource != null) {
-                    t = engine.createTemplateForUri(scriptSource.URI)
-                }
-
-                if (!t && scaffoldingTemplateGenerator) {
-                    GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest()
-                    def controllerActions = scaffoldedActionMap[webRequest.controllerName]
-                    if (controllerActions?.contains(webRequest.actionName)) {
-                        GrailsDomainClass domainClass = controllerToScaffoldedDomainClassMap[webRequest.controllerName]
-                        if (domainClass) {
-                            int i = uri.lastIndexOf('/')
-                            String templateName = i > -1 ? uri.substring(i) : uri
-                            if (templateName.toLowerCase().endsWith('.gsp')) {
-                                templateName = templateName[0..-5]
-                            }
-                            def sw = new StringWriter()
-                            scaffoldingTemplateGenerator.generateView domainClass, templateName, sw
-                            t = engine.createTemplate(sw.toString(), uri)
-                        }
-                    }
-                }
-                if (t) {
-                    if (!engine.isReloadEnabled()) {
-                        def prevt = TEMPLATE_CACHE.putIfAbsent(cacheKey, t)
-                        if (prevt) {
-                            t = prevt
-                        }
-                    }
-                    else if (!Environment.isDevelopmentMode()) {
-                        TEMPLATE_CACHE.put(cacheKey, [timestamp: System.currentTimeMillis(), template: t])
-                    }
-                }
-            }
-        }
-
-        if (!t) {
-            throwTagError("Template not found for name [$attrs.template] and path [$uri]")
-        }
-
-        if (attrs.containsKey('bean')) {
-            def b = [body: body]
-            if (attrs.model instanceof Map) {
-                b += attrs.model
-            }
-            if (var) {
-                b.put(var, attrs.bean)
-            }
-            else {
-                b.put('it', attrs.bean)
-            }
-            t.make(b).writeTo(out)
-        }
-        else if (attrs.containsKey('collection')) {
-            def collection = attrs.collection
-            def key = 'it'
-            if (collection) {
-                def first = collection.iterator().next()
-                key = first ? GrailsNameUtils.getPropertyName(first.getClass()) : 'it'
-            }
-            collection.each {
-                def b = [body: body]
-                if (attrs.model instanceof Map) {
-                    b += attrs.model
-                }
-                if (var) {
-                    b.put(var, it)
-                }
-                else {
-                    b.put('it', it)
-                    b.put(key, it)
-                }
-                t.make(b).writeTo(out)
-            }
-        }
-        else if (attrs.model instanceof Map) {
-            t.make([body: body] + attrs.model).writeTo(out)
-        }
-        else if (attrs.template) {
-            t.make([body: body]).writeTo(out)
-        }
+		groovyPagesTemplateRenderer.render(getWebRequest(), getPageScope(), attrs, body, getOut())
     }
 
     /**

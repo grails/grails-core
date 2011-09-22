@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 
@@ -179,7 +180,7 @@ class FiltersGrailsPlugin {
             def bean = applicationContext.getBean(c.fullName)
             if (filterClass != null) {
                 for (filterConfig in filterClass.getConfigs(bean)) {
-                    applicationContext.autowireCapableBeanFactory.autowireBean(filterConfig)
+                    applicationContext.autowireCapableBeanFactory.autowireBeanProperties(filterConfig, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                     def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
                     handlerAdapter.afterPropertiesSet()
                     handlers <<  handlerAdapter

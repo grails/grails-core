@@ -3,38 +3,42 @@ import org.apache.tools.ant.filters.ReplaceTokens
 buildscript {
     repositories {
         mavenRepo(urls: "http://repo.grails.org/grails/core")
+	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
     dependencies {
-        classpath "commons-io:commons-io:1.4"
+        classpath "commons-io:commons-io:2.0.1"
+        //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
 }
 
-
 apply plugin: 'idea'
 
-
+grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 antTraxVersion = "1.7.1"
 antVersion = "1.8.2"
 aspectjVersion = "1.6.10"
-commonsBeanUtilsVersion = "1.8.0"
+commonsBeanUtilsVersion = "1.8.3"
 commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
-commonsIOVersion = "1.4"
-commonsLangVersion = "2.4"
+commonsIOVersion = "2.0.1"
+commonsLangVersion = "2.6"
 datastoreVersion = "1.0.0.BUILD-SNAPSHOT"
-gantVersion = "1.9.5"
+gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
-grailsVersion = '2.0.0.BUILD-SNAPSHOT'
-groovyVersion = "1.8.0"
+groovyVersion = "1.8.3-SNAPSHOT"
+gradleGroovyVersion = groovyVersion
+gradleGroovyVersion = "1.8.2"
 ivyVersion = "2.2.0"
 jansiVersion = "1.2.1"
 jlineVersion = "1.0"
 jnaVersion = "3.2.3"
-slf4jVersion = "1.6.1"
-springLoadedVersion = "0.8.6"
+slf4jVersion = "1.6.2"
+springLoadedVersion = "0.9.2.BUILD-SNAPSHOT"
 springVersion = "3.1.0.M2"
 springWebflowVersion= "2.0.8.RELEASE"
 hibernateVersion = "3.6.5.Final"
+ehcacheVersion = "2.4.5"
+junitVersion = "4.9"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -54,8 +58,10 @@ homeSrcDir = file("src")
 // artifacts' POMs.
 if(System.getProperty('groovy.jar')) {
     groovyDependency = files(System.getProperty('groovy.jar'))
+    gradleGroovyDependency = groovyDependency
 } else {
     groovyDependency = "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 }
 
 
@@ -65,6 +71,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
+    //apply plugin: 'duplicates'
 
     sourceCompatibility = "1.5"
     targetCompatibility = "1.5"
@@ -112,10 +119,10 @@ subprojects { project ->
         // Groovy
         if(System.getProperty('groovy.jar')) {
             // use the jar specified in the system property (the joint build specifies its own groovy jar)...
-            groovy groovyDependency
+            groovy gradleGroovyDependency
         } else {
             // resolve the dependency from a repo...
-            groovy( groovyDependency ) {
+            groovy( gradleGroovyDependency ) {
                 exclude module:"commons-cli"
                 exclude module:"ant"
             }
@@ -132,8 +139,8 @@ subprojects { project ->
 
 
         // Testing
-        testCompile 'junit:junit:4.8.1'
-        testCompile('org.spockframework:spock-core:0.5-groovy-1.8') {
+        testCompile "junit:junit:${junitVersion}"
+        testCompile('org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT') {
             transitive = false
         }
     }
@@ -161,6 +168,7 @@ subprojects { project ->
     configurations {
         meta
         published.extendsFrom archives, meta
+        	all*.exclude group:'commons-logging', module: 'commons-logging'
     }
 
     artifacts {

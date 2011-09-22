@@ -16,11 +16,10 @@
 
 package org.codehaus.groovy.grails.web.pages.discovery;
 
-import grails.util.Environment;
-import org.springframework.core.io.Resource;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.core.io.Resource;
 
 /**
  * Extends {@link GroovyPageStaticResourceLocator} adding caching of the result
@@ -38,7 +37,7 @@ public class CachingGroovyPageStaticResourceLocator extends GroovyPageStaticReso
         Resource resource = uriResolveCache.get(uri);
         if (resource == null) {
             resource = super.findResourceForURI(uri);
-            if (resource == null && Environment.isWarDeployed()) {
+            if (resource == null && warDeployed) {
                 resource = NULL_RESOURCE;
             }
             if(resource != null)

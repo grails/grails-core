@@ -170,6 +170,10 @@ class GroovyPagesGrailsPlugin {
             bean.lazyInit = true
             groovyPageLocator = groovyPageLocator
         }
+		
+		groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+			bean.autowire = true	
+		}
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
             groovyPageLocator = groovyPageLocator
@@ -400,7 +404,8 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-        event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(event.ctx)
+        def ctx = event.ctx ?: application.mainContext
+        event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(ctx)
 
         // clear uri cache after changes
         event.ctx.getBean("groovyPagesUriService").clear()

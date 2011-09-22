@@ -359,7 +359,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
         assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template
-        
+
         template = '<g:createLink action="testAction" controller="testController" absolute="${true}" />'
         assertOutputEquals 'http://localhost:8080/foo/testController/testAction', template
     }
@@ -370,7 +370,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="false" />'
         assertOutputEquals '/foo/testController/testAction', template
-        
+
         template = '<g:createLink action="testAction" controller="testController" absolute="${false}" />'
         assertOutputEquals '/foo/testController/testAction', template
     }
@@ -389,7 +389,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:createLink absolute="true" action="testAction" controller="testController" />'
         request.serverPort = 8080
         assertOutputEquals 'http://localhost:8080/testController/testAction', template
-        
+
         template = '<g:createLink absolute="${true}" action="testAction" controller="testController" />'
         request.serverPort = 8080
         assertOutputEquals 'http://localhost:8080/testController/testAction', template
@@ -399,7 +399,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:createLink absolute="false" action="testAction" controller="testController" />'
         request.serverPort = 8080
         assertOutputEquals '/testController/testAction', template
-        
+
         template = '<g:createLink absolute="${false}" action="testAction" controller="testController" />'
         request.serverPort = 8080
         assertOutputEquals '/testController/testAction', template

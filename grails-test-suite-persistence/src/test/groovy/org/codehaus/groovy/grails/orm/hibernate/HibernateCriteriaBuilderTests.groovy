@@ -188,7 +188,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
     void testWithGString() {
         def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
 
-        assertNotNull(domainClass) 
+        assertNotNull(domainClass)
 
         def obj = domainClass.newInstance()
         obj.firstName = "bart"
@@ -1479,7 +1479,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                 "}", "Test1",CriteriaBuilderTestClass.name)
         assertEquals 1 , results.size()
     }
-    
+
     void testPaginationParamsWithProjection() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             CriteriaBuilderTestClass.name)
@@ -1492,13 +1492,13 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj.setProperty("age", 45)
 
         obj.invokeMethod("save", null)
-        
+
         List results = parse(".list([:]) { " +
                     "projections { " +
                         "property('firstName')" +
                     "}" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
-        
+
         assertEquals 1 , results.size()
         assertTrue 'Result list should contain Strings', results[0] instanceof String
     }

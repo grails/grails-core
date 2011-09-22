@@ -33,16 +33,21 @@ dependencies {
 
     compile "commons-lang:commons-lang:$commonsLangVersion"
 
-    // Ant
     compile "org.fusesource.jansi:jansi:$jansiVersion",
             "jline:jline:$jlineVersion",
             "net.java.dev.jna:jna:$jnaVersion"
 
+    compile "junit:junit:${junitVersion}"
+
+    // Ant    
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
-            "org.apache.ant:ant-junit:${antVersion}",
             "org.apache.ant:ant-trax:${antTraxVersion}",
             "org.apache.ivy:ivy:${ivyVersion}"
+    
+    compile("org.apache.ant:ant-junit:${antVersion}") {
+    	exclude module:'junit'
+    }
 
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         exclude module:'commons-cli'

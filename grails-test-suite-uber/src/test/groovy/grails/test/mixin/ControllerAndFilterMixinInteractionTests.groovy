@@ -3,13 +3,6 @@ package grails.test.mixin
 import org.junit.Test
 import grails.persistence.Entity
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 22/08/2011
- * Time: 15:59
- * To change this template use File | Settings | File Templates.
- */
 @TestFor(SecureUserController)
 @Mock([SecurityFilters, User])
 class ControllerAndFilterMixinInteractionTests {
@@ -27,10 +20,11 @@ class ControllerAndFilterMixinInteractionTests {
         assert "/user/login" == response.redirectedUrl
     }
 }
-class SecureUserController {
 
+class SecureUserController {
     def index() { }
 }
+
 class SecurityFilters {
 
     def filters = {
@@ -50,11 +44,9 @@ class SecurityFilters {
         }
     }
 }
+
 @Entity
 class User {
-
     String username
     String password
-    static constraints = {
-    }
 }

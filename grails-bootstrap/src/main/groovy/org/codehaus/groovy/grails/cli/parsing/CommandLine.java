@@ -15,9 +15,6 @@
  */
 package org.codehaus.groovy.grails.cli.parsing;
 
-import groovy.lang.Closure;
-import org.codehaus.groovy.grails.cli.GrailsScriptRunner;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +37,6 @@ public interface CommandLine {
     String NON_INTERACTIVE_ARGUMENT = "non-interactive";
 
     /**
-     *
      * @return The environment specified
      */
     String getEnvironment();
@@ -51,19 +47,16 @@ public interface CommandLine {
     boolean isEnvironmentSet();
 
     /**
-     *
      * @return The command name specified
      */
     String getCommandName();
 
     /**
-     *
      * @return The remaining arguments after the command name
      */
     List<String> getRemainingArgs();
 
     /**
-     *
      * @return The remaining arguments as an array
      */
     String[] getRemainingArgsArray();
@@ -74,11 +67,10 @@ public interface CommandLine {
     Properties getSystemProperties();
 
     /**
-     *
      * @param name The name of the option
      * @return Whether the given option is specified
      */
-    public boolean hasOption(String name);
+    boolean hasOption(String name);
 
     /**
      * The value of an option
@@ -96,7 +88,6 @@ public interface CommandLine {
      * @return The remaining args separated by the line separator char
      */
     String getRemainingArgsLineSeparated();
-
 
     Map<String, Object> getUndeclaredOptions();
 }

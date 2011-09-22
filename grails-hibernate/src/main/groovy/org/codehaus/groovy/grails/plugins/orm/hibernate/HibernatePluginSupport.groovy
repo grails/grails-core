@@ -369,12 +369,17 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     }
 
     static void enhanceSessionFactories(ApplicationContext ctx, grailsApplication) {
+
+        Map<SessionFactory, HibernateDatastore> datastores = [:]
+
         for (entry in ctx.getBeansOfType(SessionFactory)) {
             SessionFactory sessionFactory = entry.value
             String beanName = entry.key
             String suffix = beanName - 'sessionFactory'
-            enhanceSessionFactory sessionFactory, grailsApplication, ctx, suffix
+            enhanceSessionFactory sessionFactory, grailsApplication, ctx, suffix, datastores
         }
+
+        ctx.eventTriggeringInterceptor.datastores = datastores
     }
 
     static void enhanceProxyClass(Class proxyClass) {
@@ -439,16 +444,18 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         proxy.metaClass = GroovySystem.metaClassRegistry.getMetaClass(proxy.getClass())
     }
 
-    static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application, ApplicationContext ctx) {
-        enhanceSessionFactory(sessionFactory, application, ctx, '')
+    static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application,
+              ApplicationContext ctx) {
+        enhanceSessionFactory(sessionFactory, application, ctx, '', [:])
     }
 
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application,
-            ApplicationContext ctx, String suffix) {
+            ApplicationContext ctx, String suffix, Map<SessionFactory, HibernateDatastore> datastores) {
 
         MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
         PlatformTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", PlatformTransactionManager)
-        final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx)
+        final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx, application.config)
+        datastores[sessionFactory] = datastore
         String datasourceName = suffix ? suffix[1..-1] : GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
 
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)

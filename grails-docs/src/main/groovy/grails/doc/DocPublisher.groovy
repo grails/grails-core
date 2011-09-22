@@ -65,6 +65,8 @@ class DocPublisher {
     String version
     /** The authors of the documentation */
     String authors = ""
+    /** The translators of the documentation (if any) */
+    String translators = ""
     /** The documentation license */
     String license = ""
     /** The copyright message */
@@ -79,7 +81,7 @@ class DocPublisher {
     /** Properties used to configure the DocEngine */
     Properties engineProperties
 
-    private output
+    def output
     private context
     private engine
     private customMacros = []
@@ -202,7 +204,10 @@ class DocPublisher {
             // A set of all gdoc files.
             def files = []
             guideSrcDir.traverse(type: FileType.FILES, nameFilter: ~/^.+\.gdoc$/) {
-                files << (it.absolutePath - guideSrcDir.absolutePath)[1..-1]
+                // We need relative file paths with '/' separators, since those
+                // are what are stored in the UserGuideNodes.
+                files << (it.absolutePath - guideSrcDir.absolutePath)[1..-1].
+                        replace(File.separator as char, '/' as char)
             }
 
             if (!verifyToc(guideSrcDir, files, guide)) {
@@ -252,6 +257,7 @@ class DocPublisher {
             subtitle: subtitle,
             footer: footer, // TODO - add a way to specify footer
             authors: authors,
+            translators: translators,
             version: version,
             refMenu: refCategories,
             toc: guide,
@@ -260,7 +266,7 @@ class DocPublisher {
             sponsorLogo: injectPath(sponsorLogo, pathToRoot),
             single: false,
             path: pathToRoot,
-            resourcesPath: calculatePathToResources(pathToRoot), 
+            resourcesPath: calculatePathToResources(pathToRoot),
             prev: null,
             next: null,
             legacyLinks: legacyLinks
@@ -553,7 +559,7 @@ class DocPublisher {
     }
 
     private String calculatePathToResources(String pathToRoot) {
-        return language ? '../' + pathToRoot : pathToRoot  
+        return language ? '../' + pathToRoot : pathToRoot
     }
 
     private initContext(context, path) {

@@ -96,11 +96,12 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
         return resolvedView;
     }
 
-    protected View createScaffoldedView(String viewName, String viewCode) {
+    protected View createScaffoldedView(String viewName, String viewCode) throws Exception {
         final ScaffoldedGroovyPageView view = new ScaffoldedGroovyPageView(viewName, viewCode);
         view.setApplicationContext(getApplicationContext());
         view.setServletContext(getServletContext());
         view.setTemplateEngine(templateEngine);
+        view.afterPropertiesSet();
         return view;
     }
 

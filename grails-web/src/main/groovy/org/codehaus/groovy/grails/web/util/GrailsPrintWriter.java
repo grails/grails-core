@@ -37,10 +37,12 @@ public class GrailsPrintWriter extends PrintWriter {
     protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
     protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble=false;
-    protected Writer out;
+    @SuppressWarnings("hiding") protected Writer out;
     protected boolean allowUnwrappingOut=true;
-    private boolean finalTargetHere=false;
-    protected boolean usageFlag=false;
+    private boolean finalTargetHere = false;
+    protected boolean usageFlag = false;
+    protected Writer streamCharBufferTarget = null;
+    protected Writer previousOut = null;
 
     public GrailsPrintWriter(Writer out) {
         super(out);
@@ -155,14 +157,15 @@ public class GrailsPrintWriter extends PrintWriter {
             usageFlag = true;
             return;
         }
-
-        if (obj instanceof StreamCharBuffer) {
+        
+        Class clazz = obj.getClass();
+        if (clazz == String.class) {
+        	write((String)obj);
+        } else if (clazz == StreamCharBuffer.class) {
             write((StreamCharBuffer)obj);
-        }
-        else if (obj instanceof Writable) {
+        } else if (obj instanceof Writable) {
             write((Writable)obj);
-        }
-        else if (obj instanceof CharSequence) {
+        } else if (obj instanceof CharSequence) {
             try {
                 usageFlag = true;
                 out.append((CharSequence) obj);
@@ -170,8 +173,7 @@ public class GrailsPrintWriter extends PrintWriter {
             catch (IOException e) {
                 handleIOException(e);
             }
-        }
-        else {
+        } else {
             write(String.valueOf(obj));
         }
     }
@@ -435,7 +437,14 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
     protected Writer findStreamCharBufferTarget(boolean markUsed) {
-        Writer target = getOut();
+    	boolean allowCaching = markUsed;
+    	
+    	Writer currentOut = getOut();
+    	if(allowCaching && streamCharBufferTarget != null && previousOut == currentOut) {
+    		return streamCharBufferTarget;
+    	}
+    	
+        Writer target = currentOut;
         while (target instanceof GrailsPrintWriter) {
             GrailsPrintWriter gpr=((GrailsPrintWriter)target);
             if (gpr.isAllowUnwrappingOut()) {
@@ -448,10 +457,19 @@ public class GrailsPrintWriter extends PrintWriter {
             }
         }
 
+        Writer result;
         if (target instanceof StreamCharBufferWriter) {
-            return target;
+        	result = target;
+        } else {
+        	result = currentOut;
+        }       
+        
+        if(allowCaching) {
+        	streamCharBufferTarget = result;
+        	previousOut = currentOut;
         }
-        return getOut();
+        
+        return result;
     }
 
     public void print(final StreamCharBuffer otherBuffer) {

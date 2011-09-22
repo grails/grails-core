@@ -189,7 +189,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.web.GroovyPagesGrailsPlugin")
-        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.LoggingGrailsPlugin")
+        dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.log4j.LoggingGrailsPlugin")
 
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, grailsApplication)}
 
@@ -322,7 +322,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         assert engine
         def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
-		t.allowSettingContentType = true
+        t.allowSettingContentType = true
 
         /*
         println "------------HTMLPARTS----------------------"

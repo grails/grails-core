@@ -5,7 +5,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import spock.lang.Specification
 
 class ValidateableTransformationSpec extends Specification {
-    
+
     static gcl
 
     def setupSpec() {
@@ -34,7 +34,7 @@ class ValidateableTransformationSpec extends Specification {
             class Widget {
             }
             ''')
-            
+
         when:
             def validateMethodCount = clz.metaClass.methods.findAll { it.name == 'validate' }?.size()
 

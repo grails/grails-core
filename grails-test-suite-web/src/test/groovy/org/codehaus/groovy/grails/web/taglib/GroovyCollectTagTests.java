@@ -23,6 +23,7 @@ public class GroovyCollectTagTests extends TestCase {
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     protected void setUp() throws Exception {
         super.setUp();

@@ -18,7 +18,7 @@ dependencies {
                 project(":grails-plugin-servlets"),
                 project(":grails-plugin-services"),
                 project(":grails-plugin-i18n"),
-                project(":grails-plugin-logging")
+                project(":grails-plugin-log4j")
 }
 
 test {

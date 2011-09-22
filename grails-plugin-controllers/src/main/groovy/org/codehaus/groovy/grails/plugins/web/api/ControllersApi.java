@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestAttributes;
@@ -54,6 +55,8 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @SuppressWarnings("rawtypes")
 public class ControllersApi extends CommonWebApi implements Serializable {
+
+    private static final long serialVersionUID = 1;
 
     private static final String RENDER_METHOD_NAME = "render";
     private static final String BIND_DATA_METHOD = "bindData";
@@ -109,7 +112,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
     public static void initialize(Object instance) {
         ApplicationContext applicationContext = getStaticApplicationContext();
         if (applicationContext != null) {
-            applicationContext.getAutowireCapableBeanFactory().autowireBean(instance);
+            applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
             if(Environment.getCurrent() == Environment.TEST) {
                 GrailsWebRequest webRequest = GrailsWebRequest.lookup();
                 if(webRequest != null) {

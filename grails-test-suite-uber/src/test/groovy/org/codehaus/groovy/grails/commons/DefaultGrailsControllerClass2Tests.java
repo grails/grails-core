@@ -75,6 +75,19 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertEquals("/test/someAction", grailsClass.getViewByURI("/test/some-action"));
     }
 
+    public void testDefaultGrailsControllerDefaultActionViewNamesForHyphenatedUrls() throws Exception {
+        GroovyClassLoader cl = new GrailsAwareClassLoader();
+        Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MyTestController { static defaultAction = 'someAction'; def index() {}; def someAction = {}; } ");
+        GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
+        assignGrailsApplication(cl, grailsClass, new HyphenatedUrlConverter());
+        assertEquals("MyTest", grailsClass.getName());
+        assertEquals("MyTestController", grailsClass.getFullName());
+        assertEquals("/myTest/someAction", grailsClass.getViewByName("someAction"));
+        assertEquals("/myTest/someAction", grailsClass.getViewByURI("/my-test/some-action"));
+        assertEquals("/myTest/someAction", grailsClass.getViewByURI("/my-test/"));
+        assertEquals("/myTest/index", grailsClass.getViewByURI("/my-test/index"));
+    }
+    
     public void testMappingToControllerBeginningWith2UpperCaseLetters() {
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MYdemoController { def action = { return null }; } ");
@@ -180,11 +193,11 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertTrue("actionTwo should have accepted a DELETE", grailsClass.isHttpMethodAllowedForAction(controller, "DELETE", "actionTwo"));
         assertTrue("actionTwo should have accepted a POST", grailsClass.isHttpMethodAllowedForAction(controller, "POST", "actionTwo"));
     }
-    
+
     public void testInterceptorCloning() throws Exception {
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { \n" +
-        								"def someproperty='testvalue'\n" +
+                                        "def someproperty='testvalue'\n" +
                                         "static def beforeInterceptor = { someproperty }\n" +
                                         "def list = { return 'test' }\n " +
                                         "} ");
@@ -201,17 +214,15 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
     private void assignGrailsApplication(GroovyClassLoader cl,
             GrailsControllerClass grailsClass, UrlConverter urlConverter) {
         GrailsApplication ga = new DefaultGrailsApplication(cl.getLoadedClasses(), cl);
-        
+
         MockApplicationContext ctx = new MockApplicationContext();
         ctx.registerMockBean(UrlConverter.BEAN_NAME, urlConverter);
         ga.setMainContext(ctx);
         ga.initialise();
         grailsClass.setGrailsApplication(ga);
     }
-    
-    private void assignGrailsApplication(GroovyClassLoader cl,
-            GrailsControllerClass grailsClass) {
+
+    private void assignGrailsApplication(GroovyClassLoader cl, GrailsControllerClass grailsClass) {
         assignGrailsApplication(cl, grailsClass, new CamelCaseUrlConverter());
     }
-    
 }

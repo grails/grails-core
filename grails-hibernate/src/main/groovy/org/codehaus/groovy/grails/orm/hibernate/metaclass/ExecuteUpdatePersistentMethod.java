@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -49,8 +50,8 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
     private static final String METHOD_SIGNATURE = "executeUpdate";
     private static final Pattern METHOD_PATTERN = Pattern.compile("^executeUpdate$");
 
-    public ExecuteUpdatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(sessionFactory, classLoader, METHOD_PATTERN);
+    public ExecuteUpdatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+        super(sessionFactory, classLoader, METHOD_PATTERN, application);
     }
 
     @Override

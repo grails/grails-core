@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.CollectionUtils;
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.Script;
@@ -176,13 +177,22 @@ public abstract class GroovyPage extends Script {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
         }
-        getBinding().getVariables().put(OUT, out);
+        setVariableDirectly(OUT, out);
         if (codecClass != null) {
             codecOut = new CodecPrintWriter(grailsApplication, out, codecClass);
         } else {
             codecOut = out;
         }
-        getBinding().getVariables().put(CODEC_OUT, codecOut);
+        setVariableDirectly(CODEC_OUT, codecOut);
+    }
+    
+    private void setVariableDirectly(String name, Object value) {
+    	Binding binding=getBinding();
+    	if(binding instanceof AbstractGroovyPageBinding) {
+    		((AbstractGroovyPageBinding)binding).setVariableDirectly(name, value);
+    	} else {
+    		binding.getVariables().put(name, value);
+    	}
     }
 
     public String getPluginContextPath() {
@@ -289,7 +299,7 @@ public abstract class GroovyPage extends Script {
             }
             if (value != null) {
                 // cache lookup for next execution
-                getBinding().getVariables().put(property, value);
+            	setVariableDirectly(property, value);
             }
         }
 
@@ -365,6 +375,9 @@ public abstract class GroovyPage extends Script {
                             ((GroovyPageTagBody) body).setPreferSubChunkWhenWritingToOtherBuffer(true);
                         }
 
+                        if (!(attrs instanceof GroovyPageAttributes)) {
+                            attrs = new GroovyPageAttributes(attrs);
+                        }        
                         switch (tag.getParameterTypes().length) {
                             case 1:
                                 tagresult = tag.call(new Object[]{attrs});
@@ -462,45 +475,6 @@ public abstract class GroovyPage extends Script {
 
     private GroovyObject getTagLib(String namespace, String tagName) {
         return lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
-    }
-
-    /**
-     * Allows invoking of taglibs as method calls with simple bodies. The bodies should only contain text
-     *
-     * @param methodName The methodName of the tag to call or the methodName of a method on GroovPage
-     * @param args       The Arguments
-     * @return The result of the invocation
-     */
-    @SuppressWarnings("rawtypes")
-    @Override
-    public final Object invokeMethod(final String methodName, Object args) {
-        if (methodName.equals("invokeTag")) return super.invokeMethod(methodName, args);
-
-        Map attrs = null;
-        Object body = null;
-        GroovyObject tagLib = getTagLibForDefaultNamespace(methodName);
-        if (tagLib != null) {
-            // get attributes and body closure
-            if (args instanceof Object[]) {
-                Object[] argArray = (Object[]) args;
-                if (argArray.length > 0 && argArray[0] instanceof Map) {
-                    attrs = (Map) argArray[0];
-                }
-                if (argArray.length > 1) {
-                    body = argArray[1];
-                }
-            } else if (args instanceof Map) {
-                attrs = (Map) args;
-            }
-
-            if (attrs == null) {
-                attrs = new HashMap();
-            }
-
-            return captureTagOutput(gspTagLibraryLookup, DEFAULT_NAMESPACE, methodName, attrs, body, webRequest);
-        }
-
-        return super.invokeMethod(methodName, args);
     }
 
     @SuppressWarnings("rawtypes")
@@ -653,12 +627,9 @@ public abstract class GroovyPage extends Script {
         GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
         setBodyClosure(bodyClosureIndex, tagBody);
     }
-    
+
+    @SuppressWarnings("unchecked")
     public void changeItVariable(Object value) {
-    	getBinding().getVariables().put("it", value);    	
-    }
-    
-    public Map createGroovyPageAttributes(Map map) {
-    	return new GroovyPageAttributes(map);
+    	setVariableDirectly("it", value);
     }
 }

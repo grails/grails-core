@@ -88,14 +88,8 @@ import java.util.regex.Pattern;
  */
 public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
 
-    private GrailsApplication grailsApplication;
-
-    public FindAllPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(sessionFactory, classLoader, Pattern.compile("^findAll$"));
-    }
-
-    public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
+    public FindAllPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+        super(sessionFactory, classLoader, Pattern.compile("^findAll$"), application);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -224,17 +218,14 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                 private boolean retrieveBoolean(Object param, String key) {
                     boolean value = false;
                     if (isMapWithValue(param, key)) {
-                    	SimpleTypeConverter converter = new SimpleTypeConverter();
-                        value = converter.convertIfNecessary(((Map)param).get(key), Boolean.class);
+                        value = new SimpleTypeConverter().convertIfNecessary(((Map)param).get(key), Boolean.class);
                     }
                     return value;
                 }
 
                 private int retrieveInt(Object param, String key) {
                     if (isMapWithValue(param, key)) {
-                    	SimpleTypeConverter converter = new SimpleTypeConverter();
-                        Integer convertedParam = converter.convertIfNecessary(((Map) param).get(key),Integer.class);
-                        return convertedParam;
+                        return new SimpleTypeConverter().convertIfNecessary(((Map) param).get(key),Integer.class);
                     }
                     if (isIntegerOrLong(param)) {
                         return ((Number)param).intValue();
@@ -262,7 +253,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                     crit.add(example);
 
                     Map argsMap = (arguments.length > 1 && (arguments[1] instanceof Map)) ? (Map) arguments[1] : Collections.EMPTY_MAP;
-                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication,clazz, crit, argsMap);
+                    GrailsHibernateUtil.populateArgumentsForCriteria(application,clazz, crit, argsMap);
                     return crit.list();
                 }
             });
@@ -272,7 +263,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
             return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException, SQLException {
                     Criteria crit = session.createCriteria(clazz);
-                    GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, clazz, crit, (Map)arguments[0]);
+                    GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit, (Map)arguments[0]);
                     return crit.list();
                 }
             });

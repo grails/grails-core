@@ -47,7 +47,7 @@ hibernate {
         // Check that the observers are what we expect (note that the
         // core plugin "logging" should be one of them).
         def expectedObservers = ["logging", "observing"]
-        assertTrue observers*.name.containsAll(expectedObservers)
+        assert observers*.name.containsAll(expectedObservers)
         assertEquals expectedObservers.size(), observers.size()
 
         // Also check that the "logging" plugin is observing the "my"

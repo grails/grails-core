@@ -28,7 +28,9 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
+import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
@@ -46,21 +48,21 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
     public static final String METHOD_SIGNATURE = "validate";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
-    private GrailsApplication application;
     public static final String ARGUMENT_DEEP_VALIDATE = "deepValidate";
     private static final String ARGUMENT_EVICT = "evict";
     private Validator validator;
-    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
+    private HibernateDatastore datastore;
 
     public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        this(sessionFactory, classLoader, application, null);
+        this(sessionFactory, classLoader, application, null, null);
     }
 
-    public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, Validator validator) {
-        super(METHOD_PATTERN, sessionFactory, classLoader);
+    public ValidatePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader,
+             GrailsApplication application, Validator validator, HibernateDatastore datastore) {
+        super(METHOD_PATTERN, sessionFactory, classLoader, application);
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
-        this.application = application;
         this.validator = validator;
+        this.datastore = datastore;
     }
 
     @Override
@@ -105,7 +107,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
             }
         }
 
-        beforeValidateHelper.invokeBeforeValidate(target, validatedFieldsList);
+        fireEvent(target, validatedFieldsList);
 
         if (deepValidate && (validator instanceof CascadingValidator)) {
             ((CascadingValidator)validator).validate(target, errors, deepValidate);
@@ -137,6 +139,12 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
         }
 
         return valid;
+    }
+
+    private void fireEvent(Object target, List<?> validatedFieldsList) {
+        ValidationEvent event = new ValidationEvent(datastore, target);
+        event.setValidatedFields(validatedFieldsList);
+        application.getMainContext().publishEvent(event);
     }
 
     @SuppressWarnings("rawtypes")

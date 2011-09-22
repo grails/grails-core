@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.GroovyObjectSupport;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -42,7 +44,8 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
  * @author Lari Hotari
  * @since 1.2
  */
-public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport implements Map, Cloneable {
     protected Map wrappedMap;
 
     public AbstractTypeConvertingMap() {
@@ -54,6 +57,7 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         wrappedMap = map;
     }
 
+    @Override
     public boolean equals(Object that) {
         if (this == that) {
             return true;
@@ -66,42 +70,43 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         if (getClass() != that.getClass()) {
             return false;
         }
-        
+
         AbstractTypeConvertingMap thatMap = (AbstractTypeConvertingMap)that;
-        
-        if(this.wrappedMap==thatMap.wrappedMap) {
-        	return true;
+
+        if (wrappedMap == thatMap.wrappedMap) {
+            return true;
         }
-        
+
         if (wrappedMap.size() != thatMap.wrappedMap.size()) {
             return false;
         }
-        
+
         if (!wrappedMap.keySet().equals(thatMap.wrappedMap.keySet())) {
             return false;
         }
-        
+
         final Iterator it = wrappedMap.keySet().iterator();
         while (it.hasNext()) {
             final Object key = it.next();
             Object thisValue=wrappedMap.get(key);
             Object thatValue=thatMap.wrappedMap.get(key);
             if(thisValue==null && thatValue != null) {
-            	return false;
+                return false;
             }
             if (!thisValue.equals(thatValue)) {
                 return false;
             }
-        }        
+        }
         return true;
     }
 
+    @Override
     public int hashCode() {
-    	HashCodeBuilder builder = new HashCodeBuilder(23, 31);
-    	for (Object entry : this.wrappedMap.entrySet()) {
-    		builder.append(entry);
-    	}
-    	return builder.toHashCode();    	
+        HashCodeBuilder builder = new HashCodeBuilder(23, 31);
+        for (Object entry : this.wrappedMap.entrySet()) {
+            builder.append(entry);
+        }
+        return builder.toHashCode();
     }
 
     /**
@@ -127,15 +132,15 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         return null;
     }
 
-    
+
     public Byte getByte(String name, Integer defaultValue) {
-    	Byte value=getByte(name);
-    	if(value==null && defaultValue != null) {
-    		value=Byte.valueOf((byte)defaultValue.intValue());
-    	}
-    	return value;
+        Byte value=getByte(name);
+        if(value==null && defaultValue != null) {
+            value=Byte.valueOf((byte)defaultValue.intValue());
+        }
+        return value;
     }
-    
+
     /**
      * Helper method for obtaining Character value from parameter
      * @param name The name of the parameter
@@ -155,15 +160,15 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Character getChar(String name, Integer defaultValue) {
-    	Character value=getChar(name);
-    	if(value==null && defaultValue != null) {
-    		value=Character.valueOf((char)defaultValue.intValue());
-    	}
-    	return value;
+        Character value=getChar(name);
+        if(value==null && defaultValue != null) {
+            value=Character.valueOf((char)defaultValue.intValue());
+        }
+        return value;
     }
-    
+
     /**
      * Helper method for obtaining integer value from parameter
      * @param name The name of the parameter
@@ -186,14 +191,14 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Integer getInt(String name, Integer defaultValue) {
-    	Integer value=getInt(name);
-    	if(value==null) {
-    		value=defaultValue;
-    	}
-    	return value;
-    }    
+        Integer value=getInt(name);
+        if(value==null) {
+            value=defaultValue;
+        }
+        return value;
+    }
 
     /**
      * Helper method for obtaining long value from parameter
@@ -214,14 +219,14 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Long getLong(String name, Long defaultValue) {
-    	Long value=getLong(name);
-    	if(value==null) {
-    		value=defaultValue;
-    	}
-    	return value;
-    }    
+        Long value=getLong(name);
+        if(value==null) {
+            value=defaultValue;
+        }
+        return value;
+    }
 
     /**
     * Helper method for obtaining short value from parameter
@@ -245,15 +250,15 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Short getShort(String name, Integer defaultValue) {
-    	Short value=getShort(name);
-    	if(value==null && defaultValue != null) {
-    		value=defaultValue.shortValue();
-    	}
-    	return value;
+        Short value=getShort(name);
+        if(value==null && defaultValue != null) {
+            value=defaultValue.shortValue();
+        }
+        return value;
     }
-    
+
     /**
     * Helper method for obtaining double value from parameter
     * @param name The name of the parameter
@@ -276,14 +281,14 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Double getDouble(String name, Double defaultValue) {
-    	Double value=getDouble(name);
-    	if(value==null) {
-    		value=defaultValue;
-    	}
-    	return value;
-    }    
+        Double value=getDouble(name);
+        if(value==null) {
+            value=defaultValue;
+        }
+        return value;
+    }
 
     /**
      * Helper method for obtaining float value from parameter
@@ -307,14 +312,14 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Float getFloat(String name, Float defaultValue) {
-    	Float value=getFloat(name);
-    	if(value==null) {
-    		value=defaultValue;
-    	}
-    	return value;
-    }    
+        Float value=getFloat(name);
+        if(value==null) {
+            value=defaultValue;
+        }
+        return value;
+    }
 
     /**
      * Helper method for obtaining float value from parameter
@@ -338,7 +343,7 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return null;
     }
-    
+
     public Boolean getBoolean(String name, Boolean defaultValue) {
         Boolean value;
         if (containsKey(name)) {
@@ -347,8 +352,8 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
             value = defaultValue;
         }
         return value;
-    }    
-    
+    }
+
     /**
      * Obtains a date for the parameter name using the default format
      * @param name
@@ -374,17 +379,50 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
             }
         }
         return null;
-    }    
-    
-	public Date date(String name) {
-		return getDate(name);
-	}
+    }
 
-	public Date date(String name, String format) {
-		return getDate(name, format);
-	}
-    
-    
+    /**
+     * Obtains a date for the given parameter name
+     *
+     * @param name The name of the parameter
+     * @return The date object or null if it cannot be parsed
+     */
+    public Date date(String name) {
+        return getDate(name);
+    }
+
+    /**
+     * Obtains a date for the given parameter name and format
+     *
+     * @param name The name of the parameter
+     * @param format The format
+     * @return The date object or null if it cannot be parsed
+     */
+    public Date date(String name, String format) {
+        return getDate(name, format);
+    }
+
+
+    /**
+     * Obtains a date for the given parameter name and format
+     *
+     * @param name The name of the parameter
+     * @param formats The formats
+     * @return The date object or null if it cannot be parsed
+     */
+    public Date date(String name, Collection<String> formats) {
+        return getDate(name, formats);
+    }
+
+    private Date getDate(String name, Collection<String> formats) {
+        for (String format : formats) {
+            Date date = getDate(name,format);
+            if(date != null) return date;
+        }
+        return null;
+    }
+
+
     /**
      * Helper method for obtaining a list of values from parameter
      * @param name The name of the parameter
@@ -403,10 +441,10 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
         }
         return Collections.singletonList(paramValues);
     }
-    
+
     public List list(String name) {
         return getList(name);
-    }    
+    }
 
     public Object put(Object k, Object v) {
         return wrappedMap.put(k, v);
@@ -421,7 +459,7 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
     }
 
     public boolean isEmpty() {
-    	return wrappedMap.isEmpty();
+        return wrappedMap.isEmpty();
     }
 
     public boolean containsKey(Object k) {
@@ -455,12 +493,13 @@ public abstract class AbstractTypeConvertingMap implements Map, Cloneable {
     public Set entrySet() {
         return wrappedMap.entrySet();
     }
-    
+
+    @Override
     public String toString() {
-    	return DefaultGroovyMethods.toMapString(this);
+        return DefaultGroovyMethods.toMapString(this);
     }
-	
-	public boolean asBoolean() {
-		return !isEmpty();
-	}
+
+    public boolean asBoolean() {
+        return !isEmpty();
+    }
 }

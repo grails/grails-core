@@ -17,8 +17,14 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.ExpandoMetaClass;
-import groovy.lang.GroovyClassLoader;
+
+import java.util.Iterator;
+import java.util.Properties;
+
+import javax.servlet.http.HttpServletResponse;
+
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -38,9 +44,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.*;
 
 /**
  * @author Steven Devijver

@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
@@ -38,12 +39,14 @@ public class MergePersistentMethod extends AbstractSavePersistentMethod {
     public static final String METHOD_SIGNATURE = "merge";
     public static final Pattern METHOD_PATTERN = Pattern.compile('^'+METHOD_SIGNATURE+'$');
 
-    public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
-        super(METHOD_PATTERN, sessionFactory, classLoader, application);
+    public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader,
+               GrailsApplication application, HibernateDatastore datastore) {
+        super(METHOD_PATTERN, sessionFactory, classLoader, application, datastore);
     }
 
-    public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application, GrailsDomainClass dc) {
-        super(METHOD_PATTERN, sessionFactory, classLoader, application, dc);
+    public MergePersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader,
+               GrailsApplication application, GrailsDomainClass dc, HibernateDatastore datastore) {
+        super(METHOD_PATTERN, sessionFactory, classLoader, application, dc, datastore);
     }
 
     /* (non-Javadoc)

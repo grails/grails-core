@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.FlushMode;
@@ -51,7 +52,7 @@ import org.springframework.orm.hibernate3.HibernateCallback;
 public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod {
     private static final String METHOD_SIGNATURE = "executeQuery";
     private static final Pattern METHOD_PATTERN = Pattern.compile("^executeQuery$");
-    
+
     @SuppressWarnings("serial")
     private static final List<String> QUERY_META_PARAMS = Collections.unmodifiableList(
             new ArrayList<String>() {{
@@ -65,8 +66,8 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
             }}
     );
 
-    public ExecuteQueryPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(sessionFactory, classLoader, METHOD_PATTERN);
+    public ExecuteQueryPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
+        super(sessionFactory, classLoader, METHOD_PATTERN, application);
     }
 
     @SuppressWarnings("rawtypes")
@@ -114,7 +115,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                 for (Object parameter : positionalParams) {
                     q.setParameter(index++, parameter instanceof CharSequence ? parameter.toString() : parameter);
                 }
-                
+
                 // process named HQL params
                 for (Object o : namedParams.entrySet()) {
                     Map.Entry entry = (Map.Entry) o;

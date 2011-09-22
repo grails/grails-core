@@ -15,6 +15,9 @@
 */
 package org.codehaus.groovy.grails.support;
 
+import java.util.Collections;
+import java.util.Map;
+
 import org.apache.commons.collections.map.ReferenceMap;
 
 /**
@@ -23,13 +26,14 @@ import org.apache.commons.collections.map.ReferenceMap;
  * @author Graeme Rocher
  * @since 0.6
  */
-public class SoftThreadLocalMap extends InheritableThreadLocal<ReferenceMap> {
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public class SoftThreadLocalMap extends InheritableThreadLocal<Map> {
 
     /**
-     * Creates an initial value of a Map
+     * Creates an initial value of a Map.
      */
     @Override
-    protected ReferenceMap initialValue() {
-        return new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT);
+    protected Map initialValue() {
+        return Collections.synchronizedMap(new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT));
     }
 }

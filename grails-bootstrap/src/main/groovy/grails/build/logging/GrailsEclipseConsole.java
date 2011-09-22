@@ -50,7 +50,7 @@ public class GrailsEclipseConsole extends GrailsConsole {
     }
 
     @Override
-    protected OutputStream ansiWrap(OutputStream out) {
+    protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
         if (DEBUG) {
             try {
                 out.write(("<<<"+ECLIPSE_SUPPORTS_ANSI_PROP+":"+eclipseSupportsAnsi()+">>>\n").getBytes());

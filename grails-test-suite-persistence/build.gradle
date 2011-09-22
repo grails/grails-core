@@ -2,7 +2,7 @@ dependencies {
 
     testCompile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
 
-    testCompile 'net.sf.ehcache:ehcache-core:2.3.1'
+    testCompile "net.sf.ehcache:ehcache-core:$ehcacheVersion"
 
     testCompile project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),
@@ -16,7 +16,8 @@ dependencies {
                 project(':grails-plugin-controllers'),
                 project(':grails-hibernate'),
                 project(':grails-bootstrap'),
-                project(':grails-crud')
+                project(':grails-crud'),
+                project(':grails-plugin-log4j')
 }
 test {
     maxParallelForks = 2
