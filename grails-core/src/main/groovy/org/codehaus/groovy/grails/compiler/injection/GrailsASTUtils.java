@@ -412,7 +412,7 @@ public class GrailsASTUtils {
         return newParameterTypes;
     }
 
-    private static ClassNode nonGeneric(ClassNode type) {
+    public static ClassNode nonGeneric(ClassNode type) {
         if (type.isUsingGenerics()) {
             final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
             nonGen.setRedirect(type);
@@ -427,7 +427,7 @@ public class GrailsASTUtils {
             return nonGen.makeArray();
         }
 
-        return type;
+        return type.getPlainNodeReference();
     }
 
     public static boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {

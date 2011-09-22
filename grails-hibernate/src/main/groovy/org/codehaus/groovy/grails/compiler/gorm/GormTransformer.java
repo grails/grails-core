@@ -119,6 +119,7 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
         final BlockStatement methodBody = new BlockStatement();
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(classNode), NEW_INSTANCE_METHOD,ZERO_ARGS)));
         MethodNode methodNode = classNode.getDeclaredMethod(CreateDynamicMethod.METHOD_NAME, ZERO_PARAMETERS);
+        classNode = GrailsASTUtils.nonGeneric(classNode);
         if(methodNode == null) {
             classNode.addMethod(new MethodNode(CreateDynamicMethod.METHOD_NAME, PUBLIC_STATIC_MODIFIER, classNode, ZERO_PARAMETERS,null, methodBody));
         }
