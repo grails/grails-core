@@ -14,19 +14,22 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.orm.PagedResultList;
 import groovy.lang.Closure;
+
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.springframework.orm.hibernate3.HibernateCallback;
-
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * The "list" persistent static method. This method lists of of the persistent
@@ -55,13 +58,30 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
                 Criteria c =  session.createCriteria(clazz);
                 if (arguments.length > 0 && arguments[0] instanceof Map) {
                     Map argMap = (Map)arguments[0];
-                    GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
+                    if(argMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
+                        c.setFirstResult(0);
+                        c.setMaxResults(Integer.MAX_VALUE);
+                        c.setProjection(Projections.rowCount());
+                        int totalCount = ((Number)c.uniqueResult()).intValue();
+
+                        c.setProjection(null);
+                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
+                        c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+
+                        PagedResultList pagedResultList = new PagedResultList(c.list());
+                        pagedResultList.setTotalCount(totalCount);
+                        return pagedResultList;
+                    } else {
+                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
+                        c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                        return c.list();
+                    }
                 }
                 else {
                     GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c, Collections.EMPTY_MAP);
+                    c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                    return c.list();
                 }
-                c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-                return c.list();
             }
         });
     }
