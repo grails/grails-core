@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -66,7 +67,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             validateMethodCode.addStatement(new ExpressionStatement(invokeValidateInstanceExpression));
             final Parameter fieldsToValidateParameter = new Parameter(new ClassNode(List.class), fieldsToValidateParameterName);
             classNode.addMethod(new MethodNode(
-                  VALIDATE_METHOD_NAME, Modifier.PUBLIC, new ClassNode(Boolean.class),
+                  VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,
                   new Parameter[]{fieldsToValidateParameter}, EMPTY_CLASS_ARRAY, validateMethodCode));
         }
         final MethodNode noArgValidateMethod = classNode.getMethod(VALIDATE_METHOD_NAME,ZERO_PARAMETERS);
@@ -78,7 +79,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final Expression callListArgValidateMethod = new MethodCallExpression(THIS_EXPRESSION, VALIDATE_METHOD_NAME, validateInstanceArguments);
             validateMethodCode.addStatement(new ReturnStatement(callListArgValidateMethod));
             classNode.addMethod(new MethodNode(
-                  VALIDATE_METHOD_NAME, Modifier.PUBLIC, new ClassNode(Boolean.class),
+                  VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,
                   ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, validateMethodCode));
         }
     }
