@@ -51,6 +51,20 @@ class DefaultASTValidateableHelperSpec extends Specification {
         }
         ''')
     }
+    
+    void 'Test validate method returns has a declared return type of boolean, not Boolean'() {
+        when:
+            def validateListArgMethod = widgetClass.metaClass.methods.find {
+                'validate' == it.name && it.paramsCount == 1 && it.parameterTypes[0].theClass == List
+            }
+            def validateNoArgMethod = widgetClass.metaClass.methods.find {
+                'validate' == it.name && it.paramsCount == 0
+            }
+            
+        then:
+            Boolean.TYPE == validateListArgMethod.returnType
+            Boolean.TYPE == validateNoArgMethod.returnType
+    }
 
     void 'Test validate method on uninitialized object'() {
         given:

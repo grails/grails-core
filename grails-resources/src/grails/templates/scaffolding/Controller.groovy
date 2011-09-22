@@ -10,7 +10,8 @@ class ${className}Controller {
 
     def list() {
         params.max = Math.min(params.max ? params.int('max') : 10, 100)
-        [${propertyName}List: ${className}.list(params), ${propertyName}Total: ${className}.count()]
+        def ${propertyName}List = ${className}.list(params)
+        [${propertyName}List: ${propertyName}List, ${propertyName}Total: ${propertyName}List.totalCount]
     }
 
     def create() {
