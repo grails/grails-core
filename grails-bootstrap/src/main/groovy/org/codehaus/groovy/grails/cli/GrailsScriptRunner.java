@@ -63,7 +63,6 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.Log4jConfigurer;
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -562,9 +561,9 @@ public class GrailsScriptRunner {
         }
 
         try {
-            Log4jConfigurer.initLogging("file:" + settings.getGrailsHome() + "/scripts/log4j.properties");
-        } catch (FileNotFoundException e) {
-            // ignore, Log4j will print an error in this case
+            org.springframework.util.Log4jConfigurer.initLogging("file:" + settings.getGrailsHome() + "/scripts/log4j.properties");
+        } catch (Throwable e) {
+            console.verbose("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
         }
     }
 
