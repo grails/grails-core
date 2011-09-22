@@ -67,6 +67,8 @@ class BuildSettings extends AbstractBuildSettings {
      */
     public static final String PROJECT_WORK_DIR = "grails.project.work.dir"
 
+    public static final String OFFLINE_MODE= "grails.offline.mode"
+
     /**
      * The name of the system property for {@link #projectWarExplodedDir}.
      */
@@ -353,6 +355,11 @@ class BuildSettings extends AbstractBuildSettings {
      * Return whether the BuildConfig has been modified
      */
     boolean modified = false
+
+    /**
+     * Whether the build is allowed to connect to remote servers to resolve dependencies
+     */
+    boolean offline = false
 
     GrailsCoreDependencies coreDependencies
 
@@ -1134,6 +1141,7 @@ class BuildSettings extends AbstractBuildSettings {
         dependencyManager = new IvyDependencyManager(appName,
                 appVersion, this, metadata)
 
+        dependencyManager.offline = offline
         dependencyManager.includeJavadoc = includeJavadoc
         dependencyManager.includeSource = includeSource
 
@@ -1276,6 +1284,9 @@ class BuildSettings extends AbstractBuildSettings {
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
         def metadata = Metadata.current
+
+        offline = Boolean.valueOf(getPropertyValue(OFFLINE_MODE, props, String.valueOf(offline)))
+
         if (!grailsWorkDirSet) {
             grailsWorkDir = new File(getPropertyValue(WORK_DIR, props, "${userHome}/.grails/${grailsVersion}"))
         }

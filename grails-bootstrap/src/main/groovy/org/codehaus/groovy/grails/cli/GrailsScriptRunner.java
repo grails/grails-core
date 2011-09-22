@@ -161,9 +161,8 @@ public class GrailsScriptRunner {
         BuildSettings build = null;
         try {
             build = new BuildSettings(new File(grailsHome));
-            if (commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT)) {
-                build.setModified(true);
-            }
+            build.setModified(commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT));
+            build.setOffline(commandLine.hasOption(CommandLine.OFFLINE_ARGUMENT));
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
             }
@@ -242,6 +241,7 @@ public class GrailsScriptRunner {
         CommandLineParser parser = new CommandLineParser();
         parser.addOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
         parser.addOption(CommandLine.VERBOSE_ARGUMENT, "Enable verbose output");
+        parser.addOption(CommandLine.OFFLINE_ARGUMENT, "Indicates that Grails should not connect to any remote servers during processing of the build");
         parser.addOption(CommandLine.STACKTRACE_ARGUMENT, "Enable stack traces in output");
         parser.addOption(CommandLine.AGENT_ARGUMENT, "Enable the reloading agent");
         parser.addOption(CommandLine.NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");

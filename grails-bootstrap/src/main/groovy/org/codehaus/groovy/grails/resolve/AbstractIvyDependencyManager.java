@@ -137,11 +137,20 @@ public abstract class AbstractIvyDependencyManager {
     final protected IvySettings ivySettings;
     final protected BuildSettings buildSettings;
     final protected Metadata metadata;
+    private boolean offline;
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
         this.buildSettings = buildSettings;
         this.metadata = metadata;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+    }
+
+    public boolean isOffline() {
+        return offline;
     }
 
     public void setIncludeSource(boolean includeSource) {
@@ -496,6 +505,8 @@ public abstract class AbstractIvyDependencyManager {
         } else {
             context = DependencyConfigurationContext.forPlugin(dependencyManager, pluginName);
         }
+
+        context.setOffline(this.offline);
 
         definition.setDelegate(new DependencyConfigurationConfigurer(context));
         definition.setResolveStrategy(Closure.DELEGATE_FIRST);
