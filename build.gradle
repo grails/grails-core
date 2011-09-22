@@ -26,6 +26,8 @@ datastoreVersion = "1.0.0.BUILD-SNAPSHOT"
 gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
 groovyVersion = "1.8.3-SNAPSHOT"
+gradleGroovyVersion = groovyVersion
+gradleGroovyVersion = "1.8.2"
 ivyVersion = "2.2.0"
 jansiVersion = "1.2.1"
 jlineVersion = "1.0"
@@ -56,8 +58,10 @@ homeSrcDir = file("src")
 // artifacts' POMs.
 if(System.getProperty('groovy.jar')) {
     groovyDependency = files(System.getProperty('groovy.jar'))
+    gradleGroovyDependency = groovyDependency
 } else {
     groovyDependency = "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 }
 
 
@@ -115,10 +119,10 @@ subprojects { project ->
         // Groovy
         if(System.getProperty('groovy.jar')) {
             // use the jar specified in the system property (the joint build specifies its own groovy jar)...
-            groovy groovyDependency
+            groovy gradleGroovyDependency
         } else {
             // resolve the dependency from a repo...
-            groovy( groovyDependency ) {
+            groovy( gradleGroovyDependency ) {
                 exclude module:"commons-cli"
                 exclude module:"ant"
             }
