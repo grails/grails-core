@@ -119,8 +119,8 @@ class PluginInstallEngine {
             it.changing || rootChangingPatternCompiled?.matcher(it.dependencyRevisionId.revision)?.matches()
         }
         if (changingPlugins) {
-            def noChangingPlugins = changingPlugins.size()
-            eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for updates"
+            def numChangingPlugins = changingPlugins.size()
+            eventHandler "StatusUpdate", "Checking ${numChangingPlugins} changing plugin${numChangingPlugins > 1 ? 's' : ''} for updates"
             installPlugins(changingPlugins)
             eventHandler "StatusUpdate", "Changing plugin checking complete"
         }
