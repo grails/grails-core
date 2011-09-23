@@ -149,8 +149,8 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     private StackTraceFilterer createStackTraceFilterer() {
         try {
             GrailsApplication application = (GrailsApplication)getBean("grailsApplication");
-            return (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
-                    application.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+            return (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
+                    application.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
         }
         catch (Throwable t) {
             logger.error("Problem instantiating StackTraceFilterer class, using default: " + t.getMessage());
