@@ -26,9 +26,7 @@ import groovy.lang.Writable;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,14 +35,20 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.grails.web.mime.MimeUtility;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
@@ -81,9 +85,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_JSON = "json";
 
     private static final String TEXT_HTML = "text/html";
+    public static final String DISPOSITION_HEADER_PREFIX = "attachment;filename=";
     private String gspEncoding = DEFAULT_ENCODING;
     private static final String DEFAULT_ENCODING = "utf-8";
     private Object ARGUMENT_PLUGIN = "plugin";
+    private static final String ARGUMENT_FILE = "file";
+    private static final String ARGUMENT_FILE_NAME = "fileName";
+    private MimeUtility mimeUtility;
 
     public RenderDynamicMethod() {
         super(METHOD_PATTERN);
@@ -117,14 +125,15 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         else if (arguments[0] instanceof Map) {
             Map argMap = (Map) arguments[0];
             Writer out;
-            if (argMap.containsKey(ARGUMENT_CONTENT_TYPE) && argMap.containsKey(ARGUMENT_ENCODING)) {
-                String contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString();
+            boolean hasContentType = argMap.containsKey(ARGUMENT_CONTENT_TYPE);
+            String contentType = hasContentType ? argMap.get(ARGUMENT_CONTENT_TYPE).toString() : null;
+            if (hasContentType && argMap.containsKey(ARGUMENT_ENCODING)) {
                 String encoding = argMap.get(ARGUMENT_ENCODING).toString();
                 setContentType(response, contentType, encoding);
                 out = GSPResponseWriter.getInstance(response);
             }
-            else if (argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
-                setContentType(response, argMap.get(ARGUMENT_CONTENT_TYPE).toString(), DEFAULT_ENCODING);
+            else if (hasContentType) {
+                setContentType(response, contentType, DEFAULT_ENCODING);
                 out = GSPResponseWriter.getInstance(response);
             }
             else {
@@ -177,6 +186,59 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             }
+            else if(argMap.containsKey(ARGUMENT_FILE)) {
+                renderView = false;
+
+                Object o = argMap.get(ARGUMENT_FILE);
+                Object fnO = argMap.get(ARGUMENT_FILE_NAME);
+                String fileName = fnO != null ? fnO.toString() : ((o instanceof File) ? ((File)o).getName(): null );
+                if(o != null) {
+                    if(fileName != null) {
+                        detectContentTypeFromFileName(webRequest, response, argMap, fileName, hasContentType);
+                        if(fnO != null) {
+                            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName);
+                        }
+                    }
+                    else if(!hasContentType) {
+                        throw new ControllerExecutionException(
+                                "Argument [file] of render method specified without valid [contentType] argument");
+                    }
+
+
+                    InputStream input = null;
+                    try {
+                        if(o instanceof File) {
+                            File f = (File) o;
+                            input = FileUtils.openInputStream(f);
+                        }
+                        else if(o instanceof InputStream) {
+                            input = (InputStream) o;
+                        }
+                        else if(o instanceof byte[]) {
+                            input = new ByteArrayInputStream((byte[])o);
+                        }
+                        else {
+                            input = FileUtils.openInputStream(new File(o.toString()));
+                        }
+                        IOUtils.copy(input, response.getOutputStream());
+                    } catch (IOException e) {
+                        throw new ControllerExecutionException(
+                                "I/O error copying file to response: " + e.getMessage(), e);
+
+                    }
+                    finally {
+                        if(input != null) {
+                            try {
+                                input.close();
+                            } catch (IOException e) {
+                                // ignore
+                            }
+                        }
+                    }
+                }
+
+
+            }
             else if (statusSet) {
                 // GRAILS-6711 nothing to render, just setting status code, so don't render the map
                 renderView = false;
@@ -200,6 +262,36 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+
+    private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
+        if(hasContentType) return;
+        String contentType;
+        MimeUtility mimeUtility = lookupMimeUtility(webRequest);
+        if (mimeUtility != null) {
+            MimeType mimeType = mimeUtility.getMimeTypeForExtension(FilenameUtils.getExtension(fileName));
+            if (mimeType != null) {
+                contentType = mimeType.getName();
+                Object encodingObj = argMap.get(ARGUMENT_ENCODING);
+                String encoding = encodingObj != null ? encodingObj.toString() : DEFAULT_ENCODING;
+                setContentType(response, contentType, encoding);
+            } else {
+                throw new ControllerExecutionException(
+                        "Content type could not be determined for file: " + fileName);
+
+            }
+        }
+    }
+
+    private MimeUtility lookupMimeUtility(GrailsWebRequest webRequest) {
+        if(this.mimeUtility == null) {
+            ApplicationContext applicationContext = webRequest.getApplicationContext();
+            if(applicationContext != null) {
+                this.mimeUtility = applicationContext.getBean("grailsMimeUtility", MimeUtility.class);
+            }
+        }
+        return mimeUtility;
     }
 
     private boolean renderTemplate(Object target, GroovyObject controller, GrailsWebRequest webRequest,

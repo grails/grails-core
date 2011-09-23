@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.servlet
 
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 
 /**
  * Tests for the render method.
@@ -28,6 +29,34 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
     @Override
     protected Collection<Class> getControllerClasses() {
         [RenderController]
+    }
+
+    void testRenderFile() {
+        def mockController = new RenderController()
+        mockController.render file:"hello".bytes, contentType:"text/plain"
+
+        assert "hello" == response.contentAsString
+
+        response.reset()
+
+        shouldFail(ControllerExecutionException) {
+            mockController.render file:"hello".bytes
+        }
+
+        response.reset()
+
+        mockController.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain"
+
+
+        assert "hello" == response.contentAsString
+        assert null == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
+
+        response.reset()
+
+        mockController.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain", fileName:"hello.txt"
+        assert "hello" == response.contentAsString
+        assert "attachment;filename=hello.txt" == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
+
     }
 
     void testRenderMethodWithStatus() {
@@ -203,6 +232,8 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 }
 
 class RenderController {
+
+
 
     def renderBug = {
         render(view:'login', [foo:"bar"])
