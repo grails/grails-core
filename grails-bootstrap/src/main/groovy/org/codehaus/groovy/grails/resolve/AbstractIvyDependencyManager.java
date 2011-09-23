@@ -555,6 +555,10 @@ public abstract class AbstractIvyDependencyManager {
      * Aspects of registering a dependency common to both plugins and jar dependencies.
      */
     private void registerDependencyCommon(String scope, EnhancedDefaultDependencyDescriptor descriptor, boolean isPluginDep) {
+        if (offline && descriptor.isChanging()) {
+            descriptor.setChanging(false);
+        }
+
         registerUsedConfigurationIfNecessary(scope);
 
         if (descriptor.getModuleConfigurations().length == 0) {
