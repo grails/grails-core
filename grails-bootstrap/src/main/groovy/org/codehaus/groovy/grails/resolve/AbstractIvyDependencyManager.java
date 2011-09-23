@@ -152,7 +152,11 @@ public abstract class AbstractIvyDependencyManager {
         
         chainResolver = new ChainResolver();
         
-        chainResolver.setName("default");
+        // Use the name cache because the root chain resolver is the one that is shown to have resolved the dependency
+        // when it is resolved in the cache, which makes Ivy debug output easier to understand by making it clear what
+        // came from the cache
+        chainResolver.setName("cache");
+        
         chainResolver.setReturnFirst(true);
         updateChangingPattern(chainResolver);
     }
