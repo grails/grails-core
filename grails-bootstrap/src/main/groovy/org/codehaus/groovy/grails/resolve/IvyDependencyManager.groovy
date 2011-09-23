@@ -82,8 +82,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         this.applicationVersion = applicationVersion
     }
 
-    IvyDependencyManager createCopy() {
-        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings, metadata, ivySettings)
+    IvyDependencyManager createCopy(BuildSettings buildSettings) {
+        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings)
         copy.offline = offline
         copy.chainResolver = chainResolver
         if (logger) {

@@ -44,7 +44,7 @@ final class PluginResolveEngine {
     }
 
     IvyDependencyManager createFreshDependencyManager() {
-        dependencyManager.createCopy()
+        dependencyManager.createCopy(settings)
     }
 
     /**
