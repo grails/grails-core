@@ -522,4 +522,10 @@ public class GrailsASTUtils {
         return null;
     }
 
+    public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
+        MethodNode existing = controllerClassNode.getMethod(methodNode.getName(), methodNode.getParameters());
+        if(existing == null) {
+            controllerClassNode.addMethod(methodNode);
+        }
+    }
 }
