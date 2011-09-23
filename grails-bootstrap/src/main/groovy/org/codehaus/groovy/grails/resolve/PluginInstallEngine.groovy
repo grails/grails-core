@@ -206,7 +206,7 @@ class PluginInstallEngine {
             log "warn"
             repositories {
                 def pluginResolver = new FileSystemResolver(name: name)
-                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/grails-[module]-[revision].[ext]")
+                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/[module]-[revision].[ext]")
                 pluginResolver.settings = dependencyManager.ivySettings
                 pluginResolver.latestStrategy = new LatestTimeStrategy()
                 pluginResolver.changingPattern = ".*SNAPSHOT"
