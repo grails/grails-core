@@ -44,14 +44,7 @@ final class PluginResolveEngine {
     }
 
     IvyDependencyManager createFreshDependencyManager() {
-        IvyDependencyManager dm = new IvyDependencyManager(dependencyManager.applicationName,
-            dependencyManager.applicationVersion ?: "0.1", settings)
-        dm.offline = dependencyManager.offline
-        dm.chainResolver = dependencyManager.chainResolver
-        if (dependencyManager.logger) {
-            dm.logger = dependencyManager.logger
-        }
-        return dm
+        dependencyManager.createCopy()
     }
 
     /**
