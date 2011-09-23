@@ -14,6 +14,7 @@ dependencies {
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
+        transitive = false
         exclude group: 'org.grails', module:'grails-bootstrap'
         exclude group: 'org.grails', module:'grails-core'
         exclude group: 'org.grails', module:'grails-test'
