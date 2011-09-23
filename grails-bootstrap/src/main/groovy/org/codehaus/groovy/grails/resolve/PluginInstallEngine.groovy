@@ -205,7 +205,7 @@ class PluginInstallEngine {
         dependencyManager.parseDependencies {
             log "warn"
             repositories {
-                def pluginResolver = new FileSystemResolver(name: name)
+                def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
                 pluginResolver.addArtifactPattern("${parentDir.absolutePath}/[module]-[revision].[ext]")
                 pluginResolver.settings = dependencyManager.ivySettings
                 pluginResolver.latestStrategy = new LatestTimeStrategy()
