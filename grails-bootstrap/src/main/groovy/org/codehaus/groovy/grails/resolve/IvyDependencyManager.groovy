@@ -44,14 +44,8 @@ import org.codehaus.groovy.grails.plugins.VersionComparator
  */
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
-    static final SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT"
-
     ResolveEngine resolveEngine
     MessageLogger logger
-    ChainResolver chainResolver = new ChainResolver(
-        name: "default",
-        returnFirst: true,
-        changingPattern: SNAPSHOT_CHANGING_PATTERN)
 
     Collection repositoryData = new ConcurrentLinkedQueue()
 
@@ -93,8 +87,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * @param resolver The resolver to be used
      */
     void setChainResolver(ChainResolver resolver) {
-        this.chainResolver = resolver
         resolveEngine.dictatorResolver = chainResolver
+        super.setChainResolver(chainResolver)
     }
 
     /**
@@ -108,11 +102,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     MessageLogger getLogger() { this.logger }
-
-    /**
-     * @return The current chain resolver
-     */
-    ChainResolver getChainResolver() { chainResolver }
 
     /**
      * Resets the Grails plugin resolver if it is used

@@ -24,6 +24,7 @@ import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.matcher.PatternMatcher;
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
@@ -45,6 +46,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public abstract class AbstractIvyDependencyManager {
 
+    public static final String SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT";
+        
     /*
      * Out of the box Ivy configurations are:
      *
@@ -138,15 +141,38 @@ public abstract class AbstractIvyDependencyManager {
     final protected BuildSettings buildSettings;
     final protected Metadata metadata;
     private boolean offline;
+    
+    private ChainResolver chainResolver;
+    
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
         this.buildSettings = buildSettings;
         this.metadata = metadata;
+        
+        chainResolver = new ChainResolver();
+        
+        chainResolver.setName("default");
+        chainResolver.setReturnFirst(true);
+        updateChangingPattern(chainResolver);
     }
 
     public void setOffline(boolean offline) {
         this.offline = offline;
+        updateChangingPattern(chainResolver);
+    }
+
+    private void updateChangingPattern(ChainResolver chainResolver) {
+        chainResolver.setChangingPattern(isOffline() ? null : IvyDependencyManager.SNAPSHOT_CHANGING_PATTERN);
+    }
+    
+    public ChainResolver getChainResolver() {
+        return chainResolver;
+    }
+
+    public void setChainResolver(ChainResolver chainResolver) {
+        this.chainResolver = chainResolver;
+        updateChangingPattern(chainResolver);
     }
 
     public boolean isOffline() {
