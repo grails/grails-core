@@ -87,7 +87,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
         if (arg instanceof String) {
             final String query = (String) arg;
             final String shortName = GrailsNameUtils.getShortName(clazz);
-            if (!query.matches("from [" + clazz.getName() + "|" + shortName    + "].*")) {
+            if (!query.matches("(?i)from(?-i)\\s+[" + clazz.getName() + "|" + shortName    + "].*")) {
                 throw new GrailsQueryException("Invalid query [" + query + "] for domain class [" + clazz + "]");
             }
 
