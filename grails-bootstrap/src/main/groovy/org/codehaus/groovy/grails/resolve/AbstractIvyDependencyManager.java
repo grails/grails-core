@@ -174,6 +174,14 @@ public abstract class AbstractIvyDependencyManager {
         return chainResolver;
     }
 
+    public BuildSettings getBuildSettings() {
+        return buildSettings;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
     public void setChainResolver(ChainResolver chainResolver) {
         this.chainResolver = chainResolver;
         updateChangingPattern(chainResolver);

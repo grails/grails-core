@@ -61,8 +61,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     /**
      * Creates a new IvyDependencyManager instance
      */
-    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null) {
-        super(new IvySettings(), settings, metadata)
+    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null, IvySettings ivySettings = new IvySettings()) {
+        super(ivySettings, settings, metadata)
 
         ivySettings.defaultInit()
         // don't cache for snapshots
@@ -82,6 +82,16 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         this.applicationVersion = applicationVersion
     }
 
+    IvyDependencyManager createCopy() {
+        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings, metadata, ivySettings)
+        copy.offline = offline
+        copy.chainResolver = chainResolver
+        if (logger) {
+            copy.logger = logger
+        }
+        copy
+    }
+    
     /**
      * Allows settings an alternative chain resolver to be used
      * @param resolver The resolver to be used
