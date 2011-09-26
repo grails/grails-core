@@ -23,6 +23,7 @@ package org.codehaus.groovy.grails.web.servlet;
 public class HttpHeaders {
 
     public static final String CONNECTION = "Connection";
+    public static final String CONTENT_DISPOSITION = "Content-Disposition";
     public static final String CACHE_CONTROL = "Cache-Control";
     public static final String DATE = "Date";
     public static final String PRAGMA = "Pragma";

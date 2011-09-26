@@ -44,14 +44,8 @@ import org.codehaus.groovy.grails.plugins.VersionComparator
  */
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
-    static final SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT"
-
     ResolveEngine resolveEngine
     MessageLogger logger
-    ChainResolver chainResolver = new ChainResolver(
-        name: "default",
-        returnFirst: true,
-        changingPattern: SNAPSHOT_CHANGING_PATTERN)
 
     Collection repositoryData = new ConcurrentLinkedQueue()
 
@@ -67,8 +61,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     /**
      * Creates a new IvyDependencyManager instance
      */
-    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null) {
-        super(new IvySettings(), settings, metadata)
+    IvyDependencyManager(String applicationName, String applicationVersion, BuildSettings settings=null, Metadata metadata = null, IvySettings ivySettings = new IvySettings()) {
+        super(ivySettings, settings, metadata)
 
         ivySettings.defaultInit()
         // don't cache for snapshots
@@ -88,13 +82,23 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         this.applicationVersion = applicationVersion
     }
 
+    IvyDependencyManager createCopy(BuildSettings buildSettings) {
+        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings)
+        copy.offline = offline
+        copy.chainResolver = chainResolver
+        if (logger) {
+            copy.logger = logger
+        }
+        copy
+    }
+    
     /**
      * Allows settings an alternative chain resolver to be used
      * @param resolver The resolver to be used
      */
     void setChainResolver(ChainResolver resolver) {
-        this.chainResolver = resolver
         resolveEngine.dictatorResolver = chainResolver
+        super.setChainResolver(chainResolver)
     }
 
     /**
@@ -108,11 +112,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     MessageLogger getLogger() { this.logger }
-
-    /**
-     * @return The current chain resolver
-     */
-    ChainResolver getChainResolver() { chainResolver }
 
     /**
      * Resets the Grails plugin resolver if it is used

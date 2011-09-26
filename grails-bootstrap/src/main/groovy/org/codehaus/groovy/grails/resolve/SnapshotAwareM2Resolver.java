@@ -102,7 +102,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                 getDefaultRMDParser(artifact.getModuleRevisionId().getModuleId()), date);
 
             if (uniqueResource != null) {
-                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.uniqueRevision, rev.lastModified);
+                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.revision, rev.lastModified);
             }
 
             pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());
@@ -133,7 +133,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                     mrid, data.getDate()), getRMDParser(dd, data), data.getDate());
 
             if (uniqueResource != null) {
-                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.uniqueRevision, rev.lastModified);
+                return new LastModifiedResolvedResource(uniqueResource.getResource(), rev.revision, rev.lastModified);
             }
 
             pattern = getWholePattern().replaceFirst("\\-\\[revision\\]", "-" + mrid.getRevision());

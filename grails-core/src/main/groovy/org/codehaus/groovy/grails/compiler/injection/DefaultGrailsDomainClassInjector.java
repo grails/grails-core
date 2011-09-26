@@ -171,10 +171,10 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
      * @return A {@link ClassNode} of type {@link Set} that is possibly parameterized by the expression that is passed in.
      */
     private ClassNode findPropertyType(Expression expression) {
-        ClassNode setNode = new ClassNode(Set.class);
+        ClassNode setNode = ClassHelper.make(Set.class).getPlainNodeReference();
         if (expression instanceof ClassExpression) {
             GenericsType[] genericsTypes = new GenericsType[1];
-            genericsTypes[0] = new GenericsType(expression.getType());
+            genericsTypes[0] = new GenericsType(GrailsASTUtils.nonGeneric(expression.getType()));
             setNode.setGenericsTypes(genericsTypes);
         }
         return setNode;

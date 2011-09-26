@@ -27,6 +27,7 @@ import java.util.Properties;
  */
 public interface CommandLine {
 
+    String OFFLINE_ARGUMENT = "offline";
     String VERBOSE_ARGUMENT = "verbose";
     String STACKTRACE_ARGUMENT = "stacktrace";
     String AGENT_ARGUMENT = "reloading";
