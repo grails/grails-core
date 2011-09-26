@@ -357,7 +357,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     /**
      * Obtains a date for the parameter name using the default format
      * @param name
-     * @return
+     * @return The date (in the {@link GrailsDataBinder#DEFAULT_DATE_FORMAT}) or null
      */
     public Date getDate(String name) {
         return getDate(name, GrailsDataBinder.DEFAULT_DATE_FORMAT);
