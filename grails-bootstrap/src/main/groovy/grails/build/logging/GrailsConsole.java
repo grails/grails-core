@@ -501,7 +501,7 @@ public class GrailsConsole {
         if ((error instanceof BuildException) && error.getCause() != null) {
             error = error.getCause();
         }
-        if (!isVerbose()) {
+        if (!isVerbose() && !Boolean.getBoolean("grails.full.stacktrace")) {
             StackTraceUtils.deepSanitize(error);
         }
         StringWriter sw = new StringWriter();
