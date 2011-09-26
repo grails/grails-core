@@ -80,7 +80,7 @@ public class GrailsDispatcherServletTests extends TestCase {
             dispatcherServlet.init(new MockServletConfig(new MockServletContext()));
 
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/test/action");
-            HandlerExecutionChain executionChain = dispatcherServlet.getHandler(request, true);
+            HandlerExecutionChain executionChain = dispatcherServlet.getHandler(request);
 
             assertNotNull(executionChain);
             assertEquals(2, executionChain.getInterceptors().length);
@@ -90,18 +90,18 @@ public class GrailsDispatcherServletTests extends TestCase {
             }
 
             request = new MockHttpServletRequest("GET", "/test/action/1");
-            executionChain = dispatcherServlet.getHandler(request, true);
+            executionChain = dispatcherServlet.getHandler(request);
 
             assertNotNull(executionChain);
 
             request = new MockHttpServletRequest("GET", "/test/action/1/param/value");
-            executionChain = dispatcherServlet.getHandler(request, true);
+            executionChain = dispatcherServlet.getHandler(request);
 
             assertNotNull(executionChain);
 
             request = new MockHttpServletRequest("GET", "/context/rubbish/action");
 
-            executionChain = dispatcherServlet.getHandler(request, true);
+            executionChain = dispatcherServlet.getHandler(request);
             assertNull(executionChain);
         } finally {
             System.setProperty("grails.env", "");

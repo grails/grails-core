@@ -15,25 +15,27 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
-import com.opensymphony.sitemesh.Content;
 import grails.util.Environment;
 import groovy.lang.GroovyObject;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.sitemesh.Content;
 
 /**
  * Provides the logic for GrailsLayoutDecoratorMapper without so many ties to the Sitemesh API
@@ -47,18 +49,15 @@ public class GroovyPageLayoutFinder {
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
     private static final long LAYOUT_CACHE_EXPIRATION_MILLIS =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
-
+    private static final String LAYOUTS_PATH = "/layouts";
+    
     private Map<String, DecoratorCacheValue> decoratorCache = new ConcurrentHashMap<String, DecoratorCacheValue>();
     private Map<LayoutCacheKey, DecoratorCacheValue> layoutDecoratorCache = new ConcurrentHashMap<LayoutCacheKey, DecoratorCacheValue>();
 
-    private GrailsConventionGroovyPageLocator groovyPageLocator;
     private String defaultDecoratorName;
     private boolean gspReloadEnabled;
     private boolean cacheEnabled = (Environment.getCurrent() != Environment.DEVELOPMENT);
-
-    public void setGroovyPageLocator(GrailsConventionGroovyPageLocator groovyPageLocator) {
-        this.groovyPageLocator = groovyPageLocator;
-    }
+	private ViewResolver viewResolver;
 
     public void setDefaultDecoratorName(String defaultDecoratorName) {
         this.defaultDecoratorName = defaultDecoratorName;
@@ -72,8 +71,12 @@ public class GroovyPageLayoutFinder {
         this.cacheEnabled = cacheEnabled;
     }
 
+    public void setViewResolver(ViewResolver viewResolver) {
+		this.viewResolver = viewResolver;
+	}
+
     public Decorator findLayout(HttpServletRequest request, Content page) {
-        return findLayout(request, GroovyPageLayoutRenderer.content2htmlPage(page));
+        return findLayout(request, GSPSitemeshPage.content2htmlPage(page));
     }
     public Decorator findLayout(HttpServletRequest request, Page page) {
         if (LOG.isDebugEnabled()) {
@@ -146,20 +149,16 @@ public class GroovyPageLayoutFinder {
             }
         }
 
-        Decorator d = null;
-        GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+       	View view;
+		try {
+			view = viewResolver.resolveViewName(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name), request.getLocale());
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to resolve view", e);
+		}
 
-        GroovyPageScriptSource scriptSource = null;
-
-        if (controller != null) {
-            scriptSource = groovyPageLocator.findLayout(controller, name);
-        }
-        else {
-            scriptSource = groovyPageLocator.findLayout(name);
-        }
-
-        if (scriptSource != null) {
-            d =  createDecorator(name, scriptSource.getURI());
+        Decorator d = null;		
+		if (view != null) {
+            d = createDecorator(name, view);
         }
 
         if (cacheEnabled) {
@@ -198,10 +197,10 @@ public class GroovyPageLayoutFinder {
         return d;
     }
 
-    private Decorator createDecorator(String decoratorName, String decoratorPage) {
-        return new DefaultDecorator(decoratorName, decoratorPage, Collections.EMPTY_MAP);
+    private Decorator createDecorator(String decoratorName, View view) {
+        return new SpringMVCViewDecorator(decoratorName, view);
     }
-
+    
     private static class LayoutCacheKey {
         private String controllerName;
         private String actionUri;

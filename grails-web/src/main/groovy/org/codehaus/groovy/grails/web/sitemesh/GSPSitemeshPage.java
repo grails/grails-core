@@ -21,8 +21,10 @@ import java.util.Map;
 
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
+import com.opensymphony.module.sitemesh.HTMLPage;
 import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage;
 import com.opensymphony.sitemesh.Content;
+import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
 
 /**
  * Grails/GSP specific implementation of Sitemesh's AbstractHTMLPage
@@ -166,5 +168,15 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
             return null;
         }
         return contentBuffers.get(name);
+    }
+
+    public static HTMLPage content2htmlPage(Content content) {
+        HTMLPage htmlPage = null;
+        if (content instanceof HTMLPage) {
+            htmlPage = (HTMLPage) content;
+        } else {
+            htmlPage = new Content2HTMLPage(content);
+        }
+        return htmlPage;
     }
 }

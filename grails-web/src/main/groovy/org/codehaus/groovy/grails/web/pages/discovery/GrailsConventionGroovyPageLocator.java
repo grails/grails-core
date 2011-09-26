@@ -16,17 +16,16 @@
 package org.codehaus.groovy.grails.web.pages.discovery;
 
 import grails.util.GrailsNameUtils;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Extended GroovyPageLocator that deals with the details of Grails' conventions
@@ -38,7 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator {
 
     private static final char DOT = '.';
-    private static final String LAYOUTS_PATH = "/layouts";
+
     private GroovyPagesUriService uriService = new DefaultGroovyPagesUriService();
 
     /**
@@ -50,47 +49,6 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      */
     public GroovyPageScriptSource findViewByPath(String uri) {
         return findPage(uriService.getAbsoluteViewURI(uri));
-    }
-
-    /**
-     * <p>Finds a layout by name. For example the layout name "main" will search for /WEB-INF/grails-app/views/layouts/main.gsp in production
-     * and  grails-app/views/layouts/main.gsp at development time</p>
-     *
-     * <p>If the layout is not found in the application then a scan is executed that searches through binary and source plugins looking for the first matching layout name</p>
-     *
-     * @param layoutName The name of the layout
-     * @return The script source or null
-     */
-    public GroovyPageScriptSource findLayout(String layoutName) {
-        GroovyPageScriptSource scriptSource = findPage(uriService.getAbsoluteViewURI(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, layoutName)));
-        if (scriptSource == null) {
-            scriptSource = findLayoutInBinaryPlugins(layoutName);
-        }
-        return scriptSource;
-    }
-
-    /**
-     * <p>Finds a layout by name. For example the layout name "main" will search for /WEB-INF/grails-app/views/layouts/main.gsp in production
-     * and  grails-app/views/layouts/main.gsp at development time</p>
-     *
-     * <p>If the layout is not found in the application then a scan is executed that searches through binary and source plugins looking for the first matching layout name</p>
-     *
-     * @param controller The controller
-     * @param layoutName The layout
-     *
-     * @return The script source or null
-     */
-    public GroovyPageScriptSource findLayout(Object controller, String layoutName) {
-        GroovyPageScriptSource scriptSource = findLayout(layoutName);
-        if (scriptSource == null && controller != null) {
-            if (pluginManager != null) {
-                String pathToView = pluginManager.getPluginViewsPathForInstance(controller);
-                if (pathToView != null) {
-                     scriptSource = findPage(uriService.getAbsoluteViewURI(GrailsResourceUtils.appendPiecesForUri(pathToView, LAYOUTS_PATH, layoutName)));
-                }
-            }
-        }
-        return scriptSource;
     }
 
     /**
@@ -264,25 +222,5 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
 
     protected String getNameForController(Object controller) {
         return GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
-    }
-
-    protected GroovyPageScriptSource findLayoutInBinaryPlugins(String name) {
-        if (pluginManager == null) {
-            return null;
-        }
-
-        for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
-            if (!(plugin instanceof BinaryGrailsPlugin)) {
-                continue;
-            }
-
-            String uri = "/WEB-INF/grails-app/views/layouts/" + name;
-            Class<?> viewClass = ((BinaryGrailsPlugin)plugin).resolveView(uri);
-            if (viewClass != null) {
-                return new GroovyPageCompiledScriptSource(uri, viewClass);
-            }
-        }
-
-        return null;
     }
 }
