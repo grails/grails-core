@@ -177,7 +177,7 @@ class GroovyPagesGrailsPlugin {
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
             gspReloadEnabled = enableReload
-            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout']
+            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: null
 			viewResolver = ref('jspViewResolver')
         }
 
