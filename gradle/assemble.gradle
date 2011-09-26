@@ -152,6 +152,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         }
         from(pluginsFromSvn.outputs.files) {
             into "plugins"
+            rename { it - "grails-" }
         }
         from('grails-resources/src/grails/home/docs/README') {
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
