@@ -46,11 +46,7 @@ class LoggingGrailsPlugin {
     }
 
     def onConfigChange = { event ->
-        def log4jConfig = event.source.log4j
-        if (log4jConfig instanceof Closure || log4jConfig instanceof Collection || log4jConfig instanceof Map) {
-            LogManager.resetConfiguration()
-            new Log4jConfig(event.application.config).configure(log4jConfig)
-        }
+		Log4jConfig.initialize(event.source)
     }
 
     def doWithWebDescriptor = { webXml ->

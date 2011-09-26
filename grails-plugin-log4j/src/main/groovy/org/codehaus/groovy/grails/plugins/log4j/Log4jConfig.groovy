@@ -15,9 +15,13 @@
  */
 package org.codehaus.groovy.grails.plugins.log4j
 
+import java.util.Collection;
+import java.util.Map;
+
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
+import groovy.lang.Closure;
 
 import org.apache.commons.beanutils.BeanUtils
 import org.apache.log4j.Appender
@@ -25,6 +29,7 @@ import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.FileAppender
 import org.apache.log4j.HTMLLayout
 import org.apache.log4j.Level
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger
 import org.apache.log4j.PatternLayout
 import org.apache.log4j.RollingFileAppender
@@ -56,6 +61,27 @@ class Log4jConfig {
     Log4jConfig(ConfigObject config) {
         this.config = config
     }
+	
+	public static void initialize(ConfigObject config) {
+		if (config != null) {
+			LogManager.resetConfiguration();
+			Object o = config.get("log4j")
+			Log4jConfig log4jConfig = new Log4jConfig(config)
+			if (o instanceof Closure) {
+				log4jConfig.configure((Closure<?>)o);
+			}
+			else if (o instanceof Map) {
+				log4jConfig.configure((Map<?, ?>)o);
+			}
+			else if (o instanceof Collection) {
+				log4jConfig.configure((Collection<?>)o);
+			}
+			else {
+				// setup default logging
+				log4jConfig.configure();
+			}
+		}
+	}
 
     def methodMissing(String name, args) {
         if (APPENDERS.containsKey(name) && args) {

@@ -77,13 +77,15 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         Map constrainedProperties = domainClass.getConstrainedProperties();
         Set<String> constrainedPropertyNames = new HashSet(constrainedProperties.keySet());
 
+        for(Object key : constrainedProperties.keySet()) {
+            String propertyName = (String) key;
+            validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
+        }
+        
         GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 
         for (GrailsDomainClassProperty persistentProperty : persistentProperties) {
             String propertyName = persistentProperty.getName();
-            if (constrainedProperties.containsKey(propertyName)) {
-                validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
-            }
 
             if ((persistentProperty.isAssociation() || persistentProperty.isEmbedded()) && cascade) {
                 cascadeToAssociativeProperty(errors, bean, persistentProperty);

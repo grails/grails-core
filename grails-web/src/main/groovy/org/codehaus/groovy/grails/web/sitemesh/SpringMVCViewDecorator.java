@@ -24,13 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.springframework.web.servlet.View;
-import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
-import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.module.sitemesh.HTMLPage;
 import com.opensymphony.module.sitemesh.RequestConstants;
+import com.opensymphony.module.sitemesh.mapper.DefaultDecorator;
 import com.opensymphony.sitemesh.Content;
-import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
+import com.opensymphony.sitemesh.SiteMeshContext;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
 /**
  *
@@ -39,37 +40,30 @@ import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class GroovyPageLayoutRenderer {
+public class SpringMVCViewDecorator extends DefaultDecorator implements com.opensymphony.sitemesh.Decorator {
+    private View view;
 
-    private Decorator decorator;
-    private ViewResolver viewResolver;
-
-    public GroovyPageLayoutRenderer(Decorator decorator, ViewResolver viewResolver) {
-        this.decorator = decorator;
-        this.viewResolver = viewResolver;
+    public SpringMVCViewDecorator(String name, View view) {
+    	super(name, (view instanceof AbstractUrlBasedView) ? ((AbstractUrlBasedView)view).getUrl() : view.toString(), Collections.EMPTY_MAP);
+        this.view = view;
     }
+    
+	public void render(Content content, SiteMeshContext context) {
+        SiteMeshWebAppContext ctx = (SiteMeshWebAppContext) context;
+        render(content, ctx.getRequest(), ctx.getResponse(), ctx.getServletContext());
+	}
 
     public void render(Content content, HttpServletRequest request,
                        HttpServletResponse response, ServletContext servletContext) {
-
-        HTMLPage htmlPage = content2htmlPage(content);
+        HTMLPage htmlPage = GSPSitemeshPage.content2htmlPage(content);
         request.setAttribute(RequestConstants.PAGE, htmlPage);
 
-        // see if the URI path (webapp) is set
-        if (decorator.getURIPath() != null) {
-            // in a security conscious environment, the servlet container
-            // may return null for a given URL
-            if (servletContext.getContext(decorator.getURIPath()) != null) {
-                servletContext = servletContext.getContext(decorator.getURIPath());
-            }
-        }
         // get the dispatcher for the decorator
         if (!response.isCommitted()) {
             boolean dispatched = false;
             try {
                 request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, Boolean.TRUE);
                 try {
-                    View view = viewResolver.resolveViewName(decorator.getPage(), request.getLocale());
                     view.render(Collections.<String, Object>emptyMap(), request, response);
                     dispatched = true;
                     if (!response.isCommitted()) {
@@ -77,7 +71,7 @@ public class GroovyPageLayoutRenderer {
                     }
                 } catch (Exception e) {
                     cleanRequestAttributes(request);
-                    throw new GroovyPagesException("Error applying layout : " + decorator.getPage(), e);
+                    throw new GroovyPagesException("Error applying layout : " + getName(), e);
                 }
             } finally {
                 if (!dispatched) {
@@ -96,13 +90,4 @@ public class GroovyPageLayoutRenderer {
     }
 
 
-    public static HTMLPage content2htmlPage(Content content) {
-        HTMLPage htmlPage = null;
-        if (content instanceof HTMLPage) {
-            htmlPage = (HTMLPage) content;
-        } else {
-            htmlPage = new Content2HTMLPage(content);
-        }
-        return htmlPage;
-    }
 }

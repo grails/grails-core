@@ -356,8 +356,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
     protected void createStackTraceFilterer() {
         try {
-            filterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
-                    application.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+            filterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
+                    application.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
         }
         catch (Throwable t) {
             logger.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());

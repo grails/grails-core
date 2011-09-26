@@ -34,28 +34,10 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     private static final GroovyPageResourceScriptSource NULL_SCRIPT = new GroovyPageResourceScriptSource("/null",new ByteArrayResource("".getBytes()));
     private Map<String, GroovyPageScriptSource> uriResolveCache = new ConcurrentHashMap<String, GroovyPageScriptSource>();
 
-    private Map<String, GroovyPageScriptSource> layoutResolveCache = new ConcurrentHashMap<String, GroovyPageScriptSource>();
-
     @Override
     public GroovyPageScriptSource findViewByPath(String uri) {
         if (uri == null) return null;
         return super.findViewByPath(uri);
-    }
-
-    @Override
-    public GroovyPageScriptSource findLayout(String layoutName) {
-       if (layoutName == null) return null;
-       GroovyPageScriptSource scriptSource = layoutResolveCache.get(layoutName);
-        if (scriptSource == null) {
-            scriptSource = super.findLayout(layoutName);
-            if (scriptSource == null && Environment.isWarDeployed()) {
-                layoutResolveCache.put(layoutName, NULL_SCRIPT);
-            }
-            else if (scriptSource != null){
-                layoutResolveCache.put(layoutName, scriptSource);
-            }
-        }
-        return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }
 
     @Override
