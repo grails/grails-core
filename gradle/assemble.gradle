@@ -47,18 +47,16 @@ task sourcesJars(type: Copy) {
 }
 
 task pluginsFromSvn {
-    dir = "$buildDir/pluginsFromSvn"
-    grailsHibernateDest = "$dir/grails-hibernate-${grailsVersion}.zip"
-    grailsTomcatDest = "$dir/grails-tomcat-${grailsVersion}.zip"
-    outputs.files grailsHibernateDest, grailsTomcatDest
+    dir = file("$buildDir/pluginsFromSvn")
+    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
         ant {
             mkdir(dir: dir)
             def versionTag = grailsVersion.replaceAll(/\./, '_').toUpperCase()
             get(src: "http://plugins.grails.org/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${grailsVersion}.zip",
-                dest: grailsHibernateDest, verbose: true, usetimestamp: true)
+                dest: dir, verbose: true, usetimestamp: true)
             get(src: "http://plugins.grails.org/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${grailsVersion}.zip",
-                dest: grailsTomcatDest, verbose: true, usetimestamp: true)
+                dest: dir, verbose: true, usetimestamp: true)
             get(src: "http://plugins.grails.org/grails-resources/tags/RELEASE_1_0_2/grails-resources-1.0.2.zip",
                   dest: dir, verbose: true, usetimestamp: true)                
             get(src: "http://plugins.grails.org/grails-jquery/tags/RELEASE_1_6_1_1/grails-jquery-1.6.1.1.zip",
