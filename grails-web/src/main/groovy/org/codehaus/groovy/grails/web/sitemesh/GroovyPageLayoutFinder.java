@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
@@ -136,10 +137,14 @@ public class GroovyPageLayoutFinder {
     }
 
     protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
-        return getNamedDecorator(request, defaultDecoratorName);
+        return getNamedDecorator(request, (defaultDecoratorName != null) ? defaultDecoratorName : "application", defaultDecoratorName==null);
+    }
+    
+    public Decorator getNamedDecorator(HttpServletRequest request, String name) {
+    	return getNamedDecorator(request, name, false);
     }
 
-    public Decorator getNamedDecorator(HttpServletRequest request, String name) {
+    public Decorator getNamedDecorator(HttpServletRequest request, String name, boolean viewMustExist) {
         if (StringUtils.isBlank(name)) return null;
 
         if (cacheEnabled) {
@@ -152,6 +157,10 @@ public class GroovyPageLayoutFinder {
        	View view;
 		try {
 			view = viewResolver.resolveViewName(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name), request.getLocale());
+			// it's only possible to check that GroovyPageView exists
+			if(viewMustExist && !(view instanceof GroovyPageView)) {
+				view = null;
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("Unable to resolve view", e);
 		}
@@ -179,14 +188,14 @@ public class GroovyPageLayoutFinder {
             d = getNamedDecorator(request, layoutProperty.toString());
         } else {
             if (d == null && !StringUtils.isBlank(actionUri)) {
-                d = getNamedDecorator(request, actionUri.substring(1));
+                d = getNamedDecorator(request, actionUri.substring(1), true);
             }
 
             if (d == null && !StringUtils.isBlank(controllerName)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Action layout not found, trying controller");
                 }
-                d = getNamedDecorator(request, controllerName);
+                d = getNamedDecorator(request, controllerName, true);
             }
 
             if (d == null) {

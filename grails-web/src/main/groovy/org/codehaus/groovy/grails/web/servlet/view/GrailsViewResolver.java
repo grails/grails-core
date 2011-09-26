@@ -60,7 +60,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
     private GrailsApplication grailsApplication;
     private boolean developmentMode = GrailsUtil.isDevelopmentEnv();
-    private boolean checkExistence = true;
 
     /**
      * Constructor.
@@ -141,11 +140,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 		AbstractUrlBasedView view = buildView(viewName);
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
-        if(checkExistence && request != null && request.getRequestDispatcher(view.getUrl())==null) {
-        	return null;        	
-        } else {
-        	return view;
-        }
+       	return view;
 	}
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
@@ -159,8 +154,4 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
     }
-
-	public void setCheckExistence(boolean checkExistence) {
-		this.checkExistence = checkExistence;
-	}
 }
