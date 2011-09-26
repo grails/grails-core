@@ -43,6 +43,10 @@ sourceSets {
     }
 }
 
+javadoc {
+    classpath += configurations.agent
+}
+
 compileGroovy.doFirst {
     delete("${buildDir}/classes/main/META-INF")
     ant.mkdir(dir:sourceSets.main.classesDir)
