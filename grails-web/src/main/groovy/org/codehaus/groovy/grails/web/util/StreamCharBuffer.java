@@ -137,8 +137,8 @@ import org.springframework.web.util.HtmlUtils;
  * </p>
  * <p>
  * There can be several different type of chunks: char arrays (
- * {@link CharBufferChunk}), String chunks ({@link StringChunk}) and other
- * StreamCharBuffers as sub chunks ({@link StreamCharBufferSubChunk}).
+ * {@code CharBufferChunk}), String chunks ({@code StringChunk}) and other
+ * StreamCharBuffers as sub chunks ({@code StreamCharBufferSubChunk}).
  * </p>
  * <p>
  * Child StreamCharBuffers can be changed after adding to parent buffer. The
