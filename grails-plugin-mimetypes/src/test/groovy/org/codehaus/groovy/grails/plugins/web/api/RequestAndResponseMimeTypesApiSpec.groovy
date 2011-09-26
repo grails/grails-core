@@ -95,6 +95,29 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     }
 
+    void "Test withFormat method when Accept header contains the all (*/*) and non-matching formats"() {
+        setup: "The request Acept header is 'application/xml, text/csv, */*' and withFormat is used"
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            def request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+            request.addHeader('Accept', acceptHeader)
+            def responseResult = response.withFormat {
+                json { 'got json' }
+                text { 'got text' }
+                html { 'got html' }
+            }
+
+        expect:
+        formatResponse == responseResult
+
+        where:
+        formatResponse  | acceptHeader
+        null            | 'application/xml, text/csv'
+        'got html'      | 'application/xml, text/html, */*'
+        'got json'      | 'application/xml, */*, text/html'
+        'got json'      | 'application/xml, text/csv, */*'
+
+    }
 
     private RequestMimeTypesApi getRequestMimeTypesApi() {
         final application = new DefaultGrailsApplication()
