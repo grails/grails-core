@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.logging;
 
-import groovy.lang.Closure;
 import groovy.util.ConfigObject;
-import org.apache.log4j.LogManager;
+
 import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
 
 /**
@@ -29,13 +28,6 @@ import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
 public class LoggingInitializer {
 
     public void initialize(ConfigObject config) {
-        LogManager.resetConfiguration();
-        Object log4j = config.get("log4j");
-        if (log4j instanceof Closure) {
-            new Log4jConfig(config).configure((Closure<?>)log4j);
-        } else {
-            // setup default logging
-            new Log4jConfig(config).configure();
-        }
+    	Log4jConfig.initialize(config);
     }
 }

@@ -49,21 +49,7 @@ public class Log4jConfigListener implements ServletContextListener {
                 // create empty app to provide metadata
                 GrailsApplication application = new DefaultGrailsApplication();
                 co = application.getConfig();
-                if (co != null) {
-                    Object o = co.get("log4j");
-                    if (o instanceof Closure) {
-                        new Log4jConfig(co).configure((Closure<?>)o);
-                    }
-                    else if (o instanceof Collection) {
-                        new Log4jConfig(co).configure((Collection<?>)o);
-                    }
-                    else if (o instanceof Map) {
-                        new Log4jConfig(co).configure((Map<?, ?>)o);
-                    }
-                    else {
-                        new Log4jConfig(co).configure();
-                    }
-                }
+                Log4jConfig.initialize(co);
             }
         }
         catch (Throwable e) {
