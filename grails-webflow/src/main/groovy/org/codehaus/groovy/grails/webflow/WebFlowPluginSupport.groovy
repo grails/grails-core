@@ -17,11 +17,10 @@ package org.codehaus.groovy.grails.webflow
 
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.webflow.context.servlet.GrailsFlowUrlHandler
-import org.codehaus.groovy.grails.webflow.engine.builder.ControllerFlowRegistry
 import org.codehaus.groovy.grails.webflow.engine.builder.FlowBuilder
 import org.codehaus.groovy.grails.webflow.execution.GrailsFlowExecutorImpl
 import org.codehaus.groovy.grails.webflow.mvc.servlet.GrailsFlowHandlerAdapter
-import org.codehaus.groovy.grails.webflow.mvc.servlet.GrailsFlowHandlerMapping;
+import org.codehaus.groovy.grails.webflow.mvc.servlet.GrailsFlowHandlerMapping
 import org.codehaus.groovy.grails.webflow.persistence.FlowAwareCurrentSessionContext
 import org.codehaus.groovy.grails.webflow.persistence.SessionAwareHibernateFlowExecutionListener
 import org.codehaus.groovy.grails.webflow.scope.ScopeRegistrar
@@ -31,6 +30,7 @@ import org.springframework.webflow.conversation.impl.SessionBindingConversationM
 import org.springframework.webflow.core.collection.LocalAttributeMap
 import org.springframework.webflow.core.collection.MutableAttributeMap
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistryImpl
 import org.springframework.webflow.engine.RequestControlContext
 import org.springframework.webflow.engine.builder.DefaultFlowHolder
 import org.springframework.webflow.engine.builder.FlowAssembler
@@ -71,10 +71,7 @@ class WebFlowPluginSupport {
             viewFactoryCreator = viewFactoryCreator
         }
 
-        flowRegistry(ControllerFlowRegistry) {
-            grailsApplication = ref("grailsApplication", true)
-            flowBuilderServices = flowBuilderServices
-        }
+        flowRegistry(FlowDefinitionRegistryImpl)
 
         flowScopeRegistrar(ScopeRegistrar)
         boolean configureHibernateListener = manager.hasGrailsPlugin('hibernate') && springConfig.containsBean("sessionFactory")
@@ -113,7 +110,20 @@ class WebFlowPluginSupport {
         flowExecutionFactory.executionKeyFactory = appCtx.getBean("flowExecutionRepository")
     }
 
-    static doWithDynamicMethods = {
+    static doWithDynamicMethods = { appCtx ->
+        
+        for (GrailsControllerClass c in application.controllerClasses) {
+            for (flow in c.flows) {
+                def flowId = ("${c.logicalPropertyName}/" + flow.key).toString()
+
+                def builder = new FlowBuilder(flowId, flow.value,appCtx.flowBuilderServices, appCtx.flowRegistry)
+                builder.viewPath = "/"
+                builder.applicationContext = appCtx
+                def assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
+                appCtx.flowRegistry.registerFlowDefinition new DefaultFlowHolder(assembler)
+            }
+        }
+
         RequestControlContext.metaClass.getFlow = { -> delegate.flowScope }
 
         RequestControlContext.metaClass.getConversation = { -> delegate.conversationScope }

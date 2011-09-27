@@ -43,8 +43,8 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         GroovyClassLoader cl = new GroovyClassLoader();
         Class<?> clazz = cl.parseClass("class OverviewController { }");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
-
         assignGrailsApplication(cl, grailsClass);
+        grailsClass.initialize();
 
         assertEquals(2, grailsClass.getURIs().length);
     }
@@ -54,6 +54,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { def action = { return null }; } ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass);
+        grailsClass.initialize();
         assertEquals("Test", grailsClass.getName());
         assertEquals("TestController", grailsClass.getFullName());
         assertEquals("/test/action", grailsClass.getViewByURI("/test/action"));
@@ -70,6 +71,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class TestController { def someAction = { return null }; } ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass, new HyphenatedUrlConverter());
+        grailsClass.initialize();
         assertEquals("Test", grailsClass.getName());
         assertEquals("TestController", grailsClass.getFullName());
         assertEquals("/test/someAction", grailsClass.getViewByURI("/test/some-action"));
@@ -80,6 +82,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MyTestController { static defaultAction = 'someAction'; def index() {}; def someAction = {}; } ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass, new HyphenatedUrlConverter());
+        grailsClass.initialize();
         assertEquals("MyTest", grailsClass.getName());
         assertEquals("MyTestController", grailsClass.getFullName());
         assertEquals("/myTest/someAction", grailsClass.getViewByName("someAction"));
@@ -93,6 +96,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MYdemoController { def action = { return null }; } ");
         GrailsControllerClass grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass);
+        grailsClass.initialize();
         assertEquals("MYdemo", grailsClass.getName());
         assertEquals("MYdemoController", grailsClass.getFullName());
         assertTrue(grailsClass.mapsToURI("/MYdemo"));

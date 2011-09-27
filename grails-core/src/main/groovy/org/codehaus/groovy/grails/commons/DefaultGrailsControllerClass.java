@@ -72,7 +72,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     private UrlConverter urlConverter;
 
     public void setDefaultActionName(String defaultActionName) {
-        ensureInitialized();
         this.defaultActionName = defaultActionName;
         configureDefaultActionIfSet();
         configureURIsForCurrentState();
@@ -89,23 +88,18 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         }
     }
 
-    private boolean initialized = false;
+    public void initialize() {
+        ApplicationContext mainContext = grailsApplication.getMainContext();
+        urlConverter = mainContext.getBean("grailsUrlConverter", UrlConverter.class);
+        uri = SLASH + urlConverter.toUrlElement(getName());
+        controllerPath = uri + SLASH;
 
-    private void ensureInitialized() {
-        if (!initialized) {
-            initialized = true;
-            ApplicationContext mainContext = grailsApplication.getMainContext();
-            urlConverter = mainContext.getBean("grailsUrlConverter", UrlConverter.class);
-            uri = SLASH + urlConverter.toUrlElement(getName());
-            controllerPath = uri + SLASH;
-            //
-            Collection<String> actionNames = new HashSet<String>();
-            flowStrategy(actionNames);
-            methodStrategy(actionNames);
-            //
-            configureDefaultActionIfSet();
-            configureURIsForCurrentState();
-        }
+        Collection<String> actionNames = new HashSet<String>();
+        flowStrategy(actionNames);
+        methodStrategy(actionNames);
+
+        configureDefaultActionIfSet();
+        configureURIsForCurrentState();
     }
 
     //Todo change flow resolution
@@ -182,12 +176,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public String[] getURIs() {
-        ensureInitialized();
         return uris;
     }
 
     public boolean mapsToURI(@SuppressWarnings("hiding") String uri) {
-        ensureInitialized();
         for (String uri1 : uris) {
             if (pathMatcher.match(uri1, uri)) {
                 return true;
@@ -197,17 +189,14 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public String getViewByURI(@SuppressWarnings("hiding") String uri) {
-        ensureInitialized();
         return uri2viewMap.get(uri);
     }
 
     public String getMethodActionName(@SuppressWarnings("hiding") String uri) {
-        ensureInitialized();
         return uri2methodMap.get(uri);
     }
 
     public String getViewByName(String viewName) {
-        ensureInitialized();
         if (viewNames.containsKey(viewName)) {
             return viewNames.get(viewName);
         }
@@ -334,7 +323,6 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public Map<String, Closure> getFlows() {
-        ensureInitialized();
         Map<String, Closure> closureFlows = new HashMap<String, Closure>();
         for (String name : flows.keySet()) {
             Closure c = getPropertyValue(name + "Flow", Closure.class);
@@ -346,17 +334,14 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public boolean isFlowAction(String actionName) {
-        ensureInitialized();
         return flows.containsKey(actionName);
     }
 
     public String getDefaultAction() {
-        ensureInitialized();
         return defaultActionName;
     }
 
     public void registerMapping(String actionName) {
-        ensureInitialized();
         configureMappingForMethodAction(actionName);
         configureURIsForCurrentState();
     }

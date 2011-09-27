@@ -32,6 +32,7 @@ class FooController {
         ga.initialise()
 
         def foo = ga.getControllerClass("FooController")
+        foo.initialize()
         assertEquals 2, foo.flows.size()
         assertTrue foo.flows.containsKey("book")
         assertTrue foo.flows.containsKey("store")

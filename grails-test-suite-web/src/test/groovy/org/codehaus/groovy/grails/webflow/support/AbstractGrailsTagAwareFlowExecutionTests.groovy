@@ -110,6 +110,7 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
         appCtx = springConfig.getApplicationContext()
+        grailsApplication.mainContext = appCtx
 
         flowBuilderServices = new FlowBuilderServices()
         MvcViewFactoryCreator viewCreator = new MvcViewFactoryCreator()
