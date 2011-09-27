@@ -254,7 +254,7 @@ class NamedCriteriaProxy {
         def closureClone = criteriaClosure.clone()
         closureClone.resolveStrategy = Closure.DELEGATE_FIRST
         if (namedCriteriaParams) {
-            closureClone = closureClone.curry(namedCriteriaParams)
+            closureClone = closureClone.curry(*namedCriteriaParams)
         }
         def c = {
             closureClone.delegate = delegate
