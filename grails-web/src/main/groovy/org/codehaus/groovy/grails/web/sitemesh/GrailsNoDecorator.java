@@ -63,28 +63,28 @@ public class GrailsNoDecorator extends BaseWebAppDecorator implements Decorator{
         }
     }
 
-	public String getPage() {
-		return null;
-	}
+    public String getPage() {
+        return null;
+    }
 
-	public String getName() {
-		return null;
-	}
+    public String getName() {
+        return null;
+    }
 
-	public String getURIPath() {
-		return null;
-	}
+    public String getURIPath() {
+        return null;
+    }
 
-	public String getRole() {
-		return null;
-	}
+    public String getRole() {
+        return null;
+    }
 
-	public String getInitParameter(String paramName) {
-		return null;
-	}
+    public String getInitParameter(String paramName) {
+        return null;
+    }
 
-	@SuppressWarnings("rawtypes")
-	public Iterator getInitParameterNames() {
-		return null;
-	}
+    @SuppressWarnings("rawtypes")
+    public Iterator getInitParameterNames() {
+        return null;
+    }
 }

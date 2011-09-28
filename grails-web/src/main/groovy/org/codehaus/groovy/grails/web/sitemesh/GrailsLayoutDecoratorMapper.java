@@ -46,18 +46,18 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
     }
-    
+
     @Override
     public Decorator getDecorator(HttpServletRequest request, Page page) {
-    	Decorator layout = groovyPageLayoutFinder.findLayout(request, page);
+        Decorator layout = groovyPageLayoutFinder.findLayout(request, page);
         if (layout != null) {
             return layout;
         }
         layout = parent != null ? super.getDecorator(request, page) : null;
         if (layout == null || layout.getPage() == null) {
-        	layout = new GrailsNoDecorator();
-	    }
-	 	return layout;
+            layout = new GrailsNoDecorator();
+        }
+        return layout;
     }
 
     @Override
@@ -68,8 +68,8 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         }
         layout = parent != null ? super.getNamedDecorator(request, name) : null;
         if (layout == null || layout.getPage() == null) {
-        	layout = new GrailsNoDecorator();
-	    }
-	 	return layout;
+            layout = new GrailsNoDecorator();
+        }
+        return layout;
     }
 }

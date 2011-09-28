@@ -106,20 +106,13 @@ class GrailsArtefactTransformerSpec extends Specification {
 }
 
 class TestTransformer extends AbstractGrailsArtefactTransformer {
-    public Class getInstanceImplementation() {
-        TestInstanceApi
-    }
+    Class getInstanceImplementation() { TestInstanceApi }
 
-    public Class getStaticImplementation() {
-    }
+    Class getStaticImplementation() {}
 
-    boolean shouldInject(URL arg0) {
-        true
-    }
-    
-    protected boolean requiresAutowiring() {
-        false
-	}
+    boolean shouldInject(URL arg0) { true }
+
+    protected boolean requiresAutowiring() { false }
 }
 
 class TestInstanceApi {
@@ -128,4 +121,3 @@ class TestInstanceApi {
     void setSomePropertyDefinedInTestInstanceApi(Object instance, String arg) {}
     String getSomePropertyDefinedInTestInstanceApi(Object instance) { }
 }
-

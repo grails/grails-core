@@ -2859,13 +2859,13 @@ public final class GrailsDomainBinder {
         if ((minConstraintValue != null) && (minConstraintValue instanceof Number)) {
             minConstraintValueLength = Math.max(
                     countDigits((Number) minConstraintValue),
-                    countDigits(new Long(((Number) minConstraintValue).longValue())) + scale);
+                    countDigits(((Number) minConstraintValue).longValue()) + scale);
         }
         int maxConstraintValueLength = 0;
         if ((maxConstraintValue != null) && (maxConstraintValue instanceof Number)) {
             maxConstraintValueLength = Math.max(
                     countDigits((Number) maxConstraintValue),
-                    countDigits(new Long(((Number) maxConstraintValue).longValue())) + scale);
+                    countDigits(((Number) maxConstraintValue).longValue()) + scale);
         }
 
         if (minConstraintValueLength > 0 && maxConstraintValueLength > 0) {

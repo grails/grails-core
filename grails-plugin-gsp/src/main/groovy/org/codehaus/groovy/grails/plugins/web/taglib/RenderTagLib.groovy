@@ -44,9 +44,9 @@ import com.opensymphony.module.sitemesh.RequestConstants
  */
 @Artefact("TagLibrary")
 class RenderTagLib implements RequestConstants {
-	GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
-	ErrorsViewStackTracePrinter errorsViewStackTracePrinter
-	GroovyPagesTemplateEngine groovyPagesTemplateEngine
+    GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
+    ErrorsViewStackTracePrinter errorsViewStackTracePrinter
+    GroovyPagesTemplateEngine groovyPagesTemplateEngine
 
     protected getPage() {
         return getRequest().getAttribute(PAGE)
@@ -123,13 +123,13 @@ class RenderTagLib implements RequestConstants {
                 }
                 if (content instanceof StreamCharBuffer) {
                     gspSiteMeshPage.setPageBuffer(content)
-					gspSiteMeshPage.setUsed(true)
+                    gspSiteMeshPage.setUsed(true)
                 }
                 else if (content != null) {
                     def buf = new StreamCharBuffer()
                     buf.writer.write(content)
                     gspSiteMeshPage.setPageBuffer(buf)
-					gspSiteMeshPage.setUsed(true)
+                    gspSiteMeshPage.setUsed(true)
                 }
             }
             finally {
@@ -529,7 +529,7 @@ class RenderTagLib implements RequestConstants {
      * @attr plugin The plugin to look for the template in
      */
     Closure render = { attrs, body ->
-		groovyPagesTemplateRenderer.render(getWebRequest(), getPageScope(), attrs, body, getOut())
+        groovyPagesTemplateRenderer.render(getWebRequest(), getPageScope(), attrs, body, getOut())
     }
 
     /**

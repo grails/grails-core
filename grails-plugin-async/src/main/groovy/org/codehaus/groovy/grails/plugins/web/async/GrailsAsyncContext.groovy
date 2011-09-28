@@ -82,7 +82,7 @@ class GrailsAsyncContext implements AsyncContext {
             if (content != null) {
                 def decorator = groovyPageLayoutFinder?.findLayout(request, content)
                 if (decorator) {
-					decorator.render(content, new SiteMeshWebAppContext(request, targetResponse, request.servletContext))
+                    decorator.render(content, new SiteMeshWebAppContext(request, targetResponse, request.servletContext))
                 } else {
                    content.writeOriginal(targetResponse.getWriter())
                 }

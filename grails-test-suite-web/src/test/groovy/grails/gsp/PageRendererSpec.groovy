@@ -100,7 +100,7 @@ class PageRendererSpec extends Specification {
             def contents = pageRenderer.render(template:"/foo/bar", model:[something:true,message:"hello, world"])
         then:
             contents != null
-			
+
             contents == """
 				{ hello, world ({[)
             """

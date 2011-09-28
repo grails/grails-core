@@ -231,24 +231,25 @@ public class GroovyPageView extends AbstractUrlBasedView {
         this.scriptSource = scriptSource;
     }
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		super.afterPropertiesSet();
-		try {
-			initTemplate();
-		} catch(Exception e) {
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        super.afterPropertiesSet();
+        try {
+            initTemplate();
+        } catch(Exception e) {
             handleException(e, templateEngine);
         }
-	}
-	
-	protected void initTemplate() throws IOException {
-	    if (scriptSource == null) {
-	        template = templateEngine.createTemplate(getUrl());
-	    } else {
-	    	template = templateEngine.createTemplate(scriptSource);
-	    }
-		if (template instanceof GroovyPageTemplate) {
-		    ((GroovyPageTemplate)template).setAllowSettingContentType(true);
-		}
-	}
+    }
+
+    @SuppressWarnings("unused")
+    protected void initTemplate() throws IOException {
+        if (scriptSource == null) {
+            template = templateEngine.createTemplate(getUrl());
+        } else {
+            template = templateEngine.createTemplate(scriptSource);
+        }
+        if (template instanceof GroovyPageTemplate) {
+            ((GroovyPageTemplate)template).setAllowSettingContentType(true);
+        }
+    }
 }

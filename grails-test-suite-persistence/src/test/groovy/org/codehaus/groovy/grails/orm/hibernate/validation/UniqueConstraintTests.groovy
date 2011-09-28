@@ -149,7 +149,7 @@ class UniqueConstraintTests extends AbstractGrailsHibernateTests {
                 String code
 
                 static constraints = {
-                    login(unique:['grp',new Long(1)])
+                    login(unique:['grp',1L])
                 }
             }
             ''')

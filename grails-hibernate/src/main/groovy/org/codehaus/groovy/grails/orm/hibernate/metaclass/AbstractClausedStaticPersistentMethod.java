@@ -492,7 +492,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                 if (currentMatcher.find()) {
                     containsOperator = true;
                     operatorInUse = operators[i];
-                    
+
                     queryParameters = querySequence.split(operatorInUse);
 
                     // loop through query parameters and create expressions

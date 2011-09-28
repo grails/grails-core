@@ -112,12 +112,12 @@ public class ScaleConstraint extends AbstractConstraint {
         if (propertyValue instanceof Float) {
             bigDecimal = new BigDecimal(propertyValue.toString());
             bigDecimal = getScaledValue(bigDecimal);
-            bean.setPropertyValue(getPropertyName(), new Float(bigDecimal.floatValue()));
+            bean.setPropertyValue(getPropertyName(), bigDecimal.floatValue());
         }
         else if (propertyValue instanceof Double) {
             bigDecimal = new BigDecimal(propertyValue.toString());
             bigDecimal = getScaledValue(bigDecimal);
-            bean.setPropertyValue(getPropertyName(), new Double(bigDecimal.doubleValue()));
+            bean.setPropertyValue(getPropertyName(), bigDecimal.doubleValue());
         }
         else if (propertyValue instanceof BigDecimal) {
             bigDecimal = (BigDecimal) propertyValue;

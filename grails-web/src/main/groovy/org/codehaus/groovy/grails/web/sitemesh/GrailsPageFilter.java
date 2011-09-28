@@ -84,7 +84,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         fc.getServletContext().setAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE, defaultFactory);
         defaultFactory.refresh();
         FactoryHolder.setFactory(defaultFactory);
-        
+
         contentProcessor = new PageParser2ContentProcessor(defaultFactory);
         decoratorMapper = defaultFactory.getDecoratorMapper();
 
@@ -157,9 +157,9 @@ public class GrailsPageFilter extends SiteMeshFilter {
             com.opensymphony.module.sitemesh.Decorator decorator = decoratorMapper.getDecorator(request, GSPSitemeshPage.content2htmlPage(content));
             persistenceInterceptor.reconnect();
             if(decorator instanceof Decorator) {
-            	((Decorator)decorator).render(content, webAppContext);
+                ((Decorator)decorator).render(content, webAppContext);
             } else {
-            	new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
+                new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
             }
             dispatched = true;
         }
@@ -186,7 +186,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
      * into returned {@link com.opensymphony.module.sitemesh.Page} object. If
      * {@link com.opensymphony.module.sitemesh.Page} is not parseable, null is returned.
      */
-    private Content obtainContent(ContentProcessor contentProcessor, SiteMeshWebAppContext webAppContext,
+    private Content obtainContent(@SuppressWarnings("hiding") ContentProcessor contentProcessor, SiteMeshWebAppContext webAppContext,
                                   HttpServletRequest request, HttpServletResponse response, FilterChain chain)
                 throws IOException, ServletException {
 

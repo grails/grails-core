@@ -76,7 +76,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected View loadView(String viewName, Locale locale) throws Exception {
         Assert.notNull(templateEngine, "Property [templateEngine] cannot be null");
         if(viewName.endsWith(GSP_SUFFIX)) {
-        	viewName = viewName.substring(0, viewName.length() - GSP_SUFFIX.length());
+            viewName = viewName.substring(0, viewName.length() - GSP_SUFFIX.length());
         }
 
         if (developmentMode) {
@@ -113,8 +113,8 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         if (scriptSource != null) {
             return createGroovyPageView(webRequest, scriptSource.getURI(), scriptSource);
         }
-        
-        return createJstlView(viewName, request);
+
+        return createJstlView(viewName);
     }
 
     private View createGroovyPageView(GrailsWebRequest webRequest, String gspView, ScriptSource scriptSource) {
@@ -128,20 +128,19 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         gspSpringView.setTemplateEngine(templateEngine);
         gspSpringView.setScriptSource(scriptSource);
         try {
-			gspSpringView.afterPropertiesSet();
-		} catch (Exception e) {
-			throw new RuntimeException("Error initializing GroovyPageView", e);
-		}
+            gspSpringView.afterPropertiesSet();
+        } catch (Exception e) {
+            throw new RuntimeException("Error initializing GroovyPageView", e);
+        }
         return gspSpringView;
     }
-    
-	private View createJstlView(String viewName, HttpServletRequest request)
-			throws Exception {
-		AbstractUrlBasedView view = buildView(viewName);
+
+    private View createJstlView(String viewName) throws Exception {
+        AbstractUrlBasedView view = buildView(viewName);
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
-       	return view;
-	}
+        return view;
+    }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         // ignored, here for compatibility

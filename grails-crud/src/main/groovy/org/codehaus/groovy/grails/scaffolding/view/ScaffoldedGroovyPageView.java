@@ -71,7 +71,7 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
+    protected void renderWithTemplateEngine(@SuppressWarnings("hiding") GroovyPagesTemplateEngine templateEngine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
 
         if (LOG.isDebugEnabled()) {
@@ -93,12 +93,12 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
             }
         }
     }
-    
+
+    @Override
     protected void initTemplate() throws IOException {
         template = templateEngine.createTemplate(contents, getUrl());
         if (template instanceof GroovyPageTemplate) {
             ((GroovyPageTemplate)template).setAllowSettingContentType(true);
         }
-    	
     }
 }

@@ -15,26 +15,25 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Script;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerAware;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
-import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.ServletContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Constructs the UrlMappingsHolder from the registered UrlMappings class within a GrailsApplication.
@@ -48,7 +47,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
-    private ServletContext servletContext;
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
 
@@ -130,14 +128,13 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         this.grailsApplication = grailsApplication;
     }
 
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
+    public void setServletContext(@SuppressWarnings("unused") ServletContext servletContext) {
+        // not used
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
-
 
     /**
      * Set the ApplicationContext that this object runs in.

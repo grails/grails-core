@@ -76,7 +76,7 @@ public class ValidatorConstraintTests extends AbstractConstraintTests {
                 getConstraint("{val,obj -> return ['test.message', 'arg', 123L]}"),
                 "test",
                 "testClass.testString.test.message",
-                new Object[] { "testString", TestClass.class, "test", "arg", new Long(123) });
+                new Object[] { "testString", TestClass.class, "test", "arg", 123L });
         try {
             testConstraintFailed(
                     getConstraint("{val,obj -> return [123L,'arg1','arg2']}"),

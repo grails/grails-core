@@ -143,7 +143,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             ClassHelper.Byte_TYPE, "byte",
             ClassHelper.Character_TYPE, "char");
     private static List<ClassNode> PRIMITIVE_CLASS_NODES = CollectionUtils.<ClassNode>newList(
-    		ClassHelper.boolean_TYPE,
+            ClassHelper.boolean_TYPE,
             ClassHelper.char_TYPE,
             ClassHelper.int_TYPE,
             ClassHelper.short_TYPE,
@@ -356,7 +356,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
 
         if ((PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) ||
-        		 TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
+                 TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
             initializePrimitiveOrTypeWrapperParameter(wrapper, param, requestParameterName);
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param, requestParameterName);

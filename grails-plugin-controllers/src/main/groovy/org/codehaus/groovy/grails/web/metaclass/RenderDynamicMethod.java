@@ -264,11 +264,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         return null;
     }
 
-
     private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
         if(hasContentType) return;
         String contentType;
-        MimeUtility mimeUtility = lookupMimeUtility(webRequest);
+        @SuppressWarnings("hiding") MimeUtility mimeUtility = lookupMimeUtility(webRequest);
         if (mimeUtility != null) {
             MimeType mimeType = mimeUtility.getMimeTypeForExtension(FilenameUtils.getExtension(fileName));
             if (mimeType != null) {
@@ -279,7 +278,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             } else {
                 throw new ControllerExecutionException(
                         "Content type could not be determined for file: " + fileName);
-
             }
         }
     }

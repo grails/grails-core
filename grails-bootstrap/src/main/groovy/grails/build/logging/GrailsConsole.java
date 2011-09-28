@@ -688,7 +688,7 @@ public class GrailsConsole {
     }
 
     private Ansi erasePreviousLine(String categoryName) {
-        int cursorMove = this.cursorMove;
+        @SuppressWarnings("hiding") int cursorMove = this.cursorMove;
         if(userInputActive) cursorMove++;
         if (cursorMove > 0) {
             int moveLeftLength = categoryName.length() + lastMessage.length();
