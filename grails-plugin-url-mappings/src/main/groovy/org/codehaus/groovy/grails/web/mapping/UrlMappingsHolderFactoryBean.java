@@ -155,7 +155,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
      *          if thrown by application context methods
      * @see org.springframework.beans.factory.BeanInitializationException
      */
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         setGrailsApplication(applicationContext.getBean( GrailsApplication.APPLICATION_ID, GrailsApplication.class) );
