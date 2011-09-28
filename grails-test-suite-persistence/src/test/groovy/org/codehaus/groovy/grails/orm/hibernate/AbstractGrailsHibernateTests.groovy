@@ -86,6 +86,7 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
         ga.setMainContext(springConfig.getUnrefreshedApplicationContext())
         appCtx = springConfig.getApplicationContext()
         applicationContext = appCtx
+        ga.setMainContext(appCtx)
         dependentPlugins*.doWithApplicationContext(appCtx)
 
         mockManager.applicationContext = appCtx

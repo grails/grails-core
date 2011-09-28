@@ -16,7 +16,9 @@ import grails.persistence.*
 class CustomCascadeMappingOne {
     static hasMany = [foos:CustomCascadeMappingTwo, bars:CustomCascadeMappingTwo]
 
-    static mapping = {
+    static mapping = { applicationContext ->
+        assert applicationContext != null
+        println applicationContext
         foos cascade:'none', joinTable:'foos'
         bars cascade:'all', joinTable:'bars'
     }

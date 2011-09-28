@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
@@ -39,6 +40,7 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.mapping.Table;
 import org.hibernate.type.*;
 import org.hibernate.util.StringHelper;
+import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Modifier;
 import java.sql.Types;
@@ -1245,13 +1247,20 @@ public final class GrailsDomainBinder {
             Object o = GrailsClassUtils.getStaticPropertyValue(domainClass.getClazz(), GrailsDomainClassProperty.MAPPING);
             if (o != null || defaultMapping != null) {
                 HibernateMappingBuilder builder = new HibernateMappingBuilder(domainClass.getFullName());
+                GrailsApplication application = domainClass.getGrailsApplication();
+                ApplicationContext ctx = null;
+                if(application != null) {
+                    ctx = application.getMainContext();
+                    if(ctx == null) ctx = application.getParentContext();
+                }
+
                 Mapping m = null;
                 if (defaultMapping != null) {
-                    m = builder.evaluate(defaultMapping);
+                    m = builder.evaluate(defaultMapping,ctx);
                 }
 
                 if (o instanceof Closure) {
-                    m = builder.evaluate((Closure<?>) o);
+                    m = builder.evaluate((Closure<?>) o,ctx);
                 }
 
                 if (cache) {
