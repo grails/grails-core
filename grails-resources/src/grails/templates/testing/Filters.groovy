@@ -6,5 +6,6 @@ import grails.test.mixin.*
 class @artifact.name@ {
 
     void testSomething() {
+        fail "Implement me"
     }
 }
