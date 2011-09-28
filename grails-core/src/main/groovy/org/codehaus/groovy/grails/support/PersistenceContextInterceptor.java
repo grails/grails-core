@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.support;
 /**
  * Sets up the persistent context before and after a Grails operation is invoked.
  *
- * @see grails.util.RunTests
  * @author Graeme Rocher
  * @since 0.4
  */

@@ -16,6 +16,9 @@
 package org.codehaus.groovy.grails.plugins.web.async
 
 import grails.util.GrailsUtil
+import javax.servlet.http.HttpServletRequest
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 /**
  * Async support for the Grails 2.0. Doesn't do much right now, most logic handled
@@ -26,4 +29,16 @@ import grails.util.GrailsUtil
  */
 class ControllersAsyncGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
+
+    def doWithDynamicMethods = {
+        def original = HttpServletRequest.metaClass.getMetaMethod("startAsync", new Object[0])
+        if(original != null) {
+            HttpServletRequest.metaClass.startAsync = {->
+                def webRequest = GrailsWebRequest.lookup()
+                def ctx = request.startAsync(webRequest.currentRequest, webRequest.currentResponse)
+                delegate.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
+                return new GrailsAsyncContext(ctx, webRequest)
+            }
+        }
+    }
 }

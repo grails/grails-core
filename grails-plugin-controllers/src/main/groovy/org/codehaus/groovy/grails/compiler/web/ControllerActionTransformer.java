@@ -62,6 +62,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
@@ -150,6 +151,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             ClassHelper.double_TYPE,
             ClassHelper.float_TYPE,
             ClassHelper.byte_TYPE);
+    public static final String VOID_TYPE = "void";
 
     private Boolean converterEnabled;
 
@@ -173,6 +175,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
+                if(method.getReturnType().getName().equals(VOID_TYPE)) continue;
                 MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
                 if (wrapperMethod != null) {
                     deferredNewMethods.add(wrapperMethod);
@@ -285,8 +288,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
 
         annotateActionMethod(parameters, methodNode);
-
-        controllerClassNode.addMethod(methodNode);
+        GrailsASTUtils.addMethodIfNotPresent(controllerClassNode, methodNode);
     }
 
     protected void annotateActionMethod(final Parameter[] parameters,

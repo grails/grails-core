@@ -17,6 +17,7 @@ package dsld
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
@@ -86,6 +87,7 @@ def domainClass = grailsArtifact("domain")
 }
 
 // criteria queries
+// where
 // GormStaticAPI
 // GormInstanceAPI
 // GormValidationAPI
@@ -93,16 +95,56 @@ domainClass.accept {
 	provider = "Criteria builder DSL"
 	method name:"createCriteria", type:"grails.orm.HibernateCriteriaBuilder",
 		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
-	method name:"withCriteria", type:List, params: [query : Closure],
+	method name:"withCriteria", type:"java.util.List<${currentType.name}>", params: [query : Closure],
 		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
 
+	method name:"where", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params: [query : Closure],
+		declaringType:currentType, isStatic:true
+
+	method name:"find", type:currentType, params: [query : Closure],
+		declaringType:currentType, isStatic:true
+		
+	method name:"findAll", type:"java.util.List<${currentType.name}>", params: [query : Closure],
+		declaringType:currentType, isStatic:true
+		
 	provider = "GORM Static API"
-	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<" + currentType.name + ">", isStatic:true, except:["withCriteria", "createCriteria"]
+	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<${currentType.name}>", isStatic:true, except:["withCriteria", "createCriteria", "where", "find", "findAll"]
 	provider = "GORM Instance API"
-	delegatesTo type:"org.grails.datastore.gorm.GormInstanceApi<" + currentType.name + ">", asCategory:true
+	delegatesTo type:"org.grails.datastore.gorm.GormInstanceApi<${currentType.name}>", asCategory:true
 	provider = "GORM Validation API"
-	delegatesTo type:"org.grails.datastore.gorm.GormValidationApi<" + currentType.name + ">", asCategory:true
+	delegatesTo type:"org.grails.datastore.gorm.GormValidationApi<${currentType.name}>", asCategory:true
 }
+
+// where queries, 
+// see: http://hudson.grails.org/job/grails_docs_2.0.x/lastSuccessfulBuild/artifact/build/docs/guide/GORM.html#whereQueries
+(domainClass & inClosure() & (enclosingCallName("where") | enclosingCallName("find") | enclosingCallName("findAll"))).accept {
+	// add the extra functions
+	method name:"avg", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params:[prop:Object], doc:"The average of all values"
+	method name:"sum", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params:[prop:Object], doc:"The sum of all values"
+	method name:"max", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params:[prop:Object], doc:"The maximum value" 
+	method name:"min", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params:[prop:Object], doc:"The minimum value" 
+	method name:"count", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params:[prop:Object], doc:"The count of all values" 
+	method name:"property", type:"grails.gorm.DetachedCriteria<${currentType.name}>", params:[prop:Object], doc:"Retrieves a property of the resulting entities"
+	
+	// extraction functions
+	method name:"second", type:Integer, params:[prop:Date], doc:"The second of a date property"
+	method name:"minute", type:Integer, params:[prop:Date], doc:"The minute of a date property"
+	method name:"hour", type:Integer, params:[prop:Date], doc:"The hour of a date property"
+	method name:"day", type:Integer, params:[prop:Date], doc:"The day of a date property"
+	method name:"year", type:Integer, params:[prop:Date], doc:"The year of a date property"
+
+	method name:"lower", type:String, params:[prop:String], doc:"Converts a string property to lower case"
+	method name:"upper", type:String, params:[prop:String], doc:"Converts a string property to upper case"
+	method name:"length", type:Integer, params:[prop:String], doc:"The length of a string property"
+	method name:"trim", type:String, params:[prop:String], doc:"Trims a string property"
+}
+
+// the 'of' method
+currentType("grails.gorm.DetachedCriteria").accept {
+	provider = "DetachedCriteria DSL"
+	method name:"of", params:[subquery:Closure], declaringType:extractGeneric(currentType), doc:"You can apply additional criteria to any subquery by using the of method and passing in a closure containing the criteria."
+}
+
 currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	provider = "Criteria builder DSL"
 	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
@@ -199,6 +241,14 @@ def toPropertyName(String typeName) {
     return typeName[0].toLowerCase(Locale.ENGLISH) + typeName.substring(1);
 }
 
+
+ClassNode extractGeneric(ClassNode orig) {
+	GenericsType[] gt = orig.genericsTypes
+	if (gt?.length == 1) {
+		return gt[0].type
+	}
+	null
+}
 
 // For unit tests
 def grailsUnitTestArtifact =

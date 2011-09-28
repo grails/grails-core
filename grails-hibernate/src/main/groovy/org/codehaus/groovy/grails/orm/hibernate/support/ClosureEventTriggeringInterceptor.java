@@ -166,24 +166,23 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         SessionFactory sessionFactory = hibernateEvent.getSession().getSessionFactory();
         if (!(sessionFactory instanceof SessionFactoryProxy)) {
             // should always be the case
-            for (SessionFactory sf : getSessionFactories()) {
+        	for (Map.Entry<SessionFactory, HibernateDatastore> entry : datastores.entrySet()) {
+        		SessionFactory sf=entry.getKey();
                 if (sf instanceof SessionFactoryProxy) {
                     if (((SessionFactoryProxy)sf).getCurrentSessionFactory() == sessionFactory) {
-                        sessionFactory = sf;
-                        break;
+                        return entry.getValue();
                     }
                 }
             }
         }
-        return datastores.get(sessionFactory);
+
+        Datastore datastore = datastores.get(sessionFactory);
+        if ((datastore == null) && (datastores.size()==1)) {
+            datastore = datastores.values().iterator().next();
+        }
+        return datastore;
     }
 
-    private synchronized Collection<SessionFactory> getSessionFactories() {
-        if (sessionFactories == null) {
-            sessionFactories = ctx.getBeansOfType(SessionFactory.class).values();
-        }
-        return sessionFactories;
-    }
 
     /*
      * TODO: This is a horrible hack due to a bug in Hibernate's post-insert event processing (HHH-3904)

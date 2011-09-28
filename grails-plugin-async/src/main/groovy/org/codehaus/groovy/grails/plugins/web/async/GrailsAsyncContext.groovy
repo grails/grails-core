@@ -22,8 +22,10 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutRenderer
+import org.codehaus.groovy.grails.web.sitemesh.SpringMVCViewDecorator
 import org.codehaus.groovy.grails.web.util.WebUtils
+
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
 /**
  * Wraps an AsyncContext providing additional logic to provide the appropriate context to a Grails application.
@@ -80,11 +82,8 @@ class GrailsAsyncContext implements AsyncContext {
             if (content != null) {
                 def decorator = groovyPageLayoutFinder?.findLayout(request, content)
                 if (decorator) {
-                    GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator,
-                              originalWebRequest.attributes.pagesTemplateEngine, originalWebRequest.applicationContext)
-                    renderer.render(content, request, targetResponse, request.servletContext)
-                }
-                else {
+					decorator.render(content, new SiteMeshWebAppContext(request, targetResponse, request.servletContext))
+                } else {
                    content.writeOriginal(targetResponse.getWriter())
                 }
             }

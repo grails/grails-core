@@ -22,6 +22,7 @@ import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ import org.springframework.beans.InvalidPropertyException;
  */
 public class ConstrainedPropertyBuilder extends BuilderSupport {
 
-    private Map<String, ConstrainedProperty> constrainedProperties = new HashMap<String, ConstrainedProperty>();
+    private Map<String, ConstrainedProperty> constrainedProperties = new LinkedHashMap<String, ConstrainedProperty>();
     private Map<String, String> sharedConstraints = new HashMap<String, String>();
     private int order = 1;
     private Class<?> targetClass;

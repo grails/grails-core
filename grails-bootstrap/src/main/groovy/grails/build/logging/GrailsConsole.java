@@ -232,6 +232,7 @@ public class GrailsConsole {
     public void setVerbose(boolean verbose) {
         if (verbose) {
             // enable big traces in verbose mode
+            // note - can't use StackTraceFilterer#SYS_PROP_DISPLAY_FULL_STACKTRACE as it is in grails-core
             System.setProperty("grails.full.stacktrace", "true");
         }
         this.verbose = verbose;
@@ -500,7 +501,7 @@ public class GrailsConsole {
         if ((error instanceof BuildException) && error.getCause() != null) {
             error = error.getCause();
         }
-        if (!isVerbose()) {
+        if (!isVerbose() && !Boolean.getBoolean("grails.full.stacktrace")) {
             StackTraceUtils.deepSanitize(error);
         }
         StringWriter sw = new StringWriter();

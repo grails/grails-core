@@ -151,7 +151,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         this.hibernateTemplate = new HibernateTemplate(sessionFactory)
         this.conversionService = datastore.mappingContext.conversionService
 
-        identityType = persistentEntity.identity.type
+        identityType = persistentEntity.identity?.type
 
         def mappingContext = datastore.mappingContext
         if (mappingContext instanceof GrailsDomainClassMappingContext) {
@@ -159,7 +159,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             grailsApplication = domainClassMappingContext.getGrailsApplication()
 
             GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
-            identityType = domainClass.identifier.type
+            identityType = domainClass.identifier?.type
 
             this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
@@ -184,7 +184,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
     private convertIdentifier(Serializable id) {
         final idType = identityType
-        if (id != null && !idType.isAssignableFrom(id.getClass())) {
+        if (idType != null && id != null && !idType.isAssignableFrom(id.getClass())) {
             try {
                 if (id instanceof Number && Long.equals(idType)) {
                     id = id.toLong()

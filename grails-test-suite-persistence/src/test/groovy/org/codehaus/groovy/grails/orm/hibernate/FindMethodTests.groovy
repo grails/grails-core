@@ -24,6 +24,16 @@ class FindMethodTestClass {
         assert domain.find("from FindMethodTestClass as f where f.one = ? and f.two = ?", ["one", 2]) : "should have returned a result"
     }
 
+    void testFindMethodWithHQLUpperCase() {
+        def domain = ga.getDomainClass("FindMethodTestClass").clazz
+
+        assertNotNull "should have saved", domain.newInstance(one:"one", two:2).save(flush:true)
+
+        session.clear()
+
+        assert domain.find("FROM FindMethodTestClass as f where f.one = ? and f.two = ?", ["one", 2]) : "should have returned a result"
+    }
+
     void testUsingHibernateCache() {
         def theClass = ga.getDomainClass("FindMethodTestClass").clazz
 

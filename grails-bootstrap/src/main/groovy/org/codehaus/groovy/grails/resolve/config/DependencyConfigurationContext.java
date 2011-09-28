@@ -25,6 +25,7 @@ public class DependencyConfigurationContext {
     final public String pluginName;
     final public boolean inherited;
     final public boolean exported;
+    private boolean offline;
 
     private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String pluginName, boolean inherited) {
         this.dependencyManager = dependencyManager;
@@ -39,6 +40,14 @@ public class DependencyConfigurationContext {
         else {
             exported = true;
         }
+    }
+
+    public boolean isOffline() {
+        return offline;
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
     }
 
     static public DependencyConfigurationContext forApplication(IvyDependencyManager dependencyManager) {
