@@ -34,8 +34,7 @@ import com.opensymphony.sitemesh.SiteMeshContext;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
 /**
- *
- * Encapsulates the logic for rendering a layout
+ * Encapsulates the logic for rendering a layout.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -44,17 +43,17 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
     private View view;
 
     public SpringMVCViewDecorator(String name, View view) {
-    	super(name, (view instanceof AbstractUrlBasedView) ? ((AbstractUrlBasedView)view).getUrl() : view.toString(), Collections.EMPTY_MAP);
+        super(name, (view instanceof AbstractUrlBasedView) ? ((AbstractUrlBasedView)view).getUrl() : view.toString(), Collections.EMPTY_MAP);
         this.view = view;
     }
-    
-	public void render(Content content, SiteMeshContext context) {
+
+    public void render(Content content, SiteMeshContext context) {
         SiteMeshWebAppContext ctx = (SiteMeshWebAppContext) context;
         render(content, ctx.getRequest(), ctx.getResponse(), ctx.getServletContext());
-	}
+    }
 
     public void render(Content content, HttpServletRequest request,
-                       HttpServletResponse response, ServletContext servletContext) {
+                       HttpServletResponse response, @SuppressWarnings("unused") ServletContext servletContext) {
         HTMLPage htmlPage = GSPSitemeshPage.content2htmlPage(content);
         request.setAttribute(RequestConstants.PAGE, htmlPage);
 
@@ -88,6 +87,4 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
         request.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE);
         request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, null);
     }
-
-
 }

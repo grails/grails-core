@@ -91,13 +91,13 @@ public enum Environment {
         String envName = System.getProperty(Environment.KEY);
 
         if (isBlank(envName)) {
-        	Metadata metadata = Metadata.getCurrent();	
-        	if(metadata != null) {
-        		envName = metadata.getEnvironment();
-        	}
-        	if(isBlank(envName)) {
-        		return DEVELOPMENT;
-        	}
+            Metadata metadata = Metadata.getCurrent();
+            if (metadata != null) {
+                envName = metadata.getEnvironment();
+            }
+            if (isBlank(envName)) {
+                return DEVELOPMENT;
+            }
         }
 
         Environment env = getEnvironment(envName);

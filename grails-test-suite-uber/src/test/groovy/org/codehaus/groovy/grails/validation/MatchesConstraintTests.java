@@ -44,7 +44,7 @@ public class MatchesConstraintTests extends AbstractConstraintTests {
         assertEquals("[a-z]", constraint.getRegex());
 
         try {
-            getConstraint("testString", new Long(123));
+            getConstraint("testString", 123L);
             fail("MatchesConstraint must throw an exception for non-string parameters.");
         } catch (IllegalArgumentException iae) {
             // Great

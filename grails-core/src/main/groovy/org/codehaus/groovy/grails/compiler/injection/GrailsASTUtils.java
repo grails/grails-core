@@ -500,7 +500,7 @@ public class GrailsASTUtils {
         }
     }
 
-    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
+    public static void addAnnotationIfNecessary(ClassNode classNode, @SuppressWarnings("unused") Class<Entity> entityClass) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = new ClassNode(Entity.class);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
@@ -514,11 +514,11 @@ public class GrailsASTUtils {
     }
 
     public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations){
-         for (AnnotationNode annotation : annotations) {
-                if(annotation.getClassNode().equals(annotationClassNode)) {
-                    return annotation;
-                }
+        for (AnnotationNode annotation : annotations) {
+            if (annotation.getClassNode().equals(annotationClassNode)) {
+                return annotation;
             }
+        }
         return null;
     }
 

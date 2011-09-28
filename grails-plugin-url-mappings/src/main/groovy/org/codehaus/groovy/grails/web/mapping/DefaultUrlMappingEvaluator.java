@@ -47,7 +47,6 @@ import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
@@ -90,6 +89,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
      * @deprecated Used DefaultUrLMappingsEvaluator(ApplicationContext) instead
      * @param servletContext The servlet context
      */
+    @Deprecated
     public DefaultUrlMappingEvaluator(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
@@ -138,7 +138,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 "]. A URL mapping must be an instance of groovy.lang.Script.");
     }
 
-    private List evaluateMappings(GroovyObject go, Closure mappings, Binding binding) {
+    private List<?> evaluateMappings(GroovyObject go, Closure<?> mappings, Binding binding) {
         UrlMappingBuilder builder = new UrlMappingBuilder(binding, servletContext);
         mappings.setDelegate(builder);
         mappings.call();

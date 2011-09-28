@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -307,7 +306,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
                 // remove the precompiled version from caches & mapping
                 precompiledCache.remove(uri);
                 groovyPageLocator.removePrecompiledPage(uri);
-                
+
                 return createTemplateForUri(uri);
             }
             return new GroovyPageTemplate(meta);
@@ -347,30 +346,31 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             if (scriptSource != null) break;
         }
 
-        if(scriptSource!=null) {
-        	return createTemplate(scriptSource);
-        } else {
-        	return null;
+        if (scriptSource != null) {
+            return createTemplate(scriptSource);
         }
+        return null;
     }
 
-	public Template createTemplate(ScriptSource scriptSource) {
-		if (scriptSource instanceof ResourceScriptSource) {
-			ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
+    public Template createTemplate(ScriptSource scriptSource) {
+        if (scriptSource instanceof ResourceScriptSource) {
+            ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
             Resource resource = resourceSource.getResource();
             return createTemplate(resource, true);
-        }  else if (scriptSource instanceof GroovyPageCompiledScriptSource) {
+        }
+
+        if (scriptSource instanceof GroovyPageCompiledScriptSource) {
             // handle pre-compiled
             GroovyPageCompiledScriptSource compiledSource = (GroovyPageCompiledScriptSource) scriptSource;
             return createTemplateFromPrecompiled(compiledSource.getURI(),compiledSource.getCompiledClass());
-        } else {
-        	try {
-				return createTemplate(scriptSource.getScriptAsString(), scriptSource.suggestedClassName());
-			} catch (IOException e) {
-				throw new RuntimeException("IOException in createTemplate", e);
-			}
         }
-	}
+
+        try {
+            return createTemplate(scriptSource.getScriptAsString(), scriptSource.suggestedClassName());
+        } catch (IOException e) {
+            throw new RuntimeException("IOException in createTemplate", e);
+        }
+    }
 
     /**
      * Creates a Template using the given text for the Template and the given name. The name
@@ -381,7 +381,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      *
      * @return The Template instance
      * @throws CompilationFailedException
-     * @throws java.io.IOException Thrown if an IO exception occurs creating the Template
+     * @throws IOException Thrown if an IO exception occurs creating the Template
      */
     public Template createTemplate(String txt, String pageName) throws IOException {
         Assert.hasLength(txt, "Argument [txt] cannot be null or blank");
@@ -561,7 +561,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         try {
             String encoding = GroovyPageParser.DEFAULT_ENCODING;
             if (grailsApplication != null) {
-            	Map<String,Object> config = grailsApplication.getFlatConfig();
+                Map<String,Object> config = grailsApplication.getFlatConfig();
                 Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
                     encoding = gspEnc.toString();
@@ -669,7 +669,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             throw new GroovyPagesException("IO exception parsing script ["+ relativePageName + "]: " + e.getMessage(), e);
         }
         GroovyPagesMetaUtils.registerMethodMissingForGSP(scriptClass, tagLibraryLookup);
-        
+
         return scriptClass;
     }
 

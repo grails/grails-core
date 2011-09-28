@@ -583,8 +583,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      */
     @Override
     public boolean equals(Object o) {
-    	if(o==this) return true;
-    	
+        if (o==this) return true;
+
         if (!(o instanceof CharSequence)) return false;
 
         CharSequence other = (CharSequence) o;
@@ -644,55 +644,55 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     boolean isNotEmpty() {
-        if(totalCharsInList > 0) {
+        if (totalCharsInList > 0) {
             return true;
         }
-        if(totalCharsInDynamicChunks > 0) {
+        if (totalCharsInDynamicChunks > 0) {
             return true;
         }
-        if(allocBuffer.charsUsed() > 0) {
+        if (allocBuffer.charsUsed() > 0) {
             return true;
         }
         if (totalCharsInDynamicChunks == -1) {
             for (StreamCharBufferSubChunk chunk : dynamicChunkMap.values()) {
-                if(chunk.getSubBuffer().isNotEmpty()) {
+                if (chunk.getSubBuffer().isNotEmpty()) {
                     return true;
                 }
             }
         }
         return false;
     }
-    
+
     boolean isSizeLarger(int minSize) {
-    	if(minSize <= sizeAtLeast) {
-    		return true;
-    	} else {
-    		boolean retval = calculateIsSizeLarger(minSize);
-    		if(retval && minSize > sizeAtLeast) {
-    			sizeAtLeast = minSize;
-    		}
-    		return retval;
-    	}
+        if (minSize <= sizeAtLeast) {
+            return true;
+        }
+
+        boolean retval = calculateIsSizeLarger(minSize);
+        if (retval && minSize > sizeAtLeast) {
+            sizeAtLeast = minSize;
+        }
+        return retval;
     }
 
     private boolean calculateIsSizeLarger(int minSize) {
         int total = totalCharsInList;
         total += allocBuffer.charsUsed();
-        if(total > minSize) {
+        if (total > minSize) {
             return true;
         }
-        if(totalCharsInDynamicChunks != -1) {
+        if (totalCharsInDynamicChunks != -1) {
             total += totalCharsInDynamicChunks;
-            if(total > minSize) {
+            if (total > minSize) {
                 return true;
             }
         } else {
             for (StreamCharBufferSubChunk chunk : dynamicChunkMap.values()) {
-                if(!chunk.hasCachedSize() && chunk.getSubBuffer().isSizeLarger(minSize-total)) {
+                if (!chunk.hasCachedSize() && chunk.getSubBuffer().isSizeLarger(minSize-total)) {
                     return true;
                 }
                 total += chunk.size();
-                if(total > minSize) {
+                if (total > minSize) {
                     return true;
                 }
             }
@@ -874,7 +874,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
 
         private final int getNewChunkMinSize() {
-            if(chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 || allocBuffer.charsUsed() >= chunkMinSize) {
+            if (chunkMinSize <= 0 || allocBuffer.charsUsed() == 0 || allocBuffer.charsUsed() >= chunkMinSize) {
                 return 0;
             }
             return allocBuffer.spaceLeft();

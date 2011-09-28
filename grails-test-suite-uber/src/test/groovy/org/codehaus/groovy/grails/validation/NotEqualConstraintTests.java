@@ -16,26 +16,18 @@ public class NotEqualConstraintTests extends AbstractConstraintTests {
 
     public void testValidation() {
         testConstraintMessageCodes(
-                getConstraint("testString", "12345"),
-                "12345",
+                getConstraint("testString", "12345"), "12345",
                 new String[] {"testClass.testString.notEqual.error","testClass.testString.notEqual"},
                 new Object[] {"testString",TestClass.class,"12345","12345"});
 
-        testConstraintPassed(
-                getConstraint("testString", "12345"),
-                "1234");
+        testConstraintPassed(getConstraint("testString", "12345"), "1234");
 
-        testConstraintPassed(
-                getConstraint("testLong", new Long(123)),
-                new Long(122));
+        testConstraintPassed(getConstraint("testLong", 123L), 122L);
 
-        testConstraintPassed(
-                getConstraint("testDate", new Date(123)),
-                null);
+        testConstraintPassed(getConstraint("testDate", new Date(123)), null);
 
         testConstraintDefaultMessage(
-                getConstraint("testString", "123"),
-                "123",
+                getConstraint("testString", "123"), "123",
                 "Property [{0}] of class [{1}] with value [{2}] cannot equal [{3}]");
     }
 
@@ -61,7 +53,7 @@ public class NotEqualConstraintTests extends AbstractConstraintTests {
 
         // property is String but parameter is Integer
         try {
-            getConstraint("testString", new Integer(4));
+            getConstraint("testString", 4);
             fail("MinConstraint must throw an exception for parameter with wrong type .");
         } catch (IllegalArgumentException iae) {
             // Great

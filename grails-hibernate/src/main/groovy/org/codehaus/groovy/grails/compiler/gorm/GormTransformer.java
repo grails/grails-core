@@ -15,12 +15,12 @@
  */
 package org.codehaus.groovy.grails.compiler.gorm;
 
+import grails.persistence.Entity;
+
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-import grails.persistence.Entity;
-import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;

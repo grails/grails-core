@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public abstract class AbstractIvyDependencyManager {
 
     public static final String SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT";
-        
+
     /*
      * Out of the box Ivy configurations are:
      *
@@ -141,35 +141,34 @@ public abstract class AbstractIvyDependencyManager {
     final protected BuildSettings buildSettings;
     final protected Metadata metadata;
     private boolean offline;
-    
+
     private ChainResolver chainResolver;
-    
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
         this.buildSettings = buildSettings;
         this.metadata = metadata;
-        
+
         chainResolver = new ChainResolver();
-        
+
         // Use the name cache because the root chain resolver is the one that is shown to have resolved the dependency
         // when it is resolved in the cache, which makes Ivy debug output easier to understand by making it clear what
         // came from the cache
         chainResolver.setName("cache");
-        
+
         chainResolver.setReturnFirst(true);
-        updateChangingPattern(chainResolver);
+        updateChangingPattern();
     }
 
     public void setOffline(boolean offline) {
         this.offline = offline;
-        updateChangingPattern(chainResolver);
+        updateChangingPattern();
     }
 
-    private void updateChangingPattern(ChainResolver chainResolver) {
+    private void updateChangingPattern() {
         chainResolver.setChangingPattern(isOffline() ? null : IvyDependencyManager.SNAPSHOT_CHANGING_PATTERN);
     }
-    
+
     public ChainResolver getChainResolver() {
         return chainResolver;
     }
@@ -184,7 +183,7 @@ public abstract class AbstractIvyDependencyManager {
 
     public void setChainResolver(ChainResolver chainResolver) {
         this.chainResolver = chainResolver;
-        updateChangingPattern(chainResolver);
+        updateChangingPattern();
     }
 
     public boolean isOffline() {

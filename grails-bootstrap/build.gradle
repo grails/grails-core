@@ -17,7 +17,6 @@ dependencies {
         exclude module:"commons-logging"
     }
 
-
     compile("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {
         // Explicitly exclude OSGIified dependencies - GRAILS-7525
         // Have to use excludes instead of transitive = false - GRADLE-1574
@@ -39,25 +38,24 @@ dependencies {
 
     compile "junit:junit:${junitVersion}"
 
-    // Ant    
+    // Ant
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
             "org.apache.ant:ant-trax:${antTraxVersion}",
             "org.apache.ivy:ivy:${ivyVersion}"
-    
+
     compile("org.apache.ant:ant-junit:${antVersion}") {
-    	exclude module:'junit'
+        exclude module:'junit'
     }
 
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         exclude module:'commons-cli'
     }
-
 }
 
 processResources {
-   inputs.property "version", version
-   filter(ReplaceTokens, tokens:[version:version])
+    inputs.property "version", version
+    filter(ReplaceTokens, tokens:[version:version])
 }
 
 jar.appendix = 'bootstrap'

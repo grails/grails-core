@@ -87,7 +87,7 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assertEquals("/myTest/someAction", grailsClass.getViewByURI("/my-test/"));
         assertEquals("/myTest/index", grailsClass.getViewByURI("/my-test/index"));
     }
-    
+
     public void testMappingToControllerBeginningWith2UpperCaseLetters() {
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MYdemoController { def action = { return null }; } ");

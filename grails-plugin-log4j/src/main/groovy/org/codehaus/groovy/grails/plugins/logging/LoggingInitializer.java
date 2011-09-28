@@ -28,6 +28,6 @@ import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
 public class LoggingInitializer {
 
     public void initialize(ConfigObject config) {
-    	Log4jConfig.initialize(config);
+        Log4jConfig.initialize(config);
     }
 }

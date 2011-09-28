@@ -224,18 +224,18 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     static String attrsToString(Map attrs) {
         // Output any remaining user-specified attributes
-		StringBuilder sb=new StringBuilder()
-		// For some strange reason Groovy creates ClassCastExceptions internally in PogoMetaMethodSite.checkCall without this hack
-		for(Iterator i = InvokerHelper.asIterator(attrs); i.hasNext();) {
-			Map.Entry e=i.next()
-			if(e.value != null) { 
-				sb.append(' ')
-				sb.append(e.key)
-				sb.append('="')
-				sb.append(String.valueOf(e.value).encodeAsHTML())
-				sb.append('"')
-			}
-		}
+        StringBuilder sb=new StringBuilder()
+        // For some strange reason Groovy creates ClassCastExceptions internally in PogoMetaMethodSite.checkCall without this hack
+        for (Iterator i = InvokerHelper.asIterator(attrs); i.hasNext();) {
+            Map.Entry e = i.next()
+            if (e.value != null) {
+                sb.append(' ')
+                sb.append(e.key)
+                sb.append('="')
+                sb.append(String.valueOf(e.value).encodeAsHTML())
+                sb.append('"')
+            }
+        }
         return sb.toString()
     }
 
@@ -250,13 +250,13 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     ]
 
     static getAttributesToRender(constants, attrs) {
-		StringBuilder sb=new StringBuilder()
-		if(constants) {
-			sb.append(attrsToString(constants))
-		}
-		if(attrs) {
-			sb.append(attrsToString(attrs))
-		}
+        StringBuilder sb=new StringBuilder()
+        if (constants) {
+            sb.append(attrsToString(constants))
+        }
+        if (attrs) {
+            sb.append(attrsToString(attrs))
+        }
         return sb.toString()
     }
 

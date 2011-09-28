@@ -170,15 +170,15 @@ class GroovyPagesGrailsPlugin {
             bean.lazyInit = true
             groovyPageLocator = groovyPageLocator
         }
-		
-		groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
-			bean.autowire = true	
-		}
+
+        groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+            bean.autowire = true
+        }
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
             gspReloadEnabled = enableReload
             defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: null
-			viewResolver = ref('jspViewResolver')
+            viewResolver = ref('jspViewResolver')
         }
 
         // Setup the GroovyPagesUriService

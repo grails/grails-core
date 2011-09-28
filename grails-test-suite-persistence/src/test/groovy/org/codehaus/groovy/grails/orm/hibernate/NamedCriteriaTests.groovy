@@ -684,7 +684,7 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
                     datePublished: new Date()).save()
         }
 
-        def pubs = NamedCriteriaPublication.recentPublications.list(max: 10, offset: new Integer(5))
+        def pubs = NamedCriteriaPublication.recentPublications.list(max: 10, offset: 5)
         assertEquals 10, pubs?.size()
 
         (6..15).each {num ->

@@ -36,7 +36,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.Validator;
 
 /**
  * A specialised Spring validator that validates a domain class instance using the constraints defined in the
@@ -45,7 +44,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class GrailsDomainClassValidator implements Validator, CascadingValidator, GrailsApplicationAware {
+public class GrailsDomainClassValidator implements CascadingValidator, GrailsApplicationAware {
 
     private static final List<String> EMBEDDED_EXCLUDES = Arrays.asList(
         GrailsDomainClassProperty.IDENTITY,
@@ -81,7 +80,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             String propertyName = (String) key;
             validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
         }
-        
+
         GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 
         for (GrailsDomainClassProperty persistentProperty : persistentProperties) {

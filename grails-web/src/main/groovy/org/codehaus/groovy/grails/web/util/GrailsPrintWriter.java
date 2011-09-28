@@ -157,10 +157,10 @@ public class GrailsPrintWriter extends PrintWriter {
             usageFlag = true;
             return;
         }
-        
-        Class clazz = obj.getClass();
+
+        Class<?> clazz = obj.getClass();
         if (clazz == String.class) {
-        	write((String)obj);
+            write((String)obj);
         } else if (clazz == StreamCharBuffer.class) {
             write((StreamCharBuffer)obj);
         } else if (obj instanceof Writable) {
@@ -437,13 +437,13 @@ public class GrailsPrintWriter extends PrintWriter {
     }
 
     protected Writer findStreamCharBufferTarget(boolean markUsed) {
-    	boolean allowCaching = markUsed;
-    	
-    	Writer currentOut = getOut();
-    	if(allowCaching && streamCharBufferTarget != null && previousOut == currentOut) {
-    		return streamCharBufferTarget;
-    	}
-    	
+        boolean allowCaching = markUsed;
+
+        Writer currentOut = getOut();
+        if (allowCaching && streamCharBufferTarget != null && previousOut == currentOut) {
+            return streamCharBufferTarget;
+        }
+
         Writer target = currentOut;
         while (target instanceof GrailsPrintWriter) {
             GrailsPrintWriter gpr=((GrailsPrintWriter)target);
@@ -459,16 +459,16 @@ public class GrailsPrintWriter extends PrintWriter {
 
         Writer result;
         if (target instanceof StreamCharBufferWriter) {
-        	result = target;
+            result = target;
         } else {
-        	result = currentOut;
-        }       
-        
-        if(allowCaching) {
-        	streamCharBufferTarget = result;
-        	previousOut = currentOut;
+            result = currentOut;
         }
-        
+
+        if (allowCaching) {
+            streamCharBufferTarget = result;
+            previousOut = currentOut;
+        }
+
         return result;
     }
 

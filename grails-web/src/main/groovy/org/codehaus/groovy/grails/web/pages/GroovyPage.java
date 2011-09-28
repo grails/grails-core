@@ -25,7 +25,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -168,7 +167,7 @@ public abstract class GroovyPage extends Script {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings("rawtypes")
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GrailsApplication grailsApplication, Class codecClass) {
         outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         out = outputStack.getProxyWriter();
@@ -185,14 +184,15 @@ public abstract class GroovyPage extends Script {
         }
         setVariableDirectly(CODEC_OUT, codecOut);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private void setVariableDirectly(String name, Object value) {
-    	Binding binding=getBinding();
-    	if(binding instanceof AbstractGroovyPageBinding) {
-    		((AbstractGroovyPageBinding)binding).setVariableDirectly(name, value);
-    	} else {
-    		binding.getVariables().put(name, value);
-    	}
+        Binding binding = getBinding();
+        if (binding instanceof AbstractGroovyPageBinding) {
+            ((AbstractGroovyPageBinding)binding).setVariableDirectly(name, value);
+        } else {
+            binding.getVariables().put(name, value);
+        }
     }
 
     public String getPluginContextPath() {
@@ -266,13 +266,13 @@ public abstract class GroovyPage extends Script {
         try {
             return evaluator.call(outerIt);
         } catch (Exception e) {
-            throw new GroovyPagesException("Error evaluating expression [" + exprText + "] on line [" + lineNumber + "]: " + e.getMessage(), e, lineNumber, getGroovyPageFileName());
+            throw new GroovyPagesException("Error evaluating expression [" + exprText + "] on line [" +
+                 lineNumber + "]: " + e.getMessage(), e, lineNumber, getGroovyPageFileName());
         }
     }
 
     public abstract String getGroovyPageFileName();
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object getProperty(String property) {
         if (OUT.equals(property)) return out;
@@ -299,7 +299,7 @@ public abstract class GroovyPage extends Script {
             }
             if (value != null) {
                 // cache lookup for next execution
-            	setVariableDirectly(property, value);
+                setVariableDirectly(property, value);
             }
         }
 
@@ -377,7 +377,7 @@ public abstract class GroovyPage extends Script {
 
                         if (!(attrs instanceof GroovyPageAttributes)) {
                             attrs = new GroovyPageAttributes(attrs);
-                        }        
+                        }
                         switch (tag.getParameterTypes().length) {
                             case 1:
                                 tagresult = tag.call(new Object[]{attrs});
@@ -467,10 +467,6 @@ public abstract class GroovyPage extends Script {
             preferSubChunkWhenWritingToOtherBuffer = true;
         }
         return preferSubChunkWhenWritingToOtherBuffer;
-    }
-
-    private GroovyObject getTagLibForDefaultNamespace(String tagName) {
-        return getTagLib(DEFAULT_NAMESPACE, tagName);
     }
 
     private GroovyObject getTagLib(String namespace, String tagName) {
@@ -628,8 +624,7 @@ public abstract class GroovyPage extends Script {
         setBodyClosure(bodyClosureIndex, tagBody);
     }
 
-    @SuppressWarnings("unchecked")
     public void changeItVariable(Object value) {
-    	setVariableDirectly("it", value);
+        setVariableDirectly("it", value);
     }
 }
