@@ -157,9 +157,7 @@ class UrlMappingsGrailsPlugin {
 
     private UrlMappingsHolder createUrlMappingsHolder(GrailsApplication application, WebApplicationContext applicationContext, GrailsPluginManager pluginManager) {
         def factory = new UrlMappingsHolderFactoryBean()
-        factory.grailsApplication = application
-        factory.servletContext = applicationContext.servletContext
-        factory.pluginManager = pluginManager
+        factory.applicationContext = applicationContext
         factory.afterPropertiesSet()
 
         final urlMappingsHolder = factory.getObject()

@@ -6,6 +6,7 @@ import junit.framework.ComparisonFailure
 
 import org.junit.Test
 import grails.web.Action
+import org.springframework.web.context.WebApplicationContext
 
 /**
  * Tests for the UrlMappingsTestMixin class
@@ -156,7 +157,9 @@ class UserController {
 }
 
 class MyUrlMappings {
-    static mappings = {
+    static mappings = { applicationContext ->
+        assert applicationContext != null
+        assert applicationContext instanceof WebApplicationContext
         "/action1"(controller: "grailsUrlMappingsTestCaseFake", action: "action1")
         "/action2"(controller: "grailsUrlMappingsTestCaseFake", action: "action2")
         "/default"(controller: "grailsUrlMappingsTestCaseFake")

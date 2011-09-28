@@ -39,6 +39,7 @@ import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -80,6 +81,7 @@ class GrailsUnitTestMixin {
             defineBeans {
                 grailsProxyHandler(DefaultProxyHandler)
                 grailsApplication(DefaultGrailsApplication)
+                pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
                 messageSource(StaticMessageSource)
             }
             applicationContext.refresh()
