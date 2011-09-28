@@ -14,6 +14,12 @@ class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
         assertOutputEquals('errors', template,[foo:new NSTestBean()])
     }
 
+    void testInvokeTagNoArguments() {
+        def template = '<two:hello/>'
+        assertOutputEquals('<a href="/foo/bar">hello</a>', template,[:])
+        assertOutputEquals('<a href="/foo/bar">hello</a>', template,[:])
+    }
+
     void testInvokeTagWithNamespace() {
         def template = '<my:test1>foo: <my:test2 foo="bar1" /> one: ${my.test2(foo:"bar2")} two: ${my.test2()}</my:test1>'
         assertOutputEquals('foo: hello! bar1 one: hello! bar2 two: hello! null', template)
@@ -64,8 +70,13 @@ class SecondTagLib {
    static namespace = "two"
 
    Closure test1 = { attrs, body ->
+
         out << my.test2(foo:"bar3")
    }
+
+    Closure hello = { attrs ->
+        out << g.link(controller:'foo', action:'bar') { "hello" }
+    }
 
 }
        ''')
