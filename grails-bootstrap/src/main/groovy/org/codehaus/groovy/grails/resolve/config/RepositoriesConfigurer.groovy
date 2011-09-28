@@ -226,7 +226,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     private createLocalPluginResolver(String name, String location) {
         def pluginResolver = new FileSystemResolver(name: name)
-        pluginResolver.addArtifactPattern("${location}/plugins/grails-[artifact]-[revision].[ext]")
+        pluginResolver.addArtifactPattern("${location}/plugins/[artifact]-[revision].[ext]")
         pluginResolver.settings = dependencyManager.ivySettings
         pluginResolver.latestStrategy = new LatestTimeStrategy()
         pluginResolver.changingPattern = ".*SNAPSHOT"

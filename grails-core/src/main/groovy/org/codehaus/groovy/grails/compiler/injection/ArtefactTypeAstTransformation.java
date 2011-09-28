@@ -34,7 +34,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 /**
  * A transformation used to apply transformers to classes not located in Grails
  * directory structure. For example any class can be annotated with
- * @Artefact("Controller") to make it into a controller no matter what the location.
+ * &#064;Artefact("Controller") to make it into a controller no matter what the location.
  *
  * @author Graeme Rocher
  * @since 2.0

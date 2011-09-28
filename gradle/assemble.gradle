@@ -47,23 +47,23 @@ task sourcesJars(type: Copy) {
 }
 
 task pluginsFromSvn {
-    dir = "$buildDir/pluginsFromSvn"
-    grailsHibernateDest = "$dir/grails-hibernate-${grailsVersion}.zip"
-    grailsTomcatDest = "$dir/grails-tomcat-${grailsVersion}.zip"
-    outputs.files grailsHibernateDest, grailsTomcatDest
+    plugins = [
+        hibernate: grailsVersion,
+        tomcat: grailsVersion,
+        resources: "1.0.2",
+        jquery: "1.6.1.1"
+    ]
+    
+    dir = file("$buildDir/pluginsFromSvn")
+    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
         ant {
             mkdir(dir: dir)
-            def versionTag = grailsVersion.replaceAll(/\./, '_').toUpperCase()
-            get(src: "http://plugins.grails.org/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${grailsVersion}.zip",
-                dest: grailsHibernateDest, verbose: true, usetimestamp: true)
-            get(src: "http://plugins.grails.org/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${grailsVersion}.zip",
-                dest: grailsTomcatDest, verbose: true, usetimestamp: true)
-            get(src: "http://plugins.grails.org/grails-resources/tags/RELEASE_1_0_2/grails-resources-1.0.2.zip",
-                  dest: dir, verbose: true, usetimestamp: true)                
-            get(src: "http://plugins.grails.org/grails-jquery/tags/RELEASE_1_6_1_1/grails-jquery-1.6.1.1.zip",
-                    dest: dir, verbose: true, usetimestamp: true)                
-                  
+            plugins.each { name, version ->
+                def versionTag = version.replaceAll(/\./, '_').toUpperCase()
+                get(src: "http://plugins.grails.org/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
+                    dest: dir, verbose: true, usetimestamp: true)
+            }
         }
     }
 }
@@ -152,6 +152,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         }
         from(pluginsFromSvn.outputs.files) {
             into "plugins"
+            rename { it - "grails-" }
         }
         from('grails-resources/src/grails/home/docs/README') {
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])

@@ -59,6 +59,13 @@ class MimeTypesApiSupport {
                             result = getResponseForFormat(formats[mime.extension], mime.extension, formatProvider)
                             break
                         }
+                        else {
+                            if (mime.extension == 'all') {
+                                def firstKey = formats.firstKey()
+                                result = getResponseForFormat(formats[firstKey], firstKey, formatProvider)
+                                break
+                            }
+                        }
                     }
                 }
             }

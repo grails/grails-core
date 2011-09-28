@@ -86,6 +86,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings)
         copy.offline = offline
         copy.chainResolver = chainResolver
+        copy.resolveEngine = resolveEngine
         if (logger) {
             copy.logger = logger
         }

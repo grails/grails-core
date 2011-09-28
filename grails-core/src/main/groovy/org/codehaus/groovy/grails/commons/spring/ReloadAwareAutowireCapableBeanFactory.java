@@ -33,12 +33,14 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -189,8 +191,21 @@ public class ReloadAwareAutowireCapableBeanFactory extends
 				return;
 			}
 		}
-		super.autowireBeanProperties(existingBean, autowireMode,
-				dependencyCheck);
+		
+		if(autowireMode == AUTOWIRE_BY_NAME) {
+			RootBeanDefinition bd =
+					new RootBeanDefinition(ClassUtils.getUserClass(existingBean), autowireMode, dependencyCheck);
+			bd.setScope(BeanDefinition.SCOPE_PROTOTYPE);
+			bd.setSynthetic(true);
+			// use optimized method for autowiring by name, don't register any editors for BeanWrapperImpl
+			BeanWrapperImpl bw = new BeanWrapperImpl(false);
+			bw.setWrappedInstance(existingBean);
+			bw.setConversionService(getConversionService());
+			populateBean(bd.getBeanClass().getName(), bd, bw);			
+		} else {
+			super.autowireBeanProperties(existingBean, autowireMode,
+					dependencyCheck);
+		}
 	}
 
 	@Override

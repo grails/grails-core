@@ -39,8 +39,12 @@ dependencies {
 
 sourceSets {
     main {
-        compileClasspath = files(configurations.agent)
+        compileClasspath = configurations.agent
     }
+}
+
+javadoc {
+    classpath += configurations.agent
 }
 
 compileGroovy.doFirst {
