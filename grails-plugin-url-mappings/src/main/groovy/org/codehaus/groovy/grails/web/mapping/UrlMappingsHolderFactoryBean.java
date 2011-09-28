@@ -160,6 +160,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         this.applicationContext = applicationContext;
         setGrailsApplication(applicationContext.getBean( GrailsApplication.APPLICATION_ID, GrailsApplication.class) );
         setServletContext(applicationContext instanceof WebApplicationContext ? ((WebApplicationContext) applicationContext).getServletContext() : null);
-        setPluginManager( applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class));
+        setPluginManager( applicationContext.containsBean(GrailsPluginManager.BEAN_NAME) ? applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null);
     }
 }
