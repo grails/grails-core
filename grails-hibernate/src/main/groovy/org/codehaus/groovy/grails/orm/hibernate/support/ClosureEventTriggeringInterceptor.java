@@ -175,7 +175,12 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                 }
             }
         }
-        return datastores.get(sessionFactory);
+
+        Datastore datastore = datastores.get(sessionFactory);
+        if ((datastore == null) && (datastores.size()==1)) {
+            datastore = datastores.values().iterator().next();
+        }
+        return datastore;
     }
 
 
