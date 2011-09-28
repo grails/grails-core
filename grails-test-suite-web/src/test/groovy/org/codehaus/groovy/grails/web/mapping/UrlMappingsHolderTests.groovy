@@ -54,7 +54,7 @@ mappings {
     void testGetReverseMappingWithNamedArgsAndClosure() {
         def res = new ByteArrayResource(mappingWithNamedArgsAndClosure.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator()
+        def evaluator = new DefaultUrlMappingEvaluator(appCtx)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
@@ -70,7 +70,7 @@ mappings {
         runTest {
             def res = new ByteArrayResource(mappingWithNamedArgs.bytes)
 
-            def evaluator = new DefaultUrlMappingEvaluator()
+            def evaluator = new DefaultUrlMappingEvaluator(appCtx)
             def mappings = evaluator.evaluateMappings(res)
 
             def holder = new DefaultUrlMappingsHolder(mappings)
@@ -86,7 +86,7 @@ mappings {
     void testGetReverseMappingWithExcessArgs() {
         def res = new ByteArrayResource(mappingScript.bytes)
 
-        def evaluator = new DefaultUrlMappingEvaluator()
+        def evaluator = new DefaultUrlMappingEvaluator(appCtx)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
@@ -103,7 +103,7 @@ mappings {
 
     void testGetReverseMappingWithVariables() {
         def res = new ByteArrayResource(mappingScript2.bytes)
-        def evaluator = new DefaultUrlMappingEvaluator()
+        def evaluator = new DefaultUrlMappingEvaluator(appCtx)
         def mappings = evaluator.evaluateMappings(res)
 
         def holder = new DefaultUrlMappingsHolder(mappings)
@@ -129,7 +129,7 @@ mappings {
         runTest {
             def res = new ByteArrayResource(mappingScript.bytes)
 
-            def evaluator = new DefaultUrlMappingEvaluator()
+            def evaluator = new DefaultUrlMappingEvaluator(appCtx)
             def mappings = evaluator.evaluateMappings(res)
 
             // use un-cached holder for testing
@@ -150,7 +150,7 @@ mappings {
         runTest {
             def res = new ByteArrayResource(mappingScript.bytes)
 
-            def evaluator = new DefaultUrlMappingEvaluator()
+            def evaluator = new DefaultUrlMappingEvaluator(appCtx)
             def mappings = evaluator.evaluateMappings(res)
 
             // use un-cached holder for testing
