@@ -16,7 +16,8 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
     private configurator
 
-    @Override protected void onSetUp() {
+    @Override
+    protected void onSetUp() {
         PluginManagerHolder.setPluginManager(null)
     }
 
@@ -140,7 +141,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
         assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:h2:mem:grailsDB", parentBeanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "jdbc:h2:mem:grailsDB;MVCC=TRUE", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginPoolingOn() {
@@ -168,7 +169,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
                     production {
                         dataSource {
                             dbCreate = "update"
-                            url = "jdbc:h2:file:prodDb;shutdown=true"
+                            url = "jdbc:h2:prodDb"
                         }
                     }
                 }
@@ -365,6 +366,32 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
         assertEquals "java:comp/env/myDataSource", beanDef.propertyValues.getPropertyValue('jndiName').value
         assertEquals DataSource, beanDef.propertyValues.getPropertyValue('expectedType').value
+    }
+
+    // doesn't actually test MVCC, mostly just that it's a valid URL
+    void testMvccUrlOption() {
+        def config = new ConfigSlurper().parse '''
+            dataSource {
+                driverClassName = "org.h2.Driver"
+                url = "jdbc:h2:mem:devDb;MVCC=TRUE"
+                username = "sa"
+                password = ""
+                pooled = true
+                dbCreate = "create-drop"
+            }
+        '''
+
+        def bb = createBeanBuilder(config)
+
+        def beanDef = bb.getBeanDefinition('dataSourceUnproxied')
+        assertEquals BasicDataSource.name, beanDef.beanClassName
+        assert beanDef.parentName == 'abstractGrailsDataSourceBean'
+
+        def parentBeanDef = bb.getBeanDefinition('abstractGrailsDataSourceBean')
+        assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
+        assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
+        assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
+        assertEquals "jdbc:h2:mem:devDb;MVCC=TRUE", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     private createAppCtx(config) {
