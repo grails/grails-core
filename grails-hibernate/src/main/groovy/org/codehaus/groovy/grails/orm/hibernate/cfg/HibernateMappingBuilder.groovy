@@ -19,6 +19,7 @@ import org.apache.commons.beanutils.BeanUtils
 import org.apache.commons.logging.LogFactory
 import org.hibernate.FetchMode
 import org.hibernate.InvalidMappingException
+import org.springframework.context.ApplicationContext
 
 /**
  * Implements the ORM mapping DSL constructing a model that can be evaluated by the
@@ -50,14 +51,14 @@ class HibernateMappingBuilder {
      *
      * @param mappingClosure The closure that defines the ORM DSL
      */
-    Mapping evaluate(Closure mappingClosure) {
+    Mapping evaluate(Closure mappingClosure, ApplicationContext applicationContext = null) {
         if (mapping == null) {
             mapping = new Mapping()
         }
         mappingClosure.resolveStrategy = Closure.DELEGATE_ONLY
         mappingClosure.delegate = this
         try {
-            mappingClosure.call()
+            mappingClosure.call(applicationContext)
         } finally {
             mappingClosure.delegate = null
         }
