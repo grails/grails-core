@@ -53,7 +53,7 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
 			MetaMethod method=tagBean.metaClass.getMetaMethod(name, args)
 			synchronized(this) {
 				metaClass."$name" = { Object[] varArgs ->
-					method.invoke(tagBean, varArgs ? varArgs[0] : varArgs)
+					method.invoke(tagBean, *varArgs )
 			   }
 			}
 			return method.invoke(tagBean, args)
