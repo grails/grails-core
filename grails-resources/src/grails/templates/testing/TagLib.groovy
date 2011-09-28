@@ -10,6 +10,6 @@ import org.junit.*
 class @artifact.name@ {
 
     void testSomething() {
-
+        fail "Implement me"
     }
 }
