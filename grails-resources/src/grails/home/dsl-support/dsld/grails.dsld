@@ -29,6 +29,23 @@ import org.codehaus.groovy.ast.expr.MapExpression;
  * @since 2.0
  */
 
+/*
+ * A note about using named parameters:
+ * 
+ * DSLD supports various kinds of parameters: regular, named and optional.
+ * regular and named parameters appear in content assist, and optional does not.
+ * named and optional parameters are inserted with the argument name prefixed.
+ * 
+ * Here is an example:
+ * method name:"meth", 
+ *        params: [first:String, second: "foo.MyObj", 
+ *        namedParams:[third:Integer, fourth:Long], 
+ *        optionalParams:[fifth:"foo.Optional", sixth:"foo.OtherOptional"]
+ * 
+ * note that the use of named and optional parameters deprecates the "useNamed" argument.
+ */
+
+
 def grailsArtifact = { String folder ->
 	sourceFolderOfCurrentType("grails-app/" + folder) &
 	nature("grails") & (~isScript())
