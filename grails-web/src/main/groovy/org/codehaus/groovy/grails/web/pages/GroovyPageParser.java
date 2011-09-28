@@ -1011,12 +1011,12 @@ public class GroovyPageParser implements Tokens {
         Map attrs = new LinkedHashMap();
 
         Matcher m=Pattern.compile("\\s").matcher(text);
-        
+
         if (m.find()) { // ignores carriage returns and new lines
             tagName = text.substring(0, m.start());
             if (state != EOF) {
-            	String attrTokens = text.substring(m.start(), text.length());
-            	populateMapWithAttributes(attrs, attrTokens);
+                String attrTokens = text.substring(m.start(), text.length());
+                populateMapWithAttributes(attrs, attrTokens);
             }
         } else {
             tagName = text;
@@ -1028,8 +1028,7 @@ public class GroovyPageParser implements Tokens {
                     ". Are you missing a closing brace '}'?", pageName,
                     getCurrentOutputLineNumber());
         }
-        
-        
+
         flushTagBuffering();
 
         TagMeta tm = new TagMeta();
@@ -1075,7 +1074,7 @@ public class GroovyPageParser implements Tokens {
 
             if (attrs.size() > 0) {
                 FastStringWriter buffer = new FastStringWriter();
-                buffer.print('[');
+                buffer.print("[");
                 for (Iterator<?> i = attrs.keySet().iterator(); i.hasNext();) {
                     String name = (String) i.next();
                     String cleanedName=name;
@@ -1090,7 +1089,7 @@ public class GroovyPageParser implements Tokens {
                         buffer.print(',');
                     }
                     else {
-                        buffer.print("] as GroovyPageAttributes");
+                        buffer.print("]");
                     }
                 }
                 attrsVarsMapDefinition.put(tagIndex, buffer.toString());
@@ -1109,7 +1108,7 @@ public class GroovyPageParser implements Tokens {
                 //out.print("def ");
                 bodyVarsDefined.add(tm.tagIndex);
             }
-            out.println("createTagBody(" + tm.tagIndex + ", {");
+            out.println("createTagBody(" + tm.tagIndex + ", {->");
             closureLevel++;
         }
     }
@@ -1126,49 +1125,98 @@ public class GroovyPageParser implements Tokens {
         }
         currentlyBufferingWhitespace = false;
     }
+    
+    private static final int PARSING_NORMAL=0;
+    private static final int PARSING_EXPRESSION=1;
+    private static final int PARSING_QUOTEDVALUE=2;
 
     private void populateMapWithAttributes(Map<String, String> attrs, String attrTokens) {
-    	attrTokens = attrTokens.trim();
-    	int startPos=0;
-    	while(startPos < attrTokens.length()) {
-    		// parse name (before '=' character)
-    		int equalsignPos = attrTokens.indexOf('=', startPos);
-    		if(equalsignPos == -1) {
-    			throw new GrailsTagException("Expecting '=' after attribute name", pageName, getCurrentOutputLineNumber());
-    		}
-    		String name = attrTokens.substring(startPos, equalsignPos).trim();
-    		
-    		// parse value
-    		startPos = equalsignPos + 1;
-    		char ch = attrTokens.charAt(startPos++);
-    		while(Character.isWhitespace(ch) && startPos < attrTokens.length()) {
-    			ch = attrTokens.charAt(startPos++);
-    		}
-    		if(!(ch=='\'' || ch=='"')) {
-    			throw new GrailsTagException("Attribute value must be quoted.", pageName, getCurrentOutputLineNumber());
-    		}
-    		char quoteChar = ch;
-    		
-    		int endQuotepos = attrTokens.indexOf(quoteChar, startPos);
-    		if(endQuotepos==-1) {
-    			throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
-    		}
-    		
-    		String val=attrTokens.substring(startPos, endQuotepos);
+        attrTokens = attrTokens.trim();
+        int startPos=0;
+        while(startPos < attrTokens.length()) {
+            // parse name (before '=' character)
+            int equalsignPos = attrTokens.indexOf('=', startPos);
+            if (equalsignPos == -1) {
+                throw new GrailsTagException("Expecting '=' after attribute name", pageName, getCurrentOutputLineNumber());
+            }
+            String name = attrTokens.substring(startPos, equalsignPos).trim();
 
-    		if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
-    		    val = val.substring(2, val.length() - 1);
-    		}
-    		else if (!(val.startsWith("[") && val.endsWith("]"))) {
-    			if(val.indexOf('"')==-1) {
-    				quoteChar = '"';
-    			}
-    		    val = quoteChar + val + quoteChar;
-    		}
-    		attrs.put("\"" + name + "\"", val);
-    		startPos = endQuotepos + 1;
-    	}
-    	
+            // parse value
+            startPos = equalsignPos + 1;
+            char ch = attrTokens.charAt(startPos++);
+            while(Character.isWhitespace(ch) && startPos < attrTokens.length()) {
+                ch = attrTokens.charAt(startPos++);
+            }
+            if (!(ch=='\'' || ch=='"')) {
+                throw new GrailsTagException("Attribute value must be quoted.", pageName, getCurrentOutputLineNumber());
+            }
+            char quoteChar = ch;
+            
+            int parenthesisLevel=0;
+            int endPos = startPos;
+            int endQuotepos = -1;
+            char previousChar = 0;
+            int valueCharIndex=0;
+            int parsingState = PARSING_NORMAL;
+            char currentQuoteChar = 0;            
+            while(endPos < attrTokens.length() && endQuotepos==-1) {
+                ch = attrTokens.charAt(endPos++);
+                switch(ch) {
+	                case '{':
+	                	if(previousChar=='$' || parsingState==PARSING_EXPRESSION) {
+	                		parenthesisLevel++;
+	                		parsingState=PARSING_EXPRESSION;
+	                	}
+	                	break;
+	                case '[':
+	                	if(valueCharIndex==0 || parsingState==PARSING_EXPRESSION) {
+	                		parenthesisLevel++;
+	                		parsingState=PARSING_EXPRESSION;
+	                	}
+	                	break;
+	                case '}':
+	                case ']': 
+	                	if(parsingState==PARSING_EXPRESSION) {
+	                		parenthesisLevel--;
+	                		if(parenthesisLevel==0) {
+	                			parsingState=PARSING_NORMAL;
+	                		}
+	                	}
+	                	break;
+	                default:
+	                	if(previousChar != '\\') {
+		                	if(parsingState==PARSING_NORMAL && ch==quoteChar && parenthesisLevel == 0) {
+		                		endQuotepos = endPos-1;
+		                	} else if(parsingState==PARSING_EXPRESSION && (ch=='"' || ch=='\'')) {
+	                			currentQuoteChar = ch;
+	                			parsingState = PARSING_QUOTEDVALUE;
+	                		} else if(parsingState==PARSING_QUOTEDVALUE && ch==currentQuoteChar) {
+	                			parsingState = PARSING_EXPRESSION;
+	                		}
+	                	}
+	                	break;
+                }
+                previousChar=ch;
+                valueCharIndex++;
+            }
+            if (endQuotepos==-1) {
+                throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
+            }
+
+            String val=attrTokens.substring(startPos, endQuotepos);
+
+            if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
+                val = val.substring(2, val.length() - 1);
+            }
+            else if (!(val.startsWith("[") && val.endsWith("]"))) {
+                if (val.indexOf('"')==-1) {
+                    quoteChar = '"';
+                }
+                val = quoteChar + val + quoteChar;
+            }
+            attrs.put("\"" + name + "\"", val);
+            startPos = endQuotepos + 1;
+        }
     }
 
     private void pageImport(String value) {
@@ -1284,7 +1332,7 @@ public class GroovyPageParser implements Tokens {
         return defaultCodecDirectiveValue;
     }
 
-	public String getPageName() {
-		return pageName;
-	}
+    public String getPageName() {
+        return pageName;
+    }
 }

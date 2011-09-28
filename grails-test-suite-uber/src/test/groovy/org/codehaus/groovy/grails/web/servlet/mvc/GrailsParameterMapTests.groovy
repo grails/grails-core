@@ -1,12 +1,46 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import org.springframework.mock.web.MockHttpServletRequest
+import grails.util.GrailsWebUtil
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.WebApplicationContext
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.springframework.context.support.StaticMessageSource
 
 class GrailsParameterMapTests extends GroovyTestCase {
 
     GrailsParameterMap theMap
     MockHttpServletRequest mockRequest = new MockHttpServletRequest()
 
+    void testDateMessageSourceFormat() {
+
+        try {
+            MockApplicationContext ctx = new MockApplicationContext()
+            final messageSource = new StaticMessageSource()
+            ctx.registerMockBean("messageSource", messageSource)
+            final webRequest = grails.util.GrailsWebUtil.bindMockWebRequest(ctx)
+            messageSource.addMessage("date.myDate.format", webRequest.locale, "yyMMdd")
+            def request = webRequest.currentRequest
+            def params = new GrailsParameterMap(request)
+            params['myDate'] = '710716'
+            def val = params.date('myDate')
+            def cal = new GregorianCalendar(1971,6,16)
+            assert val == cal.time
+        } finally {
+            RequestContextHolder.setRequestAttributes(null)
+        }
+    }
+    void testDateMethodMultipleFormats() {
+        def request = new MockHttpServletRequest()
+        def params = new GrailsParameterMap(request)
+        params['myDate'] = '710716'
+
+        def val = params.date('myDate', ['yyyy-MM-dd', 'yyyyMMdd', 'yyMMdd'])
+
+        def cal = new GregorianCalendar(1971,6,16)
+
+        assert val == cal.time
+    }
     void testDateMethod() {
         def request = new MockHttpServletRequest()
         def params = new GrailsParameterMap(request)

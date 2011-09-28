@@ -162,19 +162,20 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             return;
         }
+        final String defaultViewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + defaultActionName;
 
         uri2methodMap.put(uri, defaultActionName);
         uri2methodMap.put(controllerPath, defaultActionName);
-        uri2viewMap.put(controllerPath, controllerPath + defaultActionName);
-        uri2viewMap.put(uri, controllerPath + defaultActionName);
-        viewNames.put(defaultActionName, controllerPath + defaultActionName);
+        uri2viewMap.put(controllerPath, defaultViewPath);
+        uri2viewMap.put(uri, defaultViewPath);
+        viewNames.put(defaultActionName, defaultViewPath);
     }
 
     private void configureMappingForMethodAction(String closureName) {
         String tmpUri = controllerPath + urlConverter.toUrlElement(closureName);
         uri2methodMap.put(tmpUri, closureName);
         uri2methodMap.put(tmpUri + SLASH + "**", closureName);
-        
+
         String viewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + closureName;
         uri2viewMap.put(tmpUri, viewPath);
         viewNames.put(closureName, viewPath);
@@ -298,19 +299,19 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private Closure getInterceptor(GroovyObject controller, Object ip) {
         Closure interceptor=null;
-    	if (ip instanceof Map) {
+        if (ip instanceof Map) {
             Map ipMap = (Map) ip;
             if (ipMap.containsKey(ACTION)) {
-            	interceptor=(Closure) ipMap.get(ACTION);
+                interceptor=(Closure) ipMap.get(ACTION);
             }
         } else if (ip instanceof Closure) {
-        	interceptor=(Closure) ip;
+            interceptor=(Closure) ip;
         }
-    	if(interceptor != null && interceptor.getDelegate() != controller) {
-    		interceptor = (Closure)interceptor.clone();
-    		interceptor.setDelegate(controller);
-    		interceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
-    	}
+        if(interceptor != null && interceptor.getDelegate() != controller) {
+            interceptor = (Closure)interceptor.clone();
+            interceptor.setDelegate(controller);
+            interceptor.setResolveStrategy(Closure.DELEGATE_FIRST);
+        }
         return interceptor;
     }
 

@@ -74,8 +74,8 @@ public class TagLibraryApi extends CommonWebApi {
      * @param instance The tag library
      * @return  The page scope instance
      */
-    public GroovyPageBinding getPageScope(@SuppressWarnings("unused") Object instance) {
-    	GrailsWebRequest webRequest = getWebRequest(instance);
+    public GroovyPageBinding getPageScope(Object instance) {
+        GrailsWebRequest webRequest = getWebRequest(instance);
         GroovyPageBinding binding = (GroovyPageBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
         if (binding == null) {
             binding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));

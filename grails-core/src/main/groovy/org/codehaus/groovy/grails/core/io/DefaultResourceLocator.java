@@ -56,6 +56,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     protected Map<String, Resource> uriToResourceCache = new ConcurrentHashMap<String, Resource>();
     protected ResourceLoader defaultResourceLoader =  new FileSystemResourceLoader();
     protected GrailsPluginManager pluginManager;
+    protected boolean warDeployed = Environment.isWarDeployed();
 
     public void setSearchLocation(String searchLocation) {
         ResourceLoader resourceLoader = getDefaultResourceLoader();
@@ -101,7 +102,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
         if (resource == null) {
 
             PluginResourceInfo info = inferPluginNameFromURI(uri);
-            if (Environment.isWarDeployed()) {
+            if (warDeployed) {
                 Resource defaultResource = defaultResourceLoader.getResource(uri);
                 if (defaultResource != null && defaultResource.exists()) {
                     resource = defaultResource;
@@ -115,7 +116,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                     if (res.exists()) {
                         resource = res;
                     }
-                    else if (!Environment.isWarDeployed()) {
+                    else if (!warDeployed) {
                         Resource dir = resolveExceptionSafe(resourceSearchDirectory);
                         if (dir.exists() && info != null) {
                             try {
@@ -147,7 +148,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
             if (resource != null) {
                 uriToResourceCache.put(uri, resource);
             }
-            else if (Environment.isWarDeployed()) {
+            else if (warDeployed) {
                 uriToResourceCache.put(uri, NULL_RESOURCE);
             }
         }

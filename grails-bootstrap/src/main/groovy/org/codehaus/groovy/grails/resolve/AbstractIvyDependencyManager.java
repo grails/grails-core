@@ -24,6 +24,7 @@ import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.matcher.PatternMatcher;
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
@@ -45,6 +46,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public abstract class AbstractIvyDependencyManager {
 
+    public static final String SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT";
+        
     /*
      * Out of the box Ivy configurations are:
      *
@@ -137,11 +140,55 @@ public abstract class AbstractIvyDependencyManager {
     final protected IvySettings ivySettings;
     final protected BuildSettings buildSettings;
     final protected Metadata metadata;
+    private boolean offline;
+    
+    private ChainResolver chainResolver;
+    
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
         this.buildSettings = buildSettings;
         this.metadata = metadata;
+        
+        chainResolver = new ChainResolver();
+        
+        // Use the name cache because the root chain resolver is the one that is shown to have resolved the dependency
+        // when it is resolved in the cache, which makes Ivy debug output easier to understand by making it clear what
+        // came from the cache
+        chainResolver.setName("cache");
+        
+        chainResolver.setReturnFirst(true);
+        updateChangingPattern(chainResolver);
+    }
+
+    public void setOffline(boolean offline) {
+        this.offline = offline;
+        updateChangingPattern(chainResolver);
+    }
+
+    private void updateChangingPattern(ChainResolver chainResolver) {
+        chainResolver.setChangingPattern(isOffline() ? null : IvyDependencyManager.SNAPSHOT_CHANGING_PATTERN);
+    }
+    
+    public ChainResolver getChainResolver() {
+        return chainResolver;
+    }
+
+    public BuildSettings getBuildSettings() {
+        return buildSettings;
+    }
+
+    public Metadata getMetadata() {
+        return metadata;
+    }
+
+    public void setChainResolver(ChainResolver chainResolver) {
+        this.chainResolver = chainResolver;
+        updateChangingPattern(chainResolver);
+    }
+
+    public boolean isOffline() {
+        return offline;
     }
 
     public void setIncludeSource(boolean includeSource) {
@@ -497,6 +544,8 @@ public abstract class AbstractIvyDependencyManager {
             context = DependencyConfigurationContext.forPlugin(dependencyManager, pluginName);
         }
 
+        context.setOffline(this.offline);
+
         definition.setDelegate(new DependencyConfigurationConfigurer(context));
         definition.setResolveStrategy(Closure.DELEGATE_FIRST);
         definition.call();
@@ -506,6 +555,10 @@ public abstract class AbstractIvyDependencyManager {
      * Aspects of registering a dependency common to both plugins and jar dependencies.
      */
     private void registerDependencyCommon(String scope, EnhancedDefaultDependencyDescriptor descriptor, boolean isPluginDep) {
+        if (offline && descriptor.isChanging()) {
+            descriptor.setChanging(false);
+        }
+
         registerUsedConfigurationIfNecessary(scope);
 
         if (descriptor.getModuleConfigurations().length == 0) {

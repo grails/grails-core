@@ -1,31 +1,40 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
-import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.module.sitemesh.Page;
-import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 import grails.util.GrailsWebUtil;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
+
+import java.util.Collections;
+import java.util.Map;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+
 import junit.framework.TestCase;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.ServletContext;
-import java.util.Collections;
-import java.util.Map;
+import com.opensymphony.module.sitemesh.Config;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.module.sitemesh.Page;
+import com.opensymphony.module.sitemesh.parser.HTMLPageParser;
 
 public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
@@ -39,8 +48,20 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         GrailsConventionGroovyPageLocator pageLocator = new GrailsConventionGroovyPageLocator();
         pageLocator.setApplicationContext(appCtx);
 
+        
+        GroovyPagesTemplateEngine gpte = new GroovyPagesTemplateEngine(appCtx.getServletContext());
+        gpte.setApplicationContext(appCtx);
+        gpte.afterPropertiesSet();
+        
+        GrailsViewResolver grailsViewResolver=new GrailsViewResolver();
+        grailsViewResolver.setGrailsApplication(grailsApplication);
+        grailsViewResolver.setApplicationContext(appCtx);
+        grailsViewResolver.setGroovyPageLocator(pageLocator);
+        grailsViewResolver.setPluginManager(new MockGrailsPluginManager(grailsApplication));
+        grailsViewResolver.setTemplateEngine(gpte);
+        
         GroovyPageLayoutFinder layoutFinder = new GroovyPageLayoutFinder();
-        layoutFinder.setGroovyPageLocator(pageLocator);
+        layoutFinder.setViewResolver(grailsViewResolver);
         @SuppressWarnings("rawtypes")
         Map flat = config != null ?  config.flatten() : Collections.emptyMap();
         layoutFinder.setDefaultDecoratorName(flat.get("grails.sitemesh.default.layout") != null ? flat.get("grails.sitemesh.default.layout").toString(): "application");
@@ -49,7 +70,12 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         appCtx.registerMockBean("groovyPageLayoutFinder", layoutFinder);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
-        return GrailsWebUtil.bindMockWebRequest(appCtx);
+        return GrailsWebUtil.bindMockWebRequest(appCtx, new MockHttpServletRequest(appCtx.getServletContext()) {
+        	@Override
+        	public RequestDispatcher getRequestDispatcher(String path) {
+        		return null;
+        	}
+        }, new MockHttpServletResponse());
     }
 
     /*
@@ -60,7 +86,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+        request.setMethod("GET");
+        request.setRequestURI("orders/list");
         ServletContext context = webRequest.getServletContext();
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
         Config c = new Config(new MockServletConfig(context));
@@ -80,7 +108,10 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/");
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+        request.setMethod("GET");
+        request.setRequestURI("/");
+
         ServletContext context = webRequest.getServletContext();
 
         GrailsLayoutDecoratorMapper m = new GrailsLayoutDecoratorMapper();
@@ -101,7 +132,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+        request.setMethod("GET");
+        request.setRequestURI("orders/list");
         ServletContext context = webRequest.getServletContext();
         GroovyClassLoader gcl = new GroovyClassLoader();
 
@@ -132,7 +165,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
             appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
             appCtx.registerMockResource("/grails-app/views/layouts/otherApplication.gsp", "<html><body><h1>Other Default Layout</h1><g:layoutBody /></body></html>");
 
-            MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+            MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+            request.setMethod("GET");
+            request.setRequestURI("orders/list");
             ServletContext context = webRequest.getServletContext();
             GroovyClassLoader gcl = new GroovyClassLoader();
 
@@ -161,7 +196,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+        request.setMethod("GET");
+        request.setRequestURI("orders/list");
         ServletContext context = webRequest.getServletContext();
         GroovyClassLoader gcl = new GroovyClassLoader();
 
@@ -190,7 +227,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test2/testAction.gsp", "<html><body><g:layoutBody /></body></html>");
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+        request.setMethod("GET");
+        request.setRequestURI("orders/list");
         ServletContext context = webRequest.getServletContext();
         GroovyClassLoader gcl = new GroovyClassLoader();
 
@@ -219,7 +258,9 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         appCtx.registerMockResource("/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
         appCtx.registerMockResource("/grails-app/views/layouts/mylayout.gsp", "<html><body><g:layoutBody /></body></html>");
 
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "orders/list");
+        MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();
+        request.setMethod("GET");
+        request.setRequestURI("orders/list");
         ServletContext context = webRequest.getServletContext();
         GroovyClassLoader gcl = new GroovyClassLoader();
 

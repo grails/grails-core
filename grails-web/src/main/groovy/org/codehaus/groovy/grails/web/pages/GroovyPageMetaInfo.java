@@ -80,6 +80,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     private String pluginPath;
     private GrailsPlugin pagePlugin;
+    private boolean developmentMode = Environment.isDevelopmentMode();
 
     public GroovyPageMetaInfo() {
         latestLastModifiedCheck=System.currentTimeMillis();
@@ -392,7 +393,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
      */
     public synchronized boolean shouldReload(PrivilegedAction<Resource> resourceCallable) {
         long now = System.currentTimeMillis();
-        if (Environment.isDevelopmentMode() || now - latestLastModifiedCheck > LASTMODIFIED_CHECK_INTERVAL) {
+        if (developmentMode || now - latestLastModifiedCheck > LASTMODIFIED_CHECK_INTERVAL) {
             latestLastModifiedCheck=now;
             Resource resource=resourceCallable.run();
             if (resource != null && resource.exists()) {

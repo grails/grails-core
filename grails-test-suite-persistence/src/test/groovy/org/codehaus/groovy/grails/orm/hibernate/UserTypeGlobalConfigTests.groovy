@@ -1,12 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 23/08/2011
- * Time: 15:50
- * To change this template use File | Settings | File Templates.
- */
 class UserTypeGlobalConfigTests extends AbstractGrailsHibernateTests {
     @Override protected void onSetUp() {
         gcl.parseClass('''
@@ -41,10 +34,8 @@ class UserTypeGlobalConfigAddress {
 '''
     }
 
-
     void testSubclassInheritsGlobalUserTypeMapping() {
         def Bar = ga.getDomainClass("UserTypeGlobalConfigBar").clazz
-
 
         def b = Bar.newInstance(active:true)
 
@@ -55,13 +46,11 @@ class UserTypeGlobalConfigAddress {
         def rs = session.connection().prepareStatement("select * from user_type_global_config_foo").executeQuery()
         rs.next()
         assertEquals "Y", rs.getString("active")
-
     }
 
     void testEmbeddedUsersGlobalUserTypeMapping() {
         def Person = ga.getDomainClass("UserTypeGlobalConfigPerson").clazz
         def Address= ga.getDomainClass("UserTypeGlobalConfigAddress").clazz
-
 
         def p = Person.newInstance(address:Address.newInstance(home:true))
 

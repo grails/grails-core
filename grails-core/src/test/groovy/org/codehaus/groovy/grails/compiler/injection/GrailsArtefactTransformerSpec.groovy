@@ -12,6 +12,29 @@ class GrailsArtefactTransformerSpec extends Specification {
         gcl.classInjectors = [transformer]as ClassInjector[]
     }
 
+    void 'Test instance property is available in all classes in the hierarcy'() {
+        given:
+            def parentClass = gcl.parseClass('''
+            class ParentClass {}
+''')
+            def firstChildClass = gcl.parseClass('''
+            class FirstChildClass extends ParentClass {}
+''')
+            def secondChildClass = gcl.parseClass('''
+            class SecondChildClass extends FirstChildClass {}
+''')
+
+        when:
+            def parentInstanceFields = parentClass.declaredFields.findAll { 'instanceTestInstanceApi' == it.name && it.declaringClass == parentClass}
+            def firstChildInstanceFields = firstChildClass.declaredFields.findAll { 'instanceTestInstanceApi' == it.name && it.declaringClass == firstChildClass}
+            def secondChildInstanceFields = secondChildClass.declaredFields.findAll { 'instanceTestInstanceApi' == it.name && it.declaringClass == secondChildClass}
+
+        then:
+            1 == parentInstanceFields?.size()
+            1 == firstChildInstanceFields?.size()
+            1 == secondChildInstanceFields?.size()
+    }
+
     void 'Test properties defined in InstanceApi'() {
         given:
             def testClass = gcl.parseClass('''
@@ -92,6 +115,10 @@ class TestTransformer extends AbstractGrailsArtefactTransformer {
 
     boolean shouldInject(URL arg0) {
         true
+    }
+    
+    protected boolean requiresAutowiring() {
+        false
 	}
 }
 

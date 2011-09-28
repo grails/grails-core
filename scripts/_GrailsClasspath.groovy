@@ -34,6 +34,9 @@ includeTargets << grailsScript("_GrailsSettings")
 classpathSet = false
 includePluginJarsOnClasspath = true
 projectCompiler = new GrailsProjectCompiler(pluginSettings, classLoader)
+def compileConfigLevels = grailsSettings.config.grails.project
+projectCompiler.javaOptions.source = compileConfigLevels.source.level ?: 1.6
+projectCompiler.javaOptions.target = compileConfigLevels.target.level ?: 1.6
 projectCompiler.ant = ant
 
 target(name:'classpath', description: "Sets the Grails classpath", prehook:null, posthook:null) {

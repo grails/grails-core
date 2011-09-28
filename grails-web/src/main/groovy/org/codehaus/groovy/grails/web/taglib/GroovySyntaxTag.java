@@ -46,9 +46,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     protected PrintWriter out;
     protected Map<String, String> attributes = new HashMap<String, String>();
     protected GroovyPageParser parser;
-    
 
-    protected String foreachRenamedIt = null;
+    protected String foreachRenamedIt;
 
     @SuppressWarnings("rawtypes")
     public void init(Map context) {
@@ -101,7 +100,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
 
         expr = expr.trim();
         if ((expr.startsWith("\"") && expr.endsWith("\"")) ||
-        		(expr.startsWith("\'") && expr.endsWith("\'"))) {
+                (expr.startsWith("\'") && expr.endsWith("\'"))) {
             expr = expr.substring(1,expr.length()-1);
             expr = expr.trim();
         }
@@ -147,8 +146,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.print(" )"); // dot de-reference
         out.print(" {"); // start closure
         out.println();
-        if (!hasVar){
-        	out.println("changeItVariable(" + foreachRenamedIt +")" );
+        if (!hasVar) {
+            out.println("changeItVariable(" + foreachRenamedIt +")" );
         }
     }
 

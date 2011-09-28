@@ -115,15 +115,34 @@ public class GrailsConsole {
 
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
-        out = new PrintStream(AnsiConsole.wrapOutputStream(System.out));
+        out = new PrintStream(ansiWrap(System.out));
 
         System.setOut(new GrailsConsolePrintStream(out));
-        System.setErr(new GrailsConsoleErrorPrintStream(new PrintStream(AnsiConsole.wrapOutputStream(System.err))));
+        System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
 
-        reader = new ConsoleReader();
+        reader = createConsoleReader();
         reader.setBellEnabled(false);
         reader.setCompletionHandler(new CandidateListCompletionHandler());
 
+        terminal = createTerminal();
+
+        // bit of a WTF this, but see no other way to allow a customization indicator
+        maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
+
+        out.println();
+    }
+
+    protected ConsoleReader createConsoleReader() throws IOException {
+        return new ConsoleReader();
+    }
+
+    /**
+     * Creates the instance of Terminal used directly in GrailsConsole. Note that there is also
+     * another terminal instance created implicitly inside of ConsoleReader. That instance
+     * is controlled by the jline.terminal system property.
+     */
+    protected Terminal createTerminal() {
+        @SuppressWarnings("hiding") Terminal terminal;
         if (isWindows()) {
             terminal = new WindowsTerminal() {
                 @Override
@@ -142,15 +161,21 @@ public class GrailsConsole {
         else {
             terminal = Terminal.setupTerminal();
         }
+        return terminal;
+    }
 
-        // bit of a WTF this, but see no other way to allow a customization indicator
-        maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
-
-        out.println();
+    /**
+     * Hook method that allows controlling whether or not output streams should be wrapped by
+     * AnsiConsole.wrapOutputStream. Unfortunately, Eclipse consoles will look to the AnsiWrap
+     * like they do not understand ansi, even if we were to implement support in Eclipse to'
+     * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
+     */
+    protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
+        return AnsiConsole.wrapOutputStream(out);
     }
 
     // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
-    private void fixCtrlC() throws IOException {
+    private void fixCtrlC() {
         try {
             Field f = ConsoleReader.class.getDeclaredField("keybindings");
             f.setAccessible(true);
@@ -171,7 +196,7 @@ public class GrailsConsole {
     public static synchronized GrailsConsole getInstance() {
         if (instance == null) {
             try {
-                instance = new GrailsConsole();
+                instance = createInstance();
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
@@ -181,6 +206,20 @@ public class GrailsConsole {
             System.setOut(new GrailsConsolePrintStream(instance.out));
         }
         return instance;
+    }
+
+    public static GrailsConsole createInstance() throws IOException {
+        String className = System.getProperty("grails.console.class");
+        if (className!=null) {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends GrailsConsole> klass = (Class<? extends GrailsConsole>) Class.forName(className);
+                return klass.newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return new GrailsConsole();
     }
 
     public void setAnsiEnabled(boolean ansiEnabled) {
@@ -193,6 +232,7 @@ public class GrailsConsole {
     public void setVerbose(boolean verbose) {
         if (verbose) {
             // enable big traces in verbose mode
+            // note - can't use StackTraceFilterer#SYS_PROP_DISPLAY_FULL_STACKTRACE as it is in grails-core
             System.setProperty("grails.full.stacktrace", "true");
         }
         this.verbose = verbose;
@@ -461,7 +501,7 @@ public class GrailsConsole {
         if ((error instanceof BuildException) && error.getCause() != null) {
             error = error.getCause();
         }
-        if (!isVerbose()) {
+        if (!isVerbose() && !Boolean.getBoolean("grails.full.stacktrace")) {
             StackTraceUtils.deepSanitize(error);
         }
         StringWriter sw = new StringWriter();
@@ -553,14 +593,13 @@ public class GrailsConsole {
      * @return The user input prompt
      */
     private String showPrompt(String prompt) {
-            cursorMove = 0;
-            if(!userInputActive) {
-                return readLine(prompt);
-            }
-            else {
-                out.print(prompt);
-                return null;
-            }
+        cursorMove = 0;
+        if (!userInputActive) {
+            return readLine(prompt);
+        }
+
+        out.print(prompt);
+        return null;
     }
 
     private String readLine(String prompt) {

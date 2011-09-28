@@ -113,7 +113,7 @@ public class GrailsWebUtil {
      * @return The GrailsWebRequest instance
      */
     public static GrailsWebRequest bindMockWebRequest(WebApplicationContext ctx) {
-        return bindMockWebRequest(ctx, new MockHttpServletRequest(), new MockHttpServletResponse());
+        return bindMockWebRequest(ctx, new MockHttpServletRequest(ctx.getServletContext()), new MockHttpServletResponse());
     }
 
     /**
@@ -151,9 +151,10 @@ public class GrailsWebUtil {
      * @return The GrailsWebRequest instance
      */
     public static GrailsWebRequest bindMockWebRequest() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
+    	ServletContext servletContext = new MockServletContext();
+        MockHttpServletRequest request = new MockHttpServletRequest(servletContext);
         GrailsWebRequest webRequest = new GrailsWebRequest(request,
-                new MockHttpServletResponse(), new MockServletContext());
+                new MockHttpServletResponse(), servletContext);
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         RequestContextHolder.setRequestAttributes(webRequest);
         return webRequest;
@@ -180,11 +181,10 @@ public class GrailsWebUtil {
     }
 
     public static String getContentType(String name, String encoding) {
-    	if(CHARSET_IN_CONTENT_TYPE_REGEXP.matcher(name).find()) {
-    		return name;
-    	} else {
-    		if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
-    		return name + CHARSET_ATTRIBUTE + encoding;
-    	}
+        if (CHARSET_IN_CONTENT_TYPE_REGEXP.matcher(name).find()) {
+            return name;
+        }
+        if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
+        return name + CHARSET_ATTRIBUTE + encoding;
     }
 }

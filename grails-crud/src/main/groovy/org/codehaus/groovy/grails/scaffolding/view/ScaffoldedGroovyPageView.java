@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.scaffolding.view;
 
 import groovy.lang.Writable;
-import groovy.text.Template;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -79,11 +78,7 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
             LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
         }
 
-        Template t = templateEngine.createTemplate(contents, getUrl());
-        if(t instanceof GroovyPageTemplate) {
-        	((GroovyPageTemplate)t).setAllowSettingContentType(true);
-        }        
-        Writable w = t.make(model);
+        Writable w = template.make(model);
         Writer out = null;
         try {
             out = createResponseWriter(response);
@@ -97,5 +92,13 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
                 out.close();
             }
         }
+    }
+    
+    protected void initTemplate() throws IOException {
+        template = templateEngine.createTemplate(contents, getUrl());
+        if (template instanceof GroovyPageTemplate) {
+            ((GroovyPageTemplate)template).setAllowSettingContentType(true);
+        }
+    	
     }
 }

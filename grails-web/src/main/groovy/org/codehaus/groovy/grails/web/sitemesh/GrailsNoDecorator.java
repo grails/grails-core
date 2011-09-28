@@ -18,12 +18,14 @@ package org.codehaus.groovy.grails.web.sitemesh;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 import com.opensymphony.sitemesh.webapp.decorator.BaseWebAppDecorator;
@@ -39,7 +41,7 @@ import com.opensymphony.sitemesh.webapp.decorator.BaseWebAppDecorator;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class GrailsNoDecorator extends BaseWebAppDecorator {
+public class GrailsNoDecorator extends BaseWebAppDecorator implements Decorator{
 
     @Override
     protected void render(Content content, HttpServletRequest request, HttpServletResponse response,
@@ -60,4 +62,29 @@ public class GrailsNoDecorator extends BaseWebAppDecorator {
             writer.flush();
         }
     }
+
+	public String getPage() {
+		return null;
+	}
+
+	public String getName() {
+		return null;
+	}
+
+	public String getURIPath() {
+		return null;
+	}
+
+	public String getRole() {
+		return null;
+	}
+
+	public String getInitParameter(String paramName) {
+		return null;
+	}
+
+	@SuppressWarnings("rawtypes")
+	public Iterator getInitParameterNames() {
+		return null;
+	}
 }

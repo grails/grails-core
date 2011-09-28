@@ -16,7 +16,19 @@
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import grails.validation.ValidationException;
-import groovy.lang.*;
+import groovy.lang.Closure;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaMethod;
+import groovy.lang.MetaProperty;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,9 +38,11 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractDynamicPersistentMethod;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod;
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.ValidatePersistentMethod;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.EntityMode;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -38,13 +52,6 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.Errors;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  * <p>Invokes closure events on domain entities such as beforeInsert, beforeUpdate and beforeDelete.
  *
@@ -53,11 +60,17 @@ import java.util.Map;
  * @author Lari Hotari
  * @since 1.3.5
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
-public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadEventListener, PostLoadEventListener,
-        PostInsertEventListener, PostUpdateEventListener, PostDeleteEventListener, PreDeleteEventListener,
-        PreUpdateEventListener {
-    private static final long serialVersionUID = 1L;
+@SuppressWarnings({"rawtypes", "unchecked", "serial"})
+public class ClosureEventListener implements SaveOrUpdateEventListener,
+                                             PreLoadEventListener,
+                                             PostLoadEventListener,
+                                             PostInsertEventListener,
+                                             PostUpdateEventListener,
+                                             PostDeleteEventListener,
+                                             PreDeleteEventListener,
+                                             PreUpdateEventListener {
+
+    private static final long serialVersionUID = 1;
     private static final Log log = LogFactory.getLog(ClosureEventListener.class);
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[] {};
 
@@ -70,6 +83,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
     EventTriggerCaller postDeleteEventListener;
     EventTriggerCaller preDeleteEventListener;
     EventTriggerCaller preUpdateEventListener;
+    private BeforeValidateHelper beforeValidateHelper = new BeforeValidateHelper();
     boolean shouldTimestamp = false;
     MetaProperty dateCreatedProperty;
     MetaProperty lastUpdatedProperty;
@@ -161,86 +175,92 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
     }
 
     public void onPreLoad(final PreLoadEvent event) {
-        if (preLoadEventCaller != null) {
-            doWithManualSession(event, new Closure(this) {
-                 @Override
-                 public Object call() {
-                    preLoadEventCaller.call(event.getEntity());
-                     return null;
-                 }
-             });
-
-
+        if (preLoadEventCaller == null) {
+            return;
         }
+
+        doWithManualSession(event, new Closure(this) {
+            @Override
+            public Object call() {
+                preLoadEventCaller.call(event.getEntity());
+                return null;
+            }
+        });
     }
 
     public void onPostLoad(final PostLoadEvent event) {
-        if (postLoadEventListener != null) {
-           doWithManualSession(event, new Closure(this) {
-                @Override
-                public Object call() {
-                    postLoadEventListener.call(event.getEntity());
-                    return null;
-                }
-            });
-
+        if (postLoadEventListener == null) {
+            return;
         }
+
+       doWithManualSession(event, new Closure(this) {
+            @Override
+            public Object call() {
+                postLoadEventListener.call(event.getEntity());
+                return null;
+            }
+        });
     }
 
     public void onPostInsert(PostInsertEvent event) {
         final Object entity = event.getEntity();
         AbstractSavePersistentMethod.clearDisabledValidations(entity);
-        if (postInsertEventListener != null) {
-            doWithManualSession(event, new Closure(this) {
-                @Override
-                public Object call() {
-                    postInsertEventListener.call(entity);
-                    return null;
-                }
-            });
-
+        if (postInsertEventListener == null) {
+            return;
         }
+
+        doWithManualSession(event, new Closure(this) {
+            @Override
+            public Object call() {
+                postInsertEventListener.call(entity);
+                return null;
+            }
+        });
     }
 
     public void onPostUpdate(PostUpdateEvent event) {
         final Object entity = event.getEntity();
         AbstractSavePersistentMethod.clearDisabledValidations(entity);
-        if (postUpdateEventListener != null) {
-            doWithManualSession(event, new Closure(this) {
-                @Override
-                public Object call() {
-                    postUpdateEventListener.call(entity);
-                    return null;
-                }
-            });
-
+        if (postUpdateEventListener == null) {
+            return;
         }
+
+        doWithManualSession(event, new Closure(this) {
+            @Override
+            public Object call() {
+                postUpdateEventListener.call(entity);
+                return null;
+            }
+        });
     }
 
     public void onPostDelete(PostDeleteEvent event) {
         final Object entity = event.getEntity();
         AbstractSavePersistentMethod.clearDisabledValidations(entity);
-        if (postDeleteEventListener != null) {
-            doWithManualSession(event, new Closure(this) {
-                @Override
-                public Object call() {
-                    postDeleteEventListener.call(entity);
-                    return null;
-                }
-            });
+        if (postDeleteEventListener == null) {
+            return;
         }
+
+        doWithManualSession(event, new Closure(this) {
+            @Override
+            public Object call() {
+                postDeleteEventListener.call(entity);
+                return null;
+            }
+        });
     }
 
     public boolean onPreDelete(final PreDeleteEvent event) {
-        if (preDeleteEventListener != null) {
-            return doWithManualSession(event, new Closure<Boolean>(this) {
-                @Override
-                public Boolean call() {
-                    return preDeleteEventListener.call(event.getEntity());
-                }
-            });
+        if (preDeleteEventListener == null) {
+            return false;
         }
-        return false;
+
+        return doWithManualSession(event, new Closure<Boolean>(this) {
+            @Override
+            public Boolean call() {
+                return preDeleteEventListener.call(event.getEntity());
+            }
+        });
     }
 
     public boolean onPreUpdate(final PreUpdateEvent event) {
@@ -268,12 +288,10 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
                         throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
                                 + "]", errors);
                     }
-
                 }
                 return evict;
             }
         });
-
     }
 
     private <T> T doWithManualSession(AbstractEvent event, Closure<T> callable) {
@@ -325,12 +343,15 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
                         throw new ValidationException("Validation error whilst flushing entity [" + entity.getClass().getName()
                                 + "]", errors);
                     }
-
                 }
                 return evict;
             }
         });
+    }
 
+    public void onValidate(ValidationEvent event) {
+        beforeValidateHelper.invokeBeforeValidate(
+                event.getEntityObject(), event.getValidatedFields());
     }
 
     private static abstract class EventTriggerCaller {
@@ -382,8 +403,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener, PreLoadE
             }
             callable.setResolveStrategy(Closure.DELEGATE_FIRST);
             callable.setDelegate(entity);
-            Object retval = callable.call();
-            return retval;
+            return callable.call();
         }
     }
 

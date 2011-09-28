@@ -202,6 +202,10 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue b.hasErrors()
         assertOutputEquals("success", '''<g:hasErrors bean="${book}" field="releaseDate">success</g:hasErrors>''', [book:b])
         assertOutputEquals("success", '''<g:hasErrors model="[book:book]" field="releaseDate">success</g:hasErrors>''', [book:b])
+        assertOutputEquals("success", '''${hasErrors(bean: book, field:"releaseDate") { "success" }''', [book:b])
+        assertOutputEquals("success", '''${hasErrors(model: [book: book], field:"releaseDate") { "success" }''', [book:b])
+        assertOutputEquals("success", '''${g.hasErrors(bean: book, field:"releaseDate") { "success" }''', [book:b])
+        assertOutputEquals("success", '''${g.hasErrors(model: [book: book], field:"releaseDate") { "success" }''', [book:b])
         assertOutputEquals("", '''<g:hasErrors bean="${book}" field="title">success</g:hasErrors>''', [book:b])
         assertOutputEquals("", '''<g:hasErrors model="[book:book]" field="title">success</g:hasErrors>''', [book:b])
 

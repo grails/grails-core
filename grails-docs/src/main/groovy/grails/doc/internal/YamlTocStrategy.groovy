@@ -78,7 +78,7 @@ class YamlTocStrategy {
             return filePath
         }
         else if (pathElements) {
-            // Now check whether its in any sub-directories named after the
+            // Now check whether it's in any sub-directories named after the
             // ancestor nodes. First we look in a directory with the same
             // name as the root (named) node, then in a sub-directory of
             // that folder named after the next parent, and so on. So if
@@ -90,7 +90,7 @@ class YamlTocStrategy {
             //    intro/whatsNew/changelog/$basename.gdoc
             //
             for (i in 1..pathElements.size()) {
-                filePath = "${pathElements[-1..-i].join(File.separator)}${File.separator}${basename}.gdoc"
+                filePath = "${pathElements[-1..-i].join('/')}/${basename}.gdoc"
                 if (resourceChecker.exists(filePath)) {
                     return filePath
                 }

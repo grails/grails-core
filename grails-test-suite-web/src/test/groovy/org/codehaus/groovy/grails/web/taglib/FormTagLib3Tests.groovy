@@ -262,7 +262,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             final Element inputElement = document.getDocumentElement()
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
         }
-        
+
         sw = new StringWriter()
         pw = new PrintWriter(sw)
 

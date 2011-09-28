@@ -60,11 +60,13 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     void grailsPlugins() {
-        if (isResolverNotAlreadyDefined('grailsPlugins')) {
-            dependencyManager.repositoryData << [type: 'grailsPlugins', name:"grailsPlugins"]
-            if (dependencyManager.buildSettings != null) {
-                def pluginResolver = new GrailsPluginsDirectoryResolver(dependencyManager.buildSettings, dependencyManager.ivySettings)
-                addToChainResolver(pluginResolver)
+        if(!context.offline) {
+            if (isResolverNotAlreadyDefined('grailsPlugins')) {
+                dependencyManager.repositoryData << [type: 'grailsPlugins', name:"grailsPlugins"]
+                if (dependencyManager.buildSettings != null) {
+                    def pluginResolver = new GrailsPluginsDirectoryResolver(dependencyManager.buildSettings, dependencyManager.ivySettings)
+                    addToChainResolver(pluginResolver)
+                }
             }
         }
     }
@@ -99,7 +101,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     void mavenRepo(String url) {
-        if (isResolverNotAlreadyDefined(url)) {
+        if (!context.offline && isResolverNotAlreadyDefined(url) ) {
             dependencyManager.repositoryData << ['type':'mavenRepo', root:url, name:url, m2compatbile:true]
             def resolver = new SnapshotAwareM2Resolver(name: url, root: url, m2compatible: true, settings: dependencyManager.ivySettings, changingPattern: ".*SNAPSHOT")
             addToChainResolver(resolver)
@@ -108,7 +110,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     void mavenRepo(Map args) {
         if (args && args.name) {
-            if (isResolverNotAlreadyDefined(args.name)) {
+            if (!context.offline && isResolverNotAlreadyDefined(args.name)) {
                 dependencyManager.repositoryData << (['type':'mavenRepo'] + args)
                 args.settings = dependencyManager.ivySettings
                 def resolver = new SnapshotAwareM2Resolver(args)
@@ -128,7 +130,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     void ebr() {
-        if (isResolverNotAlreadyDefined('ebr')) {
+        if (!context.offline && isResolverNotAlreadyDefined('ebr')) {
             dependencyManager.repositoryData << ['type':'ebr']
             IBiblioResolver ebrReleaseResolver = new SnapshotAwareM2Resolver(name:"ebrRelease",
                                                                      root:"http://repository.springsource.com/maven/bundles/release",
@@ -153,7 +155,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
      * against non-Maven repositories
      */
     void grailsRepo(String url, String name=null) {
-        if (isResolverNotAlreadyDefined(name ?: url)) {
+        if (!context.offline && isResolverNotAlreadyDefined(name ?: url)) {
             dependencyManager.repositoryData << ['type':'grailsRepo', url:url]
             def urlResolver = new GrailsRepoResolver(name ?: url, new URL(url))
             urlResolver.addArtifactPattern("${url}/grails-[module]/tags/RELEASE_*/grails-[module]-[revision].[ext]")
@@ -167,7 +169,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     void grailsCentral() {
-        if (isResolverNotAlreadyDefined('grailsCentral')) {
+        if (!context.offline && isResolverNotAlreadyDefined('grailsCentral')) {
             grailsRepo("http://svn.codehaus.org/grails-plugins", "grailsCentral")
             mavenRepo("http://repo.grails.org/grails/plugins")
             mavenRepo("http://repo.grails.org/grails/core")
@@ -176,7 +178,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     void mavenCentral() {
-        if (isResolverNotAlreadyDefined('mavenCentral')) {
+        if (!context.offline && isResolverNotAlreadyDefined('mavenCentral')) {
             dependencyManager.repositoryData << ['type':'mavenCentral']
             IBiblioResolver mavenResolver = new SnapshotAwareM2Resolver(name:"mavenCentral")
             mavenResolver.m2compatible = true
@@ -224,7 +226,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     private createLocalPluginResolver(String name, String location) {
         def pluginResolver = new FileSystemResolver(name: name)
-        pluginResolver.addArtifactPattern("${location}/plugins/grails-[artifact]-[revision].[ext]")
+        pluginResolver.addArtifactPattern("${location}/plugins/[artifact]-[revision].[ext]")
         pluginResolver.settings = dependencyManager.ivySettings
         pluginResolver.latestStrategy = new LatestTimeStrategy()
         pluginResolver.changingPattern = ".*SNAPSHOT"

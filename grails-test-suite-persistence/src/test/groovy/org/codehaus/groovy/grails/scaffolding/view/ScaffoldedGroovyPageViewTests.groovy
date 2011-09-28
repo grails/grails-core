@@ -22,6 +22,7 @@ class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
         def view = new ScaffoldedGroovyPageView(url, "<%='success'+foo%>")
         view.applicationContext = ctx
         view.templateEngine = gpte
+		view.afterPropertiesSet()
 
         def model = [foo:"bar"]
         view.render(model, webRequest.currentRequest, webRequest.currentResponse)

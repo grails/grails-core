@@ -51,22 +51,18 @@ target(packagePlugin: "Implementation target") {
         }
     }
 
-
     if (!pluginFile) ant.fail("Plugin file not found for plugin project")
-    
-    def pluginBaseDir = pluginFile.parentFile.absolutePath    
-    def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)    
-    pluginInfo = pluginSettings.getPluginInfo(pluginBaseDir)    
+
+    def pluginBaseDir = pluginFile.parentFile.absolutePath
+    def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
+    pluginInfo = pluginSettings.getPluginInfo(pluginBaseDir)
     def packager = new PluginPackager(pluginInfo, resourceList, new File(projectWorkDir))
     packager.ant = ant
     packager.resourcesDir = new File(resourcesDirPath)
     packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
-    
-    
+
     def descriptor = pluginSettings.getBasePluginDescriptor()
     plugin = packager.generatePluginXml(descriptor.file)
-
-
 
     if (plugin?.hasProperty('pluginExcludes')) {
         pluginInfo.pluginExcludes = plugin.pluginExcludes

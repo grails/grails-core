@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2004-2005 the original author or authors.
  *
@@ -33,6 +34,7 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.grails.compiler.injection.NamedArtefactTypeAstTransformation
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 
 /**
  * Handles the configuration of dynamic scaffolding in Grails.
@@ -110,7 +112,7 @@ class ScaffoldingGrailsPlugin {
         scaffoldedDomains[controllerClass.logicalPropertyName] = domainClass
         String controllerSource = generateControllerSource(generator, domainClass)
         def scaffoldedInstance = createScaffoldedInstance(parentLoader, controllerSource)
-        appCtx.autowireCapableBeanFactory.autowireBean(scaffoldedInstance)
+        appCtx.autowireCapableBeanFactory.autowireBeanProperties(scaffoldedInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         List actionProperties = getScaffoldedActions(scaffoldedInstance)
 
         def javaClass = controllerClass.clazz

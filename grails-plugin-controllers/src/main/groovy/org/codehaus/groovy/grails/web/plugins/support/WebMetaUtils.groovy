@@ -261,7 +261,7 @@ class WebMetaUtils {
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, RCH.currentRequestAttributes())
         }
         mc."$name" = {Map attrs, CharSequence body ->
-            delegate."$name"(attrs, new GroovyPage.ConstantClosure(body))
+			GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new GroovyPage.ConstantClosure(body), RCH.currentRequestAttributes())
         }
         mc."$name" = {Map attrs ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, RCH.currentRequestAttributes())
@@ -297,8 +297,8 @@ class WebMetaUtils {
             } else if (clazz == char[]) {
                 delegate.toCharArray()
             } else if (clazz == Boolean || clazz == boolean) {
-				delegate.asBoolean()	
-			} else {
+                delegate.asBoolean()
+            } else {
                 delegate.toString().asType(clazz)
             }
         }

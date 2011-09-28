@@ -32,22 +32,20 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
 import com.opensymphony.module.sitemesh.Config;
-import com.opensymphony.module.sitemesh.Factory;
-import com.opensymphony.module.sitemesh.HTMLPage;
+import com.opensymphony.module.sitemesh.DecoratorMapper;
 import com.opensymphony.module.sitemesh.RequestConstants;
 import com.opensymphony.sitemesh.Content;
 import com.opensymphony.sitemesh.ContentProcessor;
 import com.opensymphony.sitemesh.Decorator;
-import com.opensymphony.sitemesh.DecoratorSelector;
-import com.opensymphony.sitemesh.SiteMeshContext;
-import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
-import com.opensymphony.sitemesh.compatability.DecoratorMapper2DecoratorSelector;
+import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
+import com.opensymphony.sitemesh.compatability.PageParser2ContentProcessor;
 import com.opensymphony.sitemesh.webapp.ContainerTweaks;
 import com.opensymphony.sitemesh.webapp.SiteMeshFilter;
 import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
@@ -59,8 +57,8 @@ import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
  * @author Graeme Rocher
  */
 public class GrailsPageFilter extends SiteMeshFilter {
-
     public static final String ALREADY_APPLIED_KEY = "com.opensymphony.sitemesh.APPLIED_ONCE";
+    public static final String FACTORY_SERVLET_CONTEXT_ATTRIBUTE = "sitemesh.factory";
     private static final String HTML_EXT = ".html";
     private static final String UTF_8_ENCODING = "UTF-8";
     private static final String CONFIG_OPTION_GSP_ENCODING = "grails.views.gsp.encoding";
@@ -71,7 +69,9 @@ public class GrailsPageFilter extends SiteMeshFilter {
     private WebApplicationContext applicationContext;
     private PersistenceContextInterceptor persistenceInterceptor = new NullPersistentContextInterceptor();
     private String defaultEncoding = UTF_8_ENCODING;
-    private GroovyPagesTemplateEngine templateEngine;
+    protected ViewResolver layoutViewResolver;
+    private ContentProcessor contentProcessor;
+    private DecoratorMapper decoratorMapper;
 
     @Override
     public void init(FilterConfig fc) {
@@ -81,12 +81,15 @@ public class GrailsPageFilter extends SiteMeshFilter {
         Config config = new Config(fc);
         //DefaultFactory defaultFactory = new DefaultFactory(config);
         Grails5535Factory defaultFactory = new Grails5535Factory(config);//TODO revert once Sitemesh bug is fixed
-        config.getServletContext().setAttribute("sitemesh.factory", defaultFactory);
+        fc.getServletContext().setAttribute(FACTORY_SERVLET_CONTEXT_ATTRIBUTE, defaultFactory);
         defaultFactory.refresh();
         FactoryHolder.setFactory(defaultFactory);
+        
+        contentProcessor = new PageParser2ContentProcessor(defaultFactory);
+        decoratorMapper = defaultFactory.getDecoratorMapper();
 
         applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(fc.getServletContext());
-        templateEngine = applicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID, GroovyPagesTemplateEngine.class);
+        layoutViewResolver = WebUtils.lookupViewResolver(applicationContext);
 
         final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(fc.getServletContext());
         String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
@@ -123,8 +126,6 @@ public class GrailsPageFilter extends SiteMeshFilter {
         ServletContext servletContext = filterConfig.getServletContext();
 
         SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, response, servletContext);
-        ContentProcessor contentProcessor = initContentProcessor(webAppContext);
-        DecoratorSelector decoratorSelector = initDecoratorSelector(webAppContext);
 
         if (filterAlreadyAppliedForRequest(request)) {
             // Prior to Servlet 2.4 spec, it was unspecified whether the filter should be called again upon an include().
@@ -153,10 +154,13 @@ public class GrailsPageFilter extends SiteMeshFilter {
             }
 
             detectContentTypeFromPage(content, response);
-            Decorator decorator = decoratorSelector.selectDecorator(content, webAppContext);
+            com.opensymphony.module.sitemesh.Decorator decorator = decoratorMapper.getDecorator(request, GSPSitemeshPage.content2htmlPage(content));
             persistenceInterceptor.reconnect();
-
-            decorator.render(content, webAppContext);
+            if(decorator instanceof Decorator) {
+            	((Decorator)decorator).render(content, webAppContext);
+            } else {
+            	new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
+            }
             dispatched = true;
         }
         catch (IllegalStateException e) {
@@ -177,51 +181,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         }
     }
 
-    private HTMLPage content2htmlPage(Content content) {
-        HTMLPage htmlPage = null;
-        if (content instanceof HTMLPage) {
-            htmlPage = (HTMLPage)content;
-        }
-        else {
-            htmlPage = new Content2HTMLPage(content);
-        }
-        return htmlPage;
-    }
-
-    @Override
-    protected DecoratorSelector initDecoratorSelector(SiteMeshWebAppContext webAppContext) {
-        // TODO: Remove heavy coupling on horrible SM2 Factory
-        final Factory factory = Factory.getInstance(new Config(filterConfig));
-        factory.refresh();
-        return new DecoratorMapper2DecoratorSelector(factory.getDecoratorMapper()) {
-            @Override
-            public Decorator selectDecorator(Content content, final SiteMeshContext context) {
-                SiteMeshWebAppContext siteMeshWebAppContext = (SiteMeshWebAppContext) context;
-                final com.opensymphony.module.sitemesh.Decorator decorator =
-                    factory.getDecoratorMapper().getDecorator(siteMeshWebAppContext.getRequest(), content2htmlPage(content));
-                if (decorator == null || decorator.getPage() == null) {
-                    return new GrailsNoDecorator();
-                }
-
-                return new Decorator() {
-                    private void render(@SuppressWarnings("hiding") Content content, HttpServletRequest request,
-                                        HttpServletResponse response, ServletContext servletContext) {
-
-                        GroovyPageLayoutRenderer layoutRenderer = new GroovyPageLayoutRenderer(decorator, templateEngine, applicationContext);
-                        layoutRenderer.render(content, request, response, servletContext);
-                    }
-
-                    public void render(@SuppressWarnings("hiding") Content content, SiteMeshContext siteMeshContext) {
-                        SiteMeshWebAppContext ctx = (SiteMeshWebAppContext) siteMeshContext;
-                        render(content, ctx.getRequest(), ctx.getResponse(), ctx.getServletContext());
-                    }
-                };
-            }
-        };
-    }
-
-
-    /**
+   /**
      * Continue in filter-chain, writing all content to buffer and parsing
      * into returned {@link com.opensymphony.module.sitemesh.Page} object. If
      * {@link com.opensymphony.module.sitemesh.Page} is not parseable, null is returned.

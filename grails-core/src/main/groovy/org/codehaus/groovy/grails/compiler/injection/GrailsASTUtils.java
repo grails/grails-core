@@ -15,18 +15,14 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -188,7 +184,7 @@ public class GrailsASTUtils {
         if(propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
             return null;
         }
-        
+
         BlockStatement methodBody = new BlockStatement();
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, thisAsFirstArgument);
 
@@ -416,7 +412,7 @@ public class GrailsASTUtils {
         return newParameterTypes;
     }
 
-    private static ClassNode nonGeneric(ClassNode type) {
+    public static ClassNode nonGeneric(ClassNode type) {
         if (type.isUsingGenerics()) {
             final ClassNode nonGen = ClassHelper.makeWithoutCaching(type.getName());
             nonGen.setRedirect(type);
@@ -431,7 +427,7 @@ public class GrailsASTUtils {
             return nonGen.makeArray();
         }
 
-        return type;
+        return type.getPlainNodeReference();
     }
 
     public static boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
@@ -501,6 +497,35 @@ public class GrailsASTUtils {
         if (classNode != null && classNode.getField(fieldName) == null) {
             classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
                     new ConstructorCallExpression(fieldType, new ArgumentListExpression()));
+        }
+    }
+
+    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
+        List<AnnotationNode> annotations = classNode.getAnnotations();
+        ClassNode annotationClassNode = new ClassNode(Entity.class);
+        AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
+        if(annotations.isEmpty()) {
+            classNode.addAnnotation(annotationToAdd);
+        }
+        else {
+            boolean foundAnn = findAnnotation(annotationClassNode, annotations) != null;
+            if(!foundAnn) classNode.addAnnotation(annotationToAdd);
+        }
+    }
+
+    public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations){
+         for (AnnotationNode annotation : annotations) {
+                if(annotation.getClassNode().equals(annotationClassNode)) {
+                    return annotation;
+                }
+            }
+        return null;
+    }
+
+    public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
+        MethodNode existing = controllerClassNode.getMethod(methodNode.getName(), methodNode.getParameters());
+        if(existing == null) {
+            controllerClassNode.addMethod(methodNode);
         }
     }
 }

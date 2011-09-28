@@ -70,7 +70,7 @@ class PageRendererSpec extends Specification {
             """
     }
 
-	void "Test render page with curly braces in parens"() {
+    void "Test render page with curly braces in parens"() {
         given:
             resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource('''
                 <g:each var="formatter" in="${formatters}">
@@ -79,18 +79,18 @@ class PageRendererSpec extends Specification {
         when:
             def contents = pageRenderer.render(template:"/foo/bar", model:[formatters:[[object: 'obj1', options: 'opt1'], [object: 'obj2', options: 'opt2']]])
         then:
-        
+
         println "C: $contents"
             contents != null
-			
+
             contents == '''
                 
                   <h2>obj1 (opt1)</h2>
                 
                   <h2>obj2 (opt2)</h2>
                 '''
-	}
-	
+    }
+
     void "Test render page with brackets in HTML"() {
         given:
             resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""

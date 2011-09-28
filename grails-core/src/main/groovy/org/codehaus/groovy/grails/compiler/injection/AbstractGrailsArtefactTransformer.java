@@ -109,7 +109,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             else {
                 final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
                 FieldNode fieldNode = classNode.getField(apiInstanceProperty);
-                if(fieldNode == null) {
+                if(fieldNode == null || (Modifier.isPrivate(fieldNode.getModifiers()) && !fieldNode.getDeclaringClass().equals(classNode))) {
                     fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);
                     classNode.addField(fieldNode);
                 }

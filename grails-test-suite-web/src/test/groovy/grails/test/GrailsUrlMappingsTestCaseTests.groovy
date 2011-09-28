@@ -39,7 +39,7 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
             new GroovyClassLoader(getClass().classLoader))
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
-        
+
         mockApplication.mainContext= mainContext
         mockApplication.initialise()
         mockApplication.config.disableMultipart = true

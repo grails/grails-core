@@ -2,13 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 31/05/2011
- * Time: 15:23
- * To change this template use File | Settings | File Templates.
- */
 class EmbeddedGlobalConstraintsTests extends AbstractGrailsHibernateTests {
     @Override protected void onSetUp() {
         gcl.parseClass('''
@@ -40,7 +33,6 @@ grails.gorm.default.constraints = {
 
         session.clear()
 
-
         p = PersonWithNullableAddress.get(p.id)
 
         assert p.address != null
@@ -51,23 +43,18 @@ grails.gorm.default.constraints = {
     @Override protected getDomainClasses() {
         return [PersonWithNullableAddress]
     }
-
-
 }
+
 @Entity
 class PersonWithNullableAddress {
 
-	String name
-	NullableAddress address
+    String name
+    NullableAddress address
 
-	static embedded = ["address"]
-
-    static constraints = {
-    }
+    static embedded = ["address"]
 }
 
-
 class NullableAddress {
-	String street
-	String postCode
+    String street
+    String postCode
 }

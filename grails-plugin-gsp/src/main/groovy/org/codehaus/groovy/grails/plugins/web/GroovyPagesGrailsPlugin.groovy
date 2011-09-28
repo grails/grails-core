@@ -170,11 +170,15 @@ class GroovyPagesGrailsPlugin {
             bean.lazyInit = true
             groovyPageLocator = groovyPageLocator
         }
+		
+		groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+			bean.autowire = true	
+		}
 
         groovyPageLayoutFinder(GroovyPageLayoutFinder) {
-            groovyPageLocator = groovyPageLocator
             gspReloadEnabled = enableReload
-            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: 'application'
+            defaultDecoratorName = application.flatConfig['grails.sitemesh.default.layout'] ?: null
+			viewResolver = ref('jspViewResolver')
         }
 
         // Setup the GroovyPagesUriService
@@ -400,7 +404,8 @@ class GroovyPagesGrailsPlugin {
             }
         }
 
-        event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(event.ctx)
+        def ctx = event.ctx ?: application.mainContext
+        event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(ctx)
 
         // clear uri cache after changes
         event.ctx.getBean("groovyPagesUriService").clear()

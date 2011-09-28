@@ -16,7 +16,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPagesMetaUtils
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 
 /**
@@ -27,7 +28,6 @@ import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
  * @since 1.0
  */
 class NamespacedTagDispatcher extends GroovyObjectSupport {
-
     String namespace
     GrailsApplication application
     Class type
@@ -38,14 +38,27 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
         this.application = application
         this.lookup = lookup
         this.type = callingType
+		// use per-instance metaclass
+		ExpandoMetaClass emc = new ExpandoMetaClass(this.getClass(), false, true)
+		emc.initialize()
+		this.metaClass = emc
+		if(ns == GroovyPage.DEFAULT_NAMESPACE) {
+			GroovyPagesMetaUtils.registerMethodMissingWorkaroundsForDefaultNamespace(emc, lookup)
+		}
     }
-
-    def invokeMethod(String name, args) {
-        def tagBean = lookup.lookupTagLibrary(namespace, name)
-        if (!tagBean) {
-            throw new MissingMethodException(name, type, args)
-        }
-
-        return tagBean.invokeMethod(name, args)
-    }
+	
+	def methodMissing(String name, args) {
+        GroovyObject tagBean = lookup.lookupTagLibrary(namespace, name)
+		if(tagBean && tagBean.respondsTo(name, args)) {
+			MetaMethod method=tagBean.metaClass.getMetaMethod(name, args)
+			synchronized(this) {
+				metaClass."$name" = { Object[] varArgs ->
+					method.invoke(tagBean, varArgs ? varArgs[0] : varArgs)
+			   }
+			}
+			return method.invoke(tagBean, args)
+		} else { 
+			throw new MissingMethodException(name, type, args)
+		}
+	}
 }

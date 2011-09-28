@@ -34,7 +34,6 @@ import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
-import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutRenderer;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -58,6 +57,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.ModelAndViewDefiningException;
+import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
@@ -65,6 +65,8 @@ import org.springframework.web.util.NestedServletException;
 
 import com.opensymphony.module.sitemesh.Decorator;
 import com.opensymphony.sitemesh.Content;
+import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
 
 /**
  * Handles incoming requests for Grails.
@@ -88,6 +90,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
+    protected ViewResolver layoutViewResolver;
 
     /**
      * Constructor.
@@ -130,6 +133,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected void initStrategies(ApplicationContext context) {
         super.initStrategies(context);
         initLocaleResolver(context);
+        layoutViewResolver = WebUtils.lookupViewResolver(context);
     }
 
     // copied from base class since it's private
@@ -189,7 +193,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
         String[] webRequestInterceptors = webContext.getBeanNamesForType(WebRequestInterceptor.class);
-        @SuppressWarnings("hiding")
         HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 
         // Merge the handler and web request interceptors into a single array. Note that we
@@ -232,7 +235,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     /* (non-Javadoc)
      * @see org.springframework.web.servlet.DispatcherServlet#doDispatch(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-    @Override
+	@Override
     protected void doDispatch(final HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, localeResolver);
@@ -282,7 +285,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
 
                 // Determine handler for the current request.
-                mappedHandler = getHandler(processedRequest, false);
+                mappedHandler = getHandler(processedRequest);
                 if (mappedHandler == null || mappedHandler.getHandler() == null) {
                     noHandlerFound(processedRequest, response);
                     return;
@@ -363,9 +366,13 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         Content content = bufferingResponse.getContent();
                         if (content != null) {
                             Decorator decorator = groovyPageLayoutFinder.findLayout(request, content);
-                            if (decorator != null) {
-                                GroovyPageLayoutRenderer renderer = new GroovyPageLayoutRenderer(decorator, requestAttributes.getAttributes().getPagesTemplateEngine(), getWebApplicationContext());
-                                renderer.render(content, request, targetResponse, getServletContext());
+                            SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, targetResponse, getServletContext());
+                            if(decorator != null) {
+	                            if(decorator instanceof com.opensymphony.sitemesh.Decorator) {
+	                            	((com.opensymphony.sitemesh.Decorator)decorator).render(content, webAppContext);
+	                            } else {
+	                            	new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
+	                            }
                             } else {
                                 content.writeOriginal(targetResponse.getWriter());
                             }
@@ -514,19 +521,18 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return request;
     }
 
-    @Override
-    public HandlerExecutionChain getHandler(HttpServletRequest request, boolean cache) throws Exception {
-        return super.getHandler(request, cache);
-    }
-
     private void createStackTraceFilterer() {
         try {
-            stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
-                    application.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+            stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
+                    application.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
         }
         catch (Throwable t) {
             logger.error("Problem instantiating StackTraceFilterer class, using default: " + t.getMessage());
             stackFilterer = new DefaultStackTraceFilterer();
         }
+    }
+    
+    public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+    	return super.getHandler(request);
     }
 }

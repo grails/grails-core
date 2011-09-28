@@ -7,7 +7,7 @@ import java.lang.ref.SoftReference;
  *
  * @author Lari Hotari
  */
-class SoftKey<T> extends SoftReference<T> {
+public class SoftKey<T> extends SoftReference<T> {
     final int hash;
 
     public SoftKey(T referent) {

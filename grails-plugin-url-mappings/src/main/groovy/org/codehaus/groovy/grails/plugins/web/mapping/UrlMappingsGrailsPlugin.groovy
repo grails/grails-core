@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins.web.mapping;
 
-
 import grails.util.GrailsUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
@@ -54,7 +53,7 @@ class UrlMappingsGrailsPlugin {
         if (configuredServerURL) {
             serverURL = configuredServerURL
         }
-        
+
         def urlConverterType = application.config?.grails?.web?.url?.converter
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
         grailsLinkGenerator(CachingLinkGenerator, serverURL)

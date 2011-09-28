@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -61,6 +62,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
@@ -130,16 +132,26 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private static final Map<Class, String> TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME = CollectionUtils.<Class, String>newMap(
-            Integer.class, "int",
-            Float.class, "float",
-            Long.class, "long",
-            Double.class, "double",
-            Short.class, "short",
-            Boolean.class, "boolean",
-            Byte.class, "byte",
-            Character.class, "char");
+    @SuppressWarnings({ "unchecked"})
+    private static final Map<ClassNode, String> TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME = CollectionUtils.<ClassNode, String>newMap(
+            ClassHelper.Integer_TYPE, "int",
+            ClassHelper.Float_TYPE, "float",
+            ClassHelper.Long_TYPE, "long",
+            ClassHelper.Double_TYPE, "double",
+            ClassHelper.Short_TYPE, "short",
+            ClassHelper.Boolean_TYPE, "boolean",
+            ClassHelper.Byte_TYPE, "byte",
+            ClassHelper.Character_TYPE, "char");
+    private static List<ClassNode> PRIMITIVE_CLASS_NODES = CollectionUtils.<ClassNode>newList(
+    		ClassHelper.boolean_TYPE,
+            ClassHelper.char_TYPE,
+            ClassHelper.int_TYPE,
+            ClassHelper.short_TYPE,
+            ClassHelper.long_TYPE,
+            ClassHelper.double_TYPE,
+            ClassHelper.float_TYPE,
+            ClassHelper.byte_TYPE);
+    public static final String VOID_TYPE = "void";
 
     private Boolean converterEnabled;
 
@@ -163,6 +175,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
+                if(method.getReturnType().getName().equals(VOID_TYPE)) continue;
                 MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
                 if (wrapperMethod != null) {
                     deferredNewMethods.add(wrapperMethod);
@@ -275,8 +288,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
 
         annotateActionMethod(parameters, methodNode);
-
-        controllerClassNode.addMethod(methodNode);
+        GrailsASTUtils.addMethodIfNotPresent(controllerClassNode, methodNode);
     }
 
     protected void annotateActionMethod(final Parameter[] parameters,
@@ -343,11 +355,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             requestParameterName = requestParameters.get(0).getMember("value").getText();
         }
 
-        if (paramTypeClassNode.isResolved() &&
-                (Character.class == paramTypeClassNode.getTypeClass() ||
-                        Boolean.class == paramTypeClassNode.getTypeClass() ||
-                        Number.class.isAssignableFrom(paramTypeClassNode.getTypeClass()) ||
-                        paramTypeClassNode.getTypeClass().isPrimitive())) {
+        if ((PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) ||
+        		 TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
             initializePrimitiveOrTypeWrapperParameter(wrapper, param, requestParameterName);
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param, requestParameterName);
@@ -462,10 +471,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         final ClassNode paramTypeClassNode = param.getType();
         final String methodParamName = param.getName();
         final Expression defaultValueExpression;
-        final Class<?> paramTypeClass = paramTypeClassNode.getTypeClass();
-        if (Boolean.TYPE == paramTypeClass) {
+        if (paramTypeClassNode.equals(ClassHelper.Boolean_TYPE)) {
             defaultValueExpression = new ConstantExpression(false);
-        } else if (paramTypeClass.isPrimitive()) {
+        } else if (PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode)) {
             defaultValueExpression = new ConstantExpression(0);
         } else {
             defaultValueExpression = new ConstantExpression(null);
@@ -475,10 +483,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         final Expression paramsTypeConversionMethodArguments = new ArgumentListExpression(
                 paramConstantExpression/*, defaultValueExpression*/, new ConstantExpression(null));
         final String conversionMethodName;
-        if (TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClass)) {
-            conversionMethodName = TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.get(paramTypeClass);
+        if (TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode)) {
+            conversionMethodName = TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.get(paramTypeClassNode);
         } else {
-            conversionMethodName = paramTypeClass.getName();
+            conversionMethodName = paramTypeClassNode.getName();
         }
         final Expression retrieveConvertedValueExpression = new MethodCallExpression(
                 PARAMS_EXPRESSION, conversionMethodName, paramsTypeConversionMethodArguments);

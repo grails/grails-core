@@ -269,7 +269,7 @@ target (war: "The implementation target") {
             entry(key:Environment.KEY, value:grailsEnv)
             entry(key:Metadata.WAR_DEPLOYED, value:"true")
             entry(key:BuildScope.KEY, value:"$buildScope")
-            entry(key:Metadata.SERVLET_VERSION, value:grailsSettings.servletVersion)            
+            entry(key:Metadata.SERVLET_VERSION, value:grailsSettings.servletVersion)
         }
 
         ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml",

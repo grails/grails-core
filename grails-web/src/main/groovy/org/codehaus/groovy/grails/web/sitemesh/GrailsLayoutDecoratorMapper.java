@@ -36,7 +36,6 @@ import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
  * @author Lari Hotari
  */
 public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper implements DecoratorMapper {
-
     private GroovyPageLayoutFinder groovyPageLayoutFinder;
     public static final String LAYOUT_ATTRIBUTE = GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE;
 
@@ -47,14 +46,18 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder.class);
     }
-
+    
     @Override
     public Decorator getDecorator(HttpServletRequest request, Page page) {
-        Decorator layout = groovyPageLayoutFinder.findLayout(request, page);
+    	Decorator layout = groovyPageLayoutFinder.findLayout(request, page);
         if (layout != null) {
             return layout;
         }
-        return parent != null ? super.getDecorator(request, page) : null;
+        layout = parent != null ? super.getDecorator(request, page) : null;
+        if (layout == null || layout.getPage() == null) {
+        	layout = new GrailsNoDecorator();
+	    }
+	 	return layout;
     }
 
     @Override
@@ -63,6 +66,10 @@ public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper impleme
         if (layout != null) {
             return layout;
         }
-        return parent != null ? super.getNamedDecorator(request, name) : null;
+        layout = parent != null ? super.getNamedDecorator(request, name) : null;
+        if (layout == null || layout.getPage() == null) {
+        	layout = new GrailsNoDecorator();
+	    }
+	 	return layout;
     }
 }

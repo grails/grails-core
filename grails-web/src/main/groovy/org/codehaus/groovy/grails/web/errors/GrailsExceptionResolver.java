@@ -268,8 +268,8 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     private void createStackFilterer() {
         try {
-            stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
-                    grailsApplication.getConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
+            stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
+                    grailsApplication.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
         }
         catch (Throwable t) {
             logger.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());

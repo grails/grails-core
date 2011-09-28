@@ -58,6 +58,7 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
         runTest {
             def webRequest = RequestContextHolder.currentRequestAttributes()
             GroovyPage script = gcl.loadClass("MyPage").newInstance()
+			GroovyPagesMetaUtils.registerMethodMissingForGSP(script.getClass(), appCtx.getBean('gspTagLibraryLookup'))
             script.setJspTagLibraryResolver(appCtx.getBean('jspTagLibraryResolver'))
             script.setGspTagLibraryLookup(appCtx.getBean('gspTagLibraryLookup'))
             def controller = ga.getControllerClass("TestController").newInstance()

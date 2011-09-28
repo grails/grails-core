@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.validation;
+package grails.validation
 
-import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BeanPropertyBindingResult
 
 /**
- * 
- * Models validation errors in a Grails application 
- * 
+ * Models validation errors in a Grails application.
+ *
  * @author Graeme Rocher
  * @since 2.0
  */
-public class ValidationErrors extends BeanPropertyBindingResult {
+class ValidationErrors extends BeanPropertyBindingResult {
 
-    public ValidationErrors(Object target) {
+    ValidationErrors(Object target) {
         super(target, target.getClass().name)
     }
 
-    public ValidationErrors(Object target, String objectName) {
+    ValidationErrors(Object target, String objectName) {
         super(target, objectName)
     }
 

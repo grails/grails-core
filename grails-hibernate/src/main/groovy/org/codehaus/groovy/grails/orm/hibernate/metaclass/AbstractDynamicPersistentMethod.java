@@ -21,6 +21,7 @@ import groovy.lang.MetaClass;
 
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.SessionFactory;
@@ -36,15 +37,18 @@ public abstract class AbstractDynamicPersistentMethod extends AbstractDynamicMet
 
     public static final String ERRORS_PROPERTY = "errors";
 
-    private ClassLoader classLoader = null;
+    private ClassLoader classLoader;
     private HibernateTemplate hibernateTemplate;
+    GrailsApplication application;
 
-    public AbstractDynamicPersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader) {
+    public AbstractDynamicPersistentMethod(Pattern pattern, SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
         super(pattern);
         Assert.notNull(sessionFactory, "Session factory is required!");
         this.classLoader = classLoader;
+        Assert.notNull(application, "Constructor argument 'application' cannot be null");
+        this.application = application;
         hibernateTemplate = new HibernateTemplate(sessionFactory);
-        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault());
+        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault(this.application));
     }
 
     protected HibernateTemplate getHibernateTemplate() {

@@ -1094,10 +1094,16 @@ public class GrailsClassUtils {
         return false;
     }
 
-    public static Object instantiateFromConfig(ConfigObject config, String configKey, String defaultClassName)
+    @SuppressWarnings("unchecked")
+	public static Object instantiateFromConfig(ConfigObject config, String configKey, String defaultClassName)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
+        return instantiateFromFlatConfig(config.flatten(), configKey, defaultClassName);
+    }
+    
+    public static Object instantiateFromFlatConfig(Map<String, Object> flatConfig, String configKey, String defaultClassName)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
         String className = defaultClassName;
-        Object configName = config.flatten().get(configKey);
+        Object configName = flatConfig.get(configKey);
         if (configName instanceof CharSequence) {
             className = configName.toString();
         }

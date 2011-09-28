@@ -14,11 +14,12 @@ dependencies {
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
+        transitive = false
         exclude group: 'org.grails', module:'grails-bootstrap'
         exclude group: 'org.grails', module:'grails-core'
         exclude group: 'org.grails', module:'grails-test'
         exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jul-to-slf4j'
         exclude group: 'org.slf4j', module:'slf4j-api'
         exclude group: 'org.slf4j', module:'slf4j-simple'
 
@@ -30,12 +31,12 @@ dependencies {
         exclude group: 'org.springframework', module:'spring-beans'
         exclude group: 'org.springframework', module:'spring-tx'
         exclude group: 'org.slf4j', module:'jcl-over-slf4j'
-        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jul-to-slf4j'
         exclude group: 'org.slf4j', module:'slf4j-api'
         exclude group: 'org.slf4j', module:'slf4j-simple'
         exclude group: 'org.grails', module:'grails-bootstrap'
         exclude group: 'org.grails', module:'grails-core'
-        exclude group: 'commons-collection', module:'commons-collection'
+        exclude group: 'commons-collections', module:'commons-collections'
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassit', module:'javassist'
         exclude group: 'java-persistence', module:'persistence-api'
@@ -54,7 +55,7 @@ dependencies {
     compile 'javax.transaction:jta:1.1'
 
     runtime 'org.hibernate:hibernate-commons-annotations:3.2.0.Final'
-    runtime 'net.sf.ehcache:ehcache-core:2.4.2'
+    runtime "net.sf.ehcache:ehcache-core:$ehcacheVersion"
     runtime 'org.hibernate:hibernate-validator:4.1.0.Final',
             "org.hibernate:hibernate-ehcache:$hibernateVersion",
             'antlr:antlr:2.7.6'

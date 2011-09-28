@@ -119,8 +119,8 @@ class PluginInstallEngine {
             it.changing || rootChangingPatternCompiled?.matcher(it.dependencyRevisionId.revision)?.matches()
         }
         if (changingPlugins) {
-            def noChangingPlugins = changingPlugins.size()
-            eventHandler "StatusUpdate", "Checking ${noChangingPlugins} changing plugin${noChangingPlugins > 1 ? 's' : ''} for updates"
+            def numChangingPlugins = changingPlugins.size()
+            eventHandler "StatusUpdate", "Checking ${numChangingPlugins} changing plugin${numChangingPlugins > 1 ? 's' : ''} for updates"
             installPlugins(changingPlugins)
             eventHandler "StatusUpdate", "Changing plugin checking complete"
         }
@@ -205,8 +205,8 @@ class PluginInstallEngine {
         dependencyManager.parseDependencies {
             log "warn"
             repositories {
-                def pluginResolver = new FileSystemResolver(name: name)
-                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/grails-[module]-[revision].[ext]")
+                def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
+                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/[module]-[revision].[ext]")
                 pluginResolver.settings = dependencyManager.ivySettings
                 pluginResolver.latestStrategy = new LatestTimeStrategy()
                 pluginResolver.changingPattern = ".*SNAPSHOT"

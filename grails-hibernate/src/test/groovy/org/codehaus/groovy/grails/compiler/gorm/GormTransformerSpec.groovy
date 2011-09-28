@@ -9,25 +9,81 @@ import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Errors
 
 import spock.lang.Specification
+import grails.persistence.Entity
+import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector
 
 class GormTransformerSpec extends Specification {
 
-    
-    void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
+    void "Test that generic information is added to hasMany collections"() {
         given:
               def gcl = new GrailsAwareClassLoader()
               def gormTransformer = new GormTransformer() {
                   @Override
+                  boolean shouldInject(URL url) { true }
+              }
+              def domainTransformer = new DefaultGrailsDomainClassInjector() {
+                  @Override
                   boolean shouldInject(URL url) {
-                      return true;
+                      true
                   }
 
+              }
+              gcl.classInjectors = [gormTransformer,domainTransformer] as ClassInjector[]
+
+          when:
+              def cls = gcl.parseClass('''
+@grails.persistence.Entity
+class TestEntity {
+    Long id
+
+    static hasMany = [associated:Associated]
+}
+
+@grails.persistence.Entity
+class Associated {
+    Long id
+}
+  ''')
+
+          then:
+             cls.getAnnotation(Entity) != null
+             cls.getDeclaredField("associated") != null
+             cls.getDeclaredField("associated").genericType != null
+             cls.getDeclaredField("associated").genericType.getActualTypeArguments()[0] == gcl.loadClass("Associated")
+    }
+
+    void "Test that only one annotation is added on already annotated entity"() {
+        given:
+              def gcl = new GrailsAwareClassLoader()
+              def gormTransformer = new GormTransformer() {
+                  @Override
+                  boolean shouldInject(URL url) { true }
               }
               gcl.classInjectors = [gormTransformer] as ClassInjector[]
 
           when:
               def cls = gcl.parseClass('''
-@grails.persistence.Entity              
+@grails.persistence.Entity
+class TestEntity {
+    Long id
+}
+  ''')
+
+          then:
+             cls.getAnnotation(Entity) != null
+    }
+    void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
+        given:
+              def gcl = new GrailsAwareClassLoader()
+              def gormTransformer = new GormTransformer() {
+                  @Override
+                  boolean shouldInject(URL url) { true }
+              }
+              gcl.classInjectors = [gormTransformer] as ClassInjector[]
+
+          when:
+              def cls = gcl.parseClass('''
+@grails.persistence.Entity
 class TestEntity {
     Long id
 }

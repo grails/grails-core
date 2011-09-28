@@ -314,7 +314,7 @@ class OneToOneTest2 {
         GrailsDomainClassProperty transientString2Property = middleDomainClass.getPropertyByName("transientString2");
         assertNotNull("transientString2 property not found in middleDomainClass", transientString2Property)
         assertFalse("transientString2 property should have been transient in middleDomainClass", transientString2Property.isPersistent())
-        
+
         transientStringProperty = middleDomainClass.getPropertyByName("transientString");
         assertNotNull("transientString property not found in middleDomainClass", transientStringProperty)
         assertFalse("transientString property should have been transient in middleDomainClass", transientStringProperty.isPersistent())
@@ -332,19 +332,18 @@ class OneToOneTest2 {
         GrailsDomainClassProperty bottomStringProperty = bottomDomainClass.getPropertyByName("bottomString")
         assertNotNull("bottomString property not found in bottomDomainClass", bottomStringProperty)
         assertTrue("bottomString property was not persistent in bottomDomainClass", bottomStringProperty.isPersistent())
-        
+
         GrailsDomainClassProperty transientString3Property = bottomDomainClass.getPropertyByName("transientString3");
         assertNotNull("transientString3 property not found in bottomDomainClass", transientString3Property)
         assertFalse("transientString3 property should have been transient in bottomDomainClass", transientString3Property.isPersistent())
-        
+
         transientString2Property = bottomDomainClass.getPropertyByName("transientString2")
         assertNotNull("transientString2 property not found in bottomDomainClass", transientString2Property)
         assertFalse("transientString2 property should have been transient in bottomDomainClass", transientString2Property.isPersistent())
-        
+
         transientStringProperty = bottomDomainClass.getPropertyByName("transientString")
         assertNotNull("transientString property not found in bottomDomainClass", transientStringProperty)
         assertFalse("transientString property should have been transient in bottomDomainClass", transientStringProperty.isPersistent())
-
     }
 
     void testDefaultGrailsDomainClass() throws Exception {

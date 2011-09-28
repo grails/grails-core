@@ -16,7 +16,7 @@ import java.util.concurrent.locks.*
  */
 abstract class AbstractCliTestCase extends GroovyTestCase {
     static final String EOL = System.getProperty("line.separator")
-    
+
     private final Lock lock = new ReentrantLock()
     private final Condition condition = lock.newCondition()
     private final Condition waiting = lock.newCondition()
@@ -157,7 +157,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
             lock.lock()
             streamsProcessed = true
             lock.unlock()
-            
+
             // Now kill the process since it appears to be stuck.
             process.destroy()
         }
@@ -210,7 +210,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
     protected void verifyHeader() {
         assert output.contains("|Loading Grails ${grailsVersion}")
     }
-    
+
     public boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows")
     }

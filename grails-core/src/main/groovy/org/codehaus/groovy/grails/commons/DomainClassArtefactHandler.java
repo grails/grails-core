@@ -29,20 +29,18 @@ import java.util.Map;
  * @author Graeme Rocher
  * @author Marc Palmer (marc@anyware.co.uk)
  */
-public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware{
+public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
 
     public static final String TYPE = "Domain";
 
-    private GrailsApplication grailsApplication;
     private Map<String, Object> defaultConstraints;
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
-        if(grailsApplication != null) {
-            this.defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
+        if (grailsApplication != null) {
+            defaultConstraints = ConstraintEvalUtils.getDefaultConstraints(grailsApplication.getConfig());
         }
     }
 
@@ -75,15 +73,15 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         // it's not a closure
         if (clazz == null) return false;
 
+        if (clazz.getAnnotation(Entity.class) != null) {
+            return true;
+        }
+
         if (Closure.class.isAssignableFrom(clazz)) {
             return false;
         }
 
         if (GrailsClassUtils.isJdk5Enum(clazz)) return false;
-
-        if (clazz.getAnnotation(Entity.class) != null) {
-            return true;
-        }
 
         Class testClass = clazz;
         while (testClass != null && !testClass.equals(GroovyObject.class) && !testClass.equals(Object.class)) {

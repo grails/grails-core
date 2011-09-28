@@ -14,9 +14,10 @@
  */
 package grails.doc.ant
 
+import org.apache.tools.ant.BuildException
+import org.apache.tools.ant.Project
 import org.apache.tools.ant.Task
 import grails.doc.DocPublisher
-import org.apache.tools.ant.BuildException
 
 /**
  * An ant task for using the DocEngine.
@@ -100,6 +101,33 @@ class DocPublisherTask extends Task {
 
     void execute() {
         publisher.ant = new AntBuilder(this)
+        publisher.output = new AntLogAdapter(publisher.ant.project, this)
         publisher.publish()
+    }
+}
+
+class AntLogAdapter {
+    private antProject
+    private task
+
+    AntLogAdapter(antProject, task) {
+        this.antProject = antProject
+        this.task = task
+    }
+
+    void error(String msg) {
+        antProject.log task, msg, Project.MSG_ERR
+    }
+
+    void warn(String msg) {
+        antProject.log task, msg, Project.MSG_WARN
+    }
+
+    void info(String msg) {
+        antProject.log task, msg, Project.MSG_INFO
+    }
+
+    void debug(String msg) {
+        antProject.log task, msg, Project.MSG_DEBUG
     }
 }

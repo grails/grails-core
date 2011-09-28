@@ -58,6 +58,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     protected Collection<ResourceLoader> resourceLoaders = new ConcurrentLinkedQueue<ResourceLoader>();
     protected GrailsPluginManager pluginManager;
     private Map<String, String> precompiledGspMap;
+    protected boolean warDeployed = Environment.isWarDeployed();
 
     public void setResourceLoader(ResourceLoader resourceLoader) {
         addResourceLoader(resourceLoader);
@@ -146,7 +147,8 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
             return null;
         }
 
-        uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
+        if(!uri.startsWith(PATH_TO_WEB_INF_VIEWS))
+            uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
         for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
             if (!(plugin instanceof BinaryGrailsPlugin)) {
                 continue;
@@ -185,7 +187,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     protected GroovyPageScriptSource findResourceScriptSource(final String uri) {
         List<String> searchPaths = null;
 
-        if (Environment.isWarDeployed()) {
+        if (warDeployed) {
             if (uri.startsWith(PLUGINS_PATH)) {
                 PluginViewPathInfo pathInfo = getPluginViewPathInfo(uri);
 
@@ -246,7 +248,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     }
 
     private boolean isPrecompiledAvailable() {
-        return precompiledGspMap != null && precompiledGspMap.size() > 0 && Environment.isWarDeployed();
+        return precompiledGspMap != null && precompiledGspMap.size() > 0 && warDeployed;
     }
 
     public void setServletContext(ServletContext servletContext) {

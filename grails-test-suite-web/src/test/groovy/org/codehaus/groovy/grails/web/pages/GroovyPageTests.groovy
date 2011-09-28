@@ -85,6 +85,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         GroovyPage gspScript = gcl.parseClass(pageCode).newInstance()
         gspScript.setJspTagLibraryResolver(appCtx.getBean("jspTagLibraryResolver"))
         gspScript.setGspTagLibraryLookup(appCtx.getBean("gspTagLibraryLookup"))
+		GroovyPagesMetaUtils.registerMethodMissingForGSP(gspScript.getClass(), appCtx.getBean("gspTagLibraryLookup"))
         return gspScript
     }
 

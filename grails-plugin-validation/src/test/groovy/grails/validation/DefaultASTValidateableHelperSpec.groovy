@@ -42,7 +42,7 @@ class DefaultASTValidateableHelperSpec extends Specification {
             String name
             String category
             Integer count
-            
+
             static constraints = {
                 name matches: /[A-Z].*/
                 category size: 3..50
@@ -50,6 +50,20 @@ class DefaultASTValidateableHelperSpec extends Specification {
             }
         }
         ''')
+    }
+    
+    void 'Test validate method returns has a declared return type of boolean, not Boolean'() {
+        when:
+            def validateListArgMethod = widgetClass.metaClass.methods.find {
+                'validate' == it.name && it.paramsCount == 1 && it.parameterTypes[0].theClass == List
+            }
+            def validateNoArgMethod = widgetClass.metaClass.methods.find {
+                'validate' == it.name && it.paramsCount == 0
+            }
+            
+        then:
+            Boolean.TYPE == validateListArgMethod.returnType
+            Boolean.TYPE == validateNoArgMethod.returnType
     }
 
     void 'Test validate method on uninitialized object'() {
@@ -203,7 +217,7 @@ class DefaultASTValidateableHelperSpec extends Specification {
         when:
             def isValid = widget.validate([])
             def errorCount = widget.errors.errorCount
-            
+
         then:
             isValid
             0 == errorCount
