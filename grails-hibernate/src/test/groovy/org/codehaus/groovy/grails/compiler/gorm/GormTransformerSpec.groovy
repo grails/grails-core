@@ -138,14 +138,14 @@ class TestEntity {
               cls.count()
 
           then:
-             thrown IllegalStateException
+             thrown MissingMethodException
 
           when:
             cls.metaClass.static.currentGormStaticApi = {-> null}
             cls.count()
 
           then:
-            thrown NullPointerException
+            thrown MissingMethodException
 
 
           when:
