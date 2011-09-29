@@ -100,6 +100,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
 
             if (c != null) {
                 c = (Closure<?>) c.clone();
+                c.setResolveStrategy(Closure.DELEGATE_ONLY);
                 c.setDelegate(delegate);
                 c.call();
             }

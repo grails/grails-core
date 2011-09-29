@@ -21,18 +21,14 @@ import grails.util.GrailsNameUtils;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import groovy.lang.MissingMethodException;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -44,6 +40,10 @@ public class GrailsASTUtils {
 
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
+    public static final Token EQUALS_OPERATOR = Token.newSymbol("==", 0, 0);
+    public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
+    public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
+    public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
 
     /**
      * Returns whether a classNode has the specified property or not
@@ -192,7 +192,11 @@ public class GrailsASTUtils {
 
         MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, methodName, arguments);
         methodCallExpression.setMethodTarget(declaredMethod);
-        methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+        ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, declaredMethod);
+        VariableExpression apiVar = addApiVariableDeclaration(delegate, declaredMethod, methodBody);
+        IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
+
+        methodBody.addStatement(ifStatement);
         MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
@@ -200,6 +204,32 @@ public class GrailsASTUtils {
 
         classNode.addMethod(methodNode);
         return methodNode;
+    }
+
+    private static IfStatement createIfElseStatementForApiMethodCall(MethodCallExpression methodCallExpression, VariableExpression apiVar, ThrowStatement missingMethodException) {
+        BlockStatement ifBlock = new BlockStatement();
+        ifBlock.addStatement(missingMethodException);
+        BlockStatement elseBlock = new BlockStatement();
+        elseBlock.addStatement(new ExpressionStatement(methodCallExpression));
+
+        return new IfStatement(new BooleanExpression(new BinaryExpression(apiVar, EQUALS_OPERATOR, NULL_EXPRESSION)),ifBlock,elseBlock);
+    }
+
+    private static VariableExpression addApiVariableDeclaration(Expression delegate, MethodNode declaredMethod, BlockStatement methodBody) {
+        VariableExpression apiVar = new VariableExpression("$api_"+declaredMethod.getName());
+        DeclarationExpression de = new DeclarationExpression(apiVar, ASSIGNMENT_OPERATOR, delegate);
+        methodBody.addStatement(new ExpressionStatement(de));
+        return apiVar;
+    }
+
+    private static ThrowStatement createMissingMethodThrowable(ClassNode classNode, MethodNode declaredMethodNode) {
+        ArgumentListExpression exceptionArgs = new ArgumentListExpression();
+        exceptionArgs.addExpression(new ConstantExpression(declaredMethodNode.getName()));
+        exceptionArgs.addExpression(new ClassExpression(classNode.getPlainNodeReference()));
+        for (Parameter parameter : declaredMethodNode.getParameters()) {
+            exceptionArgs.addExpression(new VariableExpression(parameter.getName()));
+        }
+        return new ThrowStatement(new ConstructorCallExpression(MISSING_METHOD_EXCEPTION, exceptionArgs));
     }
 
     /**
@@ -276,7 +306,12 @@ public class GrailsASTUtils {
         MethodCallExpression methodCallExpression = new MethodCallExpression(
                 expression, declaredMethodName, arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
-        methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+
+        ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
+        VariableExpression apiVar = addApiVariableDeclaration(expression, delegateMethod, methodBody);
+        IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
+
+        methodBody.addStatement(ifStatement);
         ClassNode returnType = nonGeneric(delegateMethod.getReturnType());
         if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
             declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;

@@ -15,6 +15,8 @@
 package org.codehaus.groovy.grails.validation;
 
 import grails.util.GrailsUtil;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
 import groovy.util.BuilderSupport;
 
@@ -43,6 +45,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
     private ClassPropertyFetcher classPropertyFetcher;
     private static final String SHARED_CONSTRAINT = "shared";
     private static final String IMPORT_FROM_CONSTRAINT = "importFrom";
+    private MetaClass targetMetaClass;
 
     public ConstrainedPropertyBuilder(Object target) {
         this(target.getClass());
@@ -51,10 +54,20 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
     public ConstrainedPropertyBuilder(Class<?> targetClass) {
         this.targetClass = targetClass;
         classPropertyFetcher = ClassPropertyFetcher.forClass(targetClass);
+        this.targetMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(targetClass);
     }
 
     public String getSharedConstraint(String propertyName) {
         return sharedConstraints.get(propertyName);
+    }
+
+    @Override
+    protected Object doInvokeMethod(String methodName, Object name, Object args) {
+        try {
+            return super.doInvokeMethod(methodName, name, args);
+        } catch (MissingMethodException e) {
+            return targetMetaClass.invokeMethod(targetClass, methodName, args);
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -69,7 +82,11 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
                 cp = constrainedProperties.get(property);
             }
             else {
-                cp = new ConstrainedProperty(targetClass, property, classPropertyFetcher.getPropertyType(property));
+                Class<?> propertyType = classPropertyFetcher.getPropertyType(property);
+                if(propertyType == null) {
+                    throw new MissingMethodException(property, targetClass, new Object[]{attributes}, true);
+                }
+                cp = new ConstrainedProperty(targetClass, property, propertyType);
                 cp.setOrder(order++);
                 constrainedProperties.put(property, cp);
             }
