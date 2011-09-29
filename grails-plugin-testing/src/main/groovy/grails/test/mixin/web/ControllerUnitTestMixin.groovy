@@ -261,7 +261,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             bindGrailsWebRequest()
         }
         final controllerArtefact = grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
-
+        controllerArtefact.initialize()
         if (!controllerClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
 

@@ -198,4 +198,9 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @param defaultActionName The default action name
      */
     void setDefaultActionName(String defaultActionName);
+
+    /**
+     * Initialize the controller class
+     */
+    void initialize();
 }

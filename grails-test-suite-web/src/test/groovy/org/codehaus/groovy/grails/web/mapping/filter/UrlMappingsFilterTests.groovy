@@ -145,6 +145,7 @@ mappings {
 
         def app = creategGrailsApplication()
         app.initialise()
+        app.getControllerClass('blogs.BlogController').initialize()
 
         appCtx.registerMockBean("grailsApplication", app)
 
@@ -176,7 +177,9 @@ mappings {
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
-
+        app.getControllerClass('NoIndexController').initialize()
+        app.getControllerClass('OtherController').initialize()
+        
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
         request.setRequestURI("/noIndex/myAction")
@@ -220,7 +223,8 @@ class IndexAndActionController {
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
-
+        app.getControllerClass('IndexAndActionController').initialize()
+        
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
         request.setRequestURI("/indexAndAction/")
@@ -311,7 +315,8 @@ class BlogController {
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
-
+        app.getControllerClass('blogs.BlogController').initialize()
+        
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
         request.setRequestURI("/fr/blog/")

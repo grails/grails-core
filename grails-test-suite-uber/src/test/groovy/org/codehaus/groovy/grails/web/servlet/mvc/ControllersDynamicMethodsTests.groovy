@@ -53,6 +53,7 @@ class ControllersDynamicMethodsTests extends AbstractGrailsMockTests {
             def appCtx = springConfig.getApplicationContext()
             mockManager.applicationContext = appCtx
             servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, ctx)
+            ga.mainContext = appCtx
             mockManager.doDynamicMethods()
 
             request = new MockHttpServletRequest()
