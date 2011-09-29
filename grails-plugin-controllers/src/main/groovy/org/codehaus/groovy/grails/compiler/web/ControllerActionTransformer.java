@@ -340,8 +340,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
         wrapper.addStatement(new ExpressionStatement(errorsAssignmentExpression));
 
-        for (Parameter param : actionParameters) {
-            initializeMethodParameter(classNode, wrapper, param);
+        if(actionParameters != null) {
+            for (Parameter param : actionParameters) {
+                initializeMethodParameter(classNode, wrapper, param);
+            }
         }
         return wrapper;
     }
