@@ -15,22 +15,25 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Script;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerAware;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
-import org.springframework.web.context.ServletContextAware;
-
-import javax.servlet.ServletContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Constructs the UrlMappingsHolder from the registered UrlMappings class within a GrailsApplication.
@@ -39,14 +42,13 @@ import java.util.Map;
  * @since 0.5
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, GrailsApplicationAware, ServletContextAware, PluginManagerAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, ApplicationContextAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
-    private UrlMappingEvaluator mappingEvaluator;
-    private ServletContext servletContext;
     private GrailsPluginManager pluginManager;
+    private ApplicationContext applicationContext;
 
     public UrlMappingsHolder getObject() throws Exception {
         return urlMappingsHolder;
@@ -68,9 +70,9 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
 
-        final DefaultUrlMappingEvaluator defaultUrlMappingEvaluator = new DefaultUrlMappingEvaluator(servletContext);
+        final DefaultUrlMappingEvaluator defaultUrlMappingEvaluator = new DefaultUrlMappingEvaluator((WebApplicationContext) applicationContext);
         defaultUrlMappingEvaluator.setPluginManager(pluginManager);
-        mappingEvaluator = defaultUrlMappingEvaluator;
+        UrlMappingEvaluator mappingEvaluator = defaultUrlMappingEvaluator;
 
         if (mappings.length == 0) {
             urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
@@ -126,13 +128,34 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         this.grailsApplication = grailsApplication;
     }
 
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
+    public void setServletContext(@SuppressWarnings("unused") ServletContext servletContext) {
+        // not used
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
 
-
+    /**
+     * Set the ApplicationContext that this object runs in.
+     * Normally this call will be used to initialize the object.
+     * <p>Invoked after population of normal bean properties but before an init callback such
+     * as {@link org.springframework.beans.factory.InitializingBean#afterPropertiesSet()}
+     * or a custom init-method. Invoked after {@link org.springframework.context.ResourceLoaderAware#setResourceLoader},
+     * {@link org.springframework.context.ApplicationEventPublisherAware#setApplicationEventPublisher} and
+     * {@link org.springframework.context.MessageSourceAware}, if applicable.
+     *
+     * @param applicationContext the ApplicationContext object to be used by this object
+     * @throws org.springframework.context.ApplicationContextException
+     *          in case of context initialization errors
+     * @throws org.springframework.beans.BeansException
+     *          if thrown by application context methods
+     * @see org.springframework.beans.factory.BeanInitializationException
+     */
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+        setGrailsApplication(applicationContext.getBean( GrailsApplication.APPLICATION_ID, GrailsApplication.class) );
+        setServletContext(applicationContext instanceof WebApplicationContext ? ((WebApplicationContext) applicationContext).getServletContext() : null);
+        setPluginManager( applicationContext.containsBean(GrailsPluginManager.BEAN_NAME) ? applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null);
+    }
 }

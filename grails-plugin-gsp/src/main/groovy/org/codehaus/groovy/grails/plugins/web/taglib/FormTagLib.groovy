@@ -238,10 +238,10 @@ class FormTagLib {
     void outputAttributes(attrs, writer) {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
-			writer << k
+            writer << k
             writer << '="'
-			writer << v.encodeAsHTML()
-			writer << '" '
+            writer << v.encodeAsHTML()
+            writer << '" '
         }
     }
 
@@ -288,8 +288,8 @@ class FormTagLib {
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
 
         writer << "<form action=\""
-		writer << createLink(linkAttrs)
-		writer << "\" "
+        writer << createLink(linkAttrs)
+        writer << "\" "
 
         // if URL is not nul remove attributes
         if (attrs.url == null) {

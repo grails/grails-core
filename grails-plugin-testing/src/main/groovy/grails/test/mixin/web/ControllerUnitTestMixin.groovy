@@ -194,15 +194,13 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
                 jspTagLibraryResolver = ref("jspTagLibraryResolver")
                 groovyPageLocator = ref("groovyPageLocator")
             }
-			
-			groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
-				bean.lazyInit = true
-				groovyPageLocator = ref("groovyPageLocator")
-				groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
-			}
-	
-        }
 
+            groovyPagesTemplateRenderer(GroovyPagesTemplateRenderer) { bean ->
+                bean.lazyInit = true
+                groovyPageLocator = ref("groovyPageLocator")
+                groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
+            }
+        }
 
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
@@ -216,7 +214,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     void bindGrailsWebRequest() {
         if (webRequest == null) {
             webRequest = GrailsWebRequest.lookup()
-            if(webRequest == null) {
+            if (webRequest == null) {
 
                 if (!applicationContext.isActive()) {
                     applicationContext.refresh()
@@ -258,7 +256,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      * @param controllerClass The controller class
      * @return An instance of the controller
      */
-    def <T> T  mockController(Class<T> controllerClass) {
+    def <T> T mockController(Class<T> controllerClass) {
         if (webRequest == null) {
             bindGrailsWebRequest()
         }

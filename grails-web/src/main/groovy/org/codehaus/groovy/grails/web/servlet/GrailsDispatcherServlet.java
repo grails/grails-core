@@ -193,7 +193,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
         String[] webRequestInterceptors = webContext.getBeanNamesForType(WebRequestInterceptor.class);
-        HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
+        @SuppressWarnings("hiding") HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 
         // Merge the handler and web request interceptors into a single array. Note that we
         // start with the web request interceptors to ensure that the OpenSessionInViewInterceptor
@@ -235,7 +235,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     /* (non-Javadoc)
      * @see org.springframework.web.servlet.DispatcherServlet#doDispatch(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
-	@Override
+    @Override
     protected void doDispatch(final HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, localeResolver);
@@ -367,12 +367,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                         if (content != null) {
                             Decorator decorator = groovyPageLayoutFinder.findLayout(request, content);
                             SiteMeshWebAppContext webAppContext = new SiteMeshWebAppContext(request, targetResponse, getServletContext());
-                            if(decorator != null) {
-	                            if(decorator instanceof com.opensymphony.sitemesh.Decorator) {
-	                            	((com.opensymphony.sitemesh.Decorator)decorator).render(content, webAppContext);
-	                            } else {
-	                            	new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
-	                            }
+                            if (decorator != null) {
+                                if (decorator instanceof com.opensymphony.sitemesh.Decorator) {
+                                    ((com.opensymphony.sitemesh.Decorator)decorator).render(content, webAppContext);
+                                } else {
+                                    new OldDecorator2NewDecorator(decorator).render(content, webAppContext);
+                                }
                             } else {
                                 content.writeOriginal(targetResponse.getWriter());
                             }
@@ -531,8 +531,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             stackFilterer = new DefaultStackTraceFilterer();
         }
     }
-    
+
+    @Override
     public HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
-    	return super.getHandler(request);
+        return super.getHandler(request);
     }
 }

@@ -16,11 +16,7 @@ package org.codehaus.groovy.grails.plugins.log4j.web.util;
 
 import grails.util.Environment;
 import grails.util.GrailsWebUtil;
-import groovy.lang.Closure;
 import groovy.util.ConfigObject;
-
-import java.util.Collection;
-import java.util.Map;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

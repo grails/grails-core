@@ -17,10 +17,10 @@ public class DynamicMethodsTests extends TestCase {
             }
         };
 
-        assertTrue(dc.isArgumentsMatch(new Object[]{"test", new Integer(1)}));
+        assertTrue(dc.isArgumentsMatch(new Object[]{"test", 1}));
         assertFalse(dc.isArgumentsMatch(new Object[]{"test"}));
         assertFalse(dc.isArgumentsMatch(new Object[]{"test", new Date()}));
-        assertFalse(dc.isArgumentsMatch(new Object[]{"test", new Integer(1), "test"}));
+        assertFalse(dc.isArgumentsMatch(new Object[]{"test", 1, "test"}));
     }
 
     public void testInvokeConstructor() {
@@ -32,7 +32,7 @@ public class DynamicMethodsTests extends TestCase {
             }
         });
         InvocationCallback callback = new InvocationCallback();
-        Object result = dm.invokeConstructor(new Object[]{"test", new Integer(1)},callback);
+        Object result = dm.invokeConstructor(new Object[]{"test", 1},callback);
 
         assertTrue(callback.isInvoked());
         assertNotNull(result);

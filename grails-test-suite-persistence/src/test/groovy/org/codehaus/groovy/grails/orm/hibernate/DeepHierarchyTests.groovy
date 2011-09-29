@@ -3,9 +3,9 @@ package org.codehaus.groovy.grails.orm.hibernate
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.test.*
 
-class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
+class DeepHierarchyTests extends AbstractGrailsHibernateTests {
 
-    void testCountInDeepHeirarchy() {
+    void testCountInDeepHierarchy() {
         def p = ga.getDomainClass("Personnel")
         def a = ga.getDomainClass("Approver")
         def h = ga.getDomainClass("Handler")
@@ -35,7 +35,7 @@ class DeepHeirarchyTests extends AbstractGrailsHibernateTests {
         assertEquals 1, h.clazz.count()
     }
 
-    void testPersistentValuesInDeepHeirarchy() {
+    void testPersistentValuesInDeepHierarchy() {
         def p = ga.getDomainClass("Personnel")
         def a = ga.getDomainClass("Approver")
         def h = ga.getDomainClass("Handler")

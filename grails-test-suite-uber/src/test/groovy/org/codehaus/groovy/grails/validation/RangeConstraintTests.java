@@ -16,16 +16,14 @@ public class RangeConstraintTests extends AbstractConstraintTests {
 
     public void testValidation() {
         testConstraintMessageCodes(
-                getConstraint("testInteger", new IntRange(1, 5)),
-                new Long(7),
+                getConstraint("testInteger", new IntRange(1, 5)), 7L,
                 new String[] {"testClass.testInteger.range.error","testClass.testInteger.range.toobig"},
-                new Object[] {"testInteger",TestClass.class,new Long(7),new Integer(1),new Integer(5)});
+                new Object[] {"testInteger",TestClass.class, 7L, 1, 5 });
 
         testConstraintMessageCodes(
-                getConstraint("testInteger", new IntRange(1, 5)),
-                new Integer(0),
+                getConstraint("testInteger", new IntRange(1, 5)), 0,
                 new String[] {"testClass.testInteger.range.error","testClass.testInteger.range.toosmall"},
-                new Object[] {"testInteger",TestClass.class,new Integer(0),new Integer(1),new Integer(5)});
+                new Object[] {"testInteger",TestClass.class, 0, 1, 5 });
 
         testConstraintPassed(
                 getConstraint("testString", new ObjectRange("abca","abcf")),

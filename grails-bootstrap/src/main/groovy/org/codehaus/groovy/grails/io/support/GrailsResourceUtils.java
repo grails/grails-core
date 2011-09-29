@@ -15,20 +15,17 @@
  */
 package org.codehaus.groovy.grails.io.support;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 /**
  * Utility methods for resource handling / figuring out class names.
@@ -379,25 +376,25 @@ public class GrailsResourceUtils {
      * @return a uri
      */
     public static String appendPiecesForUri(String... pieces) {
-    	if(pieces==null || pieces.length==0) return "";
-    	
-    	// join parts && strip double slashes
+        if (pieces==null || pieces.length==0) return "";
+
+        // join parts && strip double slashes
         StringBuilder builder = new StringBuilder(16 * pieces.length);
-        char previous=0;
+        char previous = 0;
         for(int i=0; i < pieces.length;i++) {
             String piece = pieces[i];
-            if(piece != null && piece.length() > 0) {
-            	for(int j=0, maxlen=piece.length();j < maxlen;j++) {
-            		char current=piece.charAt(j);
-                	if(!(previous=='/' && current=='/')) {
-                		builder.append(current);
-                    	previous = current;
-                	}
-            	}
-            	if (i + 1 < pieces.length && previous != '/') {
-            		builder.append('/');
-            		previous='/';
-            	}
+            if (piece != null && piece.length() > 0) {
+                for(int j=0, maxlen=piece.length();j < maxlen;j++) {
+                    char current=piece.charAt(j);
+                    if (!(previous=='/' && current=='/')) {
+                        builder.append(current);
+                        previous = current;
+                    }
+                }
+                if (i + 1 < pieces.length && previous != '/') {
+                    builder.append('/');
+                    previous='/';
+                }
             }
         }
         return builder.toString();

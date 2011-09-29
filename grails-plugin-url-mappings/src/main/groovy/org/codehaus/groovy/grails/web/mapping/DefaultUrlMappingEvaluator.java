@@ -49,6 +49,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -82,9 +83,20 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private static final String PARSE_REQUEST = "parseRequest";
     private static final String RESOURCE = "resource";
     private GrailsPluginManager pluginManager;
+    private WebApplicationContext applicationContext;
 
+    /**
+     * @deprecated Used DefaultUrLMappingsEvaluator(ApplicationContext) instead
+     * @param servletContext The servlet context
+     */
+    @Deprecated
     public DefaultUrlMappingEvaluator(ServletContext servletContext) {
         this.servletContext = servletContext;
+    }
+
+    public DefaultUrlMappingEvaluator(WebApplicationContext applicationContext) {
+        this.servletContext = applicationContext.getServletContext();
+        this.applicationContext = applicationContext;
     }
 
     @SuppressWarnings("rawtypes")
@@ -118,18 +130,23 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
             Closure mappings = closure.getMappings();
 
-            UrlMappingBuilder builder = new UrlMappingBuilder(script.getBinding(), servletContext);
-            mappings.setDelegate(builder);
-            mappings.call();
-            builder.urlDefiningMode = false;
-
-            configureUrlMappingDynamicObjects(script);
-
-            return builder.getUrlMappings();
+            Binding binding = script.getBinding();
+            return evaluateMappings(script, mappings, binding);
         }
 
         throw new UrlMappingException("Unable to configure URL mappings for class [" + theClass +
                 "]. A URL mapping must be an instance of groovy.lang.Script.");
+    }
+
+    private List<?> evaluateMappings(GroovyObject go, Closure<?> mappings, Binding binding) {
+        UrlMappingBuilder builder = new UrlMappingBuilder(binding, servletContext);
+        mappings.setDelegate(builder);
+        mappings.call();
+        builder.urlDefiningMode = false;
+
+        configureUrlMappingDynamicObjects(go);
+
+        return builder.getUrlMappings();
     }
 
     @SuppressWarnings("rawtypes")
@@ -137,18 +154,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         UrlMappingBuilder builder = new UrlMappingBuilder(null, servletContext);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call();
+        closure.call(applicationContext);
         builder.urlDefiningMode = false;
-        List mappings = builder.getUrlMappings();
         configureUrlMappingDynamicObjects(closure);
-        return mappings;
+        return builder.getUrlMappings();
     }
 
-    private void configureUrlMappingDynamicObjects(Script script) {
-        if (pluginManager != null) {
-            WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(script.getClass()), null);
-        }
-    }
 
     private void configureUrlMappingDynamicObjects(Object object) {
         if (pluginManager != null) {

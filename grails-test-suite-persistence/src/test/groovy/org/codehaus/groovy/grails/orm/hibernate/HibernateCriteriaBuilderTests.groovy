@@ -986,7 +986,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj.invokeMethod("save", null)
 
         GroovyObject obj2 = domainClass.newInstance()
-        //obj.setProperty("id", new Long(2)
+        //obj.setProperty("id", 2L)
         obj2.setProperty("firstName", "zulu")
         obj2.setProperty("lastName", "alpha")
         obj2.setProperty("age", 45)

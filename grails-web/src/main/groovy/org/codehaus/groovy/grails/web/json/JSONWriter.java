@@ -281,7 +281,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(double d) {
-        return value(new Double(d));
+        return value(Double.valueOf(d));
     }
 
     /**

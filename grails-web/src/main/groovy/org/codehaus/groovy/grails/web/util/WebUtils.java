@@ -80,8 +80,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 .getRequiredWebApplicationContext(servletContext);
         return lookupViewResolver(wac);
     }
-        
-    public static ViewResolver lookupViewResolver(ApplicationContext wac) {    
+
+    public static ViewResolver lookupViewResolver(ApplicationContext wac) {
         if (wac.containsBean("jspViewResolver")) {
             return wac.getBean("jspViewResolver", ViewResolver.class);
         }

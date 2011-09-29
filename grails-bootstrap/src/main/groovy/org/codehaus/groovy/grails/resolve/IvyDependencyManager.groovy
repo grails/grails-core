@@ -92,7 +92,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
         copy
     }
-    
+
     /**
      * Allows settings an alternative chain resolver to be used
      * @param resolver The resolver to be used

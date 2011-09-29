@@ -71,17 +71,16 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
                         PagedResultList pagedResultList = new PagedResultList(c.list());
                         pagedResultList.setTotalCount(totalCount);
                         return pagedResultList;
-                    } else {
-                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
-                        c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-                        return c.list();
                     }
-                }
-                else {
-                    GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c, Collections.EMPTY_MAP);
+
+                    GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
                     c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
                     return c.list();
                 }
+
+                GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c, Collections.EMPTY_MAP);
+                c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                return c.list();
             }
         });
     }
