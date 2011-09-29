@@ -3,14 +3,11 @@ dataSource {
     driverClassName = "org.h2.Driver"
     username = "sa"
     password = ""
-	properties {
-		defaultAutoCommit = false
-	}
 }
 hibernate {
     cache.use_second_level_cache = true
     cache.use_query_cache = true
-	cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
+    cache.region.factory_class = 'net.sf.ehcache.hibernate.EhCacheRegionFactory'
 }
 // environment specific settings
 environments {
@@ -33,7 +30,6 @@ environments {
             // For MySQL production scenarios enable the following settings
 //          pooled = true
 //          properties {
-//               defaultAutoCommit = false			
 //               minEvictableIdleTimeMillis=1800000
 //               timeBetweenEvictionRunsMillis=1800000
 //               numTestsPerEvictionRun=3
