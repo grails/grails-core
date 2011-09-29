@@ -98,7 +98,7 @@ target(configureApp:"Configures the Grails application and builds an Application
         def configurer = new GrailsRuntimeConfigurator(grailsApp, appCtx)
         def jndiEntries = config?.grails?.naming?.entries
 
-        if (jndiEntries instanceof Map) {
+        if ((jndiEntries instanceof Map) && jndiEntries) {
             def jndiBindingSupport = new JndiBindingSupport(jndiEntries)
             jndiBindingSupport.bind()
         }
