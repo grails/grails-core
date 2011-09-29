@@ -191,7 +191,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                     scaffoldedtemplateName = scaffoldedtemplateName.substring(0, scaffoldedtemplateName.length()-4);
                 }
                 FastStringWriter sw = new FastStringWriter();
-                ReflectionUtils.invokeMethod(generateViewMethod, scaffoldingTemplateGenerator, domainClass, templateName, sw);
+                ReflectionUtils.invokeMethod(generateViewMethod, scaffoldingTemplateGenerator, domainClass, scaffoldedtemplateName, sw);
                 t = groovyPagesTemplateEngine.createTemplate(sw.toString(), uri);
             }
         }
