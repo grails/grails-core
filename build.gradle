@@ -58,7 +58,7 @@ homeSrcDir = file("src")
 // artifacts' POMs.
 if(System.getProperty('groovy.jar')) {
     groovyDependency = files(System.getProperty('groovy.jar'))
-    gradleGroovyDependency = groovyDependency
+    gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 } else {
     groovyDependency = "org.codehaus.groovy:groovy-all:${groovyVersion}"
     gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
