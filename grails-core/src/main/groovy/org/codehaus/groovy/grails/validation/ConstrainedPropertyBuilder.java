@@ -18,6 +18,7 @@ import grails.util.GrailsUtil;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
+import groovy.lang.MissingPropertyException;
 import groovy.util.BuilderSupport;
 
 import java.beans.PropertyDescriptor;
@@ -68,6 +69,25 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
         } catch (MissingMethodException e) {
             return targetMetaClass.invokeMethod(targetClass, methodName, args);
         }
+    }
+
+    @Override
+    public Object getProperty(String property) {
+        try {
+            return super.getProperty(property);
+        } catch (MissingPropertyException e) {
+            return targetMetaClass.getProperty(targetClass, property);
+        }
+    }
+
+    @Override
+    public void setProperty(String property, Object newValue) {
+        try {
+            super.setProperty(property, newValue);
+        } catch (MissingPropertyException e) {
+            targetMetaClass.setProperty(targetClass, property, newValue);
+        }
+
     }
 
     @SuppressWarnings("rawtypes")
