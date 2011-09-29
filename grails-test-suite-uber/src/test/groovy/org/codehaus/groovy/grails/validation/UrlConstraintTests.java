@@ -124,7 +124,7 @@ public class UrlConstraintTests extends AbstractConstraintTests {
         }
 
         try {
-            getConstraint("testString", new Double(1.0));
+            getConstraint("testString", 1d);
             fail("UrlConstraint must throw an exception for non-boolean, non-string and non-list parameters.");
         } catch (IllegalArgumentException iae) {
             // Great

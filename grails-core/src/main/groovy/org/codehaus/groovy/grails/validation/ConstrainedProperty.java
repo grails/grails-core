@@ -667,7 +667,7 @@ public class ConstrainedProperty {
         if ((maxSizeConstraint != null) || (sizeConstraint != null)) {
             int maxSizeConstraintValue = maxSizeConstraint != null ? maxSizeConstraint.getMaxSize() : Integer.MAX_VALUE;
             int sizeConstraintHighValue = sizeConstraint != null ? sizeConstraint.getRange().getToInt() : Integer.MAX_VALUE;
-            maxSize = new Integer(Math.min(maxSizeConstraintValue, sizeConstraintHighValue));
+            maxSize = Math.min(maxSizeConstraintValue, sizeConstraintHighValue);
         }
 
         return maxSize;
@@ -703,7 +703,7 @@ public class ConstrainedProperty {
             int minSizeConstraintValue = minSizeConstraint != null ? minSizeConstraint.getMinSize() : Integer.MIN_VALUE;
             int sizeConstraintLowValue = sizeConstraint != null ? sizeConstraint.getRange().getFromInt() : Integer.MIN_VALUE;
 
-            minSize = new Integer(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
+            minSize = Integer.valueOf(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
         }
 
         return minSize;

@@ -151,7 +151,7 @@ public class GrailsWebUtil {
      * @return The GrailsWebRequest instance
      */
     public static GrailsWebRequest bindMockWebRequest() {
-    	ServletContext servletContext = new MockServletContext();
+        ServletContext servletContext = new MockServletContext();
         MockHttpServletRequest request = new MockHttpServletRequest(servletContext);
         GrailsWebRequest webRequest = new GrailsWebRequest(request,
                 new MockHttpServletResponse(), servletContext);

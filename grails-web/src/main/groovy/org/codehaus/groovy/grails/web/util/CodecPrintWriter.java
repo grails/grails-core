@@ -57,10 +57,10 @@ public class CodecPrintWriter extends GrailsPrintWriter {
             return;
         }
         Object encoded=encodeObject(obj);
-        if(encoded==null) return;
+        if (encoded==null) return;
         Class<?> clazz=encoded.getClass();
         if (clazz == String.class) {
-        	super.write((String)encoded);
+            super.write((String)encoded);
         } else if (clazz == StreamCharBuffer.class) {
             super.write((StreamCharBuffer)encoded);
         }

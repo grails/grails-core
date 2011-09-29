@@ -46,7 +46,7 @@ class LoggingGrailsPlugin {
     }
 
     def onConfigChange = { event ->
-		Log4jConfig.initialize(event.source)
+        Log4jConfig.initialize(event.source)
     }
 
     def doWithWebDescriptor = { webXml ->

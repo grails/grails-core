@@ -108,12 +108,12 @@ public class ScaleConstraintTests extends AbstractConstraintTests {
 
     private void testFloat(int scale, float value, float result) {
         Constraint constraint = getConstraint("testFloat", scale);
-        assertEquals(new Float(result), proceedValidation(constraint, new Float(value)));
+        assertEquals(result, proceedValidation(constraint, value));
     }
 
     private void testDouble(int scale, double value, double result) {
         Constraint constraint = getConstraint("testDouble", scale);
-        assertEquals(new Double(result), proceedValidation(constraint, value));
+        assertEquals(Double.valueOf(result), proceedValidation(constraint, value));
     }
     private void testBigDecimal(int scale, String value, String result) {
         Constraint constraint = getConstraint("testBigDecimal", scale);

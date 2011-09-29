@@ -24,13 +24,13 @@ public class SizeConstraintTests extends AbstractConstraintTests{
                 getConstraint("testString", new IntRange(2, 5)),
                 "123456",
                 new String[] {"testClass.testString.size.error","testClass.testString.size.toobig"},
-                new Object[] {"testString",TestClass.class,"123456",new Integer(2),new Integer(5)});
+                new Object[] {"testString",TestClass.class,"123456", 2, 5 });
 
         testConstraintMessageCodes(
                 getConstraint("testString", new IntRange(2, 5)),
                 "1",
                 new String[] {"testClass.testString.size.error","testClass.testString.size.toosmall"},
-                new Object[] {"testString",TestClass.class,"1",new Integer(2),new Integer(5)});
+                new Object[] {"testString",TestClass.class,"1", 2, 5 });
 
         testConstraintPassed(
                 getConstraint("testArray", new IntRange(2, 5)),

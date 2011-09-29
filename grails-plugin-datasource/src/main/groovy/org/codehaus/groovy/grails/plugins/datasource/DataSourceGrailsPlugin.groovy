@@ -110,7 +110,7 @@ class DataSourceGrailsPlugin {
                 defaultReadOnly = readOnly
             }
 
-            url = ds.url ?: "jdbc:h2:mem:grailsDB"
+            url = ds.url ?: "jdbc:h2:mem:grailsDB;MVCC=TRUE"
 
             String theUsername = ds.username ?: (defaultDriver ? "sa" : null)
             if (theUsername != null) {

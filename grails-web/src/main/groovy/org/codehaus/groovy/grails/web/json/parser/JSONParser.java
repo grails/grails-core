@@ -253,7 +253,7 @@ public final class JSONParser implements JsonParserConstants {
         if (exppart != null) {
             n = new java.math.BigDecimal(intpart + fracpart + exppart);
         } else if (fracpart != null) {
-            n = new Double(intpart + fracpart);
+            n = Double.valueOf(intpart + fracpart);
         } else {
             // See if the number fits in an integer, or long
             // Use BigInteger only if it is big enough.

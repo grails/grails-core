@@ -16,32 +16,22 @@ public class MinConstraintTests extends AbstractConstraintTests {
 
     public void testValidation() {
         testConstraintMessageCodes(
-                getConstraint("testFloat", new Float(1.5d)),
-                new Float(1.4d),
+                getConstraint("testFloat", 1.5f), 1.4f,
                 new String[] {"testClass.testFloat.min.error","testClass.testFloat.min.notmet"},
-                new Object[] {"testFloat",TestClass.class,new Float(1.4d),new Float(1.5d)});
+                new Object[] {"testFloat", TestClass.class, 1.4f, 1.5f });
 
-        testConstraintPassed(
-                getConstraint("testFloat", new Float(1.5d)),
-                new Float(1.7d));
+        testConstraintPassed(getConstraint("testFloat", 1.5f), 1.7f);
 
-        testConstraintFailed(
-                getConstraint("testLong", new Long(15000)),
-                new Long(10000));
+        testConstraintFailed(getConstraint("testLong", 15000L), 10000L);
 
         // bound is included in valid interval
-        testConstraintPassed(
-                getConstraint("testInteger", new Integer(100)),
-                new Integer(100));
+        testConstraintPassed(getConstraint("testInteger", 100), 100);
 
         // must always pass for null value
-        testConstraintPassed(
-                getConstraint("testFloat", new Float(1.5d)),
-                null);
+        testConstraintPassed(getConstraint("testFloat", 1.5f), null);
 
         testConstraintDefaultMessage(
-                getConstraint("testFloat", new Float(1.7)),
-                new Float(1.5),
+                getConstraint("testFloat", 1.7f), 1.5f,
                 "Property [{0}] of class [{1}] with value [{2}] is less than minimum value [{3}]");
     }
 
@@ -56,8 +46,8 @@ public class MinConstraintTests extends AbstractConstraintTests {
         assertFalse(constraint.supports(List.class));
         assertFalse(constraint.supports(null));
 
-        constraint = (MinConstraint) getConstraint("testLong", new Long(100));
-        assertEquals(new Long(100), constraint.getMinValue());
+        constraint = (MinConstraint) getConstraint("testLong", 100L);
+        assertEquals(100L, constraint.getMinValue());
 
         try {
             getConstraint("testFloat", new Object());
@@ -68,7 +58,7 @@ public class MinConstraintTests extends AbstractConstraintTests {
 
         // property is Float but parameter is Double
         try {
-            getConstraint("testFloat", new Double(4d));
+            getConstraint("testFloat", 4d);
             fail("MinConstraint must throw an exception for parameter with wrong type .");
         } catch (IllegalArgumentException iae) {
             // Great
@@ -76,7 +66,7 @@ public class MinConstraintTests extends AbstractConstraintTests {
 
         // property is Float but parameter is Double
         try {
-            getConstraint("testBigDecimal", new Integer(5));
+            getConstraint("testBigDecimal", 5);
             fail("MinConstraint must throw an exception for parameter with wrong type .");
         } catch (IllegalArgumentException iae) {
             // Great

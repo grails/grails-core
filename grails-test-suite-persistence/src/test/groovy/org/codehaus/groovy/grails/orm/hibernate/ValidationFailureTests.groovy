@@ -29,14 +29,14 @@ class ValidationOrder {
     String six
     String three
     String two
-    
+
     static constraints = {
-        one blank: false 
-        two blank: false 
-        three blank: false 
-        four blank: false 
-        five blank: false 
-        six blank: false 
+        one blank: false
+        two blank: false
+        three blank: false
+        four blank: false
+        five blank: false
+        six blank: false
     }
 }
 """
@@ -80,7 +80,7 @@ class ValidationOrder {
         a = authorClass.clazz.get(1)
         assertEquals "123456789", a.name
     }
-    
+
     void testOrderOfErrors() {
         def orderClass = ga.getDomainClass('ValidationOrder')
         def order = orderClass.newInstance()

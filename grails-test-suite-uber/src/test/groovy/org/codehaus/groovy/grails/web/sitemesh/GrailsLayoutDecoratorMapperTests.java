@@ -48,18 +48,17 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         GrailsConventionGroovyPageLocator pageLocator = new GrailsConventionGroovyPageLocator();
         pageLocator.setApplicationContext(appCtx);
 
-        
         GroovyPagesTemplateEngine gpte = new GroovyPagesTemplateEngine(appCtx.getServletContext());
         gpte.setApplicationContext(appCtx);
         gpte.afterPropertiesSet();
-        
+
         GrailsViewResolver grailsViewResolver=new GrailsViewResolver();
         grailsViewResolver.setGrailsApplication(grailsApplication);
         grailsViewResolver.setApplicationContext(appCtx);
         grailsViewResolver.setGroovyPageLocator(pageLocator);
         grailsViewResolver.setPluginManager(new MockGrailsPluginManager(grailsApplication));
         grailsViewResolver.setTemplateEngine(gpte);
-        
+
         GroovyPageLayoutFinder layoutFinder = new GroovyPageLayoutFinder();
         layoutFinder.setViewResolver(grailsViewResolver);
         @SuppressWarnings("rawtypes")
@@ -71,10 +70,10 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
         return GrailsWebUtil.bindMockWebRequest(appCtx, new MockHttpServletRequest(appCtx.getServletContext()) {
-        	@Override
-        	public RequestDispatcher getRequestDispatcher(String path) {
-        		return null;
-        	}
+            @Override
+            public RequestDispatcher getRequestDispatcher(String path) {
+                return null;
+            }
         }, new MockHttpServletResponse());
     }
 

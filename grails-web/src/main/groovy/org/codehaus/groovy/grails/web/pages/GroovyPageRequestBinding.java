@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.Environment;
-import groovy.lang.Binding;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -149,15 +148,15 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
         public Object evaluate(GrailsWebRequest webRequest);
     }
 
-	@Override
-	public Set<String> getVariableNames() {
-		if(getVariablesMap().size()==0) {
-			return lazyRequestBasedValuesMap.keySet();
-		} else {
-			HashSet<String> variableNames=new HashSet<String>();
-			variableNames.addAll(lazyRequestBasedValuesMap.keySet());
-			variableNames.addAll(getVariablesMap().keySet());
-			return variableNames;
-		}
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<String> getVariableNames() {
+        if (getVariablesMap().isEmpty()) {
+            return lazyRequestBasedValuesMap.keySet();
+        }
+
+        Set<String> variableNames = new HashSet<String>(lazyRequestBasedValuesMap.keySet());
+        variableNames.addAll(getVariablesMap().keySet());
+        return variableNames;
+    }
 }

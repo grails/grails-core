@@ -14,25 +14,25 @@ class FindOrSaveByPersistenceMethodTests extends AbstractGrailsHibernateTests {
         assertNotNull zackB.id
 
         assertEquals 4, Person.count()
-        
+
         def person = Person.findOrSaveByFirstNameAndLastNameAndAge('Zack', 'Brown', 14)
         assertNotNull 'findOrSaveBy should not have returned null', person
         assertEquals zackB.id, person.id
         assertEquals 'Zack', person.firstName
         assertEquals 'Brown', person.lastName
-        assertEquals 14, person.age 
-        
+        assertEquals 14, person.age
+
         assertEquals 4, Person.count()
-        
+
         person = Person.findOrSaveByFirstNameAndLastNameAndAge('Johnny', 'Winter', 68)
         assertNotNull 'findOrSaveBy should not have returned null', person
         assertEquals 'Johnny', person.firstName
         assertEquals 'Winter', person.lastName
         assertEquals 68, person.age
-        
+
         assertEquals 5, Person.count()
     }
-    
+
     void testFindOrSaveByForARecordThatDoesExistInTheDatabase() {
         def ginger = new Person(firstName: 'Ginger', lastName: 'Baker').save(flush: true)
         assertNotNull 'save should not have returned null', ginger
