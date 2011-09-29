@@ -142,9 +142,9 @@ class UrlMappingsGrailsPlugin {
         if (application.isUrlMappingsClass(event.source)) {
             application.addArtefact(UrlMappingsArtefactHandler.TYPE, event.source)
 
-            UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, event.ctx, event.manager)
+            ApplicationContext ctx = applicationContext
+            UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, ctx, manager)
 
-            ApplicationContext ctx = event.ctx
             HotSwappableTargetSource ts = ctx.getBean("urlMappingsTargetSource", HotSwappableTargetSource)
             ts.swap urlMappingsHolder
 

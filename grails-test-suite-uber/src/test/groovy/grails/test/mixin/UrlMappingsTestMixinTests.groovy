@@ -129,6 +129,7 @@ class UrlMappingsTestMixinTests {
 
     @Test
     void testGrails5222Again() {
+        mockController(GrailsUrlMappingsTestCaseFakeController)
         mockUrlMappings(AnotherUrlMappings)
         shouldFail(ComparisonFailure) {
             assertForwardUrlMapping("/alias/param1value", controller: "grailsUrlMappingsTestCaseFake", action: "action1") {
