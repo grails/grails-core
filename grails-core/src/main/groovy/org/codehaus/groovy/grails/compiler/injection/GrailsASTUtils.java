@@ -225,7 +225,7 @@ public class GrailsASTUtils {
     private static ThrowStatement createMissingMethodThrowable(ClassNode classNode, MethodNode declaredMethodNode) {
         ArgumentListExpression exceptionArgs = new ArgumentListExpression();
         exceptionArgs.addExpression(new ConstantExpression(declaredMethodNode.getName()));
-        exceptionArgs.addExpression(new ClassExpression(classNode.getPlainNodeReference()));
+        exceptionArgs.addExpression(new ClassExpression(classNode));
         for (Parameter parameter : declaredMethodNode.getParameters()) {
             exceptionArgs.addExpression(new VariableExpression(parameter.getName()));
         }
