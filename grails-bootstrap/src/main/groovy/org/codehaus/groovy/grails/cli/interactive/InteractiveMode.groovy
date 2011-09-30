@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import java.awt.Desktop
+import org.codehaus.groovy.grails.cli.support.UaaIntegration
+import grails.util.PluginBuildSettings
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -69,6 +71,9 @@ class InteractiveMode {
         console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         interactiveModeActive = true
 
+        if(UaaIntegration.isAvailable() && !UaaIntegration.isEnabled()) {
+            UaaIntegration.enable(settings, new PluginBuildSettings(settings), true)
+        }
         addStatus("Enter a script name to run. Use TAB for completion: ")
         while (interactiveModeActive) {
             def scriptName = showPrompt()

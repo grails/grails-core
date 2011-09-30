@@ -54,10 +54,16 @@ public class UaaIntegration {
            + "To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.\n"
            + "##########################################################.\n"
            + "Enter Y or N:";
+
+    private static boolean enabled = false;
     public static final int ONE_MINUTE = 180000;
 
     public static boolean isAvailable() {
         return ClassUtils.isPresent("org.springframework.uaa.client.UaaServiceFactory", UaaIntegration.class.getClassLoader());
+    }
+
+    public static boolean isEnabled() {
+        return enabled;
     }
 
     public static void enable(final BuildSettings settings, final PluginBuildSettings pluginSettings, boolean interactive) {
@@ -82,7 +88,8 @@ public class UaaIntegration {
                 }
             }
         }
-        else if (isUaaAccepted(privacyLevel)) {
+
+        if (isUaaAccepted(privacyLevel)) {
             Runnable r = new Runnable() {
                 public void run() {
                     final UaaClient.Product product = VersionHelper.getProduct("Grails", settings.getGrailsVersion());
@@ -117,6 +124,7 @@ public class UaaIntegration {
 
             ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
             scheduler.schedule(r, new Date(System.currentTimeMillis() + ONE_MINUTE));
+            enabled = true;
         }
     }
 
