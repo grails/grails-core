@@ -314,20 +314,29 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
      */
     void assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
 
-        def engine = appCtx.groovyPagesTemplateEngine
-
-        //printCompiledSource(template)
-
-        assert engine
-        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
-        t.allowSettingContentType = true
+        GroovyPageTemplate t = createTemplate(template)
 
         /*
         println "------------HTMLPARTS----------------------"
         t.metaInfo.htmlParts.eachWithIndex {it, i -> print "htmlpart[${i}]:\n>${it}<\n--------\n" }
         */
 
-        def w = t.make(params)
+        assertTemplateOutputEquals(expected, t, params, transform)
+    }
+
+    protected GroovyPageTemplate createTemplate(template) {
+        GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
+
+        //printCompiledSource(template)
+
+        assert engine
+        GroovyPageTemplate t = engine.createTemplate(template, "test_" + System.currentTimeMillis())
+        t.allowSettingContentType = true
+        return t
+    }
+
+    protected def assertTemplateOutputEquals(expected, GroovyPageTemplate template, params = [:], Closure transform = { it.toString() }) {
+        def w = template.make(params)
 
         MockHttpServletResponse mockResponse = new MockHttpServletResponse()
         mockResponse.setCharacterEncoding("UTF-8")
@@ -336,7 +345,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         w.writeTo(writer)
 
         writer.flush()
-        assertEquals expected, transform(mockResponse.contentAsString)
+        assert expected == transform(mockResponse.contentAsString)
     }
 
     def applyTemplate(template, params = [:], target = null, String filename = null) {
