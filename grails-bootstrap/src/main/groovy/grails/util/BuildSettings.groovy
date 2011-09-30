@@ -1158,6 +1158,11 @@ class BuildSettings extends AbstractBuildSettings {
 
         def grailsConfig = config.grails
 
+        // If grails.dependency.cache.dir is set, use it for Ivy.
+        if (grailsConfig.dependency.cache.dir) {
+            dependencyManager.ivySettings.defaultCache = grailsConfig.dependency.cache.dir as File
+        }
+
         if (!dependenciesExternallyConfigured) {
             coreDependencies = new GrailsCoreDependencies(grailsVersion, servletVersion)
             grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
