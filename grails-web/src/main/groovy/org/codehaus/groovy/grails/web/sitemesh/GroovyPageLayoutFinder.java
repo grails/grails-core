@@ -48,6 +48,7 @@ import com.opensymphony.sitemesh.Content;
 public class GroovyPageLayoutFinder {
 
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
+    public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
     private static final long LAYOUT_CACHE_EXPIRATION_MILLIS = Long.getLong("grails.gsp.reload.interval", 5000)
             .longValue();
@@ -90,58 +91,60 @@ public class GroovyPageLayoutFinder {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Evaluating layout for request: " + request.getRequestURI());
         }
-        Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
-        String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
+        final Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
+        if(request.getAttribute(RENDERING_VIEW_ATTRIBUTE) != null || layoutAttribute != null) {
+            String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
 
-        if (layoutName == null) {
-            layoutName = page.getProperty("meta.layout");
-        }
+            if (layoutName == null) {
+                layoutName = page.getProperty("meta.layout");
+            }
 
-        Decorator d = null;
+            Decorator d = null;
 
-        if (StringUtils.isBlank(layoutName)) {
-            GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
-            if (controller != null) {
-                String controllerName = (String)controller
-                        .getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
-                String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
+            if (StringUtils.isBlank(layoutName)) {
+                GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+                if (controller != null) {
+                    String controllerName = (String)controller
+                            .getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
+                    String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
 
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Found controller in request, location layout for controller [" + controllerName
-                            + "] and action [" + actionUri + "]");
-                }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Found controller in request, location layout for controller [" + controllerName
+                                + "] and action [" + actionUri + "]");
+                    }
 
-                LayoutCacheKey cacheKey = null;
-                boolean cachedIsNull = false;
+                    LayoutCacheKey cacheKey = null;
+                    boolean cachedIsNull = false;
 
-                if (cacheEnabled) {
-                    cacheKey = new LayoutCacheKey(controllerName, actionUri);
-                    DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
-                    if (cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
-                        d = cacheValue.getDecorator();
-                        if (d == null) {
-                            cachedIsNull = true;
+                    if (cacheEnabled) {
+                        cacheKey = new LayoutCacheKey(controllerName, actionUri);
+                        DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
+                        if (cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
+                            d = cacheValue.getDecorator();
+                            if (d == null) {
+                                cachedIsNull = true;
+                            }
                         }
                     }
-                }
 
-                if (d == null && !cachedIsNull) {
-                    d = resolveDecorator(request, controller, controllerName, actionUri);
-                    if (cacheEnabled) {
-                        layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
+                    if (d == null && !cachedIsNull) {
+                        d = resolveDecorator(request, controller, controllerName, actionUri);
+                        if (cacheEnabled) {
+                            layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
+                        }   
                     }
+                }
+                else {
+                    d = getApplicationDefaultDecorator(request);
                 }
             }
             else {
-                d = getApplicationDefaultDecorator(request);
+                d = getNamedDecorator(request, layoutName);
             }
-        }
-        else {
-            d = getNamedDecorator(request, layoutName);
-        }
 
-        if (d != null) {
-            return d;
+            if (d != null) {
+                return d;
+            }
         }
         return null;
     }
