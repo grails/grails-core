@@ -17,6 +17,7 @@
 package org.codehaus.groovy.grails.plugins.support.aware;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.springframework.beans.factory.Aware;
 
 /**
  * <p>Convenience interface that can be implemented by classes that are
@@ -26,7 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
  * @since 0.2
  * @see GrailsApplication
  */
-public interface GrailsApplicationAware {
+public interface GrailsApplicationAware extends Aware {
     /**
      * <p>This method is called by the {@link org.springframework.context.ApplicationContext} that
      * loads the Grails application. The {@link GrailsApplication} instance that represents
