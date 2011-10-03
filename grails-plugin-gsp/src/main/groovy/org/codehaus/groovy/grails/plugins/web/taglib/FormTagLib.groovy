@@ -117,6 +117,7 @@ class FormTagLib {
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
+        handleRequiredAttribute(attrs)
         attrs.id = attrs.id ?: attrs.name
         out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs, out)
@@ -154,6 +155,8 @@ class FormTagLib {
         }
 
         if (checked instanceof String) checked = Boolean.valueOf(checked)
+
+        handleRequiredAttribute(attrs)
 
         if (value == null) value = false
 
@@ -230,6 +233,18 @@ class FormTagLib {
             attrs.value = val
         }
         attrs.value = attrs.value != null ? attrs.value : "" // can't use ?: since 0 is groovy false
+    }
+
+    /**
+     * handle HTML's 'required' attribute: only add it if it's value is true in HTML even 'required="false"' marks the field as required
+     * @param attrs
+     */
+    void handleRequiredAttribute(attrs) {
+        def requiredString = attrs.remove('required')
+        Boolean required = Boolean.valueOf(requiredString)
+        if (required) {
+            attrs.required = true
+        }
     }
 
     /**
@@ -759,6 +774,7 @@ class FormTagLib {
         if (disabled && Boolean.valueOf(disabled)) {
             attrs.disabled = 'disabled'
         }
+        handleRequiredAttribute(attrs)
 
         writer << "<select name=\"${attrs.remove('name')?.encodeAsHTML()}\" "
         // process remaining attributes
@@ -900,6 +916,8 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
         def checked = attrs.remove('checked') ? true : false
+        handleRequiredAttribute(attrs)
+
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         // process remaining attributes
         outputAttributes(attrs, out)
@@ -921,6 +939,8 @@ class FormTagLib {
         def values = attrs.remove('values')
         def labels = attrs.remove('labels')
         def name = attrs.remove('name')
+        handleRequiredAttribute(attrs)
+
         values.eachWithIndex {val, idx ->
             def it = new Expando()
             it.radio = new StringBuilder("<input type=\"radio\" name=\"${name}\" ")
