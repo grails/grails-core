@@ -37,6 +37,7 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
     private static Log log = LogFactory.getLog(GroovyPageRequestBinding.class);
     private GrailsWebRequest webRequest;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
+    private boolean developmentMode = Environment.isDevelopmentMode();
 
     private static Map<String, LazyRequestBasedValue> lazyRequestBasedValuesMap = new HashMap<String, LazyRequestBasedValue>();
     static {
@@ -131,7 +132,7 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
             }
 
             // warn about missing variables in development mode
-            if (val == null && Environment.isDevelopmentMode()) {
+            if (val == null && developmentMode) {
                 if (log.isDebugEnabled()) {
                     log.debug("Variable '" + name + "' not found in binding or the value is null.");
                 }

@@ -463,11 +463,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      * @throws IOException
      */
     public void writeTo(Writer target, boolean flushTarget, boolean emptyAfter) throws IOException {
-        if (target instanceof GrailsPrintWriter) {
-            GrailsPrintWriter gpw = ((GrailsPrintWriter)target);
-            if (gpw.isAllowUnwrappingOut()) {
-                target = gpw.getOut();
-            }
+        if (target instanceof GrailsWrappedWriter) {
+            target = ((GrailsWrappedWriter)target).unwrap();
         }
         if (target instanceof StreamCharBufferWriter) {
             if (target == writer) {

@@ -18,8 +18,6 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.text.Template;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,7 +35,6 @@ import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSo
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -185,7 +182,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     protected void renderPageWithEngine(@SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
             @SuppressWarnings("unused") HttpServletRequest request,
             HttpServletResponse response, Template template) throws Exception {
-        GrailsPrintWriter out = (GrailsPrintWriter) createResponseWriter(response);
+        GSPResponseWriter out = createResponseWriter(response);
         try {
             if(template instanceof GroovyPageTemplate) {
                 ((GroovyPageTemplate)template).setAllowSettingContentType(true);
@@ -207,8 +204,8 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
      * @param response The HttpServletResponse
      * @return The created java.io.Writer
      */
-    protected Writer createResponseWriter(HttpServletResponse response) {
-        PrintWriter out = GSPResponseWriter.getInstance(response);
+    protected GSPResponseWriter createResponseWriter(HttpServletResponse response) {
+        GSPResponseWriter out = GSPResponseWriter.getInstance(response);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;
