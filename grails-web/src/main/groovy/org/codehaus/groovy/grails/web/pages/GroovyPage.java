@@ -303,13 +303,6 @@ public abstract class GroovyPage extends Script {
             }
         }
 
-        /* if (value == null) {
-            MetaProperty mp = getMetaClass().getMetaProperty(property);
-            if (mp != null) {
-                return mp.getProperty(this);
-            }
-        }   */
-
         return value;
     }
 
