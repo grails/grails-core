@@ -355,7 +355,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
                     @Override
                     Criterion createCriterion() {
                         Collection collection = (Collection)arguments[0];
-                        if (collection.isEmpty()) {
+                        if (collection == null || collection.isEmpty()) {
                             return FORCE_NO_RESULTS;
                         }
                         return Restrictions.in(propertyName, collection);
