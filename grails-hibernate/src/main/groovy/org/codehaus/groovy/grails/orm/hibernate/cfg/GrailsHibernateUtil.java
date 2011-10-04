@@ -311,12 +311,7 @@ public class GrailsHibernateUtil {
     }
 
     public static void cacheCriteriaByMapping(GrailsApplication grailsApplication, Class<?> targetClass, Criteria criteria) {
-        boolean cachedByDefault=grailsApplication != null ? isCacheQueriesByDefault(grailsApplication) : false;
-        if(cachedByDefault) {
-            criteria.setCacheable(true);
-        } else {
-            cacheCriteriaByMapping(targetClass, criteria);
-        }
+        cacheCriteriaByMapping(targetClass, criteria);
     }
     
     @SuppressWarnings("rawtypes")
