@@ -14,6 +14,7 @@ class FindByInListBook {
     Long version
 
     String title
+    String author
 }
 '''
     }
@@ -49,10 +50,19 @@ class FindByInListBook {
         assertEquals "Should have returned 'The Stand' from inList query", 'The Stand', results[0].title
     }
 
+    void testMultipleFindInListEmptyUsingOr() {
+        def FindByInListBook = ga.getDomainClass("FindByInListBook").clazz
+        createBooks FindByInListBook
+
+        def results = FindByInListBook.findAllByTitleInListOrAuthorInList([], [])
+        assertEquals 0, results.size()
+    }
+
     private void createBooks(FindByInListBook) {
-        assertNotNull FindByInListBook.newInstance(title:"The Stand").save(flush:true)
-        assertNotNull FindByInListBook.newInstance(title:"The Shining").save(flush:true)
-        assertNotNull FindByInListBook.newInstance(title:"Rose Madder").save(flush:true)
+        assertNotNull FindByInListBook.newInstance(title:"The Stand", author: "Stephen King").save(flush:true)
+        assertNotNull FindByInListBook.newInstance(title:"The Shining", author: "Stephen King").save(flush:true)
+        assertNotNull FindByInListBook.newInstance(title:"Rose Madder", author: "Stephen King").save(flush:true)
+        assertNotNull FindByInListBook.newInstance(title:"Daemon", author: "Daniel Suarez").save(flush:true)
         session.clear()
     }
 }
