@@ -112,6 +112,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
             return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException, SQLException {
                     Query q = session.createQuery(query);
+                    getHibernateTemplate().applySettings(q);
 
                     Object[] queryArgs = null;
                     Map queryNamedArgs = null;
@@ -250,6 +251,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                     Example example = Example.create(arg).ignoreCase();
 
                     Criteria crit = session.createCriteria(clazz);
+                    getHibernateTemplate().applySettings(crit);
                     crit.add(example);
 
                     Map argsMap = (arguments.length > 1 && (arguments[1] instanceof Map)) ? (Map) arguments[1] : Collections.EMPTY_MAP;
@@ -263,6 +265,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
             return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException, SQLException {
                     Criteria crit = session.createCriteria(clazz);
+                    getHibernateTemplate().applySettings(crit);
                     GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit, (Map)arguments[0]);
                     return crit.list();
                 }

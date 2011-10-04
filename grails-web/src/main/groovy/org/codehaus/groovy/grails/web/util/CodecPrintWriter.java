@@ -2,12 +2,12 @@ package org.codehaus.groovy.grails.web.util;
 
 import groovy.lang.Closure;
 import groovy.lang.Writable;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
+
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
     private Closure<?> encodeClosure;
@@ -245,19 +245,19 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     }
 
     @Override
-    public PrintWriter append(final char c) {
+    public GrailsPrintWriter append(final char c) {
         write(c);
         return this;
     }
 
     @Override
-    public PrintWriter append(final CharSequence csq, final int start, final int end) {
+    public GrailsPrintWriter append(final CharSequence csq, final int start, final int end) {
         encodeAndPrint(csq.subSequence(start, end));
         return this;
     }
 
     @Override
-    public PrintWriter append(final CharSequence csq) {
+    public GrailsPrintWriter append(final CharSequence csq) {
         encodeAndPrint(csq);
         return this;
     }

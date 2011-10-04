@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
+import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
@@ -76,7 +77,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
     public GrailsWrappedRuntimeException(ServletContext servletContext, Throwable t) {
         super(t.getMessage(), t);
         cause = t;
-        FastStringWriter pw = new FastStringWriter();
+        FastStringPrintWriter pw = new FastStringPrintWriter();
         cause.printStackTrace(pw);
         stackTrace = pw.toString();
 

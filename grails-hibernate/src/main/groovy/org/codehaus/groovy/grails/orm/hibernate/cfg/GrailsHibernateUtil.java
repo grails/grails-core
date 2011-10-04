@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler;
 import org.hibernate.Criteria;
@@ -265,6 +266,7 @@ public class GrailsHibernateUtil {
             } else {
                 Criteria subCriteria = c.createCriteria(sortHead);
                 Class<?> propertyTargetClass = property.getReferencedDomainClass().getClazz();
+                GrailsHibernateUtil.cacheCriteriaByMapping(grailsApplication, propertyTargetClass, subCriteria);
                 addOrderPossiblyNested(grailsApplication, subCriteria, propertyTargetClass, sortTail, order, ignoreCase); // Recurse on nested sort
             }
         }
@@ -308,6 +310,15 @@ public class GrailsHibernateUtil {
         }
     }
 
+    public static void cacheCriteriaByMapping(GrailsApplication grailsApplication, Class<?> targetClass, Criteria criteria) {
+        boolean cachedByDefault=grailsApplication != null ? isCacheQueriesByDefault(grailsApplication) : false;
+        if(cachedByDefault) {
+            criteria.setCacheable(true);
+        } else {
+            cacheCriteriaByMapping(targetClass, criteria);
+        }
+    }
+    
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Criteria c, Map argMap) {
         populateArgumentsForCriteria(null,null, c, argMap);
@@ -363,7 +374,7 @@ public class GrailsHibernateUtil {
      * @param sessionFactory The SessionFactory instance
      */
     public static void setObjectToReadWrite(final Object target, SessionFactory sessionFactory) {
-        HibernateTemplate template = new HibernateTemplate(sessionFactory);
+        GrailsHibernateTemplate template = new GrailsHibernateTemplate(sessionFactory);
         template.setExposeNativeSession(true);
         template.execute(new HibernateCallback<Void>() {
             public Void doInHibernate(Session session) throws HibernateException, SQLException {

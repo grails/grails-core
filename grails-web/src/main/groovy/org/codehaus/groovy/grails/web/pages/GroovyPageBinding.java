@@ -80,13 +80,6 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
                     cachedParentVariableNames.add(name);
                 }
             }
-            // stackover flow if pluginContextPath or pagePlugin is checked by MetaProperty
-            if (val==null && !name.equals(GroovyPage.PLUGIN_CONTEXT_PATH) && !name.equals("pagePlugin")) {
-                MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
-                if (metaProperty != null) {
-                    val = metaProperty.getProperty(this);
-                }
-            }
         }
         return val;
     }

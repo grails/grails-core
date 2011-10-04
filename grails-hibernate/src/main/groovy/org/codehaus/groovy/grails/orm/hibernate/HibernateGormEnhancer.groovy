@@ -127,7 +127,7 @@ class HibernateGormEnhancer extends GormEnhancer {
 class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     private static final EMPTY_ARRAY = [] as Object[]
 
-    private HibernateTemplate hibernateTemplate
+    private GrailsHibernateTemplate hibernateTemplate
     private SessionFactory sessionFactory
     private ConversionService conversionService
     private Class identityType
@@ -148,7 +148,6 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         super.transactionManager = transactionManager
         this.classLoader = classLoader
         this.sessionFactory = datastore.getSessionFactory()
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory)
         this.conversionService = datastore.mappingContext.conversionService
 
         identityType = persistentEntity.identity?.type
@@ -163,8 +162,10 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
             this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
             this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
-            this.cacheQueriesByDefault = GrailsHibernateUtil.isCacheQueriesByDefault(grailsApplication)
+            this.hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
             this.hibernateTemplate.setCacheQueries(this.cacheQueriesByDefault)
+        } else {
+            this.hibernateTemplate = new GrailsHibernateTemplate(sessionFactory)
         }
 
         this.executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader, grailsApplication)
@@ -226,7 +227,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     @Override
     List<D> getAll() {
         hibernateTemplate.execute({ Session session ->
-            session.createCriteria(persistentClass).list()
+            Criteria criteria = session.createCriteria(persistentClass)
+            hibernateTemplate.applySettings(criteria)
+            criteria.list()
         } as HibernateCallback)
     }
 
@@ -247,6 +250,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         hibernateTemplate.execute({Session session ->
             ids = ids.collect { convertIdentifier(it) }
             def criteria = session.createCriteria(persistentClass)
+            hibernateTemplate.applySettings(criteria)
             def identityName = persistentEntity.identity.name
             criteria.add(Restrictions.'in'(identityName, ids))
             def results = criteria.list()
@@ -284,6 +288,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     Integer count() {
         hibernateTemplate.execute({Session session ->
             def criteria = session.createCriteria(persistentClass)
+            hibernateTemplate.applySettings(criteria)
             criteria.setProjection(Projections.rowCount())
             def num = criteria.uniqueResult()
             num == null ? 0 : num
@@ -294,8 +299,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     boolean exists(Serializable id) {
         id = convertIdentifier(id)
         hibernateTemplate.execute({ Session session ->
-            session.createCriteria(persistentEntity.javaClass)
-                .add(Restrictions.idEq(id))
+            Criteria criteria = session.createCriteria(persistentEntity.javaClass)
+            hibernateTemplate.applySettings(criteria)
+            criteria.add(Restrictions.idEq(id))
                 .setProjection(Projections.rowCount())
                 .uniqueResult()
         } as HibernateCallback) == 1
@@ -448,6 +454,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             Map queryArgs = filterQueryArgumentMap(queryMap)
             List<String> nullNames = removeNullNames(queryArgs)
             Criteria criteria = session.createCriteria(persistentClass)
+            hibernateTemplate.applySettings(criteria)
             criteria.add(Restrictions.allEq(queryArgs))
             for (name in nullNames) {
                 criteria.add Restrictions.isNull(name)
@@ -464,6 +471,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             Map queryArgs = filterQueryArgumentMap(queryMap)
             List<String> nullNames = removeNullNames(queryArgs)
             Criteria criteria = session.createCriteria(persistentClass)
+            hibernateTemplate.applySettings(criteria)
             criteria.add(Restrictions.allEq(queryArgs))
             for (name in nullNames) {
                 criteria.add Restrictions.isNull(name)
@@ -500,8 +508,8 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
     @Override
     Object withSession(Closure callable) {
-        HibernateTemplate template = new HibernateTemplate(sessionFactory)
-        template.setCacheQueries(cacheQueriesByDefault)
+        HibernateTemplate template = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
+        template.setExposeNativeSession(false)
         template.execute({ session ->
             callable(session)
         } as HibernateCallback)
@@ -509,8 +517,8 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
     @Override
     void withNewSession(Closure callable) {
-        HibernateTemplate template = new HibernateTemplate(sessionFactory)
-        template.setCacheQueries(cacheQueriesByDefault)
+        HibernateTemplate template  = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
+        template.setExposeNativeSession(false)
         SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
         Session previousSession = sessionHolder?.session
         try {
@@ -728,7 +736,6 @@ class HibernateGormInstanceApi extends GormInstanceApi {
 
         this.classLoader = classLoader
         sessionFactory = datastore.getSessionFactory()
-        hibernateTemplate = new HibernateTemplate(sessionFactory)
 
         def mappingContext = datastore.mappingContext
         if (mappingContext instanceof GrailsDomainClassMappingContext) {
@@ -738,8 +745,10 @@ class HibernateGormInstanceApi extends GormInstanceApi {
             this.config = grailsApplication.config?.grails?.gorm
             this.saveMethod = new SavePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
             this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
+            this.hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
             this.cacheQueriesByDefault = GrailsHibernateUtil.isCacheQueriesByDefault(grailsApplication)
-            this.hibernateTemplate.setCacheQueries(this.cacheQueriesByDefault)
+        } else {
+            hibernateTemplate = new GrailsHibernateTemplate(sessionFactory)
         }
     }
 

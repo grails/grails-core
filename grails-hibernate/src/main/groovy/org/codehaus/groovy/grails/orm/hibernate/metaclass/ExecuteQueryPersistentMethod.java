@@ -83,6 +83,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Query q = session.createQuery(query);
+                getHibernateTemplate().applySettings(q);
                 SimpleTypeConverter converter = new SimpleTypeConverter();
                 // process paginate params
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
