@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
 import org.grails.datastore.gorm.finders.FinderMethod;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
 public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation implements FinderMethod {
 
     private ClassLoader classLoader;
-    private HibernateTemplate hibernateTemplate;
+    private GrailsHibernateTemplate hibernateTemplate;
     protected final GrailsApplication application;
 
     protected AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern, GrailsApplication application) {
@@ -49,11 +49,10 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         this.classLoader = classLoader;
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
         this.application = application;
-        hibernateTemplate = new HibernateTemplate(sessionFactory);
-        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault(this.application));
+        hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, this.application);
     }
 
-    protected HibernateTemplate getHibernateTemplate() {
+    protected GrailsHibernateTemplate getHibernateTemplate() {
         return hibernateTemplate;
     }
 
@@ -80,7 +79,9 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
             return builder.buildCriteria(additionalCriteria);
         }
 
-        return session.createCriteria(clazz);
+        Criteria criteria = session.createCriteria(clazz);
+        hibernateTemplate.applySettings(criteria);
+        return criteria;
     }
 
     protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);

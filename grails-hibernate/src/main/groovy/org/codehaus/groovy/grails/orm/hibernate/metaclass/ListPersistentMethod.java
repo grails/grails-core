@@ -56,6 +56,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Criteria c =  session.createCriteria(clazz);
+                getHibernateTemplate().applySettings(c);
                 if (arguments.length > 0 && arguments[0] instanceof Map) {
                     Map argMap = (Map)arguments[0];
                     if(argMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {

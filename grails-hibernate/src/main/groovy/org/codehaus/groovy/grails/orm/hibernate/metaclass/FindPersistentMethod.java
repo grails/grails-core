@@ -94,6 +94,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
             return getHibernateTemplate().execute(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException, SQLException {
                     Query q = session.createQuery(query);
+                    getHibernateTemplate().applySettings(q);
                     Object[] queryArgs = null;
                     Map queryNamedArgs = null;
                     boolean useCache = useCache(arguments);
@@ -181,6 +182,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
                     Example example = Example.create(arg).ignoreCase();
 
                     Criteria crit = session.createCriteria(clazz);
+                    getHibernateTemplate().applySettings(crit);
                     crit.add(example);
                     crit.setMaxResults(1);
                     List results = crit.list();

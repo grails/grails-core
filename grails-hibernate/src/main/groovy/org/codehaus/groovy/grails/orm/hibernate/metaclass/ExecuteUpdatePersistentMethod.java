@@ -62,6 +62,7 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
         return getHibernateTemplate().execute(new HibernateCallback() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Query q = session.createQuery(arguments[0].toString());
+                getHibernateTemplate().applySettings(q);
                 SessionFactoryUtils.applyTransactionTimeout(q, getHibernateTemplate().getSessionFactory());
 
                 // process positional HQL params
