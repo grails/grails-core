@@ -15,13 +15,15 @@
  */
 package org.codehaus.groovy.grails.plugins.support.aware;
 
+import org.springframework.beans.factory.Aware;
+
 /**
  * Convenience interface that can be implemented by classes that are registered by plugins.
  *
  * @author Steven Devijver
  * @since 0.2
  */
-public interface ClassLoaderAware {
+public interface ClassLoaderAware extends Aware {
 
     /**
      * This method is called by the {@link org.springframework.context.ApplicationContext} that

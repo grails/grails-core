@@ -15,13 +15,14 @@
  */
 package org.codehaus.groovy.grails.orm.support;
 
+import org.springframework.beans.factory.Aware;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Graeme Rocher
  * @since 0.4
  */
-public interface TransactionManagerAware {
+public interface TransactionManagerAware extends Aware {
 
     /**
      * Sets the transaction manager on implementors

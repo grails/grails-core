@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.support.aware;
 
+import org.springframework.beans.factory.Aware;
+
 import groovy.util.ConfigObject;
 
 /**
@@ -23,7 +25,7 @@ import groovy.util.ConfigObject;
  * @author Graeme Rocher
  * @since 1.2
  */
-public interface GrailsConfigurationAware {
+public interface GrailsConfigurationAware extends Aware {
 
     void setConfiguration(ConfigObject co);
 }

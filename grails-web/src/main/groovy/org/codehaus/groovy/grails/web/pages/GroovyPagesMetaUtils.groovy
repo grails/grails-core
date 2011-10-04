@@ -17,7 +17,7 @@ class GroovyPagesMetaUtils {
                 MetaMethod method=tagBean.metaClass.getMetaMethod(name, args)
                 synchronized(mc) {
                     mc."$name" = { Object[] varArgs ->
-                        method.invoke(tagBean, varArgs ? varArgs[0] : varArgs)
+                        method.invoke(tagBean, *varArgs)
                    }
                 }
                 return method.invoke(tagBean, args)

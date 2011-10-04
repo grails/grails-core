@@ -29,6 +29,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import com.opensymphony.module.sitemesh.Config;
@@ -82,6 +83,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
      */
     public void testGetDecoratorHttpServletRequestPage() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest(null);
+        webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
 
@@ -104,6 +106,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     public void testDecoratedByApplicationConventionForViewsNotRenderedByAController() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest(null);
+        webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
 
@@ -128,6 +131,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     public void testDecoratedByApplicationConvention() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest(null);
+        webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
 
@@ -160,6 +164,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
     public void testOverridingDefaultTemplateViaConfig() throws Exception {
             ConfigObject config = new ConfigSlurper().parse("grails.sitemesh.default.layout='otherApplication'");
             GrailsWebRequest webRequest = buildMockRequest(config);
+            webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
             MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
             appCtx.registerMockResource("/grails-app/views/layouts/application.gsp", "<html><body><h1>Default Layout</h1><g:layoutBody /></body></html>");
             appCtx.registerMockResource("/grails-app/views/layouts/otherApplication.gsp", "<html><body><h1>Other Default Layout</h1><g:layoutBody /></body></html>");
@@ -192,6 +197,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     public void testDecoratedByControllerConvention() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest(null);
+        webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
 
@@ -223,6 +229,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     public void testDecoratedByActionConvention() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest(null);
+        webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test2/testAction.gsp", "<html><body><g:layoutBody /></body></html>");
 
@@ -253,6 +260,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
     public void testDecoratedByLayoutPropertyInController() throws Exception {
         GrailsWebRequest webRequest = buildMockRequest(null);
+        webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE, RequestAttributes.SCOPE_REQUEST);
         MockApplicationContext appCtx = (MockApplicationContext)webRequest.getApplicationContext();
         appCtx.registerMockResource("/grails-app/views/layouts/test.gsp", "<html><body><g:layoutBody /></body></html>");
         appCtx.registerMockResource("/grails-app/views/layouts/mylayout.gsp", "<html><body><g:layoutBody /></body></html>");
