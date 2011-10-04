@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Binding;
-import groovy.lang.MetaProperty;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,6 +71,8 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
         Object val = getVariablesMap().get(name);
         if (val == null && !getVariablesMap().containsKey(name)) {
             if (GroovyPage.PAGE_SCOPE.equals(name)) return this;
+            if ("variables".equals(name)) return getVariables();
+            if ("metaClass".equals(name)) return getMetaClass();
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
