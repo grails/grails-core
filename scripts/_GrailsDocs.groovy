@@ -199,7 +199,10 @@ target(javadoc:"Produces javadoc documentation") {
 target(refdocs:"Generates Grails style reference documentation") {
     depends(parseArguments, createConfig,loadPlugins, setupDoc)
 
-    if (docsDisabled()) return
+    if (docsDisabled()) {
+        event("DocSkip", ["refdocs"])
+        return
+    }
 
     def srcDocs = new File("${basedir}/src/docs")
 
@@ -239,6 +242,8 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
     }
 
     if (srcDocs.exists()) {
+        event("DocStart", ["refdocs"])
+        
         File refDocsDir = grailsSettings.docsOutputDir
         def publisher = new DocPublisher(srcDocs, refDocsDir, grailsConsole)
         publisher.ant = ant
@@ -270,7 +275,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
             }
             exit 1
         }
-
+        event("DocEnd", ["refdocs"])
     }
 }
 
