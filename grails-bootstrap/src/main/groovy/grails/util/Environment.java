@@ -80,6 +80,18 @@ public enum Environment {
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
+    
+    private static Environment cachedCurrentEnvironment = null;
+    private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
+    private String name;
+    
+    Environment() {
+        initialize();
+    }
+
+    private void initialize() {
+        this.name = toString().toLowerCase(Locale.getDefault());
+    }
 
     /**
      * Returns the current environment which is typcally either DEVELOPMENT, PRODUCTION or TEST.
@@ -88,6 +100,13 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
+        if(cachedCurrentEnvironment != null) {
+            return cachedCurrentEnvironment;
+        }
+        return resolveCurrentEnvironment();
+    }
+
+    private static Environment resolveCurrentEnvironment() {
         String envName = System.getProperty(Environment.KEY);
 
         if (isBlank(envName)) {
@@ -115,6 +134,10 @@ public enum Environment {
         }
         return env;
     }
+    
+    public static void cacheCurrentEnvironment() {
+        cachedCurrentEnvironment = resolveCurrentEnvironment();
+    }
 
     /**
      * @see #getCurrent()
@@ -130,7 +153,7 @@ public enum Environment {
      */
     public static boolean isDevelopmentMode() {
         return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
-             System.getProperty("grails.home") != null;
+                cachedHasGrailsHome;
     }
 
     /**
@@ -325,15 +348,12 @@ public enum Environment {
         return value == null || value.trim().length() == 0;
     }
 
-    private String name;
+
 
     /**
      * @return  the name of the environment
      */
     public String getName() {
-        if (name == null) {
-            return toString().toLowerCase(Locale.getDefault());
-        }
         return name;
     }
 

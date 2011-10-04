@@ -54,6 +54,7 @@ public class GrailsContextLoader extends ContextLoader {
         if (metadata != null && metadata.isWarDeployed()) {
             Grape.setEnableAutoDownload(false);
             Grape.setEnableGrapes(false);
+            Environment.cacheCurrentEnvironment();
         }
 
         if (LOG.isDebugEnabled()) {
