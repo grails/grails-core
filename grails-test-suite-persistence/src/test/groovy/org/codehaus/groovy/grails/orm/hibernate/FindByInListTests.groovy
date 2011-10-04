@@ -57,6 +57,18 @@ class FindByInListBook {
         def results = FindByInListBook.findAllByTitleInListOrAuthorInList([], [])
         assertEquals 0, results.size()
     }
+    
+    void testNullArgumentsToInListQueries() {
+        def FindByInListBook = ga.getDomainClass("FindByInListBook").clazz
+        createBooks FindByInListBook
+
+        def results = FindByInListBook.findAllByTitleInListOrAuthorInList(null, null)
+        assertEquals 0, results.size()
+        
+        results = FindByInListBook.findAllByTitleInListOrTitle(null, 'The Stand')
+        assertEquals 1, results.size()
+        assertEquals "Should have returned 'The Stand' from inList query", 'The Stand', results[0].title
+    }
 
     private void createBooks(FindByInListBook) {
         assertNotNull FindByInListBook.newInstance(title:"The Stand", author: "Stephen King").save(flush:true)

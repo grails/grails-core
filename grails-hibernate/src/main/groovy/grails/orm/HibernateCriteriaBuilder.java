@@ -1134,7 +1134,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         }
 
         propertyName = calculatePropertyName(propertyName);
-        addToCriteria(Restrictions.in(propertyName, values));
+        addToCriteria(Restrictions.in(propertyName, values == null ? Collections.EMPTY_LIST : values));
         return this;
     }
 
