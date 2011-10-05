@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
@@ -73,6 +74,12 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
     public FindPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, GrailsApplication application) {
         super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), application);
     }
+
+    @Override
+    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;
+    }
+
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override

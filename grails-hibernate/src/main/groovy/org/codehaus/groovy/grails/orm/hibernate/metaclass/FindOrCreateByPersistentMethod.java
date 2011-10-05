@@ -1,9 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import groovy.lang.Closure;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.hibernate.SessionFactory;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,27 +15,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.hibernate.SessionFactory;
-
 @SuppressWarnings("rawtypes")
 public class FindOrCreateByPersistentMethod extends AbstractFindByPersistentMethod {
 
     private static final String METHOD_PATTERN = "(findOrCreateBy)([A-Z]\\w*)";
 
-    public FindOrCreateByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
-        this(application,sessionFactory, classLoader, METHOD_PATTERN);
+    public FindOrCreateByPersistentMethod(HibernateDatastore datastore, GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
+        this(datastore, application,sessionFactory, classLoader, METHOD_PATTERN);
     }
 
-    public FindOrCreateByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader, String pattern) {
-        super(application,sessionFactory, classLoader, Pattern.compile(pattern), OPERATORS);
+    public FindOrCreateByPersistentMethod(HibernateDatastore datastore, GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader, String pattern) {
+        super(datastore, application,sessionFactory, classLoader, Pattern.compile(pattern), OPERATORS);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected Object doInvokeInternalWithExpressions(Class clazz,
-            String methodName, Object[] arguments, List expressions,
-            String operatorInUse, Closure additionalCriteria) {
+                                                     String methodName, Object[] arguments, List expressions,
+                                                     String operatorInUse, DetachedCriteria detachedCriteria, Closure additionalCriteria) {
         boolean isValidMethod = true;
 
         if (OPERATOR_OR.equals(operatorInUse)) {
@@ -48,7 +49,7 @@ public class FindOrCreateByPersistentMethod extends AbstractFindByPersistentMeth
             throw new MissingMethodException(methodName, clazz, arguments);
         }
         Object result = super.doInvokeInternalWithExpressions(clazz, methodName, arguments,
-                expressions, operatorInUse, additionalCriteria);
+                expressions, operatorInUse, detachedCriteria, additionalCriteria);
 
         if (result == null) {
             Map m = new HashMap();

@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.hibernate.SessionFactory;
 
 public class FindOrSaveByPersistentMethod extends FindOrCreateByPersistentMethod {
@@ -13,8 +14,8 @@ public class FindOrSaveByPersistentMethod extends FindOrCreateByPersistentMethod
      * @param sessionFactory
      * @param classLoader
      */
-    public FindOrSaveByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(application,sessionFactory, classLoader, METHOD_PATTERN);
+    public FindOrSaveByPersistentMethod(HibernateDatastore datastore,GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
+        super(datastore, application,sessionFactory, classLoader, METHOD_PATTERN);
     }
 
     @Override

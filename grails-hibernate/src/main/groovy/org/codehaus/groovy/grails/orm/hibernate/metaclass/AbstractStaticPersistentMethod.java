@@ -15,20 +15,24 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import grails.orm.HibernateCriteriaBuilder;
 import groovy.lang.Closure;
-
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
+import org.codehaus.groovy.grails.orm.hibernate.query.HibernateQuery;
+import org.grails.datastore.gorm.finders.DynamicFinder;
 import org.grails.datastore.gorm.finders.FinderMethod;
+import org.grails.datastore.mapping.model.PersistentEntity;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
+
+import java.util.regex.Pattern;
 
 /**
  * Abstract base class for static persistent methods.
@@ -58,7 +62,7 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
 
     @Override
     public Object invoke(Class clazz, String methodName, Object[] arguments) {
-        return invoke(clazz, methodName, null, arguments);
+        return invoke(clazz, methodName, (Closure) null, arguments);
     }
 
     public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
@@ -72,7 +76,18 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         }
     }
 
-    protected Criteria getCriteria(GrailsApplication appliation, Session session, Closure additionalCriteria, Class<?> clazz) {
+    public Object invoke(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.classLoader);
+            return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+    }
+
+    protected Criteria getCriteria(HibernateDatastore datastore, GrailsApplication appliation, Session session, DetachedCriteria detachedCriteria, Closure additionalCriteria, Class<?> clazz) {
         if (additionalCriteria != null) {
             HibernateCriteriaBuilder builder = new HibernateCriteriaBuilder(clazz, session.getSessionFactory());
             builder.setGrailsApplication(appliation);
@@ -80,9 +95,19 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         }
 
         Criteria criteria = session.createCriteria(clazz);
+        if(detachedCriteria != null) {
+
+            HibernateSession hibernateSession = new HibernateSession(datastore, session.getSessionFactory());
+            PersistentEntity persistentEntity = datastore.getMappingContext().getPersistentEntity(clazz.getName());
+            if(persistentEntity != null) {
+                DynamicFinder.applyDetachedCriteria(new HibernateQuery(criteria, hibernateSession, persistentEntity), detachedCriteria);
+            }
+        }
         hibernateTemplate.applySettings(criteria);
         return criteria;
     }
 
     protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
+
+    protected abstract Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments);
 }

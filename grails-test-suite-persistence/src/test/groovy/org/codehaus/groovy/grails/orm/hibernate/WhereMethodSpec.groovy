@@ -42,6 +42,23 @@ class CallMe {
 ''')
     }
 
+
+  def "Test invoke dynamic finder on where query"() {
+      given:"A bunch of people"
+        createPeople()
+
+      when:"We create a where query and combine it with a dynamic finder"
+        def query = Person.where {
+            lastName == "Simpson"
+        }
+        Person p = query.findByFirstName("Bart")
+
+      then:"The correct result is returned"
+        p != null
+        p.firstName == "Bart"
+
+  }
+
   def "Test function execution"() {
       given:"A bunch of people with pets"
           createPeopleWithPets()

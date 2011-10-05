@@ -15,29 +15,21 @@
 
 package org.codehaus.groovy.grails.orm.hibernate
 
-import grails.orm.HibernateCriteriaBuilder
+import org.grails.datastore.mapping.query.api.Criteria as GrailsCriteria
 
+import grails.orm.HibernateCriteriaBuilder
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormInstanceApi
 import org.grails.datastore.gorm.GormStaticApi
 import org.grails.datastore.gorm.GormValidationApi
-import org.grails.datastore.gorm.finders.CountByFinder
-import org.grails.datastore.gorm.finders.FindAllByBooleanFinder
-import org.grails.datastore.gorm.finders.FindByBooleanFinder
-import org.grails.datastore.gorm.finders.FindOrCreateByFinder
-import org.grails.datastore.gorm.finders.FindOrSaveByFinder
-import org.grails.datastore.gorm.finders.FinderMethod
-import org.grails.datastore.gorm.finders.ListOrderByFinder;
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.hibernate.*
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.engine.EntityEntry
@@ -51,10 +43,11 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.hibernate.Criteria
-import org.grails.datastore.mapping.query.api.Criteria as GrailsCriteria
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
+import org.grails.datastore.gorm.finders.*
+import org.hibernate.*
 
-/**
+ /**
  * Extended GORM Enhancer that fills out the remaining GORM for Hibernate methods
  * and implements string-based query support via HQL.
  *
@@ -78,11 +71,11 @@ class HibernateGormEnhancer extends GormEnhancer {
     static List createPersistentMethods(GrailsApplication grailsApplication, ClassLoader classLoader, Datastore datastore) {
         def sessionFactory = datastore.sessionFactory
         Collections.unmodifiableList([
-            new FindAllByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindAllByPersistentMethod(datastore,grailsApplication, sessionFactory, classLoader),
             new FindAllByBooleanFinder(datastore),
             new FindOrCreateByFinder(datastore),
             new FindOrSaveByFinder(datastore),
-            new FindByPersistentMethod(grailsApplication, sessionFactory, classLoader),
+            new FindByPersistentMethod(datastore, grailsApplication, sessionFactory, classLoader),
             new FindByBooleanFinder(datastore),
             new CountByFinder(datastore),
             new ListOrderByFinder(datastore) ])

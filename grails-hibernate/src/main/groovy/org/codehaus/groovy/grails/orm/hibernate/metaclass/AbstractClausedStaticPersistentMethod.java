@@ -14,24 +14,13 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import grails.orm.RlikeExpression;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.CriteriaQuery;
@@ -42,6 +31,13 @@ import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.beans.TypeConverter;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Graeme Rocher
@@ -443,6 +439,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         }
     }
 
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
      */
@@ -450,6 +447,15 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
     @Override
     protected Object doInvokeInternal(final Class clazz, String methodName,
                                       Closure additionalCriteria, Object[] arguments) {
+        return doInvokeInternal(clazz, methodName, null, additionalCriteria, arguments);
+    }
+
+    @Override
+    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        return doInvokeInternal(clazz, methodName, additionalCriteria,null, arguments);
+    }
+
+    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria detachedCriteria, Closure additionalCriteria, Object[] arguments) {
         List expressions = new ArrayList();
         if (arguments == null) arguments = new Object[0];
         Matcher match = super.getPattern().matcher(methodName);
@@ -527,7 +533,7 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
         }
         // otherwise there is only one expression
         if (!containsOperator && querySequence != null) {
-            GrailsMethodExpression solo = GrailsMethodExpression.create(application, clazz,querySequence);
+            GrailsMethodExpression solo = GrailsMethodExpression.create(application, clazz, querySequence);
 
             if (solo.argumentsRequired > arguments.length) {
                 throw new MissingMethodException(methodName,clazz,arguments);
@@ -565,9 +571,9 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
             LOG.trace("Calculated expressions: " + expressions);
         }
 
-        return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse, additionalCriteria);
+        return doInvokeInternalWithExpressions(clazz, methodName, remainingArguments, expressions, operatorInUse, detachedCriteria, additionalCriteria);
     }
 
     @SuppressWarnings("rawtypes")
-    protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse, Closure additionalCriteria);
+    protected abstract Object doInvokeInternalWithExpressions(Class clazz, String methodName, Object[] arguments, List expressions, String operatorInUse, DetachedCriteria detachedCriteria, Closure additionalCriteria);
 }

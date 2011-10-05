@@ -14,10 +14,11 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.hibernate.SessionFactory;
+
+import java.util.regex.Pattern;
 
 /**
  * The "findBy*" static persistent method. This method allows querying for
@@ -40,7 +41,7 @@ public class FindByPersistentMethod extends AbstractFindByPersistentMethod {
      * @param sessionFactory
      * @param classLoader
      */
-    public FindByPersistentMethod(GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
-        super(application,sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), OPERATORS);
+    public FindByPersistentMethod(HibernateDatastore datastore, GrailsApplication application,SessionFactory sessionFactory, ClassLoader classLoader) {
+        super(datastore,application,sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), OPERATORS);
     }
 }
