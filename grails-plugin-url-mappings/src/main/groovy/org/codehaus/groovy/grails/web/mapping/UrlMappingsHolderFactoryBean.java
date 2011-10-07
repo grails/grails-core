@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.PluginManagerAware;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -42,7 +44,7 @@ import org.springframework.web.context.WebApplicationContext;
  * @since 0.5
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, ApplicationContextAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, ApplicationContextAware, GrailsApplicationAware, PluginManagerAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
@@ -63,6 +65,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
     }
 
     public void afterPropertiesSet() throws Exception {
+        Assert.state(applicationContext != null, "Property [applicationContext] must be set!");
         Assert.state(grailsApplication != null, "Property [grailsApplication] must be set!");
 
         List urlMappings = new ArrayList();

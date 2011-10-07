@@ -57,7 +57,10 @@ class UrlMappingsGrailsPlugin {
         def urlConverterType = application.config?.grails?.web?.url?.converter
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
         grailsLinkGenerator(CachingLinkGenerator, serverURL)
-        urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, createUrlMappingsHolder(application, springConfig.getUnrefreshedApplicationContext(), manager)) { bean ->
+        "org.grails.internal.URL_MAPPINGS_HOLDER"(UrlMappingsHolderFactoryBean) { bean ->
+            bean.lazyInit = true
+        }
+        urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, ref("org.grails.internal.URL_MAPPINGS_HOLDER")) { bean ->
             bean.lazyInit = true
         }
         grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
