@@ -17,9 +17,12 @@ package org.codehaus.groovy.grails.cli.interactive
 
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
+import grails.build.interactive.completors.EscapingFileNameCompletor
+import grails.build.interactive.completors.RegexCompletor
 
 import java.util.concurrent.ConcurrentHashMap
 
+import jline.ArgumentCompletor
 import jline.SimpleCompletor
 
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
@@ -31,9 +34,10 @@ import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
  * @since 2.0
  */
 class GrailsInteractiveCompletor extends SimpleCompletor {
-
     BuildSettings settings
     Map completorCache = new ConcurrentHashMap()
+
+    private ArgumentCompletor bangCompletor = new ArgumentCompletor(new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
 
     GrailsInteractiveCompletor(BuildSettings settings, List scriptResources) {
         super(getScriptNames(scriptResources))
@@ -51,7 +55,7 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
             trimmedBuffer = trimmedBuffer.split(' ')[0]
         }
 
-        def completor = completorCache.get(trimmedBuffer)
+        def completor = trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer)
         if (completor == null) {
             def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
             className = "grails.build.interactive.completors.$className"
