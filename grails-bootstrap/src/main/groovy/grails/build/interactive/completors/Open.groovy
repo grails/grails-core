@@ -1,16 +1,17 @@
 package grails.build.interactive.completors
 
-import jline.SimpleCompletor
 import jline.ArgumentCompletor
-import jline.FileNameCompletor
+import jline.SimpleCompletor
+
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 
 /**
  * @author Graeme Rocher
  * @since 2.0
  */
-class Open extends ArgumentCompletor{
+class Open extends ArgumentCompletor {
 
-    Open(String[] candidateStrings) {
-        super([new SimpleCompletor("open"), new FileNameCompletor()] )
+    Open() {
+        super([ new SimpleCompletor("open"), new SimpleOrFileNameCompletor(InteractiveMode.FIXED_OPEN_OPTIONS) ])
     }
 }
