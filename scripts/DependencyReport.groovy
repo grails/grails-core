@@ -45,7 +45,11 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
     def conf = args.trim() ?: 'build, compile, provided, runtime, test'
     ivy.report(organisation: 'org.grails.internal', module: grailsAppName, todir: targetDir, conf: conf)
 
-    grailsConsole.addStatus "Dependency report output to [$targetDir]"
+    // Copy the runtime dependency report to 'index.html' for easy opening.
+    ant.copy file: "${targetDir}/org.grails.internal-${grailsAppName}-runtime.html",
+             tofile: "${targetDir}/index.html"
+
+    grailsConsole.addStatus "Dependency report output to [${targetDir}/index.html]"
 }
 
 setDefaultTarget(dependencyReport)
