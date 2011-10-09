@@ -129,7 +129,7 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_TEST_REPORTS_DIR = "grails.project.test.reports.dir"
 
     /**
-     * The name of the system property for {@link #testReportsDir}.
+     * The name of the system property for {@link #docsOutputDir}.
      */
     public static final String PROJECT_DOCS_OUTPUT_DIR = "grails.project.docs.output.dir"
 
