@@ -14,7 +14,7 @@ class DirtyTests extends AbstractGrailsHibernateTests {
         d.save(flush: true, failOnError: true)
         session.clear()
 
-        d = Dirt.get(1)
+        d = Dirt.get(d.id)
         assertNotNull d
 
         assertFalse d.isDirty('pr1')
@@ -50,7 +50,7 @@ class DirtyTests extends AbstractGrailsHibernateTests {
         d.save(flush: true, failOnError: true)
         session.clear()
 
-        d = Dirt.get(1)
+        d = Dirt.get(d.id)
         assertNotNull d
 
         assertFalse d.isDirty()
@@ -80,7 +80,7 @@ class DirtyTests extends AbstractGrailsHibernateTests {
         d.save(flush: true, failOnError: true)
         session.clear()
 
-        d = Dirt.get(1)
+        d = Dirt.get(d.id)
         assertNotNull d
 
         d.pr1.reverse()
@@ -92,6 +92,22 @@ class DirtyTests extends AbstractGrailsHibernateTests {
         assertEquals pr3, d.getPersistentValue('pr3')
     }
 
+    void testNewInstances() {
+        def Dirt = ga.getDomainClass('DirtWithValidator').clazz
+
+        def d = Dirt.newInstance(pr1: 'pr1', pr2: new Date(), pr3: 123)
+        assertFalse d.isDirty()
+        assertFalse d.isDirty('pr1')
+        assertFalse d.isDirty('pr2')
+        assertFalse d.isDirty('pr3')
+        assertEquals 0, d.getDirtyPropertyNames().size()
+
+        d.save(flush: true, failOnError: true)
+        session.clear()
+
+        assertNotNull Dirt.get(d.id)
+    }
+
     protected void onSetUp() {
         gcl.parseClass("""
 class Dirt {
@@ -101,6 +117,19 @@ class Dirt {
     String pr1
     Date pr2
     Integer pr3
+}
+
+class DirtWithValidator {
+    Long id
+    Long version
+
+    String pr1
+    Date pr2
+    Integer pr3
+
+    static constraints = {
+        pr1(validator: { val, obj -> if (obj.isDirty('pr3')) {} })
+    }
 }
 """)
     }
