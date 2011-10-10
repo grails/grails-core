@@ -756,7 +756,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     boolean isDirty(instance, String fieldName) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session)
-        if (!entry) {
+        if (!entry || !entry.loadedState) {
             return false
         }
 
@@ -775,7 +775,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     boolean isDirty(instance) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session)
-        if (!entry) {
+        if (!entry || !entry.loadedState) {
             return false
         }
 
@@ -793,7 +793,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     List getDirtyPropertyNames(instance) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session)
-        if (!entry) {
+        if (!entry || !entry.loadedState) {
             return []
         }
 
