@@ -35,6 +35,6 @@ class RegexCompletorSpec extends Specification {
         retval == -1
 
         where:
-        source << [ "!ls ls", "!", "test", "", "!ls" ]
+        source << [ "!ls ls", "!", "test", "" ]
     }
 }
