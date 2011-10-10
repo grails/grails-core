@@ -110,5 +110,10 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
         public Set getOwningEntities(Class javaClass, MappingContext context) {
             return null;
         }
+
+        @Override
+        public IdentityMapping getIdentityMapping(ClassMapping classMapping) {
+            return null;
+        }
     }
 }
