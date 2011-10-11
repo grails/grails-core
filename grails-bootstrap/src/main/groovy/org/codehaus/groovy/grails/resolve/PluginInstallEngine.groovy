@@ -35,6 +35,7 @@ import org.springframework.core.io.FileSystemResource
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.core.module.descriptor.Configuration
+import org.apache.ivy.plugins.resolver.ChainResolver
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -201,12 +202,15 @@ class PluginInstallEngine {
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
         def parentDir = zipFile.parentFile
-        def dependencyManager = resolveEngine.createFreshDependencyManager()
+        IvyDependencyManager dependencyManager = new IvyDependencyManager(resolveEngine.dependencyManager.applicationName, resolveEngine.dependencyManager.applicationVersion, settings)
+        dependencyManager.chainResolver = new ChainResolver()
         dependencyManager.parseDependencies {
             log "warn"
             repositories {
                 def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
-                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/[module]-[revision].[ext]")
+                final parentPath = parentDir.canonicalPath
+                pluginResolver.addArtifactPattern("${parentPath}/[module]-[revision].[ext]")
+                pluginResolver.addArtifactPattern("${parentPath}/grails-[module]-[revision].[ext]")
                 pluginResolver.settings = dependencyManager.ivySettings
                 pluginResolver.latestStrategy = new LatestTimeStrategy()
                 pluginResolver.changingPattern = ".*SNAPSHOT"
@@ -217,8 +221,12 @@ class PluginInstallEngine {
                 compile ":$name:$version"
             }
         }
-        dependencyManager.resolveDependencies()
-        installPluginZipInternal name, version, zipFile, globalInstall, overwrite
+        final report = dependencyManager.resolveDependencies()
+        if(!report.hasError())
+            installPluginZipInternal name, version, zipFile, globalInstall, overwrite
+        else {
+            errorHandler "Resove errors installing plugin $name"
+        }
     }
 
     /**
