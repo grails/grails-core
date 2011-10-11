@@ -182,7 +182,8 @@ public class Metadata extends Properties {
         if (f != null && f.exists()) {
             return getInstance(f);
         }
-        return getCurrent();
+
+        return f != null ? new Metadata(f ) : new Metadata();
     }
 
     /**
