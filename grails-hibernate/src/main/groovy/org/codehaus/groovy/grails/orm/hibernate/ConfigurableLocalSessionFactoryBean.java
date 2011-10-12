@@ -35,7 +35,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-import org.springframework.orm.hibernate3.SessionFactoryBuilder;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -131,9 +130,9 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     @Override
-    public SessionFactoryBuilder setClassLoader(ClassLoader beanClassLoader) {
+    public void setBeanClassLoader(ClassLoader beanClassLoader) {
         this.classLoader = beanClassLoader;
-        return super.setClassLoader(beanClassLoader);
+        super.setBeanClassLoader(beanClassLoader);
     }
 
     @Override
@@ -149,9 +148,9 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     @Override
-    protected SessionFactory newSessionFactory() throws HibernateException {
+    protected SessionFactory newSessionFactory(Configuration configuration) throws HibernateException {
         try {
-            SessionFactory sf = super.newSessionFactory();
+            SessionFactory sf = super.newSessionFactory(configuration);
 
             if (!grails.util.Environment.getCurrent().isReloadEnabled() || !proxyIfReloadEnabled) {
                 return sf;
@@ -210,12 +209,10 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     @Override
-    protected void postProcessConfiguration() throws HibernateException {
+    protected void postProcessConfiguration(Configuration config) throws HibernateException {
         if (hibernateEventListeners == null || hibernateEventListeners.getListenerMap() == null) {
             return;
         }
-
-        Configuration config = getConfiguration();
 
         EventListeners listeners = config.getEventListeners();
         Map<String,Object> listenerMap = hibernateEventListeners.getListenerMap();
