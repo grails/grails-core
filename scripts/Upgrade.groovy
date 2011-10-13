@@ -35,6 +35,7 @@ target(upgrade: "main upgrade target") {
 
     depends(createStructure, parseArguments)
 
+    System.properties.put('runningGrailsUpgrade', 'true')
     boolean force = argsMap.force || !isInteractive ?: false
 
     if (appGrailsVersion != grailsVersion) {

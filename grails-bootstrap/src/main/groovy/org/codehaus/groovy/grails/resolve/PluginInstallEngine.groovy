@@ -420,7 +420,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             for (dependencyConfiguration in dependencyConfigurationsToAdd) {
                 def resolveReport = dependencyManager.resolveDependencies(dependencyConfiguration)
                 if (resolveReport.hasError()) {
-                    errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                    def runningUpgrade = Boolean.getBoolean('runningGrailsUpgrade')
+                    if(!runningUpgrade) {
+                        errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                    }
                 }
                 else {
                     addJarsToRootLoader dependencyConfiguration, resolveReport.getArtifactsReports(null, false).localFile
