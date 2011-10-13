@@ -166,7 +166,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
                             ModuleRevisionId.newInstance("commons-codec", "commons-codec", "1.5"),
                             ModuleRevisionId.newInstance("commons-collections", "commons-collections", "3.2.1"),
-                            ModuleRevisionId.newInstance("commons-io", "commons-io", "2.0.1"),
+                            ModuleRevisionId.newInstance("commons-io", "commons-io", "2.1"),
                             ModuleRevisionId.newInstance("commons-lang", "commons-lang", "2.6"),
                             ModuleRevisionId.newInstance("javax.transaction", "jta", "1.1"),
                             ModuleRevisionId.newInstance("org.hibernate.javax.persistence", "hibernate-jpa-2.0-api", "1.0.1.Final"),
