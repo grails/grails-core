@@ -369,7 +369,12 @@ class PluginInstallEngine {
         def pluginDir = currentInstall.file.canonicalFile
         def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
         // if the versions are the same no need to continue
-        if (version == pluginInfo?.version) {
+        def versionFromMetadata = Metadata.current?."plugins.${name}"
+        if(versionFromMetadata != null) {
+            if(version == versionFromMetadata) {
+                return true
+            }
+        } else if (version == pluginInfo?.version) {
             return true
         }
 
