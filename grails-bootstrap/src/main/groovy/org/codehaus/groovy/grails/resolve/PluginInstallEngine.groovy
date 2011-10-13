@@ -383,7 +383,7 @@ class PluginInstallEngine {
             return true
         }
 
-        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to update to [$name-$version]? ")) {
+        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [${versionFromMetadata ? name + '-' + versionFromMetadata : pluginDir.name}]. Do you want to update to [$name-$version]? ")) {
             ant.delete(dir: currentInstall.file)
             return false
         }
