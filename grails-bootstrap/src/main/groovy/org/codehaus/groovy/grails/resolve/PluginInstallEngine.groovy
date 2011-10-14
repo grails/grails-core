@@ -225,7 +225,7 @@ class PluginInstallEngine {
         if(!report.hasError())
             installPluginZipInternal name, version, zipFile, globalInstall, overwrite
         else {
-            errorHandler "Resove errors installing plugin $name"
+            errorHandler "Could not resolve all dependencies for plugin $name"
         }
     }
 
