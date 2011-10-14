@@ -37,7 +37,6 @@ import java.util.Vector;
  * @since 1.1
  */
 public class Metadata extends Properties {
-
     private static final long serialVersionUID = -582452926111226898L;
     public static final String FILE = "application.properties";
     public static final String APPLICATION_VERSION = "app.version";
@@ -49,15 +48,26 @@ public class Metadata extends Properties {
 
     private static Reference<Metadata> metadata = new SoftReference<Metadata>(new Metadata());
 
-    private boolean initialized;
     private File metadataFile;
+    private boolean warDeployed;
 
     private Metadata() {
         super();
+        loadFromDefault();
     }
 
     private Metadata(File f) {
         this.metadataFile = f;
+        loadFromFile(f);
+    }
+    
+    private Metadata(InputStream inputStream) {
+        loadFromInputStream(inputStream);
+    }
+    
+    private Metadata(Map properties) {
+        putAll(properties);
+        afterLoading();
     }
 
     public File getMetadataFile() {
@@ -71,8 +81,13 @@ public class Metadata extends Properties {
         Metadata m = metadata.get();
         if (m != null) {
             m.clear();
-            m.initialized = false;
+            m.afterLoading();
         }
+    }
+    
+    private void afterLoading() {
+        Object val = get(WAR_DEPLOYED);
+        warDeployed = (val != null && val.equals("true"));
     }
 
     /**
@@ -81,30 +96,57 @@ public class Metadata extends Properties {
     public static Metadata getCurrent() {
         Metadata m = metadata.get();
         if (m == null) {
-            metadata = new SoftReference<Metadata>(new Metadata());
-            m = metadata.get();
+            m = new Metadata();
+            metadata = new SoftReference<Metadata>(m);
         }
-        if (!m.initialized) {
-            InputStream input = null;
+        return m;
+    }
+
+    private void loadFromDefault() {
+        InputStream input = null;
+        try {
+            input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
+            if (input == null) {
+                input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
+            }
+            if (input != null) {
+                load(input);
+            }
+            afterLoading();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
+        }
+        finally {
+            closeQuietly(input);
+        }
+    }
+    
+    private void loadFromInputStream(InputStream inputStream) {
+        try {
+            load(inputStream);
+            afterLoading();
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
+        }
+    }
+    
+    private void loadFromFile(File file) {
+        if (file != null && file.exists()) {
+            FileInputStream input = null;
             try {
-                input = Thread.currentThread().getContextClassLoader().getResourceAsStream(FILE);
-                if (input == null) {
-                    input = Metadata.class.getClassLoader().getResourceAsStream(FILE);
-                }
-                if (input != null) {
-                    m.load(input);
-                }
+                input = new FileInputStream(file);
+                load(input);
+                afterLoading();
             }
             catch (Exception e) {
                 throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
             }
             finally {
                 closeQuietly(input);
-                m.initialized = true;
             }
         }
-
-        return m;
     }
 
     /***
@@ -113,18 +155,11 @@ public class Metadata extends Properties {
      * @return a Metadata instance
      */
     public static Metadata getInstance(InputStream inputStream) {
-        Metadata m = new Metadata();
+        Metadata m = new Metadata(inputStream);
         metadata = new FinalReference<Metadata>(m);
-
-        try {
-            m.load(inputStream);
-            m.initialized = true;
-        }
-        catch (IOException e) {
-            throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
-        }
         return m;
     }
+
 
     /**
      * Loads and returns a new Metadata object for the given File.
@@ -134,24 +169,9 @@ public class Metadata extends Properties {
     public static Metadata getInstance(File file) {
         Metadata m = new Metadata(file);
         metadata = new FinalReference<Metadata>(m);
-
-        if (file != null && file.exists()) {
-
-            FileInputStream input = null;
-            try {
-                input = new FileInputStream(file);
-                m.load(input);
-                m.initialized = true;
-            }
-            catch (Exception e) {
-                throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
-            }
-            finally {
-                closeQuietly(input);
-            }
-        }
         return m;
     }
+
 
     /**
      * Reloads the application metadata.
@@ -159,11 +179,11 @@ public class Metadata extends Properties {
      */
     public static Metadata reload() {
         File f = getCurrent().metadataFile;
-
-        if (f != null) {
+        if (f != null && f.exists()) {
             return getInstance(f);
         }
-        return getCurrent();
+
+        return f != null ? new Metadata(f ) : new Metadata();
     }
 
     /**
@@ -287,8 +307,7 @@ public class Metadata extends Properties {
      * @return true if this application is deployed as a WAR
      */
     public boolean isWarDeployed() {
-        Object val = get(WAR_DEPLOYED);
-        return val != null && val.equals("true");
+        return warDeployed;
     }
 
     private static void closeQuietly(Closeable c) {

@@ -23,14 +23,6 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
@@ -47,6 +39,9 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.util.*;
+
 /**
  * Abstract implementation of the GrailsPluginManager interface
  *
@@ -58,6 +53,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     private static final Log LOG = LogFactory.getLog(AbstractGrailsPluginManager.class);
     private static final String BLANK = "";
     public static final String CONFIG_FILE = "Config";
+    private static final String DATA_SOURCE_CLASS = "DataSource";
     protected List<GrailsPlugin> pluginList = new ArrayList<GrailsPlugin>();
     protected GrailsApplication application;
     protected Resource[] pluginResources = new Resource[0];
@@ -352,7 +348,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     }
 
     public void informOfClassChange(File file, @SuppressWarnings("rawtypes") Class cls) {
-        if (cls != null && cls.getName().equals(CONFIG_FILE)) {
+        if (cls != null && (cls.getName().equals(CONFIG_FILE) || cls.getName().equals(DATA_SOURCE_CLASS))) {
             ConfigSlurper configSlurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application);
             ConfigObject c;
             try {

@@ -119,7 +119,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         def template = '''<g:fieldValue bean="${book}" field="title" />'''
 
-        assertOutputEquals("&lt;script&gt;alert('escape me')&lt;/script&gt;", template, [book:b])
+        assertOutputEquals("&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;", template, [book:b])
 
         request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", 'html')
 

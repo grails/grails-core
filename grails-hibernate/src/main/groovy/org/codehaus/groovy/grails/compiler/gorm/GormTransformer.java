@@ -23,14 +23,10 @@ import java.util.List;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -54,7 +50,7 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You either don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
     public static final String NEW_INSTANCE_METHOD = "newInstance";
 
-    private static final List<String> EXCLUDES = Arrays.asList("create");
+    private static final List<String> EXCLUDES = Arrays.asList("create", "setTransactionManager");
     private static final Class<?>[] EMPTY_JAVA_CLASS_ARRAY = {};
     private static final Class<?>[] OBJECT_CLASS_ARG = { Object.class };
 

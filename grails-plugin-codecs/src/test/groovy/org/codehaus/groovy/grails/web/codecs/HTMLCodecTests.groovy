@@ -9,6 +9,7 @@ class HTMLCodecTests extends GroovyTestCase {
     void testEncode() {
         assertEquals('&lt;tag&gt;', codec.encode('<tag>'))
         assertEquals('&quot;quoted&quot;', codec.encode('"quoted"'))
+        assertEquals("Hitchiker&#39;s Guide", codec.encode("Hitchiker's Guide"))
     }
 
     void testDecode() {

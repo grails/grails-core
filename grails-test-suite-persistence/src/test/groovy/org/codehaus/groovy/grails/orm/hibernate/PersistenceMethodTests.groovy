@@ -20,7 +20,7 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
     }
 
     void testMethodSignatures() {
-        FindByPersistentMethod findBy = new FindByPersistentMethod(grailsApplication,
+        FindByPersistentMethod findBy = new FindByPersistentMethod(null, grailsApplication,
                 sessionFactory, new GroovyClassLoader())
         assertTrue findBy.isMethodMatch("findByFirstName")
         assertTrue findBy.isMethodMatch("findByFirstNameAndLastName")

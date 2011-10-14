@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.GrailsWrappedWriter;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -129,10 +130,6 @@ public final class GroovyPageOutputStack {
             super(new NullWriter());
         }
 
-        public void setOut(Writer newOut) {
-            out = newOut;
-        }
-
         @SuppressWarnings("unused")
         public GroovyPageOutputStack getOutputStack() {
             return GroovyPageOutputStack.this;
@@ -149,11 +146,8 @@ public final class GroovyPageOutputStack {
     }
 
     private Writer unwrapTargetWriter(Writer targetWriter) {
-        if (targetWriter instanceof GrailsPrintWriter) {
-            GrailsPrintWriter gpw=((GrailsPrintWriter)targetWriter);
-            if (gpw.isAllowUnwrappingOut()) {
-                return ((GrailsPrintWriter)targetWriter).getOut();
-            }
+        if (targetWriter instanceof GrailsWrappedWriter) {
+            return ((GrailsWrappedWriter)targetWriter).unwrap();
         }
         return targetWriter;
     }

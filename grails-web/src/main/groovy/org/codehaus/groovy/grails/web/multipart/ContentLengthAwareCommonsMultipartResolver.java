@@ -47,8 +47,9 @@ public class ContentLengthAwareCommonsMultipartResolver extends CommonsMultipart
         } catch (MultipartException e) {
             if (e.getCause() != null && e.getCause().getClass().equals(FileUploadBase.UnknownSizeException.class)) {
                 LOG.warn(e.getMessage());
-                Map<String, String[]> empty = Collections.emptyMap();
-                return new MultipartParsingResult(EMPTY_MULTI_VALUE_MAP, empty);
+                Map<String, String[]> emptyMpParams = Collections.emptyMap();
+                Map<String, String> emptyMpParamContentTypes = Collections.emptyMap();
+                return new MultipartParsingResult(EMPTY_MULTI_VALUE_MAP, emptyMpParams, emptyMpParamContentTypes);
             }
             throw e;
         }

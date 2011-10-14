@@ -14,14 +14,9 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import grails.orm.PagedResultList;
 import groovy.lang.Closure;
-
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
@@ -30,6 +25,11 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The "list" persistent static method. This method lists of of the persistent
@@ -56,6 +56,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Criteria c =  session.createCriteria(clazz);
+                getHibernateTemplate().applySettings(c);
                 if (arguments.length > 0 && arguments[0] instanceof Map) {
                     Map argMap = (Map)arguments[0];
                     if(argMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
@@ -83,5 +84,10 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
                 return c.list();
             }
         });
+    }
+
+    @Override
+    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;
     }
 }

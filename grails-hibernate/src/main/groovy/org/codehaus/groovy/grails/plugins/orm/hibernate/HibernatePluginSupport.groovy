@@ -538,7 +538,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         String propertyName = property.name
         def getterName = GrailsClassUtils.getGetterName(propertyName)
         def setterName = GrailsClassUtils.getSetterName(propertyName)
-        domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.curry(propertyName)
+        domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.clone().curry(propertyName)
         domainClass.metaClass."${setterName}" = { PropertyUtils.setProperty(delegate, propertyName, it) }
 
         for (GrailsDomainClass sub in domainClass.subClasses) {

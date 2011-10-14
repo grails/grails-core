@@ -38,7 +38,7 @@ import javax.servlet.jsp.tagext.DynamicAttributes;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -77,7 +77,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     private List<String> invocationBodyContent = new ArrayList<String>();
     private BeanWrapper bean;
     protected Map<String, Object> attributes = new HashMap<String, Object>();
-    private FastStringWriter sw;
+    private FastStringPrintWriter sw;
     private PrintWriter out;
     private JspWriter jspWriter;
     private GrailsApplicationAttributes grailsAttributes;
@@ -176,7 +176,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             throw new GrailsTagException("Tag [" + getTagName() + "] does not exist. No tag library found.");
         }
 
-        sw = new FastStringWriter();
+        sw = new FastStringPrintWriter();
         out = sw;
         tagLib.setProperty(OUT_PROPERTY, out);
         Object tagLibProp;

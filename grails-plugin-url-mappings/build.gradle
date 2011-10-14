@@ -2,7 +2,7 @@ dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile "commons-io:commons-io:${commonsIOVersion}"
 
-    compile 'com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.1_jdk5'
+    compile "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}"
 
     compile project(":grails-web"), project(":grails-plugin-controllers")
 }

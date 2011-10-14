@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.WebUtils;
@@ -269,7 +269,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         private final static TextEncoder TEXT_ENCODER = new TextEncoder();
 
         private StreamCharBuffer charBuffer;
-        private GrailsPrintWriter exposedWriter;
+        private GrailsPrintWriterAdapter exposedWriter;
         private StreamByteBuffer byteBuffer;
         private ServletOutputStream exposedStream;
 
@@ -305,8 +305,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                 if (gspSitemeshPage != null) {
                     gspSitemeshPage.setPageBuffer(charBuffer);
                 }
-                exposedWriter = new GrailsPrintWriter(charBuffer.getWriter());
-                exposedWriter.setFinalTargetHere(true);
+                exposedWriter = new GrailsPrintWriterAdapter(charBuffer.getWriter());
             }
             return exposedWriter;
         }

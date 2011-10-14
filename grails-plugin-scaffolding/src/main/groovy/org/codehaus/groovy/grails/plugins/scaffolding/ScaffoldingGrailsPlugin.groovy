@@ -136,9 +136,6 @@ class ScaffoldingGrailsPlugin {
                 }
             }
             controllerClass.registerMapping(propertyName)
-            if (propertyName == GrailsControllerClass.INDEX_ACTION) {
-                controllerClass.defaultActionName = propertyName
-            }
         }
     }
 

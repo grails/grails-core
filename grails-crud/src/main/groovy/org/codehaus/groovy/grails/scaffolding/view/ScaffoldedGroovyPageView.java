@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.util.Assert;
 
 /**
@@ -78,6 +79,7 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
             LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
         }
 
+        request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
         Writable w = template.make(model);
         Writer out = null;
         try {

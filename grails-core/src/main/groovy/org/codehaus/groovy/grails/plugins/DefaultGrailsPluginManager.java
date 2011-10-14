@@ -160,8 +160,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         setPluginFilter();
     }
 
-
-
     public GrailsPlugin[] getUserPlugins() {
         return userPlugins.toArray(new GrailsPlugin[userPlugins.size()]);
     }
@@ -262,9 +260,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             for (String loadBefore : plugin.getLoadBeforeNames()) {
                 final GrailsPlugin loadBeforePlugin = getGrailsPlugin(loadBefore);
                 int j = newList.indexOf(loadBeforePlugin);
-                if (i > j) {
+                if (j > -1 && i > j) {
                     newList.remove(plugin);
-                    newList.add(j,plugin);
+                    newList.add(j, plugin);
                 }
             }
 
@@ -272,9 +270,9 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             for (String loadAfter : plugin.getLoadAfterNames()) {
                 final GrailsPlugin loadAfterPlugin = getGrailsPlugin(loadAfter);
                 int j = newList.indexOf(loadAfterPlugin);
-                if (i < j) {
+                if (j > -1 && i < j) {
                     newList.remove(plugin);
-                    newList.add(j,plugin);
+                    newList.add(j, plugin);
                 }
             }
         }
@@ -283,7 +281,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
 
     private void attemptLoadPlugins(ClassLoader gcl) {
         // retrieve load core plugins first
-
 
         List<GrailsPlugin>  grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
 
@@ -353,8 +350,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         return new DefaultGrailsPlugin(pluginClass, application);
     }
 
-    protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass,
-            Resource resource) {
+    protected GrailsPlugin createGrailsPlugin(Class<?> pluginClass, Resource resource) {
         return new DefaultGrailsPlugin(pluginClass, resource, application);
     }
 
@@ -1776,5 +1772,4 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             "<!ATTLIST welcome-file id ID #IMPLIED>\n" +
             "<!ATTLIST welcome-file-list id ID #IMPLIED>";
     }
-
 }

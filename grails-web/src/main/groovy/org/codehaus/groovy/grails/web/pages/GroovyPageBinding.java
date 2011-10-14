@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Binding;
-import groovy.lang.MetaProperty;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,19 +71,14 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
         Object val = getVariablesMap().get(name);
         if (val == null && !getVariablesMap().containsKey(name)) {
             if (GroovyPage.PAGE_SCOPE.equals(name)) return this;
+            if ("variables".equals(name)) return getVariables();
+            if ("metaClass".equals(name)) return getMetaClass();
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
                     // cache variable in this context since parent context cannot change during usage of this context
                     getVariablesMap().put(name, val);
                     cachedParentVariableNames.add(name);
-                }
-            }
-            // stackover flow if pluginContextPath or pagePlugin is checked by MetaProperty
-            if (val==null && !name.equals(GroovyPage.PLUGIN_CONTEXT_PATH) && !name.equals("pagePlugin")) {
-                MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
-                if (metaProperty != null) {
-                    val = metaProperty.getProperty(this);
                 }
             }
         }

@@ -35,6 +35,7 @@ import org.springframework.core.io.FileSystemResource
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.core.module.descriptor.Configuration
+import org.apache.ivy.plugins.resolver.ChainResolver
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -201,12 +202,15 @@ class PluginInstallEngine {
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
         def parentDir = zipFile.parentFile
-        def dependencyManager = resolveEngine.createFreshDependencyManager()
+        IvyDependencyManager dependencyManager = new IvyDependencyManager(resolveEngine.dependencyManager.applicationName, resolveEngine.dependencyManager.applicationVersion, settings)
+        dependencyManager.chainResolver = new ChainResolver()
         dependencyManager.parseDependencies {
             log "warn"
             repositories {
                 def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
-                pluginResolver.addArtifactPattern("${parentDir.absolutePath}/[module]-[revision].[ext]")
+                final parentPath = parentDir.canonicalPath
+                pluginResolver.addArtifactPattern("${parentPath}/[module]-[revision].[ext]")
+                pluginResolver.addArtifactPattern("${parentPath}/grails-[module]-[revision].[ext]")
                 pluginResolver.settings = dependencyManager.ivySettings
                 pluginResolver.latestStrategy = new LatestTimeStrategy()
                 pluginResolver.changingPattern = ".*SNAPSHOT"
@@ -217,8 +221,12 @@ class PluginInstallEngine {
                 compile ":$name:$version"
             }
         }
-        dependencyManager.resolveDependencies()
-        installPluginZipInternal name, version, zipFile, globalInstall, overwrite
+        final report = dependencyManager.resolveDependencies()
+        if(!report.hasError())
+            installPluginZipInternal name, version, zipFile, globalInstall, overwrite
+        else {
+            errorHandler "Resove errors installing plugin $name"
+        }
     }
 
     /**
@@ -361,7 +369,12 @@ class PluginInstallEngine {
         def pluginDir = currentInstall.file.canonicalFile
         def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
         // if the versions are the same no need to continue
-        if (version == pluginInfo?.version) {
+        def versionFromMetadata = Metadata.current?."plugins.${name}"
+        if(versionFromMetadata != null) {
+            if(version == versionFromMetadata) {
+                return true
+            }
+        } else if (version == pluginInfo?.version) {
             return true
         }
 
@@ -370,7 +383,7 @@ class PluginInstallEngine {
             return true
         }
 
-        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to update to [$name-$version]? ")) {
+        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [${versionFromMetadata ? name + '-' + versionFromMetadata : pluginDir.name}]. Do you want to update to [$name-$version]? ")) {
             ant.delete(dir: currentInstall.file)
             return false
         }
@@ -407,7 +420,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             for (dependencyConfiguration in dependencyConfigurationsToAdd) {
                 def resolveReport = dependencyManager.resolveDependencies(dependencyConfiguration)
                 if (resolveReport.hasError()) {
-                    errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                    def runningUpgrade = Boolean.getBoolean('runningGrailsUpgrade')
+                    if(!runningUpgrade) {
+                        errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                    }
                 }
                 else {
                     addJarsToRootLoader dependencyConfiguration, resolveReport.getArtifactsReports(null, false).localFile

@@ -26,12 +26,13 @@ class WithSessionMethodTests extends AbstractGrailsHibernateTests {
         def testClass = ga.getDomainClass("WithSessionMethod").clazz
 
         Session testSession
-        testClass.withNewSession { Session session ->
+        def returnValue = testClass.withNewSession { Session session ->
             testSession = session
+            5
         }
 
         assertNotNull testSession
-
+        assertEquals 5, returnValue
     }
 
     protected void onSetUp() {

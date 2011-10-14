@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
 import org.springframework.util.Assert
-import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter
 
 /**
  * @author Graeme Rocher
@@ -36,7 +36,7 @@ class JspTagLibImpl implements JspTagLib {
 
         if (tag) {
             args = args ?: [[:]] // default to an list with an empty map inside
-            def sw = new FastStringWriter()
+            def sw = new FastStringPrintWriter()
 
             Map attrs = args[0] instanceof Map ? args[0] : [:]
             def body = args[0] instanceof Closure ? args[0] : null
