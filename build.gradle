@@ -6,7 +6,7 @@ buildscript {
 	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
     dependencies {
-        classpath "commons-io:commons-io:2.0.1"
+        classpath "commons-io:commons-io:2.1"
         //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
 }
@@ -20,12 +20,12 @@ aspectjVersion = "1.6.10"
 commonsBeanUtilsVersion = "1.8.3"
 commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
-commonsIOVersion = "2.0.1"
+commonsIOVersion = "2.1"
 commonsLangVersion = "2.6"
 datastoreVersion = "1.0.0.BUILD-SNAPSHOT"
 gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
-groovyVersion = "1.8.3-SNAPSHOT"
+groovyVersion = "1.8.3"
 gradleGroovyVersion = groovyVersion
 gradleGroovyVersion = "1.8.2"
 ivyVersion = "2.2.0"
@@ -33,12 +33,13 @@ jansiVersion = "1.2.1"
 jlineVersion = "1.0"
 jnaVersion = "3.2.3"
 slf4jVersion = "1.6.2"
-springLoadedVersion = "1.0.1.BUILD-SNAPSHOT"
-springVersion = "3.1.0.M2"
+springLoadedVersion = "1.0.1"
+springVersion = "3.1.0.RC1"
 springWebflowVersion= "2.0.8.RELEASE"
-hibernateVersion = "3.6.5.Final"
-ehcacheVersion = "2.4.5"
-junitVersion = "4.9"
+hibernateVersion = "3.6.7.Final"
+ehcacheVersion = "2.4.6"
+junitVersion = "4.10"
+concurrentlinkedhashmapVersion = "1.2_jdk5"
 
 archivesBaseName = 'grails'
 version = grailsVersion
@@ -135,7 +136,7 @@ subprojects { project ->
 
         // Specs
         compile 'javax.servlet:servlet-api:2.5'
-        compile 'org.hibernate.java-persistence:jpa-api:2.0-cr-1'
+        compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 
 
         // Testing

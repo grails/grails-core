@@ -225,7 +225,7 @@ class PluginInstallEngine {
         if(!report.hasError())
             installPluginZipInternal name, version, zipFile, globalInstall, overwrite
         else {
-            errorHandler "Resove errors installing plugin $name"
+            errorHandler "Could not resolve all dependencies for plugin $name"
         }
     }
 
@@ -369,7 +369,12 @@ class PluginInstallEngine {
         def pluginDir = currentInstall.file.canonicalFile
         def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
         // if the versions are the same no need to continue
-        if (version == pluginInfo?.version) {
+        def versionFromMetadata = Metadata.current?."plugins.${name}"
+        if(versionFromMetadata != null) {
+            if(version == versionFromMetadata) {
+                return true
+            }
+        } else if (version == pluginInfo?.version) {
             return true
         }
 
@@ -378,7 +383,7 @@ class PluginInstallEngine {
             return true
         }
 
-        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [$pluginDir.name]. Do you want to update to [$name-$version]? ")) {
+        if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [${versionFromMetadata ? name + '-' + versionFromMetadata : pluginDir.name}]. Do you want to update to [$name-$version]? ")) {
             ant.delete(dir: currentInstall.file)
             return false
         }
@@ -415,7 +420,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             for (dependencyConfiguration in dependencyConfigurationsToAdd) {
                 def resolveReport = dependencyManager.resolveDependencies(dependencyConfiguration)
                 if (resolveReport.hasError()) {
-                    errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                    def runningUpgrade = Boolean.getBoolean('runningGrailsUpgrade')
+                    if(!runningUpgrade) {
+                        errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                    }
                 }
                 else {
                     addJarsToRootLoader dependencyConfiguration, resolveReport.getArtifactsReports(null, false).localFile

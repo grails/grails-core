@@ -509,7 +509,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     }
 
     @Override
-    void withNewSession(Closure callable) {
+    def withNewSession(Closure callable) {
         HibernateTemplate template  = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
         template.setExposeNativeSession(false)
         SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
@@ -525,7 +525,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
                     sessionHolder.addSession(session)
                 }
 
-                callable(session)
+                return callable(session)
             } as HibernateCallback)
         }
         finally {
