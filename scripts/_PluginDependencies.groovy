@@ -68,7 +68,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 
     def installEngine = createPluginInstallEngine()
     for (zip in pluginZips) {
-        installEngine.installPlugin(zip)
+        installEngine.installResolvedPlugin(zip)
     }
 
     installEngine.checkPluginsToUninstall()

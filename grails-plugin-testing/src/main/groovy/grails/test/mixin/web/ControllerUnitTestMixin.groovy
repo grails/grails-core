@@ -62,8 +62,16 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
+import org.codehaus.groovy.grails.plugins.codecs.HexCodec
+import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
+import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
+import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
+import org.codehaus.groovy.grails.plugins.codecs.URLCodec
+import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
 
- /**
+/**
  * A mixin that can be applied to a unit test in order to test controllers.
  *
  * @author Graeme Rocher
@@ -212,6 +220,15 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
     @Before
     void bindGrailsWebRequest() {
+        mockCodec(Base64Codec)
+        mockCodec(HTMLCodec)
+        mockCodec(URLCodec)
+        mockCodec(JavaScriptCodec)
+        mockCodec(HexCodec)
+        mockCodec(MD5Codec)
+        mockCodec(SHA1Codec)
+        mockCodec(SHA256Codec)
+
         if (webRequest == null) {
             webRequest = GrailsWebRequest.lookup()
             if (webRequest == null) {

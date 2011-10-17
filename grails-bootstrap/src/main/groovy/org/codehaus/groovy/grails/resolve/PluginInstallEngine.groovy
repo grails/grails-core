@@ -187,6 +187,23 @@ class PluginInstallEngine {
         }
     }
 
+
+    /**
+     * Installs a plugin from the given ZIP file. Differs from #installPlugin(zipFile) in that the plugin to be installed is assumed to already be resolved and
+     * hence not placed in the users local cache
+     *
+     * @param zipFile The plugin zip file
+     */
+    boolean installResolvedPlugin(File zipFile) {
+        if (!zipFile.exists()) {
+            errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
+        }
+
+        def (name, version) = readMetadataFromZip(zipFile.absolutePath)
+
+        installPluginZipInternal name, version, zipFile, false, false
+    }
+
     /**
      * Installs a plugin from the given ZIP file
      *
@@ -225,7 +242,7 @@ class PluginInstallEngine {
         if(!report.hasError())
             installPluginZipInternal name, version, zipFile, globalInstall, overwrite
         else {
-            errorHandler "Resove errors installing plugin $name"
+            errorHandler "Could not resolve all dependencies for plugin $name"
         }
     }
 
