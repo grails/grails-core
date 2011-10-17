@@ -201,7 +201,7 @@ class PluginInstallEngine {
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
-        installPluginZipInternal name, version, zipFile, false, true
+        installPluginZipInternal name, version, zipFile, false, false
     }
 
     /**
