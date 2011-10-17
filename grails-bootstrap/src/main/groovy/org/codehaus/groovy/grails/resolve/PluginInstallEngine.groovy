@@ -187,6 +187,24 @@ class PluginInstallEngine {
         }
     }
 
+
+    /**
+     * Installs a plugin from the given ZIP file. Differs from #installPlugin(zipFile) in that the plugin to be installed is assumed to already be resolved and
+     * hence not placed in the users local cache
+     *
+     * @param zipFile The plugin zip file
+     * @param globalInstall Whether it is a global install or not (optional)
+     */
+    boolean installResolvedPlugin(File zipFile) {
+        if (!zipFile.exists()) {
+            errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
+        }
+
+        def (name, version) = readMetadataFromZip(zipFile.absolutePath)
+
+        installPluginZipInternal name, version, zipFile, false, true
+    }
+
     /**
      * Installs a plugin from the given ZIP file
      *
