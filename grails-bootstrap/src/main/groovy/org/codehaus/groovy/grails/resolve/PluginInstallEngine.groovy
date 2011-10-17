@@ -193,7 +193,6 @@ class PluginInstallEngine {
      * hence not placed in the users local cache
      *
      * @param zipFile The plugin zip file
-     * @param globalInstall Whether it is a global install or not (optional)
      */
     boolean installResolvedPlugin(File zipFile) {
         if (!zipFile.exists()) {
