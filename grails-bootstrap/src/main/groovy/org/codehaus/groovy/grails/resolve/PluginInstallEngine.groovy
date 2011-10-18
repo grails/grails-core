@@ -219,10 +219,13 @@ class PluginInstallEngine {
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
         def parentDir = zipFile.parentFile
-        IvyDependencyManager dependencyManager = new IvyDependencyManager(resolveEngine.dependencyManager.applicationName, resolveEngine.dependencyManager.applicationVersion, settings)
+        final currentDependencyManager = resolveEngine.dependencyManager
+        IvyDependencyManager dependencyManager = new IvyDependencyManager(currentDependencyManager.applicationName, currentDependencyManager.applicationVersion, settings)
         dependencyManager.chainResolver = new ChainResolver()
         dependencyManager.parseDependencies {
             log "warn"
+            useOrigin false
+            cacheDir currentDependencyManager.ivySettings.getDefaultCache().absolutePath
             repositories {
                 def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
                 final parentPath = parentDir.canonicalPath
@@ -239,8 +242,13 @@ class PluginInstallEngine {
             }
         }
         final report = dependencyManager.resolveDependencies()
-        if(!report.hasError())
-            installPluginZipInternal name, version, zipFile, globalInstall, overwrite
+        if(!report.hasError()) {
+            final reports = report.allArtifactsReports
+            if(reports) {
+                installPluginZipInternal name, version, reports[0].localFile, globalInstall, overwrite
+            }
+        }
+
         else {
             errorHandler "Could not resolve all dependencies for plugin $name"
         }
