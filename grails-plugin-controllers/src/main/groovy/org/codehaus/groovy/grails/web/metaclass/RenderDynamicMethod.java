@@ -43,6 +43,7 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeUtility;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
@@ -245,7 +246,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             else {
                 Object object = arguments[0];
-                renderView = renderObject(object, out);
+                if(object instanceof JSONElement) {
+                    renderView = renderJSON((JSONElement)object, response);
+                }
+                else{
+                    renderView = renderObject(object, out);
+                }
             }
             try {
                 if (!renderView) {
@@ -262,6 +268,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private boolean renderJSON(JSONElement object, HttpServletResponse response) {
+        response.setContentType(GrailsWebUtil.getContentType("application/json", gspEncoding));
+        return renderText(object.toString(), response);
     }
 
     private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
