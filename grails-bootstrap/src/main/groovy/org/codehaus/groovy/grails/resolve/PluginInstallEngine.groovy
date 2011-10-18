@@ -245,7 +245,12 @@ class PluginInstallEngine {
         if(!report.hasError()) {
             final reports = report.allArtifactsReports
             if(reports) {
-                installPluginZipInternal name, version, reports[0].localFile, globalInstall, overwrite
+                final localFile = reports[0].localFile
+                if(version.endsWith("-SNAPSHOT")) {
+                    ant.mkdir(dir:"${settings.grailsWorkDir}/cached-snapshot-plugins")
+                    ant.copy(file:localFile, todir:"${settings.grailsWorkDir}/cached-snapshot-plugins")
+                }
+                installPluginZipInternal name, version, localFile, globalInstall, overwrite
             }
         }
 
