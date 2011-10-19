@@ -27,10 +27,21 @@ class CreateCriteriaTests extends AbstractGrailsHibernateTests {
 
     void testPaginatedQueryReturnsPagedResultList() {
         def dc = ga.getDomainClass("CreateCriteriaMethodBook")
+        def stats = sessionFactory.statistics
+        stats.statisticsEnabled = true
+        stats.clear()
         def results = dc.clazz.createCriteria().list(max: 10, offset: 0) {
             like("title","Book%")
         }
         assertTrue 'results should have been a PagedResultList', results instanceof PagedResultList
+        assertEquals 1, stats.queryExecutionCount
+        
+        assertEquals 0, results.totalCount
+        assertEquals 2, stats.queryExecutionCount
+        
+        // refer to totalCount again and make sure another query was not sent to the database
+        assertEquals 0, results.totalCount
+        assertEquals 2, stats.queryExecutionCount
     }
 
     void onSetUp() {

@@ -16,10 +16,18 @@
 package grails.orm;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
+import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.criterion.Projections;
+import org.springframework.orm.hibernate3.HibernateCallback;
 
 /**
  * A result list for Criteria list calls, which is aware of the totalCount for
@@ -35,15 +43,15 @@ public class PagedResultList implements List, Serializable {
 
     protected List list;
 
-    protected int totalCount;
+    protected int totalCount = Integer.MIN_VALUE;
+    
+    private final GrailsHibernateTemplate hibernateTemplate;
+    private final Class clazz;
 
-    public PagedResultList(List list) {
+    public PagedResultList(GrailsHibernateTemplate template, Class clazz, List list) {
         this.list = list;
-    }
-
-    public PagedResultList(List list, int totalCount) {
-        this.list = list;
-        this.totalCount = totalCount;
+        this.hibernateTemplate = template;
+        this.clazz = clazz;
     }
 
     public int size() {
@@ -149,6 +157,20 @@ public class PagedResultList implements List, Serializable {
     }
 
     public int getTotalCount() {
+        if(totalCount == Integer.MIN_VALUE) {
+            totalCount = (Integer)hibernateTemplate.execute(new HibernateCallback<Object>() {
+                public Object doInHibernate(Session session)
+                     throws HibernateException,
+                     SQLException {
+                    Criteria countCriteria = session.createCriteria(clazz);
+                    hibernateTemplate.applySettings(countCriteria);
+                    countCriteria.setFirstResult(0);
+                    countCriteria.setProjection(Projections.rowCount());
+                    int totalCount = ((Number)countCriteria.uniqueResult()).intValue();
+                    return totalCount;
+                }
+            }); 
+        }
         return totalCount;
     }
 
