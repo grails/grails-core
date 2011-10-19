@@ -18,6 +18,7 @@ dependencies {
             project(':grails-plugin-log4j'),
             project(":grails-test"),
             project(":grails-plugin-testing")
+            project(":grails-resources")
 }
 
 sourceSets {
