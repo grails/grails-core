@@ -56,6 +56,10 @@ public class ServletContextHolder {
             if(webRequest != null) {
                 return webRequest.getServletContext();
             }
+            else {
+                int thisId = System.identityHashCode(ServletContextHolder.class.getClassLoader());
+                return servletContexts.get(thisId);
+            }
         }
         return servletContext;
     }
@@ -65,12 +69,14 @@ public class ServletContextHolder {
      */
     public static void setServletContext(ServletContext servletContext) {
         int id = getClassLoaderId();
+        int thisClassLoaderId = System.identityHashCode(ServletContextHolder.class.getClassLoader());
         if(servletContext != null) {
-
             servletContexts.put(id, servletContext);
+            servletContexts.put(thisClassLoaderId, servletContext);
         }
         else {
             servletContexts.remove(id);
+            servletContexts.remove(thisClassLoaderId);
         }
     }
 
