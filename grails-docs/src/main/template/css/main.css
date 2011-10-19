@@ -635,6 +635,10 @@ ol.HEBREW {
     list-style-type: hebrew;
 }
 
+li {
+    margin-top: 0.7em;
+}
+
 /************************************************/
 /* index formatting                             */
 .index-top {
@@ -683,11 +687,6 @@ ol.HEBREW {
 
 .calendar .today {
     border: 3px solid #cccccc;
-}
-
-li {
-    margin-bottom: 2px;
-    margin-top: 2px;
 }
 
 /*
