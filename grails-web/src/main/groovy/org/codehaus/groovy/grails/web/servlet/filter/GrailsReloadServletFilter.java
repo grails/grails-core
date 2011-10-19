@@ -28,7 +28,7 @@ import java.io.IOException;
  *
  * @author Graeme Rocher
  *
- * @deprecated This filter is no longer used and is here for binary compatibility. Replaced by agent-based reloading in 1.4
+ * @deprecated This filter is no longer used and is here for binary compatibility. Replaced by agent-based reloading in 2.0.
  */
 @Deprecated
 public class GrailsReloadServletFilter extends OncePerRequestFilter {

@@ -62,7 +62,6 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.CompositeType;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * Utility methods for configuring Hibernate inside Grails.
@@ -310,10 +309,11 @@ public class GrailsHibernateUtil {
         }
     }
 
-    public static void cacheCriteriaByMapping(GrailsApplication grailsApplication, Class<?> targetClass, Criteria criteria) {
+    public static void cacheCriteriaByMapping(@SuppressWarnings("unused") GrailsApplication grailsApplication,
+            Class<?> targetClass, Criteria criteria) {
         cacheCriteriaByMapping(targetClass, criteria);
     }
-    
+
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(Criteria c, Map argMap) {
         populateArgumentsForCriteria(null,null, c, argMap);

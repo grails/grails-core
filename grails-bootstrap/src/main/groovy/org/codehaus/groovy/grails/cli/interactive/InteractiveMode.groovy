@@ -18,16 +18,17 @@ package org.codehaus.groovy.grails.cli.interactive
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
+import grails.util.PluginBuildSettings
+
+import java.awt.Desktop
 
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.ScriptNotFoundException
+import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.cli.parsing.CommandLine
-import java.awt.Desktop
 import org.codehaus.groovy.grails.cli.support.UaaIntegration
-import grails.util.PluginBuildSettings
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -63,7 +64,7 @@ class InteractiveMode {
 
         // Initialise the command options map supported by the 'open' command.
         openOptions = [
-                'test-report': [ 
+                'test-report': [
                         path: new File(settings.testReportsDir, "html/index.html").absolutePath,
                         description: "Opens the current test report (if it exists)" ],
                 'dep-report': [

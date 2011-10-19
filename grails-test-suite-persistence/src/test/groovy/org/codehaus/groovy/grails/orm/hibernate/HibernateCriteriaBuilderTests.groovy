@@ -251,7 +251,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         }
         assertEquals 1 , results.size()
     }
-    
+
     void testInList() {
         createDomainData()
         def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
@@ -262,7 +262,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         def firstNames = results*.firstName
         assertTrue 'homer' in firstNames
         assertTrue 'bart' in firstNames
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', []
@@ -275,7 +275,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertTrue 'bart' in firstNames
         assertTrue 'lisa' in firstNames
         assertTrue 'maggie' in firstNames
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', []
@@ -288,25 +288,25 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertTrue 'bart' in firstNames
         assertTrue 'lisa' in firstNames
         assertTrue 'maggie' in firstNames
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', []
             }
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             inList 'firstName', []
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             inList 'firstName', []
             inList 'lastName', []
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', []
@@ -314,7 +314,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
             }
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', null
@@ -327,7 +327,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertTrue 'bart' in firstNames
         assertTrue 'lisa' in firstNames
         assertTrue 'maggie' in firstNames
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', null
@@ -340,25 +340,25 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertTrue 'bart' in firstNames
         assertTrue 'lisa' in firstNames
         assertTrue 'maggie' in firstNames
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', null
             }
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             inList 'firstName', null
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             inList 'firstName', null
             inList 'lastName', null
         }
         assertEquals 0, results.size()
-        
+
         results = domainClass.createCriteria().list {
             or {
                 inList 'firstName', null

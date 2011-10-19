@@ -42,7 +42,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
 
     boolean invalidToken
     MultiValueMap<String, MultipartFile> multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
-    
+
     private Map<String, String> multipartContentTypes = Collections.emptyMap();
     private Map<String, HttpHeaders> multipartHeaders = Collections.emptyMap();
     private HttpHeaders httpHeaders = new HttpHeaders();
@@ -348,35 +348,35 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         multipartContentTypes.clear();
         httpHeaders.clear();
     }
-    
+
     String getMultipartContentType(String paramOrFileName) {
         return multipartContentTypes.get(paramOrFileName);
     }
-    
+
     String setMultipartContentType(String paramOrFileName, String contentType) {
         return multipartContentTypes.put(paramOrFileName, contentType);
     }
-    
+
     HttpHeaders getMultipartHeaders(String paramOrFileName) {
         return multipartHeaders.get(paramOrFileName);
     }
-    
+
     HttpHeaders setMultipartHeaders(String paramOrFileName, HttpHeaders headers) {
         return multipartHeaders.put(paramOrFileName, headers);
     }
-    
+
     HttpHeaders getRequestHeaders() {
         return requestHeaders;
     }
-    
+
     void setRequestHeaders(HttpHeaders headers) {
         requestHeaders = headers;
     }
-    
+
     HttpMethod getRequestMethod() {
         return requestMethod;
     }
-    
+
     HttpMethod setRequestMethod(HttpMethod method) {
         requestMethod = method;
     }

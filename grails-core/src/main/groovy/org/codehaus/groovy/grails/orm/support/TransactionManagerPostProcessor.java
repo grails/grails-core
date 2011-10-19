@@ -79,7 +79,7 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
             // otherwise we end up in an endless loop (it triggers the current method).
             String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
                     beanFactory, PlatformTransactionManager.class, false, false);
-    
+
             // If at least one is found, use the first of them as the
             // transaction manager for the application.
             if (beanNames.length > 0) {

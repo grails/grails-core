@@ -48,7 +48,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * Session implementation that wraps a Hibernate {@link org.hibernate.Session}.
- * 
+ *
  * @author Graeme Rocher
  * @since 1.0
  */
@@ -193,10 +193,9 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     }
 
     /**
-     * Deletes all objects matching the given criteria
-     * 
-     * @param criteria
-     *            The criteria
+     * Deletes all objects matching the given criteria.
+     *
+     * @param criteria The criteria
      * @return The total number of records deleted
      */
     public int deleteAll(final QueryableCriteria criteria) {
@@ -221,12 +220,10 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     }
 
     /**
-     * Updates all objects matching the given criteria and property values
-     * 
-     * @param criteria
-     *            The criteria
-     * @param properties
-     *            The properties
+     * Updates all objects matching the given criteria and property values.
+     *
+     * @param criteria The criteria
+     * @param properties The properties
      * @return The total number of records updated
      */
     public int updateAll(final QueryableCriteria criteria, final Map<String, Object> properties) {

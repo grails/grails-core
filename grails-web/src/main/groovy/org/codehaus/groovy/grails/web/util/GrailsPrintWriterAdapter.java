@@ -10,16 +10,17 @@ import org.apache.commons.io.output.NullWriter;
 
 public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrappedWriter {
     protected GrailsPrintWriter target;
-    
+
     public GrailsPrintWriterAdapter(Writer wrapped) {
         super(new NullWriter());
-        if(!(target instanceof GrailsPrintWriter)) {
+        if (!(target instanceof GrailsPrintWriter)) {
             this.target = new GrailsPrintWriter(wrapped);
-        } else {
-            this.target = ((GrailsPrintWriter)target);            
+        }
+        else {
+            this.target = ((GrailsPrintWriter)target);
         }
     }
-    
+
     public boolean isAllowUnwrappingOut() {
         return target.isAllowUnwrappingOut();
     }
@@ -27,18 +28,17 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
     public GrailsPrintWriter getTarget() {
         return target;
     }
-    
+
     public Writer getOut() {
         return target.getOut();
     }
-    
+
     public Writer unwrap() {
-        if(isAllowUnwrappingOut()) {
+        if (isAllowUnwrappingOut()) {
             return getOut();
-        } else {
-            return this;
         }
-    }    
+        return this;
+    }
 
     public GrailsPrintWriter leftShift(Object value) throws IOException {
         return target.leftShift(value);
@@ -48,124 +48,154 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
         return target.plus(value);
     }
 
+    @Override
     public boolean checkError() {
         return target.checkError();
     }
 
+    @Override
     public void setError() {
         target.setError();
     }
 
+    @Override
     public void flush() {
         target.flush();
     }
 
+    @Override
     public void print(Object obj) {
         target.print(obj);
     }
 
+    @Override
     public void print(String s) {
         target.print(s);
     }
 
+    @Override
     public void write(String s) {
         target.write(s);
     }
 
+    @Override
     public void write(int c) {
         target.write(c);
     }
 
+    @Override
     public void write(char[] buf, int off, int len) {
         target.write(buf, off, len);
     }
 
+    @Override
     public void write(String s, int off, int len) {
         target.write(s, off, len);
     }
 
+    @Override
     public void write(char[] buf) {
         target.write(buf);
     }
 
+    @Override
     public void print(boolean b) {
         target.print(b);
     }
 
+    @Override
     public void print(char c) {
         target.print(c);
     }
 
+    @Override
     public void print(int i) {
         target.print(i);
     }
 
+    @Override
     public void print(long l) {
         target.print(l);
     }
 
+    @Override
     public void print(float f) {
         target.print(f);
     }
 
+    @Override
     public void print(double d) {
         target.print(d);
     }
 
+    @Override
     public void print(char[] s) {
         target.print(s);
     }
 
+    @Override
     public void println() {
         target.println();
     }
 
+    @Override
     public void println(boolean b) {
         target.println(b);
     }
 
+    @Override
     public void println(char c) {
         target.println(c);
     }
 
+    @Override
     public void println(int i) {
         target.println(i);
     }
 
+    @Override
     public void println(long l) {
         target.println(l);
     }
 
+    @Override
     public void println(float f) {
         target.println(f);
     }
 
+    @Override
     public void println(double d) {
         target.println(d);
     }
 
+    @Override
     public void println(char[] c) {
         target.println(c);
     }
 
+    @Override
     public void println(String s) {
         target.println(s);
     }
 
+    @Override
     public void println(Object o) {
         target.println(o);
     }
 
+    @Override
     public PrintWriter append(char c) {
         target.append(c);
         return this;
     }
 
+    @Override
     public PrintWriter append(CharSequence csq, int start, int end) {
         target.append(csq, start, end);
         return this;
     }
 
+    @Override
     public PrintWriter append(CharSequence csq) {
         target.append(csq);
         return this;
@@ -220,6 +250,7 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
         return target.resetUsed();
     }
 
+    @Override
     public void close() {
         target.close();
     }
@@ -227,11 +258,11 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
     public void markUsed() {
         target.markUsed();
     }
-    
+
     protected boolean isTrouble() {
         return target.isTrouble();
     }
-    
+
     protected void handleIOException(IOException e) {
         target.handleIOException(e);
     }
