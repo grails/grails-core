@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractClausedStaticPersistentMethod.GrailsMethodExpression;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -78,6 +79,11 @@ public class FindAllByPersistentMethod extends AbstractClausedStaticPersistentMe
                 GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c, argsMap);
 
                 if (operator.equals(OPERATOR_OR)) {
+                    if (firstExpressionIsRequiredBoolean()) {
+                        GrailsMethodExpression expression = (GrailsMethodExpression) expressions.remove(0);
+                        c.add(expression.getCriterion());
+                    }
+
                     Disjunction dis = Restrictions.disjunction();
                     int numberOfForceNoResultsCriterion = 0;
                     for (Object expression : expressions) {
@@ -107,5 +113,16 @@ public class FindAllByPersistentMethod extends AbstractClausedStaticPersistentMe
                 return c.list();
             }
         });
+    }
+
+    /**
+     * Indicates if the first expression in the query is a required boolean property and as such should
+     * be ANDed to the other expressions, not ORed.
+     *
+     * @return true if the first expression is a required boolean property, false otherwise
+     * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.FindAllByBooleanPropertyPersistentMethod
+     */
+    protected boolean firstExpressionIsRequiredBoolean() {
+        return false;
     }
 }
