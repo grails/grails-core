@@ -192,7 +192,15 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
     }
 
     // Add the app name and Grails version to the metadata.
-    updateMetadata(metadata, ["app.name": "$grailsAppName", "app.grails.version": "$grailsVersion"])
+    def newMetadata = ["app.name": "$grailsAppName", "app.grails.version": "$grailsVersion"]
+    for(pluginEntry in grailsSettings.defaultPluginMap) {
+        def pluginName = pluginEntry.key
+        def pluginKey = "plugins.$pluginName".toString()
+        if(metadata.containsKey(pluginKey)) {
+            newMetadata[pluginKey] = pluginEntry.value
+        }        
+    }
+    updateMetadata(metadata, newMetadata)
 
     // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
     def plugins = pluginSettings.pluginBaseDirectories
