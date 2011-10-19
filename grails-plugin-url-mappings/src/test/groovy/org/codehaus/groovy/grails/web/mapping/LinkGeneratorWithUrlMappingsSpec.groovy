@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.CamelCaseUrlConverter
-
 import org.springframework.mock.web.MockServletContext
-
 import spock.lang.Specification
 
 /**
  * More tests for {@link LinkGenerator }. See Also LinkGeneratorSpec.
+ * 
+ * These test focus on testing integration with the URL mappings to ensure they are respected.
  */
 class LinkGeneratorWithUrlMappingsSpec extends Specification{
 
@@ -34,36 +34,36 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
         generator.link(link)
     }
 
-    void "Check that the correct relative link is generated for a controller and action"() {
+    void "link is prefixed by the deployment context, and use path specified in the mapping"() {
         given:
             context = "/bar"
 
-        when: "A link is created with only the controller specified"
+        when:
             link = action
 
         then:
             uri == "$context/$path"
     }
 
-    void "Check that the correct absolute link is generated for a controller and action"() {
+    void "absolute links are prefixed by the base url, don't contain the deployment context, and use path specified in the mapping"() {
         given:
             context = "/bar"
 
-        when: "An absolute link is created with the controller and action specified"
+        when:
             link = action + [absolute: true]
 
         then:
             uri == "$baseUrl/$path"
     }
 
-    void "Check that an absolute link is generated for a relative link with no context path"() {
+    void "absolute links are generated when a relative link is asked for, but the deployment context is not known or set"() {
         given:
             context = null
 
-        when:"A relative link is created with a controller, an action and no known context path"
+        when:
             link = action
 
-        then: "Check that an absolute link is created"
+        then:
             uri == "$baseUrl/$path"
     }
 }
