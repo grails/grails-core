@@ -1194,6 +1194,25 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     }
 
     /**
+     * Orders by the specified property name (defaults to ascending)
+     *
+     * @param o The property name to order by
+     * @return A Order instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria order(Order o) {
+        if (criteria == null) {
+            throwRuntimeException(new IllegalArgumentException("Call to [order] not allowed here."));
+        }
+        if (paginationEnabledList) {
+            orderEntries.add(o);
+        }
+        else {
+            criteria.addOrder(o);
+        }
+        return this;
+    }
+
+    /**
      * Orders by the specified property name and direction
      *
      * @param propertyName The property name to order by
