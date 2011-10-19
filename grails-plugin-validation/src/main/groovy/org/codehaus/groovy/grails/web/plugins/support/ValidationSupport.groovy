@@ -17,8 +17,10 @@ package org.codehaus.groovy.grails.web.plugins.support
 
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.web.context.ContextLoader
+import org.springframework.web.context.support.WebApplicationContextUtils
 
 
 class ValidationSupport {
@@ -27,7 +29,13 @@ class ValidationSupport {
         if (!object.hasProperty('constrainedProperties')) {
             return true
         }
-        def ctx = ContextLoader.currentWebApplicationContext
+
+        def ctx = null
+                
+        def sch = ServletContextHolder.servletContext
+        if(sch) {
+            ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
+        }
 
         def constraints = object.constrainedProperties
         if(constraints == null) {
