@@ -323,7 +323,7 @@ public class GrailsScriptRunner {
         }
 
         CommandLineParser parser = getCommandLineParser();
-        CommandLine commandLine = parser.parseString(args);
+        CommandLine commandLine = parser.parseString(scriptName,args);
 
         return executeCommand(commandLine, scriptName, env);
     }
