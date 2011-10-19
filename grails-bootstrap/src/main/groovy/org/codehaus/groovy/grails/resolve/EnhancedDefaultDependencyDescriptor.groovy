@@ -70,8 +70,9 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         this.scope = scope
 
         // never allow these to avoid LinkageError
-        excludeForString("xml-apis")
-        excludeForString("xmlParserAPIs")
+        excludeForMap(group:"xml-apis", name:"xml-apis")
+        excludeForMap(group:"xml-apis", name:"xmlParserAPIs")
+        excludeForMap(group:"xerces", name:"xmlParserAPIs")
     }
 
     EnhancedDefaultDependencyDescriptor(ModuleRevisionId mrid, boolean force, boolean transitive, String scope) {
