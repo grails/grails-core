@@ -46,13 +46,12 @@ public class Metadata extends Properties {
     public static final String WAR_DEPLOYED = "grails.war.deployed";
     public static final String DEFAULT_SERVLET_VERSION = "2.5";
 
-    private static Reference<Metadata> metadata = new SoftReference<Metadata>(new Metadata());
+    private static Holder<Reference<Metadata>> holder = new Holder<Reference<Metadata>>("Metadata");
 
     private File metadataFile;
     private boolean warDeployed;
 
     private Metadata() {
-        super();
         loadFromDefault();
     }
 
@@ -60,12 +59,12 @@ public class Metadata extends Properties {
         this.metadataFile = f;
         loadFromFile(f);
     }
-    
+
     private Metadata(InputStream inputStream) {
         loadFromInputStream(inputStream);
     }
-    
-    private Metadata(Map properties) {
+
+    private Metadata(Map<?, ?> properties) {
         putAll(properties);
         afterLoading();
     }
@@ -78,26 +77,25 @@ public class Metadata extends Properties {
      * Resets the current state of the Metadata so it is re-read.
      */
     public static void reset() {
-        Metadata m = metadata.get();
+        Metadata m = getFromMap();
         if (m != null) {
             m.clear();
             m.afterLoading();
         }
     }
-    
+
     private void afterLoading() {
-        Object val = get(WAR_DEPLOYED);
-        warDeployed = (val != null && val.equals("true"));
+        warDeployed = "true".equals(get(WAR_DEPLOYED));
     }
 
     /**
      * @return the metadata for the current application
      */
     public static Metadata getCurrent() {
-        Metadata m = metadata.get();
+        Metadata m = getFromMap();
         if (m == null) {
             m = new Metadata();
-            metadata = new SoftReference<Metadata>(m);
+            holder.set(new SoftReference<Metadata>(m));
         }
         return m;
     }
@@ -121,7 +119,7 @@ public class Metadata extends Properties {
             closeQuietly(input);
         }
     }
-    
+
     private void loadFromInputStream(InputStream inputStream) {
         try {
             load(inputStream);
@@ -131,7 +129,7 @@ public class Metadata extends Properties {
             throw new RuntimeException("Cannot load application metadata:" + e.getMessage(), e);
         }
     }
-    
+
     private void loadFromFile(File file) {
         if (file != null && file.exists()) {
             FileInputStream input = null;
@@ -149,14 +147,14 @@ public class Metadata extends Properties {
         }
     }
 
-    /***
+    /**
      * Loads a Metadata instance from a Reader
      * @param inputStream The InputStream
      * @return a Metadata instance
      */
     public static Metadata getInstance(InputStream inputStream) {
         Metadata m = new Metadata(inputStream);
-        metadata = new FinalReference<Metadata>(m);
+        holder.set(new FinalReference<Metadata>(m));
         return m;
     }
 
@@ -168,10 +166,9 @@ public class Metadata extends Properties {
      */
     public static Metadata getInstance(File file) {
         Metadata m = new Metadata(file);
-        metadata = new FinalReference<Metadata>(m);
+        holder.set(new FinalReference<Metadata>(m));
         return m;
     }
-
 
     /**
      * Reloads the application metadata.
@@ -183,7 +180,7 @@ public class Metadata extends Properties {
             return getInstance(f);
         }
 
-        return f != null ? new Metadata(f ) : new Metadata();
+        return f == null ? new Metadata() : new Metadata(f);
     }
 
     /**
@@ -284,7 +281,7 @@ public class Metadata extends Properties {
 
         Metadata persistedMetadata = Metadata.reload();
         boolean result = allStringValuesMetadata.equals(persistedMetadata);
-        metadata = new SoftReference<Metadata>(transientMetadata);
+        holder.set(new SoftReference<Metadata>(transientMetadata));
         return result;
     }
 
@@ -321,11 +318,16 @@ public class Metadata extends Properties {
         }
     }
 
+    private static Metadata getFromMap() {
+        Reference<Metadata> metadata = holder.get();
+        return metadata == null ? null : metadata.get();
+    }
+
     static class FinalReference<T> extends SoftReference<T> {
         private T ref;
         public FinalReference(T t) {
             super(t);
-            this.ref =t;
+            ref = t;
         }
 
         @Override

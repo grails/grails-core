@@ -15,9 +15,9 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsUtil;
+import grails.util.Holders;
 import groovy.util.ConfigObject;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -31,10 +31,6 @@ import java.util.Map;
 @Deprecated
 public class ConfigurationHolder {
 
-    private static ConfigObject config;
-    @SuppressWarnings("rawtypes")
-    private static Map flatConfig;
-
     /**
      * Sets the ConfigObject. Synchronized to avoid the flatten() method being called concurrently.
      * @param newConfig
@@ -43,13 +39,7 @@ public class ConfigurationHolder {
      */
     @Deprecated
     public static synchronized void setConfig(ConfigObject newConfig) {
-        config = newConfig;
-        // reset flat config
-        if (newConfig != null) {
-            flatConfig = newConfig.flatten();
-        } else {
-            flatConfig = null;
-        }
+        Holders.setConfig(newConfig);
     }
 
     /**
@@ -59,12 +49,12 @@ public class ConfigurationHolder {
      *
      * @return The ConfigObject
      *
-      @deprecated Use dependency injection instead
+     * @deprecated Use dependency injection instead
      */
     @Deprecated
     public static ConfigObject getConfig() {
         GrailsUtil.deprecated("Method ConfigurationHolder.getConfig() is deprecated and will be removed in a future version of Grails.");
-        return config;
+        return Holders.getConfig();
     }
 
     /**
@@ -77,6 +67,6 @@ public class ConfigurationHolder {
     @SuppressWarnings("rawtypes")
     @Deprecated
     public static Map getFlatConfig() {
-        return flatConfig != null ? flatConfig : Collections.EMPTY_MAP;
+        return Holders.getFlatConfig();
     }
 }

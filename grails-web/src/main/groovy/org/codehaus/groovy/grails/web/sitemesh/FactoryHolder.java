@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import grails.util.Holder;
+
 import org.springframework.util.Assert;
 
 import com.opensymphony.module.sitemesh.Factory;
@@ -26,20 +28,19 @@ import com.opensymphony.module.sitemesh.Factory;
  */
 public class FactoryHolder {
 
+    private static Holder<Factory> holder = new Holder<Factory>("factory");
+
     private FactoryHolder() {
         // static only
     }
 
-    private static Factory factory;
-
     public static Factory getFactory() {
+        Factory factory = holder.get();
         Assert.state(factory != null, "Cannot return Sitemesh factory it has not been set!");
         return factory;
     }
 
-    public static void setFactory(Factory newFactory) {
-        synchronized(FactoryHolder.class) {
-            factory = newFactory;
-        }
+    public static synchronized void setFactory(Factory factory) {
+        holder.set(factory);
     }
 }

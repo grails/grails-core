@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.GrailsUtil;
+import grails.util.Holders;
 
 /**
  * Static singleton holder for the GrailsApplication instance.
@@ -27,8 +28,6 @@ import grails.util.GrailsUtil;
 @Deprecated
 public abstract class ApplicationHolder {
 
-    private static GrailsApplication application;
-
     /**
      * @return The GrailsApplication instance
      * @deprecated Use dependency injection instead
@@ -36,17 +35,16 @@ public abstract class ApplicationHolder {
     @Deprecated
     public static GrailsApplication getApplication() {
         GrailsUtil.deprecated("Method ApplicationHolder.getApplication() is deprecated and will be removed in a future version of Grails.");
-        return application;
+        return Holders.getGrailsApplication();
     }
 
     /**
-     *
      * @param application The application to set
      * @deprecated Use dependency injection instead
      */
     @Deprecated
     public static void setApplication(GrailsApplication application) {
         GrailsUtil.deprecated("Method ApplicationHolder.setApplication(application) is deprecated and will be removed in a future version of Grails.");
-        ApplicationHolder.application = application;
+        Holders.setGrailsApplication(application);
     }
 }

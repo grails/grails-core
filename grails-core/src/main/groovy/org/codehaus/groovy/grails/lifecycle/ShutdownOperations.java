@@ -15,15 +15,15 @@
  */
 package org.codehaus.groovy.grails.lifecycle;
 
+import grails.util.Holders;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 
 /**
  * Operations that should be executed on shutdown.
@@ -39,8 +39,7 @@ public class ShutdownOperations {
 
     public static final Runnable DEFAULT_SHUTDOWN_OPERATION = new Runnable() {
         public void run() {
-            PluginManagerHolder.setPluginManager(null);
-            ApplicationHolder.setApplication(null);
+            Holders.reset();
             ConfigurationHelper.clearCachedConfigs();
             //ExpandoMetaClass.disableGlobally();
             ClassPropertyFetcher.clearClassPropertyFetcherCache();

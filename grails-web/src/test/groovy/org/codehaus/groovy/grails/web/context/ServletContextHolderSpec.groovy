@@ -1,21 +1,16 @@
 package org.codehaus.groovy.grails.web.context
 
-import spock.lang.Specification
-import org.springframework.mock.web.MockServletContext
 import grails.util.GrailsWebUtil
+
+import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 10/19/11
- * Time: 4:42 PM
- * To change this template use File | Settings | File Templates.
- */
-class ServletContextHolderSpec extends Specification{
+import spock.lang.Specification
+
+class ServletContextHolderSpec extends Specification {
 
     void cleanup() {
-        ServletContextHolder.clearServletContext()
+        ServletContextHolder.setServletContext(null)
         RequestContextHolder.setRequestAttributes(null)
     }
 

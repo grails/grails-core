@@ -26,7 +26,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.util.StringUtils;
 
 /**
- * An enum that represents the current environment
+ * Represents the current environment.
  *
  * @author Graeme Rocher
  * @since 1.1
@@ -80,17 +80,17 @@ public enum Environment {
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
-    
-    private static Environment cachedCurrentEnvironment = null;
+
+    private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
     private String name;
-    
+
     Environment() {
         initialize();
     }
 
     private void initialize() {
-        this.name = toString().toLowerCase(Locale.getDefault());
+        name = toString().toLowerCase(Locale.getDefault());
     }
 
     /**
@@ -100,9 +100,11 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
-        if(cachedCurrentEnvironment != null) {
-            return cachedCurrentEnvironment;
+        Environment current = cachedCurrentEnvironment.get();
+        if (current != null) {
+            return current;
         }
+
         return resolveCurrentEnvironment();
     }
 
@@ -134,9 +136,9 @@ public enum Environment {
         }
         return env;
     }
-    
+
     public static void cacheCurrentEnvironment() {
-        cachedCurrentEnvironment = resolveCurrentEnvironment();
+        cachedCurrentEnvironment.set(resolveCurrentEnvironment());
     }
 
     /**
@@ -347,8 +349,6 @@ public enum Environment {
     private static boolean isBlank(String value) {
         return value == null || value.trim().length() == 0;
     }
-
-
 
     /**
      * @return  the name of the environment

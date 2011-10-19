@@ -1,4 +1,4 @@
-/* Copyright 2004-2005 Graeme Rocher
+/* Copyright 2011 SpringSource.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,25 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
-import grails.util.Holders;
+import grails.util.Holder;
 
 import javax.servlet.ServletContext;
 
-/**
- * Holds a reference to the ServletContext.
- *
- * @author Graeme Rocher
- * @since 1.0
- */
-public class ServletContextHolder {
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
-    public static void setServletContext(final ServletContext servletContext) {
-        Holders.setServletContext(servletContext);
+/**
+ * @author Burt Beckwith
+ * @since 2.0
+ */
+public class WebRequestServletHolder extends Holder<ServletContext> {
+
+    public WebRequestServletHolder() {
+        super("ServletContext");
     }
 
-    public static ServletContext getServletContext() {
-        return Holders.getServletContext();
+    @Override
+    protected ServletContext lookupSecondary() {
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        return webRequest == null ? null : webRequest.getServletContext();
     }
 }
