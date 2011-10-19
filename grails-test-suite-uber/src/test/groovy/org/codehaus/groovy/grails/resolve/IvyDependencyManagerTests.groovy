@@ -587,8 +587,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 'runtime', foocache.@conf.text()
         assertEquals 'true', foocache.@transitive.text()
 
-        assertEquals 'xml-apisxmlParserAPIsjms', foocache.excludes.@name.text()
-        assertEquals '***', foocache.excludes.@group.text()
+        assertEquals 'xml-apisxmlParserAPIsxmlParserAPIsjms', foocache.excludes.@name.text()
+        assertEquals 'xml-apisxml-apisxerces*', foocache.excludes.@group.text()
 
         // should not include inherited dependencies
         def inherited = dependencies.find { it.@name == 'grails-test' }

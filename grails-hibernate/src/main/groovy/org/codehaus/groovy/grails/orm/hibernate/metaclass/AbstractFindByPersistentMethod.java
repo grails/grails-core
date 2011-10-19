@@ -50,6 +50,10 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
                 }
 
                 if (operator.equals(OPERATOR_OR)) {
+                    if (firstExpressionIsRequiredBoolean()) {
+                        GrailsMethodExpression expression = (GrailsMethodExpression) expressions.remove(0);
+                        crit.add(expression.getCriterion());
+                    }
                     Disjunction dis = Restrictions.disjunction();
                     for (Object expression : expressions) {
                         GrailsMethodExpression current = (GrailsMethodExpression) expression;
@@ -71,5 +75,16 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
                 return null;
             }
         });
+    }
+
+    /**
+     * Indicates if the first expression in the query is a required boolean property and as such should
+     * be ANDed to the other expressions, not ORed.
+     *
+     * @return true if the first expression is a required boolean property, false otherwise
+     * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.FindByBooleanPropertyPersistentMethod
+     */
+    protected boolean firstExpressionIsRequiredBoolean() {
+        return false;
     }
 }

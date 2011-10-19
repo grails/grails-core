@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.query.HibernateCriterionAdapter;
 import org.codehaus.groovy.grails.orm.hibernate.query.HibernateProjectionAdapter;
@@ -1194,6 +1195,25 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     }
 
     /**
+     * Orders by the specified property name (defaults to ascending)
+     *
+     * @param o The property name to order by
+     * @return A Order instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria order(Order o) {
+        if (criteria == null) {
+            throwRuntimeException(new IllegalArgumentException("Call to [order] not allowed here."));
+        }
+        if (paginationEnabledList) {
+            orderEntries.add(o);
+        }
+        else {
+            criteria.addOrder(o);
+        }
+        return this;
+    }
+
+    /**
      * Orders by the specified property name and direction
      *
      * @param propertyName The property name to order by
@@ -1445,8 +1465,6 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     // an exception is thrown for non-string sort fields (GRAILS-2690).
                     criteria.setFirstResult(0);
                     criteria.setMaxResults(Integer.MAX_VALUE);
-                    criteria.setProjection(Projections.rowCount());
-                    int totalCount = ((Number)criteria.uniqueResult()).intValue();
 
                     // Restore the previous projection, add settings for the pagination parameters,
                     // and then execute the query.
@@ -1489,10 +1507,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                         }
                     }
                     GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, targetClass, criteria, argMap);
-                    PagedResultList pagedRes = new PagedResultList(criteria.list());
-
-                    // Updated the paged results with the total number of records calculated previously.
-                    pagedRes.setTotalCount(totalCount);
+                    GrailsHibernateTemplate ght = new GrailsHibernateTemplate(sessionFactory, grailsApplication);
+                    PagedResultList pagedRes = new PagedResultList(ght, targetClass, criteria.list());
                     result = pagedRes;
                 }
                 else {

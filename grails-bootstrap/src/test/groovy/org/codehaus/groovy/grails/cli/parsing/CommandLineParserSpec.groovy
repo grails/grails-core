@@ -7,6 +7,18 @@ import spock.lang.Specification
  */
 class CommandLineParserSpec extends Specification {
 
+    void "Test parse string with command and args"() {
+        when:
+            def parser = new CommandLineParser()
+            def cl = parser.parseString("run-app", "foo")
+
+        then:
+            cl.commandName == 'run-app'
+            cl.environment == 'development'
+            cl.systemProperties.size() == 0
+            cl.remainingArgs == ['foo']
+    }
+
     void "Test parse basic command"() {
         when:
             def parser = new CommandLineParser()

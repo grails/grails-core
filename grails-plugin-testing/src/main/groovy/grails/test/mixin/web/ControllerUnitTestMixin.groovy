@@ -70,6 +70,7 @@ import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
 
 /**
  * A mixin that can be applied to a unit test in order to test controllers.
@@ -166,6 +167,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         servletContext = new MockServletContext()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
+        ServletContextHolder.servletContext = servletContext
 
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans(new ConvertersGrailsPlugin().doWithSpring)
@@ -216,6 +218,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     @AfterClass
     static void cleanupGrailsWeb() {
         servletContext = null
+        ServletContextHolder.clearServletContext()
     }
 
     @Before

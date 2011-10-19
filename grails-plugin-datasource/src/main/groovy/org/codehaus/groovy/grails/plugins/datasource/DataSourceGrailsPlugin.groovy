@@ -87,7 +87,7 @@ class DataSourceGrailsPlugin {
 
         final String hsqldbDriver = "org.hsqldb.jdbcDriver"
         if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
-            throw new GrailsConfigurationException("Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 1.4 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy or add HSQLDB as a dependency of your application.")
+            throw new GrailsConfigurationException("Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 2.0 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy or add HSQLDB as a dependency of your application.")
         }
 
         boolean defaultDriver = (driver == "org.h2.Driver")
