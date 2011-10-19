@@ -33,7 +33,6 @@ public class ServletContextHolder {
 
     static {
         ShutdownOperations.addOperation(new Runnable() {
-            @Override
             public void run() {
                 clearServletContext();
             }
