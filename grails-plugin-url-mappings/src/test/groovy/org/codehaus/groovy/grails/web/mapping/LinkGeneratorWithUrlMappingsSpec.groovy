@@ -20,7 +20,7 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
         "/${this.path}"(this.action)
     }
 
-    def link = null
+    def link = new LinkedHashMap(action)
 
     protected getGenerator() {
         def generator = new DefaultLinkGenerator(baseUrl, context)
@@ -34,34 +34,28 @@ class LinkGeneratorWithUrlMappingsSpec extends Specification{
         generator.link(link)
     }
 
-    void "link is prefixed by the deployment context, and use path specified in the mapping"() {
-        given:
-            context = "/bar"
-
+    void "link is prefixed by the deployment context, and uses path specified in the mapping"() {
         when:
-            link = action
+            context = "/bar"
 
         then:
             uri == "$context/$path"
     }
 
     void "absolute links are prefixed by the base url, don't contain the deployment context, and use path specified in the mapping"() {
-        given:
+        when:
             context = "/bar"
 
-        when:
-            link = action + [absolute: true]
+        and:
+            link.absolute = true
 
         then:
             uri == "$baseUrl/$path"
     }
 
     void "absolute links are generated when a relative link is asked for, but the deployment context is not known or set"() {
-        given:
-            context = null
-
         when:
-            link = action
+            context = null
 
         then:
             uri == "$baseUrl/$path"
