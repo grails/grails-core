@@ -42,6 +42,15 @@ public class GrailsCoreDependencies {
         this.servletVersion = servletVersion != null ? servletVersion : "2.5";
     }
 
+    private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, boolean transitive) {
+        for (ModuleRevisionId mrid : dependencies) {
+            EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false, scope);
+            descriptor.setInherited(true);
+            descriptor.setTransitive(transitive);
+            dependencyManager.registerDependency(scope, descriptor);
+        }
+    }
+
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, String... excludes) {
         for (ModuleRevisionId mrid : dependencies) {
             EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false, scope);
@@ -179,9 +188,6 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-spring", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-logging", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-core", datastoreMappingVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", datastoreMappingVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-datastore-simple", datastoreMappingVersion),
 
                             // Plugins
                             ModuleRevisionId.newInstance("org.grails", "grails-plugin-codecs", grailsVersion),
@@ -216,6 +222,13 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion)
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
+
+                        ModuleRevisionId[] datastoreDependencies = {
+                                ModuleRevisionId.newInstance("org.grails", "grails-datastore-core", datastoreMappingVersion),
+                                ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", datastoreMappingVersion),
+                                ModuleRevisionId.newInstance("org.grails", "grails-datastore-simple", datastoreMappingVersion)
+                        };
+                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, datastoreDependencies, false);
 
                         if (GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
                             ModuleRevisionId[] servletThreeCompileDependencies = {
