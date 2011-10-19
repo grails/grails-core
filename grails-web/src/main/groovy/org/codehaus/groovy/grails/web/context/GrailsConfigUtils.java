@@ -85,6 +85,7 @@ public class GrailsConfigUtils {
     }
 
     public static WebApplicationContext configureWebApplicationContext(ServletContext servletContext, WebApplicationContext parent) {
+        ServletContextHolder.setServletContext(servletContext);
         GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
 
         if (LOG.isDebugEnabled()) {
