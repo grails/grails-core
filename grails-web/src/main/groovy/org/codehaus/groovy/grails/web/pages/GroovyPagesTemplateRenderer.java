@@ -39,7 +39,7 @@ import org.springframework.util.ReflectionUtils;
 public class GroovyPagesTemplateRenderer implements InitializingBean {
     private GrailsConventionGroovyPageLocator groovyPageLocator;
     private GroovyPagesTemplateEngine groovyPagesTemplateEngine;
-    private ConcurrentMap<String,CacheEntry> templateCache = new ConcurrentHashMap<String,CacheEntry>();
+    private ConcurrentMap<String,TemplateRendererCacheEntry> templateCache = new ConcurrentHashMap<String,TemplateRendererCacheEntry>();
     private Object scaffoldingTemplateGenerator;
     private Map<String, Collection<String>> scaffoldedActionMap;
     private Map<String, GrailsDomainClass> controllerToScaffoldedDomainClassMap;
@@ -103,7 +103,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             cacheKey = contextPath + pluginName + uri;
         }
 
-        CacheEntry cacheEntry = templateCache.get(cacheKey);
+        TemplateRendererCacheEntry cacheEntry = templateCache.get(cacheKey);
         if (cacheEntry != null && cacheEntry.isValid()) {
             t = cacheEntry.template;
         } else {
@@ -111,21 +111,27 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 if (cacheEntry != null) {
                     // prevent several competing threads to update the template at the same time
                     cacheEntry.getLock().lock();
+                    if(cacheEntry.isValid()) {
+                        // another thread already updated the entry
+                        t = cacheEntry.template;
+                    }
                 }
-                if (scriptSource != null) {
-                    t = groovyPagesTemplateEngine.createTemplate(scriptSource);
-                }
-                boolean allowCaching = !disableCache;
-                if (t==null && scaffoldingTemplateGenerator != null) {
-                    t = generateScaffoldedTemplate(webRequest, templateName, uri);
-                    // always enable caching for generated scaffolded template
-                    allowCaching = true;
-                }
-                if (t != null && allowCaching) {
-                    if (cacheEntry != null) {
-                        cacheEntry.setTemplate(t);
-                    } else {
-                        templateCache.put(cacheKey, new CacheEntry(t, reloadEnabled));
+                if(t == null) {
+                    if (scriptSource != null) {
+                        t = groovyPagesTemplateEngine.createTemplate(scriptSource);
+                    }
+                    boolean allowCaching = !disableCache;
+                    if (t==null && scaffoldingTemplateGenerator != null) {
+                        t = generateScaffoldedTemplate(webRequest, templateName, uri);
+                        // always enable caching for generated scaffolded template
+                        allowCaching = true;
+                    }
+                    if (t != null && allowCaching) {
+                        if (cacheEntry != null) {
+                            cacheEntry.setTemplate(t);
+                        } else {
+                            templateCache.put(cacheKey, new TemplateRendererCacheEntry(t, reloadEnabled));
+                        }
                     }
                 }
             } finally {
@@ -198,13 +204,13 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         return t;
     }
 
-    private static class CacheEntry {
+    private static class TemplateRendererCacheEntry {
         private long timestamp=System.currentTimeMillis();
         private Template template;
         private boolean reloadEnabled;
         private final Lock lock = new ReentrantLock();
 
-        public CacheEntry(Template t, boolean reloadEnabled) {
+        public TemplateRendererCacheEntry(Template t, boolean reloadEnabled) {
             this.template = t;
             this.reloadEnabled = reloadEnabled;
         }
@@ -217,7 +223,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             return !reloadEnabled || (System.currentTimeMillis() - timestamp < GroovyPageMetaInfo.LASTMODIFIED_CHECK_INTERVAL);
         }
 
-        public synchronized void setTemplate(Template template) {
+        public void setTemplate(Template template) {
             this.template = template;
             this.timestamp = System.currentTimeMillis();
         }

@@ -18,7 +18,7 @@ class GroovyPageViewTests extends GroovyTestCase {
 
         def rl = new MockStringResourceLoader()
 
-        def url = "/WEB-INF/grails-apps/views/test.gsp"
+        def url = "/WEB-INF/grails-app/views/test.gsp"
 
         rl.registerMockResource(url, "<%='success'+foo%>")
 

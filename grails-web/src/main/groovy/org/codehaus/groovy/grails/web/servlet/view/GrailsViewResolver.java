@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.servlet.view;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
 
+import java.security.PrivilegedAction;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +34,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.scripting.ScriptSource;
@@ -52,14 +54,15 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     public static final String GSP_SUFFIX = ".gsp";
     public static final String JSP_SUFFIX = ".jsp";
-
+    
     protected GroovyPagesTemplateEngine templateEngine;
     protected GrailsConventionGroovyPageLocator groovyPageLocator;
 
     // no need for static cache since GrailsViewResolver is in app context
-    private Map<String, View> VIEW_CACHE = new ConcurrentHashMap<String, View>();
+    private Map<String, CacheEntry<View>> VIEW_CACHE = new ConcurrentHashMap<String, CacheEntry<View>>();
     private GrailsApplication grailsApplication;
     private boolean developmentMode = GrailsUtil.isDevelopmentEnv();
+    private long cacheTimeout=-1;
 
     /**
      * Constructor.
@@ -83,12 +86,55 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             return createGrailsView(viewName);
         }
 
-        View view = VIEW_CACHE.get(viewName);
-        if (view == null || (templateEngine.isReloadEnabled() && view instanceof GroovyPageView && ((GroovyPageView)view).isExpired())) {
-            view = createGrailsView(viewName);
+        CacheEntry<View> entry = VIEW_CACHE.get(viewName);
+        
+        final String lookupViewName = viewName;
+        PrivilegedAction<View> updater=new PrivilegedAction<View>() {
+            public View run() {
+                try {
+                    return createGrailsView(lookupViewName);
+                }
+                catch (Exception e) {
+                    throw new WrappedInitializationException(e);
+                }
+            }
+        };
+        
+        View view=null;
+        
+        if(entry==null) {
+            try {
+                view = updater.run();
+            } catch (WrappedInitializationException e) {
+                e.rethrow();
+            }
+            entry = new CacheEntry<View>(view);
+            VIEW_CACHE.put(viewName, entry);
+            return view;
         }
-        VIEW_CACHE.put(viewName, view);
+        
+        try {
+            view = entry.getValue(cacheTimeout, updater);
+        } catch (WrappedInitializationException e) {
+            e.rethrow();
+        }
+        
         return view;
+    }
+    
+    private static class WrappedInitializationException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        public WrappedInitializationException(Throwable cause) {
+            super(cause);
+        }
+        
+        public void rethrow() throws Exception {
+            if(getCause() instanceof Exception) {
+                throw (Exception)getCause();
+            } else {
+                throw this;
+            }            
+        }
     }
 
     private View createGrailsView(String viewName) throws Exception {
@@ -152,5 +198,13 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+    public long getCacheTimeout() {
+        return cacheTimeout;
+    }
+
+    public void setCacheTimeout(long cacheTimeout) {
+        this.cacheTimeout = cacheTimeout;
     }
 }

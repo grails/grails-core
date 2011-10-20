@@ -39,7 +39,6 @@ import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import grails.gsp.PageRenderer
-import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
@@ -98,6 +97,7 @@ class GroovyPagesGrailsPlugin {
         boolean enableReload = env.isReloadEnabled() ||
             GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD) ||
             (developmentMode && env == Environment.DEVELOPMENT)
+        long gspCacheTimeout = Long.getLong("grails.gsp.reload.interval", (developmentMode && env == Environment.DEVELOPMENT) ? 0L : 5000L)
         boolean warDeployedWithReload = application.warDeployed && enableReload
         boolean enableCacheResources = !(application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES) == true)
 
@@ -148,10 +148,17 @@ class GroovyPagesGrailsPlugin {
                     location = "classpath:gsp/views.properties"
                 }
             }
+            if (enableReload) {
+                cacheTimeout = gspCacheTimeout
+            }
+            reloadEnabled = enableReload
         }
 
         grailsResourceLocator(CachingGroovyPageStaticResourceLocator) { bean ->
             bean.parent = "abstractGrailsResourceLocator"
+            if (enableReload) {
+                cacheTimeout = gspCacheTimeout
+            }
         }
 
         // Setup the main templateEngine used to render GSPs
@@ -193,6 +200,9 @@ class GroovyPagesGrailsPlugin {
             suffix = ".jsp"
             templateEngine = groovyPagesTemplateEngine
             groovyPageLocator = groovyPageLocator
+            if (enableReload) {
+                cacheTimeout = gspCacheTimeout
+            }
         }
         // Configure a Spring MVC view resolver
         jspViewResolver(GrailsViewResolver) { bean ->

@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.Environment;
-
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,6 +37,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
+import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -73,21 +72,23 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     public static final String HTML_DATA_POSTFIX = "_html.data";
     public static final String LINENUMBERS_DATA_POSTFIX = "_linenumbers.data";
 
-    private long latestLastModifiedCheck=0L;
     public static final long LASTMODIFIED_CHECK_INTERVAL =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
     private static final long LASTMODIFIED_CHECK_GRANULARITY =  Long.getLong("grails.gsp.reload.granularity", 2000).longValue();
     private GrailsApplication grailsApplication;
 
     private String pluginPath;
     private GrailsPlugin pagePlugin;
-    private boolean developmentMode = Environment.isDevelopmentMode();
+    private boolean initialized=false;
+    
+    private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>(null);
 
     public GroovyPageMetaInfo() {
-        latestLastModifiedCheck=System.currentTimeMillis();
+        shouldReloadCacheEntry.expire();
     }
-
+    
     @SuppressWarnings("rawtypes")
     public GroovyPageMetaInfo(Class<?> pageClass) {
+        this();
         precompiledMode=true;
         this.pageClass = pageClass;
         contentType = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_CONTENT_TYPE), null);
@@ -100,6 +101,16 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
         catch (IOException e) {
             throw new RuntimeException("Problem reading html data for page class " + pageClass, e);
+        }
+    }
+    
+    static interface GroovyPageMetaInfoInitializer {
+        public void initialize(GroovyPageMetaInfo metaInfo);        
+    }
+
+    synchronized void initializeOnDemand(GroovyPageMetaInfoInitializer initializer) {
+        if(!initialized) {
+            initializer.initialize(this);
         }
     }
 
@@ -134,6 +145,8 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
 
         initializePluginPath();
+        
+        initialized = true;
     }
 
     private void initializePluginPath() {
@@ -391,21 +404,29 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
      * @param resourceCallable call back that resolves the source gsp lazily
      * @return true if the available gsp source file is newer than the loaded one.
      */
-    public synchronized boolean shouldReload(PrivilegedAction<Resource> resourceCallable) {
-        long now = System.currentTimeMillis();
-        if (developmentMode || now - latestLastModifiedCheck > LASTMODIFIED_CHECK_INTERVAL) {
-            latestLastModifiedCheck=now;
-            Resource resource=resourceCallable.run();
-            if (resource != null && resource.exists()) {
-                long currentLastmodified=establishLastModified(resource);
-                // granularity is required since lastmodified information is rounded some where in copying & war (zip) file information
-                // usually the lastmodified time is 1000L apart in files and in files extracted from the zip (war) file
-                if (currentLastmodified > 0 && Math.abs(currentLastmodified - lastModified) > LASTMODIFIED_CHECK_GRANULARITY) {
-                    return true;
+    public boolean shouldReload(final PrivilegedAction<Resource> resourceCallable) {
+        if(resourceCallable == null) return false;
+        Resource resource=checkIfReloadableResourceHasChanged(resourceCallable);
+        return (resource != null);
+    }
+    
+    
+    public Resource checkIfReloadableResourceHasChanged(final PrivilegedAction<Resource> resourceCallable) {
+        PrivilegedAction<Resource> checkerCallable = new PrivilegedAction<Resource>() {
+            public Resource run() {
+                Resource resource=resourceCallable.run();
+                if (resource != null && resource.exists()) {
+                    long currentLastmodified=establishLastModified(resource);
+                    // granularity is required since lastmodified information is rounded some where in copying & war (zip) file information
+                    // usually the lastmodified time is 1000L apart in files and in files extracted from the zip (war) file
+                    if (currentLastmodified > 0 && Math.abs(currentLastmodified - lastModified) > LASTMODIFIED_CHECK_GRANULARITY) {
+                        return resource;
+                    }
                 }
+                return null;
             }
-        }
-        return false;
+        };
+        return shouldReloadCacheEntry.getValue(LASTMODIFIED_CHECK_INTERVAL, checkerCallable);
     }
 
     public boolean isPrecompiledMode() {
