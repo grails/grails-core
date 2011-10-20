@@ -39,8 +39,6 @@ class JavascriptTagLib {
 
     GrailsPluginManager pluginManager
 
-    def resourceService
-
     Class<JavascriptProvider> defaultProvider
 
     JavascriptTagLib() {
@@ -54,6 +52,11 @@ class JavascriptTagLib {
             }
         }
     }
+    
+    private boolean hasResourcesProcessor() {
+        grailsApplication.mainContext.containsBean('grailsResourceProcessor')
+    }
+    
 /**
      * Includes a javascript src file, library or inline script
      * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
@@ -84,8 +87,9 @@ class JavascriptTagLib {
             javascriptInclude(attrs)
         }
         else if (attrs.library) {
-            if (resourceService) {
+            if (hasResourcesProcessor()) {
                 out << r.require(module:attrs.library)
+                includedLibrary(attrs.library)
             } else {
                 if (LIBRARY_MAPPINGS.containsKey(attrs.library)) {
                     LIBRARY_MAPPINGS[attrs.library].each {
@@ -96,25 +100,33 @@ class JavascriptTagLib {
                             javascriptInclude(newattrs)
                         }
                     }
-                    if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-                        request[INCLUDED_LIBRARIES] << attrs.library
-                    }
+                    includedLibrary(attrs.library)
                 }
                 else {
                     if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
                         def newattrs = [:] + attrs
                         newattrs.src = String.valueOf(newattrs.remove('library')) + '.js'
                         javascriptInclude(newattrs)
-                        request[INCLUDED_LIBRARIES] << attrs.library
+                        includedLibrary(attrs.library)
                         request[INCLUDED_JS] << attrs.library
                     }
                 }
             }
         }
         else {
-            out.println '<script type="text/javascript">'
-            out.println body()
-            out.println '</script>'
+            if (hasResourcesProcessor()) {
+                out << r.script(Collections.EMPTY_MAP, body)
+            } else {
+                out.println '<script type="text/javascript">'
+                out.println body()
+                out.println '</script>'
+            }
+        }
+    }
+
+    private includedLibrary(library) {
+        if (!request[INCLUDED_LIBRARIES].contains(library)) {
+            request[INCLUDED_LIBRARIES] << library
         }
     }
 

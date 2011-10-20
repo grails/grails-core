@@ -170,7 +170,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication.setApplicationContext(ctx)
 
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication)
-        ctx.registerMockBean("pluginManager", mockManager)
+        ctx.registerMockBean("pluginManager", mockManager) 
 
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 
@@ -180,6 +180,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean("grailsApplication",grailsApplication)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
+        onInitMockBeans()
+        
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
@@ -219,8 +221,10 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         GroovySystem.metaClassRegistry.removeMetaClass(String)
         GroovySystem.metaClassRegistry.removeMetaClass(Object)
+        
         // Why are the TagLibClasses removed?
         //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
+        
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         initThemeSource(request, messageSource)
@@ -248,6 +252,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     protected void onInit() {}
     protected void onDestroy() {}
+    protected void onInitMockBeans() {} 
 
     protected MockServletContext createMockServletContext() { new MockServletContext() }
 
@@ -291,12 +296,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     void assertOutputContains(expected, template, params = [:]) {
         def result = applyTemplate(template, params)
-        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertTrue "Output does not contain expected string [$expected]. Output was: [${result}]", result.indexOf(expected) > -1
     }
 
     void assertOutputNotContains(expected, template, params = [:]) {
         def result = applyTemplate(template, params)
-        assertFalse "Output should not contain the expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertFalse "Output should not contain the expected string [$expected]. Output was: [${result}]", result.indexOf(expected) > -1
     }
 
     /**

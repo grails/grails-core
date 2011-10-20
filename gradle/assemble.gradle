@@ -6,35 +6,47 @@ def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
 // The configurations of which we collect all the dependencies of for our lib dir.
 // Notice that we exclude all project dependencies as we do NOT want jars built by this project
 // to be part of the configuration. This also avoids building those jars when running this task.
-def libsConfigurations = []
-subprojects {
+def libsConfigurations = [:]
+subprojects { subproject ->
     configurations {
-        libsConfigurations << libs { 
+        libs { 
             extendsFrom compile, runtime
             ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
-        }.copyRecursive {
-            !(it instanceof org.gradle.api.artifacts.ProjectDependency)
         }
     }
+    
+    // Filter out project dependencies, we don't want them, we just want externals
+    def externalLibs = configurations.libs.copyRecursive { !(it instanceof org.gradle.api.artifacts.ProjectDependency) }
+    
+    // We have to manually copy the exclude rules due to GRADLE-1853
+    configurations.libs.hierarchy.each {
+        it.excludeRules.each {
+            externalLibs.exclude it.excludeArgs
+        }
+    }
+    
+    libsConfigurations[subproject] = externalLibs
 }
 
-task populateDependencies(type: Sync, dependsOn: libsConfigurations) {
+task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     into homeLibDir
     
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
     // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
     // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
     gradle.taskGraph.whenReady { taskGraph ->
-       if (taskGraph.hasTask(':populateDependencies')) {
-           from(gradleArtifactCache) {
-               libsConfigurations*.resolvedConfiguration*.resolvedArtifacts*.each { artifact ->
-                   def dependency = artifact.getResolvedDependency()
+        if (taskGraph.hasTask(':populateDependencies')) {
+            from(gradleArtifactCache) {
+                libsConfigurations.each { project, configuration ->
+                    configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                        def dependency = artifact.resolvedDependency
 
-                   def file = artifact.file
-                   include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                   include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                   include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-               }
+                        def file = artifact.file
+                        include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                        include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                        include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                    }
+                }
            }
        }
     }
