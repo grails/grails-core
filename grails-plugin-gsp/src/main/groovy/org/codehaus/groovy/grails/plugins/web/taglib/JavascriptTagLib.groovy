@@ -39,8 +39,6 @@ class JavascriptTagLib {
 
     GrailsPluginManager pluginManager
 
-    def resourceService
-
     Class<JavascriptProvider> defaultProvider
 
     JavascriptTagLib() {
@@ -54,6 +52,11 @@ class JavascriptTagLib {
             }
         }
     }
+    
+    private boolean hasResourcesProcessor() {
+        grailsApplication.mainContext.containsBean('grailsResourceProcessor')
+    }
+    
 /**
      * Includes a javascript src file, library or inline script
      * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
@@ -84,7 +87,7 @@ class JavascriptTagLib {
             javascriptInclude(attrs)
         }
         else if (attrs.library) {
-            if (resourceService) {
+            if (hasResourcesProcessor()) {
                 out << r.require(module:attrs.library)
                 includedLibrary(attrs.library)
             } else {
@@ -111,9 +114,13 @@ class JavascriptTagLib {
             }
         }
         else {
-            out.println '<script type="text/javascript">'
-            out.println body()
-            out.println '</script>'
+            if (hasResourcesProcessor()) {
+                out << r.script(Collections.EMPTY_MAP, body)
+            } else {
+                out.println '<script type="text/javascript">'
+                out.println body()
+                out.println '</script>'
+            }
         }
     }
 

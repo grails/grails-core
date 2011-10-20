@@ -102,38 +102,6 @@ class TestUrlMappings {
     }
 
     /**
-     * Tests that the INCLUDED_JS_LIBRARIES attribute is set correctly without resources plugin
-     */
-    void testLibraryAttributeSetWhenResourcesInstalled() {
-        def template = '<g:javascript library="testing"/>'
-
-        def taglib = appCtx.getBean(JavascriptTagLib.class.name)
-        def oldMC = replaceMetaClass(taglib)
-
-        def requiredModule 
-        
-        // Dummy r.resource impl
-        def mockRes = [
-            require: { attrs -> requiredModule = attrs.module; return '' }
-        ]
-        taglib.metaClass.getR = { -> mockRes }
-        taglib.metaClass.getResourceService = { -> [something:'value'] }
-        try {
-            
-            def result = applyTemplate(template, [:])
-            
-            println "Result: $result"
-            assertEquals(['testing'], request.getAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES"))
-            assertEquals 0, result.trim().size()
-            assertEquals 'testing', requiredModule
-            
-        } finally {
-            taglib.metaClass = oldMC
-        }
-    }
-
-
-    /**
      * Tests that the 'formRemote' tag complains if a 'params' attribute
      * is given.
      */

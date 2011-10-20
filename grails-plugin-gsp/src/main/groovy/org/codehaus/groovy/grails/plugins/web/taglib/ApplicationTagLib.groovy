@@ -48,8 +48,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     @Autowired
     LinkGenerator linkGenerator
 
-    def resourceService
-
     static final SCOPES = [page: 'pageScope',
                            application: 'servletContext',
                            request:'request',
@@ -57,6 +55,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
                            flash:'flash']
 
     boolean useJsessionId = false
+
+    private boolean hasResourceProcessor() {
+        grailsApplication.mainContext.containsBean('grailsResourceProcessor')
+    }
 
     void afterPropertiesSet() {
         def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
@@ -148,7 +150,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         // Use resources plugin if present, but only if file is specified - resources require files
         // But users often need to link to a folder just using dir
-        out << ((resourceService && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
+        out << ((hasResourceProcessor() && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
     }
 
     /**
@@ -162,7 +164,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (!attrs.uri && !attrs.dir) {
             attrs.dir = "images"
         }
-        if (resourceService) {
+        if (hasResourceProcessor()) {
             out << r.img(attrs)
         } else {
             def uri = attrs.uri ?: resource(attrs)

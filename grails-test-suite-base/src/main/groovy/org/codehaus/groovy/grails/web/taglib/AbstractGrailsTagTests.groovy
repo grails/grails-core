@@ -180,6 +180,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean("grailsApplication",grailsApplication)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
+        onInitMockBeans()
+        
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
@@ -250,6 +252,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     protected void onInit() {}
     protected void onDestroy() {}
+    protected void onInitMockBeans() {} 
 
     protected MockServletContext createMockServletContext() { new MockServletContext() }
 
