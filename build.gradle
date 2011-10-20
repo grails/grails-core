@@ -169,7 +169,7 @@ subprojects { project ->
     configurations {
         meta
         published.extendsFrom archives, meta
-        	all*.exclude group:'commons-logging', module: 'commons-logging'
+        all*.exclude group:'commons-logging', module: 'commons-logging'
     }
 
     artifacts {
