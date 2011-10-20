@@ -16,9 +16,7 @@ package grails.util;
 
 import groovy.util.ConfigObject;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -75,11 +73,11 @@ public class Holders {
             return (GrailsApplication)getApplicationContext().getBean(APPLICATION_BEAN_NAME);
         }
         catch (IllegalStateException e) {
-            error("ApplicationContext not found in ServletContext or no thread-bound ServletContext found, returning singleton");
+            LOG.error("ApplicationContext not found in ServletContext or no thread-bound ServletContext found, returning singleton");
             return applicationSingleton;
         }
         catch (IllegalArgumentException e) {
-            error("No thread-bound ServletContext found, returning singleton");
+            LOG.error("No thread-bound ServletContext found, returning singleton");
             return applicationSingleton;
         }
     }
@@ -167,29 +165,12 @@ public class Holders {
         setPluginManagerInCreation(false);
     }
 
-    private static void error(String message) {
-        LOG.error(message, createException(""));
-    }
-
     private static <T> T get(Holder<T> holder, String type) {
         return get(holder, type, false);
     }
 
     private static <T> T get(Holder<T> holder, String type, boolean mappedOnly) {
         return holder.get(mappedOnly);
-    }
-
-    private static Throwable createException(String message) {
-        Throwable t = GrailsUtil.deepSanitize(new Exception(message));
-        List<StackTraceElement> newTrace = new ArrayList<StackTraceElement>();
-        for (StackTraceElement element : t.getStackTrace()) {
-            newTrace.add(element);
-            if (!element.getClassName().equals("grails.util.Holders")) {
-                break;
-            }
-        }
-        t.setStackTrace(newTrace.toArray(new StackTraceElement[newTrace.size()]));
-        return t;
     }
 
     @SuppressWarnings("unchecked")
