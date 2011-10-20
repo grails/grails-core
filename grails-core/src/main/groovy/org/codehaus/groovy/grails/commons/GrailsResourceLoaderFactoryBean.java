@@ -57,7 +57,7 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResour
     }
 
     public void afterPropertiesSet() throws Exception {
-        resourceLoader = Holders.getResourceLoader(true);
+        resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
         if (resourceLoader != null) {
             return;
         }

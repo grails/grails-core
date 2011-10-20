@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.compiler.support;
 
-import grails.util.Holders;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 
 /**
  * A holder for the GrailsResourceLoader object.
@@ -24,11 +24,13 @@ import grails.util.Holders;
  */
 public class GrailsResourceLoaderHolder {
 
+    private static GrailsResourceLoader resourceLoader;
+
     public static synchronized GrailsResourceLoader getResourceLoader() {
-        return Holders.getResourceLoader();
+        return resourceLoader;
     }
 
     public static synchronized void setResourceLoader(GrailsResourceLoader resourceLoader) {
-        Holders.setResourceLoader(resourceLoader);
+        GrailsResourceLoaderHolder.resourceLoader = resourceLoader;
     }
 }
