@@ -224,7 +224,7 @@ class PluginInstallEngine {
         dependencyManager.chainResolver = new ChainResolver()
         dependencyManager.parseDependencies {
             log "warn"
-            useOrigin false
+            useOrigin true
             cacheDir currentDependencyManager.ivySettings.getDefaultCache().absolutePath
             repositories {
                 def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
