@@ -10,13 +10,17 @@ dependencies {
         exclude module:'commons-logging'
     }
 
-    compile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
+    compile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile('commons-fileupload:commons-fileupload:1.2.2')
     compile "commons-io:commons-io:${commonsIOVersion}"
     compile "commons-lang:commons-lang:$commonsLangVersion"
 
-    compile "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}"
+    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
     compile 'opensymphony:sitemesh:2.4'
 
     compile "org.springframework:spring-webmvc:${springVersion}"
