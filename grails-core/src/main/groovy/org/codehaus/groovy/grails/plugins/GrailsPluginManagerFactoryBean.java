@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
@@ -60,7 +59,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
     }
 
     public void afterPropertiesSet() throws Exception {
-        pluginManager = Holders.getPluginManager(true);
+        pluginManager = PluginManagerHolder.getPluginManager();
 
         if (pluginManager == null) {
             Assert.state(descriptor != null, "Cannot create PluginManager, /WEB-INF/grails.xml not found!");

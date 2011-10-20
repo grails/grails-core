@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.util.Holders;
+import org.springframework.util.Assert;
 
 /**
  * Manages a thread bound plugin manager instance.
@@ -25,8 +25,11 @@ import grails.util.Holders;
  */
 public abstract class PluginManagerHolder {
 
+    private static GrailsPluginManager gpm;
+    private static Boolean inCreation = false;
+
     public static void setInCreation(boolean inCreation) {
-        Holders.setPluginManagerInCreation(inCreation);
+        PluginManagerHolder.inCreation = inCreation;
     }
 
     /**
@@ -37,7 +40,10 @@ public abstract class PluginManagerHolder {
      */
     @Deprecated
     public static void setPluginManager(GrailsPluginManager pluginManager) {
-        Holders.setPluginManager(pluginManager);
+        if (pluginManager != null) {
+            inCreation = false;
+        }
+        gpm = pluginManager;
     }
 
     /**
@@ -48,7 +54,15 @@ public abstract class PluginManagerHolder {
      */
     @Deprecated
     public static GrailsPluginManager getPluginManager() {
-        return Holders.getPluginManager();
+        while (inCreation) {
+            try {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e) {
+                break;
+            }
+        }
+        return gpm;
     }
 
     /**
@@ -60,6 +74,8 @@ public abstract class PluginManagerHolder {
      */
     @Deprecated
     public static GrailsPluginManager currentPluginManager() {
-        return Holders.currentPluginManager();
+        GrailsPluginManager current = getPluginManager();
+        Assert.state(current != null, "No PluginManager set");
+        return current;
     }
 }
