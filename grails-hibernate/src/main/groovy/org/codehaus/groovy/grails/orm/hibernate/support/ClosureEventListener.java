@@ -312,7 +312,9 @@ public class ClosureEventListener implements SaveOrUpdateEventListener,
                 Object entity = event.getEntity();
                 boolean synchronizeState = false;
                 if (beforeInsertCaller != null) {
-                    beforeInsertCaller.call(entity);
+                    if (beforeInsertCaller.call(entity)) {
+                        return true;
+                    }
                     synchronizeState = true;
                 }
                 if (shouldTimestamp) {

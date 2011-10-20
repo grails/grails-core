@@ -18,13 +18,9 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.apache.commons.beanutils.BeanUtils
-
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
-
-import org.springframework.util.Assert
 
 /**
  * Implements performing a forward.

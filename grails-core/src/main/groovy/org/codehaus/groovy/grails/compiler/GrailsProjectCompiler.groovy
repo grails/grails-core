@@ -111,7 +111,7 @@ class GrailsProjectCompiler {
             }
         }
     }
-    
+
     AntBuilder getAnt() {
         if (ant == null) {
            ant = new AntBuilder()

@@ -40,8 +40,8 @@ import com.opensymphony.sitemesh.Content;
 
 /**
  * Provides the logic for GrailsLayoutDecoratorMapper without so many ties to
- * the Sitemesh API
- * 
+ * the Sitemesh API.
+ *
  * @author Graeme Rocher
  * @since 2.0
  */
@@ -50,8 +50,7 @@ public class GroovyPageLayoutFinder {
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
     public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
-    private static final long LAYOUT_CACHE_EXPIRATION_MILLIS = Long.getLong("grails.gsp.reload.interval", 5000)
-            .longValue();
+    private static final long LAYOUT_CACHE_EXPIRATION_MILLIS = Long.getLong("grails.gsp.reload.interval", 5000);
     private static final String LAYOUTS_PATH = "/layouts";
 
     private Map<String, DecoratorCacheValue> decoratorCache = new ConcurrentHashMap<String, DecoratorCacheValue>();
@@ -92,7 +91,7 @@ public class GroovyPageLayoutFinder {
             LOG.debug("Evaluating layout for request: " + request.getRequestURI());
         }
         final Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
-        if(request.getAttribute(RENDERING_VIEW_ATTRIBUTE) != null || layoutAttribute != null) {
+        if (request.getAttribute(RENDERING_VIEW_ATTRIBUTE) != null || layoutAttribute != null) {
             String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
 
             if (layoutName == null) {
@@ -131,7 +130,7 @@ public class GroovyPageLayoutFinder {
                         d = resolveDecorator(request, controller, controllerName, actionUri);
                         if (cacheEnabled) {
                             layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
-                        }   
+                        }
                     }
                 }
                 else {
@@ -159,8 +158,9 @@ public class GroovyPageLayoutFinder {
     }
 
     public Decorator getNamedDecorator(HttpServletRequest request, String name, boolean viewMustExist) {
-        if (StringUtils.isBlank(name))
+        if (StringUtils.isBlank(name)) {
             return null;
+        }
 
         if (cacheEnabled) {
             DecoratorCacheValue cacheValue = decoratorCache.get(name);
@@ -248,25 +248,32 @@ public class GroovyPageLayoutFinder {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
+            }
             LayoutCacheKey other = (LayoutCacheKey)obj;
             if (actionUri == null) {
-                if (other.actionUri != null)
+                if (other.actionUri != null) {
                     return false;
+                }
             }
-            else if (!actionUri.equals(other.actionUri))
+            else if (!actionUri.equals(other.actionUri)) {
                 return false;
+            }
             if (controllerName == null) {
-                if (other.controllerName != null)
+                if (other.controllerName != null) {
                     return false;
+                }
             }
-            else if (!controllerName.equals(other.controllerName))
+            else if (!controllerName.equals(other.controllerName)) {
                 return false;
+            }
             return true;
         }
     }

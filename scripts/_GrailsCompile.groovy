@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.apache.tools.ant.BuildException
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+
 /**
- * Gant script that compiles Groovy and Java files in the src tree
+ * Gant script that compiles Groovy and Java files in the src tree.
  *
  * @author Graeme Rocher
  *
@@ -58,7 +60,7 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
         // classes that might conflict with the project's.
         withCompilationErrorHandling {
             projectCompiler.compilePlugins()
-        }        
+        }
     }
 }
 
@@ -66,9 +68,9 @@ private withCompilationErrorHandling(Closure callable) {
     try {
         callable.call()
     }
-    catch (org.apache.tools.ant.BuildException e) {
-        if(e.cause instanceof MultipleCompilationErrorsException) {
-            event("StatusError", ["Compilation error: ${e.cause.message}"])            
+    catch (BuildException e) {
+        if (e.cause instanceof MultipleCompilationErrorsException) {
+            event("StatusError", ["Compilation error: ${e.cause.message}"])
         }
         else {
             grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
@@ -79,7 +81,6 @@ private withCompilationErrorHandling(Closure callable) {
         grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
         exit 1
     }
-    
 }
 
 target(compilepackage : "Compile & Compile GSP files") {
@@ -97,7 +98,7 @@ target(compilegsp : "Compile GSP files") {
         }
         else {
             event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
-            exit(1)            
+            exit(1)
         }
     }
 }

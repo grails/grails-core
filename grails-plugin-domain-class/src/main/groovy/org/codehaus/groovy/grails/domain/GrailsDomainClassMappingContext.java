@@ -111,6 +111,7 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
             return null;
         }
 
+        @SuppressWarnings("unused")
         public IdentityMapping getIdentityMapping(ClassMapping classMapping) {
             return null;
         }

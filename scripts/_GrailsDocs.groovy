@@ -243,7 +243,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
 
     if (srcDocs.exists()) {
         event("DocStart", ["refdocs"])
-        
+
         File refDocsDir = grailsSettings.docsOutputDir
         def publisher = new DocPublisher(srcDocs, refDocsDir, grailsConsole)
         publisher.ant = ant

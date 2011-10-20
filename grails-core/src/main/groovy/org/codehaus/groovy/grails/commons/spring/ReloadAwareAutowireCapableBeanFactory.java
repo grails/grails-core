@@ -184,7 +184,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends
             boolean dependencyCheck) throws BeansException {
         if(autowireMode == AUTOWIRE_BY_NAME) {
             if(DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS || dependencyCheck || existingBean instanceof Aware) {
-                super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);          
+                super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
             } else {
                 populateBeanInAutowireByName(existingBean);
             }
@@ -193,11 +193,11 @@ public class ReloadAwareAutowireCapableBeanFactory extends
                     dependencyCheck);
         }
     }
-    
+
     protected void populateBeanInAutowireByName(final Object existingBean) {
         // list of bean properties for that a bean exists
         Map<String, PropertyDescriptor> autowireableBeanProps = resolveAutowireablePropertyDescriptors(existingBean);
-        
+
         // apply autowire instances directly without all the layers of Spring
         autowireBeanInAutowireByName(existingBean, autowireableBeanProps);
     }
@@ -234,9 +234,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends
                 if (ex.getTargetException() instanceof ClassCastException) {
                     throw new TypeMismatchException(propertyChangeEvent, pd.getPropertyType(), ex.getTargetException());
                 }
-                else {
-                    throw new MethodInvocationException(propertyChangeEvent, ex.getTargetException());
-                }
+                throw new MethodInvocationException(propertyChangeEvent, ex.getTargetException());
             }
             catch (Exception ex) {
                 PropertyChangeEvent pce = new PropertyChangeEvent(existingBean, beanName, null, value);

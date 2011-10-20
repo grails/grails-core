@@ -110,11 +110,13 @@ public class ClassPropertyFetcher {
     private void init() {
         FieldCallback fieldCallback = new ReflectionUtils.FieldCallback() {
             public void doWith(Field field) {
-                if (field.isSynthetic())
+                if (field.isSynthetic()) {
                     return;
+                }
                 final int modifiers = field.getModifiers();
-                if (!Modifier.isPublic(modifiers))
+                if (!Modifier.isPublic(modifiers)) {
                     return;
+                }
 
                 final String name = field.getName();
                 if (name.indexOf('$') == -1) {
@@ -133,10 +135,12 @@ public class ClassPropertyFetcher {
         MethodCallback methodCallback = new ReflectionUtils.MethodCallback() {
             public void doWith(Method method) throws IllegalArgumentException,
                     IllegalAccessException {
-                if (method.isSynthetic())
+                if (method.isSynthetic()) {
                     return;
-                if (!Modifier.isPublic(method.getModifiers()))
+                }
+                if (!Modifier.isPublic(method.getModifiers())) {
                     return;
+                }
                 if (Modifier.isStatic(method.getModifiers())
                         && method.getReturnType() != Void.class) {
                     if (method.getParameterTypes().length == 0) {
@@ -148,15 +152,14 @@ public class ClassPropertyFetcher {
                             } else if (name.length() > 2
                                     && name.startsWith("is")
                                     && Character.isUpperCase(name.charAt(2))
-                                    && (method.getReturnType() == Boolean.class || method
-                                            .getReturnType() == boolean.class)) {
+                                    && (method.getReturnType() == Boolean.class ||
+                                        method.getReturnType() == boolean.class)) {
                                 name = name.substring(2);
                             }
                             PropertyFetcher fetcher = new GetterPropertyFetcher(
                                     method, true);
                             staticFetchers.put(name, fetcher);
-                            staticFetchers.put(StringUtils.uncapitalize(name),
-                                    fetcher);
+                            staticFetchers.put(StringUtils.uncapitalize(name), fetcher);
                         }
                     }
                 }
@@ -191,16 +194,13 @@ public class ClassPropertyFetcher {
         for (PropertyDescriptor desc : propertyDescriptors) {
             Method readMethod = desc.getReadMethod();
             if (readMethod != null) {
-                boolean staticReadMethod = Modifier.isStatic(readMethod
-                        .getModifiers());
+                boolean staticReadMethod = Modifier.isStatic(readMethod.getModifiers());
                 if (staticReadMethod) {
                     staticFetchers.put(desc.getName(),
-                            new GetterPropertyFetcher(readMethod,
-                                    staticReadMethod));
+                            new GetterPropertyFetcher(readMethod, staticReadMethod));
                 } else {
                     instanceFetchers.put(desc.getName(),
-                            new GetterPropertyFetcher(readMethod,
-                                    staticReadMethod));
+                            new GetterPropertyFetcher(readMethod, staticReadMethod));
                 }
             }
         }

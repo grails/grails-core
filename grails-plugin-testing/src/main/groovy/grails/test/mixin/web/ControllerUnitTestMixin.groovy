@@ -218,7 +218,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     @AfterClass
     static void cleanupGrailsWeb() {
         servletContext = null
-        ServletContextHolder.clearServletContext()
+        ServletContextHolder.setServletContext(null)
     }
 
     @Before

@@ -89,13 +89,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public GrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent) {
         this.application = application;
         this.parent = parent;
-        if (parent != null) {
-            parent.containsBean(DATA_SOURCE_BEAN);
-        }
 
         try {
-            pluginManager = parent != null ? parent.getBean(GrailsPluginManager.class) : null;
-            pluginManager = pluginManager != null ? pluginManager : PluginManagerHolder.getPluginManager();
+            pluginManager = parent == null ? null : parent.getBean(GrailsPluginManager.class);
+            pluginManager = pluginManager == null ? PluginManagerHolder.getPluginManager() : pluginManager;
         } catch (BeansException e) {
             // ignore
         }
@@ -301,7 +298,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         catch (Exception ex) {
             LOG.error("[RuntimeConfiguration] Unable to perform post initialization config: " + resourceName, ex);
         }
- 
+
         GrailsRuntimeConfigurator.loadSpringGroovyResources(springConfig, app);
     }
 

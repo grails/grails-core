@@ -44,7 +44,7 @@ import org.springframework.webflow.expression.DefaultExpressionParserFactory
 import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
 
 /**
- * Provides the core Webflow functionality within Grails
+ * Provides the core Webflow functionality within Grails.
  *
  * @author Graeme Rocher
  * @since 1.2
@@ -111,7 +111,7 @@ class WebFlowPluginSupport {
     }
 
     static doWithDynamicMethods = { appCtx ->
-        
+
         for (GrailsControllerClass c in application.controllerClasses) {
             for (flow in c.flows) {
                 def flowId = ("${c.logicalPropertyName}/" + flow.key).toString()

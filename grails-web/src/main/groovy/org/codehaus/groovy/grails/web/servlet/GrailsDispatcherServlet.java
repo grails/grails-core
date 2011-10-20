@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import grails.util.Holders;
+
 import java.util.Locale;
 import java.util.Map;
 
@@ -31,6 +33,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
+import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
@@ -160,6 +163,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         // construct the SpringConfig for the container managed application
         Assert.notNull(parent, "Grails requires a parent ApplicationContext, is the /WEB-INF/applicationContext.xml file missing?");
         setApplication(parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
+
+        ServletContextHolder.setServletContext(getServletContext());
 
         WebApplicationContext webContext;
         if (wac instanceof GrailsApplicationContext) {

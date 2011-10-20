@@ -22,7 +22,7 @@ class FactoryHolderTests extends GroovyTestCase {
     void testSetFactory() {
         def factory = new DummyFactory()
         FactoryHolder.setFactory(factory)
-        assertSame factory, FactoryHolder.@factory
+        assertSame factory, FactoryHolder.factory
     }
 
     // Silly test, but a necessary evil in order to get Cobertura to give us 100% coverage

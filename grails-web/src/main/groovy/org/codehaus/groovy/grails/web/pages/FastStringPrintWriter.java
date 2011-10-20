@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 /**
- * fast in-memory PrintWriter implementation  
+ * Fast in-memory PrintWriter implementation.
  *
  * @author Lari Hotari
  * @since 2.0

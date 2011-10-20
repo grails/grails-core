@@ -11,7 +11,7 @@ class LegacyTocStrategySpec extends Specification {
         def toc = strategy.generateToc([
                 [name: "1. Introduction.gdoc"],
                 [name: "1.1.10 Web Features.gdoc"],
-                [name: "1.1 What's new in Grails 1.4?.gdoc"],
+                [name: "1.1 What's new in Grails 2.0?.gdoc"],
                 [name: "1.1.2. Core Features.gdoc"],
                 [name: "1.2.1 Part One.gdoc"],
                 [name: "2.2 Upgrading from previous versions of Grails.gdoc"],
@@ -28,9 +28,9 @@ class LegacyTocStrategySpec extends Specification {
         toc.children[0].title == "Introduction"
         toc.children[0].file == "1. Introduction.gdoc"
         toc.children[0].parent == toc
-        toc.children[0].children*.name == ["1.1 What's new in Grails 1.4?", "1.2. Breaking Changes"]
-        toc.children[0].children*.title == ["What's new in Grails 1.4?", "Breaking Changes"]
-        toc.children[0].children*.file == ["1.1 What's new in Grails 1.4?.gdoc", "1.2. Breaking Changes.gdoc"]
+        toc.children[0].children*.name == ["1.1 What's new in Grails 2.0?", "1.2. Breaking Changes"]
+        toc.children[0].children*.title == ["What's new in Grails 2.0?", "Breaking Changes"]
+        toc.children[0].children*.file == ["1.1 What's new in Grails 2.0?.gdoc", "1.2. Breaking Changes.gdoc"]
         toc.children[0].children[0].children[1].name == "1.1.2. Core Features"
         toc.children[0].children[0].children[1].title == "Core Features"
         toc.children[0].children[0].children[1].file == "1.1.2. Core Features.gdoc"

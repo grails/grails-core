@@ -30,7 +30,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 /**
  * PrintWriter implementation that doesn't have synchronization. null object
  * references are ignored in print methods (nothing gets printed)
- * 
+ *
  * @author Lari Hotari, Sagire Software Oy
  */
 public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
@@ -50,13 +50,12 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     public boolean isAllowUnwrappingOut() {
         return allowUnwrappingOut;
     }
-    
+
     public Writer unwrap() {
-        if(isAllowUnwrappingOut()) {
+        if (isAllowUnwrappingOut()) {
             return getOut();
-        } else {
-            return this;
         }
+        return this;
     }
 
     public Writer getOut() {
@@ -114,9 +113,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
      * 
      * @see #checkError()
      */
+    @Override
     public synchronized void flush() {
-        if (trouble)
+        if (trouble) {
             return;
+        }
 
         try {
             out.flush();
@@ -131,8 +132,9 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     }
     
     void handleIOException(IOException e) {
-        if (trouble)
+        if (trouble) {
             return;
+        }
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("I/O exception in GrailsPrintWriter: " + e.getMessage(), e);
@@ -204,9 +206,9 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
      * Writes a string. If the argument is <code>null</code> then the string
      * <code>""</code> is printed.
      * 
-     * @param s
-     *            The <code>String</code> to be printed
+     * @param s The <code>String</code> to be printed
      */
+    @Override
     public void write(final String s) {
         usageFlag = true;
         if (trouble || s == null) {
@@ -224,9 +226,9 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     /**
      * Write a single character.
      * 
-     * @param c
-     *            int specifying a character to be written.
+     * @param c int specifying a character to be written.
      */
+    @Override
     public void write(final int c) {
         usageFlag = true;
         if (trouble)
@@ -243,13 +245,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     /**
      * Write a portion of an array of characters.
      * 
-     * @param buf
-     *            Array of characters
-     * @param off
-     *            Offset from which to start writing characters
-     * @param len
-     *            Number of characters to write
+     * @param buf Array of characters
+     * @param off Offset from which to start writing characters
+     * @param len Number of characters to write
      */
+    @Override
     public void write(final char buf[], final int off, final int len) {
         usageFlag = true;
         if (trouble || buf == null || len == 0)
@@ -265,13 +265,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     /**
      * Write a portion of a string.
      * 
-     * @param s
-     *            A String
-     * @param off
-     *            Offset from which to start writing characters
-     * @param len
-     *            Number of characters to write
+     * @param s A String
+     * @param off Offset from which to start writing characters
+     * @param len Number of characters to write
      */
+    @Override
     public void write(final String s, final int off, final int len) {
         usageFlag = true;
         if (trouble || s == null || s.length() == 0)
@@ -285,6 +283,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         }
     }
 
+    @Override
     public void write(final char buf[]) {
         write(buf, 0, buf.length);
     }
@@ -374,6 +373,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         println();
     }
 
+    @Override
     public GrailsPrintWriter append(final char c) {
         try {
             usageFlag = true;
@@ -385,6 +385,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         return this;
     }
 
+    @Override
     public GrailsPrintWriter append(final CharSequence csq, final int start, final int end) {
         try {
             usageFlag = true;
@@ -396,6 +397,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         return this;
     }
 
+    @Override
     public GrailsPrintWriter append(final CharSequence csq) {
         try {
             usageFlag = true;
@@ -412,6 +414,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         return this;
     }
 
+    @Override
     protected Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
@@ -534,6 +537,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         return prevUsed;
     }
 
+    @Override
     public void close() {
         try {
             out.close();
