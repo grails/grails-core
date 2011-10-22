@@ -91,4 +91,8 @@ public interface CommandLine {
     String getRemainingArgsLineSeparated();
 
     Map<String, Object> getUndeclaredOptions();
+
+    String lookupEnvironmentForCommand();
+
+    void setCommand(String scriptName);
 }

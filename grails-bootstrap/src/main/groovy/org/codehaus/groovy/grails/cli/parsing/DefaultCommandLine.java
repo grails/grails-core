@@ -41,19 +41,21 @@ public class DefaultCommandLine implements CommandLine {
         so.value = value;
 
         declaredOptions.put(name, so);
-
     }
 
     public void setEnvironment(String environment) {
         this.environment = environment;
     }
 
+    public void setCommand(String name) {
+        commandName = name;
+    }
+
     public String getEnvironment() {
         boolean useDefaultEnv = environment == null;
         String env;
         if (useDefaultEnv && commandName != null) {
-            env = CommandLineParser.DEFAULT_ENVS.get(commandName);
-            env = env != null ? env : Environment.DEVELOPMENT.getName();
+            env = lookupEnvironmentForCommand();
         }
         else {
             env = environment != null ? environment : Environment.DEVELOPMENT.getName();
@@ -62,8 +64,12 @@ public class DefaultCommandLine implements CommandLine {
         System.setProperty(Environment.KEY, env);
         System.setProperty(Environment.DEFAULT, String.valueOf(useDefaultEnv));
 
-
         return env;
+    }
+
+    public String lookupEnvironmentForCommand() {
+        String env = CommandLineParser.DEFAULT_ENVS.get(commandName);
+        return env == null ? Environment.DEVELOPMENT.getName() : env;
     }
 
     public boolean isEnvironmentSet() {
@@ -71,7 +77,7 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void setCommandName(String cmd) {
-        if("refresh-dependencies".equals(cmd)) {
+        if ("refresh-dependencies".equals(cmd)) {
             addUndeclaredOption(RESOLVE_DEPENDENCIES_ARGUMENT);
         }
         this.commandName = cmd;

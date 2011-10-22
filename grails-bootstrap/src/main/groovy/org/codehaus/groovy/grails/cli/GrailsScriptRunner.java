@@ -454,6 +454,20 @@ public class GrailsScriptRunner {
                 }
 
                 loadScriptClass(gant, scriptName);
+
+                // at this point if they were calling a script that has a non-default
+                // env (e.g. war or test-app) it wouldn't have been correctly set, so
+                // set it now, but only if they didn't specify the env (e.g. "grails test war" -> "grails test war")
+
+                if (Boolean.TRUE.toString().equals(System.getProperty(Environment.DEFAULT))) {
+                    commandLine.setCommand(GrailsNameUtils.getScriptName(scriptName));
+                    env = commandLine.lookupEnvironmentForCommand();
+                    binding.setVariable("grailsEnv", env);
+                    settings.setGrailsEnv(env);
+                    System.setProperty(Environment.KEY, env);
+                    settings.setDefaultEnv(false);
+                    System.setProperty(Environment.DEFAULT, Boolean.FALSE.toString());
+                }
             } else {
                 throw e;
             }
