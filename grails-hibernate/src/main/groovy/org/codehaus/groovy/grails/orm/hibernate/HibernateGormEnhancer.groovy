@@ -807,7 +807,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     }
 
     /**
-     * Gets the original persisted value of a field
+     * Gets the original persisted value of a field.
      *
      * @param fieldName The field name
      * @return The original persisted value
@@ -815,7 +815,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     Object getPersistentValue(instance, String fieldName) {
         def session = sessionFactory.currentSession
         def entry = findEntityEntry(instance, session, false)
-        if (!entry) {
+        if (!entry || !entry.loadedState) {
             return null
         }
 
