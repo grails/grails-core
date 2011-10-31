@@ -1125,11 +1125,7 @@ public class GroovyPageParser implements Tokens {
         }
         currentlyBufferingWhitespace = false;
     }
-
-    private static final int PARSING_NORMAL=0;
-    private static final int PARSING_EXPRESSION=1;
-    private static final int PARSING_QUOTEDVALUE=2;
-
+    
     private void populateMapWithAttributes(Map<String, String> attrs, String attrTokens) {
         attrTokens = attrTokens.trim();
         int startPos=0;
@@ -1152,53 +1148,7 @@ public class GroovyPageParser implements Tokens {
             }
             char quoteChar = ch;
 
-            int parenthesisLevel=0;
-            int endPos = startPos;
-            int endQuotepos = -1;
-            char previousChar = 0;
-            int valueCharIndex=0;
-            int parsingState = PARSING_NORMAL;
-            char currentQuoteChar = 0;
-            while(endPos < attrTokens.length() && endQuotepos==-1) {
-                ch = attrTokens.charAt(endPos++);
-                switch(ch) {
-                    case '{':
-                        if (previousChar=='$' || parsingState==PARSING_EXPRESSION) {
-                            parenthesisLevel++;
-                            parsingState=PARSING_EXPRESSION;
-                        }
-                        break;
-                    case '[':
-                        if (valueCharIndex==0 || parsingState==PARSING_EXPRESSION) {
-                            parenthesisLevel++;
-                            parsingState=PARSING_EXPRESSION;
-                        }
-                        break;
-                    case '}':
-                    case ']':
-                        if (parsingState==PARSING_EXPRESSION) {
-                            parenthesisLevel--;
-                            if (parenthesisLevel==0) {
-                                parsingState=PARSING_NORMAL;
-                            }
-                        }
-                        break;
-                    default:
-                        if (previousChar != '\\') {
-                            if (parsingState==PARSING_NORMAL && ch==quoteChar && parenthesisLevel == 0) {
-                                endQuotepos = endPos-1;
-                            } else if (parsingState==PARSING_EXPRESSION && (ch=='"' || ch=='\'')) {
-                                currentQuoteChar = ch;
-                                parsingState = PARSING_QUOTEDVALUE;
-                            } else if (parsingState==PARSING_QUOTEDVALUE && ch==currentQuoteChar) {
-                                parsingState = PARSING_EXPRESSION;
-                            }
-                        }
-                        break;
-                }
-                previousChar=ch;
-                valueCharIndex++;
-            }
+            int endQuotepos = GroovyPageExpressionParser.findExpressionEndPos(attrTokens, startPos, quoteChar, (char)0, false);
             if (endQuotepos==-1) {
                 throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
             }
@@ -1218,6 +1168,7 @@ public class GroovyPageParser implements Tokens {
             startPos = endQuotepos + 1;
         }
     }
+
 
     private void pageImport(String value) {
         // LOG.debug("pageImport(" + value + ')');
