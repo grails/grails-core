@@ -39,7 +39,6 @@ class GroovyPageScanner implements Tokens {
     private int state = HTML;
     private int len;
     private String lastNamespace;
-    private int exprBracketCount = 0;
     private List<Integer> lineNumberPositions;
     private int lastLineNumberIndex = -1;
     private String pageName = "Unknown";
@@ -119,8 +118,6 @@ class GroovyPageScanner implements Tokens {
             char c1 = left > 1 ? text.charAt(end1) : 0;
             char c2 = left > 2 ? text.charAt(end1 + 1) : 0;
 
-            boolean gexprBracketsClosed = updateBracketState(c);
-
             switch (state) {
                 case HTML:
                     if (isPotentialScriptletOrTag(c, left)) {
@@ -197,71 +194,37 @@ class GroovyPageScanner implements Tokens {
                     }
                     break;
                 case GTAG_EXPR:
-                    checkValidExpressionState(c, c1, left);
-                    if (gexprBracketsClosed && c == '}') {
-                        return found(GSTART_TAG,1);
-                    }
-                    break;
-                case GEXPR:
-                    checkValidExpressionState(c, c1, left);
+                case GEXPR:    
                 case GDIRECT:
-                    if (gexprBracketsClosed && c == '}') {
-                        return found(HTML, 1);
-                    }
-                    break;
                 case GSCRIPT:
-                    if (gexprBracketsClosed && c == '}' && c1 == '%') {
-                        return found(HTML, 2);
-                    }
-                    break;
                 case GDECLAR:
-                    if (gexprBracketsClosed && c == '}' && (c1 == '!' || c1 == '%')) {
-                        return found(HTML, 2);
-                    }
-                    break;
+                    return parseExpression();
             }
         }
     }
 
-    private boolean updateBracketState(char c) {
-        boolean previousBracketsClosed = (exprBracketCount==0);
+    protected int parseExpression() {
+        int expressionEndState = HTML;
+        char terminationChar = '}';
+        char nextTerminationChar = 0;
+        boolean startInExpression = true;
         switch (state) {
             case GTAG_EXPR:
-            case GEXPR:
-            case GSCRIPT:
-            case GDECLAR:
-            case GDIRECT:
-                if (c == '{') {
-                    exprBracketCount++;
-                } else if (c=='}') {
-                    exprBracketCount--;
-                }
+                expressionEndState = GSTART_TAG;
                 break;
-            default:
-                exprBracketCount=0;
-                return false;
+            case GSCRIPT:
+                nextTerminationChar = '%';
+                break;
+            case GDECLAR:
+                nextTerminationChar = '!';
+                break;
         }
-        if (exprBracketCount < -1) {
-            throw new GrailsTagException("Unmatched brackets in GSP expression", pageName, getLineNumberForToken());
-        }
-        return (exprBracketCount==0 || exprBracketCount==-1) && previousBracketsClosed;
-    }
-
-    private void checkValidExpressionState(char c, char c1, int left) {
-        if (isPotentialScriptletOrTag(c, left)) {
-            if (c1 == '%') {
-                throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
-            }
-
-            boolean bStartTag = !isClosingTag(c1);
-
-            String tagNameSpace = getTagNamespace(bStartTag ? end1 : end1 + 1);
-            if (isTagDefinition(tagNameSpace)) {
-                throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
-            }
-        }
-        else if (isStartOfGExpression(c, c1)) {
-            //TODO: check this one
+        
+        int endpos=GroovyPageExpressionParser.findExpressionEndPos(text, end1-1, terminationChar, nextTerminationChar, startInExpression);
+        if(endpos != -1) {
+            end1=endpos+1;
+            return found(expressionEndState,nextTerminationChar==0?1:2);
+        } else {
             throw new GrailsTagException("Unclosed GSP expression", pageName, getLineNumberForToken());
         }
     }
@@ -318,7 +281,7 @@ class GroovyPageScanner implements Tokens {
     }
 
     void reset() {
-        end1 = begin1 = end2 = begin2 = exprBracketCount = 0;
+        end1 = begin1 = end2 = begin2 = 0;
         state = HTML;
         lastNamespace = null;
         lastLineNumberIndex = -1;
