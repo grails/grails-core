@@ -87,6 +87,9 @@ class GrailsProjectCompiler {
         initializeSrcDirectories()
         initializeAntClasspaths()
 
+        javaOptions.source = buildSettings.compilerSourceLevel
+        javaOptions.target = buildSettings.compilerTargetLevel
+
 
         GrailsResourceLoader resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
         GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
