@@ -291,6 +291,7 @@ class PluginInstallEngine {
         def abort = checkExistingPluginInstall(name, version)
 
         if (abort && !overwrite) {
+
             return false
         }
 
@@ -400,6 +401,7 @@ class PluginInstallEngine {
         def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
         // if the versions are the same no need to continue
         if (version == pluginInfo?.version) {
+            GrailsConsole.instance.addStatus("Plugin '$name' with version '${pluginInfo?.version}' is already installed")
             return true
         }
 
