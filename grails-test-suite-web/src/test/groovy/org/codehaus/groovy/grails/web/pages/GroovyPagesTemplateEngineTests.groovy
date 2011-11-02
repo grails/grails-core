@@ -467,6 +467,60 @@ hello
         assertEquals "Hello World", sw.toString()
     }
 
+    void testInlineScriptWithValidUnmatchedBrackets() {
+        
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def t = gpte.createTemplate('''
+<% if(true) { %>
+Hello ${foo}
+<% } %>
+<% if(false) { %>
+never
+<% } else { %>
+  
+<% } %>
+''', "hello_test")
+        def w = t.make(foo:"World")
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "Hello World", sw.toString().trim()
+    }
+        
+    void testInlineScriptWithValidUnmatchedBracketsGspSyntax() {
+        
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def t = gpte.createTemplate('''
+%{ if(true) { }%
+Hello ${foo}
+%{ } }%
+%{ if(false) { }%
+never
+%{ } else { }%
+  
+%{ } }%
+''', "hello_test")
+        def w = t.make(foo:"World")
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "Hello World", sw.toString().trim()
+    }
+    
     void testCreateTemplateFromText() {
 
         GrailsWebUtil.bindMockWebRequest()
