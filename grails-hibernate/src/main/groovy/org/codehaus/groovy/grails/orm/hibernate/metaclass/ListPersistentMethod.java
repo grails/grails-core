@@ -63,7 +63,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
                         c.setMaxResults(Integer.MAX_VALUE);
                         GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
                         c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-                        return new PagedResultList(getHibernateTemplate(), clazz, c.list());
+                        return new PagedResultList(getHibernateTemplate(), c);
                     }
 
                     GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
