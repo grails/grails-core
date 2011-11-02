@@ -50,6 +50,14 @@ class BuildSettings extends AbstractBuildSettings {
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 
     /**
+     * The compiler source level to use
+     */
+    public static final String COMPILER_SOURCE_LEVEL = "grails.project.source.level"
+    /**
+     * The compiler source level to use
+     */
+    public static final String COMPILER_TARGET_LEVEL = "grails.project.target.level"
+    /**
      * The version of the servlet API
      */
     public static final String SERVLET_VERSION = "grails.servlet.version"
@@ -204,6 +212,16 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** The environment for the current script.  */
     String grailsEnv
+
+    /**
+     * The compiler source level to use
+     */
+    String compilerSourceLevel = "1.6"
+
+    /**
+     * The compiler target level to use
+     */
+    String compilerTargetLevel = "1.6"
 
     /** <code>true</code> if the default environment for a script should be used.  */
     boolean defaultEnv
@@ -1165,6 +1183,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!dependenciesExternallyConfigured) {
             coreDependencies = new GrailsCoreDependencies(grailsVersion, servletVersion)
+            coreDependencies.java5compatible = !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", compilerTargetLevel)
             grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
             def credentials = grailsConfig.project.ivy.authentication
             if (credentials instanceof Closure) {
@@ -1297,6 +1316,8 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         servletVersion = getPropertyValue(SERVLET_VERSION, props, "2.5")
+        compilerSourceLevel = getPropertyValue(COMPILER_SOURCE_LEVEL, props, "1.6")
+        compilerTargetLevel = getPropertyValue(COMPILER_TARGET_LEVEL, props, "1.6")
 
         if (!projectWorkDirSet) {
             def workingDirName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME
