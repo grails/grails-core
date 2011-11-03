@@ -96,7 +96,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
         final workDir = dependencyManager.buildSettings?.grailsWorkDir
         if(workDir)
-            flatDir(name:"grailsHome", dirs:"${workDir}/cached-snapshot-plugins")
+            flatDir(name:"grailsHome", dirs:"${workDir}/cached-installed-plugins")
         if (grailsHome!='.') {
             def resolver = createLocalPluginResolver("grailsHome", grailsHome)
             addToChainResolver(resolver)
