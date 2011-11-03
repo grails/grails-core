@@ -317,6 +317,9 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
+                        if(java5compatible) {
+                            registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), } );
+                        }
 
                         ModuleRevisionId[] ehcacheDependencies = {
                             ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.6")
