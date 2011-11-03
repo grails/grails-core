@@ -40,6 +40,7 @@ class ListableBook {
         assertTrue 'results should have been a PagedResultList', results instanceof PagedResultList
         assertEquals 1, stats.queryExecutionCount
         
+        assertEquals 2, results.size()
         assertEquals 6, results.totalCount
         assertEquals 2, stats.queryExecutionCount
 
