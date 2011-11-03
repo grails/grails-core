@@ -275,7 +275,7 @@ def whereQuery = (domainClass & inClosure() & (enclosingCallName("where") | encl
 
 whereQuery.accept {
 	def currentTypeName = currentType.name
-	def detachedName = "rails.gorm.DetachedCriteria<${currentTypeName}>"
+	def detachedName = "grails.gorm.DetachedCriteria<${currentTypeName}>"
 	provider = "Where query DSL"
 	// add the extra functions
 	method name:"avg", type:detachedName, params:[prop:Object], doc:"The average of all values"
