@@ -201,7 +201,7 @@ class PluginInstallEngine {
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
-        installPluginZipInternal name, version, zipFile, false, false
+        installPluginZipInternal name, version, zipFile, false, false, true
     }
 
     /**
@@ -246,10 +246,8 @@ class PluginInstallEngine {
             final reports = report.allArtifactsReports
             if(reports) {
                 final localFile = reports[0].localFile
-                if(version.endsWith("-SNAPSHOT")) {
-                    ant.mkdir(dir:"${settings.grailsWorkDir}/cached-snapshot-plugins")
-                    ant.copy(file:localFile, todir:"${settings.grailsWorkDir}/cached-snapshot-plugins")
-                }
+                ant.mkdir(dir:"${settings.grailsWorkDir}/cached-installed-plugins")
+                ant.copy(file:localFile, tofile:"${settings.grailsWorkDir}/cached-installed-plugins/$name-${version}.zip")
                 installPluginZipInternal name, version, localFile, globalInstall, overwrite
             }
         }
@@ -281,16 +279,17 @@ class PluginInstallEngine {
     }
 
     protected boolean installPluginZipInternal(String name, String version, File pluginZip,
-            boolean globalInstall = false, boolean overwrite = false) {
+            boolean globalInstall = false, boolean overwrite = false, boolean isResolve = false) {
 
         def fullPluginName = "$name-$version"
         def pluginInstallPath = "${globalInstall ? globalPluginsLocation : applicationPluginsLocation}/${fullPluginName}"
 
         assertNoExistingInlinePlugin(name)
 
-        def abort = checkExistingPluginInstall(name, version)
+        def abort = checkExistingPluginInstall(name, version, isResolve)
 
         if (abort && !overwrite) {
+
             return false
         }
 
@@ -388,7 +387,7 @@ class PluginInstallEngine {
      * @param version The plugin version
      * @return true if the installation should be aborted
      */
-    protected boolean checkExistingPluginInstall(String name, version) {
+    protected boolean checkExistingPluginInstall(String name, version, boolean isResolve = true) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
 
         if (!currentInstall?.exists()) {
@@ -400,6 +399,8 @@ class PluginInstallEngine {
         def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
         // if the versions are the same no need to continue
         if (version == pluginInfo?.version) {
+            if(!isResolve)
+                GrailsConsole.instance.addStatus("Plugin '$name' with version '${pluginInfo?.version}' is already installed")
             return true
         }
 

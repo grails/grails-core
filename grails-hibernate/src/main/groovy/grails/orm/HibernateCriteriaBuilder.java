@@ -1508,7 +1508,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     }
                     GrailsHibernateUtil.populateArgumentsForCriteria(grailsApplication, targetClass, criteria, argMap);
                     GrailsHibernateTemplate ght = new GrailsHibernateTemplate(sessionFactory, grailsApplication);
-                    PagedResultList pagedRes = new PagedResultList(ght, targetClass, criteria.list());
+                    PagedResultList pagedRes = new PagedResultList(ght, criteria);
                     result = pagedRes;
                 }
                 else {
