@@ -92,6 +92,29 @@ class DirtyTests extends AbstractGrailsHibernateTests {
         assertEquals pr3, d.getPersistentValue('pr3')
     }
 
+    void testGetPersistentValueRead() {
+        def Dirt = ga.getDomainClass('Dirt').clazz
+
+        String pr1 = 'pr1'
+        Date pr2 = new Date()
+        int pr3 = 123
+
+        def d = Dirt.newInstance(pr1: pr1, pr2: pr2, pr3: pr3)
+        d.save(flush: true, failOnError: true)
+        session.clear()
+
+        d = Dirt.read(d.id)
+        assertNotNull d
+
+        d.pr1.reverse()
+        d.pr2++
+        d.pr3++
+
+        assertNull d.getPersistentValue('pr1')
+        assertNull d.getPersistentValue('pr2')
+        assertNull d.getPersistentValue('pr3')
+    }
+
     void testNewInstances() {
         def Dirt = ga.getDomainClass('DirtWithValidator').clazz
 

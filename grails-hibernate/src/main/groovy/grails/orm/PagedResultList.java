@@ -46,12 +46,12 @@ public class PagedResultList implements List, Serializable {
     protected int totalCount = Integer.MIN_VALUE;
     
     private final GrailsHibernateTemplate hibernateTemplate;
-    private final Class clazz;
-
-    public PagedResultList(GrailsHibernateTemplate template, Class clazz, List list) {
-        this.list = list;
+    private final Criteria criteria;
+    
+    public PagedResultList(GrailsHibernateTemplate template, Criteria crit) {
+        this.list = crit.list();
+        this.criteria = crit;
         this.hibernateTemplate = template;
-        this.clazz = clazz;
     }
 
     public int size() {
@@ -162,11 +162,10 @@ public class PagedResultList implements List, Serializable {
                 public Object doInHibernate(Session session)
                      throws HibernateException,
                      SQLException {
-                    Criteria countCriteria = session.createCriteria(clazz);
-                    hibernateTemplate.applySettings(countCriteria);
-                    countCriteria.setFirstResult(0);
-                    countCriteria.setProjection(Projections.rowCount());
-                    int totalCount = ((Number)countCriteria.uniqueResult()).intValue();
+                    hibernateTemplate.applySettings(criteria);
+                    criteria.setFirstResult(0);
+                    criteria.setProjection(Projections.rowCount());
+                    int totalCount = ((Number)criteria.uniqueResult()).intValue();
                     return totalCount;
                 }
             }); 
