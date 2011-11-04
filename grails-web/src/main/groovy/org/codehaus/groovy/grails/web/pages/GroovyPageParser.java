@@ -65,6 +65,9 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
     public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
     public static final String DEFAULT_ENCODING = "UTF-8";
+    
+    private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
+    private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";    
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -1162,7 +1165,18 @@ public class GroovyPageParser implements Tokens {
                 if (val.indexOf('"')==-1) {
                     quoteChar = '"';
                 }
-                val = quoteChar + val + quoteChar;
+                String quoteStr;
+                // use multiline groovy string if the value contains newlines
+                if(val.indexOf('\n')!=-1 || val.indexOf('\r')!=-1) {
+                    if(quoteChar=='"') {
+                        quoteStr=MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
+                    } else {
+                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;    
+                    }
+                } else {
+                    quoteStr = String.valueOf(quoteChar);
+                }
+                val = quoteStr + val + quoteStr;
             }
             attrs.put("\"" + name + "\"", val);
             startPos = endQuotepos + 1;
