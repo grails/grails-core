@@ -1151,14 +1151,15 @@ public class GroovyPageParser implements Tokens {
             }
             char quoteChar = ch;
 
-            int endQuotepos = GroovyPageExpressionParser.findExpressionEndPos(attrTokens, startPos, quoteChar, (char)0, false);
+            GroovyPageExpressionParser expressionParser = new GroovyPageExpressionParser(attrTokens, startPos, quoteChar, (char)0, false);
+            int endQuotepos = expressionParser.parse();
             if (endQuotepos==-1) {
                 throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
             }
 
             String val=attrTokens.substring(startPos, endQuotepos);
 
-            if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
+            if (val.startsWith("${") && val.endsWith("}") && !expressionParser.isContainsGstrings()) {
                 val = val.substring(2, val.length() - 1);
             }
             else if (!(val.startsWith("[") && val.endsWith("]"))) {

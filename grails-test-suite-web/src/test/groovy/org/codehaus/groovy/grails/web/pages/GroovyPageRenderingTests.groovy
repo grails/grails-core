@@ -85,4 +85,65 @@ is a test action description" class="buttons" onclick="if (testForm.testField.va
 </body>
 </html>''', result
     }
+    
+    void testNestedExpression() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='${[test: "${a} ${a}"]}'/>${b.test}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello', result
+    }
+
+    void testGstring() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='${"${a} ${a}"}'/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello', result
+    }
+
+    void testGstring2() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='${a} ${a}'/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello', result
+    }
+
+    void testGstring3() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='${a} hello'/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello', result
+    }
+
+    void testGstring4() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='hello ${a}'/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello', result
+    }
+
+    void testGstring5() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='hello ${a} hello'/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello hello', result
+    }
+
+    void testNotGstring() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value="${'hello ${a} hello'}"/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello ${a} hello', result
+    }
+
+    void testNotGstring2() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='${"hello \\${a} hello"}'/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello ${a} hello', result
+    }
+
+    void testNotGstring3() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value="${a + '${'}"/>${b}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello${', result
+    }
+
+    void testNestedExpressionInMap() {
+        def template='''<g:set var="a" value="hello"/><g:set var="b" value='[test: "${a} ${a}"]'/>${b.test}'''
+        def result = applyTemplate(template, [:])
+        assertEquals 'hello hello', result
+    }
+
 }
