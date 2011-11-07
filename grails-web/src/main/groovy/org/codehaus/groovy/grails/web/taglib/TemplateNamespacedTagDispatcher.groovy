@@ -22,7 +22,7 @@ class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
             MetaMethod method=renderTagLib.metaClass.getMetaMethod('render', args)
             synchronized(this) {
                 metaClass."$name" = { Object[] varArgs ->
-                    method.invoke(renderTagLib, argsToAttrs(name, varArgs))
+                    renderTagLib."$name"(argsToAttrs(name, varArgs))
                }
             }
             return method.invoke(renderTagLib, argsToAttrs(name, args))
