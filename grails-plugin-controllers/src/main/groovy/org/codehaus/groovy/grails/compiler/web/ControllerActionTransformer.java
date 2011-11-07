@@ -275,20 +275,23 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void addMethodToInvokeClosure(ClassNode controllerClassNode,
             PropertyNode closureProperty) {
-        ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
-        final Parameter[] parameters = closureExpression.getParameters();
-        final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, parameters);
+        MethodNode method = controllerClassNode.getMethod(closureProperty.getName(), ZERO_PARAMETERS);
+        if(method == null || !method.getDeclaringClass().equals(controllerClassNode)) {
+            ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
+            final Parameter[] parameters = closureExpression.getParameters();
+            final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, parameters);
 
-        final ArgumentListExpression closureInvocationArguments = new ArgumentListExpression();
-        for (Parameter p : parameters) {
-            closureInvocationArguments.addExpression(new VariableExpression(p.getName()));
+            final ArgumentListExpression closureInvocationArguments = new ArgumentListExpression();
+            for (Parameter p : parameters) {
+                closureInvocationArguments.addExpression(new VariableExpression(p.getName()));
+            }
+            final MethodCallExpression methodCallExpression = new MethodCallExpression(closureExpression, "call", closureInvocationArguments);
+            newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
+            final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
+
+            annotateActionMethod(parameters, methodNode);
+            controllerClassNode.addMethod(methodNode);
         }
-        final MethodCallExpression methodCallExpression = new MethodCallExpression(closureExpression, "call", closureInvocationArguments);
-        newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
-        final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
-
-        annotateActionMethod(parameters, methodNode);
-        GrailsASTUtils.addMethodIfNotPresent(controllerClassNode, methodNode);
     }
 
     protected void annotateActionMethod(final Parameter[] parameters,
