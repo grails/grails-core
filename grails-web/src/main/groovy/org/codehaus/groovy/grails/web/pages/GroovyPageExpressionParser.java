@@ -15,30 +15,37 @@ class GroovyPageExpressionParser {
     private static enum ParsingState {
         NORMAL, EXPRESSION, QUOTEDVALUE_SINGLE, QUOTEDVALUE_DOUBLE, TRIPLEQUOTED_SINGLE, TRIPLEQUOTED_DOUBLE;
     }
+    String scriptTokens;
+    int startPos;
+    char terminationChar;
+    char nextTerminationChar;
+    Stack<ParsingState> parsingStateStack = new Stack<ParsingState>();
+    boolean containsGstrings=false;
+    int terminationCharPos = -1;
+    int relativeCharIndex=0;
     
-    /**
-     * Finds the ending position of an expression.
-     * 
-     * 
-     * @param scriptTokens the source script
-     * @param startPos starting position
-     * @param terminationChar the termination character
-     * @param nextTerminationChar optional 2nd termination character (0 if none)
-     * @param startInExpression starts in EXPRESSION state
-     * @return
-     */
-    static int findExpressionEndPos(String scriptTokens, int startPos, char terminationChar, char nextTerminationChar, boolean startInExpression) {
-        int currentPos = startPos;
-        int terminationCharPos = -1;
-        char previousChar = 0;
-        char previousPreviousChar = 0;
-        int relativeCharIndex=0;
-        Stack<ParsingState> parsingStateStack = new Stack<ParsingState>();
+    public GroovyPageExpressionParser(String scriptTokens, int startPos, char terminationChar,
+            char nextTerminationChar, boolean startInExpression) {
+        this.scriptTokens = scriptTokens;
+        this.startPos = startPos;
+        this.terminationChar = terminationChar;
+        this.nextTerminationChar = nextTerminationChar;
         if(startInExpression) {
             parsingStateStack.push(ParsingState.EXPRESSION);
         } else {
             parsingStateStack.push(ParsingState.NORMAL);
         } 
+    }
+
+    /**
+     * Finds the ending position of an expression.
+     * 
+     * @return end position of expression
+     */
+    int parse() {
+        int currentPos = startPos;
+        char previousChar = 0;
+        char previousPreviousChar = 0;
         
         while(currentPos < scriptTokens.length() && terminationCharPos==-1) {
             ParsingState parsingState = parsingStateStack.peek();
@@ -55,12 +62,12 @@ class GroovyPageExpressionParser {
                             return -1;
                         }
                         if (previousChar=='$' || parsingState==ParsingState.EXPRESSION) {
-                            parsingStateStack.push(ParsingState.EXPRESSION);
+                            changeState(ParsingState.EXPRESSION);
                         }
                         break;
                     case '[':
                         if (relativeCharIndex==0 || parsingState==ParsingState.EXPRESSION) {
-                            parsingStateStack.push(ParsingState.EXPRESSION);
+                            changeState(ParsingState.EXPRESSION);
                         }
                         break;
                     case '}':
@@ -73,9 +80,9 @@ class GroovyPageExpressionParser {
                     case '"':
                         if (parsingState==ParsingState.EXPRESSION) {
                             if(nextChar != ch && previousChar != ch) {
-                                parsingStateStack.push(ch=='"' ? ParsingState.QUOTEDVALUE_DOUBLE : ParsingState.QUOTEDVALUE_SINGLE);
+                                changeState(ch=='"' ? ParsingState.QUOTEDVALUE_DOUBLE : ParsingState.QUOTEDVALUE_SINGLE);
                             } else if (previousChar==ch && previousPreviousChar==ch) {
-                                parsingStateStack.push(ch=='"' ? ParsingState.TRIPLEQUOTED_DOUBLE : ParsingState.TRIPLEQUOTED_SINGLE);
+                                changeState(ch=='"' ? ParsingState.TRIPLEQUOTED_DOUBLE : ParsingState.TRIPLEQUOTED_SINGLE);
                             }
                         }
                         break;
@@ -94,6 +101,23 @@ class GroovyPageExpressionParser {
             previousChar=ch;
             relativeCharIndex++;
         }
+        return terminationCharPos;
+    }
+
+    private void changeState(ParsingState newState) {
+        ParsingState currentState = parsingStateStack.peek();
+        // check if expression contains GStrings
+        if(relativeCharIndex > 1 && newState==ParsingState.EXPRESSION && (currentState==ParsingState.QUOTEDVALUE_DOUBLE || currentState==ParsingState.TRIPLEQUOTED_DOUBLE || currentState==ParsingState.NORMAL)) {
+            containsGstrings=true;
+        }
+        parsingStateStack.push(newState);
+    }
+
+    public boolean isContainsGstrings() {
+        return containsGstrings;
+    }
+
+    public int getTerminationCharPos() {
         return terminationCharPos;
     }
 }

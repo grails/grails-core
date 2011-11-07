@@ -152,31 +152,29 @@ def toPropertyName(String typeName) {
 		ClassNode proptype = unbox(prop.type)
 		String propname = prop.name
 		if (proptype == ClassHelper.STRING_TYPE) {
-			method isStatic: true, name: propname, params: [blank:Boolean], useNamedArgs:true, doc: 'Validate that a String is is not blank. <a href="http://grails.org/doc/latest/ref/Constraints/blank.html">Details.</a>'
-			method isStatic: true, name: propname, params: [creditCard:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid credit card number. <a href="http://grails.org/doc/latest/ref/Constraints/creditCard.html">Details.</a>'
-			method isStatic: true, name: propname, params: [email:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid email address. <a href="http://grails.org/doc/latest/ref/Constraints/email.html">Details.</a>'
-			method isStatic: true, name: propname, params: [url:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid URL. <a href="http://grails.org/doc/latest/ref/Constraints/url.html">Details.</a>'
-			method isStatic: true, name: propname, params: [matches:String], useNamedArgs:true, doc: 'Validate that a String matches a regular expression. <a href="http://grails.org/doc/latest/ref/Constraints/matches.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [blank:Boolean], useNamedArgs:true, doc: 'Validate that a String is is not blank. <a href="http://grails.org/doc/latest/ref/Constraints/blank.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [creditCard:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid credit card number. <a href="http://grails.org/doc/latest/ref/Constraints/creditCard.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [email:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid email address. <a href="http://grails.org/doc/latest/ref/Constraints/email.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [url:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid URL. <a href="http://grails.org/doc/latest/ref/Constraints/url.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [matches:String], useNamedArgs:true, doc: 'Validate that a String matches a regular expression. <a href="http://grails.org/doc/latest/ref/Constraints/matches.html">Details.</a>'
 		} else if (proptype.name == Date.name) {
-			method isStatic: true, name: propname, params: [max:Date], useNamedArgs:true, doc: 'Validate that a Date is not after the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
-			method isStatic: true, name: propname, params: [min:Date], useNamedArgs:true, doc: 'Validate that a Date is not before the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [max:Date], useNamedArgs:true, doc: 'Validate that a Date is not after the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [min:Date], useNamedArgs:true, doc: 'Validate that a Date is not before the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
 		} else if (ClassHelper.isNumberType(proptype)) {
-			method isStatic: true, name: propname, params: [max:proptype], useNamedArgs:true, doc: 'Validate that a number is not greater than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
-			method isStatic: true, name: propname, params: [min:proptype], useNamedArgs:true, doc: 'Validate that a number is not less than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
-			method isStatic: true, name: propname, params: [scale:proptype], useNamedArgs:true, doc: 'Sets to the desired scale for floating point numbers. <a href="http://grails.org/doc/latest/ref/Constraints/scale.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [max:proptype], useNamedArgs:true, doc: 'Validate that a number is not greater than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [min:proptype], useNamedArgs:true, doc: 'Validate that a number is not less than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [scale:proptype], useNamedArgs:true, doc: 'Sets to the desired scale for floating point numbers. <a href="http://grails.org/doc/latest/ref/Constraints/scale.html">Details.</a>'
 		} else if (proptype.implementsInterface(ClassHelper.LIST_TYPE)) {
-			method isStatic: true, name: propname, params: [maxSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have more than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
-			method isStatic: true, name: propname, params: [minSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have fewer than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [maxSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have more than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [minSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have fewer than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
 		}
-		method isStatic: true, name: propname, params: [unique:Boolean], useNamedArgs:true, doc: 'Validate that the value is unique at the database level.  <a href="http://grails.org/doc/latest/ref/Constraints/unique.html">Details.</a>'
-		method isStatic: true, name: propname, params: [size:Integer], useNamedArgs:true, doc: 'Validate that the size of a value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/size.html">Details.</a>'
-		method isStatic: true, name: propname, params: [notEqual:Object], useNamedArgs:true, doc: 'Validate that the value is not equal to the specified value.  <a href="http://grails.org/doc/latest/ref/Constraints/notEqual.html">Details.</a>'
-		method isStatic: true, name: propname, params: [nullable:Boolean], useNamedArgs:true, doc: 'Specify if a value is allowed to be null.  <a href="http://grails.org/doc/latest/ref/Constraints/nullable.html">Details.</a>'
-		method isStatic: true, name: propname, params: [range:Range], useNamedArgs:true, doc: 'Validate that the value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/range.html">Details.</a>'
-		method isStatic: true, name: propname, params: [inList:List], useNamedArgs:true, doc: 'Validate that the value is with a list of specified values.  <a href="http://grails.org/doc/latest/ref/Constraints/inList.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [unique:Boolean], useNamedArgs:true, doc: 'Validate that the value is unique at the database level.  <a href="http://grails.org/doc/latest/ref/Constraints/unique.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [size:Integer], useNamedArgs:true, doc: 'Validate that the size of a value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/size.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [notEqual:Object], useNamedArgs:true, doc: 'Validate that the value is not equal to the specified value.  <a href="http://grails.org/doc/latest/ref/Constraints/notEqual.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [nullable:Boolean], useNamedArgs:true, doc: 'Specify if a value is allowed to be null.  <a href="http://grails.org/doc/latest/ref/Constraints/nullable.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [range:Range], useNamedArgs:true, doc: 'Validate that the value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/range.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [inList:List], useNamedArgs:true, doc: 'Validate that the value is with a list of specified values.  <a href="http://grails.org/doc/latest/ref/Constraints/inList.html">Details.</a>'
 	}
-
-	// FIXJB : add the id property (type long)
 }
 
 // -----------------------------------------------------     
@@ -364,34 +362,34 @@ contribute(enclosingField("namedQueries") & domainClass) {
 	)).accept {
 	provider = "Grails ORM DSL"
 
-	method name:"table", type:Void, params: [tableName: String], useNamedArgs:true, isStatic:true
-	method name:"groups", type:Void, params: [column:String], useNamedArgs:true, isStatic:true
+	method name:"table", type:Void, namedParams: [tableName: String], isStatic:true
+	method name:"groups", type:Void, namedParams: [column:String], isStatic:true
 	method name:"tablePerHierarchy", type:Void, params: [val:Boolean], isStatic:true
 	method name:"cache", type:Void, params: [shouldCache:Boolean], isStatic:true
-	method name:"cache", type:Void, params: [usage:String, include:String], useNamedArgs:true, isStatic:true
+	method name:"cache", type:Void, namedParams: [usage:String, include:String], uisStatic:true
 	method name:"version", type:Void, params: [shouldVersion:Boolean], isStatic:true
 	method name:"sort", type:Void, params: [propertyName:String], isStatic:true
 	method name:"column", type:Void, params: [name:String, index:String, unique:Boolean, sqlType:String], isStatic:true
 
 	props.each { PropertyNode prop ->
-		method name: prop.name, type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true
-		method name: prop.name, type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true
-		method name: prop.name, type: Void, params:[type:Class], useNamedArgs:true, isStatic:true
-		method name: prop.name, type: Void, params:[type:String], useNamedArgs:true, isStatic:true
-		method name: prop.name, type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true
-		method name: prop.name, type: Void, params:[formula:String], useNamedArgs:true, isStatic:true
-		method name: prop.name, type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"],
-				useNamedArgs:true, isStatic:true
+		method name: prop.name, type: Void, namedParams:[column:String, cache:Boolean], isStatic:true
+		method name: prop.name, type: Void, namedParams:[lazy:Boolean], isStatic:true
+		method name: prop.name, type: Void, namedParams:[type:Class], isStatic:true
+		method name: prop.name, type: Void, namedParams:[type:String], isStatic:true
+		method name: prop.name, type: Void, namedParams:[cascade:String], isStatic:true
+		method name: prop.name, type: Void, namedParams:[formula:String], isStatic:true
+		method name: prop.name, type: Void, namedParams:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"],
+				isStatic:true
 	}
 
 	// now do the same for id
-	method name: 'id', type: Void, params:[column:String, cache:Boolean], useNamedArgs:true, isStatic:true
-	method name: 'id', type: Void, params:[lazy:Boolean], useNamedArgs:true, isStatic:true
-	method name: 'id', type: Void, params:[type:Class], useNamedArgs:true, isStatic:true
-	method name: 'id', type: Void, params:[type:String], useNamedArgs:true, isStatic:true
-	method name: 'id', type: Void, params:[cascade:String], useNamedArgs:true, isStatic:true
-	method name: 'id', type: Void, params:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], useNamedArgs:true, isStatic:true
-	method name: 'id', type :Void, params:[composite:"java.util.List<java.lang.String>"], useNamedArgs:true, isStatic:true
+	method name: 'id', type: Void, namedParams:[column:String, cache:Boolean], isStatic:true
+	method name: 'id', type: Void, namedParams:[lazy:Boolean], isStatic:true
+	method name: 'id', type: Void, namedParams:[type:Class], isStatic:true
+	method name: 'id', type: Void, namedParams:[type:String], isStatic:true
+	method name: 'id', type: Void, namedParams:[cascade:String], isStatic:true
+	method name: 'id', type: Void, namedParams:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], isStatic:true
+	method name: 'id', type :Void, namedParams:[composite:"java.util.List<java.lang.String>"], isStatic:true
 }
 
 

@@ -65,6 +65,9 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
     public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
     public static final String DEFAULT_ENCODING = "UTF-8";
+    
+    private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
+    private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";    
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -1148,21 +1151,33 @@ public class GroovyPageParser implements Tokens {
             }
             char quoteChar = ch;
 
-            int endQuotepos = GroovyPageExpressionParser.findExpressionEndPos(attrTokens, startPos, quoteChar, (char)0, false);
+            GroovyPageExpressionParser expressionParser = new GroovyPageExpressionParser(attrTokens, startPos, quoteChar, (char)0, false);
+            int endQuotepos = expressionParser.parse();
             if (endQuotepos==-1) {
                 throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
             }
 
             String val=attrTokens.substring(startPos, endQuotepos);
 
-            if (val.startsWith("${") && val.endsWith("}") && val.indexOf("${", 2)==-1) {
+            if (val.startsWith("${") && val.endsWith("}") && !expressionParser.isContainsGstrings()) {
                 val = val.substring(2, val.length() - 1);
             }
             else if (!(val.startsWith("[") && val.endsWith("]"))) {
                 if (val.indexOf('"')==-1) {
                     quoteChar = '"';
                 }
-                val = quoteChar + val + quoteChar;
+                String quoteStr;
+                // use multiline groovy string if the value contains newlines
+                if(val.indexOf('\n')!=-1 || val.indexOf('\r')!=-1) {
+                    if(quoteChar=='"') {
+                        quoteStr=MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
+                    } else {
+                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;    
+                    }
+                } else {
+                    quoteStr = String.valueOf(quoteChar);
+                }
+                val = quoteStr + val + quoteStr;
             }
             attrs.put("\"" + name + "\"", val);
             startPos = endQuotepos + 1;
