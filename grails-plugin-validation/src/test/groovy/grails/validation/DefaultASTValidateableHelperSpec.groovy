@@ -4,11 +4,19 @@ import static org.junit.Assert.*
 
 import java.net.URL
 
+import javax.servlet.ServletContext
+
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.WebApplicationContext;
 
 import spock.lang.Specification
 
@@ -50,6 +58,28 @@ class DefaultASTValidateableHelperSpec extends Specification {
             }
         }
         ''')
+
+        def applicationContext = new MockApplicationContext()
+        applicationContext.registerMockBean ConstraintsEvaluator.BEAN_NAME, new DefaultConstraintEvaluator()
+
+        def servletContext = new MockServletContext()
+        servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
+
+        ServletContextHolder.servletContext = servletContext
+    }
+
+    def cleanupSpec() {
+        ServletContextHolder.servletContext = null
+    }
+
+    void 'Test constraints property'() {
+        when:
+            def constraints = widgetClass.constraints
+
+        then:
+            constraints.name.matches == /[A-Z].*/
+            constraints.category.size == 3..50
+            constraints.count.range == 1..10
     }
 
     void 'Test validate method returns has a declared return type of boolean, not Boolean'() {

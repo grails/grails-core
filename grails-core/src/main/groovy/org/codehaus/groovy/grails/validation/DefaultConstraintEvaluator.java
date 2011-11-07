@@ -93,7 +93,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         // Evaluate all the constraints closures in the inheritance chain
         for (Object aClassChain : classChain) {
             clazz = (Class<?>) aClassChain;
-            Closure<?> c = (Closure<?>) GrailsClassUtils.getStaticPropertyValue(clazz, PROPERTY_NAME);
+            Closure<?> c = (Closure<?>) GrailsClassUtils.getStaticFieldValue(clazz, PROPERTY_NAME);
             if (c == null) {
                 c = getConstraintsFromScript(theClass);
             }

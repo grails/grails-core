@@ -99,10 +99,10 @@ class ValidationGrailsPlugin {
             def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(validateable)
             validationClosure.setDelegate(constrainedPropertyBuilder)
             validationClosure()
-            metaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
+            metaClass.constraints = constrainedPropertyBuilder.constrainedProperties
         }
         else {
-            metaClass.constrainedProperties = [:]
+            metaClass.constraints = [:]
         }
 
         if (!metaClass.respondsTo(validateable, "validate")) {
