@@ -132,6 +132,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
             return
         }
 
+        System.setProperty("javax.sql.DataSource.Factory","org.apache.commons.dbcp.BasicDataSourceFactory");
+
+
         jndiEntries.each { name, resCfg ->
             if (resCfg) {
                 if (!resCfg["type"]) {
