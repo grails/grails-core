@@ -6,7 +6,10 @@ import spock.lang.Specification
  * Tests for {@link CommandLineParser}
  */
 class CommandLineParserSpec extends Specification {
-
+    def setup() {
+        System.setProperty("grails.env", "development");
+    }
+    
     void "Test parse string with command and args"() {
         when:
             def parser = new CommandLineParser()
