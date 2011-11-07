@@ -26,23 +26,20 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 class ValidationSupport {
 
     static validateInstance(object, List fieldsToValidate = null) {
-        if (!object.hasProperty('constrainedProperties')) {
+        if (!object.hasProperty('constraints')) {
             return true
         }
 
-        def ctx = null
-                
-        def sch = ServletContextHolder.servletContext
-        if(sch) {
-            ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
-        }
+        def constraints = object.constraints
 
-        def constraints = object.constrainedProperties
-        if(constraints == null) {
-            def constraintsEvaluator = ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME) ? ctx.getBean(ConstraintsEvaluator.BEAN_NAME) : new DefaultConstraintEvaluator()
-            constraints = object.constrainedProperties = constraintsEvaluator.evaluate(object)
-        }
         if (constraints) {
+            def ctx = null
+
+            def sch = ServletContextHolder.servletContext
+            if(sch) {
+                ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
+            }
+
             def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
             def localErrors = new BeanPropertyBindingResult(object, object.class.name)
             def originalErrors = object.errors

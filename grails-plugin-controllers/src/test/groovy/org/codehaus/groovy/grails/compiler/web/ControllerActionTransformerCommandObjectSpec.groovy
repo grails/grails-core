@@ -115,10 +115,6 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         controller = controllerClass.newInstance()
     }
 
-    def cleanup() {
-        ContextLoader.@currentContext = null
-    }
-
     def initRequest() {
         def appCtx = new GrailsWebApplicationContext()
         def bb = new BeanBuilder()
@@ -132,7 +128,6 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
         beans.registerBeans(appCtx)
-        ContextLoader.@currentContext = appCtx
 
         def request = new MockHttpServletRequest();
         def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -225,6 +220,18 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.artist.name == null
             nameErrorCodes
             'artistCommand.name.nullable.error' in nameErrorCodes
+    }
+
+    void 'Test constraints property'() {
+        when:
+            def model = controller.methodAction()
+            def person = model.person
+            def constrainedProperties = person.constraints
+            def nameConstrainedProperty = constrainedProperties.name
+            def matchesProperty = nameConstrainedProperty.matches
+
+        then:
+            /[A-Z]+/ == matchesProperty
     }
 
     void "Test command object gets autowired"() {

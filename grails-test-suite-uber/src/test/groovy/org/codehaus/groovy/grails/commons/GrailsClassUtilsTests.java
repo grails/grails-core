@@ -130,6 +130,13 @@ public class GrailsClassUtilsTests extends TestCase {
         assertEquals("URL", GrailsClassUtils.getPropertyForGetter("getURL"));
     }
 
+    public void testGetStaticField() {
+        assertEquals("SomeFieldValue",
+                GrailsClassUtils.getStaticFieldValue(ClassWithStaticFieldAndStaticPropertyWithSameName.class, "name"));
+        assertEquals("SomePropertyValue",
+                GrailsClassUtils.getStaticPropertyValue(ClassWithStaticFieldAndStaticPropertyWithSameName.class, "name"));
+    }
+
     public void testGetStaticProperty() {
         assertEquals(HttpServletRequest.BASIC_AUTH,
                 GrailsClassUtils.getStaticPropertyValue(HttpServletRequest.class, "BASIC_AUTH"));
@@ -291,5 +298,13 @@ public class GrailsClassUtilsTests extends TestCase {
         assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(null, null));
         assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(Integer.class, null));
         assertFalse(GrailsClassUtils.isAssignableOrConvertibleFrom(null, int.class));
+    }
+}
+
+class ClassWithStaticFieldAndStaticPropertyWithSameName {
+    public static String name = "SomeFieldValue";
+
+    public static String getName() {
+        return "SomePropertyValue";
     }
 }
