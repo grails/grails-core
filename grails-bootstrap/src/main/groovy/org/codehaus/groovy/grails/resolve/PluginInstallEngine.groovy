@@ -218,7 +218,7 @@ class PluginInstallEngine {
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
-        def parentDir = zipFile.parentFile
+        def parentDir = zipFile.canonicalFile.parentFile
         final currentDependencyManager = resolveEngine.dependencyManager
         IvyDependencyManager dependencyManager = new IvyDependencyManager(currentDependencyManager.applicationName, currentDependencyManager.applicationVersion, settings)
         dependencyManager.chainResolver = new ChainResolver()
