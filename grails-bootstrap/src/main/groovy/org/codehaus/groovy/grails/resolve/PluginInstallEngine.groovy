@@ -446,9 +446,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 }
                 else {
                     if(dependencyConfiguration.name != 'runtime') continue
-                    def pluginJars = resolveReport.getArtifactsReports(null, false).localFile.findAll { it.name.endsWith(".zip")}
+                    def pluginJars = resolveReport.getArtifactsReports(null, false).localFile
+                    def pluginZips = pluginJars.findAll { it.name.endsWith(".zip")}
                     def allPluginZips = new ArrayList(settings.pluginDependencies)
-                    allPluginZips.addAll(pluginJars)
+                    allPluginZips.addAll(pluginZips)
 
                     runtimeDependencies.each { runtimePluginName, runtimePluginVersion ->
                         def declaredPluginZip = allPluginZips.find { it.name ==~ /$runtimePluginName-\S+\.zip/}
