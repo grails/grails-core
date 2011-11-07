@@ -58,7 +58,8 @@ public class DefaultCommandLine implements CommandLine {
             env = lookupEnvironmentForCommand();
         }
         else {
-            env = environment != null ? environment : Environment.DEVELOPMENT.getName();
+            String fallbackEnv = System.getProperty(Environment.KEY) != null ? System.getProperty(Environment.KEY) : Environment.DEVELOPMENT.getName();
+            env = environment != null ? environment : fallbackEnv;
         }
 
         System.setProperty(Environment.KEY, env);
@@ -68,8 +69,9 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public String lookupEnvironmentForCommand() {
+        String fallbackEnv = System.getProperty(Environment.KEY) != null ? System.getProperty(Environment.KEY) : Environment.DEVELOPMENT.getName();
         String env = CommandLineParser.DEFAULT_ENVS.get(commandName);
-        return env == null ? Environment.DEVELOPMENT.getName() : env;
+        return env == null ? fallbackEnv : env;
     }
 
     public boolean isEnvironmentSet() {
@@ -150,6 +152,9 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void addSystemProperty(String name, String value) {
+        if(Environment.KEY.equals(name)) {
+            setEnvironment(value);
+        }
         systemProperties.put(name, value);
     }
 
