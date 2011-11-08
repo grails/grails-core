@@ -111,6 +111,9 @@ public abstract class AbstractBuildSettings {
             Collection<File> inlinePlugins = getInlinePluginsFromConfiguration(config);
             cache.put(KEY_INLINE_PLUGIN_LOCATIONS, inlinePlugins);
             pluginDirectoryResources.addAll(inlinePlugins);
+            ArrayList<File> list = new ArrayList<File>(pluginDirectoryResources);
+            Collections.reverse(list);
+            pluginDirectoryResources = list;
 
             cache.put(KEY_PLUGIN_DIRECTORY_RESOURCES, pluginDirectoryResources);
         }

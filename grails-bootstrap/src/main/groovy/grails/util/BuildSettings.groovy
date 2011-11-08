@@ -1243,6 +1243,10 @@ class BuildSettings extends AbstractBuildSettings {
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
             pluginName = matcher ? matcher[0][1] : pluginName
 
+
+            // The logic here tries to establish if the plugin has been declared anywhere by the application. Only plugins that have
+            // been declared should have their transitive dependencies resolved. Unfortunately it is fairly complicated to establish what plugins are declared since
+            // there may be a mixture of plugins defined in BuildConfig, inline plugins and plugins installed via install-plugin
             if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
                 return
             }
