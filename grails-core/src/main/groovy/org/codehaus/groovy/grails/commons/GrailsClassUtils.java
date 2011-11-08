@@ -678,6 +678,27 @@ public class GrailsClassUtils {
     }
 
     /**
+     * <p>Get a static field value.</p>
+     *
+     * @param clazz The class to check for static property
+     * @param name The field name
+     * @return The value if there is one, or null if unset OR there is no such field
+     */
+    public static Object getStaticFieldValue(Class<?> clazz, String name) {
+        try {
+            Field f = clazz.getDeclaredField(name);
+            if (f != null) {
+                f.setAccessible(true);
+                return f.get(null);
+            }
+        }
+        catch (Exception ignored) {
+            // ignored
+        }
+        return null;
+    }
+
+    /**
      * <p>Get a static property value, which has a public static getter or is just a public static field.</p>
      *
      * @param clazz The class to check for static property
@@ -690,17 +711,14 @@ public class GrailsClassUtils {
             if (getter != null) {
                 return getter.invoke(null);
             }
-            Field f = clazz.getDeclaredField(name);
-            if (f != null) {
-                return f.get(null);
-            }
+            return getStaticFieldValue(clazz, name);
         }
         catch (Exception ignored) {
             // ignored
         }
         return null;
     }
-
+    
     /**
      * <p>Looks for a property of the reference instance with a given name.</p>
      * <p>If found its value is returned. We follow the Java bean conventions with augmentation for groovy support
