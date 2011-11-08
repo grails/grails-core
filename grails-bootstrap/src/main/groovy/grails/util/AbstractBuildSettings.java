@@ -86,6 +86,7 @@ public abstract class AbstractBuildSettings {
      * @param location The plugin's locatino
      */
     public void addPluginDirectory(File location, boolean isInline) {
+        getPluginDirectories();
         if (location != null) {
             Collection<File> directories = getPluginDirectories();
             if (!directories.contains(location)) {
@@ -110,10 +111,10 @@ public abstract class AbstractBuildSettings {
             // BuildConfig setting "grails.plugin.location.<name>"
             Collection<File> inlinePlugins = getInlinePluginsFromConfiguration(config);
             cache.put(KEY_INLINE_PLUGIN_LOCATIONS, inlinePlugins);
-            pluginDirectoryResources.addAll(inlinePlugins);
             ArrayList<File> list = new ArrayList<File>(pluginDirectoryResources);
+            list.addAll(inlinePlugins);
             Collections.reverse(list);
-            pluginDirectoryResources = list;
+            pluginDirectoryResources = new ConcurrentLinkedQueue<File>(list);
 
             cache.put(KEY_PLUGIN_DIRECTORY_RESOURCES, pluginDirectoryResources);
         }
