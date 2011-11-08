@@ -1,13 +1,41 @@
 package org.codehaus.groovy.grails.cli.parsing
 
+import grails.util.Environment;
+import spock.lang.Shared;
 import spock.lang.Specification
 
 /**
  * Tests for {@link CommandLineParser}
  */
 class CommandLineParserSpec extends Specification {
+    @Shared
+    String originalGrailsEnv
+    @Shared
+    String originalGrailsEnvDefault
+    
     def setup() {
-        System.setProperty("grails.env", "development");
+        // set grails.env=development before each test 
+        System.setProperty(Environment.KEY, "development");
+    }
+    
+    def setupSpec() {
+        // save grails.env and grails.env.default keys before running this spec
+        originalGrailsEnv = System.getProperty(Environment.KEY)
+        originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
+    }
+    
+    def cleanupSpec() {
+        // reset grails.env and grails.env.default keys after running this spec
+        if(originalGrailsEnv != null) {
+            System.setProperty(Environment.KEY, originalGrailsEnv)
+        } else {
+            System.clearProperty(Environment.KEY)
+        }
+        if(originalGrailsEnvDefault != null) {
+            System.setProperty(Environment.DEFAULT, originalGrailsEnvDefault)
+        } else {
+            System.clearProperty(Environment.DEFAULT)
+        }
     }
     
     void "Test parse string with command and args"() {
