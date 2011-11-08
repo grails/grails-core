@@ -55,18 +55,31 @@ public class GrailsResourceUtils {
      */
     public static final String VIEWS_DIR_PATH = GRAILS_APP_DIR + "/views/";
 
+    public static final String REGEX_FILE_SEPARATOR;
+
+    static {
+
+        if (File.separator.equals("\\")) {
+            REGEX_FILE_SEPARATOR = "\\\\"; // backslashes need escaping in regexes
+        }
+        else {
+            REGEX_FILE_SEPARATOR = File.separator;
+        }
+
+    }
+
     /*
      Domain path is always matched against the normalized File representation of an URL and
      can therefore work with slashes as separators.
      */
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/" + GRAILS_APP_DIR + "/domain/(.+)\\.(groovy|java)");
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+" + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + "domain" + REGEX_FILE_SEPARATOR + "(.+)\\.(groovy|java)");
 
     /*
      This pattern will match any resource within a given directory inside grails-app
      */
-    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/" + GRAILS_APP_DIR + "/(.+?)/(.+?\\.(groovy|java))");
+    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?" + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + "(.+?)"+ REGEX_FILE_SEPARATOR +"(.+?\\.(groovy|java))");
 
-    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?/" + GRAILS_APP_DIR + "/conf/spring/(.+?\\.groovy)");
+    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?" + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + "conf"+ REGEX_FILE_SEPARATOR +"spring"+ REGEX_FILE_SEPARATOR +"(.+?\\.groovy)");
 
     public static Pattern[] COMPILER_ROOT_PATTERNS = {
         SPRING_SCRIPTS_PATH_PATTERN,
@@ -90,8 +103,7 @@ public class GrailsResourceUtils {
     public static final Pattern GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH;
 
     static {
-        String fs = File.separator;
-        if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
+        String fs = REGEX_FILE_SEPARATOR;
 
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"[\\w-]+"));
