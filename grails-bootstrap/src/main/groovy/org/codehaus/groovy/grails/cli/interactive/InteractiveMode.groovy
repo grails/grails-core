@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.cli.interactive
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
+import grails.util.Environment;
 import grails.util.PluginBuildSettings
 
 import java.awt.Desktop
@@ -91,6 +92,8 @@ class InteractiveMode {
         if(UaaIntegration.isAvailable() && !UaaIntegration.isEnabled()) {
             UaaIntegration.enable(settings, new PluginBuildSettings(settings), true)
         }
+        String originalGrailsEnv = System.getProperty(Environment.KEY)
+        String originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
         addStatus("Enter a script name to run. Use TAB for completion: ")
         while (interactiveModeActive) {
             def scriptName = showPrompt()
@@ -183,6 +186,17 @@ class InteractiveMode {
                 error "Error running script $scriptName: ${e.message}", e
             }
             finally {
+                // Reset Environment after each script run
+                if(originalGrailsEnv != null) {
+                    System.setProperty(Environment.KEY, originalGrailsEnv)
+                } else {
+                    System.clearProperty(Environment.KEY)
+                }
+                if(originalGrailsEnvDefault != null) {
+                    System.setProperty(Environment.DEFAULT, originalGrailsEnvDefault)
+                } else {
+                    System.clearProperty(Environment.DEFAULT)
+                }
                 if (grailsServer == null) {
                     try {
                         registryCleaner.clean()
