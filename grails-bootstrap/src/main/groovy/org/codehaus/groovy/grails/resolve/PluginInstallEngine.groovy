@@ -325,7 +325,7 @@ class PluginInstallEngine {
 
         def runtimeDependencies = processPluginDependencies(pluginName,pluginXml)
 
-        resolvePluginJarDependencies(fullPluginName, pluginInstallPath, runtimeDependencies)
+        resolvePluginJarDependencies(fullPluginName, pluginName, pluginInstallPath, runtimeDependencies)
 
         // proceed _Install.groovy plugin script if exists
         def installScript = new File("${pluginInstallPath}/scripts/_Install.groovy")
@@ -422,11 +422,12 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    protected void resolvePluginJarDependencies(pluginName, pluginInstallPath, Map runtimeDependencies = [:]) {
+    protected void resolvePluginJarDependencies(fullPluginName, pluginName, pluginInstallPath, Map runtimeDependencies = [:]) {
         def pluginDependencyDescriptor = new File("$pluginInstallPath/dependencies.groovy")
         if (pluginDependencyDescriptor.exists()) {
             eventHandler "StatusUpdate", "Resolving plugin JAR dependencies"
             def callable = settings.pluginDependencyHandler()
+            settings.dependencyManager.metadataRegisteredPluginNames << pluginName
             callable.call(new File("$pluginInstallPath"))
             IvyDependencyManager dependencyManager = settings.dependencyManager
             dependencyManager.resetGrailsPluginsResolver()
@@ -441,20 +442,20 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 if (resolveReport.hasError()) {
                     def runningUpgrade = Boolean.getBoolean('runningGrailsUpgrade')
                     if(!runningUpgrade) {
-                        errorHandler("Failed to install plugin [${pluginName}]. Plugin has missing JAR dependencies.")
+                        errorHandler("Failed to install plugin [${fullPluginName}]. Plugin has missing JAR dependencies.")
                     }
                 }
                 else {
                     if(dependencyConfiguration.name != 'runtime') continue
                     def pluginJars = resolveReport.getArtifactsReports(null, false).localFile
                     def pluginZips = pluginJars.findAll { it.name.endsWith(".zip")}
-                    def allPluginZips = new ArrayList(settings.pluginDependencies)
+                    def allPluginZips = new HashSet(settings.pluginDependencies)
                     allPluginZips.addAll(pluginZips)
 
                     runtimeDependencies.each { runtimePluginName, runtimePluginVersion ->
                         def declaredPluginZip = allPluginZips.find { it.name ==~ /$runtimePluginName-\S+\.zip/}
                         if(declaredPluginZip == null) {
-                            errorHandler("""
+                            grails.build.logging.GrailsConsole.getInstance().warn("""
         Plugin declares a runtime dependency on plugin [$runtimePluginName: $runtimePluginVersion] but does not define the plugin within its transitive metadata. Contact the plugin author to fix this problem or declare the plugin yourself inside BuildConfig.groovy. Example:
         ...
         plugins {
@@ -553,6 +554,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 }
                 postUninstall()
                 eventHandler "PluginUninstalled", "Uninstalled plugin [${name}]."
+                GrailsConsole.getInstance().addStatus("Uninstalled plugin [$name]")
             }
             else {
                 GrailsConsole.getInstance().warning("No plugin [$name${version ? '-' + version : ''}] installed, cannot uninstall")
