@@ -127,7 +127,7 @@ final class PluginResolveEngine {
             ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
             def location = origin.location
             def parent = location[0..location.lastIndexOf('/')-1]
-            for (DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
+            for (DependencyResolver dr in this.dependencyManager.chainResolver.resolvers) {
                 if (dr instanceof RepositoryResolver) {
                     Repository r = dr.repository
 
