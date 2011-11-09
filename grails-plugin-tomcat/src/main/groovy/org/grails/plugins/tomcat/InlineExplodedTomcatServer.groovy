@@ -73,6 +73,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         if (host != "localhost") {
             tomcat.connector.setAttribute("address", host)
+            tomcat.connector.setAttribute("port", httpPort)
         }
 
         if (getConfigParam("nio")) {
