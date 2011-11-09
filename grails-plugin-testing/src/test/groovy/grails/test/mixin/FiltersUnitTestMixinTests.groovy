@@ -61,8 +61,10 @@ class FiltersUnitTestMixinTests {
     void testExceptionThrowingFilter() {
         mockFilters(ExceptionThrowingFilters)
 
-        withFilters(action:"list") {
-            controller.list()
+        shouldFail(Exception)  {
+            withFilters(action:"list") {
+                controller.list()
+            }
         }
 
         assert request.filterBefore == null
