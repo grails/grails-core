@@ -16,27 +16,11 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
 import groovy.lang.Closure;
-
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
@@ -46,6 +30,13 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Enhances tag library classes with the appropriate API at compile time.
@@ -175,7 +166,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
     private List<PropertyNode> findTags(ClassNode classNode) {
         List<PropertyNode> tags = new ArrayList<PropertyNode>();
         List<PropertyNode> properties = classNode.getProperties();
-
+        List<PropertyNode> potentialAliases = new ArrayList<PropertyNode>();
         for (PropertyNode property : properties) {
             if (property.isPublic()) {
                 Expression initialExpression = property.getInitialExpression();
@@ -189,6 +180,20 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                         property.setType(CLOSURE_CLASS_NODE);
                     }
                 }
+                else if(initialExpression instanceof VariableExpression) {
+                    potentialAliases.add(property);
+                }
+            }
+        }
+
+        for (PropertyNode potentialAlias : potentialAliases) {
+            VariableExpression pe = (VariableExpression) potentialAlias.getInitialExpression();
+
+            String propertyName = pe.getName();
+            PropertyNode property = classNode.getProperty(propertyName);
+            if(property != null && tags.contains(property)) {
+                potentialAlias.setType(CLOSURE_CLASS_NODE);
+                tags.add(potentialAlias);
             }
         }
         return tags;
