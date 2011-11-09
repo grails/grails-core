@@ -131,6 +131,7 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
             }
         } catch (e) {
             interceptor.afterCompletion(request, response, this, e)
+            throw e
         }
     }
 }
