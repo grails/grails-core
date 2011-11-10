@@ -15,12 +15,17 @@
  */
 package org.codehaus.groovy.grails.web.pages.discovery;
 
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.support.ResourceScriptSource;
+
+import java.io.IOException;
+import java.net.URI;
 
 public class GroovyPageResourceScriptSource extends ResourceScriptSource implements GroovyPageScriptSource {
 
     private String uri;
+    private boolean isPublic;
 
     /**
      * Create a new ResourceScriptSource for the given resource.
@@ -30,9 +35,30 @@ public class GroovyPageResourceScriptSource extends ResourceScriptSource impleme
     public GroovyPageResourceScriptSource(String uri, Resource resource) {
         super(resource);
         this.uri = uri;
+        try {
+            URI u = getResource().getURI();
+            String path = u.getPath();
+            isPublic = isPublicPath(path);
+        } catch (IOException e) {
+            isPublic = isPublicPath(uri);
+        }
+    }
+
+    public static boolean isPublicPath(String path) {
+        return !(path.contains(GrailsResourceUtils.WEB_INF) || path.contains(GrailsResourceUtils.VIEWS_DIR_PATH));
     }
 
     public String getURI() {
         return uri;
+    }
+
+    /**
+     * Whether the GSP is publicly accessible directly, or only usable using internal rendering
+     *
+     * @return True if it can be rendered publicly
+     */
+    @Override
+    public boolean isPublic() {
+        return isPublic;
     }
 }

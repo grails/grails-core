@@ -28,4 +28,11 @@ public interface GroovyPageScriptSource extends ScriptSource {
      * @return The URI of the Groovy page
      */
     String getURI();
+
+    /**
+     * Whether the GSP is publicly accessible directly, or only usable using internal rendering
+     *
+     * @return True if it can be rendered publicly
+     */
+    boolean isPublic();
 }

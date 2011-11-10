@@ -33,15 +33,27 @@ public class GroovyPageCompiledScriptSource implements GroovyPageScriptSource {
     private Class<?> compiledClass;
     private GroovyPageMetaInfo groovyPageMetaInfo;
     private PrivilegedAction<Resource> resourceCallable;
+    private boolean isPublic;
 
-    public GroovyPageCompiledScriptSource(String uri, Class<?> compiledClass) {
+    public GroovyPageCompiledScriptSource(String uri, String fullPath, Class<?> compiledClass) {
         this.uri = uri;
+        this.isPublic = GroovyPageResourceScriptSource.isPublicPath(fullPath);
         this.compiledClass = compiledClass;
         this.groovyPageMetaInfo = new GroovyPageMetaInfo(compiledClass);
     }
 
     public String getURI() {
         return uri;
+    }
+
+    /**
+     * Whether the GSP is publicly accessible directly, or only usable using internal rendering
+     *
+     * @return True if it can be rendered publicly
+     */
+    @Override
+    public boolean isPublic() {
+        return isPublic;
     }
 
     /**

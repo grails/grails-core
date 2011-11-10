@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -120,20 +121,24 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         }
         else {
 
-            Template template = groovyPagesTemplateEngine.createTemplateForUri(pageName);
+            GroovyPageScriptSource scriptSource = groovyPagesTemplateEngine.findScriptSource(pageName);
 
-            if (template == null) {
-                template = findPageInBinaryPlugins(pageName);
+            if (scriptSource == null) {
+                scriptSource = findPageInBinaryPlugins(pageName);
             }
 
-            if (template == null) {
+            if (scriptSource == null || !scriptSource.isPublic()) {
                 sendNotFound(response, pageName);
                 return;
             }
 
-            renderPageWithEngine(groovyPagesTemplateEngine, request, response, template);
+            renderPageWithEngine(groovyPagesTemplateEngine, request, response, scriptSource);
         }
 
+    }
+
+    public GroovyPagesTemplateEngine getGroovyPagesTemplateEngine() {
+        return groovyPagesTemplateEngine;
     }
 
     protected boolean isSecurePath(String pageName) {
@@ -145,7 +150,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         response.sendError(404, "\"" + pageName + "\" not found.");
     }
 
-    protected Template findPageInBinaryPlugins(String pageName) {
+    protected GroovyPageScriptSource findPageInBinaryPlugins(String pageName) {
         if (pageName != null) {
             Class<?> pageClass = binaryPluginViewsMap.get(pageName);
             if (pageClass == null && pluginManager != null) {
@@ -163,7 +168,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
                 }
             }
             if (pageClass != null) {
-                return groovyPagesTemplateEngine.createTemplate(new GroovyPageCompiledScriptSource(pageName, pageClass));
+                return new GroovyPageCompiledScriptSource(pageName, pageName, pageClass);
             }
         }
         return null;
@@ -172,18 +177,20 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     /**
      * Attempts to render the page with the given arguments
      *
+     *
      * @param engine The GroovyPagesTemplateEngine to use
      * @param request The HttpServletRequest
      * @param response The HttpServletResponse
-     * @param template The template
+     * @param scriptSource The template
      *
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      */
     protected void renderPageWithEngine(@SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
             @SuppressWarnings("unused") HttpServletRequest request,
-            HttpServletResponse response, Template template) throws Exception {
+            HttpServletResponse response, GroovyPageScriptSource scriptSource) throws Exception {
         GSPResponseWriter out = createResponseWriter(response);
         try {
+            Template template = engine.createTemplate(scriptSource);
             if(template instanceof GroovyPageTemplate) {
                 ((GroovyPageTemplate)template).setAllowSettingContentType(true);
             }
