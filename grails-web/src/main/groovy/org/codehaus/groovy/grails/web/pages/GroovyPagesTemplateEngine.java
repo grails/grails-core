@@ -312,17 +312,26 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     public Template createTemplateForUri(String[] uris)  {
+        GroovyPageScriptSource scriptSource = findScriptSource(uris);
+
+        if (scriptSource != null) {
+            return createTemplate(scriptSource);
+        }
+        return null;
+    }
+
+    public GroovyPageScriptSource findScriptSource(String uri) {
+        return findScriptSource(new String[]{uri});
+    }
+
+    public GroovyPageScriptSource findScriptSource(String[] uris) {
         GroovyPageScriptSource scriptSource = null;
 
         for (String uri : uris) {
             scriptSource = groovyPageLocator.findPage(uri);
             if (scriptSource != null) break;
         }
-
-        if (scriptSource != null) {
-            return createTemplate(scriptSource);
-        }
-        return null;
+        return scriptSource;
     }
 
     public Template createTemplate(ScriptSource scriptSource) {
@@ -331,8 +340,8 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             return createTemplateFromPrecompiled((GroovyPageCompiledScriptSource) scriptSource);
         }
         
-        if (scriptSource instanceof ResourceScriptSource) {
-            ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
+        if (scriptSource instanceof GroovyPageResourceScriptSource) {
+            GroovyPageResourceScriptSource resourceSource = (GroovyPageResourceScriptSource) scriptSource;
             Resource resource = resourceSource.getResource();
             return createTemplate(resource, true);
         }

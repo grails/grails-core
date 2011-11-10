@@ -164,13 +164,13 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
         Class<?> viewClass = binaryPlugin.resolveView(uri);
         if (viewClass != null && !reloadedPrecompiledGspClassNames.contains(viewClass.getName())) {
-             scriptSource = createGroovyPageCompiledScriptSource(uri, viewClass);
+             scriptSource = createGroovyPageCompiledScriptSource(uri, uri, viewClass);
         }
         return scriptSource;
     }
     
-    protected GroovyPageCompiledScriptSource createGroovyPageCompiledScriptSource(final String uri, Class<?> viewClass) {
-        GroovyPageCompiledScriptSource scriptSource = new GroovyPageCompiledScriptSource(uri, viewClass);
+    protected GroovyPageCompiledScriptSource createGroovyPageCompiledScriptSource(final String uri, String fullPath, Class<?> viewClass) {
+        GroovyPageCompiledScriptSource scriptSource = new GroovyPageCompiledScriptSource(uri, fullPath,viewClass);
         if(reloadEnabled) {
             scriptSource.setResourceCallable(new PrivilegedAction<Resource>() {
                 public Resource run() {
@@ -190,7 +190,10 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
             if (!(plugin instanceof BinaryGrailsPlugin)) {
                 continue;
             }
-            resolveViewInBinaryPlugin((BinaryGrailsPlugin)plugin, uri);
+            GroovyPageScriptSource scriptSource = resolveViewInBinaryPlugin((BinaryGrailsPlugin) plugin, uri);
+            if(scriptSource != null) {
+                return scriptSource;
+            }
         }
 
         return null;
@@ -302,7 +305,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
                         LOG.warn("Cannot load class " + gspClassName + ". Resuming on non-precompiled implementation.", e);
                     }
                     if (gspClass != null) {
-                        return createGroovyPageCompiledScriptSource(uri, gspClass);
+                        return createGroovyPageCompiledScriptSource(uri, searchPath, gspClass);
                     }
                 }
             }
