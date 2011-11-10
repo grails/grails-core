@@ -17,6 +17,9 @@ import grails.persistence.Entity
 @Entity
 class MdsPerson {
     String name
+    static constraints = {
+        name unique: true
+    }
 }
 
 @Entity
@@ -43,6 +46,9 @@ class MdsZipCode {
     String code
     static mapping = {
         datasource 'ds3'
+    }
+    static constraints = {
+        code unique: true
     }
 }
 
@@ -227,6 +233,14 @@ hibernate {
                 unbindSessionFactory sessionFactory
             }
         }
+    }
+
+    @Override
+    protected void tearDown() {
+        for (String name in ['MdsPerson', 'MdsLibrary', 'MdsVisit', 'MdsZipCode']) {
+            ga.getDomainClass(name).clazz.list()*.delete(flush: true)
+        }
+        super.tearDown()
     }
 
     void testBeans() {
@@ -546,6 +560,40 @@ hibernate {
         assertEquals 1, AllDatasources.ds2.findAllByName(instance.name).size()
         assertEquals 1, AllDatasources.ds3.findAllByName(instance.name).size()
         assertEquals 1, AllDatasources.ds4.findAllByName(instance.name).size()
+    }
+
+    void testUnique() {
+        def Person = ga.getDomainClass('MdsPerson').clazz
+
+        def data = [name: 'person 1']
+
+        def person = Person.newInstance(data)
+        person.save()
+        assertFalse person.hasErrors()
+
+        person = Person.newInstance(data)
+        person.save()
+
+        assertEquals 1, person.errors.errorCount
+        def error = person.errors.getFieldError('name')
+        assertNotNull error
+        assertEquals 'unique', error.code
+
+        def ZipCode = ga.getDomainClass('MdsZipCode').clazz
+
+        data = [code: 'zip 1']
+        def zipCode = ZipCode.newInstance(data)
+        zipCode.save()
+        assertFalse zipCode.hasErrors()
+
+        zipCode = ZipCode.newInstance(data)
+        zipCode.save()
+        assertTrue zipCode.hasErrors()
+
+        assertEquals 1, zipCode.errors.errorCount
+        error = zipCode.errors.getFieldError('code')
+        assertNotNull error
+        assertEquals 'unique', error.code
     }
 }
 

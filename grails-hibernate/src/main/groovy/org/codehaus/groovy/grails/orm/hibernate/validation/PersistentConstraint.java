@@ -32,6 +32,4 @@ public interface PersistentConstraint extends Constraint, ApplicationContextAwar
      * @return the template
      */
     HibernateTemplate getHibernateTemplate();
-
-    void setSessionFactoryBeanName(String name);
 }

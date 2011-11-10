@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.validation.AbstractPersistentConstraint;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
@@ -109,11 +110,17 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
         fireEvent(target, validatedFieldsList);
 
-        if (deepValidate && (validator instanceof CascadingValidator)) {
-            ((CascadingValidator)validator).validate(target, errors, deepValidate);
+        AbstractPersistentConstraint.sessionFactory.set(datastore.getSessionFactory());
+        try {
+            if (deepValidate && (validator instanceof CascadingValidator)) {
+                ((CascadingValidator)validator).validate(target, errors, deepValidate);
+            }
+            else {
+                validator.validate(target,errors);
+            }
         }
-        else {
-            validator.validate(target,errors);
+        finally {
+            AbstractPersistentConstraint.sessionFactory.remove();
         }
 
         int oldErrorCount = errors.getErrorCount();
