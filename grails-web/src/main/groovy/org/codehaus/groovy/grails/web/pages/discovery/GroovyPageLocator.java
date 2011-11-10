@@ -40,7 +40,7 @@ public interface GroovyPageLocator {
      * @return A script source
      */
     GroovyPageScriptSource findPage(String uri);
-    
+
     /**
      * Finds a page for the given URI
      *

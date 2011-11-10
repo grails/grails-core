@@ -79,13 +79,13 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private String pluginPath;
     private GrailsPlugin pagePlugin;
     private boolean initialized=false;
-    
+
     private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>(null);
 
     public GroovyPageMetaInfo() {
         shouldReloadCacheEntry.expire();
     }
-    
+
     @SuppressWarnings("rawtypes")
     public GroovyPageMetaInfo(Class<?> pageClass) {
         this();
@@ -103,9 +103,9 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
             throw new RuntimeException("Problem reading html data for page class " + pageClass, e);
         }
     }
-    
+
     static interface GroovyPageMetaInfoInitializer {
-        public void initialize(GroovyPageMetaInfo metaInfo);        
+        public void initialize(GroovyPageMetaInfo metaInfo);
     }
 
     synchronized void initializeOnDemand(GroovyPageMetaInfoInitializer initializer) {
@@ -145,7 +145,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
 
         initializePluginPath();
-        
+
         initialized = true;
     }
 
@@ -409,8 +409,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         Resource resource=checkIfReloadableResourceHasChanged(resourceCallable);
         return (resource != null);
     }
-    
-    
+
     public Resource checkIfReloadableResourceHasChanged(final PrivilegedAction<Resource> resourceCallable) {
         PrivilegedAction<Resource> checkerCallable = new PrivilegedAction<Resource>() {
             public Resource run() {

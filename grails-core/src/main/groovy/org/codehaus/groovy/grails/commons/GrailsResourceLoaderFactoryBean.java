@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
-import grails.util.Holders;
 
 import java.io.IOException;
 

@@ -51,7 +51,8 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
         super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), grailsApplication);
         this.datastore = datastore;
     }
-    
+
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
         return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;

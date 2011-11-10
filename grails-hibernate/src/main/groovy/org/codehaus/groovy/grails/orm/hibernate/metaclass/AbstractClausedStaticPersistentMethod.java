@@ -443,20 +443,21 @@ public abstract class AbstractClausedStaticPersistentMethod extends AbstractStat
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractStaticPersistentMethod#doInvokeInternal(java.lang.Class, java.lang.String, java.lang.Object[])
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(final Class clazz, String methodName,
                                       Closure additionalCriteria, Object[] arguments) {
         return doInvokeInternal(clazz, methodName, null, additionalCriteria, arguments);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
         return doInvokeInternal(clazz, methodName, additionalCriteria,null, arguments);
     }
 
-    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria detachedCriteria, Closure additionalCriteria, Object[] arguments) {
-        List expressions = new ArrayList();
+    protected Object doInvokeInternal(Class<?> clazz, String methodName, DetachedCriteria<?> detachedCriteria, Closure<?> additionalCriteria, Object[] arguments) {
+        List<GrailsMethodExpression> expressions = new ArrayList<GrailsMethodExpression>();
         if (arguments == null) arguments = new Object[0];
         Matcher match = super.getPattern().matcher(methodName);
         // find match

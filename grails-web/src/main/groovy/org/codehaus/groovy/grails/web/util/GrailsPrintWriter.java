@@ -61,7 +61,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     public Writer getOut() {
         return out;
     }
-    
+
     public void setOut(Writer newOut) {
         if(newOut instanceof GrailsWrappedWriter ) {
             this.out = ((GrailsWrappedWriter)newOut).unwrap();
@@ -73,9 +73,8 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     /**
      * Provides Groovy << left shift operator, but intercepts call to make sure
      * nulls are converted to "" strings
-     * 
-     * @param value
-     *            The value
+     *
+     * @param value The value
      * @return Returns this object
      * @throws IOException
      */
@@ -96,8 +95,8 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
      * Flush the stream if it's not closed and check its error state. Errors are
      * cumulative; once the stream encounters an error, this routine will return
      * true on all successive calls.
-     * 
-     * @return True if the print stream has encountered an error, either on the
+     *
+     * @return true if the print stream has encountered an error, either on the
      *         underlying output stream or during a format conversion.
      */
     public boolean checkError() {
@@ -110,7 +109,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
 
     /**
      * Flush the stream.
-     * 
+     *
      * @see #checkError()
      */
     @Override
@@ -126,11 +125,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
             handleIOException(e);
         }
     }
-    
+
     boolean isTrouble() {
         return trouble;
     }
-    
+
     void handleIOException(IOException e) {
         if (trouble) {
             return;
@@ -149,9 +148,8 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
      * according to the platform's default character encoding, and these bytes
      * are written in exactly the manner of the <code>{@link #write(int)}</code>
      * method.
-     * 
-     * @param obj
-     *            The <code>Object</code> to be printed
+     *
+     * @param obj The <code>Object</code> to be printed
      * @see java.lang.Object#toString()
      */
     public void print(final Object obj) {
@@ -190,9 +188,8 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
      * converted into bytes according to the platform's default character
      * encoding, and these bytes are written in exactly the manner of the
      * <code>{@link #write(int)}</code> method.
-     * 
-     * @param s
-     *            The <code>String</code> to be printed
+     *
+     * @param s The <code>String</code> to be printed
      */
     public void print(final String s) {
         if (s == null) {
@@ -205,7 +202,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     /**
      * Writes a string. If the argument is <code>null</code> then the string
      * <code>""</code> is printed.
-     * 
+     *
      * @param s The <code>String</code> to be printed
      */
     @Override
@@ -225,7 +222,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
 
     /**
      * Write a single character.
-     * 
+     *
      * @param c int specifying a character to be written.
      */
     @Override
@@ -244,7 +241,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
 
     /**
      * Write a portion of an array of characters.
-     * 
+     *
      * @param buf Array of characters
      * @param off Offset from which to start writing characters
      * @param len Number of characters to write
@@ -264,7 +261,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
 
     /**
      * Write a portion of a string.
-     * 
+     *
      * @param s A String
      * @param off Offset from which to start writing characters
      * @param len Number of characters to write
@@ -546,21 +543,21 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
             handleIOException(e);
         }
     }
-    
+
     public void markUsed() {
         setUsed(true);
     }
-    
+
     public Object asType(Class<?> clazz) {
-        if(clazz == PrintWriter.class) {
+        if (clazz == PrintWriter.class) {
             return asPrintWriter();
-        } else if (clazz == Writer.class) {
-            return this;
-        } else {
-            return DefaultTypeTransformation.castToType(this, clazz);
         }
+        if (clazz == Writer.class) {
+            return this;
+        }
+        return DefaultTypeTransformation.castToType(this, clazz);
     }
-    
+
     public PrintWriter asPrintWriter() {
         return new GrailsPrintWriterAdapter(this);
     }

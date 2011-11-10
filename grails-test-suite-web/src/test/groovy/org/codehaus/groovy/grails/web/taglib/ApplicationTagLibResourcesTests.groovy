@@ -20,7 +20,7 @@ class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
     void onInitMockBeans() {
         grailsApplication.mainContext.registerMockBean('grailsResourceProcessor', [something:'value'])
     }
-    
+
     def replaceMetaClass(Object o) {
         def old = o.metaClass
 

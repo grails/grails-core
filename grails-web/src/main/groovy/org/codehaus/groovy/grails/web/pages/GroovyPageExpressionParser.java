@@ -3,13 +3,11 @@ package org.codehaus.groovy.grails.web.pages;
 import java.util.Stack;
 
 /**
- * 
  * Parses an expression in a GSP.
- * 
- * Used by GroovyPageScanner and GroovyPageParser to search for the end of an expression.
- * 
- * @author Lari Hotari
  *
+ * Used by GroovyPageScanner and GroovyPageParser to search for the end of an expression.
+ *
+ * @author Lari Hotari
  */
 class GroovyPageExpressionParser {
     private static enum ParsingState {
@@ -23,7 +21,7 @@ class GroovyPageExpressionParser {
     boolean containsGstrings=false;
     int terminationCharPos = -1;
     int relativeCharIndex=0;
-    
+
     public GroovyPageExpressionParser(String scriptTokens, int startPos, char terminationChar,
             char nextTerminationChar, boolean startInExpression) {
         this.scriptTokens = scriptTokens;
@@ -34,24 +32,24 @@ class GroovyPageExpressionParser {
             parsingStateStack.push(ParsingState.EXPRESSION);
         } else {
             parsingStateStack.push(ParsingState.NORMAL);
-        } 
+        }
     }
 
     /**
      * Finds the ending position of an expression.
-     * 
+     *
      * @return end position of expression
      */
     int parse() {
         int currentPos = startPos;
         char previousChar = 0;
         char previousPreviousChar = 0;
-        
+
         while(currentPos < scriptTokens.length() && terminationCharPos==-1) {
             ParsingState parsingState = parsingStateStack.peek();
             char ch = scriptTokens.charAt(currentPos++);
-            char nextChar = (currentPos < scriptTokens.length()) ? scriptTokens.charAt(currentPos) : 0; 
-            
+            char nextChar = (currentPos < scriptTokens.length()) ? scriptTokens.charAt(currentPos) : 0;
+
             if (parsingStateStack.size()==1 && ch==terminationChar && (nextTerminationChar==0 || nextTerminationChar==nextChar)) {
                 terminationCharPos = currentPos-1;
             } else if (parsingState==ParsingState.EXPRESSION || parsingState==ParsingState.NORMAL) {

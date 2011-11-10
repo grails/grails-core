@@ -97,7 +97,7 @@ class TestUrlMappings {
         def emc = new ExpandoMetaClass(o.class, true, true)
         emc.initialize()
         o.metaClass = emc
-        
+
         return old
     }
 

@@ -157,16 +157,13 @@ public class PagedResultList implements List, Serializable {
     }
 
     public int getTotalCount() {
-        if(totalCount == Integer.MIN_VALUE) {
+        if (totalCount == Integer.MIN_VALUE) {
             totalCount = (Integer)hibernateTemplate.execute(new HibernateCallback<Object>() {
-                public Object doInHibernate(Session session)
-                     throws HibernateException,
-                     SQLException {
+                public Object doInHibernate(Session session) throws HibernateException, SQLException {
                     hibernateTemplate.applySettings(criteria);
                     criteria.setFirstResult(0);
                     criteria.setProjection(Projections.rowCount());
-                    int totalCount = ((Number)criteria.uniqueResult()).intValue();
-                    return totalCount;
+                    return ((Number)criteria.uniqueResult()).intValue();
                 }
             }); 
         }

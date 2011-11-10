@@ -296,12 +296,12 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 
     private GroovyPageMetaInfo initializeCompiledMetaInfo(GroovyPageMetaInfo meta) {
         meta.initializeOnDemand(new GroovyPageMetaInfo.GroovyPageMetaInfoInitializer() {
-            public void initialize(GroovyPageMetaInfo meta) {
-                meta.setGrailsApplication(grailsApplication);
-                meta.setJspTagLibraryResolver(jspTagLibraryResolver);
-                meta.setTagLibraryLookup(tagLibraryLookup);
-                meta.initialize();
-                GroovyPagesMetaUtils.registerMethodMissingForGSP(meta.getPageClass(), tagLibraryLookup);
+            public void initialize(GroovyPageMetaInfo metaInfo) {
+                metaInfo.setGrailsApplication(grailsApplication);
+                metaInfo.setJspTagLibraryResolver(jspTagLibraryResolver);
+                metaInfo.setTagLibraryLookup(tagLibraryLookup);
+                metaInfo.initialize();
+                GroovyPagesMetaUtils.registerMethodMissingForGSP(metaInfo.getPageClass(), tagLibraryLookup);
             }
         });
         return meta;
@@ -330,7 +330,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             // handle pre-compiled
             return createTemplateFromPrecompiled((GroovyPageCompiledScriptSource) scriptSource);
         }
-        
+
         if (scriptSource instanceof ResourceScriptSource) {
             ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
             Resource resource = resourceSource.getResource();

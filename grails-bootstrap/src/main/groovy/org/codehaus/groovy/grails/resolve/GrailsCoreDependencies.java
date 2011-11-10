@@ -23,9 +23,6 @@ import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigur
 import org.codehaus.groovy.grails.resolve.config.JarDependenciesConfigurer;
 import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Encapsulates information about the core dependencies of Grails.
  *
@@ -69,16 +66,6 @@ public class GrailsCoreDependencies {
         }
     }
 
-    private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, Map excludes) {
-        for (ModuleRevisionId mrid : dependencies) {
-            EnhancedDefaultDependencyDescriptor descriptor = registerDependency(dependencyManager, scope, mrid);
-            if (excludes != null) {
-                descriptor.exclude(excludes);
-            }
-
-        }
-    }
-
     private EnhancedDefaultDependencyDescriptor registerDependency(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId mrid) {
         EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false, scope);
         descriptor.setInherited(true);
@@ -93,6 +80,7 @@ public class GrailsCoreDependencies {
     @SuppressWarnings({ "serial", "rawtypes" })
     public Closure createDeclaration() {
         return new Closure(this, this) {
+            @SuppressWarnings("unused")
             public Object doCall() {
                 DependencyConfigurationConfigurer rootDelegate = (DependencyConfigurationConfigurer)getDelegate();
 

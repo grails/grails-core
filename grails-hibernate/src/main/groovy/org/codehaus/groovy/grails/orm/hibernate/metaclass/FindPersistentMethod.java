@@ -75,11 +75,11 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
         super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), application);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
         return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;
     }
-
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override

@@ -172,7 +172,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"></g:actionSubmit>''', sw.toString()
     }
-    
+
     private GrailsApplication createMockGrailsApplication(ConfigObject config = null) {
         if(config==null) {
             config=new ConfigObject()
@@ -321,7 +321,7 @@ end.""":''}
         def pw = new PrintWriter(sw)
 
         w.writeTo(pw)
-        
+
         def result='''start.
 This is a multi-line string. } 
 end.
@@ -330,7 +330,7 @@ hello
 
         assertEquals result, sw.toString()
     }
-    
+
     void testParsingMultilineQuotes2() {
         GrailsWebUtil.bindMockWebRequest()
 
@@ -351,7 +351,7 @@ end.\'\'\':''}
         def pw = new PrintWriter(sw)
 
         w.writeTo(pw)
-        
+
         def result='''start.
 This is a multi-line string. }
 end.
@@ -382,12 +382,11 @@ hello
         assertEquals "hello", sw.toString()
     }
 
-    
     void testGRAILS8218() {
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-        
+
         gpte.afterPropertiesSet()
 
         def src = '''<g:if test='[pwd:"${actionName}-xx"]'>ok</g:if>'''
@@ -403,12 +402,12 @@ hello
 
         assertEquals "ok", sw.toString()
     }
-    
+
     void testGRAILS8199() {
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-        
+
         gpte.afterPropertiesSet()
 
         def src = '''<div id='${map["${id}_postfix"]}'/>'''
@@ -424,7 +423,7 @@ hello
 
         assertEquals "<div id='hello'/>", sw.toString()
     }
-    
+
     void testParsingQuotes() {
         GrailsWebUtil.bindMockWebRequest()
 
@@ -468,7 +467,7 @@ hello
     }
 
     void testInlineScriptWithValidUnmatchedBrackets() {
-        
+
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
@@ -493,9 +492,9 @@ never
 
         assertEquals "Hello World", sw.toString().trim()
     }
-        
+
     void testInlineScriptWithValidUnmatchedBracketsGspSyntax() {
-        
+
         GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
@@ -520,7 +519,7 @@ never
 
         assertEquals "Hello World", sw.toString().trim()
     }
-    
+
     void testCreateTemplateFromText() {
 
         GrailsWebUtil.bindMockWebRequest()

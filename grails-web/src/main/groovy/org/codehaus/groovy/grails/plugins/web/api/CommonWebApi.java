@@ -42,6 +42,8 @@ import java.io.Serializable;
  * @since 2.0
  */
 public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware, Serializable{
+    private static final long serialVersionUID = 1;
+
     private transient GrailsPluginManager pluginManager;
     private transient GrailsApplication grailsApplication;
     private transient ServletContext servletContext;
@@ -184,8 +186,8 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * @return The plugin context path
      */
     public String getPluginContextPath(Object delegate) {
-        GrailsPluginManager pluginManager = getPluginManagerInternal(delegate);
-        final String pluginPath = pluginManager != null ? pluginManager.getPluginPathForInstance(delegate) : null;
+        GrailsPluginManager manager = getPluginManagerInternal(delegate);
+        final String pluginPath = manager != null ? manager.getPluginPathForInstance(delegate) : null;
         return pluginPath !=null ? pluginPath : "";
     }
 

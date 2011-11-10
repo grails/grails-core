@@ -48,6 +48,8 @@ import org.springframework.web.context.request.RequestAttributes;
  */
 public class TagLibraryApi extends CommonWebApi {
 
+    private static final long serialVersionUID = 1;
+
     private TagLibraryLookup tagLibraryLookup;
 
     public TagLibraryApi() {

@@ -122,7 +122,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                     }
                     boolean allowCaching = !disableCache;
                     if (t==null && scaffoldingTemplateGenerator != null) {
-                        t = generateScaffoldedTemplate(webRequest, templateName, uri);
+                        t = generateScaffoldedTemplate(webRequest, uri);
                         // always enable caching for generated scaffolded template
                         allowCaching = true;
                     }
@@ -184,8 +184,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         }
     }
 
-    private Template generateScaffoldedTemplate(GrailsWebRequest webRequest,
-            String templateName, String uri) throws IOException {
+    private Template generateScaffoldedTemplate(GrailsWebRequest webRequest, String uri) throws IOException {
         Template t=null;
         Collection<String> controllerActions = scaffoldedActionMap.get(webRequest.getControllerName());
         if (controllerActions != null && controllerActions.contains(webRequest.getActionName())) {

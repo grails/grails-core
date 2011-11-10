@@ -45,7 +45,7 @@ public class CachingGroovyPageStaticResourceLocator extends GroovyPageStaticReso
                 return resource;
             }
         };
-        
+
         Resource resource = null;
         CacheEntry<Resource> entry = uriResolveCache.get(uri);
         if(entry==null) {

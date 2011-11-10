@@ -52,7 +52,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
                 }
                 return scriptSource;
             }
-        };   
+        };
 
         return lookupCache(GroovyPageLocatorCacheKey.build(uri, null, binding), updater);
     }
@@ -60,7 +60,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     @Override
     public GroovyPageScriptSource findPageInBinding(final String pluginName, final String uri, final GroovyPageBinding binding) {
         if (uri == null || pluginName == null) return null;
-        
+
         PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
             public GroovyPageScriptSource run() {
                 GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPageInBinding(pluginName, uri, binding);
@@ -70,14 +70,14 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
                 return scriptSource;
             }
         };
-        
+
         return lookupCache(GroovyPageLocatorCacheKey.build(uri, pluginName, binding), updater);
     }
 
     @Override
     public GroovyPageScriptSource findPage(final String uri) {
        if (uri == null) return null;
-       
+
        PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
            public GroovyPageScriptSource run() {
                GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPage(uri);
@@ -86,11 +86,11 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
                }
                return scriptSource;
            }
-       };   
-       
+       };
+
        return lookupCache(GroovyPageLocatorCacheKey.build(uri, null, null), updater);
     }
-    
+
     protected GroovyPageScriptSource lookupCache(final GroovyPageLocatorCacheKey cacheKey, PrivilegedAction<GroovyPageScriptSource> updater) {
         GroovyPageScriptSource scriptSource = null;
         if(cacheTimeout==0) {
@@ -105,7 +105,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             }
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
-    }    
+    }
 
     public long getCacheTimeout() {
         return cacheTimeout;
@@ -114,21 +114,21 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     public void setCacheTimeout(long cacheTimeout) {
         this.cacheTimeout = cacheTimeout;
     }
-    
+
     private static final class GroovyPageLocatorCacheKey {
         private final String uri;
         private final String pluginName;
         private final String contextPath;
-        
+
         private GroovyPageLocatorCacheKey(String uri, String pluginName, String contextPath) {
             this.uri = uri;
             this.pluginName = pluginName;
             this.contextPath = contextPath;
         }
-        
+
         public static final GroovyPageLocatorCacheKey build(final String uri, final String pluginName, final GroovyPageBinding binding) {
             String pluginNameInCacheKey = (pluginName == null) ? ( binding != null ? (binding.getPagePlugin() != null ? binding.getPagePlugin().getName() : null) : null) : pluginName;
-            return new GroovyPageLocatorCacheKey(uri, pluginNameInCacheKey, binding != null ? binding.getPluginContextPath() : null);       
+            return new GroovyPageLocatorCacheKey(uri, pluginNameInCacheKey, binding != null ? binding.getPluginContextPath() : null);
         }
 
         @Override
