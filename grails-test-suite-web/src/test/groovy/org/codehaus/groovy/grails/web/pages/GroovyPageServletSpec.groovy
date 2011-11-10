@@ -12,13 +12,42 @@ import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
+import org.springframework.mock.web.MockServletContext
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.util.WebUtils
 
 /**
- *
+ *  Tests for the GSP servlet
  */
 class GroovyPageServletSpec extends Specification{
 
     private SimpleMapResourceLoader resourceLoader
+
+    void setup() {
+        RequestContextHolder.setRequestAttributes(null)
+    }
+    void cleanup() {
+        RequestContextHolder.setRequestAttributes(null)
+    }
+
+    void "Test create response writer method"() {
+        when:"a response writer is created without a web request"
+            def gps = new GroovyPagesServlet()
+            def writer = gps.createResponseWriter(new MockHttpServletResponse())
+        then:"An exception is thrown"
+            thrown IllegalStateException
+
+        when:"A response writer is created with a web request"
+            RequestContextHolder.setRequestAttributes new GrailsWebRequest(
+                new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+
+            gps = new GroovyPagesServlet()
+            writer = gps.createResponseWriter(new MockHttpServletResponse())
+
+        then:"The writer is created correctly"
+            writer != null
+    }
 
     void "Test default 404 response"() {
         given:"An initialized gsp servlet"
@@ -55,6 +84,29 @@ class GroovyPageServletSpec extends Specification{
             response.status == HttpServletResponse.SC_NOT_FOUND
     }
 
+    void "Test include is allowed for forbidden GSP pages"() {
+        given:"An initialized gsp servlet and a non public GSP"
+            GroovyPagesServlet servlet = systemUnderTest()
+            nonPublicGsgPage()
+
+        when:"The page is queried in the script engine"
+            def page = servlet.groovyPagesTemplateEngine.findScriptSource("/foo/nonPublic.gsp")
+
+        then:"The page is found"
+            page != null
+            !page.isPublic()
+
+        when:"A non public page is rendered"
+            def request = new MockHttpServletRequest()
+            request.method = "GET"
+            request.setAttribute(WebUtils.INCLUDE_REQUEST_URI_ATTRIBUTE, "/foo/nonPublic.gsp")
+            request.servletPath = "/foo/nonPublic.gsp"
+            def response = new MockHttpServletResponse()
+            servlet.service(request, response)
+        then:"A 404 is sent"
+            response.status == HttpServletResponse.SC_OK
+            servlet.pageRendered.URI == page.URI
+    }
     void "Test a publicly exposed page is rendered"() {
         given:"An initialized gsp servlet and a non public GSP"
             GroovyPagesServlet servlet = systemUnderTest()
