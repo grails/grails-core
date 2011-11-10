@@ -11,12 +11,8 @@ import org.springframework.web.context.request.RequestContextHolder
 import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.plugins.MockBinaryPluginResource
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.web.pages.GroovyPageCompiler
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 import org.springframework.core.io.Resource
 
