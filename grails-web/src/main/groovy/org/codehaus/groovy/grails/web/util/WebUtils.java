@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -229,7 +230,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
         if (info.getViewName() != null) {
             String viewName = info.getViewName();
-            forwardUrl.append(SLASH).append(viewName);
+            if(viewName.startsWith("/"))
+               forwardUrl.append(viewName);
+            else
+                forwardUrl.append(SLASH).append(viewName);
         }
         else {
             forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
@@ -375,7 +379,8 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
         response = wrapped != null ? wrapped : response;
 
-        exposeForwardRequestAttributes(request);
+        exposeIncludeRequestAttributes(request);
+
         exposeRequestAttributes(request, model);
 
         try {
@@ -395,8 +400,52 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         catch (Exception e) {
             throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
         }
+        finally {
+            cleanupIncludeRequestAttributes(request);
+        }
     }
 
+    private static void cleanupIncludeRequestAttributes(HttpServletRequest request) {
+        request.removeAttribute(INCLUDE_REQUEST_URI_ATTRIBUTE);
+        request.removeAttribute(INCLUDE_CONTEXT_PATH_ATTRIBUTE);
+        request.removeAttribute(INCLUDE_SERVLET_PATH_ATTRIBUTE);
+        request.removeAttribute(INCLUDE_PATH_INFO_ATTRIBUTE);
+        request.removeAttribute(INCLUDE_QUERY_STRING_ATTRIBUTE);
+    }
+
+    /**
+     * Expose the current request URI and paths as {@link javax.servlet.http.HttpServletRequest}
+     * attributes under the keys defined in the Servlet 2.4 specification,
+     * for containers that implement 2.3 or an earlier version of the Servlet API:
+     * <code>javax.servlet.forward.request_uri</code>,
+     * <code>javax.servlet.forward.context_path</code>,
+     * <code>javax.servlet.forward.servlet_path</code>,
+     * <code>javax.servlet.forward.path_info</code>,
+     * <code>javax.servlet.forward.query_string</code>.
+     * <p>Does not override values if already present, to not cause conflicts
+     * with the attributes exposed by Servlet 2.4+ containers themselves.
+     * @param request current servlet request
+     */
+
+    public static void exposeIncludeRequestAttributes(HttpServletRequest request) {
+		exposeRequestAttributeIfNotPresent(request, INCLUDE_REQUEST_URI_ATTRIBUTE, request.getRequestURI());
+		exposeRequestAttributeIfNotPresent(request, INCLUDE_CONTEXT_PATH_ATTRIBUTE, request.getContextPath());
+		exposeRequestAttributeIfNotPresent(request, INCLUDE_SERVLET_PATH_ATTRIBUTE, request.getServletPath());
+		exposeRequestAttributeIfNotPresent(request, INCLUDE_PATH_INFO_ATTRIBUTE, request.getPathInfo());
+		exposeRequestAttributeIfNotPresent(request, INCLUDE_QUERY_STRING_ATTRIBUTE, request.getQueryString());
+    }
+
+    /**
+	 * Expose the specified request attribute if not already present.
+	 * @param request current servlet request
+	 * @param name the name of the attribute
+	 * @param value the suggested value of the attribute
+	 */
+	private static void exposeRequestAttributeIfNotPresent(ServletRequest request, String name, Object value) {
+		if (request.getAttribute(name) == null) {
+			request.setAttribute(name, value);
+		}
+	}
     /**
      * Takes a query string and returns the results as a map where the values are either a single entry or a list of values
      *
