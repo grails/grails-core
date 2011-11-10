@@ -60,6 +60,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         super(sessionFactory, classLoader, METHOD_PATTERN, application);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
         return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;

@@ -98,13 +98,9 @@ class HibernatePluginSupport {
             }
         }
 
-        for (String datasourceName in datasourceNames) {
-            boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
-            String suffix = isDefault ? '' : '_' + datasourceName
-            ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT,
-                new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(),
-                    UniqueConstraint, "sessionFactory$suffix"))
-        }
+        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT,
+            new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(),
+                UniqueConstraint))
 
         proxyHandler(HibernateProxyHandler)
 

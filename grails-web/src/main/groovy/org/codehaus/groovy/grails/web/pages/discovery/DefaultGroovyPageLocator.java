@@ -97,7 +97,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         }
         return scriptSource;
     }
-    
+
     protected Resource findReloadablePage(final String uri) {
         Resource resource = findResource(uri);
         if (resource == null) {
@@ -168,7 +168,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         }
         return scriptSource;
     }
-    
+
     protected GroovyPageCompiledScriptSource createGroovyPageCompiledScriptSource(final String uri, String fullPath, Class<?> viewClass) {
         GroovyPageCompiledScriptSource scriptSource = new GroovyPageCompiledScriptSource(uri, fullPath,viewClass);
         if(reloadEnabled) {
@@ -218,7 +218,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
 
         return null;
     }
-    
+
     protected Resource findResourceInPlugins(String uri) {
         if (pluginManager == null) {
             return null;
@@ -319,7 +319,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     protected Resource findResource(String uri) {
         return findResource(resolveSearchPaths(uri));
     }
-    
+
     protected Resource findResource(List<String> searchPaths) {
         Resource foundResource = null;
         Resource resource;
@@ -360,7 +360,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         public String basePath;
         public String pluginName;
         public String path;
-        
+
         public PluginViewPathInfo(String uri) {
             basePath = uri.substring(PLUGINS_PATH.length(), uri.length());
             int i = basePath.indexOf("/");

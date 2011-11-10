@@ -65,9 +65,9 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
     public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
     public static final String DEFAULT_ENCODING = "UTF-8";
-    
+
     private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
-    private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";    
+    private static final String MULTILINE_GROOVY_STRING_SINGLEQUOTES="'''";
 
     private GroovyPageScanner scan;
     private GSPWriter out;
@@ -1128,7 +1128,7 @@ public class GroovyPageParser implements Tokens {
         }
         currentlyBufferingWhitespace = false;
     }
-    
+
     private void populateMapWithAttributes(Map<String, String> attrs, String attrTokens) {
         attrTokens = attrTokens.trim();
         int startPos=0;
@@ -1172,7 +1172,7 @@ public class GroovyPageParser implements Tokens {
                     if(quoteChar=='"') {
                         quoteStr=MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
                     } else {
-                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;    
+                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;
                     }
                 } else {
                     quoteStr = String.valueOf(quoteChar);

@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import grails.util.Holders;
-
 import java.util.Locale;
 import java.util.Map;
 

@@ -39,6 +39,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class ControllerTagLibraryApi extends CommonWebApi {
 
+    private static final long serialVersionUID = 1;
+
     private TagLibraryLookup tagLibraryLookup;
 
     public ControllerTagLibraryApi(GrailsPluginManager pluginManager) {

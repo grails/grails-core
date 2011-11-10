@@ -54,7 +54,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     public static final String GSP_SUFFIX = ".gsp";
     public static final String JSP_SUFFIX = ".jsp";
-    
+
     protected GroovyPagesTemplateEngine templateEngine;
     protected GrailsConventionGroovyPageLocator groovyPageLocator;
 
@@ -87,7 +87,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         }
 
         CacheEntry<View> entry = VIEW_CACHE.get(viewName);
-        
+
         final String lookupViewName = viewName;
         PrivilegedAction<View> updater=new PrivilegedAction<View>() {
             public View run() {
@@ -99,9 +99,9 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
                 }
             }
         };
-        
+
         View view=null;
-        
+
         if(entry==null) {
             try {
                 view = updater.run();
@@ -112,28 +112,28 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             VIEW_CACHE.put(viewName, entry);
             return view;
         }
-        
+
         try {
             view = entry.getValue(cacheTimeout, updater);
         } catch (WrappedInitializationException e) {
             e.rethrow();
         }
-        
+
         return view;
     }
-    
+
     private static class WrappedInitializationException extends RuntimeException {
         private static final long serialVersionUID = 1L;
         public WrappedInitializationException(Throwable cause) {
             super(cause);
         }
-        
+
         public void rethrow() throws Exception {
-            if(getCause() instanceof Exception) {
+            if (getCause() instanceof Exception) {
                 throw (Exception)getCause();
-            } else {
-                throw this;
-            }            
+            }
+
+            throw this;
         }
     }
 

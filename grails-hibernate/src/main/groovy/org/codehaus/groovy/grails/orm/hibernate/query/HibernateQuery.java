@@ -419,10 +419,6 @@ public class HibernateQuery extends Query {
         private org.hibernate.criterion.Junction hibernateJunction;
         @SuppressWarnings("hiding") private String alias;
 
-        public HibernateJunction(org.hibernate.criterion.Junction junction) {
-            hibernateJunction = junction;
-        }
-
         public HibernateJunction(org.hibernate.criterion.Junction junction, String alias) {
             hibernateJunction = junction;
             this.alias = alias;
@@ -438,7 +434,6 @@ public class HibernateQuery extends Query {
                     }
                 }
                 else {
-
                     HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(c, alias);
                     org.hibernate.criterion.Criterion criterion = adapter.toHibernateCriterion(HibernateQuery.this);
                     if (criterion != null) {
@@ -611,7 +606,6 @@ public class HibernateQuery extends Query {
             return this;
         }
 
-
         @Override
         public Query and(Criterion a, Criterion b) {
             HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
@@ -626,7 +620,6 @@ public class HibernateQuery extends Query {
             HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
             addToCriteria(Restrictions.or(aa.toHibernateCriterion(HibernateQuery.this), ab.toHibernateCriterion(HibernateQuery.this)));
             return this;
-
         }
 
         @Override
@@ -693,10 +686,6 @@ public class HibernateQuery extends Query {
         public Query rlike(String property, String expr) {
             addToCriteria(new RlikeExpression(calculatePropertyName(property), calculatePropertyName(expr)));
             return this;
-        }
-
-        public void setJunction(org.hibernate.criterion.Junction junction) {
-            hibernateJunction = junction;
         }
     }
 

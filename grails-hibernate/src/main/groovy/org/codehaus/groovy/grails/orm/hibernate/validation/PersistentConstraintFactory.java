@@ -30,14 +30,8 @@ public class PersistentConstraintFactory implements ConstraintFactory {
 
     private Class<?> constraintClass;
     private ApplicationContext applicationContext;
-    private String sessionFactoryBeanName;
 
     public PersistentConstraintFactory(ApplicationContext applicationContext, Class<?> persistentConstraint) {
-        this(applicationContext, persistentConstraint, "sessionFactory");
-    }
-
-    public PersistentConstraintFactory(ApplicationContext applicationContext,
-            Class<?> persistentConstraint, String sessionFactoryBeanName) {
 
         Assert.notNull(applicationContext, "Argument [applicationContext] cannot be null");
 
@@ -48,14 +42,12 @@ public class PersistentConstraintFactory implements ConstraintFactory {
 
         this.applicationContext = applicationContext;
         this.constraintClass = persistentConstraint;
-        this.sessionFactoryBeanName = sessionFactoryBeanName;
     }
 
     public Constraint newInstance() {
         try {
             PersistentConstraint instance = (PersistentConstraint)constraintClass.newInstance();
             instance.setApplicationContext(applicationContext);
-            instance.setSessionFactoryBeanName(sessionFactoryBeanName);
             return instance;
         }
         catch (InstantiationException e) {

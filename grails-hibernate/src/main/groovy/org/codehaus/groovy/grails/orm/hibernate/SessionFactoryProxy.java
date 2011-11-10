@@ -98,7 +98,6 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
         }
     }
 
-
     /**
      * The class to use for the current session context
      *
@@ -121,7 +120,7 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
      * @return The current SessionFactoryImplementor being proxied
      */
     public SessionFactoryImplementor getCurrentSessionFactoryImplementor() {
-         return (SessionFactoryImplementor) getCurrentSessionFactory();
+        return (SessionFactoryImplementor) getCurrentSessionFactory();
     }
 
     public Session openSession() throws HibernateException {
@@ -410,7 +409,6 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
             Class<? extends SessionFactory> sessionFactoryClass = sessionFactory.getClass();
             Field currentSessionContextField = sessionFactoryClass.getDeclaredField("currentSessionContext");
             if (currentSessionContextField != null) {
-
                 ReflectionUtils.makeAccessible(currentSessionContextField);
                 currentSessionContextField.set(sessionFactory, ssc);
             }
