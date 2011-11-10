@@ -41,6 +41,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.FrameworkServlet;
+import org.springframework.web.util.WebUtils;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -116,7 +117,9 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 
-        if (isSecurePath(pageName)) {
+
+        boolean isNotInclude = !WebUtils.isIncludeRequest(request) ;
+        if (isNotInclude && isSecurePath(pageName)) {
             sendNotFound(response, pageName);
         }
         else {
@@ -127,7 +130,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
                 scriptSource = findPageInBinaryPlugins(pageName);
             }
 
-            if (scriptSource == null || !scriptSource.isPublic()) {
+            if (scriptSource == null || (isNotInclude && !scriptSource.isPublic())) {
                 sendNotFound(response, pageName);
                 return;
             }
