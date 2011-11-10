@@ -85,11 +85,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      */
     GrailsWebRequest webRequest
     /**
-     * The {@link MockHttpServletRequest} object
+     * The {@link GrailsMockHttpServletRequest} object
      */
     GrailsMockHttpServletRequest request
     /**
-     * The {@link MockHttpServletResponse} object
+     * The {@link GrailsMockHttpServletResponse} object
      */
     GrailsMockHttpServletResponse response
 
