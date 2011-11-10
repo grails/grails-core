@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.io.support;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,18 +54,7 @@ public class GrailsResourceUtils {
      */
     public static final String VIEWS_DIR_PATH = GRAILS_APP_DIR + "/views/";
 
-    public static final String REGEX_FILE_SEPARATOR;
-
-    static {
-
-        if (File.separator.equals("\\")) {
-            REGEX_FILE_SEPARATOR = "\\\\"; // backslashes need escaping in regexes
-        }
-        else {
-            REGEX_FILE_SEPARATOR = File.separator;
-        }
-
-    }
+    public static final String REGEX_FILE_SEPARATOR = "[\\\\/]"; // backslashes need escaping in regexes
 
     /*
      Domain path is always matched against the normalized File representation of an URL and

@@ -26,22 +26,21 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
  * @author Graeme Rocher
  * @since 0.4
  */
-abstract class AbstractPersistentConstraint extends AbstractConstraint implements PersistentConstraint {
+public abstract class AbstractPersistentConstraint extends AbstractConstraint implements PersistentConstraint {
+
+    public static ThreadLocal<SessionFactory> sessionFactory = new ThreadLocal<SessionFactory>();
 
     protected ApplicationContext applicationContext;
-    protected SessionFactory sessionFactory;
-    protected String sessionFactoryBeanName;
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
-    public void setSessionFactoryBeanName(String name) {
-        sessionFactoryBeanName = name;
-    }
-
     public HibernateTemplate getHibernateTemplate() {
-        return new HibernateTemplate(
-            applicationContext.getBean(sessionFactoryBeanName, SessionFactory.class), true);
+        SessionFactory sf = sessionFactory.get();
+        if (sf == null) {
+            sf = applicationContext.getBean("sessionFactory", SessionFactory.class);
+        }
+        return new HibernateTemplate(sf, true);
     }
 }
