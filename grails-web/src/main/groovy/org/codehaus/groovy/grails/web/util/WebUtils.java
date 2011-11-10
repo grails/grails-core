@@ -49,6 +49,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -381,7 +382,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
         exposeIncludeRequestAttributes(request);
 
-        exposeRequestAttributes(request, model);
+        Map toRestore = exposeRequestAttributesAndReturnOldValues(request, model);
 
         try {
             final IncludeResponseWrapper responseWrapper = new IncludeResponseWrapper(response);
@@ -401,16 +402,36 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
         }
         finally {
-            cleanupIncludeRequestAttributes(request);
+            cleanupIncludeRequestAttributes(request, toRestore);
         }
     }
 
-    private static void cleanupIncludeRequestAttributes(HttpServletRequest request) {
+    private static Map<String, Object> exposeRequestAttributesAndReturnOldValues(HttpServletRequest request, Map<String, ?> attributes) {
+        Assert.notNull(request, "Request must not be null");
+        Assert.notNull(attributes, "Attributes Map must not be null");
+        Map<String, Object> originalValues = new HashMap<String, Object>();
+        for (Map.Entry<String, ?> entry : attributes.entrySet()) {
+            String name = entry.getKey();
+            Object current = request.getAttribute(name);
+            request.setAttribute(name, entry.getValue());
+            if(current != null) {
+                originalValues.put(name, current);
+            }
+        }
+
+        return originalValues;
+    }
+
+    private static void cleanupIncludeRequestAttributes(HttpServletRequest request, Map<String, Object> toRestore) {
         request.removeAttribute(INCLUDE_REQUEST_URI_ATTRIBUTE);
         request.removeAttribute(INCLUDE_CONTEXT_PATH_ATTRIBUTE);
         request.removeAttribute(INCLUDE_SERVLET_PATH_ATTRIBUTE);
         request.removeAttribute(INCLUDE_PATH_INFO_ATTRIBUTE);
         request.removeAttribute(INCLUDE_QUERY_STRING_ATTRIBUTE);
+
+        for (Map.Entry<String, Object> entry : toRestore.entrySet()) {
+            request.setAttribute(entry.getKey(), entry.getValue());
+        }
     }
 
     /**

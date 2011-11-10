@@ -15,12 +15,14 @@ class IncludeHandlingSpec extends Specification{
 
     void "Test the appropriate request headers are set and URI of a page included"() {
         given:"A template that includes a view"
-            views['/foo/_bar.gsp'] = "Include = <g:include view='/foo/include.gsp'/>"
+            views['/foo/_bar.gsp'] = 'Include = <g:include view="/foo/include.gsp" model="[foo:\'bar\']"/>'
 
         when:"The template is rendered"
+            request.foo = "dontchange"
             def content = render(template:"/foo/bar")
 
         then:"The include status is valid"
+            request.foo == "dontchange"
             content == "Include = "
             response.includedUrls
             response.includedUrls[0] == '/foo/include.gsp'
