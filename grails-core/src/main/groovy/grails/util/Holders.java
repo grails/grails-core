@@ -21,8 +21,6 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -50,8 +48,6 @@ public class Holders {
 
     private static GrailsApplication applicationSingleton; // TODO remove
 
-    private static final Log LOG = LogFactory.getLog(Holders.class);
-
     private Holders() {
         // static only
     }
@@ -73,11 +69,9 @@ public class Holders {
             return (GrailsApplication)getApplicationContext().getBean(APPLICATION_BEAN_NAME);
         }
         catch (IllegalStateException e) {
-            LOG.error("ApplicationContext not found in ServletContext or no thread-bound ServletContext found, returning singleton");
             return applicationSingleton;
         }
         catch (IllegalArgumentException e) {
-            LOG.error("No thread-bound ServletContext found, returning singleton");
             return applicationSingleton;
         }
     }
