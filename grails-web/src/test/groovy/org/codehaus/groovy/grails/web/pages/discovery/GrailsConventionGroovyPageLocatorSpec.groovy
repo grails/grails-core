@@ -18,6 +18,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.mock.web.MockServletContext
 import org.codehaus.groovy.grails.web.pages.GroovyPageCompiler
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
+import org.springframework.core.io.Resource
 
 class GrailsConventionGroovyPageLocatorSpec extends Specification {
 
@@ -246,3 +247,19 @@ class TestController {}
 
 @GrailsPlugin(name="core", version="0.1")
 class PluginController {}
+
+class MockBinaryPluginResource extends ByteArrayResource {
+
+    Map<String, Resource> relativesResources = [:]
+
+    MockBinaryPluginResource(byte[] byteArray) {
+        super(byteArray)
+    }
+
+    @Override
+    Resource createRelative(String relativePath) {
+        return relativesResources[relativePath]
+    }
+
+
+}
