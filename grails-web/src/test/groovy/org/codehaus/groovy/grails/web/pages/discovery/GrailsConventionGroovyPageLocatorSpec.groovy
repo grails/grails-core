@@ -33,8 +33,8 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
         given: "a simple resource loader with a path to the view"
             resourceLoader.resources["/grails-app/views/test/_bar.gsp"] = new ByteArrayResource("contents".bytes) {
                 @Override
-                URI getURI() {
-                    return new URI("/grails-app/views/test/_bar.gsp")
+                URL getURL() {
+                    return new URL("file://myapp/grails-app/views/test/_bar.gsp")
                 }
 
             }
@@ -133,8 +133,8 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
         given: "a simple resource loader with a path to the view"
             resourceLoader.resources["/grails-app/views/foo/bar.gsp"] = new ByteArrayResource("contents".bytes) {
                 @Override
-                URI getURI() {
-                    return new URI("/grails-app/views/foo/bar.gsp")
+                URL getURL() {
+                    return new URL("file://myapp/grails-app/views/foo/bar.gsp")
                 }
 
             }
