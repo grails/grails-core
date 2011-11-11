@@ -15,13 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.pages.discovery;
 
+import java.io.IOException;
+import java.net.URL;
+
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.support.ResourceScriptSource;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 
 public class GroovyPageResourceScriptSource extends ResourceScriptSource implements GroovyPageScriptSource {
 
@@ -62,7 +61,7 @@ public class GroovyPageResourceScriptSource extends ResourceScriptSource impleme
     /**
      * Whether the GSP is publicly accessible directly, or only usable using internal rendering
      *
-     * @return True if it can be rendered publicly
+     * @return true if it can be rendered publicly
      */
     public boolean isPublic() {
         return isPublic;

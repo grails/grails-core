@@ -49,7 +49,7 @@ public class GroovyPageCompiledScriptSource implements GroovyPageScriptSource {
     /**
      * Whether the GSP is publicly accessible directly, or only usable using internal rendering
      *
-     * @return True if it can be rendered publicly
+     * @return true if it can be rendered publicly
      */
     public boolean isPublic() {
         return isPublic;
