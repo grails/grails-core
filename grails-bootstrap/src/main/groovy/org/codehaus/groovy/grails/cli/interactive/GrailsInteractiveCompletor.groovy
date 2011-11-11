@@ -80,7 +80,7 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     }
 
     static String[] getScriptNames(scriptResources) {
-        final scriptNames = scriptResources.collect { GrailsNameUtils.getScriptName(it.file.name) }
+        final scriptNames = scriptResources.collect { GrailsNameUtils.getScriptName(it.filename) }
         scriptNames.remove('create-app')
         scriptNames << "open"
         scriptNames as String[]
