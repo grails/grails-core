@@ -47,7 +47,6 @@ import org.grails.datastore.gorm.GormStaticApi;
 @AstTransformer
 public class GormTransformer extends AbstractGrailsArtefactTransformer {
 
-    public static final String MISSING_GORM_ERROR_MESSAGE = "Cannot locate GORM API implementation. You either don't have a GORM implementation installed (such as the Hibernate plugin) or you are running Grails code outside the context of a Grails application.";
     public static final String NEW_INSTANCE_METHOD = "newInstance";
 
     private static final List<String> EXCLUDES = Arrays.asList("create", "setTransactionManager");
@@ -61,14 +60,6 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
                 !isGetter(methodName, declaredMethod) &&
                 !isSetter(methodName, declaredMethod) &&
                 super.isStaticCandidateMethod(classNode, declaredMethod);
-    }
-
-    @Override
-    protected boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {
-        String methodName = declaredMethod.getName();
-        return !isGetter(methodName, declaredMethod) &&
-               !isSetter(methodName, declaredMethod) &&
-                super.isCandidateInstanceMethod(classNode, declaredMethod);
     }
 
     private boolean isSetter(String methodName, MethodNode declaredMethod) {

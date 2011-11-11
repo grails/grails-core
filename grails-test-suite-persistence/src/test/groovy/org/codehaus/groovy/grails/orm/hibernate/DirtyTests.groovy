@@ -133,18 +133,18 @@ class DirtyTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass("""
+import grails.persistence.*
+
+@Entity
 class Dirt {
-    Long id
-    Long version
 
     String pr1
     Date pr2
     Integer pr3
 }
 
+@Entity
 class DirtWithValidator {
-    Long id
-    Long version
 
     String pr1
     Date pr2
