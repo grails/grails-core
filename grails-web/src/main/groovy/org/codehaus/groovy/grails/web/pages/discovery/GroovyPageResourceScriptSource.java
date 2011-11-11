@@ -21,6 +21,7 @@ import org.springframework.scripting.support.ResourceScriptSource;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 
 public class GroovyPageResourceScriptSource extends ResourceScriptSource implements GroovyPageScriptSource {
 
@@ -30,15 +31,21 @@ public class GroovyPageResourceScriptSource extends ResourceScriptSource impleme
     /**
      * Create a new ResourceScriptSource for the given resource.
      *
+     * @param uri The URI of the resource
      * @param resource the Resource to load the script from
      */
     public GroovyPageResourceScriptSource(String uri, Resource resource) {
         super(resource);
         this.uri = uri;
         try {
-            URI u = getResource().getURI();
-            String path = u.getPath();
-            isPublic = isPublicPath(path);
+            URL u = getResource().getURL();
+            if(u != null) {
+                String path = u.getPath();
+                isPublic = isPublicPath(path);
+            }
+            else {
+                isPublic = isPublicPath(uri);
+            }
         } catch (IOException e) {
             isPublic = isPublicPath(uri);
         }
