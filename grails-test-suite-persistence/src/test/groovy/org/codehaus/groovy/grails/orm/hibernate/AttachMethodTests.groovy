@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -12,6 +14,7 @@ class AttachMethodTests extends AbstractGrailsHibernateTests {
         [AttachMethod]
     }
 
+
     void testAttachMethod() {
         def testClass = ga.getDomainClass(AttachMethod.name).clazz
 
@@ -20,8 +23,9 @@ class AttachMethodTests extends AbstractGrailsHibernateTests {
         assertNotNull test.save(flush:true)
 
         assertTrue session.contains(test)
-        assertTrue test.isAttached()
         assertTrue test.attached
+        assertTrue test.isAttached()
+
 
         test.discard()
 
@@ -41,8 +45,7 @@ class AttachMethodTests extends AbstractGrailsHibernateTests {
     }
 }
 
+@Entity
 class AttachMethod {
-    Long id
-    Long version
     String name
 }
