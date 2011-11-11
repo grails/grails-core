@@ -170,7 +170,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication.setApplicationContext(ctx)
 
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication)
-        ctx.registerMockBean("pluginManager", mockManager) 
+        ctx.registerMockBean("pluginManager", mockManager)
 
         grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, mockControllerClass)
 
@@ -181,7 +181,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
         onInitMockBeans()
-        
+
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
@@ -221,10 +221,10 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         GroovySystem.metaClassRegistry.removeMetaClass(String)
         GroovySystem.metaClassRegistry.removeMetaClass(Object)
-        
+
         // Why are the TagLibClasses removed?
         //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
-        
+
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         initThemeSource(request, messageSource)
@@ -252,7 +252,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     protected void onInit() {}
     protected void onDestroy() {}
-    protected void onInitMockBeans() {} 
+    protected void onInitMockBeans() {}
 
     protected MockServletContext createMockServletContext() { new MockServletContext() }
 

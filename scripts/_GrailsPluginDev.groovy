@@ -67,14 +67,14 @@ target(packagePlugin: "Implementation target") {
     if (plugin?.hasProperty('pluginExcludes')) {
         pluginInfo.pluginExcludes = plugin.pluginExcludes
     }
-    
+
     if (argsMap.binary) {
         pluginInfo.packaging = "binary"
         plugin?.packaging = "binary"
     }
     else if (argsMap.source) {
         pluginInfo.packaging = "source"
-        plugin?.packaging = "source"        
+        plugin?.packaging = "source"
     }
     else if (plugin?.hasProperty('packaging')) {
         pluginInfo.packaging = plugin.packaging

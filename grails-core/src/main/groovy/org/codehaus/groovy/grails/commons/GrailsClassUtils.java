@@ -715,7 +715,7 @@ public class GrailsClassUtils {
         }
         return null;
     }
-    
+
     /**
      * <p>Looks for a property of the reference instance with a given name.</p>
      * <p>If found its value is returned. We follow the Java bean conventions with augmentation for groovy support

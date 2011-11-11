@@ -139,7 +139,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("junit", "junit", junitVersion),
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
-                        
+
                         ModuleRevisionId[] antDependencies = {
                                 ModuleRevisionId.newInstance("org.apache.ant", "ant", antVersion),
                                 ModuleRevisionId.newInstance("org.apache.ant", "ant-launcher", antVersion),
