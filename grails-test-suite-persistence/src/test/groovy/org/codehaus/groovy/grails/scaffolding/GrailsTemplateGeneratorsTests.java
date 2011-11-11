@@ -78,14 +78,14 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
 
         assertEquals("TestController", controllerClass.getName());
 
-        verifyMethod(controllerClass, "create");
-        verifyMethod(controllerClass, "delete");
-        verifyMethod(controllerClass, "edit");
-        verifyMethod(controllerClass, "index");
-        verifyMethod(controllerClass, "list");
-        verifyMethod(controllerClass, "save");
-        verifyMethod(controllerClass, "show");
-        verifyMethod(controllerClass, "update");
+        verifyMethod(controllerClass, "create", new Class[0]);
+        verifyMethod(controllerClass, "delete", new Class[] { Long.class });
+        verifyMethod(controllerClass, "edit", new Class[] { Long.class });
+        verifyMethod(controllerClass, "index", new Class[0]);
+        verifyMethod(controllerClass, "list", new Class[] { Integer.class });
+        verifyMethod(controllerClass, "save", new Class[0]);
+        verifyMethod(controllerClass, "show", new Class[] { Long.class });
+        verifyMethod(controllerClass, "update", new Class[] { Long.class, Long.class });
 
         Object propertyValue = GrailsClassUtils.getStaticPropertyValue(controllerClass, "allowedMethods");
         assertTrue("allowedMethods property was the wrong type", propertyValue instanceof Map);
@@ -99,12 +99,11 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         assertEquals("allowedMethods had incorrect value for update action", "POST", map.get("update"));
     }
 
-    private void verifyMethod(Class<?> controllerClass, String name) throws SecurityException, NoSuchMethodException {
-        Method method = controllerClass.getMethod(name);
+    private void verifyMethod(Class<?> controllerClass, String name, Class[] args) throws SecurityException, NoSuchMethodException {
+        Method method = controllerClass.getMethod(name, args);
         assertTrue(Modifier.isPublic(method.getModifiers()));
         assertFalse(Modifier.isFinal(method.getModifiers()));
         assertSame(Object.class, method.getReturnType());
-        assertEquals(0, method.getParameterTypes().length);
     }
 
     public void testGenerateViews() throws Exception {
