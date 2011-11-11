@@ -133,9 +133,10 @@ class GroovyPageServletSpec extends Specification{
     protected def nonPublicGsgPage() {
         resourceLoader.resources['/WEB-INF/grails-app/views/foo/nonPublic.gsp'] = new ByteArrayResource("Hello".bytes) {
             @Override
-            URI getURI() {
-                return new URI('/WEB-INF/grails-app/views/foo/nonPublic.gsp')
+            URL getURL() {
+                new URL('http://localhost/WEB-INF/grails-app/views/foo/nonPublic.gsp')
             }
+
 
         }
     }
@@ -143,10 +144,9 @@ class GroovyPageServletSpec extends Specification{
     protected def publicGsgPage() {
         resourceLoader.resources['/foo/public.gsp'] = new ByteArrayResource("Hello".bytes) {
             @Override
-            URI getURI() {
-                return new URI('/foo/public.gsp')
+            URL getURL() {
+                return new URL('http://localhost/foo/public.gsp')
             }
-
         }
     }
 

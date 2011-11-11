@@ -87,7 +87,8 @@ class GrailsProjectCompiler {
         initializeSrcDirectories()
         initializeAntClasspaths()
 
-        javaOptions.source = buildSettings.compilerSourceLevel
+        if(buildSettings.compilerSourceLevel)
+            javaOptions.source = buildSettings.compilerSourceLevel
         javaOptions.target = buildSettings.compilerTargetLevel
 
 

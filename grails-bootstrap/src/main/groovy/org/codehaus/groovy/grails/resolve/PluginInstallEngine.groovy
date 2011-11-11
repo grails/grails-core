@@ -446,25 +446,28 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                     }
                 }
                 else {
-                    if(dependencyConfiguration.name != 'runtime') continue
                     def pluginJars = resolveReport.getArtifactsReports(null, false).localFile
-                    def pluginZips = pluginJars.findAll { it.name.endsWith(".zip")}
-                    def allPluginZips = new HashSet(settings.pluginDependencies)
-                    allPluginZips.addAll(pluginZips)
+                    if(dependencyConfiguration.name == 'runtime') {
+                        def pluginZips = pluginJars.findAll { it.name.endsWith(".zip")}
+                        def allPluginZips = new HashSet(settings.pluginDependencies)
+                        allPluginZips.addAll(pluginZips)
 
-                    runtimeDependencies.each { runtimePluginName, runtimePluginVersion ->
-                        def declaredPluginZip = allPluginZips.find { it.name ==~ /$runtimePluginName-\S+\.zip/}
-                        if(declaredPluginZip == null) {
-                            grails.build.logging.GrailsConsole.getInstance().warn("""
-        Plugin declares a runtime dependency on plugin [$runtimePluginName: $runtimePluginVersion] but does not define the plugin within its transitive metadata. Contact the plugin author to fix this problem or declare the plugin yourself inside BuildConfig.groovy. Example:
-        ...
-        plugins {
-           compile ":$runtimePluginName:$runtimePluginVersion"
-        }
-        """)
+                        runtimeDependencies.each { runtimePluginName, runtimePluginVersion ->
+                            def declaredPluginZip = allPluginZips.find { it.name ==~ /$runtimePluginName-\S+\.zip/}
+                            if(declaredPluginZip == null) {
+                                grails.build.logging.GrailsConsole.getInstance().warn("""
+            Plugin declares a runtime dependency on plugin [$runtimePluginName: $runtimePluginVersion] but does not define the plugin within its transitive metadata. Contact the plugin author to fix this problem or declare the plugin yourself inside BuildConfig.groovy. Example:
+            ...
+            plugins {
+               compile ":$runtimePluginName:$runtimePluginVersion"
+            }
+            """)
+                            }
+
                         }
 
                     }
+
                     addJarsToRootLoader dependencyConfiguration, pluginJars
                 }
             }
