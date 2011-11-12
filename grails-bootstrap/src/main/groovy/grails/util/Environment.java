@@ -378,6 +378,19 @@ public enum Environment {
     }
 
     /**
+     * @return true if the reloading agent is active
+     */
+    public static boolean isReloadingAgentEnabled() {
+        try {
+            Class.forName("com.springsource.loaded.TypeRegistry");
+            return true;
+        }
+        catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
      * @return Obtains the location to reload resources from
      */
     public String getReloadLocation() {
