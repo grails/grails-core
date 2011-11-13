@@ -51,7 +51,6 @@ public class GroovyPageCompiledScriptSource implements GroovyPageScriptSource {
      *
      * @return True if it can be rendered publicly
      */
-    @Override
     public boolean isPublic() {
         return isPublic;
     }
