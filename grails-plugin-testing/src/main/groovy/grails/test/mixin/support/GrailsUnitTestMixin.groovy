@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.context.support.StaticMessageSource
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.springframework.context.MessageSource
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -55,10 +56,7 @@ class GrailsUnitTestMixin {
     static ConfigObject config
     static MessageSource messageSource
 
-    private static Set changedMetaClasses = []
-    private static metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
-        GrailsUnitTestMixin.changedMetaClasses << event.getClassToUpdate()
-    } as MetaClassRegistryChangeEventListener
+    private static metaClassRegistryListener = new MetaClassRegistryCleaner()
 
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
@@ -114,10 +112,8 @@ class GrailsUnitTestMixin {
 
 
     static void cleanupModifiedMetaClasses() {
+        metaClassRegistryListener.clean()
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
-        for(Class cls in changedMetaClasses) {
-            GroovySystem.metaClassRegistry.removeMetaClass(cls)
-        }
     }
 
     /**
@@ -227,6 +223,5 @@ class GrailsUnitTestMixin {
 
         applicationContext = null
         grailsApplication = null
-        changedMetaClasses.clear()
     }
 }
