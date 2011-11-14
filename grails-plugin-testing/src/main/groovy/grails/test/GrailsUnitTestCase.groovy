@@ -77,6 +77,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
         super.tearDown()
 
         registryCleaner.clean()
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
         ShutdownOperations.runOperations()
         MockUtils.TEST_INSTANCES.clear()
         ConfigurationHolder.config = previousConfig

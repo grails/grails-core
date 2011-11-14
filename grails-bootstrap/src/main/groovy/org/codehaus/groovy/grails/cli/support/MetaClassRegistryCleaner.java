@@ -38,11 +38,15 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
 
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
         MetaClass oldMetaClass = cmcu.getOldMetaClass();
+        Class classToUpdate = cmcu.getClassToUpdate();
         if(oldMetaClass != null) {
-            alteredClasses.put(cmcu.getClassToUpdate(), oldMetaClass);
+            Object current = alteredClasses.get(classToUpdate);
+            if(current == null || current == NO_CUSTOM_METACLASS) {
+                alteredClasses.put(classToUpdate, oldMetaClass);
+            }
         }
         else {
-            alteredClasses.put(cmcu.getClassToUpdate(), NO_CUSTOM_METACLASS);
+            alteredClasses.put(classToUpdate, NO_CUSTOM_METACLASS);
         }
     }
 
