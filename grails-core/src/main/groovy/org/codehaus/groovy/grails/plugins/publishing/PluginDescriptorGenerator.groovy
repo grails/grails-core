@@ -22,6 +22,11 @@ import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.documentation.DocumentedProperty
 import org.springframework.core.io.Resource
+import grails.util.BuildSettings
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor
+import org.apache.ivy.plugins.resolver.URLResolver
+import org.apache.ivy.plugins.resolver.IBiblioResolver
+import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
 
 /**
  * Generates the plugin.xml descriptor.
@@ -36,13 +41,16 @@ class PluginDescriptorGenerator {
     String pluginName
     Resource[] resourceList
     List excludes = ["UrlMappings", "DataSource", "BuildConfig", "Config"]
+    BuildSettings buildSettings
 
-    PluginDescriptorGenerator(String pluginName, List<Resource> resourceList) {
+    PluginDescriptorGenerator(BuildSettings buildSettings, pluginName, List<Resource> resourceList) {
+        this.buildSettings = buildSettings
         this.pluginName = pluginName
         this.resourceList = resourceList.toArray()
     }
 
-    PluginDescriptorGenerator(String pluginName, Resource[] resourceList) {
+    PluginDescriptorGenerator(BuildSettings buildSettings, String pluginName, Resource[] resourceList) {
+        this.buildSettings = buildSettings
         this.pluginName = pluginName
         this.resourceList = resourceList
     }
@@ -99,7 +107,36 @@ class PluginDescriptorGenerator {
                         }
                     }
                 }
-                dependencies {
+                final dependencyManager = buildSettings?.dependencyManager
+                if(dependencyManager) {
+                    repositories {
+                        final resolvers = dependencyManager.chainResolver.resolvers
+                        for(r in resolvers) {
+                            if(r instanceof IBiblioResolver) {
+                                xml.repository(name:r.name, url:r.root )
+                            }
+                            else if(r instanceof GrailsRepoResolver) {
+                                xml.repository(name:r.name, url:r.repositoryRoot.toString() )
+                            }
+                        }
+                    }
+                    final scopes = dependencyManager.configurationNames
+                    dependencies {
+                        for(scope in scopes) {
+                            xml."$scope" {
+                                final descriptors = dependencyManager.getApplicationDependencyDescriptors(scope)
+                                if(descriptors) {
+                                    for(DependencyDescriptor dd in descriptors) {
+                                        final mrid = dd.dependencyRevisionId
+                                        xml.dependency(group:mrid.organisation, name:mrid.name, version:mrid.revision)
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+                runtimeDependencies {
                     if (pluginProps["dependsOn"]) {
                         for (d in pluginProps.dependsOn) {
                             delegate.plugin(name: d.key, version: d.value)
