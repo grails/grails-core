@@ -123,20 +123,27 @@ class PluginDescriptorGenerator {
                     final scopes = dependencyManager.configurationNames
                     dependencies {
                         for(scope in scopes) {
-                            xml."$scope" {
-                                final descriptors = dependencyManager.getApplicationDependencyDescriptors(scope)
-                                if(descriptors) {
-                                    for(DependencyDescriptor dd in descriptors) {
+
+                            final jarDependencies = dependencyManager.getApplicationDependencyDescriptors(scope)
+                            final pluginDependencies = dependencyManager.getApplicationPluginDependencyDescriptors(scope)
+
+                            if(jarDependencies || pluginDependencies) {
+                                xml."$scope" {
+                                    for(DependencyDescriptor dd in jarDependencies) {
                                         final mrid = dd.dependencyRevisionId
                                         xml.dependency(group:mrid.organisation, name:mrid.name, version:mrid.revision)
                                     }
+                                    for(DependencyDescriptor dd in pluginDependencies) {
+                                        final mrid = dd.dependencyRevisionId
+                                        xml.plugin(group:mrid.organisation, name:mrid.name, version:mrid.revision)
+                                    }
                                 }
-
                             }
+
                         }
                     }
                 }
-                runtimeDependencies {
+                runtimePluginRequirements {
                     if (pluginProps["dependsOn"]) {
                         for (d in pluginProps.dependsOn) {
                             delegate.plugin(name: d.key, version: d.value)

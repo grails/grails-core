@@ -122,7 +122,7 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
 
     // Use MarkupBuilder with indenting to generate the file.
     pluginXml.withWriter { writer ->
-        def generator = new PluginDescriptorGenerator(pluginName, resourceList)
+        def generator = new PluginDescriptorGenerator(grailsSettings, pluginName, resourceList)
 
         pluginProps["type"] = descriptor.name - '.groovy'
         generator.generatePluginXml(pluginProps, writer)

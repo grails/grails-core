@@ -178,6 +178,16 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     /**
+     * Returns all of the dependency descriptors for dependencies of the application and not
+     * those inherited from frameworks or plugins
+     */
+    Set<DependencyDescriptor> getApplicationPluginDependencyDescriptors(String scope = null) {
+        pluginDependencyDescriptors.findAll { EnhancedDefaultDependencyDescriptor dd ->
+            !dd.inherited && dd.exported && (!scope || dd.scope == scope)
+        }
+    }
+
+    /**
     * Returns all the dependency descriptors for dependencies of a plugin that have been exported for use in the application
     */
     Set<DependencyDescriptor> getExportedDependencyDescriptors(String scope = null) {

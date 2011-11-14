@@ -56,7 +56,7 @@ target(packagePlugin: "Implementation target") {
     def pluginBaseDir = pluginFile.parentFile.absolutePath
     def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
     pluginInfo = pluginSettings.getPluginInfo(pluginBaseDir)
-    def packager = new PluginPackager(pluginInfo, resourceList, new File(projectWorkDir))
+    def packager = new PluginPackager(grailsSettings, pluginInfo, resourceList, new File(projectWorkDir))
     packager.ant = ant
     packager.resourcesDir = new File(resourcesDirPath)
     packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
