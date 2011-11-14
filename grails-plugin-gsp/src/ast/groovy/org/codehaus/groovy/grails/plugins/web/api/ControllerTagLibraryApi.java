@@ -15,11 +15,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
+import grails.util.Environment;
 import groovy.lang.GroovyObject;
-import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+import groovy.lang.MetaMethod;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
+
+import java.util.List;
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -38,10 +41,11 @@ import org.springframework.context.ApplicationContext;
  * @since 2.0
  */
 public class ControllerTagLibraryApi extends CommonWebApi {
-
+    
     private static final long serialVersionUID = 1;
-
-    private TagLibraryLookup tagLibraryLookup;
+    
+    private transient TagLibraryLookup tagLibraryLookup;
+    private boolean developmentMode = Environment.isDevelopmentMode();
 
     public ControllerTagLibraryApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
@@ -54,6 +58,11 @@ public class ControllerTagLibraryApi extends CommonWebApi {
     @Autowired
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
         this.tagLibraryLookup = tagLibraryLookup;
+    }
+    
+    @Autowired
+    public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
+        this.tagLibraryLookup = gspTagLibraryLookup;
     }
 
     /**
@@ -70,13 +79,14 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         if (lookup != null) {
             GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
             if (tagLibrary != null) {
-                MetaClass controllerMc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
-                WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
-                if (controllerMc.respondsTo(instance,methodName, args).size()>0) {
-                    return controllerMc.invokeMethod(instance, methodName, args);
+                if(!developmentMode) {
+                    MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(instance);
+                    WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
+                }                
+                List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args);
+                if (respondsTo.size()>0) {
+                    return respondsTo.get(0).invoke(tagLibrary, args);
                 }
-
-                throw new MissingMethodException(methodName, instance.getClass(), args);
             }
         }
 
@@ -94,7 +104,9 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         TagLibraryLookup lookup = getTagLibraryLookup();
         NamespacedTagDispatcher namespacedTagDispatcher = lookup.lookupNamespaceDispatcher(propertyName);
         if (namespacedTagDispatcher != null) {
-            WebMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
+            if(!developmentMode) {
+                WebMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
+            }
             return namespacedTagDispatcher;
         }
 

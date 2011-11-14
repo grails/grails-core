@@ -15,14 +15,17 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
+import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+import groovy.lang.MetaMethod;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 
 import java.io.Writer;
+import java.util.List;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
@@ -37,6 +40,8 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 
@@ -47,10 +52,11 @@ import org.springframework.web.context.request.RequestAttributes;
  * @since 2.0
  */
 public class TagLibraryApi extends CommonWebApi {
-
+    
     private static final long serialVersionUID = 1;
-
-    private TagLibraryLookup tagLibraryLookup;
+    
+    private transient TagLibraryLookup tagLibraryLookup;
+    private boolean developmentMode = Environment.isDevelopmentMode();
 
     public TagLibraryApi() {
         super(null);
@@ -116,23 +122,27 @@ public class TagLibraryApi extends CommonWebApi {
      */
     public Object methodMissing(Object instance, String methodName, Object argsObject) {
         Object[] args = argsObject instanceof Object[] ? (Object[])argsObject : new Object[]{argsObject};
-        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
+        MetaClass mc = InvokerHelper.getMetaClass(instance);
         String usednamespace = getNamespace(instance);
         TagLibraryLookup lookup = getTagLibraryLookup();
         if (lookup != null) {
 
-            Object tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName);
+            GroovyObject tagLibrary = lookup.lookupTagLibrary(usednamespace, methodName);
             if (tagLibrary == null) {
                 tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
                 usednamespace = GroovyPage.DEFAULT_NAMESPACE;
             }
 
-            if (tagLibrary != null) {
+            if (tagLibrary != null && !developmentMode) {
                 WebMetaUtils.registerMethodMissingForTags(mc, lookup, usednamespace, methodName);
             }
-        }
-        if (mc.respondsTo(instance, methodName, args).size()>0) {
-            return mc.invokeMethod(instance, methodName, args);
+
+            if (tagLibrary != null) {
+                List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args);
+                if (respondsTo.size()>0) {
+                    return respondsTo.get(0).invoke(tagLibrary, args);
+                }
+            }
         }
 
         throw new MissingMethodException(methodName, instance.getClass(), args);
@@ -153,8 +163,8 @@ public class TagLibraryApi extends CommonWebApi {
         if (gspTagLibraryLookup != null) {
 
             Object result = gspTagLibraryLookup.lookupNamespaceDispatcher(name);
-            String namespace = getNamespace(instance);
             if (result == null) {
+                String namespace = getNamespace(instance);
                 GroovyObject tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name);
                 if (tagLibrary == null) {
                     tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name);
@@ -168,9 +178,12 @@ public class TagLibraryApi extends CommonWebApi {
                 }
             }
 
-            if (result != null) {
+            if (result != null && !developmentMode) {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
                 WebMetaUtils.registerPropertyMissingForTag(mc, name, result);
+            }
+            
+            if (result != null) {
                 return result;
             }
         }
@@ -189,6 +202,15 @@ public class TagLibraryApi extends CommonWebApi {
         return GroovyPage.DEFAULT_NAMESPACE;
     }
 
+    @Autowired
+    public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
+        this.tagLibraryLookup = gspTagLibraryLookup;
+    }
+    
+    public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
+        this.tagLibraryLookup = tagLibraryLookup;
+    }
+    
     public TagLibraryLookup getTagLibraryLookup() {
         if (this.tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);

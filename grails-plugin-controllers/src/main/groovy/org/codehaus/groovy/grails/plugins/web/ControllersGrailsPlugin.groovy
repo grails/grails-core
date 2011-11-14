@@ -50,7 +50,6 @@ class ControllersGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def observe= ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
-    def nonEnhancedControllerClasses = []
 
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
@@ -100,13 +99,6 @@ class ControllersGrailsPlugin {
                 "${controller.fullName}"(cls) { bean ->
                     bean.scope = controller.getPropertyValue("scope") ?: defaultScope
                     bean.autowire = "byName"
-                    def enhancedAnn = cls.getAnnotation(Enhanced)
-                    if (enhancedAnn != null) {
-                        instanceControllersApi = ref("instanceControllersApi")
-                    }
-                    else {
-                        nonEnhancedControllerClasses << controller
-                    }
                 }
             }
         }
@@ -190,12 +182,12 @@ class ControllersGrailsPlugin {
 
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi(controllerApi)
-
+        
         for (controller in application.controllerClasses) {
             def controllerClass = controller
             def mc = controllerClass.metaClass
             mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
-            if (nonEnhancedControllerClasses.contains(controllerClass)) {
+            if(controllerClass.clazz.getAnnotation(Enhanced)==null) {
                 enhancer.enhance mc
             }
             controllerClass.initialize()
@@ -236,13 +228,6 @@ class ControllersGrailsPlugin {
                     "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
                         bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
                         bean.autowire = true
-                        def enhancedAnn = controllerClass.clazz.getAnnotation(Enhanced)
-                        if (enhancedAnn != null) {
-                            instanceControllersApi = ref("instanceControllersApi")
-                        }
-                        else {
-                            nonEnhancedControllerClasses << controllerClass
-                        }
                     }
                 }
                 // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
