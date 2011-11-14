@@ -33,6 +33,8 @@ import org.springframework.context.ApplicationContext
 
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+
+import grails.artefact.Enhanced;
 import grails.validation.ValidationErrors
 
 /**
@@ -254,6 +256,19 @@ class WebMetaUtils {
         mc.getActionName = {-> RCH.currentRequestAttributes().actionName }
         mc.getControllerName = {-> RCH.currentRequestAttributes().controllerName }
         mc.getWebRequest = {-> RCH.currentRequestAttributes() }
+    }
+    
+    // used for testing (GroovyPageUnitTestMixin.mockTagLib) and "nonEnhancedTagLibClasses" in GroovyPagesGrailsPlugin 
+    static void enhanceTagLibMetaClass(final GrailsTagLibClass taglib, TagLibraryLookup gspTagLibraryLookup) {
+        if (!taglib.clazz.getAnnotation(Enhanced)) {
+            final MetaClass mc = taglib.getMetaClass()
+            final String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
+            
+            for (tag in taglib.tagNames) {
+                WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
+            }
+            // propertyMissing and methodMissing are now added in MetaClassEnhancer / TagLibraryApi
+        }
     }
 
     static registerMethodMissingForTags(MetaClass mc, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {

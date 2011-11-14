@@ -1,7 +1,10 @@
 package org.codehaus.groovy.grails.web.pages
 
+import grails.test.AbstractGrailsEnvChangingSpec
+
 import spock.lang.Specification
 import grails.test.mixin.TestFor
+import grails.util.Environment;
 import grails.artefact.Artefact
 
 /**
@@ -12,22 +15,17 @@ import grails.artefact.Artefact
  * To change this template use File | Settings | File Templates.
  */
 @TestFor(CustomApplicationTagLib)
-class InvokeTagWithCustomBodyClosureSpec extends Specification{
-
-    def "Test that a custom tag library can invoke another tag with a closure body"() {
+class InvokeTagWithCustomBodyClosureSpec extends AbstractGrailsEnvChangingSpec {
+    def "Test that a custom tag library can invoke another tag with a closure body"(grailsEnv) {
         when:'We call a custom tag that invokes an existing tag with a closure body'
+            changeGrailsEnv(grailsEnv)
             def content = applyTemplate("<a:myLink />")
-
-        then:"The expected result is rendered"
+            def content2 = applyTemplate("<a:myLink />")
+        then:"The expected result is rendered and when we call it a second time the cached version is used so we test that too"
             content == '<a href="/one/two"></a><a href="/foo/bar">Hello World</a>'
-
-
-        when:'When we call it a second time the cached version is used so we test that too'
-            content = applyTemplate("<a:myLink />")
-
-        then:"The expected result is rendered"
-            content == '<a href="/one/two"></a><a href="/foo/bar">Hello World</a>'
-
+            content == content2
+        where: 
+            grailsEnv << grailsEnvs
     }
 }
 @Artefact("TagLibrary")

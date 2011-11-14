@@ -25,11 +25,13 @@ import java.util.List;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.util.Assert;
 
@@ -304,5 +306,13 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
         }
         getBeanDefinition().setParentName(parentName);
         setAbstract(false);
+    }
+    
+    public void addQualifier(String name) { 
+        addQualifier(Qualifier.class, name);
+    }
+
+    public void addQualifier(Class qualifierClass, String name) {
+        getBeanDefinition().addQualifier(new AutowireCandidateQualifier(qualifierClass, name));
     }
 }

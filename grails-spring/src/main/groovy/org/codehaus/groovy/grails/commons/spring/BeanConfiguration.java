@@ -138,4 +138,11 @@ public interface BeanConfiguration {
     void setParent(Object name);
 
     void setBeanDefinition(BeanDefinition definition);
+    
+    /** Add a qualifier to the bean definition. */
+    public void addQualifier(String name);
+
+    /** A qualifier, using a custom annotation, to the bean definition. */
+    public void addQualifier(Class qualifierClass, String name);
+    
 }

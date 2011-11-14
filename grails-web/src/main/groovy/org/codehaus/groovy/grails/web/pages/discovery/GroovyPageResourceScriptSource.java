@@ -64,7 +64,6 @@ public class GroovyPageResourceScriptSource extends ResourceScriptSource impleme
      *
      * @return True if it can be rendered publicly
      */
-    @Override
     public boolean isPublic() {
         return isPublic;
     }
