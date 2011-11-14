@@ -73,7 +73,7 @@ final class PluginResolveEngine {
             line += "\t| Latest release: ${pluginXml.@version}"
             output.println getPluginInfoHeader()
             output.println line
-            output.println '--------------------------------------------------------------------------'
+            printLineSeparator(output)
             def release = pluginXml
             if (release) {
                 if (release.'title'.text()) {
@@ -82,29 +82,46 @@ final class PluginResolveEngine {
                 else {
                     output.println "No info about this plugin available"
                 }
-                output.println '--------------------------------------------------------------------------'
+                printLineSeparator(output)
                 if (release.'author'.text()) {
                     output.println "Author: ${release.'author'.text()}"
-                    output.println '--------------------------------------------------------------------------'
+                    printLineSeparator(output)
                 }
                 if (release.'authorEmail'.text()) {
                     output.println "Author's e-mail: ${release.'authorEmail'.text()}"
-                    output.println '--------------------------------------------------------------------------'
+                    printLineSeparator(output)
                 }
                 if (release.'documentation'.text()) {
                     output.println "Find more info here: ${release.'documentation'.text()}"
-                    output.println '--------------------------------------------------------------------------'
+                    printLineSeparator(output)
                 }
                 if (release.'description'.text()) {
                     output.println "${release.'description'.text()}"
-                    output.println '--------------------------------------------------------------------------'
+                    printLineSeparator(output)
                 }
 
+                if(release.repositories) {
+                    printSectionTitle(output, "Required Repositories")
+                    release.repositories.repository.each { repo ->
+                        output.println("- ${repo.@url}")
+                    }
+                    printLineSeparator(output)
+                }
 
+                if(release.dependencies.size()) {
+                    printSectionTitle(output, "Required Dependencies")
+                    printDependencies(output, release.dependencies)
+                    printLineSeparator(output)
+                }
+                if(release.plugins.size()) {
+                    printSectionTitle(output, "Required Plugins")
+                    printDependencies(output, release.plugins)
+                    printLineSeparator(output)
+                }
             }
             else {
                 output.println "<release not found for this plugin>"
-                output.println '--------------------------------------------------------------------------'
+                printLineSeparator(output)
             }
 
             output.println getPluginInfoFooter()
@@ -112,6 +129,25 @@ final class PluginResolveEngine {
         }
 
         return pluginXml
+    }
+
+    protected def printDependencies(output, dependencies) {
+        dependencies.children().each { scope ->
+            def scopeName = scope.name()
+            scope.dependency.each { dep ->
+                output.println("- ${dep.@group}:${dep.@name}:${dep.@version} ($scopeName)")
+            }
+        }
+    }
+
+    protected def printSectionTitle(PrintWriter output, String title) {
+        output.println()
+        output.println title
+        printLineSeparator(output)
+    }
+
+    protected def printLineSeparator(PrintWriter output) {
+        output.println '--------------------------------------------------------------------------'
     }
 
     protected String getPluginInfoHeader() {

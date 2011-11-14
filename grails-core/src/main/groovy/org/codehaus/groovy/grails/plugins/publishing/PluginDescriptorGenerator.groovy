@@ -125,14 +125,24 @@ class PluginDescriptorGenerator {
                         for(scope in scopes) {
 
                             final jarDependencies = dependencyManager.getApplicationDependencyDescriptors(scope)
-                            final pluginDependencies = dependencyManager.getApplicationPluginDependencyDescriptors(scope)
 
-                            if(jarDependencies || pluginDependencies) {
+                            if(jarDependencies) {
                                 xml."$scope" {
                                     for(DependencyDescriptor dd in jarDependencies) {
                                         final mrid = dd.dependencyRevisionId
                                         xml.dependency(group:mrid.organisation, name:mrid.name, version:mrid.revision)
                                     }
+                                }
+                            }
+
+                        }
+                    }
+                    plugins {
+                        for(scope in scopes) {
+
+                            final pluginDependencies = dependencyManager.getApplicationPluginDependencyDescriptors(scope)
+                            if(pluginDependencies) {
+                                xml."$scope" {
                                     for(DependencyDescriptor dd in pluginDependencies) {
                                         final mrid = dd.dependencyRevisionId
                                         xml.plugin(group:mrid.organisation, name:mrid.name, version:mrid.revision)
@@ -141,6 +151,7 @@ class PluginDescriptorGenerator {
                             }
 
                         }
+
                     }
                 }
                 runtimePluginRequirements {
