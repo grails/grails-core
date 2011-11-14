@@ -26,6 +26,21 @@ class PluginResolveEngineSpec extends Specification{
             metadata.title.text() == 'Render RSS/Atom feeds with a simple builder'
     }
 
+    def "Test rendering plugin-info"() {
+        given:"An instance of the resolve engine"
+            def resolveEngine = systemUnderTest()
+
+        when:"We resolve the 'feeds' plugin"
+            def sw = new StringWriter()
+            resolveEngine.renderPluginInfo("feeds", "1.5", sw)
+            def info = sw.toString()
+
+        then:"The correct metadata is obtained"
+            info.contains 'Name: feeds	| Latest release: 1.5'
+            info.contains 'Render RSS/Atom feeds with a simple builder'
+            info.contains 'Author: Marc Palmer'
+    }
+
     PluginResolveEngine systemUnderTest() {
         def settings = new BuildSettings()
         def dependencyManager = new IvyDependencyManager("test", "0.1", settings)

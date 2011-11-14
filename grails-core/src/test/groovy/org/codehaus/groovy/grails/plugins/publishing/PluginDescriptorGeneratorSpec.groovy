@@ -21,8 +21,8 @@ class PluginDescriptorGeneratorSpec extends Specification {
             xml.@name == 'foo'
             xml.@version == '1.0'
             xml.author.text() == 'Bob'
-            xml.runtimeDependencies.plugin[0].@name == 'core'
-            xml.runtimeDependencies.plugin[0].@version == '1.0'
+            xml.runtimePluginRequirements.plugin[0].@name == 'core'
+            xml.runtimePluginRequirements.plugin[0].@version == '1.0'
             xml.resources.resource[0].text() == 'FooController'
             xml.resources.resource[1].text() == 'bar.BarController'
     }
