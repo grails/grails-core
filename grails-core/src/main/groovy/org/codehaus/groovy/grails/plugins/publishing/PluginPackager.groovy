@@ -22,8 +22,9 @@ import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
+import grails.util.BuildSettings
 
- /**
+/**
  * Packages a plugin in source or binary form.
  *
  * @since 2.0
@@ -66,14 +67,16 @@ class PluginPackager {
     private File projectWorkDir
     private AntBuilder ant
     private File resourcesDir
+    private BuildSettings buildSettings
 
     List<File> jarFiles = []
     boolean hasApplicationDependencies
 
-    PluginPackager(GrailsPluginInfo pluginInfo, Resource[] resourceList, File projectWorkDir) {
+    PluginPackager(BuildSettings buildSettings, pluginInfo, Resource[] resourceList, File projectWorkDir) {
         this.pluginInfo = pluginInfo
         this.resourceList = resourceList
         this.projectWorkDir = projectWorkDir
+        this.buildSettings = buildSettings
     }
 
     File getResourcesDir() {
@@ -117,7 +120,7 @@ class PluginPackager {
 
         // Use MarkupBuilder with indenting to generate the file.
         def writer = new IndentPrinter(new PrintWriter(new FileWriter(pluginXml)))
-        def generator = new PluginDescriptorGenerator(pluginName, resourceList)
+        def generator = new PluginDescriptorGenerator(buildSettings, pluginName, resourceList)
 
         pluginProps["type"] = descriptor.name - '.groovy'
         generator.generatePluginXml(pluginProps, writer)
