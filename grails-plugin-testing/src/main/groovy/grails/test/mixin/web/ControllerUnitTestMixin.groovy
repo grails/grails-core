@@ -234,7 +234,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
         if (webRequest == null) {
             webRequest = GrailsWebRequest.lookup()
-            if (webRequest == null) {
+            if (webRequest == null || !(webRequest.currentRequest instanceof GrailsMockHttpServletRequest)) {
 
                 if (!applicationContext.isActive()) {
                     applicationContext.refresh()

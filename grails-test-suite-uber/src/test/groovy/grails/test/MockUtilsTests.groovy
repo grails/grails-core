@@ -36,7 +36,7 @@ class MockUtilsTests extends GroovyTestCase {
     private @Lazy MetaTestHelper metaTestHelper = {
         MetaTestHelper result = new MetaTestHelper()
         result.classesUnderTest = [TestDomain, MockUtilsTestController, TestCommand, A, B, ClassWithListArgBeforeValidate, ClassWithNoArgBeforeValidate, ClassWithOverloadedBeforeValidate]
-        result.classesToReset = [MockHttpServletRequest, MockHttpServletResponse, BeanPropertyBindingResult, Errors]
+        result.classesToReset = [TestDomain, MockHttpServletRequest, MockHttpServletResponse, BeanPropertyBindingResult, Errors]
         return result
     }()
 
@@ -44,6 +44,8 @@ class MockUtilsTests extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
+        MockUtils.resetIds()
+        MockUtils.TEST_INSTANCES.clear()
         metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
         PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
@@ -54,6 +56,7 @@ class MockUtilsTests extends GroovyTestCase {
         super.tearDown()
         metaTestHelper.tearDown()
         MockUtils.resetIds()
+        MockUtils.TEST_INSTANCES.clear()
         PluginManagerHolder.pluginManager = null
         ApplicationHolder.application = null
     }
