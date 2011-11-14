@@ -16,7 +16,11 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.artefact.Enhanced
+import grails.gsp.PageRenderer
+import grails.util.*
+
 import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
@@ -25,25 +29,21 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
+import org.codehaus.groovy.grails.plugins.web.taglib.*
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
+import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
+import org.codehaus.groovy.grails.web.pages.*
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.view.JstlView
-import grails.util.*
-import org.codehaus.groovy.grails.plugins.web.taglib.*
-import org.codehaus.groovy.grails.web.pages.*
-import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
-import grails.gsp.PageRenderer
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageStaticResourceLocator
-import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -60,7 +60,6 @@ class GroovyPagesGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version]
     def observe = ['controllers']
-    def nonEnhancedTagLibClasses = []
 
     // Provide these tag libraries declaratively
     def providedArtefacts = [
@@ -217,10 +216,6 @@ class GroovyPagesGrailsPlugin {
         for (taglib in application.tagLibClasses) {
 
             final tagLibClass = taglib.clazz
-            def enhancedAnn = tagLibClass.getAnnotation(Enhanced)
-            if (enhancedAnn == null) {
-                nonEnhancedTagLibClasses << taglib
-            }
 
             "${taglib.fullName}"(tagLibClass) { bean ->
                 bean.autowire = true
@@ -261,134 +256,53 @@ class GroovyPagesGrailsPlugin {
             }
         }
     }
+    
+    private void enhanceClasses(classes, apiObject) {
+        def nonEnhancedClasses = [] as Set
+        for (Class clazz in classes) {
+            if (!clazz.getAnnotation(Enhanced)) {
+                nonEnhancedClasses << clazz
+            }
+            Class superClass = clazz.superclass
+            while (superClass != Object) {
+                if (Modifier.isAbstract(superClass.getModifiers()) && !superClass.getAnnotation(Enhanced)) {
+                    nonEnhancedClasses << superClass
+                }
+                superClass = superClass.superclass
+            }
+        }
+        if(nonEnhancedClasses) {
+            def enhancer = new MetaClassEnhancer()
+            enhancer.addApi apiObject
+            nonEnhancedClasses.each { enhancer.enhance it.getMetaClass() }
+        }
+    }
+    
 
     /**
      * Sets up dynamic methods required by the GSP implementation including dynamic tag method dispatch
      */
     def doWithDynamicMethods = { ApplicationContext ctx ->
-
         WebMetaUtils.registerStreamCharBufferMetaClass()
 
         TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
         GrailsPluginManager pluginManager = getManager()
 
         if (manager?.hasGrailsPlugin("controllers")) {
-
-            def namespaceGetters = [:]
-            for (namespace in gspTagLibraryLookup.availableNamespaces) {
-                def propName = namespace
-                def namespaceDispatcher = gspTagLibraryLookup.lookupNamespaceDispatcher(namespace)
-                namespaceGetters[propName] = namespaceDispatcher
-            }
-
-
             def controllerClasses = application.controllerClasses*.clazz
-            for (Class controller in controllerClasses) {
-                Class controllerClass = controller
-                MetaClass mc = controllerClass.metaClass
-                for (entry in namespaceGetters) {
-                    final String propertyName = entry.key
-                    final dispatcher = entry.value
-                    if (!mc.getMetaProperty(propertyName)) {
-                        mc."${GrailsClassUtils.getGetterName(propertyName)}" = {-> dispatcher }
-                    }
-                }
-
-                if (!controllerClass.getAnnotation(Enhanced)) {
-                    registerControllerMethodMissing(mc, gspTagLibraryLookup, ctx)
-                    Class superClass = controllerClass.superclass
-                    // deal with abstract super classes
-                    while (superClass != Object) {
-                        if (Modifier.isAbstract(superClass.getModifiers())) {
-                            registerControllerMethodMissing(superClass.metaClass, gspTagLibraryLookup, ctx)
-                        }
-                        superClass = superClass.superclass
-                    }
-                }
-
-            }
+            enhanceClasses(controllerClasses, ctx.getBean("instanceControllerTagLibraryApi"))
         }
-
-
-        if (nonEnhancedTagLibClasses) {
-            def tagLibApi = ctx.getBean("instanceTagLibraryApi")
-
-            def enhancer = new MetaClassEnhancer()
-            enhancer.addApi tagLibApi
-
-            for (GrailsTagLibClass t in nonEnhancedTagLibClasses) {
-                GrailsTagLibClass taglib = t
-                MetaClass mc = taglib.metaClass
-                enhancer.enhance mc
-                String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
-
-                for (tag in taglib.tagNames) {
-                    WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
-                }
-
-                mc.propertyMissing = { String name ->
-                    def result = gspTagLibraryLookup.lookupNamespaceDispatcher(name)
-                    if (result == null) {
-                        def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-                        if (!tagLibrary) {
-                            tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
-                        }
-
-                        def tagProperty = tagLibrary?."$name"
-                        result = tagProperty ? tagProperty.clone() : null
-                    }
-
-                    if (result != null) {
-                        mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
-                        return result
-                    }
-
-                    throw new MissingPropertyException(name, delegate.class)
-                }
-
-                mc.methodMissing = { String name, args ->
-                    def usednamespace = namespace
-                    def tagLibrary = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-                    if (!tagLibrary) {
-                        tagLibrary = gspTagLibraryLookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
-                        usednamespace = GroovyPage.DEFAULT_NAMESPACE
-                    }
-                    if (tagLibrary) {
-                        WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, usednamespace, name)
-                        //WebMetaUtils.registerMethodMissingForTags(mc, tagLibrary, name)
-                    }
-                    if (mc.respondsTo(delegate, name, args)) {
-                        return mc.invokeMethod(delegate, name, args)
-                    }
-
-                    throw new MissingMethodException(name, delegate.class, args)
-                }
-            }
-        }
-
-
-    }
-
-    def registerControllerMethodMissing(MetaClass mc, TagLibraryLookup lookup, ApplicationContext ctx) {
-        // allow controllers to call tag library methods
-        mc.methodMissing = {String name, args ->
-            args = args == null ? [] as Object[] : args
-            def tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, name)
-            if (tagLibrary) {
-                MetaClass controllerMc = delegate.class.metaClass
-                WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, name)
-                if (controllerMc.respondsTo(delegate, name, args)) {
-                    return controllerMc.invokeMethod(delegate, name, args)
-                }
-
-                throw new MissingMethodException(name, delegate.class, args)
-            }
-
-            throw new MissingMethodException(name, delegate.class, args)
+        
+        def tagLibClasses = application.tagLibClasses*.clazz
+        enhanceClasses(tagLibClasses, ctx.getBean("instanceTagLibraryApi"))
+        application.tagLibClasses.each { taglibClass -> 
+            WebMetaUtils.enhanceTagLibMetaClass(taglibClass, gspTagLibraryLookup)
         }
     }
 
     def onChange = { event ->
+        def ctx = event.ctx ?: application.mainContext
+        
         if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
             GrailsClass taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
             if (taglibClass) {
@@ -397,13 +311,6 @@ class GroovyPagesGrailsPlugin {
                 def beans = beans {
                     "$beanName"(taglibClass.clazz) { bean ->
                         bean.autowire = true
-                        if (taglibClass.clazz.getAnnotation(Enhanced)) {
-
-                            instanceTagLibraryApi = ref("instanceTagLibraryApi")
-                        }
-                        else {
-                            nonEnhancedTagLibClasses << taglibClass
-                        }
                     }
                 }
                 beans.registerBeans(event.ctx)
@@ -412,13 +319,15 @@ class GroovyPagesGrailsPlugin {
                 // so we need to update it now.
                 def lookup = event.ctx.getBean("gspTagLibraryLookup")
                 lookup.registerTagLib(taglibClass)
+                
+                enhanceClasses([taglibClass.clazz], ctx.getBean("instanceTagLibraryApi"))
+                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
             }
+        } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
+            enhanceClasses([event.source.clazz], ctx.getBean("instanceControllerTagLibraryApi"))
         }
 
-        def ctx = event.ctx ?: application.mainContext
-        event.manager?.getGrailsPlugin("groovyPages")?.doWithDynamicMethods(ctx)
-
         // clear uri cache after changes
-        event.ctx.getBean("groovyPagesUriService").clear()
+        ctx.getBean("groovyPagesUriService").clear()
     }
 }
