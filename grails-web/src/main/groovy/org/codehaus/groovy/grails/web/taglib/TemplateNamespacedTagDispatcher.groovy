@@ -9,8 +9,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 
 class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
-
-    GroovyObject renderTagLib
+    protected GroovyObject renderTagLib
 
     TemplateNamespacedTagDispatcher(Class callingType, GrailsApplication application, TagLibraryLookup lookup) {
         super(GroovyPage.DEFAULT_NAMESPACE, callingType, application, lookup)
