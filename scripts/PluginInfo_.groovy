@@ -27,95 +27,22 @@ import org.codehaus.groovy.grails.resolve.PluginResolveEngine
 
 includeTargets << grailsScript("_GrailsPlugins")
 
-def displayHeader = {
-     '''
---------------------------------------------------------------------------
-Information about Grails plugin
---------------------------------------------------------------------------\
-'''
-}
-
 def displayPluginInfo = { pluginName, version ->
 
     BuildSettings settings = grailsSettings
     def pluginResolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
-    pluginXml = pluginResolveEngine.resolvePluginMetadata(pluginName, version)
-    if (!pluginXml) {
-        event("StatusError", ["Plugin with name '${pluginName}' was not found in the configured repositories"])
-        exit 1
-    }
-
-    def plugin = pluginXml
-    if (plugin == null) {
-        event("StatusError", ["Plugin with name '${pluginName}' was not found in the configured repositories"])
-        exit 1
-    }
-
-    def line = "Name: ${pluginName}"
-    line += "\t| Latest release: ${plugin.@version}"
-    def sw = new StringWriter()
-    def output = new PrintWriter(sw)
-    output.println displayHeader()
-    output.println line
-    output.println '--------------------------------------------------------------------------'
-    def release = pluginXml
-    if (release) {
-        if (release.'title'.text()) {
-            output.println "${release.'title'.text()}"
-        }
-        else {
-            output.println "No info about this plugin available"
-        }
-        output.println '--------------------------------------------------------------------------'
-        if (release.'author'.text()) {
-            output.println "Author: ${release.'author'.text()}"
-            output.println '--------------------------------------------------------------------------'
-        }
-        if (release.'authorEmail'.text()) {
-            output.println "Author's e-mail: ${release.'authorEmail'.text()}"
-            output.println '--------------------------------------------------------------------------'
-        }
-        if (release.'documentation'.text()) {
-            output.println "Find more info here: ${release.'documentation'.text()}"
-            output.println '--------------------------------------------------------------------------'
-        }
-        if (release.'description'.text()) {
-            output.println "${release.'description'.text()}"
-            output.println '--------------------------------------------------------------------------'
-        }
-    }
-    else {
-        output.println "<release ${releaseVersion} not found for this plugin>"
-        output.println '--------------------------------------------------------------------------'
-    }
-
-    println sw.toString()
+    pluginXml = pluginResolveEngine.renderPluginInfo(pluginName, version, System.out)
 }
 
-def displayFooter = {
-    println '''
-To get info about specific release of plugin 'grails plugin-info [NAME] [VERSION]'
-
-To get list of all plugins type 'grails list-plugins'
-
-To install latest version of plugin type 'grails install-plugin [NAME]'
-
-To install specific version of plugin type 'grails install-plugin [NAME] [VERSION]'
-
-For further info visit http://grails.org/Plugins
-'''
-}
 
 target(pluginInfo:"Implementation target") {
     depends(parseArguments)
 
     if (argsMap.params) {
-        displayHeader()
         def pluginName = argsMap.params[0]
         def version = argsMap.params.size() > 1 ? argsMap.params[1] : null
 
         displayPluginInfo(pluginName, version)
-        displayFooter()
     }
     else {
         event("StatusError", ["Usage: grails plugin-info <plugin-name> [version]"])

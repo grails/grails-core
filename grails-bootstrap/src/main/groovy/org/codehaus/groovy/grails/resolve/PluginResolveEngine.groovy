@@ -48,6 +48,95 @@ final class PluginResolveEngine {
     }
 
     /**
+     * Renders plugin info to the target writer
+     *
+     * @param pluginName The plugin name
+     * @param pluginVersion The plugin version
+     * @param output The target writer
+     */
+    GPathResult renderPluginInfo(String pluginName, String pluginVersion, OutputStream outputStream) {
+        renderPluginInfo(pluginName, pluginVersion, new OutputStreamWriter(outputStream))
+    }
+    /**
+     * Renders plugin info to the target writer
+     *
+     * @param pluginName The plugin name
+     * @param pluginVersion The plugin version
+     * @param output The target writer
+     */
+    GPathResult renderPluginInfo(String pluginName, String pluginVersion, Writer writer) {
+        def pluginXml = resolvePluginMetadata(pluginName, pluginVersion)
+
+        if(pluginXml != null) {
+            def output = new PrintWriter(writer)
+            def line = "Name: ${pluginName}"
+            line += "\t| Latest release: ${pluginXml.@version}"
+            output.println getPluginInfoHeader()
+            output.println line
+            output.println '--------------------------------------------------------------------------'
+            def release = pluginXml
+            if (release) {
+                if (release.'title'.text()) {
+                    output.println "${release.'title'.text()}"
+                }
+                else {
+                    output.println "No info about this plugin available"
+                }
+                output.println '--------------------------------------------------------------------------'
+                if (release.'author'.text()) {
+                    output.println "Author: ${release.'author'.text()}"
+                    output.println '--------------------------------------------------------------------------'
+                }
+                if (release.'authorEmail'.text()) {
+                    output.println "Author's e-mail: ${release.'authorEmail'.text()}"
+                    output.println '--------------------------------------------------------------------------'
+                }
+                if (release.'documentation'.text()) {
+                    output.println "Find more info here: ${release.'documentation'.text()}"
+                    output.println '--------------------------------------------------------------------------'
+                }
+                if (release.'description'.text()) {
+                    output.println "${release.'description'.text()}"
+                    output.println '--------------------------------------------------------------------------'
+                }
+
+
+            }
+            else {
+                output.println "<release not found for this plugin>"
+                output.println '--------------------------------------------------------------------------'
+            }
+
+            output.println getPluginInfoFooter()
+            output.flush()
+        }
+
+        return pluginXml
+    }
+
+    protected String getPluginInfoHeader() {
+    '''
+--------------------------------------------------------------------------
+Information about Grails plugin
+--------------------------------------------------------------------------\
+'''
+    }
+
+    protected String getPluginInfoFooter() {
+'''
+To get info about specific release of plugin 'grails plugin-info [NAME] [VERSION]'
+
+To get list of all plugins type 'grails list-plugins'
+
+To install latest version of plugin type 'grails install-plugin [NAME]'
+
+To install specific version of plugin type 'grails install-plugin [NAME] [VERSION]'
+
+For further info visit http://grails.org/Plugins
+'''
+    }
+
+    /**
      * Resolves a list of plugins and produces a ResolveReport
      *
      * @param pluginsToInstall The list of plugins
