@@ -48,6 +48,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
     private static final Map<String, ClassUpdate> classChangeEventQueue = new ConcurrentHashMap<String, ClassUpdate>();
     private static boolean active = false;
+    private static boolean reloadInProgress = false;
     public static final String SPRING_LOADED_PLUGIN_CLASS = "com.springsource.loaded.Plugins";
 
     private List<String> compilerExtensions;
@@ -55,6 +56,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private GrailsProjectCompiler compiler;
     private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
     private static MultipleCompilationErrorsException currentCompilationError = null;
+    private static Throwable currentReloadError = null;
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -69,8 +71,20 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         return currentCompilationError;
     }
 
+    public static Throwable getCurrentReloadError() {
+        return currentReloadError;
+    }
+
+    public static void setCurrentReloadError(Throwable currentReloadError) {
+        GrailsProjectWatcher.currentReloadError = currentReloadError;
+    }
+
     public static boolean isReloadingAgentPresent() {
         return ClassUtils.isPresent(SPRING_LOADED_PLUGIN_CLASS, GrailsProjectWatcher.class.getClassLoader());
+    }
+
+    public static boolean isReloadInProgress() {
+        return reloadInProgress;
     }
 
     /**
@@ -193,9 +207,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
                 classChangeEventQueue.put(className, new ClassUpdate() {
                     public void run(Class<?> cls) {
                         try {
+                            reloadInProgress = true;
                             pluginManager.informOfClassChange(file, cls);
                         } catch (Exception e) {
                             LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage(), e);
+                        }
+                        finally {
+                            reloadInProgress = false;
                         }
                     }
                 });
