@@ -34,7 +34,8 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.grails.compiler.injection.NamedArtefactTypeAstTransformation
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer;
 
 /**
  * Handles the configuration of dynamic scaffolding in Grails.
@@ -141,6 +142,10 @@ class ScaffoldingGrailsPlugin {
 
     def onChange = { event ->
         ScaffoldingViewResolver.clearViewCache()
+        if(event.ctx?.groovyPagesTemplateRenderer) {
+            GroovyPagesTemplateRenderer renderer = event.ctx?.groovyPagesTemplateRenderer
+            renderer.clearCache()
+        }
         if (event.source && application.isControllerClass(event.source)) {
             GrailsControllerClass controllerClass = application.getControllerClass(event.source.name)
             configureScaffoldingController(event.ctx, event.application, controllerClass)
