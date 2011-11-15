@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.view.JstlView
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -324,7 +325,7 @@ class GroovyPagesGrailsPlugin {
                 WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
             }
         } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            enhanceClasses([event.source.clazz], ctx.getBean("instanceControllerTagLibraryApi"))
+            enhanceClasses([event.source], ctx.getBean("instanceControllerTagLibraryApi"))
         }
 
         // clear uri cache after changes
