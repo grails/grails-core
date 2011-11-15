@@ -45,6 +45,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.TypeHelper;
 import org.hibernate.criterion.AggregateProjection;
 import org.hibernate.criterion.CountProjection;
 import org.hibernate.criterion.CriteriaSpecification;
@@ -1052,14 +1053,47 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
       </pre>
      *
      * @param sqlRestriction the sql restriction
-     * @return a Criterion instance
+     * @return a Criteria instance
      */
     public org.grails.datastore.mapping.query.api.Criteria sqlRestriction(String sqlRestriction) {
         if (!validateSimpleExpression()) {
             throwRuntimeException(new IllegalArgumentException("Call to [sqlRestriction] with value [" +
                     sqlRestriction + "] not allowed here."));
         }
-        addToCriteria(Restrictions.sqlRestriction(sqlRestriction));
+        return sqlRestriction(sqlRestriction, Collections.EMPTY_LIST);
+    }
+
+    /**
+     * Applies a sql restriction to the results to allow something like:
+      <pre>
+       def results = Person.withCriteria {
+           sqlRestriction "char_length(first_name) < ? AND char_length(first_name) > ?", [4, 9]
+       }
+      </pre>
+     *
+     * @param sqlRestriction the sql restriction
+     * @param values jdbc parameters
+     * @return a Criteria instance
+     */
+    public org.grails.datastore.mapping.query.api.Criteria sqlRestriction(String sqlRestriction, List<?> values) {
+        if (!validateSimpleExpression()) {
+            throwRuntimeException(new IllegalArgumentException("Call to [sqlRestriction] with value [" +
+                    sqlRestriction + "] not allowed here."));
+        }
+        final int numberOfParameters = values.size();
+        
+        final Type[] typesArray = new Type[numberOfParameters];
+        final Object[] valuesArray = new Object[numberOfParameters];
+        
+        if(numberOfParameters > 0) {
+            final TypeHelper typeHelper = sessionFactory.getTypeHelper();
+            for(int i = 0; i < typesArray.length; i++) {
+                final Object value = values.get(i);
+                typesArray[i] =  typeHelper.basic(value.getClass());
+                valuesArray[i] = value;
+            }
+        }
+        addToCriteria(Restrictions.sqlRestriction(sqlRestriction, valuesArray, typesArray));
         return this;
     }
 
