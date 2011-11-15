@@ -64,6 +64,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.springframework.validation.Validator
 import org.springframework.transaction.PlatformTransactionManager
+import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -371,12 +372,37 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 if (GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                     boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
                     String suffix = isDefault ? '' : '_' + datasourceName
-                    mappingContext.addEntityValidator(entity, ctx.getBean("${entity.name}Validator$suffix", Validator))
+                    final validator = ctx.getBean("${entity.name}Validator$suffix", Validator)
+                    mappingContext.addEntityValidator(entity, validator)
+                    if(isDefault) {
+                        GrailsDomainClass domainClass = application.getDomainClass(event.source.name)
+                        domainClass.setValidator(validator)
+                    }
                 }
             }
         }
 
         enhanceSessionFactories(ctx, event.application)
+
+        // Verify that the reload worked by executing a GORM method. If it failed try again
+        try {
+            event.source.count()
+        } catch (MissingMethodException mme) {
+
+           MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
+           final sessionFactory = ctx.getBean("sessionFactory", SessionFactory)
+           final txMgr = ctx.getBean("transactionManager", HibernateTransactionManager)
+           final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx, application.config)
+           def enhancer = new HibernateGormEnhancer(datastore, txMgr, application)
+           def entity = mappingContext.getPersistentEntity(event.source.name)
+           if (entity.javaClass.getAnnotation(Enhanced) == null) {
+              enhancer.enhance entity
+           }
+           else {
+              enhancer.enhance entity, true
+           }
+
+        }
     }
 
     static final doWithDynamicMethods = { ApplicationContext ctx ->
