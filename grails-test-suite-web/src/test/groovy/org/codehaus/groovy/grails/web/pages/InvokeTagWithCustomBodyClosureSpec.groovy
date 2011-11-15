@@ -26,6 +26,21 @@ class InvokeTagWithCustomBodyClosureSpec extends AbstractGrailsEnvChangingSpec {
             content == content2
         where: 
             grailsEnv << grailsEnvs
+            
+    }
+    
+    def 'Test invoking a tag with and then without attributes'() {
+        when:
+            def content = applyTemplate("<a:myLink foo='bar'/>")
+    
+        then:
+            content == '<a href="/one/two"></a><a href="/foo/bar">Hello World</a>'
+
+        when:
+            content = applyTemplate("<a:myLink/>")
+    
+        then:
+            content == '<a href="/one/two"></a><a href="/foo/bar">Hello World</a>'
     }
 }
 @Artefact("TagLibrary")
