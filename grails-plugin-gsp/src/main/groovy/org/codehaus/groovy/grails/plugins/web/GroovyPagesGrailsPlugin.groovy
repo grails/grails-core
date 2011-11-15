@@ -325,7 +325,7 @@ class GroovyPagesGrailsPlugin {
                 WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
             }
         } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            enhanceClasses([event.source.clazz], ctx.getBean("instanceControllerTagLibraryApi"))
+            enhanceClasses([event.source], ctx.getBean("instanceControllerTagLibraryApi"))
         }
 
         // clear uri cache after changes

@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
+import grails.util.Metadata;
 import grails.web.UrlConverter;
 
 import java.io.IOException;
@@ -72,6 +73,7 @@ import org.springframework.web.util.UrlPathHelper;
  */
 public class UrlMappingsFilter extends OncePerRequestFilter {
 
+    public static final boolean WAR_DEPLOYED = Metadata.getCurrent().isWarDeployed();
     private UrlPathHelper urlHelper = new UrlPathHelper();
     private static final Log LOG = LogFactory.getLog(UrlMappingsFilter.class);
     private static final String GSP_SUFFIX = ".gsp";
@@ -193,7 +195,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                     dispatched = true;
 
-                    checkForCompilationErrors(request);
+                    if (!WAR_DEPLOYED) {
+                        checkDevelopmentReloadingState(request);
+                    }
+
 
                     request = checkMultipart(request);
 
@@ -275,15 +280,22 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
        return controllers == null || controllers.length == 0;
     }
 
-    private void checkForCompilationErrors(HttpServletRequest request) {
-        if (application.isWarDeployed()) {
-            return;
+    private void checkDevelopmentReloadingState(HttpServletRequest request) {
+        while(GrailsProjectWatcher.isReloadInProgress()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // ignore
+            }
         }
-
         if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
         MultipleCompilationErrorsException compilationError = GrailsProjectWatcher.getCurrentCompilationError();
         if (compilationError != null) {
             throw compilationError;
+        }
+        Throwable currentReloadError = GrailsProjectWatcher.getCurrentReloadError();
+        if(currentReloadError != null) {
+            throw new RuntimeException(currentReloadError);
         }
     }
 

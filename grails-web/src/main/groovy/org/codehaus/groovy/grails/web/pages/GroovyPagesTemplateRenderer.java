@@ -34,6 +34,8 @@ import org.springframework.util.ReflectionUtils;
  * The implementation was moved from RenderTagLib, ported to Java and then refactored.
  *
  * @author Lari Hotari
+ * @author Graeme Rocher
+ *
  * @since 2.0
  */
 public class GroovyPagesTemplateRenderer implements InitializingBean {
