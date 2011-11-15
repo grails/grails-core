@@ -114,8 +114,37 @@ class NullablePart {
         assert part.save(flush:true) != null
     }
 
+    // GRAILS-8289
+    void testUpdatingManySide() {
+        buildMockRequest()
+        
+        def Item = ga.getDomainClass("Item").clazz
+        def Part = ga.getDomainClass("Part").clazz
 
+        def item = Item.newInstance(name:"iMac")
+        def part = Part.newInstance(name:"Intel CPU")
+        item.addToParts(part)
 
+        assert item.save(flush:true)  != null
+
+        session.clear()
+
+        item = Item.get(item.id)
+
+        assert item.parts.size() == 1
+        assert Part.count() == 1
+        assert Part.get(part.id).item != null
+
+        part = Part.get(part.id)
+
+        part.properties = ['item.id': item.id, name: 'New Intel CPU']
+        part.save(flush: true)
+
+        session.clear()
+
+        item = Item.get(item.id)
+        assert 1 == item.parts.size()
+    }
 
     void testCreateWithoutSave() {
 
