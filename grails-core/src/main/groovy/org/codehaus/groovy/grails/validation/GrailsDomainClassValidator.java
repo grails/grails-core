@@ -100,13 +100,6 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
             validatePropertyWithConstraint(name, obj, errors, bean, constrainedProperties);
         }
 
-        if (obj instanceof GroovyObject) {
-            ((GroovyObject)obj).setProperty(ERRORS_PROPERTY, errors);
-        }
-        else {
-            InvokerHelper.setProperty(obj,ERRORS_PROPERTY,errors);
-        }
-
         postValidate(obj,errors);
     }
 
