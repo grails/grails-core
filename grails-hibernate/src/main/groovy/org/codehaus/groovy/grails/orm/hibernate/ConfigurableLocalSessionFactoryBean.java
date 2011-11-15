@@ -36,6 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
+import javax.naming.NameNotFoundException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -198,14 +199,26 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     @Override
     public void destroy() throws HibernateException {
-        MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-        Map<?, ?> classMetaData = getSessionFactory().getAllClassMetadata();
-        for (Object o : classMetaData.values()) {
-            ClassMetadata classMetadata = (ClassMetadata) o;
-            Class<?> mappedClass = classMetadata.getMappedClass(EntityMode.POJO);
-            registry.removeMetaClass(mappedClass);
+        if(this.grailsApplication.isWarDeployed()) {
+            MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+            Map<?, ?> classMetaData = getSessionFactory().getAllClassMetadata();
+            for (Object o : classMetaData.values()) {
+                ClassMetadata classMetadata = (ClassMetadata) o;
+                Class<?> mappedClass = classMetadata.getMappedClass(EntityMode.POJO);
+                registry.removeMetaClass(mappedClass);
+            }
         }
-        super.destroy();
+
+        try {
+            super.destroy();
+        } catch (HibernateException e) {
+            if(e.getCause() instanceof NameNotFoundException) {
+                LOG.debug(e.getCause().getMessage(), e);
+            }
+            else {
+                throw e;
+            }
+        }
     }
 
     @Override

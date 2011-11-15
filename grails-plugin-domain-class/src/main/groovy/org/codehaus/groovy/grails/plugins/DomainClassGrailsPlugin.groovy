@@ -36,6 +36,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -104,7 +105,11 @@ class DomainClassGrailsPlugin {
 
     def onChange = { event ->
         def cls = event.source
-
+        try {
+            org.grails.datastore.mapping.reflect.ClassPropertyFetcher.@cachedClassPropertyFetchers.clear()
+        } catch (e) {
+            // restricted environment, ignore
+        }
         if (cls instanceof Class) {
             final domainClass = application.addArtefact(DomainClassArtefactHandler.TYPE, cls)
             if (!domainClass.abstract) {
