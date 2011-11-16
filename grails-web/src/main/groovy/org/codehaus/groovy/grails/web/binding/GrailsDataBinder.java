@@ -784,8 +784,11 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                                             new Runnable() {
                                                 public void run() {
                                                     if (otherSide.isOneToMany()) {
-                                                        String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
-                                                        GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
+                                                        Collection collection = GrailsMetaClassUtils.getPropertyIfExists(persisted, otherSide.getName(), Collection.class);
+                                                        if(collection != null && !collection.contains(getTarget())) {
+                                                            String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
+                                                            GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
+                                                        }
                                                     }
                                                 }
                                             }

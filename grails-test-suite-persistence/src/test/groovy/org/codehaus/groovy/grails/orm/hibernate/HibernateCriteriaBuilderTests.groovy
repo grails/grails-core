@@ -77,8 +77,19 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         results = domainClass.withCriteria {
             sqlRestriction "char_length(first_name) > 2"
         }
+        
+        // should retrieve homer, not bart, lisa and maggie
+        results = domainClass.withCriteria {
+            sqlRestriction 'char_length(first_name) > ? AND char_length(first_name) < ?', [4, 6]
+        }
 
-        assertEquals 4, results?.size()
+        
+        // should retrieve homer, bart and lisa, not maggie
+        results = domainClass.withCriteria {
+            sqlRestriction 'char_length(first_name) > ? AND char_length(first_name) < ?', [2, 6]
+        }
+        
+        assertEquals 3, results?.size()
     }
 
     void testOrderByProjection() {
