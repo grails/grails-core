@@ -36,6 +36,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -47,9 +48,11 @@ import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -235,6 +238,18 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         public List<UrlMapping> getUrlMappings() {
             return urlMappings;
+        }
+
+        public ServletContext getServletContext() {
+            return sc;
+        }
+
+        public ApplicationContext getApplicationContext() {
+            return WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+        }
+
+        public GrailsApplication getGrailsApplication() {
+            return getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
         }
 
         @Override
