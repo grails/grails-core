@@ -22,11 +22,33 @@ class TestingValidationSpec extends Specification {
             errorCount == 1
             'typeMismatch' in ageError.codes
     }
+    
+    @Ignore
+    void 'Test fixing a validation error'() {
+        given:
+            def person = new Person(name: 'Jeff', age: 42, email: 'bademail')
+            
+        when:
+            person.validate()
+            def errorCount = person.errors.errorCount
+            def emailError = person.errors.getFieldError('email')
+            
+        then:
+            errorCount == 1
+            'person.email.email.error' in emailError.codes
+            
+        when:
+            person.email = 'jeff.brown@springsource.com'
+            person.validate()
+            
+        then:
+            !person.hasErrors()
+    }
 
     @Ignore
     void 'Test multiple validation errors on the same property'() {
         given:
-            def person = new Person(name: 'Jeff', age: 42, email: 'bad')
+            def person = new Person(name: 'Jeff', age: 42, email: 'bade')
             
         when:
             person.validate()
@@ -60,7 +82,6 @@ class TestingValidationSpec extends Specification {
             'person.email.size.error' in codes
     }
     
-    @Ignore
     void 'Test that binding errors are retained during validation'() {
         given:
         def person = new Person(name: 'Jeff', age: 42, email: 'jeff.brown@springsource.com')
