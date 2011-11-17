@@ -12,18 +12,18 @@ class CommandLineParserSpec extends Specification {
     String originalGrailsEnv
     @Shared
     String originalGrailsEnvDefault
-    
+
     def setup() {
-        // set grails.env=development before each test 
+        // set grails.env=development before each test
         System.setProperty(Environment.KEY, "development");
     }
-    
+
     def setupSpec() {
         // save grails.env and grails.env.default keys before running this spec
         originalGrailsEnv = System.getProperty(Environment.KEY)
         originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
     }
-    
+
     def cleanupSpec() {
         // reset grails.env and grails.env.default keys after running this spec
         if(originalGrailsEnv != null) {
@@ -37,7 +37,7 @@ class CommandLineParserSpec extends Specification {
             System.clearProperty(Environment.DEFAULT)
         }
     }
-    
+
     void "Test parse string with command and args"() {
         when:
             def parser = new CommandLineParser()

@@ -52,12 +52,12 @@ class JavascriptTagLib {
             }
         }
     }
-    
+
     private boolean hasResourcesProcessor() {
         grailsApplication.mainContext.containsBean('grailsResourceProcessor')
     }
-    
-/**
+
+    /**
      * Includes a javascript src file, library or inline script
      * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
      *

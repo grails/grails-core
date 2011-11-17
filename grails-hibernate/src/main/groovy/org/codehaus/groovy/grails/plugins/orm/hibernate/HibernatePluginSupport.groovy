@@ -194,7 +194,7 @@ class HibernatePluginSupport {
 						}
 					}
 				}
-				
+
                 def namingStrategy = hibConfig.naming_strategy ?: ImprovedNamingStrategy
                 try {
                     GrailsDomainBinder.configureNamingStrategy datasourceName, namingStrategy
@@ -203,7 +203,7 @@ class HibernatePluginSupport {
                     log.error """WARNING: You've configured a custom Hibernate naming strategy '$namingStrategy' in DataSource.groovy, however the class cannot be found.
 Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 }
-				
+
 				// allow adding hibernate properties that don't start with "hibernate."
 				if(hibConfig.get('properties') instanceof ConfigObject) {
 					def hibernateProperties = hibConfig.remove('properties')
@@ -212,7 +212,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
 
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
 
-				// move net.sf.ehcache.configurationResourceName to "top level"	if it exists			
+				// move net.sf.ehcache.configurationResourceName to "top level"	if it exists
 				if(hibProps.'hibernate.net.sf.ehcache.configurationResourceName') {
 					hibProps.'net.sf.ehcache.configurationResourceName' = hibProps.remove('hibernate.net.sf.ehcache.configurationResourceName')
 				}

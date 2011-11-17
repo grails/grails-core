@@ -122,9 +122,9 @@ def toPropertyName(String typeName) {
 	}
     return typeName[0].toLowerCase(Locale.ENGLISH) + typeName.substring(1);
 }
- 
- void addSyntheticFieldToWormhole(String name, ClassNode type, Map wormhole) {
-	 def synth = wormhole["syntheticFields"] 
+
+void addSyntheticFieldToWormhole(String name, ClassNode type, Map wormhole) {
+	 def synth = wormhole["syntheticFields"]
 	 if (!synth) {
 		 synth = [:]
 		 wormhole["syntheticFields"] = synth
@@ -177,7 +177,7 @@ def toPropertyName(String typeName) {
 	}
 }
 
-// -----------------------------------------------------     
+// -----------------------------------------------------
 // GormStaticAPI
 // GormInstanceAPI
 // GormValidationAPI
@@ -203,7 +203,7 @@ def toPropertyName(String typeName) {
 		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
 	method name:"withCriteria", type:"java.util.List<${currentTypeName}>", params: [query : Closure],
 		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
-		
+
 	method name:"findWhere", type:currentType, optionalParams:convertToParams(props), isStatic:true, declaringType:"org.grails.datastore.gorm.GormStaticApi<${currentTypeName}>"
 
 	provider = "Where query DSL"
@@ -306,7 +306,7 @@ whereQuery.accept {
 		if (prop) {
 			maybe = prop.type
 		} else {
-			// grab synthetic properties (hadOne, belongsTo, and hasMany) from the wormhole 
+			// grab synthetic properties (hadOne, belongsTo, and hasMany) from the wormhole
 			Map<String,ClassNode> synth = wormhole["syntheticFields"]
 			if (synth) {
 				maybe = synth[it]
@@ -318,17 +318,17 @@ whereQuery.accept {
 				property(name:innerProp.name, type:innerProp.type, declaringType: maybe, provider: "Inner query", )
 			}
 		}
-	} 
-}  
+	}
+}
 
 // the 'of' method
-currentType("grails.gorm.DetachedCriteria").accept { 
+currentType("grails.gorm.DetachedCriteria").accept {
 	provider = "Where query DSL"
 	method name:"of", params:[subquery:Closure], declaringType:extractGeneric(currentType), doc:"You can apply additional criteria to any subquery by using the of method and passing in a closure containing the criteria."
 }
 
 
-// Criteria builder --- 
+// Criteria builder ---
 currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	provider = "Criteria builder DSL"
 	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
@@ -339,7 +339,7 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 }
 
 // namedQueries field
-// not exactly right since HibernateCriteriaBuilder methods should only be available 
+// not exactly right since HibernateCriteriaBuilder methods should only be available
 // inside of nested closures in the namedQueries field, but this formulation will
 // allow methods directly inside of the top-level namedQueries closure.
 contribute(enclosingField("namedQueries") & domainClass) {
@@ -409,7 +409,7 @@ contribute(enclosingField("namedQueries") & domainClass) {
 			 	params: [template: String, view:String, model:"java.util.Map<java.lang.String,java.lang.Object>", action: String]
 
 		 	 method name:"defineBeans", params:[beans:Closure]
-			  
+
 			 delegatesTo "grails.test.mixin.web.ControllerUnitTestMixin"
 		 } else if (className.endsWith("TagLib")) {
 		     delegatesTo "grails.test.mixin.web.GroovyPageUnitTestMixin"
@@ -422,7 +422,7 @@ contribute(enclosingField("namedQueries") & domainClass) {
 			 delegatesTo "grails.test.mixin.web.ControllerUnitTestMixin"
 			 delegatesTo "grails.test.mixin.web.UrlMappingsUnitTestMixin"
 		 }
-		 
+
 		 // must explicitly delegate to Assert since the junit classes are not in the type hierarchy until
 		 // after the AST transform is completed.
 		 delegatesTo "junit.framework.Assert"

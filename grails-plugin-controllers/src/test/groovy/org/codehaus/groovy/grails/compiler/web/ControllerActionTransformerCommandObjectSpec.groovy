@@ -119,7 +119,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
         ''')
-        
+
         // Make sure this parent controller is compiled before the subclass.  This is relevant to GRAILS-8268
         gcl.parseClass('''
         abstract class MyAbstractController {
@@ -422,14 +422,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             birthday
             expectedDate == birthday
     }
-    
+
     void 'Test overriding closure actions in subclass'() {
         given:
             def subclassController = subclassControllerClass.newInstance()
-            
+
         when:
             def model = subclassController.index()
-            
+
         then:
             'Subclass Controller' == model.name
     }
@@ -438,4 +438,3 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
-

@@ -5,8 +5,6 @@ import grails.orm.PagedResultList
 /**
  * @author Graeme Rocher
  * @since 1.0
- *
- * Created: Nov 22, 2007
  */
 class ListMethodTests extends AbstractGrailsHibernateTests {
 
@@ -39,7 +37,7 @@ class ListableBook {
         def results = bookClass.list(max: 2, offset: 0)
         assertTrue 'results should have been a PagedResultList', results instanceof PagedResultList
         assertEquals 1, stats.queryExecutionCount
-        
+
         assertEquals 2, results.size()
         assertEquals 6, results.totalCount
         assertEquals 2, stats.queryExecutionCount

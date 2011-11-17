@@ -82,7 +82,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final String applicationContextVariableName = "$ctx";
             final String constraintsEvaluatorVariableName = "$evaluator";
             final String evaluateMethodName = "evaluate";
-                
+
             final BlockStatement ifConstraintsPropertyIsNullBlockStatement = new BlockStatement();
             final Expression declareServletContextExpression = new DeclarationExpression(new VariableExpression(servletContextHolderVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(ServletContextHolder.class), "getServletContext", new ArgumentListExpression()));
             final Expression declareApplicationContextExpression = new DeclarationExpression(new VariableExpression(applicationContextVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(WebApplicationContextUtils.class), "getWebApplicationContext", new ArgumentListExpression(new VariableExpression(servletContextHolderVariableName))));

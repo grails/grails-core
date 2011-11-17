@@ -46,10 +46,10 @@ class CreateCriteriaTests extends AbstractGrailsHibernateTests {
         assertTrue 'results should have been a PagedResultList', results instanceof PagedResultList
         assertEquals 1, stats.queryExecutionCount
 
-        assertEquals 3, results.size()        
+        assertEquals 3, results.size()
         assertEquals 8, results.totalCount
         assertEquals 2, stats.queryExecutionCount
-        
+
         // refer to totalCount again and make sure another query was not sent to the database
         assertEquals 8, results.totalCount
         assertEquals 2, stats.queryExecutionCount

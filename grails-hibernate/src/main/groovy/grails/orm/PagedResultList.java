@@ -44,10 +44,10 @@ public class PagedResultList implements List, Serializable {
     protected List list;
 
     protected int totalCount = Integer.MIN_VALUE;
-    
+
     private final GrailsHibernateTemplate hibernateTemplate;
     private final Criteria criteria;
-    
+
     public PagedResultList(GrailsHibernateTemplate template, Criteria crit) {
         this.list = crit.list();
         this.criteria = crit;
@@ -165,7 +165,7 @@ public class PagedResultList implements List, Serializable {
                     criteria.setProjection(Projections.rowCount());
                     return ((Number)criteria.uniqueResult()).intValue();
                 }
-            }); 
+            });
         }
         return totalCount;
     }

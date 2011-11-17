@@ -55,7 +55,7 @@ class GroovyPageRenderingTests extends AbstractGrailsTagTests {
         def result=applyTemplate(template, [mockGrailsApplication: [domainClasses: [[fullName: 'MyClass2', clazz:'we'], [fullName: 'MyClass1', clazz:'we'], [fullName: 'MyClass3', clazz:'no']] ]])
         assertEquals '<option value="MyClass1">content.item.name.MyClass1</option><option value="MyClass2">content.item.name.MyClass2</option>', result
     }
-    
+
     void testMultilineAttributeGRAILS8253() {
         def template='''<html>
 <head>
@@ -85,7 +85,7 @@ is a test action description" class="buttons" onclick="if (testForm.testField.va
 </body>
 </html>''', result
     }
-    
+
     void testNestedExpression() {
         def template='''<g:set var="a" value="hello"/><g:set var="b" value='${[test: "${a} ${a}"]}'/>${b.test}'''
         def result = applyTemplate(template, [:])

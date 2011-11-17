@@ -46,7 +46,7 @@ public class ListOrderByPersistentMethod extends AbstractStaticPersistentMethod 
 
     private static final String METHOD_PATTERN = "(listOrderBy)(\\w+)";
     private final HibernateDatastore datastore;
-    
+
     public ListOrderByPersistentMethod(HibernateDatastore datastore, GrailsApplication grailsApplication, SessionFactory sessionFactory, ClassLoader classLoader) {
         super(sessionFactory, classLoader, Pattern.compile(METHOD_PATTERN), grailsApplication);
         this.datastore = datastore;

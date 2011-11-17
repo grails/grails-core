@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 /**
  * More tests for {@link LinkGenerator }. See Also LinkGeneratorSpec.
- * 
+ *
  * These test focus on testing integration with the URL mappings to ensure they are respected.
  */
 class LinkGeneratorWithUrlMappingsSpec extends Specification{
