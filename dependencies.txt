@@ -113,8 +113,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications (With an in-memory database)
 
-* javassist-3.8.0.GA.jar
-- Javassist 3.8 (http://www.jboss.org/javassist/) MPL or LGPL License
+* javassist-3.12.0.GA.jar
+- Javassist 3.12.0 (http://www.jboss.org/javassist/) MPL or LGPL License
 - required for running Grails applications 
 
 * jline-0.9.94.jar
