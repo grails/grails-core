@@ -5,8 +5,8 @@ The following libraries are included in Grails because they are required either 
 - used to build the framework and for the command line tools (Gant)
 - required for running Grails applications when using AntBuilder
 
-* antlr-2.7.6.jar
-- ANTLR 2.7.6 (http://www.antlr.org) BSD License
+* antlr-2.7.7.jar
+- ANTLR 2.7.7 (http://www.antlr.org) BSD License
 - required for running Grails applications (Hibernate)
 
 * aspectjrt-1.6.8.jar, aspectjweaver-1.6.8.jar
