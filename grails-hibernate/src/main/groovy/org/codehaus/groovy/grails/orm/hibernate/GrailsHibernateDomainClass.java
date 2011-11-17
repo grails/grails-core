@@ -63,12 +63,12 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
     private Map<String, GrailsHibernateDomainClassProperty> propertyMap = new LinkedHashMap<String, GrailsHibernateDomainClassProperty>();
 
     private Validator validator;
-
     private GrailsApplication application;
+    private SessionFactory sessionFactory;
+    private String sessionFactoryName;
 
     private Set subClasses = new HashSet();
     private Map constraints = Collections.emptyMap();
-
 
     /**
      * Contructor to be used by all child classes to create a new instance
@@ -76,12 +76,16 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
      *
      * @param clazz          the Grails class
      * @param sessionFactory The Hibernate SessionFactory instance
+     * @param sessionFactoryName
+     * @param application
      * @param metaData       The ClassMetaData for this class retrieved from the SF
      */
-    public GrailsHibernateDomainClass(Class<?> clazz, SessionFactory sessionFactory, GrailsApplication application,
-            ClassMetadata metaData) {
+    public GrailsHibernateDomainClass(Class<?> clazz, SessionFactory sessionFactory, String sessionFactoryName,
+            GrailsApplication application, ClassMetadata metaData) {
         super(clazz, "");
         this.application = application;
+        this.sessionFactory = sessionFactory;
+        this.sessionFactoryName = sessionFactoryName;
 
         new StandardAnnotationMetadata(clazz);
         String ident = metaData.getIdentifierPropertyName();
@@ -149,9 +153,16 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         evaluateConstraints();
     }
 
-    /**
-     * Evaluates the constraints closure to build the list of constraints
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
 
+    public String getSessionFactoryName() {
+        return sessionFactoryName;
+    }
+
+    /**
+     * Evaluates the constraints closure to build the list of constraints.
      */
     private void evaluateConstraints() {
         Map existing = (Map) getPropertyOrStaticPropertyOrFieldValue(GrailsDomainClassProperty.CONSTRAINTS, Map.class);

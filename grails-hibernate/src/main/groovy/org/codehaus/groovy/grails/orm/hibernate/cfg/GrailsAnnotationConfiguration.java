@@ -133,7 +133,8 @@ public class GrailsAnnotationConfiguration extends Configuration implements Grai
         SessionFactory sessionFactory = super.buildSessionFactory();
 
         if (grailsApplication != null) {
-            GrailsHibernateUtil.configureHibernateDomainClasses(sessionFactory, grailsApplication);
+            GrailsHibernateUtil.configureHibernateDomainClasses(
+                    sessionFactory, sessionFactoryBeanName, grailsApplication);
         }
 
         return sessionFactory;
