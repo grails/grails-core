@@ -59,7 +59,7 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
     }
 
     public MappingConfigurationStrategy getMappingSyntaxStrategy() {
-        return new GrailsGrailsDomainMappingConfigurationStrategy();
+        return new GrailsDomainMappingConfigurationStrategy();
     }
 
     @Override
@@ -77,12 +77,19 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
         return new GrailsDomainClassPersistentEntity(domainClass, this);
     }
 
-    private class GrailsGrailsDomainMappingConfigurationStrategy implements MappingConfigurationStrategy {
+    private class GrailsDomainMappingConfigurationStrategy implements MappingConfigurationStrategy {
         public boolean isPersistentEntity(Class javaClass) {
             return grailsApplication.isArtefactOfType(DomainClassArtefactHandler.TYPE, javaClass);
         }
 
         public List<PersistentProperty> getPersistentProperties(Class javaClass, MappingContext context) {
+            return null;
+        }
+
+        /**
+         * @see #getPersistentProperties(Class, org.grails.datastore.mapping.model.MappingContext, org.grails.datastore.mapping.model.ClassMapping)
+         */
+        public List<PersistentProperty> getPersistentProperties(PersistentEntity entity, MappingContext context, ClassMapping classMapping) {
             return null;
         }
 
