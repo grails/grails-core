@@ -102,11 +102,12 @@ public class GrailsHibernateUtil {
         }
     }
 
-    public static void configureHibernateDomainClasses(SessionFactory sessionFactory, GrailsApplication application) {
+    public static void configureHibernateDomainClasses(SessionFactory sessionFactory,
+            String sessionFactoryName, GrailsApplication application) {
         Map<String, GrailsDomainClass> hibernateDomainClassMap = new HashMap<String, GrailsDomainClass>();
         for (Object o : sessionFactory.getAllClassMetadata().values()) {
             ClassMetadata classMetadata = (ClassMetadata) o;
-            configureDomainClass(sessionFactory, application, classMetadata,
+            configureDomainClass(sessionFactory, sessionFactoryName, application, classMetadata,
                     classMetadata.getMappedClass(EntityMode.POJO),
                     hibernateDomainClassMap);
         }
@@ -135,8 +136,9 @@ public class GrailsHibernateUtil {
         }
     }
 
-    private static void configureDomainClass(SessionFactory sessionFactory, GrailsApplication application,
-                                             ClassMetadata cmd, Class<?> persistentClass, Map<String, GrailsDomainClass> hibernateDomainClassMap) {
+    private static void configureDomainClass(SessionFactory sessionFactory, String sessionFactoryName,
+            GrailsApplication application, ClassMetadata cmd, Class<?> persistentClass,
+            Map<String, GrailsDomainClass> hibernateDomainClassMap) {
 
         if (Modifier.isAbstract(persistentClass.getModifiers())) {
             return;
@@ -144,10 +146,10 @@ public class GrailsHibernateUtil {
 
         LOG.trace("Configuring domain class [" + persistentClass + "]");
         GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.getName());
-        if (dc == null) {
+        if (dc == null && sessionFactory.getClassMetadata(persistentClass) != null) {
             // a patch to add inheritance to this system
             GrailsHibernateDomainClass ghdc = new GrailsHibernateDomainClass(
-                    persistentClass, sessionFactory, application, cmd);
+                    persistentClass, sessionFactory, sessionFactoryName, application, cmd);
 
             hibernateDomainClassMap.put(persistentClass.getName(), ghdc);
             dc = (GrailsDomainClass) application.addArtefact(DomainClassArtefactHandler.TYPE, ghdc);
@@ -161,8 +163,6 @@ public class GrailsHibernateUtil {
      * @param targetClass The target class
      * @param c The criteria instance
      * @param argMap The arguments map
-     *
-
      */
     @SuppressWarnings("rawtypes")
     public static void populateArgumentsForCriteria(GrailsApplication grailsApplication, Class<?> targetClass, Criteria c, Map argMap) {
@@ -496,6 +496,15 @@ public class GrailsHibernateUtil {
     }
 
     public static boolean usesDatasource(GrailsDomainClass domainClass, String dataSourceName) {
+        if (domainClass instanceof GrailsHibernateDomainClass) {
+            GrailsHibernateDomainClass hibernateDomainClass = (GrailsHibernateDomainClass)domainClass;
+            String sessionFactoryName = hibernateDomainClass.getSessionFactoryName();
+            if (dataSourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE)) {
+                return "sessionFactory".equals(sessionFactoryName);
+            }
+            return sessionFactoryName.endsWith("_" + dataSourceName);
+        }
+
         List<String> names = getDatasourceNames(domainClass);
         return names.contains(dataSourceName) ||
                names.contains(GrailsDomainClassProperty.ALL_DATA_SOURCES);
@@ -509,6 +518,15 @@ public class GrailsHibernateUtil {
      * @return the default datasource name
      */
     public static String getDefaultDataSource(GrailsDomainClass domainClass) {
+        if (domainClass instanceof GrailsHibernateDomainClass) {
+            GrailsHibernateDomainClass hibernateDomainClass = (GrailsHibernateDomainClass)domainClass;
+            String sessionFactoryName = hibernateDomainClass.getSessionFactoryName();
+            if ("sessionFactory".equals(sessionFactoryName)) {
+                return GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
+            }
+            return sessionFactoryName.substring("sessionFactory_".length());
+        }
+
         List<String> names = getDatasourceNames(domainClass);
         if (names.size() == 1 && GrailsDomainClassProperty.ALL_DATA_SOURCES.equals(names.get(0))) {
             return GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
