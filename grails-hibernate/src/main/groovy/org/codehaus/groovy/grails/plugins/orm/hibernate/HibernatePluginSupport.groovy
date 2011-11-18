@@ -175,25 +175,25 @@ class HibernatePluginSupport {
 
             if (hibConfig) {
                 def cacheProvider = hibConfig.cache?.provider_class
-				if(cacheProvider) {
-	                if (cacheProvider.contains('OSCacheProvider')) {
-	                    try {
-	                        def cacheClass = getClass().classLoader.loadClass(cacheProvider)
-	                    }
-	                    catch (Throwable t) {
-							hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
-	                        log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the class for this provider cannot be found.
-	Using Grails' default cache region factory: 'net.sf.ehcache.hibernate.EhCacheRegionFactory'"""
-	                    }
-	                } else if (!(hibConfig.cache.useCacheProvider) && (cacheProvider=='org.hibernate.cache.EhCacheProvider' || cacheProvider=='net.sf.ehcache.EhCacheProvider')) {
-						hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
-						hibConfig.cache.remove('provider_class')
-						if(hibConfig.cache.provider_configuration_file_resource_path) {
-							hibProps.'net.sf.ehcache.configurationResourceName' = hibConfig.cache.provider_configuration_file_resource_path
-							hibConfig.cache.remove('provider_configuration_file_resource_path')
-						}
-					}
-				}
+                if (cacheProvider) {
+                    if (cacheProvider.contains('OSCacheProvider')) {
+                        try {
+                            def cacheClass = getClass().classLoader.loadClass(cacheProvider)
+                        }
+                        catch (Throwable t) {
+                            hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
+                            log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the class for this provider cannot be found.
+    Using Grails' default cache region factory: 'net.sf.ehcache.hibernate.EhCacheRegionFactory'"""
+                        }
+                    } else if (!(hibConfig.cache.useCacheProvider) && (cacheProvider=='org.hibernate.cache.EhCacheProvider' || cacheProvider=='net.sf.ehcache.EhCacheProvider')) {
+                        hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
+                        hibConfig.cache.remove('provider_class')
+                        if (hibConfig.cache.provider_configuration_file_resource_path) {
+                            hibProps.'net.sf.ehcache.configurationResourceName' = hibConfig.cache.provider_configuration_file_resource_path
+                            hibConfig.cache.remove('provider_configuration_file_resource_path')
+                        }
+                    }
+                }
 
                 def namingStrategy = hibConfig.naming_strategy ?: ImprovedNamingStrategy
                 try {
@@ -204,18 +204,18 @@ class HibernatePluginSupport {
 Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 }
 
-				// allow adding hibernate properties that don't start with "hibernate."
-				if(hibConfig.get('properties') instanceof ConfigObject) {
-					def hibernateProperties = hibConfig.remove('properties')
-					hibProps.putAll(hibernateProperties.flatten().toProperties())
-				}
+                // allow adding hibernate properties that don't start with "hibernate."
+                if (hibConfig.get('properties') instanceof ConfigObject) {
+                    def hibernateProperties = hibConfig.remove('properties')
+                    hibProps.putAll(hibernateProperties.flatten().toProperties())
+                }
 
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
 
-				// move net.sf.ehcache.configurationResourceName to "top level"	if it exists
-				if(hibProps.'hibernate.net.sf.ehcache.configurationResourceName') {
-					hibProps.'net.sf.ehcache.configurationResourceName' = hibProps.remove('hibernate.net.sf.ehcache.configurationResourceName')
-				}
+                // move net.sf.ehcache.configurationResourceName to "top level"    if it exists
+                if (hibProps.'hibernate.net.sf.ehcache.configurationResourceName') {
+                    hibProps.'net.sf.ehcache.configurationResourceName' = hibProps.remove('hibernate.net.sf.ehcache.configurationResourceName')
+                }
             }
 
             "hibernateProperties$suffix"(PropertiesFactoryBean) { bean ->
@@ -374,7 +374,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                     String suffix = isDefault ? '' : '_' + datasourceName
                     final validator = ctx.getBean("${entity.name}Validator$suffix", Validator)
                     mappingContext.addEntityValidator(entity, validator)
-                    if(isDefault) {
+                    if (isDefault) {
                         GrailsDomainClass domainClass = application.getDomainClass(event.source.name)
                         domainClass.setValidator(validator)
                     }

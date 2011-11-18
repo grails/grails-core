@@ -53,18 +53,19 @@ public abstract class AbstractGrailsEnvChangingSpec extends Specification {
         }
     }
     
-	protected void resetGrailsEnvironment() {
-		if(originalGrailsEnv != null) {
-			System.setProperty(Environment.KEY, originalGrailsEnv)
-		} else {
-			System.clearProperty(Environment.KEY)
-		}
-		if(originalGrailsEnvDefault != null) {
-			System.setProperty(Environment.DEFAULT, originalGrailsEnvDefault)
-		} else {
-			System.clearProperty(Environment.DEFAULT)
-		}
-	}
+    protected void resetGrailsEnvironment() {
+        if (originalGrailsEnv != null) {
+            System.setProperty(Environment.KEY, originalGrailsEnv)
+        } else {
+            System.clearProperty(Environment.KEY)
+        }
+
+        if (originalGrailsEnvDefault != null) {
+            System.setProperty(Environment.DEFAULT, originalGrailsEnvDefault)
+        } else {
+            System.clearProperty(Environment.DEFAULT)
+        }
+    }
     
     protected createCombinationsForGrailsEnvs(params) {
         [params,grailsEnvs].combinations().collect { it.flatten() }

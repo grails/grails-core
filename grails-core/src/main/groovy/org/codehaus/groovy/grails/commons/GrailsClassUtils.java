@@ -685,14 +685,14 @@ public class GrailsClassUtils {
      * @return The value if there is one, or null if unset OR there is no such field
      */
     public static Object getStaticFieldValue(Class<?> clazz, String name) {
-    	Field field = ReflectionUtils.findField(clazz, name);
-    	if(field != null) {
-    		ReflectionUtils.makeAccessible(field);
-    		try {
-    			return field.get(null);
-    		} catch (IllegalAccessException ignored) {}
-    	}
-    	return null;
+        Field field = ReflectionUtils.findField(clazz, name);
+        if (field != null) {
+            ReflectionUtils.makeAccessible(field);
+            try {
+                return field.get(null);
+            } catch (IllegalAccessException ignored) {}
+        }
+        return null;
     }
 
     /**

@@ -449,24 +449,25 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      */
 
     public static void exposeIncludeRequestAttributes(HttpServletRequest request) {
-		exposeRequestAttributeIfNotPresent(request, INCLUDE_REQUEST_URI_ATTRIBUTE, request.getRequestURI());
-		exposeRequestAttributeIfNotPresent(request, INCLUDE_CONTEXT_PATH_ATTRIBUTE, request.getContextPath());
-		exposeRequestAttributeIfNotPresent(request, INCLUDE_SERVLET_PATH_ATTRIBUTE, request.getServletPath());
-		exposeRequestAttributeIfNotPresent(request, INCLUDE_PATH_INFO_ATTRIBUTE, request.getPathInfo());
-		exposeRequestAttributeIfNotPresent(request, INCLUDE_QUERY_STRING_ATTRIBUTE, request.getQueryString());
+        exposeRequestAttributeIfNotPresent(request, INCLUDE_REQUEST_URI_ATTRIBUTE, request.getRequestURI());
+        exposeRequestAttributeIfNotPresent(request, INCLUDE_CONTEXT_PATH_ATTRIBUTE, request.getContextPath());
+        exposeRequestAttributeIfNotPresent(request, INCLUDE_SERVLET_PATH_ATTRIBUTE, request.getServletPath());
+        exposeRequestAttributeIfNotPresent(request, INCLUDE_PATH_INFO_ATTRIBUTE, request.getPathInfo());
+        exposeRequestAttributeIfNotPresent(request, INCLUDE_QUERY_STRING_ATTRIBUTE, request.getQueryString());
     }
 
     /**
-	 * Expose the specified request attribute if not already present.
-	 * @param request current servlet request
-	 * @param name the name of the attribute
-	 * @param value the suggested value of the attribute
-	 */
-	private static void exposeRequestAttributeIfNotPresent(ServletRequest request, String name, Object value) {
-		if (request.getAttribute(name) == null) {
-			request.setAttribute(name, value);
-		}
-	}
+     * Expose the specified request attribute if not already present.
+     * @param request current servlet request
+     * @param name the name of the attribute
+     * @param value the suggested value of the attribute
+     */
+    private static void exposeRequestAttributeIfNotPresent(ServletRequest request, String name, Object value) {
+        if (request.getAttribute(name) == null) {
+            request.setAttribute(name, value);
+        }
+    }
+
     /**
      * Takes a query string and returns the results as a map where the values are either a single entry or a list of values
      *

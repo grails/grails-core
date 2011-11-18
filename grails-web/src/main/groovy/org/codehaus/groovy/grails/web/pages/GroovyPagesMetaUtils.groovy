@@ -21,19 +21,19 @@ class GroovyPagesMetaUtils {
         registerMethodMissingWorkaroundsForDefaultNamespace(mc, gspTagLibraryLookup)
     }
 
-	public static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, args, boolean addMethodsToMetaClass) {
-		final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
-		if(tagBean != null) {
-			final MetaMethod method=tagBean.respondsTo(name, args).find{ it }
-			if(method != null) {
-				if(addMethodsToMetaClass) {
-					addTagLibMethodToMetaClass(tagBean, method, mc)
-				}
-				return method.invoke(tagBean, args)
+    public static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, args, boolean addMethodsToMetaClass) {
+        final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
+        if (tagBean != null) {
+            final MetaMethod method=tagBean.respondsTo(name, args).find{ it }
+            if (method != null) {
+                if (addMethodsToMetaClass) {
+                    addTagLibMethodToMetaClass(tagBean, method, mc)
+                }
+                return method.invoke(tagBean, args)
             }
-		}
-		throw new MissingMethodException(name, type, args)
-	}
+        }
+        throw new MissingMethodException(name, type, args)
+    }
 
     public static void registerMethodMissingWorkaroundsForDefaultNamespace(MetaClass mc, TagLibraryLookup gspTagLibraryLookup) {
         // hasErrors gets mixed up by hasErrors method without this metaclass modification

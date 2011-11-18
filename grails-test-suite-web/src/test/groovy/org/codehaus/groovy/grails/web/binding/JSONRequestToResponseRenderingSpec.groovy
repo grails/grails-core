@@ -7,13 +7,6 @@ import grails.test.mixin.TestFor
 import spock.lang.Specification
 import grails.converters.JSON
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 10/17/11
- * Time: 2:50 PM
- * To change this template use File | Settings | File Templates.
- */
 @TestFor(ArrayController)
 class JSONRequestToResponseRenderingSpec extends Specification{
 
