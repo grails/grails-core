@@ -23,7 +23,6 @@ class TestingValidationSpec extends Specification {
             'typeMismatch' in ageError.codes
     }
     
-    @Ignore
     void 'Test fixing a validation error'() {
         given:
             def person = new Person(name: 'Jeff', age: 42, email: 'bademail')
@@ -45,7 +44,6 @@ class TestingValidationSpec extends Specification {
             !person.hasErrors()
     }
 
-    @Ignore
     void 'Test multiple validation errors on the same property'() {
         given:
             def person = new Person(name: 'Jeff', age: 42, email: 'bade')
