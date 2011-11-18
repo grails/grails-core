@@ -130,19 +130,21 @@ subprojects { project ->
         }
         compile groovyDependency
 
-        // Logging
-        compile "org.slf4j:slf4j-api:$slf4jVersion"
-        compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+        if (project.name != "grails-docs") {
+            // Logging
+            compile "org.slf4j:slf4j-api:$slf4jVersion"
+            compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
-        // Specs
-        compile 'javax.servlet:servlet-api:2.5'
-        compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+            // Specs
+            compile 'javax.servlet:servlet-api:2.5'
+            compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 
 
-        // Testing
-        testCompile "junit:junit:${junitVersion}"
-        testCompile('org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT') {
-            transitive = false
+            // Testing
+            testCompile "junit:junit:${junitVersion}"
+            testCompile('org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT') {
+                transitive = false
+            }
         }
     }
 
