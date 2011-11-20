@@ -714,7 +714,8 @@ public abstract class AbstractIvyDependencyManager {
 
     private void addMetadataPluginDependencies(Map<String, String> plugins) {
         for (Map.Entry<String, String> plugin : plugins.entrySet()) {
-            String name = plugin.getKey();
+            String name = plugin.getKey().contains(":") ? plugin.getKey().split(":")[1] : plugin.getKey();
+			String group = plugin.getKey().contains(":") ? plugin.getKey().split(":")[0] : "org.grails.plugins";
             String version = plugin.getValue();
 
             if (pluginNameToDescriptorMap.containsKey(name)) {
@@ -723,7 +724,7 @@ public abstract class AbstractIvyDependencyManager {
 
             String scope = "runtime";
             metadataRegisteredPluginNames.add(name);
-            ModuleRevisionId mrid = ModuleRevisionId.newInstance("org.grails.plugins", name, version);
+            ModuleRevisionId mrid = ModuleRevisionId.newInstance(group, name, version);
             EnhancedDefaultDependencyDescriptor enhancedDescriptor = new EnhancedDefaultDependencyDescriptor(
                     mrid, true, true, scope);
             // since the plugin dependency isn't declared but instead installed via install-plugin
