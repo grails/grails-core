@@ -1889,6 +1889,7 @@ public final class GrailsDomainBinder {
         PropertyConfig propertyConfig = getPropertyConfig(property);
         if (propertyConfig != null && !propertyConfig.getColumns().isEmpty()) {
             bindIndex(columnName, column, propertyConfig.getColumns().get(0), t);
+            bindColumnConfigToColumn(column, propertyConfig.getColumns().get(0));
         }
     }
 
