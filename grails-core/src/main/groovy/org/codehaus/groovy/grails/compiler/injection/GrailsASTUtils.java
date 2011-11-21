@@ -345,7 +345,7 @@ public class GrailsASTUtils {
         constructCallExpression.setMethodTarget(constructorMethod);
         ExpressionStatement constructorInitExpression = new ExpressionStatement(constructCallExpression);
         if(constructorParams.length>0) {
-            constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(classNode, GrailsArtefactClassInjector.ZERO_ARGS)));
+            constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(ClassNode.THIS, GrailsArtefactClassInjector.ZERO_ARGS)));
         }
         constructorBody.addStatement(constructorInitExpression);
 
