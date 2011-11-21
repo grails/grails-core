@@ -60,8 +60,8 @@ p = new Permission(user:u, permission:"uber")
         assert entity.cash == 30
 
     }
+
     void testConstructorBehaviourNotOverriden() {
-        if(notYetImplemented()) return
         def entity = evaluate("""
           import grails.persistence.*
           @Entity
