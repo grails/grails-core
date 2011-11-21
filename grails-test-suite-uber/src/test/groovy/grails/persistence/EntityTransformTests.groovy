@@ -74,7 +74,7 @@ p = new Permission(user:u, permission:"uber")
                     cash = 30
                 }
           }
-          new EntityTransformTest(case: 42)
+          new EntityTransformTest(cash: 42)
         """)
 
         assert entity != null
