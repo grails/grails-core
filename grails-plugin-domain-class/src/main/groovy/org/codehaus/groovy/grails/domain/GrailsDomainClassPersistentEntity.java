@@ -84,7 +84,9 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity, Init
                     persistentProperty = createOneToMany(mappingContext, grailsDomainClassProperty);
                 }
                 else if (grailsDomainClassProperty.isHasOne()) {
-                    persistentProperty = createOneToOne(mappingContext, grailsDomainClassProperty);
+                    OneToOne oneToOne = (OneToOne) createOneToOne(mappingContext, grailsDomainClassProperty);
+                    oneToOne.setForeignKeyInChild(true);
+                    persistentProperty = oneToOne;
                 }
                 else if (grailsDomainClassProperty.isOneToOne()) {
                     persistentProperty = createOneToOne(mappingContext, grailsDomainClassProperty);
