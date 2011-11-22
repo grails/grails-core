@@ -43,6 +43,37 @@ class CallMe {
     }
 
 
+    def "Test parameterized where query"() {
+        given:"A bunch of people"
+              createPeople()
+
+        when:"parameters are used instead of literals"
+            def fn = "Bart"
+            def ln = "Simpson"
+
+
+            def query = Person.where { firstName != fn && lastName == ln }.sort("firstName", "desc")
+            def people = query.list()
+
+        then:"The correct results are returned"
+            people.size() == 3
+    }
+
+
+    def "Test property projection"() {
+        given:"A bunch of people"
+          createPeople()
+
+        when:"We create a where query and combine it with a property projection"
+          def query = Person.where {
+              lastName == "Simpson"
+          }
+          def results = query.property("firstName").list()
+
+        then:"The correct result is returned"
+            results == ["Homer", "Marge", "Bart", "Lisa"]
+    }
+
   def "Test invoke dynamic finder on where query"() {
       given:"A bunch of people"
         createPeople()

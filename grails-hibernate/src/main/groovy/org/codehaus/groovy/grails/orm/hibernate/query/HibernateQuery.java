@@ -322,7 +322,8 @@ public class HibernateQuery extends Query {
 
     @Override
     public ProjectionList projections() {
-        hibernateProjectionList = new HibernateProjectionList();
+        if(hibernateProjectionList == null)
+            hibernateProjectionList = new HibernateProjectionList();
         return hibernateProjectionList;
     }
 
@@ -361,6 +362,9 @@ public class HibernateQuery extends Query {
 
     @Override
     public List list() {
+        if (hibernateProjectionList != null) {
+            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
+        }
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.list();
     }
@@ -456,6 +460,12 @@ public class HibernateQuery extends Query {
 
         public org.hibernate.criterion.ProjectionList getHibernateProjectionList() {
             return projectionList;
+        }
+
+        @Override
+        public ProjectionList add(Projection p) {
+            projectionList.add(new HibernateProjectionAdapter(p).toHibernateProjection());
+            return this;
         }
 
         @Override
