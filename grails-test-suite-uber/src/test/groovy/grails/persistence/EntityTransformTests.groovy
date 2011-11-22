@@ -60,6 +60,29 @@ p = new Permission(user:u, permission:"uber")
         assert entity.cash == 30
 
     }
+
+    void testConstructorBehaviourNotOverriden() {
+        def entity = evaluate("""
+          import grails.persistence.*
+          @Entity
+          class EntityTransformTest {
+
+                boolean enabled
+                int cash
+                EntityTransformTest() {
+                    enabled = true
+                    cash = 30
+                }
+          }
+          new EntityTransformTest(cash: 42)
+        """)
+
+        assert entity != null
+        assert entity.enabled
+        assert entity.cash == 42
+
+    }
+    
     void testAnnotatedEntity() {
         def entity = evaluate("""
           import grails.persistence.*
