@@ -9,11 +9,12 @@ import grails.persistence.Entity
 class DomainClassWithCustomValidatorTests {
     void testThereCanBeOnlyOneSomething() {
         def uni = new Uniqueable();
-        assert uni.save()
+        assert uni.save(flush:true)
 
         def uni2 = new Uniqueable();
-        assert !uni2.save()
-        assert uni2.errors.getFieldErrors("word").find{ Arrays.asList(it.codes).contains("unique") }
+
+        // checks there is no stack over flow
+        uni2.save()
     }
 
 }
