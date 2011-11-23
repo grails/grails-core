@@ -13,6 +13,33 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+    def "Test where with multiple property projections using chaining"() {
+        given:"A bunch of people"
+            createPeople()
+
+        when:"Multiple property projections are used"
+            def people = Person.where { lastName == "Simpson" }
+            def results = people.property("lastName").property('firstName').list()
+
+        then:"The correct results are returned"
+            results == [["Simpson", "Homer"], ["Simpson", "Marge"], ["Simpson", "Bart"], ["Simpson", "Lisa"]]
+    }
+
+    def "Test where with multiple property projections"() {
+        given:"A bunch of people"
+            createPeople()
+
+        when:"Multiple property projections are used"
+            def people = Person.where { lastName == "Simpson" }
+            def results = people.projections {
+                property "lastName"
+                property "firstName"
+            }.list()
+
+        then:"The correct results are returned"
+            results == [["Simpson", "Homer"], ["Simpson", "Marge"], ["Simpson", "Bart"], ["Simpson", "Lisa"]]
+    }
+
     def "Test error when using unknown domain property of an association"() {
         when:"A an unknown domain class property of an association is referenced"
            queryReferencingNonExistentPropertyOfAssociation()
