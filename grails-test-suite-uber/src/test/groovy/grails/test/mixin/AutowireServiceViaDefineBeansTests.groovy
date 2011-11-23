@@ -12,16 +12,14 @@ import org.junit.BeforeClass
 @TestFor(SpringController)
 class AutowireServiceViaDefineBeansTests {
 
-    @BeforeClass
-    static void wireBeans() {
+    @Test
+    void testThatBeansAreWired() {
         defineBeans {
             springService(SpringService)
         }
-    }
 
-    @Test
-    void testThatBeansAreWired() {
         applicationContext.getBean("springService") instanceof SpringService
+        controller.index()
         controller.index()
     }
 
