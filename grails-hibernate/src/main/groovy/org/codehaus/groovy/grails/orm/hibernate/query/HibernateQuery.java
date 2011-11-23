@@ -362,10 +362,16 @@ public class HibernateQuery extends Query {
 
     @Override
     public List list() {
+        int projectionLength = 0;
         if (hibernateProjectionList != null) {
-            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
+            org.hibernate.criterion.ProjectionList projectionList = hibernateProjectionList.getHibernateProjectionList();
+            projectionLength = projectionList.getLength();
+            this.criteria.setProjection(projectionList);
         }
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+
+        if(projectionLength<2)
+            criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.list();
     }
 
@@ -386,11 +392,7 @@ public class HibernateQuery extends Query {
     @SuppressWarnings("hiding")
     @Override
     protected List executeQuery(PersistentEntity entity, Junction criteria) {
-        if (hibernateProjectionList != null) {
-            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
-        }
-        this.criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        return this.criteria.list();
+        return list();
     }
 
     String handleAssociationQuery(Association<?> association, @SuppressWarnings("unused") List<Criterion> criteriaList) {
