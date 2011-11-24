@@ -13,6 +13,38 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+
+    def "Test whereAny method"() {
+        given:"some people"
+            createPeople()
+
+        when:"An or is used in a where query"
+            def people = Person.whereAny {
+                firstName == "Homer"
+                firstName == "Bart"
+            }.list(sort:"firstName")
+
+        then:"The right results are returned"
+            people.size() == 2
+            people[0].firstName == "Bart"
+            people[1].firstName == "Homer"
+    }
+
+    def "Test where query that uses a captured variable inside an association query"() {
+        given:"people and pets"
+            createPeopleWithPets()
+
+        when:"A where query that queries an association from a captured variable is used"
+            def fn = "Joe"
+            def pets = Pet.where {
+                owner { firstName == fn }
+            }.list()
+
+        then:"The correct result is returned"
+            pets.size() == 2
+
+    }
+
     def "Test where with multiple property projections using chaining"() {
         given:"A bunch of people"
             createPeople()
