@@ -9,6 +9,7 @@ dependencies {
         exclude group: 'xml-apis', module:'xml-apis'
         exclude group: 'commons-digester', module:'commons-digester'
         exclude group: 'commons-logging', module:'commons-logging'
+        exclude group: 'commons-beanutils', module:'commons-beanutils'
     }
     compile("org.springframework:spring-aop:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
