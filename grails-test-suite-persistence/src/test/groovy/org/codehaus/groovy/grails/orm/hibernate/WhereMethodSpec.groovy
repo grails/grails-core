@@ -478,6 +478,29 @@ class CallMe {
             results.size() == 1
             results[0].firstName == "Ed"
 
+       when:"We query for people with greater than 2 pets"
+            def petCount = 2
+            query = Person.where {
+                pets.size() > petCount
+            }
+            results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 1
+            results[0].firstName == "Ed"
+
+       when:"We query for people with greater than 2 pets"
+
+            query = Person.where {
+                pets.size() > getPetCount()
+            }
+            results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 1
+            results[0].firstName == "Ed"
+
+
      when:"We query for people with greater than 2 pets"
             query = Person.where {
                 pets.size() > 1 && firstName != "Joe"
@@ -489,6 +512,7 @@ class CallMe {
             results[1].firstName == "Fred"
    }
 
+   private getPetCount(arg) { 2 }
    def "Test subquery usage combined with logical query"() {
        given:"a bunch of people"
          createPeople()
