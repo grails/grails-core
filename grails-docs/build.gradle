@@ -7,7 +7,7 @@ dependencies {
     gradleConf gradleApi()
     compile "commons-lang:commons-lang:$commonsLangVersion",
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
-            'org.apache.ant:ant:1.7.1',
+            "org.apache.ant:ant:$antVersion",
             'org.xhtmlrenderer:core-renderer:R8',
             'org.grails:grails-gdoc-engine:1.0.1',
             'org.yaml:snakeyaml:1.8'
