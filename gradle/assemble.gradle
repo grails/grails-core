@@ -28,6 +28,37 @@ subprojects { subproject ->
     libsConfigurations[subproject] = externalLibs
 }
 
+task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency', 
+                                dependsOn: libsConfigurations.values) << {
+    def moduleToVersionsMap = [:]
+    libsConfigurations.each { project, configuration ->
+        configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            def dependency = artifact.resolvedDependency
+
+            def key = "${dependency.moduleGroup}/${dependency.moduleName}".toString()
+            def value = dependency.moduleVersion
+                    
+            def versions = moduleToVersionsMap[key]
+            if(!versions) {
+                versions = [] as Set
+                moduleToVersionsMap[key] = versions
+            }
+            versions << value
+        }
+    }
+    def dups = moduleToVersionsMap.findAll { k, v ->
+        v.size() > 1
+    }
+    if(dups) {
+        def msg = 'Multiple versions of some dependencies have been identified in the dependency graph'
+        println msg
+        dups.each { k, v ->
+            println "Dependency: ${k}, Versions: $v"
+        }
+        throw new GradleException(msg)
+    }
+}
+
 task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     into homeLibDir
     
