@@ -41,9 +41,6 @@ ehcacheVersion = "2.4.6"
 junitVersion = "4.10"
 concurrentlinkedhashmapVersion = "1.2_jdk5"
 
-archivesBaseName = 'grails'
-version = grailsVersion
-
 // directories created during the build which are related 
 // to turning the workspace root into a GRAILS_HOME
 homeDistDir = file("dist")
@@ -65,6 +62,11 @@ if(System.getProperty('groovy.jar')) {
     gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 }
 
+allprojects {
+    archivesBaseName = 'grails'
+    version = grailsVersion
+    group = "org.grails"
+}
 
 subprojects { project ->
     apply plugin: 'groovy'
@@ -76,9 +78,6 @@ subprojects { project ->
 
     sourceCompatibility = "1.5"
     targetCompatibility = "1.5"
-    archivesBaseName = 'grails'
-    version = grailsVersion
-    group = "org.grails"
 
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
