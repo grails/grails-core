@@ -57,5 +57,3 @@ processResources {
     inputs.property "version", version
     filter(ReplaceTokens, tokens:[version:version])
 }
-
-jar.appendix = 'bootstrap'

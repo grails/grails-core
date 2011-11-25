@@ -63,7 +63,6 @@ if(System.getProperty('groovy.jar')) {
 }
 
 allprojects {
-    archivesBaseName = 'grails'
     version = grailsVersion
     group = "org.grails"
 }

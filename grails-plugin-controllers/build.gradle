@@ -10,4 +10,3 @@ dependencies {
             project(':grails-plugin-domain-class'),
             project(':grails-plugin-validation')
 }
-jar.appendix = 'plugin-controllers'

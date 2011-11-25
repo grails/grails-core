@@ -27,5 +27,3 @@ test {
 jar{
     from compileAstGroovy.outputs.files
 }
-
-jar.appendix = 'plugin-gsp'

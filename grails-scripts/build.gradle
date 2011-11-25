@@ -26,5 +26,3 @@ sourceSets {
         groovy.srcDirs = ['../scripts']
     }
 }
-
-jar.appendix = 'scripts'
