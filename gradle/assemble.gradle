@@ -3,35 +3,20 @@ import org.apache.tools.ant.filters.ReplaceTokens
 // This is a little fragile, need to find a way to ask Gradle for this info.
 def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
 
-// The configurations of which we collect all the dependencies of for our lib dir.
-// Notice that we exclude all project dependencies as we do NOT want jars built by this project
-// to be part of the configuration. This also avoids building those jars when running this task.
-def libsConfigurations = [:]
+def libsConfigurations = []
 subprojects { subproject ->
     configurations {
-        libs { 
+        libsConfigurations << libs { 
             extendsFrom compile, runtime
             ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
         }
     }
-    
-    // Filter out project dependencies, we don't want them, we just want externals
-    def externalLibs = configurations.libs.copyRecursive { !(it instanceof org.gradle.api.artifacts.ProjectDependency) }
-    
-    // We have to manually copy the exclude rules due to GRADLE-1853
-    configurations.libs.hierarchy.each {
-        it.excludeRules.each {
-            externalLibs.exclude it.excludeArgs
-        }
-    }
-    
-    libsConfigurations[subproject] = externalLibs
 }
 
 task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency', 
-                                dependsOn: libsConfigurations.values) << {
+                                dependsOn: libsConfigurations) << {
     def moduleToVersionsMap = [:]
-    libsConfigurations.each { project, configuration ->
+    libsConfigurations.each { configuration ->
         configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
             def dependency = artifact.resolvedDependency
 
@@ -59,7 +44,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     }
 }
 
-task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
+task populateDependencies(type: Sync, dependsOn: libsConfigurations) {
     into homeLibDir
     
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
@@ -67,15 +52,19 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
     gradle.taskGraph.whenReady { taskGraph ->
         if (taskGraph.hasTask(':populateDependencies')) {
+            def projectNames = rootProject.subprojects*.name
+            
             from(gradleArtifactCache) {
-                libsConfigurations.each { project, configuration ->
+                libsConfigurations.each { configuration ->
                     configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
                         def dependency = artifact.resolvedDependency
-
-                        def file = artifact.file
-                        include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                        include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                        include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                        
+                        if (!projectNames.contains(dependency.moduleName)) { // filter out the jars produced by this build
+                            def file = artifact.file
+                            include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                            include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                            include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                        }
                     }
                 }
            }
