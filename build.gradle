@@ -10,6 +10,9 @@ buildscript {
         //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
 }
+repositories {
+    mavenRepo(urls: "http://repo.grails.org/grails/core")
+}
 
 apply plugin: 'idea'
 
@@ -242,3 +245,6 @@ apply {
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
 }
+
+
+
