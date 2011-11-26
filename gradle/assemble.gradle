@@ -52,19 +52,21 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     }
 }
 
+
+task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources, dependsOn: libsConfigurations.values) {
+   configurations = libsConfigurations.values() as List
+   into(homeSrcDir) { dep ->
+       dep.moduleName.contains('grails-datastore')
+   }
+}
+
 // Can't use sync task here because this directory contains other things as well.
-task sourcesJars(type: Copy, dependsOn: libsConfigurations.values) {
+task sourcesJars(type: Copy) {
     into homeSrcDir
     from subprojects*.sourcesJar*.outputs*.files
-    libsConfigurations.each { project, configuration ->
-        configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-            def dependency = artifact.resolvedDependency
-            if(dependency.moduleName.startsWith('grails-datastore')) {
-                from new File(gradleArtifactCache, "${dependency.moduleGroup}/${dependency.moduleName}/sources/${dependency.moduleName}-${dependency.moduleVersion}-sources.jar")
-            }
-        }
-    }
 }
+
+sourcesJars.dependsOn downloadDatastoreSources
 
 task pluginsFromSvn {
     plugins = [
