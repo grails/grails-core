@@ -21,3 +21,5 @@ dependencies {
 
     compile project(":grails-web"), project(':grails-hibernate'), project(':grails-plugin-controllers')
 }
+
+jar.appendix = 'webflow'

@@ -23,3 +23,5 @@ dependencies {
         transitive = false
     }
 }
+
+jar.appendix = 'plugin-testing'

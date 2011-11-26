@@ -10,3 +10,4 @@ dependencies {
             project(":grails-web"),
             project(':grails-bootstrap')
 }
+jar.appendix = 'plugin-tomcat'

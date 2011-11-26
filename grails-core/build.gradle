@@ -79,3 +79,5 @@ compileGroovy.doFirst {
          entry key:"grails.version", value:version
     }
 }
+
+jar.appendix = 'core'

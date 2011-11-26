@@ -3,3 +3,5 @@ dependencies {
             project(':grails-bootstrap'),
             project(':grails-plugin-domain-class')
 }
+
+jar.appendix = 'plugin-validation'

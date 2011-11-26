@@ -2,3 +2,4 @@ dependencies {
     compile 'javax:javaee-web-api:6.0'
     compile project(':grails-plugin-controllers')
 }
+jar.appendix = 'plugin-async'

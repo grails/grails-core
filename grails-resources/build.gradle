@@ -62,3 +62,5 @@ jar.from("src/war") {
 jar.from("src/grails/templates") {
     into "src/grails/templates"
 }
+
+jar.appendix = 'resources'

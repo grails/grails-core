@@ -5,3 +5,5 @@ dependencies {
     compile project(":grails-web"),
             project(':grails-plugin-domain-class')
 }
+
+jar.appendix = 'plugin-converters'

@@ -6,3 +6,5 @@ dependencies {
             project(':grails-web'),
             project(':grails-test')
 }
+
+jar.appendix = 'test-suite-base'

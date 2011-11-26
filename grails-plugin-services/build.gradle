@@ -4,3 +4,4 @@ dependencies {
     compile project(":grails-core"),
             project(':grails-bootstrap')
 }
+jar.appendix = 'plugin-services'
