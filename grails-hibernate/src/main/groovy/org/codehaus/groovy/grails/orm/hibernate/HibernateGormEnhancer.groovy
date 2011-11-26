@@ -68,6 +68,13 @@ class HibernateGormEnhancer extends GormEnhancer {
         finders = createPersistentMethods(grailsApplication, classLoader, datastore)
     }
 
+    @Override
+    protected void registerConstraints(Datastore datastore) {
+        // no-op
+    }
+
+
+
     static List createPersistentMethods(GrailsApplication grailsApplication, ClassLoader classLoader, Datastore datastore) {
         def sessionFactory = datastore.sessionFactory
         Collections.unmodifiableList([

@@ -35,6 +35,13 @@ public interface Constraint extends MessageSourceAware {
     boolean supports(Class type);
 
     /**
+     * Return whether the constraint is valid for the owning class
+     *
+     * @return True if it is
+     */
+    boolean isValid();
+
+    /**
      * Validate this constraint against a property value. If implementation is vetoing (isVetoing() method
      * returns true), then it could return 'true' to stop further validation.
      *

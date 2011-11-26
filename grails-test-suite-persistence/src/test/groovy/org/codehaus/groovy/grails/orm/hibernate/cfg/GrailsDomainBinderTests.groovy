@@ -900,6 +900,30 @@ class TestManySide {
         assertSame getTableMapping('bagger', config), c.table
     }
 
+    
+    void testEnumProperty() {
+        DefaultGrailsDomainConfiguration config = getDomainConfig('''
+enum AlertType {
+    INFO, WARN, ERROR
+}
+class Alert {
+    Long id
+    Long version
+    String message
+    AlertType alertType
+    static mapping = {
+        alertType sqlType: 'char', length: 5
+    }
+}''')
+        Table tableMapping = getTableMapping("alert", config)
+        assertNotNull("Cannot find table mapping", tableMapping)
+        Column enumColumn = tableMapping.getColumn(new Column("alert_type"))
+        // we are mainly interested in length, but also check sqlType.
+        assertNotNull(enumColumn)
+        assertEquals(5, enumColumn.length)
+        assertEquals('char', enumColumn.sqlType)
+    }
+
     private org.hibernate.mapping.Collection findCollection(DefaultGrailsDomainConfiguration config, String role) {
         config.collectionMappings.find { it.role == role }
     }

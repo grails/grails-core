@@ -45,6 +45,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 
 /**
  * A utility/helper class for mocking various types of Grails artifacts
@@ -1022,14 +1023,14 @@ class MockUtils {
             // that, we also do the normal validation for the case where
             // we don't have a GDC, i.e. if we're validating a command
             // object.
-            constrainedProperties.each { property, constraint ->
+            constrainedProperties.each { property, ConstrainedProperty constraint ->
                 // Only perform the validation if we don't have a GDC
                 // (since if there is one the validation has already
                 // been done).
                 if (!dc) constraint.validate(obj, obj."${property}", errors)
 
                 // Handle the unique constraint if this field has one.
-                def uniqueValue = constraint.getMetaConstraintValue("unique")
+                def uniqueValue = constraint.getMetaConstraintValue("unique") ?: constraint.getAppliedConstraint("unique")?.parameter
                 if (uniqueValue) {
                     def props
                     if (uniqueValue instanceof Boolean && uniqueValue) {

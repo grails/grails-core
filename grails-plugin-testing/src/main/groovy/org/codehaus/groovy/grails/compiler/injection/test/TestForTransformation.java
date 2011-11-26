@@ -30,15 +30,14 @@ import grails.util.GrailsNameUtils;
 import groovy.util.GroovyTestCase;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.logging.LoggingTransformer;
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator;
@@ -337,6 +336,8 @@ public class TestForTransformation extends TestMixinTransformation {
 
         String methodName = "setup" + type + "UnderTest";
         String fieldName = GrailsNameUtils.getPropertyName(type);
+        String getterName = GrailsNameUtils.getGetterName(fieldName);
+        fieldName = '$' +fieldName;
 
         if (classNode.getField(fieldName) == null) {
             classNode.addField(fieldName, Modifier.PRIVATE, targetClass.getType(),null);
@@ -344,19 +345,46 @@ public class TestForTransformation extends TestMixinTransformation {
 
         MethodNode methodNode = classNode.getMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
 
+        VariableExpression fieldExpression = new VariableExpression(fieldName);
         if (methodNode == null) {
-            BlockStatement methodBody = new BlockStatement();
-            VariableExpression fieldExpression = new VariableExpression(fieldName);
-            addMockCollaborator(type, targetClass, methodBody);
-            BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
-            methodBody.addStatement(new ExpressionStatement(testTargetAssignment));
-            methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
+            BlockStatement setupMethodBody = new BlockStatement();
+            addMockCollaborator(type, targetClass, setupMethodBody);
+
+
+            methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, setupMethodBody);
             methodNode.addAnnotation(BEFORE_ANNOTATION);
             methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
             classNode.addMethod(methodNode);
         }
 
+        MethodNode getter = classNode.getMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        if(getter == null) {
+            BlockStatement getterBody = new BlockStatement();
+            getter = new MethodNode(getterName, Modifier.PUBLIC, targetClass.getType().getPlainNodeReference(),GrailsArtefactClassInjector.ZERO_PARAMETERS,null, getterBody);
+
+            BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
+            getterBody.addStatement(new IfStatement(new BooleanExpression(new BinaryExpression(fieldExpression, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)), new ExpressionStatement(testTargetAssignment), new BlockStatement()));
+
+            IfStatement autowiringIfStatement = getAutowiringIfStatement(fieldExpression);
+            getterBody.addStatement(autowiringIfStatement);
+
+            getterBody.addStatement(new ReturnStatement(fieldExpression));
+            classNode.addMethod(getter);
+        }
+
         return methodNode;
+    }
+
+    private IfStatement getAutowiringIfStatement(VariableExpression fieldExpression) {
+        VariableExpression appCtxVar = new VariableExpression("applicationContext");
+        BooleanExpression applicationContextCheck = new BooleanExpression(new BinaryExpression(appCtxVar, GrailsASTUtils.NOT_EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION));
+        BlockStatement performAutowireBlock = new BlockStatement();
+        ArgumentListExpression arguments = new ArgumentListExpression();
+        arguments.addExpression(fieldExpression);
+        arguments.addExpression(new ConstantExpression(1));
+        arguments.addExpression(new ConstantExpression(false));
+        performAutowireBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new PropertyExpression(appCtxVar,"autowireCapableBeanFactory"), "autowireBeanProperties", arguments)));
+        return new IfStatement(applicationContextCheck, performAutowireBlock, new BlockStatement());
     }
 
     protected void addMockCollaborator(String mockType, ClassExpression targetClass, BlockStatement methodBody) {

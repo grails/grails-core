@@ -67,7 +67,7 @@ import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
-    static Datastore simpleDatastore
+    static SimpleMapDatastore simpleDatastore
 
     protected Session currentSession
 
@@ -96,7 +96,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     @After
     void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
-        simpleDatastore = new SimpleMapDatastore(applicationContext)
+        DatastoreUtils.unbindSession(currentSession)
+        simpleDatastore.clearData()
     }
 
     /**

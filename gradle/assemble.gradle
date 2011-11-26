@@ -52,18 +52,28 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     }
 }
 
+
+task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources, dependsOn: libsConfigurations.values) {
+   configurations = libsConfigurations.values() as List
+   into(homeSrcDir) { dep ->
+       dep.moduleName.contains('grails-datastore')
+   }
+}
+
 // Can't use sync task here because this directory contains other things as well.
 task sourcesJars(type: Copy) {
     into homeSrcDir
     from subprojects*.sourcesJar*.outputs*.files
 }
 
+sourcesJars.dependsOn downloadDatastoreSources
+
 task pluginsFromSvn {
     plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
         resources: "1.1.1",
-        jquery: "1.6.1.1"
+        jquery: "1.7"
     ]
     
     dir = file("$buildDir/pluginsFromSvn")

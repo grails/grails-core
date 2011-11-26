@@ -230,8 +230,4 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         return uniquenessGroup;
     }
 
-    @SuppressWarnings("rawtypes")
-    public boolean supports(Class type) {
-        return true;
-    }
 }

@@ -1,6 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
+import org.grails.datastore.mapping.simple.SimpleMapDatastore
 
 /**
  * @author Graeme Rocher
@@ -13,6 +16,14 @@ class AdvancedEnumCollectionMappingTests extends AbstractGrailsHibernateTests {
     protected getDomainClasses() {
         [EnumCollectionMappingUser]
     }
+
+    @Override
+    protected void onSetUp() {
+        super.onSetUp()
+        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(new SimpleMapDatastore()))
+    }
+
+
 
     void testAdvancedEnumCollectionMapping() {
         def User = ga.getDomainClass(EnumCollectionMappingUser.name).clazz

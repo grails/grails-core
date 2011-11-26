@@ -61,14 +61,12 @@ public class HibernateQuery extends Query {
     private int aliasCount;
     private Map<String, CriteriaAndAlias> createdAssociationPaths = new HashMap<String, CriteriaAndAlias> ();
     private static final String ALIAS = "_alias";
-    private Field opField;
+    private static Field opField = ReflectionUtils.findField(SimpleExpression.class, "op");
 
     public HibernateQuery(Criteria criteria, HibernateSession session, PersistentEntity entity) {
         super(session, entity);
         this.criteria = criteria;
-        opField = ReflectionUtils.findField(SimpleExpression.class, "op");
         ReflectionUtils.makeAccessible(opField);
-
     }
 
     public HibernateQuery(Criteria subCriteria, HibernateSession session, PersistentEntity associatedEntity, String newAlias) {
@@ -127,7 +125,7 @@ public class HibernateQuery extends Query {
 
         SessionFactory sessionFactory = hibernateSession.getSessionFactory();
         String property = criterion.getProperty();
-        PropertyCriterion propertyCriterion = criterion.getPropertyCriterion();
+        Criterion datastoreCriterion = criterion.getPropertyCriterion();
         PersistentProperty pp = entity.getPropertyByName(property);
 
         if (pp == null) throw new InvalidDataAccessResourceUsageException(
@@ -143,9 +141,10 @@ public class HibernateQuery extends Query {
         if (sqlFunction != null) {
             TypeResolver typeResolver = impl.getTypeResolver();
             BasicType basic = typeResolver.basic(pp.getType().getName());
-            if (basic != null) {
+            if (basic != null && datastoreCriterion instanceof PropertyCriterion) {
 
-                final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(propertyCriterion, alias).toHibernateCriterion(this);
+                PropertyCriterion pc = (PropertyCriterion) datastoreCriterion;
+                final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(datastoreCriterion, alias).toHibernateCriterion(this);
                 if (hibernateCriterion instanceof SimpleExpression) {
                     SimpleExpression expr = (SimpleExpression) hibernateCriterion;
                     Object op = ReflectionUtils.getField(opField, expr);
@@ -156,7 +155,7 @@ public class HibernateQuery extends Query {
                     else
                         columns = mapping.toColumns(property);
                     String root = sqlFunction.render(basic, Arrays.asList(columns), impl);
-                    Object value = propertyCriterion.getValue();
+                    Object value = pc.getValue();
                     if (value != null) {
                         sqlRestriction = Restrictions.sqlRestriction(root + op + "?", value, typeResolver.basic(value.getClass().getName()));
                     }
@@ -322,7 +321,8 @@ public class HibernateQuery extends Query {
 
     @Override
     public ProjectionList projections() {
-        hibernateProjectionList = new HibernateProjectionList();
+        if(hibernateProjectionList == null)
+            hibernateProjectionList = new HibernateProjectionList();
         return hibernateProjectionList;
     }
 
@@ -361,7 +361,16 @@ public class HibernateQuery extends Query {
 
     @Override
     public List list() {
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        int projectionLength = 0;
+        if (hibernateProjectionList != null) {
+            org.hibernate.criterion.ProjectionList projectionList = hibernateProjectionList.getHibernateProjectionList();
+            projectionLength = projectionList.getLength();
+            this.criteria.setProjection(projectionList);
+        }
+
+
+        if(projectionLength<2)
+            criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.list();
     }
 
@@ -382,11 +391,7 @@ public class HibernateQuery extends Query {
     @SuppressWarnings("hiding")
     @Override
     protected List executeQuery(PersistentEntity entity, Junction criteria) {
-        if (hibernateProjectionList != null) {
-            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
-        }
-        this.criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        return this.criteria.list();
+        return list();
     }
 
     String handleAssociationQuery(Association<?> association, @SuppressWarnings("unused") List<Criterion> criteriaList) {
@@ -456,6 +461,12 @@ public class HibernateQuery extends Query {
 
         public org.hibernate.criterion.ProjectionList getHibernateProjectionList() {
             return projectionList;
+        }
+
+        @Override
+        public ProjectionList add(Projection p) {
+            projectionList.add(new HibernateProjectionAdapter(p).toHibernateProjection());
+            return this;
         }
 
         @Override
