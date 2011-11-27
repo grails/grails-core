@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.pages.discovery;
 
 import java.security.PrivilegedAction;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,12 +34,6 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     private static final GroovyPageResourceScriptSource NULL_SCRIPT = new GroovyPageResourceScriptSource("/null",new ByteArrayResource("".getBytes()));
     private Map<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> uriResolveCache = new ConcurrentHashMap<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>();
     private long cacheTimeout = -1;
-
-    @Override
-    public GroovyPageScriptSource findViewByPath(String uri) {
-        if (uri == null) return null;
-        return super.findViewByPath(uri);
-    }
 
     @Override
     public GroovyPageScriptSource findPageInBinding(final String uri, final GroovyPageBinding binding) {
@@ -99,7 +94,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             CacheEntry<GroovyPageScriptSource> entry = uriResolveCache.get(cacheKey);
             if(entry==null) {
                 scriptSource = updater.run();
-                uriResolveCache.put(cacheKey, new CacheEntry<GroovyPageScriptSource>(scriptSource));
+                uriResolveCache.put(cacheKey, new CustomCacheEntry<GroovyPageScriptSource>(scriptSource));
             } else {
                 scriptSource = entry.getValue(cacheTimeout, updater);
             }
@@ -171,4 +166,33 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             return true;
         }
     }
+
+    @Override
+    public void removePrecompiledPage(GroovyPageCompiledScriptSource scriptSource) {
+        super.removePrecompiledPage(scriptSource);
+        // remove the entry from uriResolveCache
+        for(Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> entry : new HashSet<Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>>(uriResolveCache.entrySet())) {
+            GroovyPageScriptSource ss=entry.getValue().getValue();
+            if(ss==scriptSource || (ss instanceof GroovyPageCompiledScriptSource && scriptSource.getURI().equals(((GroovyPageCompiledScriptSource)ss).getURI()))) {
+                uriResolveCache.remove(entry.getKey());
+            }
+        }
+    }
+    
+    private static class CustomCacheEntry<T> extends CacheEntry<T> {
+        public CustomCacheEntry(T value) {
+            super(value);
+        }
+
+        @Override
+        protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
+            // Never expire GroovyPageCompiledScriptSource entry in cache
+            boolean compiledScriptSourceInstance=getValue() instanceof GroovyPageCompiledScriptSource;
+            if(compiledScriptSourceInstance) {
+                resetTimestamp();
+            }
+            return !compiledScriptSourceInstance && super.shouldUpdate(beforeLockingCreatedMillis);
+        }
+    }
+
 }

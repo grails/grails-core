@@ -15,6 +15,7 @@ class GroovyPagesMetaUtils {
 
     public static void registerMethodMissingForGSP(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup) {
         final boolean addMethodsToMetaClass = !Environment.isDevelopmentMode()
+        
         mc.methodMissing = { String name, args ->
             methodMissingForTagLib(mc, mc.getTheClass(), gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, name, args, addMethodsToMetaClass)
         }
@@ -76,7 +77,7 @@ class GroovyPagesMetaUtils {
         }
         if(methodMissingClosure != null) {
             synchronized(mc) {
-                mc."$name" = methodMissingClosure
+                mc."${method.name}" = methodMissingClosure
             }
         }
     }
