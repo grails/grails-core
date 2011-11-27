@@ -155,7 +155,7 @@ subprojects { project ->
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
     }
 
-    task sourcesJar(type: Jar, dependsOn:classes) {
+    task sourcesJar(type: Jar) {
         classifier = 'sources'
         appendix = project.name[7..-1]
         from sourceSets.main.allSource
