@@ -73,11 +73,9 @@ task populateDependencies(type: Sync) {
 }
 
 
-task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources, dependsOn: libsConfigurations) {
-   configurations = libsConfigurations
-   into(homeSrcDir) { dep ->
-       dep.moduleName.contains('grails-datastore')
-   }
+task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources) {
+   configurations = libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }
+   into = homeSrcDir
 }
 
 // Can't use sync task here because this directory contains other things as well.

@@ -45,7 +45,7 @@ class DownloadSources extends DefaultTask {
     List<Configuration> configurations
     
     @OutputDirectory
-    File dest
+    File into
     
     private Closure dependencyFilter
     
@@ -55,8 +55,6 @@ class DownloadSources extends DefaultTask {
         for (configuration in configurations) {
             getAllDeps(configuration.resolvedConfiguration.getFirstLevelModuleDependencies({ it instanceof ExternalDependency } as Spec), dependencies)
         }
-        
-        dependencies = dependencies.findAll(dependencyFilter)
         
         def sourceDependencies = dependencies.collect { ResolvedDependency resolvedDependency ->
             def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion,
@@ -75,7 +73,7 @@ class DownloadSources extends DefaultTask {
         
         project.copy {
             from detached.resolvedConfiguration.getFiles(Specs.satisfyAll())
-            into dest
+            into this.into
         }
     }
     
@@ -89,12 +87,4 @@ class DownloadSources extends DefaultTask {
         allDeps
     }
     
-    void into(File file, Closure filter) {
-        dest = file
-        dependencyFilter = filter
-    }
-    
-    void into(File file) {
-        into file, {true}
-    }
 }
