@@ -44,7 +44,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     }
 }
 
-task populateDependencies(type: Sync, dependsOn: libsConfigurations) {
+task populateDependencies(type: Sync) {
     into homeLibDir
     
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
