@@ -86,8 +86,10 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             return createGrailsView(viewName);
         }
 
-        CacheEntry<View> entry = VIEW_CACHE.get(viewName);
+        String viewCacheKey = GrailsConventionGroovyPageLocator.resolveViewFormat(viewName);
         
+        CacheEntry<View> entry = VIEW_CACHE.get(viewCacheKey);
+
         final String lookupViewName = viewName;
         PrivilegedAction<View> updater=new PrivilegedAction<View>() {
             public View run() {
@@ -109,7 +111,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
                 e.rethrow();
             }
             entry = new CacheEntry<View>(view);
-            VIEW_CACHE.put(viewName, entry);
+            VIEW_CACHE.put(viewCacheKey, entry);
             return view;
         }
         

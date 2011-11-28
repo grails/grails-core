@@ -17,10 +17,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Lari Hotari
  */
 public class CacheEntry<T> {
-    AtomicReference<T> valueRef=new AtomicReference<T>(null);
-    long createdMillis;
-    Lock writeLock=new ReentrantLock();
-    
+    protected AtomicReference<T> valueRef=new AtomicReference<T>(null);
+    protected long createdMillis;
+    protected Lock writeLock=new ReentrantLock();
+
     public CacheEntry(T value) {
         this.valueRef.set(value);
         resetTimestamp();
@@ -37,12 +37,12 @@ public class CacheEntry<T> {
      */
     public T getValue(long timeout, PrivilegedAction<T> updater) {
         if(timeout < 0 || updater==null) return valueRef.get();
-        
-        if(System.currentTimeMillis() - timeout > createdMillis) {
+
+        if(hasExpired(timeout)) {
             try {
                 long beforeLockingCreatedMillis = createdMillis;
                 writeLock.lock();
-                if(beforeLockingCreatedMillis == createdMillis || createdMillis == 0L) {
+                if(shouldUpdate(beforeLockingCreatedMillis)) {
                     valueRef.set(updater.run());
                     resetTimestamp();
                 }
@@ -53,8 +53,20 @@ public class CacheEntry<T> {
         
         return valueRef.get();
     }
+    
+    public T getValue() {
+        return valueRef.get();
+    }
 
-    private void resetTimestamp() {
+    protected boolean hasExpired(long timeout) {
+        return System.currentTimeMillis() - timeout > createdMillis;
+    }
+
+    protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
+        return beforeLockingCreatedMillis == createdMillis || createdMillis == 0L;
+    }
+
+    protected void resetTimestamp() {
         createdMillis = System.currentTimeMillis();
     }
     
