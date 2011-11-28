@@ -10,6 +10,9 @@ buildscript {
         //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
 }
+repositories {
+    mavenRepo(urls: "http://repo.grails.org/grails/core")
+}
 
 apply plugin: 'idea'
 
@@ -36,7 +39,7 @@ slf4jVersion = "1.6.2"
 springLoadedVersion = "1.0.2"
 springVersion = "3.1.0.RC1"
 springWebflowVersion= "2.0.8.RELEASE"
-hibernateVersion = "3.6.7.Final"
+hibernateVersion = "3.6.8.Final"
 ehcacheVersion = "2.4.6"
 junitVersion = "4.10"
 concurrentlinkedhashmapVersion = "1.2_jdk5"
@@ -152,7 +155,7 @@ subprojects { project ->
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
     }
 
-    task sourcesJar(type: Jar, dependsOn:classes) {
+    task sourcesJar(type: Jar) {
         classifier = 'sources'
         appendix = project.name[7..-1]
         from sourceSets.main.allSource
@@ -242,3 +245,6 @@ apply {
     from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
     from 'gradle/findbugs.gradle'
 }
+
+
+
