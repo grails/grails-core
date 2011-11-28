@@ -43,9 +43,9 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
 
     protected ApplicationContext applicationContext;
     protected GrailsApplication grailsApplication;
-    protected Map<String, Object> tagLibraries = new HashMap<String, Object>();
+    protected Map<String, Map<String, Object>> tagNamespaces = new HashMap<String, Map<String, Object>>();
     protected Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
-    protected Set<String> tagsThatReturnObject = new HashSet<String>();
+    protected Map<String, Set<String>> tagsThatReturnObjectForNamespace = new HashMap<String, Set<String>>();
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
@@ -86,19 +86,27 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     public void registerTagLib(GrailsTagLibClass taglib) {
         String namespace = taglib.getNamespace();
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
+        Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
+        if(tagsThatReturnObject==null) {
+            tagsThatReturnObject=new HashSet<String>();
+            tagsThatReturnObjectForNamespace.put(namespace, tagsThatReturnObject);
+        }
         for (String tagName : taglib.getTagNames()) {
-            String nameKey=tagNameKey(namespace, tagName);
-            putTagLib(nameKey, taglib);
-            tagsThatReturnObject.remove(nameKey);
+            putTagLib(namespace, tagName, taglib);
+            tagsThatReturnObject.remove(tagName);
         }
         for (String tagName : taglib.getTagNamesThatReturnObject()) {
-            String nameKey = tagNameKey(namespace, tagName);
-            tagsThatReturnObject.add(nameKey);
+            tagsThatReturnObject.add(tagName);
         }
     }
 
-    protected void putTagLib(String nameKey, GrailsTagLibClass taglib){
-        tagLibraries.put(nameKey, applicationContext.getBean(taglib.getFullName()));
+    protected void putTagLib(String namespace, String name, GrailsTagLibClass taglib){
+        Map<String, Object>tags = tagNamespaces.get(namespace);
+        if(tags==null) {
+            tags = new HashMap<String, Object>();
+            tagNamespaces.put(namespace, tags);
+        }
+        tags.put(name, applicationContext.getBean(taglib.getFullName()));
     }
 
     /**
@@ -109,15 +117,15 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      * @return The tag library or null if it wasn't found
      */
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
-        return (GroovyObject)tagLibraries.get(tagNameKey(namespace, tagName));
-    }
-
-    protected String tagNameKey(String namespace, String tagName) {
-        return namespace + ':' + tagName;
+        Map<String, Object>tags = tagNamespaces.get(namespace);
+        if(tags==null)
+            return null;
+        return (GroovyObject)tags.get(tagName);
     }
 
     public boolean doesTagReturnObject(String namespace, String tagName) {
-        return tagsThatReturnObject.contains(tagNameKey(namespace, tagName));
+        Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
+        return tagsThatReturnObject != null && tagsThatReturnObject.contains(tagName);
     }
 
     /**
