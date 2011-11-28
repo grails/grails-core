@@ -28,7 +28,10 @@ class GroovyPagesMetaUtils {
             final MetaMethod method=tagBean.respondsTo(name, args).find{ it }
             if (method != null) {
                 if (addMethodsToMetaClass) {
-                    addTagLibMethodToMetaClass(tagBean, method, mc)
+                    // add all methods with the same name to metaclass at once to prevent "wrong number of arguments" exception
+                    for(MetaMethod m in tagBean.respondsTo(name)) {
+                        addTagLibMethodToMetaClass(tagBean, m, mc)
+                    }
                 }
                 return method.invoke(tagBean, args)
             }
