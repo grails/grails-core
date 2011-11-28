@@ -185,7 +185,7 @@ class HibernatePluginSupport {
                             log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the class for this provider cannot be found.
     Using Grails' default cache region factory: 'net.sf.ehcache.hibernate.EhCacheRegionFactory'"""
                         }
-                    } else if (!(hibConfig.cache.useCacheProvider) && (cacheProvider=='org.hibernate.cache.EhCacheProvider' || cacheProvider=='net.sf.ehcache.EhCacheProvider')) {
+                    } else if (!(hibConfig.cache.useCacheProvider) && (cacheProvider=='org.hibernate.cache.EhCacheProvider' || cacheProvider=='net.sf.ehcache.hibernate.EhCacheProvider')) {
                         hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
                         hibConfig.cache.remove('provider_class')
                         if (hibConfig.cache.provider_configuration_file_resource_path) {
