@@ -16,6 +16,12 @@
 package grails.test.mixin.support;
 
 import groovy.lang.GroovyObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
@@ -26,11 +32,6 @@ import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.support.GenericApplicationContext;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Lazy implementation of the tag library lookup class designed for testing purposes.
@@ -76,8 +77,8 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
 
     @Override
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
-
         String tagKey = tagNameKey(namespace, tagName);
+        
         if (resolveTagLibraries.containsKey(tagKey)) {
             return applicationContext.getBean(resolveTagLibraries.get(tagKey), GroovyObject.class);
         }
@@ -114,11 +115,10 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
         return null;
     }
 
-    @Override
-    protected void putTagLib(String nameKey, GrailsTagLibClass taglib){
-        tagLibraries.put(nameKey, taglib.getFullName());
-    }
-
+    protected String tagNameKey(String namespace, String tagName) {
+        return namespace + ':' + tagName;
+    }    
+    
     @Override
     public void registerTagLib(GrailsTagLibClass taglib) {
 
