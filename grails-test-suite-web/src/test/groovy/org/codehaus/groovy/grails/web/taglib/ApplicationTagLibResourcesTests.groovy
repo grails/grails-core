@@ -8,6 +8,7 @@ import groovy.mock.interceptor.StubFor
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
@@ -37,6 +38,7 @@ class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
         def template = '${resource(dir:"jquery")}'
 
         def taglib = appCtx.getBean(ApplicationTagLib.class.name)
+        taglib.hasResourceProcessor = true
         def oldMC = replaceMetaClass(taglib)
 
         // Dummy r.resource impl
@@ -56,6 +58,7 @@ class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
         def template = '${resource(dir:"jquery", file:"jqtest.js")}'
 
         def taglib = appCtx.getBean(ApplicationTagLib.class.name)
+        taglib.hasResourceProcessor = true
         def oldMC = replaceMetaClass(taglib)
 
         // Dummy r.resource impl

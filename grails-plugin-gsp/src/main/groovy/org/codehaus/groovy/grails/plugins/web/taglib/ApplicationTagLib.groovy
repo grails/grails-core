@@ -38,7 +38,8 @@ import org.springframework.context.ApplicationContextAware
  */
 @Artefact("TagLibrary")
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware {
-
+    static returnObjectForTags = ['createLink', 'resource', 'createLinkTo', 'cookie', 'header', 'img', 'join', 'meta', 'set']
+    
     ApplicationContext applicationContext
     GrailsPluginManager pluginManager
     GrailsApplication grailsApplication
@@ -55,16 +56,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
                            flash:'flash']
 
     boolean useJsessionId = false
-
-    private boolean hasResourceProcessor() {
-        grailsApplication.mainContext.containsBean('grailsResourceProcessor')
-    }
+    boolean hasResourceProcessor = false
 
     void afterPropertiesSet() {
         def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
         if (config.grails.views.enable.jsessionid instanceof Boolean) {
             useJsessionId = config.grails.views.enable.jsessionid
         }
+        hasResourceProcessor = applicationContext.containsBean('grailsResourceProcessor')
     }
 
     /**
@@ -77,7 +76,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     Closure cookie = { attrs ->
         def cke = request.cookies.find { it.name == attrs.name }
         if (cke) {
-            out << cke.value
+            return cke.value
+        } else {
+            return null
         }
     }
 
@@ -91,8 +92,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     Closure header = { attrs ->
         if (attrs.name) {
             def hdr = request.getHeader(attrs.name)
-            if (hdr) out << hdr
+            return hdr
         }
+        return null
     }
 
     /**
@@ -127,7 +129,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      */
     Closure createLinkTo = { attrs ->
         GrailsUtil.deprecated "Tag [createLinkTo] is deprecated please use [resource] instead"
-        out << resource(attrs)
+        return resource(attrs)
     }
 
     /**
@@ -145,12 +147,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr plugin The plugin to look for the resource in
      */
     Closure resource = { attrs ->
-        if (pageScope.pluginContextPath) {
+        if (!attrs.pluginContextPath && pageScope.pluginContextPath) {
             attrs.pluginContextPath = pageScope.pluginContextPath
         }
         // Use resources plugin if present, but only if file is specified - resources require files
         // But users often need to link to a folder just using dir
-        out << ((hasResourceProcessor() && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
+        return ((hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
     }
 
     /**
@@ -164,14 +166,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (!attrs.uri && !attrs.dir) {
             attrs.dir = "images"
         }
-        if (hasResourceProcessor()) {
-            out << r.img(attrs)
+        if (hasResourceProcessor) {
+            return r.img(attrs)
         } else {
             def uri = attrs.uri ?: resource(attrs)
 
             def excludes = ['dir', 'uri', 'file', 'plugin']
-            def entries = attrs.findAll { !(it.key in excludes) }.collect { "$it.key=\"$it.value\""}
-            out << "<img src=\"${uri.encodeAsHTML()}\" ${entries.join(' ')} />"
+            def attrsAsString = attrsToString(attrs.findAll { !(it.key in excludes) })
+            return "<img src=\"${uri.encodeAsHTML()}\"${attrsAsString} />"
         }
     }
 
@@ -214,10 +216,10 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
         def remainingKeys = attrs.keySet() - LinkGenerator.LINK_ATTRIBUTES
         for (key in remainingKeys) {
-            writer << " $key=\"${attrs[key]?.encodeAsHTML()}\""
+            writer << " " << key << "=\"" << attrs[key]?.encodeAsHTML() << "\""
         }
         for (entry in linkAttrs) {
-            writer << " ${entry.key}=\"${entry.value?.encodeAsHTML()}\""
+            writer << " " << entry.key << "=\"" << entry.value?.encodeAsHTML() << "\""
         }
         writer << '>'
         writer << body()
@@ -354,13 +356,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             urlAttrs.params = params
         }
         def generatedLink = linkGenerator.link(attrs, request.characterEncoding)
-        def writer = getOut()
 
         if (useJsessionId) {
-            writer << response.encodeURL(generatedLink)
+            return response.encodeURL(generatedLink)
         }
         else {
-            writer << generatedLink
+            return generatedLink
         }
     }
 
@@ -409,7 +410,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
 
         def delimiter = attrs.delimiter == null ? ', ' : attrs.delimiter
-        out << collection.join(delimiter)
+        return collection.join(delimiter)
     }
 
     /**
@@ -423,6 +424,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (!attrs.name) {
             throwTagError('Tag ["meta"] missing required attribute ["name"]')
         }
-        out << Metadata.current[attrs.name]
+        return Metadata.current[attrs.name]
     }
 }

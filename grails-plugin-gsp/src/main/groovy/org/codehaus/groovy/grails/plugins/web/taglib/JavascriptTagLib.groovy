@@ -14,10 +14,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import javax.annotation.PostConstruct;
+
 import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils
 
 /**
@@ -26,8 +30,8 @@ import org.springframework.util.ClassUtils
  * @author Graeme Rocher
  */
 @Artefact("TagLibrary")
-class JavascriptTagLib {
-
+class JavascriptTagLib implements ApplicationContextAware {
+    ApplicationContext applicationContext
     /**
      * Mappings to the relevant files to be included for each library.
      */
@@ -40,6 +44,7 @@ class JavascriptTagLib {
     GrailsPluginManager pluginManager
 
     Class<JavascriptProvider> defaultProvider
+    boolean hasResourceProcessor = false
 
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
@@ -53,8 +58,9 @@ class JavascriptTagLib {
         }
     }
 
-    private boolean hasResourcesProcessor() {
-        grailsApplication.mainContext.containsBean('grailsResourceProcessor')
+    @PostConstruct
+    private void initHasResourceProcessor() {
+        hasResourceProcessor = applicationContext.containsBean('grailsResourceProcessor')
     }
 
     /**
@@ -87,7 +93,7 @@ class JavascriptTagLib {
             javascriptInclude(attrs)
         }
         else if (attrs.library) {
-            if (hasResourcesProcessor()) {
+            if (hasResourceProcessor) {
                 out << r.require(module:attrs.library)
                 includedLibrary(attrs.library)
             } else {
@@ -114,7 +120,7 @@ class JavascriptTagLib {
             }
         }
         else {
-            if (hasResourcesProcessor()) {
+            if (hasResourceProcessor) {
                 out << r.script(Collections.EMPTY_MAP, body)
             } else {
                 out.println '<script type="text/javascript">'

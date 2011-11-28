@@ -26,6 +26,7 @@ class JavascriptTagLibResourcesTests extends AbstractGrailsTagTests {
         def template = '<g:javascript library="testing"/>'
 
         def taglib = appCtx.getBean(JavascriptTagLib.name)
+        taglib.hasResourceProcessor = true
         def oldMC = replaceMetaClass(taglib)
 
         def requiredModule
@@ -56,6 +57,7 @@ class JavascriptTagLibResourcesTests extends AbstractGrailsTagTests {
         def template = '<g:javascript>var i = 999;</g:javascript>'
 
         def taglib = appCtx.getBean(JavascriptTagLib.name)
+        taglib.hasResourceProcessor = true
         def oldMC = replaceMetaClass(taglib)
 
         def scriptFrag
