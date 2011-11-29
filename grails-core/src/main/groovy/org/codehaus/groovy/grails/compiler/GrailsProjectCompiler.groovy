@@ -300,9 +300,9 @@ class GrailsProjectCompiler {
         }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.buildScopePluginInfo, pluginBuildClassesDir)
         compilePluginSources(pluginSettings.providedScopePluginInfo, pluginProvidedClassesDir)
+        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
 
 
