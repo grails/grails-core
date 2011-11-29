@@ -45,3 +45,9 @@ jar {
 }
 
 jar.appendix = 'web'
+
+eclipse {
+    classpath {
+       plusConfigurations += configurations.jsp21
+    }
+}

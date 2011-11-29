@@ -28,3 +28,20 @@ sourceSets {
 }
 
 jar.appendix = 'scripts'
+
+eclipse {
+    /*
+    // update ../scripts -> scripts
+    classpath {
+        file {
+            withXml {
+                def node = it.asNode()
+                node.children()[1].attributes()['path']='scripts'
+            }
+        }
+    }
+    */
+    project {
+        linkedResource name: 'scripts', type: '2', location: new File('../scripts').canonicalPath
+    }
+}
