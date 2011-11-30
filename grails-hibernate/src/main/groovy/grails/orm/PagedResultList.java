@@ -27,6 +27,7 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Projections;
+import org.hibernate.impl.CriteriaImpl;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 /**
@@ -160,10 +161,18 @@ public class PagedResultList implements List, Serializable {
         if (totalCount == Integer.MIN_VALUE) {
             totalCount = (Integer)hibernateTemplate.execute(new HibernateCallback<Object>() {
                 public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                    hibernateTemplate.applySettings(criteria);
-                    criteria.setFirstResult(0);
-                    criteria.setProjection(Projections.rowCount());
-                    return ((Number)criteria.uniqueResult()).intValue();
+                    CriteriaImpl impl = (CriteriaImpl) criteria;
+                    Criteria totalCriteria = session.createCriteria(impl.getEntityOrClassName());
+                    hibernateTemplate.applySettings(totalCriteria);
+
+                    Iterator iterator = impl.iterateExpressionEntries();
+                    while (iterator.hasNext()) {
+                        CriteriaImpl.CriterionEntry entry = (CriteriaImpl.CriterionEntry) iterator.next();
+                        totalCriteria.add(entry.getCriterion());
+                    }
+                    totalCriteria.setProjection(impl.getProjection());
+                    totalCriteria.setProjection(Projections.rowCount());
+                    return ((Number)totalCriteria.uniqueResult()).intValue();
                 }
             });
         }
