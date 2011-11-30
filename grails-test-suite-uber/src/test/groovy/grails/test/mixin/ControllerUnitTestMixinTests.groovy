@@ -32,16 +32,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     protected getMockController() {
         mockController(TestController)
     }
-    
-    void testCallingSuperMethod() {
-        if(notYetImplemented()) return
-        
-        def subController = mockController(SubController)
-        
-        subController.method1()
-        assert response.status == HttpServletResponse.SC_OK
-        assert response.contentAsString == 'method 1'
-    }
+
 
     void testCallingSuperMethod() {
         def subController = mockController(SubController)
