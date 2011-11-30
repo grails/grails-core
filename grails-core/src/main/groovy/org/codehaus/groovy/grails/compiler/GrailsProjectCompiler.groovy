@@ -249,7 +249,9 @@ class GrailsProjectCompiler {
                    src(path:srcPath)
                }
             }
-            javac(javaOptions)
+            javac(javaOptions) {
+            	compilerarg value:"-Xlint:-options"
+            }
         }
 
         def classesDirPath = new File(targetDir.toString())
@@ -328,7 +330,9 @@ class GrailsProjectCompiler {
                 exclude(name: "**/*DataSource.groovy")
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
-                javac(javaOptions)
+                javac(javaOptions) {
+            		compilerarg value:"-Xlint:-options"
+            	}
             }
         }
 
