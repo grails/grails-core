@@ -312,6 +312,7 @@ public class GrailsDomainConfigurationUtil {
                 !name.equals(GrailsDomainClassProperty.META_CLASS) &&
                 !name.equals(GrailsDomainClassProperty.CLASS) &&
                 !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
+                !name.equals(GrailsDomainClassProperty.ATTACHED) &&
                 !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
                 !name.equals(GrailsDomainClassProperty.HAS_MANY) &&
                 !name.equals(GrailsDomainClassProperty.EVANESCENT) &&
