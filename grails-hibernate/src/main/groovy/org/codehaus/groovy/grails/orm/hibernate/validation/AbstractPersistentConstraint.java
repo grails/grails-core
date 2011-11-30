@@ -77,7 +77,7 @@ public abstract class AbstractPersistentConstraint extends AbstractConstraint im
     public boolean isValid() {
         if(applicationContext.containsBean("sessionFactory")) {
             GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-            GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, constraintOwningClass);
+            GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, constraintOwningClass.getName());
             if(domainClass != null ) {
                 String mappingStrategy = domainClass.getMappingStrategy();
                 return mappingStrategy.equals(GrailsDomainClass.GORM);
