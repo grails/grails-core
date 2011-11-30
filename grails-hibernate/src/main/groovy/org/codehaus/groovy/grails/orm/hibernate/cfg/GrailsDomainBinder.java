@@ -30,7 +30,8 @@ import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareJoin
 import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareSingleTableEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.*;
+import org.codehaus.groovy.grails.validation.Constraint;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.*;
@@ -2590,12 +2591,15 @@ public final class GrailsDomainBinder {
 
         ConstrainedProperty cp = getConstrainedProperty(property);
         if (cp != null && cp.hasAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT)) {
-            UniqueConstraint uc = (UniqueConstraint) cp.getAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT);
-            if (uc != null && uc.isUnique()) {
-                if (!uc.isUniqueWithinGroup()) {
-                    column.setUnique(true);
-                } else if (uc.getUniquenessGroup().size() > 0) {
-                    createKeyForProps(property, path, table, columnName, uc.getUniquenessGroup(), sessionFactoryBeanName);
+            Constraint appliedConstraint = cp.getAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT);
+            if(appliedConstraint instanceof UniqueConstraint) {
+                UniqueConstraint uc = (UniqueConstraint) appliedConstraint;
+                if (uc != null && uc.isUnique()) {
+                    if (!uc.isUniqueWithinGroup()) {
+                        column.setUnique(true);
+                    } else if (uc.getUniquenessGroup().size() > 0) {
+                        createKeyForProps(property, path, table, columnName, uc.getUniquenessGroup(), sessionFactoryBeanName);
+                    }
                 }
             }
         } else {
