@@ -689,7 +689,7 @@ public class GrailsClassUtils {
         if (field != null) {
             ReflectionUtils.makeAccessible(field);
             try {
-                return field.get(null);
+                return field.get(clazz);
             } catch (IllegalAccessException ignored) {}
         }
         return null;
