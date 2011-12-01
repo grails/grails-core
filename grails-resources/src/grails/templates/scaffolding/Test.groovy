@@ -2,7 +2,6 @@
 
 import org.junit.*
 import grails.test.mixin.*
-import javax.servlet.http.HttpServletResponse
 
 @TestFor(${className}Controller)
 @Mock(${className})
@@ -35,11 +34,6 @@ class ${className}ControllerTests {
     }
 
     void testSave() {
-        controller.save()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-
-        response.reset()
-        request.method = 'POST'
         controller.save()
 
         assert model.${propertyName}Instance != null
@@ -94,12 +88,6 @@ class ${className}ControllerTests {
     }
 
     void testUpdate() {
-
-        controller.update()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-
-        response.reset()
-        request.method = 'POST'
         controller.update()
 
         assert flash.message != null
@@ -146,11 +134,6 @@ class ${className}ControllerTests {
     }
 
     void testDelete() {
-        controller.delete()
-        assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
-
-        response.reset()
-        request.method = 'POST'
         controller.delete()
         assert flash.message != null
         assert response.redirectedUrl == '/${propertyName}/list'
