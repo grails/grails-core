@@ -232,9 +232,6 @@ public class GrailsASTUtils {
         ArgumentListExpression exceptionArgs = new ArgumentListExpression();
         exceptionArgs.addExpression(new ConstantExpression(declaredMethodNode.getName()));
         exceptionArgs.addExpression(new ClassExpression(classNode));
-        for (Parameter parameter : declaredMethodNode.getParameters()) {
-            exceptionArgs.addExpression(new VariableExpression(parameter.getName()));
-        }
         return new ThrowStatement(new ConstructorCallExpression(MISSING_METHOD_EXCEPTION, exceptionArgs));
     }
 
