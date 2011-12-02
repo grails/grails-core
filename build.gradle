@@ -16,7 +16,7 @@ repositories {
 
 apply plugin: 'idea'
 
-grailsVersion = '2.0.0.RC3'
+grailsVersion = '2.0.0.BUILD-SNAPSHOT'
 antTraxVersion = "1.7.1"
 antVersion = "1.8.2"
 aspectjVersion = "1.6.10"
