@@ -1376,7 +1376,7 @@ public final class GrailsDomainBinder {
      */
     private static void bindSubClasses(GrailsDomainClass domainClass, PersistentClass parent,
             Mappings mappings, String sessionFactoryBeanName) {
-        Set<GrailsDomainClass> subClasses = domainClass.getSubClasses();
+        Set<GrailsDomainClass> subClasses = new HashSet<GrailsDomainClass>(domainClass.getSubClasses());
 
         for (GrailsDomainClass sub : subClasses) {
             if (sub.getClazz().getSuperclass().equals(domainClass.getClazz())) {
