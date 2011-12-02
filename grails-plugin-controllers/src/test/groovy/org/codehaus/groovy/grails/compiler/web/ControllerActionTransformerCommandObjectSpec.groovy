@@ -275,6 +275,17 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.person.theAnswer == 42
     }
 
+    void 'Test subscript operator on command object errors'() {
+        when:
+            testController.params.name = 'Maynard'
+            def model = testController.closureAction()
+
+        then:
+            model.person.hasErrors()
+            model.person.name == 'Maynard'
+            'matches.invalid.name' in model.person.errors['name'].codes
+    }
+    
     void "Test validation"() {
         when:
             testController.params.name = 'JFK'

@@ -15,11 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.plugins.support
 
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
+import grails.validation.ValidationErrors
+
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.springframework.validation.BeanPropertyBindingResult
-import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 
@@ -41,7 +39,7 @@ class ValidationSupport {
             }
 
             def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
-            def localErrors = new BeanPropertyBindingResult(object, object.class.name)
+            def localErrors = new ValidationErrors(object, object.class.name)
             def originalErrors = object.errors
             for(originalError in originalErrors.allErrors) {
                 if(originalErrors.getFieldError(originalError.field)?.bindingFailure) {
