@@ -19,8 +19,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -130,7 +132,9 @@ public class GrailsMetaClassUtils {
 
         MetaClass mc = registry.getMetaClass(aClass);
         if (mc instanceof ExpandoMetaClass) {
-            return (ExpandoMetaClass)mc;
+            ExpandoMetaClass emc = (ExpandoMetaClass) mc;
+            registry.setMetaClass(aClass, emc); // make permanent
+            return emc;
         }
 
         registry.removeMetaClass(aClass);

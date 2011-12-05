@@ -16,13 +16,18 @@
 package org.codehaus.groovy.grails.compiler.web;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi;
 
@@ -57,8 +62,15 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
             SourceUnit source, ClassNode classNode) {
         if (isControllerClassNode(classNode)) {
             super.performInjectionInternal(apiInstanceProperty, source, classNode);
+
+            List<MethodNode> staticInit = classNode.getDeclaredMethods("<clinit>");
+            if(!staticInit.isEmpty()) {
+                MethodNode methodNode = staticInit.get(0);
+                GrailsASTUtils.wrapMethodBodyInTryCatchDebugStatements(methodNode);
+            }
         }
     }
+
     @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if (isControllerClassNode(classNode)) {
