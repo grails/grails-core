@@ -427,7 +427,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         if (pluginDependencyDescriptor.exists()) {
             eventHandler "StatusUpdate", "Resolving plugin JAR dependencies"
             def callable = settings.pluginDependencyHandler()
-            settings.dependencyManager.metadataRegisteredPluginNames << pluginName
             callable.call(new File("$pluginInstallPath"))
             IvyDependencyManager dependencyManager = settings.dependencyManager
             dependencyManager.resetGrailsPluginsResolver()
