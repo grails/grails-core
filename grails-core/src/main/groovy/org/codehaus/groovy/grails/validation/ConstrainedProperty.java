@@ -229,6 +229,20 @@ public class ConstrainedProperty {
         bean = new BeanWrapperImpl(this);
     }
 
+    public static void removeConstraint(String name, Class constraintClass) {
+        Assert.hasLength(name, "Argument [name] cannot be null");
+
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.remove(constraintClass);
+    }
+
+    public static void removeConstraint(String name) {
+        Assert.hasLength(name, "Argument [name] cannot be null");
+
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.clear();
+    }
+
     public static void registerNewConstraint(String name, Class<?> constraintClass) {
         Assert.hasLength(name, "Argument [name] cannot be null");
         if (constraintClass == null || !Constraint.class.isAssignableFrom(constraintClass)) {
