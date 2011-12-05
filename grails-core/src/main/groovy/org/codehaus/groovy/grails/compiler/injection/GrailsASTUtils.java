@@ -574,7 +574,33 @@ public class GrailsASTUtils {
             controllerClassNode.addMethod(methodNode);
         }
     }
-    
+
+    public static ExpressionStatement createPrintlnStatement(String message) {
+        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new ConstantExpression(message))));
+    }
+
+    public static ExpressionStatement createPrintlnStatement(String message, String variable) {
+        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new BinaryExpression(new ConstantExpression(message),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression(variable)))));
+    }
+
+    /**
+     * Wraps a method body in try / catch logic that printlns the exception message and dumps the trace. Used for debugging only!
+     *
+     * @param methodNode The method node
+     */
+    public static void wrapMethodBodyInTryCatchDebugStatements(MethodNode methodNode) {
+        BlockStatement code = (BlockStatement) methodNode.getCode();
+        BlockStatement newCode = new BlockStatement();
+        TryCatchStatement tryCatchStatement = new TryCatchStatement(code, new BlockStatement());
+        newCode.addStatement(tryCatchStatement);
+        methodNode.setCode(newCode);
+        ExpressionStatement exceptionMessage = createPrintlnStatement("Exception Message: ", "e");
+        BlockStatement catchBlock = new BlockStatement();
+        catchBlock.addStatement(exceptionMessage);
+        catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("e"), "printStackTrace",new ArgumentListExpression())));
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
+    }
+
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}
