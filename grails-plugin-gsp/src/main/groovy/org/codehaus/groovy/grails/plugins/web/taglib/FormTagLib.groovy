@@ -525,7 +525,11 @@ class FormTagLib {
                 tempyear = year
             }
             if (relativeYears) {
-                 years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)
+                if (relativeYears.reverse) {
+                    years = (tempyear + relativeYears.toInt)..(tempyear + relativeYears.fromInt)
+                } else {
+                    years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)
+                }
             } else {
                 years = (tempyear - 100)..(tempyear + 100)
             }
