@@ -584,7 +584,7 @@ public class GrailsASTUtils {
     }
 
     /**
-     * Wraps a method body in try / catch logic that printlns the exception message and dumps the trace. Used for debugging only!
+     * Wraps a method body in try / catch logic that catches any errors and logs an error, but does not rethrow!
      *
      * @param methodNode The method node
      */
@@ -594,10 +594,11 @@ public class GrailsASTUtils {
         TryCatchStatement tryCatchStatement = new TryCatchStatement(code, new BlockStatement());
         newCode.addStatement(tryCatchStatement);
         methodNode.setCode(newCode);
-        ExpressionStatement exceptionMessage = createPrintlnStatement("Exception Message: ", "e");
         BlockStatement catchBlock = new BlockStatement();
-        catchBlock.addStatement(exceptionMessage);
-        catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("e"), "printStackTrace",new ArgumentListExpression())));
+        ArgumentListExpression logArguments = new ArgumentListExpression();
+        logArguments.addExpression(new BinaryExpression(new ConstantExpression("Error initializing class: "),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression("e")));
+        logArguments.addExpression(new VariableExpression("e"));
+        catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("log"), "error", logArguments)));
         tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
     }
 
