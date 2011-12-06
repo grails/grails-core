@@ -269,12 +269,16 @@ void addSyntheticFieldToWormhole(String name, ClassNode type, Map wormhole) {
 // -----------------------------------------------------
 // where queries
 // see: http://hudson.grails.org/job/grails_docs_2.0.x/lastSuccessfulBuild/artifact/build/docs/guide/GORM.html#whereQueries
-def whereQuery = (domainClass & inClosure() & (enclosingCallName("where") | enclosingCallName("find") | enclosingCallName("findAll")))
+// FIXADE the currentType("grails.gorm.DetachedCriteria") is not really correct...see below
+def whereQuery = ((domainClass | currentType("grails.gorm.DetachedCriteria")) & inClosure() & (enclosingCallName("where") | enclosingCallName("find") | enclosingCallName("findAll")))
 
 whereQuery.accept {
 	def currentTypeName = currentType.name
+	// FIXADE detachedName will be incorrect when currentType is DetachedCriteria. 
 	def detachedName = "grails.gorm.DetachedCriteria<${currentTypeName}>"
 	provider = "Where query DSL"
+	delegatesTo type:detachedName, isStatic:true
+	 
 	// add the extra functions
 	method name:"avg", type:detachedName, params:[prop:Object], doc:"The average of all values"
 	method name:"sum", type:detachedName, params:[prop:Object], doc:"The sum of all values"
@@ -321,7 +325,7 @@ whereQuery.accept {
 	}
 }
 
-// the 'of' method
+// the 'of' method for DetachedCriteria
 currentType("grails.gorm.DetachedCriteria").accept {
 	provider = "Where query DSL"
 	method name:"of", params:[subquery:Closure], declaringType:extractGeneric(currentType), doc:"You can apply additional criteria to any subquery by using the of method and passing in a closure containing the criteria."
@@ -335,7 +339,7 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
-	delegatesTo "org.hibernate.Criteria"
+	delegatesTo type:"org.hibernate.Criteria", isStatic:true
 }
 
 // namedQueries field
@@ -348,8 +352,8 @@ contribute(enclosingField("namedQueries") & domainClass) {
 	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
-	delegatesTo "grails.orm.HibernateCriteriaBuilder"
-	delegatesTo "org.hibernate.Criteria"
+	delegatesTo type:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+	delegatesTo type:"org.hibernate.Criteria", isStatic:true
 }
 
 
