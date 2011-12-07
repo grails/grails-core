@@ -75,7 +75,7 @@ public class GenerateUtils {
             GroovyClassLoader gcl = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
 
             GrailsTemplateGenerator generator = (GrailsTemplateGenerator)gcl.parseClass(
-                    gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"))
+                    gcl.getResourceAsStream("org/codehaus/groovy/grails/scaffolding/DefaultGrailsTemplateGenerator.groovy"),"utf-8")
                     .newInstance();
             if (!CONTROLLER.equals(type) && !VIEWS.equals(type) && !ALL.equals(type)) {
                 LOG.info("Grails was unable to generate templates for unsupported type ["+type+"]");

@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.compiler.injection.GroovyPageInjector;
 import java.net.URL;
 
 
-@AstTransformer
+//@AstTransformer
 public class GroovyPageBytecodeOptimizer implements GroovyPageInjector {
 
     private final static String RUN_METHOD = "run";

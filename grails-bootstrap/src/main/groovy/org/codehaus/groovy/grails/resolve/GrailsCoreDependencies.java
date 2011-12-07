@@ -168,7 +168,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed at compile time
                         ModuleRevisionId[] groovyDependencies = {
-                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.4")
+                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "2.0.0-beta-2-SNAPSHOT")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
 
