@@ -2,6 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
+        mavenLocal()
         mavenRepo(urls: "http://repo.grails.org/grails/core")
 	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
@@ -11,6 +12,7 @@ buildscript {
     }
 }
 repositories {
+    mavenLocal()
     mavenRepo(urls: "http://repo.grails.org/grails/core")
 }
 
@@ -28,7 +30,7 @@ commonsLangVersion = "2.6"
 datastoreVersion = "1.0.0.RC3"
 gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
-groovyVersion = "1.8.4"
+groovyVersion = "2.0.0-beta-2-SNAPSHOT"
 gradleGroovyVersion = groovyVersion
 gradleGroovyVersion = "1.8.2"
 ivyVersion = "2.2.0"
@@ -112,6 +114,7 @@ subprojects { project ->
     }
 
     repositories {
+        mavenLocal()
         mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
