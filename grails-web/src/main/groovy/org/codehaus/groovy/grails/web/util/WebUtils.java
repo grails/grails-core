@@ -37,6 +37,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import groovy.lang.Binding;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -332,8 +333,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         String currentAction = null;
         String currentId = null;
         ModelAndView currentMv = null;
+        Binding currentPageBinding = null;
         Map currentParams = null;
         if (webRequest != null) {
+            currentPageBinding = (Binding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
             currentController = webRequest.getControllerName();
             currentAction = webRequest.getActionName();
             currentId = webRequest.getId();
@@ -352,6 +355,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         }
         finally {
             if (webRequest!=null) {
+                webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
                 webRequest.getParameterMap().clear();
                 webRequest.getParameterMap().putAll(currentParams);
                 webRequest.setId(currentId);
