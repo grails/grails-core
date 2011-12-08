@@ -158,7 +158,7 @@ class ValidationTagLib {
     /**
      * Checks if the request has errors either for a field or global errors.
      *
-     * @attr bean REQUIRED The bean to check for errors
+     * @attr bean The bean to check for errors
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
@@ -223,7 +223,7 @@ class ValidationTagLib {
      *
      * @emptyTag
      *
-     * @attr bean REQUIRED The bean to check for errors
+     * @attr bean The bean to check for errors
      * @attr field The field of the bean or model reference to check
      * @attr model The model reference to check for errors
      */
