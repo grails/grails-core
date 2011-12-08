@@ -113,6 +113,10 @@ class GrailsUnitTestMixin {
 
     static void cleanupModifiedMetaClasses() {
         metaClassRegistryListener.clean()
+    }
+
+    @AfterClass
+    static void deregisterMetaClassCleaner() {
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
     }
 
