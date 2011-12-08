@@ -1,6 +1,12 @@
 configurations {
     agent.extendsFrom compile
 }
+
+eclipse {
+    classpath {
+        plusConfigurations += configurations.agent
+    }
+}
 dependencies {
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
