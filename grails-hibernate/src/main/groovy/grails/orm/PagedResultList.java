@@ -170,6 +170,11 @@ public class PagedResultList implements List, Serializable {
                         CriteriaImpl.CriterionEntry entry = (CriteriaImpl.CriterionEntry) iterator.next();
                         totalCriteria.add(entry.getCriterion());
                     }
+                    Iterator subcriteriaIterator = impl.iterateSubcriteria();
+                    while (subcriteriaIterator.hasNext()) {
+                        CriteriaImpl.Subcriteria sub = (CriteriaImpl.Subcriteria) subcriteriaIterator.next();
+                        totalCriteria.createAlias(sub.getPath(), sub.getAlias(), sub.getJoinType(), sub.getWithClause());
+                    }
                     totalCriteria.setProjection(impl.getProjection());
                     totalCriteria.setProjection(Projections.rowCount());
                     return ((Number)totalCriteria.uniqueResult()).intValue();
