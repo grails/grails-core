@@ -68,7 +68,21 @@ if(System.getProperty('groovy.jar')) {
     gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 }
 
-
+// Prevent multiple repositories being used, commented out as currently doesn't work.
+/*gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.hasTask(populateDependencies)) {
+        def projectsWithMultipleRepos = allprojects.findAll { repositories.size() > 1 }
+        println "projectsWithMultipleRepos: $projectsWithMultipleRepos"
+        if (projectsWithMultipleRepos) {
+            throw new GradleException(
+                "There are projects with more than one repository defined. \n" +
+                "This isn't allowed as it breaks the populateDependencies task. You can only use the grails central repo. \n" +
+                "This is a temporary workaround for the Gradle issue: http://issues.gradle.org/browse/GRADLE-1989"
+            )
+        }
+    }
+}
+*/
 subprojects { project ->
     apply plugin: 'groovy'
     apply plugin: 'maven'
