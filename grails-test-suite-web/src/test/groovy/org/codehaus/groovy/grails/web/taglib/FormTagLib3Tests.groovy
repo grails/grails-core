@@ -352,6 +352,42 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         }
     }
 
+	void testDatePickerWithRelativeYearsAndReverseRange() {
+        def now = Calendar.instance
+        def currentYear = now.get(Calendar.YEAR)
+
+        def template = '<g:datePicker relativeYears="[5..-2]"/>'
+        def result = applyTemplate(template)
+
+        assertEquals(-1, result.indexOf("""<option value="${currentYear - 4}">${currentYear - 4}</option>"""))
+        assertEquals(-1, result.indexOf("""<option value="${currentYear - 3}">${currentYear - 3}</option>"""))
+
+        def fiveDaysFromNowIndex = result.indexOf("""<option value="${currentYear + 5}">${currentYear + 5}</option>""")
+        def fourDaysFromNowIndex = result.indexOf("""<option value="${currentYear + 4}">${currentYear + 4}</option>""")
+        assertTrue fiveDaysFromNowIndex < fourDaysFromNowIndex
+
+        def threeDaysFromNowIndex = result.indexOf("""<option value="${currentYear + 3}">${currentYear + 3}</option>""")
+        assertTrue fourDaysFromNowIndex < threeDaysFromNowIndex
+
+        def twoDaysFromNowIndex = result.indexOf("""<option value="${currentYear + 2}">${currentYear + 2}</option>""")
+        assertTrue threeDaysFromNowIndex < twoDaysFromNowIndex
+
+        def tomorrowIndex = result.indexOf("""<option value="${currentYear + 1}">${currentYear + 1}</option>""")
+        assertTrue twoDaysFromNowIndex < tomorrowIndex
+
+        def todayIndex = result.indexOf("""<option value="${currentYear}" selected="selected">${currentYear}</option>""")
+        assertTrue tomorrowIndex < todayIndex
+
+        def yesterdayIndex = result.indexOf("""<option value="${currentYear - 1}">${currentYear - 1}</option>""")
+        assertTrue todayIndex < yesterdayIndex
+
+        def twoDaysAgoIndex = result.indexOf("""<option value="${currentYear - 2}">${currentYear - 2}</option>""")
+        assertTrue yesterdayIndex < twoDaysAgoIndex
+
+        assertEquals(-1, result.indexOf("""<option value="${currentYear + 6}">${currentYear + 6}</option>"""))
+        assertEquals(-1, result.indexOf("""<option value="${currentYear + 7}">${currentYear + 7}</option>"""))
+    }
+
     void testDatePickerWithRelativeYears() {
         def now = Calendar.instance
         def currentYear = now.get(Calendar.YEAR)
