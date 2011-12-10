@@ -30,3 +30,14 @@ jar{
 }
 
 jar.appendix = 'plugin-gsp'
+
+eclipse {
+    classpath {
+       file {        
+           whenMerged { classpath ->       
+                // remove invalid build/resources/ast entry
+                classpath.entries.removeAll { entry -> entry?.kind == 'lib' && entry?.path?.endsWith('build/resources/ast') }
+           }
+       }
+    }
+}
