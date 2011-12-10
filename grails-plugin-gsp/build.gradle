@@ -1,24 +1,25 @@
 
-dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile project(":grails-web"),
-            project(":grails-plugin-codecs"),
-            project(":grails-logging"),
-            project(":grails-plugin-controllers")
-}
 sourceSets {
-    main {
-        compileClasspath = files(configurations.compile, ast.output)
-    }
     ast {
         groovy.srcDirs = ['src/ast/groovy']
         resources.srcDirs = []
     }
-    test {
-        compileClasspath = files(ast.output, configurations.testCompile)
-        runtimeClasspath = files(ast.output, configurations.testCompile, test.output)
-    }
 }
+
+configurations {
+    compile.extendsFrom astRuntime
+}
+
+dependencies {
+    compile "commons-lang:commons-lang:$commonsLangVersion",
+            sourceSets.ast.output,
+            project(":grails-plugin-codecs"),
+            project(":grails-logging")
+
+    astCompile project(":grails-web"),
+               project(":grails-plugin-controllers")
+}
+
 test {
     maxParallelForks = 4
     forkEvery = 100
