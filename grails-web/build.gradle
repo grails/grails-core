@@ -34,7 +34,7 @@ dependencies {
 
 sourceSets {
     jsp21 {
-        compileClasspath = files(configurations.jsp21, main.classes)
+        compileClasspath = files(configurations.jsp21, main.output)
         groovy.srcDirs = ['src/jsp21/groovy']
         resources.srcDirs = []
     }

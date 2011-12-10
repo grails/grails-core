@@ -8,15 +8,15 @@ dependencies {
 }
 sourceSets {
     main {
-        compileClasspath = files(configurations.compile, ast.classes)
+        compileClasspath = files(configurations.compile, ast.output)
     }
     ast {
         groovy.srcDirs = ['src/ast/groovy']
         resources.srcDirs = []
     }
     test {
-        compileClasspath = files(ast.classes, configurations.testCompile)
-        runtimeClasspath = files(ast.classes, configurations.testCompile, test.classes)
+        compileClasspath = files(ast.output, configurations.testCompile)
+        runtimeClasspath = files(ast.output, configurations.testCompile, test.output)
     }
 }
 test {
