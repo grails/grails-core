@@ -120,12 +120,21 @@ public abstract class GroovyPage extends Script {
     @SuppressWarnings("rawtypes")
     public static final class ConstantClosure extends Closure {
         private static final long serialVersionUID = 1L;
+        private static final Class[] EMPTY_CLASS_ARR=new Class[0];
         final Object retval;
 
         public ConstantClosure(Object retval) {
             super(null);
             this.retval = retval;
         }
+        
+        public int getMaximumNumberOfParameters() {
+            return 0;
+        }
+        
+        public Class[] getParameterTypes() {
+            return EMPTY_CLASS_ARR;
+        }        
 
         public Object doCall(@SuppressWarnings("unused") Object obj) {
             return retval;
