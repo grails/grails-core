@@ -433,9 +433,9 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         boolean allowCaching = markUsed;
 
         Writer currentOut = getOut();
-//        if (allowCaching && streamCharBufferTarget != null && previousOut == currentOut) {
-//            return streamCharBufferTarget;
-//        }
+        if (allowCaching && streamCharBufferTarget != null && previousOut == currentOut) {
+            return streamCharBufferTarget;
+        }
 
         Writer target = currentOut;
         while (target instanceof GrailsWrappedWriter) {
