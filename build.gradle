@@ -121,6 +121,23 @@ subprojects { project ->
         )
     }
 
+    eclipseClasspath {
+        whenConfigured { classpath ->
+            // delete ../scripts from src for grails-scripts
+            if (project.name == 'grails-scripts') {
+                classpath.entries.removeAll { entry -> entry?.kind == 'src' && entry?.path == '../scripts' }
+            }
+            // swap jsp-api-2.0 and -2.1 so that -2.0 appears before -2.1
+            if (project.name == 'grails-web') {
+                def jsp21 = classpath.entries.find { entry -> entry?.path =~ /jsp-api-2.1.jar$/ }
+                if (jsp21) {
+                    classpath.entries.remove(jsp21)
+                    classpath.entries << jsp21
+                }
+            }
+        }
+    }
+
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
     }
