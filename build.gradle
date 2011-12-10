@@ -2,7 +2,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        mavenRepo(urls: "http://repo.grails.org/grails/core")
+        maven { url "http://repo.grails.org/grails/core" }
 	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
     dependencies {
@@ -125,7 +125,7 @@ subprojects { project ->
     }
 
     repositories {
-        mavenRepo(urls: "http://repo.grails.org/grails/core")
+        maven { url "http://repo.grails.org/grails/core" }
     }
 
     configurations {
