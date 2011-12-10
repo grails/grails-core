@@ -203,9 +203,6 @@ subprojects { project ->
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
 
-
-        mavenRepo urls: url
-
         project.deployer = repositories.mavenDeployer {
           repository(url: url) {
               final username = project.properties["artifactoryPublishUsername"]
