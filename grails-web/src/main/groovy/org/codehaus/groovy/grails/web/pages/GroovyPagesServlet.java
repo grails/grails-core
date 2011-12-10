@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -191,6 +192,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     protected void renderPageWithEngine(@SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
             @SuppressWarnings("unused") HttpServletRequest request,
             HttpServletResponse response, GroovyPageScriptSource scriptSource) throws Exception {
+        request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
         GSPResponseWriter out = createResponseWriter(response);
         try {
             Template template = engine.createTemplate(scriptSource);
