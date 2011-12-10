@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.GString;
 import groovy.lang.Writable;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import java.io.Writer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
+import org.codehaus.groovy.runtime.GStringImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
@@ -44,7 +46,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     protected Writer previousOut = null;
 
     public GrailsPrintWriter(Writer out) {
-        this.out = out;
+        setOut(out);
     }
 
     public boolean isAllowUnwrappingOut() {
@@ -63,10 +65,16 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     }
     
     public void setOut(Writer newOut) {
-        if(newOut instanceof GrailsWrappedWriter ) {
-            this.out = ((GrailsWrappedWriter)newOut).unwrap();
+        this.out = unwrapWriter(newOut);
+        this.streamCharBufferTarget = null;
+        this.previousOut = null;
+    }
+
+    protected Writer unwrapWriter(Writer writer) {
+        if(writer instanceof GrailsWrappedWriter ) {
+            return ((GrailsWrappedWriter)writer).unwrap();
         } else {
-            this.out = newOut;
+            return writer;
         }
     }
 
@@ -166,6 +174,9 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         }
         else if (clazz == StreamCharBuffer.class) {
             write((StreamCharBuffer)obj);
+        }
+        else if (clazz == GStringImpl.class) {
+            write((Writable)obj);
         }
         else if (obj instanceof Writable) {
             write((Writable)obj);
@@ -512,6 +523,15 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
         return this;
     }
 
+    public void print(final GStringImpl gstring) {
+        write((Writable)gstring);
+    }
+
+    public GrailsPrintWriter leftShift(final GStringImpl gstring) {
+        write((Writable)gstring);
+        return this;
+    }
+    
     public boolean isUsed() {
         if (usageFlag) {
             return true;

@@ -66,7 +66,8 @@ defaultWarDependencies = { antBuilder ->
         def dependencies = grailsSettings.runtimeDependencies
         if (dependencies) {
             for (File f in dependencies) {
-                fileset(dir: f.parent, includes: f.name)
+                if(f && f.name.endsWith(".jar"))
+                    fileset(dir: f.parent, includes: f.name)
             }
         }
     }

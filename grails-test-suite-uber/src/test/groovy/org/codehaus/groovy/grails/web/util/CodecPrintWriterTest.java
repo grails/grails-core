@@ -14,10 +14,16 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest;
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.web.context.request.RequestContextHolder;
 
 public class CodecPrintWriterTest {
 
@@ -56,6 +62,62 @@ public class CodecPrintWriterTest {
         writer.write(buf);
         assertEquals("-> hola <-", stringwriter.getValue());
     }
+    
+    @Test
+    public void testCodecAndNoCodecGRAILS8405() throws IOException {
+        FastStringWriter target=new FastStringWriter();
+        
+        GrailsWebRequest webRequest = bindMockHttpRequest();
+        
+        // Initialize out and codecOut as it is done in GroovyPage.initRun
+        GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
+        GrailsPrintWriter out = outputStack.getProxyWriter();
+        webRequest.setOut(out);
+        GrailsPrintWriter codecOut=new CodecPrintWriter(new MockGrailsApplication(), out, CodecWithClosureProperties.class);
+               
+        // print some output        
+        codecOut.print("hola");
+        out.print("1");
+        out.print("2");
+        out.print("3");
+
+        // similar as taglib call
+        FastStringWriter bufferWriter=new FastStringWriter();
+        GrailsPrintWriter out2=new GrailsPrintWriter(bufferWriter);
+        outputStack.push(out2);
+        out.print("4");
+        codecOut.print("A");
+        outputStack.pop();
+        
+        // add output before appending "taglib output"
+        out.print("added");
+        codecOut.print("too");
+        
+        // append "taglib output"
+        out.leftShift(bufferWriter.getBuffer());
+        
+        // print some more output
+        codecOut.print("B");
+        out.print("5");
+        codecOut.print("C");
+        
+        // clear thread local
+        RequestContextHolder.setRequestAttributes(null);
+        
+        assertEquals("-> hola <-123added-> too <-4-> A <--> B <-5-> C <-", target.getValue());
+    }
+
+    private GrailsWebRequest bindMockHttpRequest() {
+        GrailsMockHttpServletRequest mockRequest=new GrailsMockHttpServletRequest();
+        GrailsMockHttpServletResponse mockResponse=new GrailsMockHttpServletResponse();
+        GrailsWebRequest webRequest = new GrailsWebRequest(mockRequest, mockResponse, mockRequest.getServletContext());
+        mockRequest.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
+        RequestContextHolder.setRequestAttributes(webRequest);
+        return webRequest;
+    }
+    
+    
+    
 }
 
 @SuppressWarnings({ "rawtypes", "unchecked" })

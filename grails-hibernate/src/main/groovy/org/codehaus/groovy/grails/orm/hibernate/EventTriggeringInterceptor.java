@@ -76,41 +76,45 @@ public class EventTriggeringInterceptor extends AbstractPersistenceEventListener
 
     @Override
     protected void onPersistenceEvent(final AbstractPersistenceEvent event) {
-        if (event instanceof org.grails.datastore.mapping.engine.event.PreInsertEvent) {
-            if (onPreInsert((PreInsertEvent)event.getNativeEvent())) {
-                event.cancel();
-            }
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PostInsertEvent) {
-            onPostInsert((PostInsertEvent)event.getNativeEvent());
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PreUpdateEvent) {
-            if (onPreUpdate((PreUpdateEvent)event.getNativeEvent())) {
-                event.cancel();
-            }
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PostUpdateEvent) {
-            onPostUpdate((PostUpdateEvent)event.getNativeEvent());
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PreDeleteEvent) {
-            if (onPreDelete((PreDeleteEvent)event.getNativeEvent())) {
-                event.cancel();
-            }
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PostDeleteEvent) {
-            onPostDelete((PostDeleteEvent)event.getNativeEvent());
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PreLoadEvent) {
-            onPreLoad((PreLoadEvent)event.getNativeEvent());
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.PostLoadEvent) {
-            onPostLoad((PostLoadEvent)event.getNativeEvent());
-        }
-        else if (event instanceof org.grails.datastore.mapping.engine.event.SaveOrUpdateEvent) {
-            onSaveOrUpdate((SaveOrUpdateEvent)event.getNativeEvent());
-        }
-        else if (event instanceof ValidationEvent) {
-            onValidate((ValidationEvent)event);
+        switch (event.getEventType()) {
+            case PreInsert:
+                if (onPreInsert((PreInsertEvent)event.getNativeEvent())) {
+                    event.cancel();
+                }
+                break;
+            case PostInsert:
+                onPostInsert((PostInsertEvent)event.getNativeEvent());
+                break;
+            case PreUpdate:
+                if (onPreUpdate((PreUpdateEvent)event.getNativeEvent())) {
+                    event.cancel();
+                }
+                break;
+            case PostUpdate:
+                onPostUpdate((PostUpdateEvent)event.getNativeEvent());
+                break;
+            case PreDelete:
+                if (onPreDelete((PreDeleteEvent)event.getNativeEvent())) {
+                    event.cancel();
+                }
+                break;
+            case PostDelete:
+                onPostDelete((PostDeleteEvent)event.getNativeEvent());
+                break;
+            case PreLoad:
+                onPreLoad((PreLoadEvent)event.getNativeEvent());
+                break;
+            case PostLoad:
+                onPostLoad((PostLoadEvent)event.getNativeEvent());
+                break;
+            case SaveOrUpdate:
+                onSaveOrUpdate((SaveOrUpdateEvent)event.getNativeEvent());
+                break;
+            case Validation:
+                onValidate((ValidationEvent)event);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected EventType: " + event.getEventType());
         }
     }
 

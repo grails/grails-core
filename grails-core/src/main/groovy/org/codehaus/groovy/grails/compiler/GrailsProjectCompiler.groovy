@@ -249,7 +249,9 @@ class GrailsProjectCompiler {
                    src(path:srcPath)
                }
             }
-            javac(javaOptions)
+            javac(javaOptions) {
+            	compilerarg value:"-Xlint:-options"
+            }
         }
 
         def classesDirPath = new File(targetDir.toString())
@@ -300,9 +302,9 @@ class GrailsProjectCompiler {
         }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.buildScopePluginInfo, pluginBuildClassesDir)
         compilePluginSources(pluginSettings.providedScopePluginInfo, pluginProvidedClassesDir)
+        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
 
 
@@ -328,7 +330,9 @@ class GrailsProjectCompiler {
                 exclude(name: "**/*DataSource.groovy")
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
-                javac(javaOptions)
+                javac(javaOptions) {
+            		compilerarg value:"-Xlint:-options"
+            	}
             }
         }
 

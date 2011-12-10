@@ -33,8 +33,7 @@ class TestEntity {
              cls.load(1)
           then:
                def e = thrown(MissingMethodException)
-               e.message == '''No signature of method: TestEntity.load() is applicable for argument types: (java.lang.Integer) values: [1]
-Possible solutions: load(java.io.Serializable), lock(), lock(java.io.Serializable), read(java.io.Serializable), list(), find()'''
+               e.message.contains '''No signature of method: TestEntity.load() is applicable for argument types'''
     }
 
     void "Test that generic information is added to hasMany collections"() {

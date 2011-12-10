@@ -23,6 +23,7 @@ public interface GrailsDomainClassProperty {
 
     String IDENTITY = "id";
     String VERSION = "version";
+    String ATTACHED = "attached";
     String TRANSIENT = "transients";
     String CONSTRAINTS = "constraints";
     String EVANESCENT = "evanescent";

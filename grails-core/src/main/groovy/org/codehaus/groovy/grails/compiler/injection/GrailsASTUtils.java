@@ -232,9 +232,6 @@ public class GrailsASTUtils {
         ArgumentListExpression exceptionArgs = new ArgumentListExpression();
         exceptionArgs.addExpression(new ConstantExpression(declaredMethodNode.getName()));
         exceptionArgs.addExpression(new ClassExpression(classNode));
-        for (Parameter parameter : declaredMethodNode.getParameters()) {
-            exceptionArgs.addExpression(new VariableExpression(parameter.getName()));
-        }
         return new ThrowStatement(new ConstructorCallExpression(MISSING_METHOD_EXCEPTION, exceptionArgs));
     }
 
@@ -577,7 +574,34 @@ public class GrailsASTUtils {
             controllerClassNode.addMethod(methodNode);
         }
     }
-    
+
+    public static ExpressionStatement createPrintlnStatement(String message) {
+        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new ConstantExpression(message))));
+    }
+
+    public static ExpressionStatement createPrintlnStatement(String message, String variable) {
+        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new BinaryExpression(new ConstantExpression(message),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression(variable)))));
+    }
+
+    /**
+     * Wraps a method body in try / catch logic that catches any errors and logs an error, but does not rethrow!
+     *
+     * @param methodNode The method node
+     */
+    public static void wrapMethodBodyInTryCatchDebugStatements(MethodNode methodNode) {
+        BlockStatement code = (BlockStatement) methodNode.getCode();
+        BlockStatement newCode = new BlockStatement();
+        TryCatchStatement tryCatchStatement = new TryCatchStatement(code, new BlockStatement());
+        newCode.addStatement(tryCatchStatement);
+        methodNode.setCode(newCode);
+        BlockStatement catchBlock = new BlockStatement();
+        ArgumentListExpression logArguments = new ArgumentListExpression();
+        logArguments.addExpression(new BinaryExpression(new ConstantExpression("Error initializing class: "),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression("e")));
+        logArguments.addExpression(new VariableExpression("e"));
+        catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("log"), "error", logArguments)));
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
+    }
+
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}

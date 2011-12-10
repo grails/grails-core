@@ -57,7 +57,11 @@ class SitemeshTagLib implements RequestConstants {
                 useXmlClosingForEmptyTag = true
             }
             attrs.each { k, v ->
-                writer << " ${k}=\"${v.encodeAsHTML()}\""
+                writer << ' '
+                writer << k
+                writer << '="'
+                writer << v.toString().encodeAsHTML()
+                writer << '"'
             }
         }
 
