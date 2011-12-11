@@ -80,6 +80,23 @@ if(System.getProperty('groovy.jar')) {
     }
 }
 */
+
+allprojects {
+    repositories {
+        maven { url "http://repo.grails.org/grails/core" }
+    }
+
+    configurations {
+        all {
+            resolutionStrategy {
+                def cacheHours = isCiBuild ? 0 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
+            }
+        }
+    }
+}
+
 subprojects { project ->
     apply plugin: 'groovy'
     apply plugin: 'maven'
@@ -119,20 +136,6 @@ subprojects { project ->
         module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
             [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
         )
-    }
-
-    repositories {
-        maven { url "http://repo.grails.org/grails/core" }
-    }
-
-    configurations {
-        all {
-            resolutionStrategy {
-                def cacheHours = isCiBuild ? 0 : 24
-                cacheDynamicVersionsFor cacheHours, 'hours'
-                cacheChangingModulesFor cacheHours, 'hours'
-            }
-        }
     }
 
     dependencies {
