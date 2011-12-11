@@ -164,12 +164,12 @@ task installResources(type: Copy) {
 
 // Make the install task for each subproject place the output jar into the dist dir
 subprojects {
-    install.doLast {
-         copy {
-             from jar.outputs.files
-             into homeDistDir
-         }
+    task installToHomeDist(type: Copy) {
+        from jar.outputs.files
+        into homeDistDir
     }
+
+    install.dependsOn installToHomeDist
 }
 
 task install(dependsOn: [populateDependencies, installResources] + subprojects*.install)
