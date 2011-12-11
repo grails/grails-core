@@ -89,7 +89,7 @@ allprojects {
     configurations {
         all {
             resolutionStrategy {
-                def cacheHours = isCiBuild ? 0 : 24
+                def cacheHours = isCiBuild ? 1 : 24
                 cacheDynamicVersionsFor cacheHours, 'hours'
                 cacheChangingModulesFor cacheHours, 'hours'
             }
