@@ -48,7 +48,8 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
     ServletContext servletContext
     GrailsWebRequest webRequest
     FlowBuilderServices flowBuilderServices
-    FlowDefinitionRegistry flowDefinitionRegistry = new FlowDefinitionRegistryImpl()
+    FlowDefinitionLocator definitionLocator = new FlowDefinitionRegistryImpl()
+
     MockHttpServletRequest request
     MockHttpServletResponse response
     def ctx
@@ -155,17 +156,11 @@ abstract class AbstractGrailsTagAwareFlowExecutionTests extends AbstractFlowExec
         return context
     }
 
-    FlowDefinition registerFlow(String flowId, Closure flowClosure) {
-        FlowBuilder builder = new FlowBuilder(flowId, flowClosure, flowBuilderServices, getFlowDefinitionRegistry())
-        builder.viewPath = "/"
-        builder.applicationContext = appCtx
-        FlowAssembler assembler = new FlowAssembler(builder, builder.getFlowBuilderContext())
-        getFlowDefinitionRegistry().registerFlowDefinition(new DefaultFlowHolder(assembler))
-        return getFlowDefinitionRegistry().getFlowDefinition(flowId)
-    }
 
     FlowDefinition getFlowDefinition() {
-        return registerFlow(getFlowId(), getFlowClosure())
+        FlowBuilder builder = new FlowBuilder(getFlowId(), getFlowBuilderServices(), getDefinitionLocator())
+        builder.applicationContext = appCtx
+        builder.flow(getFlowClosure())
     }
 
     protected void onInit() {}
