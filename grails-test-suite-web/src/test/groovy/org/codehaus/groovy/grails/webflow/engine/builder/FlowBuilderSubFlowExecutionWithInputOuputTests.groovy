@@ -8,22 +8,6 @@ import org.springframework.webflow.engine.FlowInputMappingException
 class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
     def searchMoreAction = { [moreResults: ["one", "two", "three"]] }
-
-
-    def requiredInputSubber = {
-        input {
-            requiredInput(required: true)
-        }
-
-        subberStart {
-            on("next").to "end"
-        }
-
-        end()
-    }
-
-
-    Closure getFlowClosure() {
         def subber = {
             input {
                 shortHand()
@@ -46,6 +30,21 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
                 }
             }
         }
+
+    def requiredInputSubber = {
+        input {
+            requiredInput(required: true)
+        }
+
+        subberStart {
+            on("next").to "end"
+        }
+
+        end()
+    }
+
+
+    Closure getFlowClosure() {
         return {
             start {
                 on("next") {
@@ -56,17 +55,18 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
             }
 
             defaultInputs {
-                subflow(subber)
+                subflow(controller: 'subber', action: 'subber')
                 on('subberEnd').to('providedInputs')
             }
 
             providedInputs {
-                subflow(input: [
+                subflow(controller: 'subber', action: 'subber',
+                        input: [
                                 shortHand: 'shortHandInValue',
                                 constantDefault1: 'constantDefault1InValue',
                                 constantDefault2: 'constantDefault2InValue',
                                 dynamicDefault1: {flow.get('dynamicDefaultIn')},
-                        ], subber)
+                        ])
                 on('subberEnd') {
                     flow.put('constantOut1', currentEvent.attributes.constantOut1)
                     flow.put('constantOut2', currentEvent.attributes.constantOut2)
@@ -85,6 +85,7 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
 
 
     void testSubFlowInputOutput() {
+        registerFlow('subber/subber', subber)
         GrailsWebRequest webrequest = grails.util.GrailsWebUtil.bindMockWebRequest()
         startFlow()
 
@@ -112,4 +113,14 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
 
     }
 
+    void testFailOnRequiredInput() {
+        registerFlow('subber/subber', requiredInputSubber)
+        grails.util.GrailsWebUtil.bindMockWebRequest()
+        startFlow()
+        try {
+            signalEvent('next')
+            fail('expected FlowInputMappingException')
+        }
+        catch (FlowInputMappingException e) {}
+    }
 }
