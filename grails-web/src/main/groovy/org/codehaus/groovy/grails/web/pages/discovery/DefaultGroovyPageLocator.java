@@ -323,8 +323,8 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     protected Resource findResource(List<String> searchPaths) {
         Resource foundResource = null;
         Resource resource;
-        for (String path : searchPaths) {
-            for (ResourceLoader loader : resourceLoaders) {
+        for (ResourceLoader loader : resourceLoaders) {
+            for (String path : searchPaths) {
                 resource = loader.getResource(path);
                 if (resource != null && resource.exists()) {
                     foundResource = resource;
