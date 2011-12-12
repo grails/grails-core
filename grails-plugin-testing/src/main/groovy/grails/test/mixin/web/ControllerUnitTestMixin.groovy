@@ -326,10 +326,14 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
     @After
     void clearGrailsWebRequest() {
+        def ctx = webRequest.applicationContext
         webRequest = null
         request = null
         response = null
         RequestContextHolder.setRequestAttributes(null)
+        views.clear()
+        ctx.getBean("groovyPagesTemplateEngine").clearPageCache()
+        ctx.getBean("groovyPagesTemplateRenderer").clearCache()
     }
 }
 
