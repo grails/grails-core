@@ -1408,6 +1408,9 @@ public final class GrailsDomainBinder {
             // to perform polymorphic queries
             Mapping subMapping = getMapping(sub);
             subClass.setDiscriminatorValue(subMapping != null && subMapping.getDiscriminator() != null ? subMapping.getDiscriminator() : sub.getFullName());
+            if(subMapping != null) {
+                configureDerivedProperties(sub, subMapping);
+            }
         }
 
         subClass.setEntityName(sub.getFullName());
