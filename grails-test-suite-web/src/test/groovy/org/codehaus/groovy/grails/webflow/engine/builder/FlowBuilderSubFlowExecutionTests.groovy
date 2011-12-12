@@ -8,10 +8,6 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
 class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecutionTests{
 
     def searchMoreAction = { [moreResults:["one", "two", "three"]] }
-
-    Closure getFlowClosure() {
-        def searchService = [executeSearch:{["foo", "bar"]}]
-        def params = [q:"foo"]
         def extendedSearchFlow = {
             startExtendedSearch {
                 on("findMore").to "searchMore"
@@ -29,6 +25,10 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
             moreResults()
             noResults()
         }
+
+    Closure getFlowClosure() {
+        def searchService = [executeSearch:{["foo", "bar"]}]
+        def params = [q:"foo"]
 
         return {
             displaySearchForm {
@@ -68,6 +68,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
     }
 
     void testSubFlowDefinition() {
+        registerFlow('flowBuilderSubFlowExecutionTests/extendedSearch', extendedSearchFlow)
         grails.util.GrailsWebUtil.bindMockWebRequest()
         def theFlow = getFlowDefinition()
 
@@ -85,6 +86,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
     }
 
     void testSubFlowExecution() {
+        registerFlow('flowBuilderSubFlowExecutionTests/extendedSearch', extendedSearchFlow)
         grails.util.GrailsWebUtil.bindMockWebRequest()
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
@@ -103,6 +105,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
 
     void testSubFlowExecution2() {
         searchMoreAction = { error() }
+        registerFlow('flowBuilderSubFlowExecutionTests/extendedSearch', extendedSearchFlow)
         startFlow()
         assertCurrentStateEquals "displaySearchForm"
 
