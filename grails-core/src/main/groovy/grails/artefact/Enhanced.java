@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A marker annotation for classes that are compile-time enhanced. Used to
+ * An annotation for classes that are compile-time enhanced. Used to
  * fallback to runtime enhancement if compile time enhancement does not occur
  *
  * @author Graeme Rocher
@@ -30,4 +30,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Enhanced {
+    String version();
+    String[] enhancedFor() default {};
 }
