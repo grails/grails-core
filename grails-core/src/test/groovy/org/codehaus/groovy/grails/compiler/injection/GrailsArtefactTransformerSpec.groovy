@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.compiler.injection
 
+import grails.artefact.Enhanced
+import grails.util.GrailsUtil
 import spock.lang.Specification
 
 class GrailsArtefactTransformerSpec extends Specification {
@@ -102,6 +104,22 @@ class GrailsArtefactTransformerSpec extends Specification {
             1 == oneArgGetters?.size()
             String == oneArgGetters[0].returnType
             String == oneArgGetters[0].parameterTypes[0].theClass
+    }
+    
+    void 'Test version attribute on @Enhanced'() {
+        given:
+            def testClass = gcl.parseClass('''
+            class TestClass {
+                String firstName
+            }
+            ''')
+
+        when:
+           def enhancedAnnotation = testClass.getAnnotation(Enhanced)
+           def version = enhancedAnnotation.version()
+
+        then:
+            version == GrailsUtil.grailsVersion
     }
 }
 
