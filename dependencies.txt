@@ -5,8 +5,8 @@ The following libraries are included in Grails because they are required either 
 - used to build the framework and for the command line tools (Gant)
 - required for running Grails applications when using AntBuilder
 
-* antlr-2.7.6.jar
-- ANTLR 2.7.6 (http://www.antlr.org) BSD License
+* antlr-2.7.7.jar
+- ANTLR 2.7.7 (http://www.antlr.org) BSD License
 - required for running Grails applications (Hibernate)
 
 * aspectjrt-1.6.8.jar, aspectjweaver-1.6.8.jar
@@ -113,8 +113,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications (With an in-memory database)
 
-* javassist-3.8.0.GA.jar
-- Javassist 3.8 (http://www.jboss.org/javassist/) MPL or LGPL License
+* javassist-3.12.0.GA.jar
+- Javassist 3.12.0 (http://www.jboss.org/javassist/) MPL or LGPL License
 - required for running Grails applications 
 
 * jline-0.9.94.jar
@@ -158,7 +158,7 @@ The following libraries are included in Grails because they are required either 
 - required for running Grails applications
 
 * org.springframework.*.jar
-- Spring Framework 3.1.0.RC1 (http://www.springframework.org) Apache 2.0 License
+- Spring Framework 3.1.0.RELEASE (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for the command line tools (Gant)
 - required for running Grails applications
@@ -168,8 +168,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications (When using Web flows)
 
-* svnkit-1.3.1.jar
-- SVNKit 1.3.1 (http://svnkit.com/) TMate Open Source License (see http://svnkit.com/license.html)
+* svnkit-1.3.5.jar
+- SVNKit 1.3.5 (http://svnkit.com/) TMate Open Source License (see http://svnkit.com/license.html)
 - required for the command line tools (Gant)
 
 * xpp3_min-1.1.3.4.O.jar

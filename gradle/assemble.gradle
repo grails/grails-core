@@ -72,9 +72,9 @@ task pluginsFromSvn {
     plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
-        resources: "1.1.4",
-        webxml: "1.4.1",        
-        jquery: "1.7"
+        resources: "1.1.5",
+        webxml: "1.4.1",
+        jquery: "1.7.1"
     ]
     
     dir = file("$buildDir/pluginsFromSvn")

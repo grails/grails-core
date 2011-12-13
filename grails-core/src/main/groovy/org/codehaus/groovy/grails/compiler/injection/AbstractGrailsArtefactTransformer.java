@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
+import grails.util.GrailsUtil;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -165,7 +166,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         }
 
         if (classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty()) {
-            classNode.addAnnotation(new AnnotationNode(ENHANCED_CLASS_NODE));
+            final AnnotationNode annotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
+            annotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
+            classNode.addAnnotation(annotationNode);
         }
     }
 

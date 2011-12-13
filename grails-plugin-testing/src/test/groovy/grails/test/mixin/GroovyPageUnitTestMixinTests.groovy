@@ -44,6 +44,13 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
         assert result == 'Hello /bar'
     }
 
+    void testThatViewsAreClearedBetweenTests() {
+        def result = render(view:"/foo/bar")
+
+        assert result == null
+
+    }
+
     void testMockTagLibrary() {
         mockTagLib(FooTagLib)
 

@@ -124,7 +124,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed by the Grails build system
 
-                        String springVersion = "3.1.0.RC2";
+                        String springVersion = "3.1.0.RELEASE";
                         String antVersion = "1.8.2";
                         String slf4jVersion = "1.6.2";
                         String junitVersion = "4.10";
@@ -134,7 +134,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("com.googlecode.json-simple", "json-simple", "1.1"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcpg-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
-                            ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.4"),
+                            ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.5"),
                             ModuleRevisionId.newInstance("jline", "jline", "1.0"),
                             ModuleRevisionId.newInstance("org.fusesource.jansi", "jansi", "1.2.1"),
                             ModuleRevisionId.newInstance("net.java.dev.jna", "jna", "3.2.3"),
@@ -191,7 +191,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
 
-                        String datastoreMappingVersion = "1.0.0.RC3";
+                        String datastoreMappingVersion = "1.0.0.RELEASE";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),

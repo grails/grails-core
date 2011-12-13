@@ -29,8 +29,9 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
- /**
+/**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
  *
@@ -348,6 +349,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (request['flowExecutionKey']) {
             params."execution" = request['flowExecutionKey']
             urlAttrs.params = params
+            if (attrs.controller == null && attrs.action == null && attrs.url == null && attrs.uri == null) {
+                urlAttrs[LinkGenerator.ATTRIBUTE_ACTION] = GrailsWebRequest.lookup().actionName
+            }
         }
         if (urlAttrs.event) {
             params."_eventId" = urlAttrs.remove('event')

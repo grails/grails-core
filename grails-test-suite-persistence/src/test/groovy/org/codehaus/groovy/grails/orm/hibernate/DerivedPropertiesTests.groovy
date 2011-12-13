@@ -26,6 +26,20 @@ class ClassWithConstrainedDerivedProperty {
         numberTwo max: 10
     }
 }
+
+@Entity
+class AbstractBaseClass {
+    String one
+    String two
+}
+
+@Entity
+class SubClass extends AbstractBaseClass {
+    String three
+    static mapping = {
+        three formula: 'CONCAT(one, two)'
+    }
+}
 '''
     }
 
@@ -35,6 +49,12 @@ class ClassWithConstrainedDerivedProperty {
     protected void onTearDown() {
     }
 
+    void testDerivedPropertyDefinedInSubclassIsNotConstrained() {
+        def mdc = ga.getDomainClass('SubClass')
+        def mc = mdc.clazz
+        assertFalse 'three should not have been constrained', mdc.constrainedProperties.containsKey('three')
+    }
+    
     void testDerivedPropertiesCannotBeMadeValidateable() {
 
         def myDomainClass = ga.getDomainClass('ClassWithConstrainedDerivedProperty')
