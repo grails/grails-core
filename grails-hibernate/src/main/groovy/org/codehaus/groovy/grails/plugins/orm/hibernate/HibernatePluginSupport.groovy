@@ -144,7 +144,7 @@ class HibernatePluginSupport {
             def hibConfig = application.config["hibernate$suffix"] ?: application.config.hibernate
 
             def hibConfigClass = ds?.configClass
-            def hibProps = [:]
+            def hibProps = [(Environment.SESSION_FACTORY_NAME): ConfigurableLocalSessionFactoryBean.name + suffix]
 
             if (ds.loggingSql || ds.logSql) {
                 hibProps."hibernate.show_sql" = "true"

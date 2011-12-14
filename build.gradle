@@ -34,7 +34,7 @@ jlineVersion = "1.0"
 jnaVersion = "3.2.3"
 slf4jVersion = "1.6.2"
 springLoadedVersion = "1.0.2"
-springVersion = "3.1.0.RELEASE"
+springVersion = "3.1.0.RC2"
 springWebflowVersion= "2.0.8.RELEASE"
 hibernateVersion = "3.6.8.Final"
 ehcacheVersion = "2.4.6"
@@ -262,6 +262,5 @@ apply {
     from 'gradle/findbugs.gradle'
 }
 
-task wrapper(type: Wrapper) {
-    distributionUrl "http://repo.gradle.org/gradle/distributions-snapshots/gradle-1.0-milestone-7-20111214110828+0100-bin.zip"
-}
+
+
