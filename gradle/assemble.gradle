@@ -64,13 +64,13 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
             from versionedCacheDir
             libsConfigurations.each { configuration ->
                 configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                    def dependency = artifact.resolvedDependency
+                    def dependency = artifact.moduleVersion.id
 
-                    if (!projectNames.contains(dependency.moduleName)) {
-                        def base = "${dependency.moduleGroup}/${dependency.moduleName}/$grailsRepoCacheHash"
-                        include "${base}/*-${dependency.moduleVersion}.*"
-                        include "${base}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                        include "${base}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                    if (!projectNames.contains(dependency.name)) {
+                        def base = "${dependency.group}/${dependency.name}/$grailsRepoCacheHash"
+                        include "${base}/*-${dependency.version}.*"
+                        include "${base}/jars/${dependency.name}-${dependency.version}.jar"
+                        include "${base}/bundles/${dependency.name}-${dependency.version}.jar"
                     }
                 }
             }
