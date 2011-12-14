@@ -262,5 +262,6 @@ apply {
     from 'gradle/findbugs.gradle'
 }
 
-
-
+task wrapper(type: Wrapper) {
+    distributionUrl "http://repo.gradle.org/gradle/distributions-snapshots/gradle-1.0-milestone-7-20111214110828+0100-bin.zip"
+}
