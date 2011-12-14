@@ -39,6 +39,9 @@ echo.
 goto end
 
 :have_JAVA_HOME
+@rem Remove trailing slash from JAVA_HOME if found
+if "%JAVA_HOME:~-1%"=="\" SET JAVA_HOME=%JAVA_HOME:~0,-1%
+
 @rem Validate JAVA_HOME
 %COMMAND_COM% /C DIR "%JAVA_HOME%" 2>&1 | %FIND_EXE% /I /C "%JAVA_HOME%" >nul
 if not errorlevel 1 goto check_GRAILS_HOME
@@ -55,6 +58,9 @@ goto end
 @rem Define GRAILS_HOME if not set
 if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
 
+@rem Remove trailing slash from GRAILS_HOME if found
+if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
+
 :init
 
 set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails
@@ -63,10 +69,6 @@ if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms768M -XX:PermSize=
 
 @rem Get command-line arguments, handling Windows variants
 if "%@eval[2+2]" == "4" goto 4NT_args
-
-:win9xME_args
-@rem remove trailing slash from GRAILS_HOME
-if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 
 @rem Slurp the command line arguments.
 set CMD_LINE_ARGS=
