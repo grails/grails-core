@@ -83,6 +83,20 @@ class GrailsProjectCompiler {
         this.pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
         this.config = config
         isPluginProject = pluginDescriptor != null
+
+        initializeSrcDirectories()
+        initializeAntClasspaths()
+
+        if(buildSettings.compilerSourceLevel)
+            javaOptions.source = buildSettings.compilerSourceLevel
+        javaOptions.target = buildSettings.compilerTargetLevel
+
+
+        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
+        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
+    }
+
+    private initializeSrcDirectories() {
         srcDirectories = [ "${basedir}/grails-app/conf".toString(),
                            "${basedir}/grails-app/conf/spring".toString(),
                            "${srcdir}/groovy".toString(),
@@ -94,18 +108,12 @@ class GrailsProjectCompiler {
         if (grailsAppDirs != null) {
             for (dir in grailsAppDirs) {
                 if (dir != null) {
-                    if (!excludedPaths?.contains(dir.name) && dir.isDirectory()) {
+                    if (!excludedPaths?.contains(dir.name) && dir.isDirectory() && !DirectoryWatcher.SVN_DIR_NAME.equals(dir.name)) {
                         srcDirectories << "${dir}".toString()
                     }
                 }
             }
         }
-
-        initializeAntClasspaths()
-
-
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
-        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
     }
 
     AntBuilder getAnt() {
@@ -241,7 +249,9 @@ class GrailsProjectCompiler {
                    src(path:srcPath)
                }
             }
-            javac(javaOptions)
+            javac(javaOptions) {
+            	compilerarg value:"-Xlint:-options"
+            }
         }
 
         def classesDirPath = new File(targetDir.toString())
@@ -292,9 +302,9 @@ class GrailsProjectCompiler {
         }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.buildScopePluginInfo, pluginBuildClassesDir)
         compilePluginSources(pluginSettings.providedScopePluginInfo, pluginProvidedClassesDir)
+        compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
 
 
@@ -320,7 +330,9 @@ class GrailsProjectCompiler {
                 exclude(name: "**/*DataSource.groovy")
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
-                javac(javaOptions)
+                javac(javaOptions) {
+            		compilerarg value:"-Xlint:-options"
+            	}
             }
         }
 

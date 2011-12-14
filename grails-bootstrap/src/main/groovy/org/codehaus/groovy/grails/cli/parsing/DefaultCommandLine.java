@@ -41,29 +41,37 @@ public class DefaultCommandLine implements CommandLine {
         so.value = value;
 
         declaredOptions.put(name, so);
-
     }
 
     public void setEnvironment(String environment) {
         this.environment = environment;
     }
 
+    public void setCommand(String name) {
+        commandName = name;
+    }
+
     public String getEnvironment() {
         boolean useDefaultEnv = environment == null;
         String env;
         if (useDefaultEnv && commandName != null) {
-            env = CommandLineParser.DEFAULT_ENVS.get(commandName);
-            env = env != null ? env : Environment.DEVELOPMENT.getName();
+            env = lookupEnvironmentForCommand();
         }
         else {
-            env = environment != null ? environment : Environment.DEVELOPMENT.getName();
+            String fallbackEnv = System.getProperty(Environment.KEY) != null ? System.getProperty(Environment.KEY) : Environment.DEVELOPMENT.getName();
+            env = environment != null ? environment : fallbackEnv;
         }
 
         System.setProperty(Environment.KEY, env);
         System.setProperty(Environment.DEFAULT, String.valueOf(useDefaultEnv));
 
-
         return env;
+    }
+
+    public String lookupEnvironmentForCommand() {
+        String fallbackEnv = System.getProperty(Environment.KEY) != null ? System.getProperty(Environment.KEY) : Environment.DEVELOPMENT.getName();
+        String env = CommandLineParser.DEFAULT_ENVS.get(commandName);
+        return env == null ? fallbackEnv : env;
     }
 
     public boolean isEnvironmentSet() {
@@ -71,8 +79,8 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void setCommandName(String cmd) {
-        if("refresh-dependencies".equals(cmd)) {
-            addUndeclaredOption(RESOLVE_DEPENDENCIES_ARGUMENT);
+        if ("refresh-dependencies".equals(cmd)) {
+            addUndeclaredOption(REFRESH_DEPENDENCIES_ARGUMENT);
         }
         this.commandName = cmd;
     }
@@ -144,6 +152,9 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void addSystemProperty(String name, String value) {
+        if(Environment.KEY.equals(name)) {
+            setEnvironment(value);
+        }
         systemProperties.put(name, value);
     }
 

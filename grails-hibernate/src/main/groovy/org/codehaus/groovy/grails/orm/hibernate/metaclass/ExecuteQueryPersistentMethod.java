@@ -14,29 +14,19 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
-import org.hibernate.FlushMode;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Allows the executing of arbitrary HQL queries.
@@ -72,6 +62,12 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
 
     @SuppressWarnings("rawtypes")
     @Override
+    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
     protected Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         checkMethodSignature(clazz, arguments);
 
@@ -83,6 +79,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Query q = session.createQuery(query);
+                getHibernateTemplate().applySettings(q);
                 SimpleTypeConverter converter = new SimpleTypeConverter();
                 // process paginate params
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {

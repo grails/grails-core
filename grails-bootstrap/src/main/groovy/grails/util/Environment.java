@@ -26,7 +26,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.util.StringUtils;
 
 /**
- * An enum that represents the current environment
+ * Represents the current environment.
  *
  * @author Graeme Rocher
  * @since 1.1
@@ -81,6 +81,18 @@ public enum Environment {
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
 
+    private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
+    private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
+    private String name;
+
+    Environment() {
+        initialize();
+    }
+
+    private void initialize() {
+        name = toString().toLowerCase(Locale.getDefault());
+    }
+
     /**
      * Returns the current environment which is typcally either DEVELOPMENT, PRODUCTION or TEST.
      * For custom environments CUSTOM type is returned.
@@ -88,16 +100,25 @@ public enum Environment {
      * @return The current environment.
      */
     public static Environment getCurrent() {
+        Environment current = cachedCurrentEnvironment.get();
+        if (current != null) {
+            return current;
+        }
+
+        return resolveCurrentEnvironment();
+    }
+
+    private static Environment resolveCurrentEnvironment() {
         String envName = System.getProperty(Environment.KEY);
 
         if (isBlank(envName)) {
-        	Metadata metadata = Metadata.getCurrent();	
-        	if(metadata != null) {
-        		envName = metadata.getEnvironment();
-        	}
-        	if(isBlank(envName)) {
-        		return DEVELOPMENT;
-        	}
+            Metadata metadata = Metadata.getCurrent();
+            if (metadata != null) {
+                envName = metadata.getEnvironment();
+            }
+            if (isBlank(envName)) {
+                return DEVELOPMENT;
+            }
         }
 
         Environment env = getEnvironment(envName);
@@ -116,6 +137,10 @@ public enum Environment {
         return env;
     }
 
+    public static void cacheCurrentEnvironment() {
+        cachedCurrentEnvironment.set(resolveCurrentEnvironment());
+    }
+
     /**
      * @see #getCurrent()
      * @return the current environment
@@ -130,7 +155,7 @@ public enum Environment {
      */
     public static boolean isDevelopmentMode() {
         return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
-             System.getProperty("grails.home") != null;
+                cachedHasGrailsHome;
     }
 
     /**
@@ -325,15 +350,10 @@ public enum Environment {
         return value == null || value.trim().length() == 0;
     }
 
-    private String name;
-
     /**
      * @return  the name of the environment
      */
     public String getName() {
-        if (name == null) {
-            return toString().toLowerCase(Locale.getDefault());
-        }
         return name;
     }
 
@@ -355,6 +375,19 @@ public enum Environment {
         final boolean reloadLocationSpecified = StringUtils.hasLength(reloadLocation);
         return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() ||
                 reloadOverride && reloadLocationSpecified;
+    }
+
+    /**
+     * @return true if the reloading agent is active
+     */
+    public static boolean isReloadingAgentEnabled() {
+        try {
+            Class.forName("com.springsource.loaded.TypeRegistry");
+            return true;
+        }
+        catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     /**

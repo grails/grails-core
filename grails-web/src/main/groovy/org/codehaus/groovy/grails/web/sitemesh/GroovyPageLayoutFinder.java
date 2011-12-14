@@ -39,8 +39,8 @@ import com.opensymphony.module.sitemesh.Page;
 import com.opensymphony.sitemesh.Content;
 
 /**
- * Provides the logic for GrailsLayoutDecoratorMapper without so many ties to the Sitemesh API
- *
+ * Provides the logic for GrailsLayoutDecoratorMapper without so many ties to
+ * the Sitemesh API.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -48,20 +48,26 @@ import com.opensymphony.sitemesh.Content;
 public class GroovyPageLayoutFinder {
 
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
+    public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
-    private static final long LAYOUT_CACHE_EXPIRATION_MILLIS =  Long.getLong("grails.gsp.reload.interval", 5000).longValue();
+    private static final long LAYOUT_CACHE_EXPIRATION_MILLIS = Long.getLong("grails.gsp.reload.interval", 5000);
     private static final String LAYOUTS_PATH = "/layouts";
-    
+
     private Map<String, DecoratorCacheValue> decoratorCache = new ConcurrentHashMap<String, DecoratorCacheValue>();
     private Map<LayoutCacheKey, DecoratorCacheValue> layoutDecoratorCache = new ConcurrentHashMap<LayoutCacheKey, DecoratorCacheValue>();
 
     private String defaultDecoratorName;
     private boolean gspReloadEnabled;
     private boolean cacheEnabled = (Environment.getCurrent() != Environment.DEVELOPMENT);
-	private ViewResolver viewResolver;
+    private ViewResolver viewResolver;
+    private boolean enableNonGspViews = false;
 
     public void setDefaultDecoratorName(String defaultDecoratorName) {
         this.defaultDecoratorName = defaultDecoratorName;
+    }
+
+    public void setEnableNonGspViews(boolean enableNonGspViews) {
+        this.enableNonGspViews = enableNonGspViews;
     }
 
     public void setGspReloadEnabled(boolean gspReloadEnabled) {
@@ -73,79 +79,88 @@ public class GroovyPageLayoutFinder {
     }
 
     public void setViewResolver(ViewResolver viewResolver) {
-		this.viewResolver = viewResolver;
-	}
+        this.viewResolver = viewResolver;
+    }
 
     public Decorator findLayout(HttpServletRequest request, Content page) {
         return findLayout(request, GSPSitemeshPage.content2htmlPage(page));
     }
+
     public Decorator findLayout(HttpServletRequest request, Page page) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Evaluating layout for request: " + request.getRequestURI());
         }
-        Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
-        String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
+        final Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
+        if (request.getAttribute(RENDERING_VIEW_ATTRIBUTE) != null || layoutAttribute != null) {
+            String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
 
-        if (layoutName == null) {
-            layoutName = page.getProperty("meta.layout");
-        }
+            if (layoutName == null) {
+                layoutName = page.getProperty("meta.layout");
+            }
 
-        Decorator d = null;
+            Decorator d = null;
 
-        if (StringUtils.isBlank(layoutName)) {
-            GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
-            if (controller != null) {
-                String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
-                String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
+            if (StringUtils.isBlank(layoutName)) {
+                GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
+                if (controller != null) {
+                    String controllerName = (String)controller
+                            .getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
+                    String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
 
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Found controller in request, location layout for controller [" +
-                            controllerName + "] and action [" + actionUri + "]");
-                }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Found controller in request, location layout for controller [" + controllerName
+                                + "] and action [" + actionUri + "]");
+                    }
 
-                LayoutCacheKey cacheKey = null;
-                boolean cachedIsNull = false;
+                    LayoutCacheKey cacheKey = null;
+                    boolean cachedIsNull = false;
 
-                if (cacheEnabled) {
-                    cacheKey = new LayoutCacheKey(controllerName, actionUri);
-                    DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
-                    if (cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
-                        d = cacheValue.getDecorator();
-                        if (d == null) {
-                            cachedIsNull = true;
+                    if (cacheEnabled) {
+                        cacheKey = new LayoutCacheKey(controllerName, actionUri);
+                        DecoratorCacheValue cacheValue = layoutDecoratorCache.get(cacheKey);
+                        if (cacheValue != null && (!gspReloadEnabled || !cacheValue.isExpired())) {
+                            d = cacheValue.getDecorator();
+                            if (d == null) {
+                                cachedIsNull = true;
+                            }
+                        }
+                    }
+
+                    if (d == null && !cachedIsNull) {
+                        d = resolveDecorator(request, controller, controllerName, actionUri);
+                        if (cacheEnabled) {
+                            layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
                         }
                     }
                 }
-
-                if (d == null && !cachedIsNull) {
-                    d = resolveDecorator(request, controller, controllerName, actionUri);
-                    if (cacheEnabled) {
-                        layoutDecoratorCache.put(cacheKey, new DecoratorCacheValue(d));
-                    }
+                else {
+                    d = getApplicationDefaultDecorator(request);
                 }
-            } else {
-                d = getApplicationDefaultDecorator(request);
             }
-        } else {
-            d = getNamedDecorator(request, layoutName);
-        }
+            else {
+                d = getNamedDecorator(request, layoutName);
+            }
 
-        if (d != null) {
-            return d;
+            if (d != null) {
+                return d;
+            }
         }
         return null;
     }
 
     protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
-        return getNamedDecorator(request, (defaultDecoratorName != null) ? defaultDecoratorName : "application", defaultDecoratorName==null);
+        return getNamedDecorator(request, (defaultDecoratorName != null) ? defaultDecoratorName : "application",
+                !enableNonGspViews || defaultDecoratorName == null);
     }
-    
+
     public Decorator getNamedDecorator(HttpServletRequest request, String name) {
-    	return getNamedDecorator(request, name, false);
+        return getNamedDecorator(request, name, !enableNonGspViews);
     }
 
     public Decorator getNamedDecorator(HttpServletRequest request, String name, boolean viewMustExist) {
-        if (StringUtils.isBlank(name)) return null;
+        if (StringUtils.isBlank(name)) {
+            return null;
+        }
 
         if (cacheEnabled) {
             DecoratorCacheValue cacheValue = decoratorCache.get(name);
@@ -154,19 +169,21 @@ public class GroovyPageLayoutFinder {
             }
         }
 
-       	View view;
-		try {
-			view = viewResolver.resolveViewName(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name), request.getLocale());
-			// it's only possible to check that GroovyPageView exists
-			if(viewMustExist && !(view instanceof GroovyPageView)) {
-				view = null;
-			}
-		} catch (Exception e) {
-			throw new RuntimeException("Unable to resolve view", e);
-		}
+        View view;
+        try {
+            view = viewResolver.resolveViewName(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name),
+                    request.getLocale());
+            // it's only possible to check that GroovyPageView exists
+            if (viewMustExist && !(view instanceof GroovyPageView)) {
+                view = null;
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Unable to resolve view", e);
+        }
 
-        Decorator d = null;		
-		if (view != null) {
+        Decorator d = null;
+        if (view != null) {
             d = createDecorator(name, view);
         }
 
@@ -176,8 +193,8 @@ public class GroovyPageLayoutFinder {
         return d;
     }
 
-    private Decorator resolveDecorator(HttpServletRequest request,
-                 GroovyObject controller, String controllerName, String actionUri) {
+    private Decorator resolveDecorator(HttpServletRequest request, GroovyObject controller, String controllerName,
+            String actionUri) {
         Decorator d = null;
 
         Object layoutProperty = GrailsClassUtils.getStaticPropertyValue(controller.getClass(), "layout");
@@ -186,7 +203,8 @@ public class GroovyPageLayoutFinder {
                 LOG.debug("layout property found in controller, looking for template named " + layoutProperty);
             }
             d = getNamedDecorator(request, layoutProperty.toString());
-        } else {
+        }
+        else {
             if (d == null && !StringUtils.isBlank(actionUri)) {
                 d = getNamedDecorator(request, actionUri.substring(1), true);
             }
@@ -209,7 +227,7 @@ public class GroovyPageLayoutFinder {
     private Decorator createDecorator(String decoratorName, View view) {
         return new SpringMVCViewDecorator(decoratorName, view);
     }
-    
+
     private static class LayoutCacheKey {
         private String controllerName;
         private String actionUri;
@@ -230,23 +248,32 @@ public class GroovyPageLayoutFinder {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
-            LayoutCacheKey other = (LayoutCacheKey) obj;
+            }
+            LayoutCacheKey other = (LayoutCacheKey)obj;
             if (actionUri == null) {
-                if (other.actionUri != null)
+                if (other.actionUri != null) {
                     return false;
-            } else if (!actionUri.equals(other.actionUri))
+                }
+            }
+            else if (!actionUri.equals(other.actionUri)) {
                 return false;
+            }
             if (controllerName == null) {
-                if (other.controllerName != null)
+                if (other.controllerName != null) {
                     return false;
-            } else if (!controllerName.equals(other.controllerName))
+                }
+            }
+            else if (!controllerName.equals(other.controllerName)) {
                 return false;
+            }
             return true;
         }
     }

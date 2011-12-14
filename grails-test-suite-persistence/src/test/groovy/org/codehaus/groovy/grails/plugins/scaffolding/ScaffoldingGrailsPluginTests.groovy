@@ -73,6 +73,7 @@ class TestTagLib {
         plugin.doWithRuntimeConfiguration(springConfig)
 
         def appCtx = springConfig.getApplicationContext()
+        ga.mainContext = appCtx
         dependentPlugins*.doWithDynamicMethods(appCtx)
         assert appCtx.containsBean("dataSource")
         assert appCtx.containsBean("sessionFactory")

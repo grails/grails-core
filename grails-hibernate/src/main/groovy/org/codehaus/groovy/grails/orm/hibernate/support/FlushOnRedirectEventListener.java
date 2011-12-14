@@ -14,12 +14,12 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * Flushes the session on a redirect.
@@ -36,7 +36,7 @@ public class FlushOnRedirectEventListener implements RedirectEventListener {
     }
 
     public void responseRedirected(String url) {
-        new HibernateTemplate(sessionFactory).execute(new HibernateCallback<Void>() {
+        new GrailsHibernateTemplate(sessionFactory).execute(new HibernateCallback<Void>() {
             public Void doInHibernate(Session session) {
                 if (session.getFlushMode() != FlushMode.MANUAL) {
                     session.flush();

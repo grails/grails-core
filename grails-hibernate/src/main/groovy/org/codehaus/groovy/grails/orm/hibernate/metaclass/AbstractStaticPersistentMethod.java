@@ -15,20 +15,24 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import grails.orm.HibernateCriteriaBuilder;
 import groovy.lang.Closure;
-
-import java.util.regex.Pattern;
-
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractStaticMethodInvocation;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
+import org.codehaus.groovy.grails.orm.hibernate.query.HibernateQuery;
+import org.grails.datastore.gorm.finders.DynamicFinder;
 import org.grails.datastore.gorm.finders.FinderMethod;
+import org.grails.datastore.mapping.model.PersistentEntity;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.Assert;
+
+import java.util.regex.Pattern;
 
 /**
  * Abstract base class for static persistent methods.
@@ -40,7 +44,7 @@ import org.springframework.util.Assert;
 public abstract class AbstractStaticPersistentMethod extends AbstractStaticMethodInvocation implements FinderMethod {
 
     private ClassLoader classLoader;
-    private HibernateTemplate hibernateTemplate;
+    private GrailsHibernateTemplate hibernateTemplate;
     protected final GrailsApplication application;
 
     protected AbstractStaticPersistentMethod(SessionFactory sessionFactory, ClassLoader classLoader, Pattern pattern, GrailsApplication application) {
@@ -49,17 +53,16 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         this.classLoader = classLoader;
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
         this.application = application;
-        hibernateTemplate = new HibernateTemplate(sessionFactory);
-        hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault(this.application));
+        hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, this.application);
     }
 
-    protected HibernateTemplate getHibernateTemplate() {
+    protected GrailsHibernateTemplate getHibernateTemplate() {
         return hibernateTemplate;
     }
 
     @Override
     public Object invoke(Class clazz, String methodName, Object[] arguments) {
-        return invoke(clazz, methodName, null, arguments);
+        return invoke(clazz, methodName, (Closure) null, arguments);
     }
 
     public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
@@ -73,15 +76,38 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         }
     }
 
-    protected Criteria getCriteria(GrailsApplication appliation, Session session, Closure additionalCriteria, Class<?> clazz) {
+    public Object invoke(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(this.classLoader);
+            return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
+        }
+        finally {
+            Thread.currentThread().setContextClassLoader(originalClassLoader);
+        }
+    }
+
+    protected Criteria getCriteria(HibernateDatastore datastore, GrailsApplication appliation, Session session, DetachedCriteria detachedCriteria, Closure additionalCriteria, Class<?> clazz) {
         if (additionalCriteria != null) {
             HibernateCriteriaBuilder builder = new HibernateCriteriaBuilder(clazz, session.getSessionFactory());
             builder.setGrailsApplication(appliation);
             return builder.buildCriteria(additionalCriteria);
         }
 
-        return session.createCriteria(clazz);
+        Criteria criteria = session.createCriteria(clazz);
+        if(detachedCriteria != null) {
+
+            HibernateSession hibernateSession = new HibernateSession(datastore, session.getSessionFactory());
+            PersistentEntity persistentEntity = datastore.getMappingContext().getPersistentEntity(clazz.getName());
+            if(persistentEntity != null) {
+                DynamicFinder.applyDetachedCriteria(new HibernateQuery(criteria, hibernateSession, persistentEntity), detachedCriteria);
+            }
+        }
+        hibernateTemplate.applySettings(criteria);
+        return criteria;
     }
 
     protected abstract Object doInvokeInternal(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments);
+
+    protected abstract Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments);
 }

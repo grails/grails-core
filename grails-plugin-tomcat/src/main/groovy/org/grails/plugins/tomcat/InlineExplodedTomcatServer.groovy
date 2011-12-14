@@ -73,6 +73,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         if (host != "localhost") {
             tomcat.connector.setAttribute("address", host)
+            tomcat.connector.setAttribute("port", httpPort)
         }
 
         if (getConfigParam("nio")) {
@@ -114,9 +115,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
     }
 
     void stop() {
+        ShutdownOperations.runOperations()
         tomcat.stop()
         tomcat.destroy()
-        ShutdownOperations.runOperations()
         GrailsPluginUtils.clearCaches()
     }
 
@@ -131,6 +132,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
         if (!(jndiEntries instanceof Map)) {
             return
         }
+
+        System.setProperty("javax.sql.DataSource.Factory","org.apache.commons.dbcp.BasicDataSourceFactory");
+
 
         jndiEntries.each { name, resCfg ->
             if (resCfg) {

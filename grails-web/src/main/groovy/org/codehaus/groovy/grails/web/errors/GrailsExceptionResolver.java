@@ -17,12 +17,14 @@ package org.codehaus.groovy.grails.web.errors;
 
 import grails.util.Environment;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -56,91 +58,136 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 public class GrailsExceptionResolver extends SimpleMappingExceptionResolver implements ServletContextAware, GrailsApplicationAware {
 
     public static final String EXCEPTION_ATTRIBUTE = "exception";
-    private ServletContext servletContext;
 
-    private static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
-    private GrailsApplication grailsApplication;
-    private StackTraceFilterer stackFilterer;
+    protected static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
+    protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    protected ServletContext servletContext;
+    protected GrailsApplication grailsApplication;
+    protected StackTraceFilterer stackFilterer;
 
     /* (non-Javadoc)
      * @see org.springframework.web.servlet.handler.SimpleMappingExceptionResolver#resolveException(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, java.lang.Exception)
      */
     @Override
-    public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response,
+                                         Object handler, Exception ex) {
 
-        if ((ex instanceof InvokerInvocationException)||(ex instanceof GrailsMVCException)) {
-            Throwable t = getRootCause(ex);
-            if (t instanceof Exception) {
-                ex = (Exception) t;
-            }
-        }
+        ex = findWrappedException(ex);
+
+        filterStackTrace(ex);
 
         ModelAndView mv = super.resolveException(request, response, handler, ex);
+
+        setStatus(request, response, mv, ex);
+
+        logStackTrace(ex, request);
+
+        UrlMappingsHolder urlMappings = lookupUrlMappings();
+        if (urlMappings != null) {
+            mv = resolveViewOrForward(ex, urlMappings, request, response, mv);
+        }
+
+        return mv;
+    }
+
+    protected void filterStackTrace(Exception e) {
+        stackFilterer.filter(e, true);
+    }
+
+    protected void setStatus(HttpServletRequest request, HttpServletResponse response, ModelAndView mv, Exception e) {
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         // expose the servlet 2.3 specs status code request attribute as 500
         request.setAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
-        stackFilterer.filter(ex, true);
+        mv.addObject(EXCEPTION_ATTRIBUTE, new GrailsWrappedRuntimeException(servletContext, e));
+    }
 
-        GrailsWrappedRuntimeException gwrex = new GrailsWrappedRuntimeException(servletContext, ex);
-        mv.addObject(EXCEPTION_ATTRIBUTE,gwrex);
-
-        UrlMappingsHolder urlMappings = null;
+    protected UrlMappingsHolder lookupUrlMappings() {
         try {
-            urlMappings = WebUtils.lookupUrlMappings(servletContext);
+            return WebUtils.lookupUrlMappings(servletContext);
+        }
+        catch (Exception ignored) {
+            // ignore, no app ctx in this case.
+            return null;
+        }
+    }
+
+    protected ModelAndView resolveViewOrForward(Exception ex, UrlMappingsHolder urlMappings, HttpServletRequest request,
+            HttpServletResponse response, ModelAndView mv) {
+
+        UrlMappingInfo info = matchStatusCode(ex, urlMappings);
+        try {
+            if (info != null && info.getViewName() != null) {
+                resolveView(request, info, mv);
+            }
+            else if (info != null && info.getControllerName() != null) {
+                String uri = determineUri(request);
+                if (!response.isCommitted()) {
+                    forwardRequest(info, request, response, mv, uri);
+                    // return an empty ModelAndView since the error handler has been processed
+                    return new ModelAndView();
+                }
+            }
+            return mv;
         }
         catch (Exception e) {
-            // ignore, no app ctx in this case.
+            LOG.error("Unable to render errors view: " + e.getMessage(), e);
+            throw new GrailsRuntimeException(e);
         }
+    }
 
-        LOG.error(getRequestLogMessage(ex, request), ex);
+    protected void forwardRequest(UrlMappingInfo info, HttpServletRequest request, HttpServletResponse response,
+            ModelAndView mv, String uri) throws ServletException, IOException {
+        info.configure(WebUtils.retrieveGrailsWebRequest());
+        String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(
+                request, response, info, mv.getModel());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Matched URI [" + uri + "] to URL mapping [" + info +
+                    "], forwarding to [" + forwardUrl + "] with response [" + response.getClass() + "]");
+        }
+    }
 
-        if (urlMappings != null) {
-            UrlMappingInfo info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
-            if (info == null) {
-                info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                        getRootCause(ex));
-            }
-            if (info == null) {
-                info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
-            try {
-                if (info != null && info.getViewName() != null) {
-                    ViewResolver viewResolver = WebUtils.lookupViewResolver(servletContext);
-                    View v = WebUtils.resolveView(request, info, info.getViewName(),viewResolver);
-                    if (v != null) {
-                        mv.setView(v);
-                    }
-                }
-                else if (info != null && info.getControllerName() != null) {
-                    String uri;
-                    if (request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE) != null) {
-                        uri = (String)request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
-                    }
-                    else {
-                        uri = request.getRequestURI();
-                    }
+    protected String determineUri(HttpServletRequest request) {
+        String uri = (String)request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
+        if (uri == null) {
+            uri = request.getRequestURI();
+        }
+        return uri;
+    }
 
-                    if (!response.isCommitted()) {
-                        info.configure(WebUtils.retrieveGrailsWebRequest());
-                        String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(
-                                request, response, info, mv.getModel());
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Matched URI [" + uri + "] to URL mapping [" + info +
-                                    "], forwarding to [" + forwardUrl + "] with response [" + response.getClass() + "]");
-                        }
-                        // return an empty ModelAndView since the error handler has been processed
-                        return new ModelAndView();
-                    }
-                }
-            }
-            catch (Exception e) {
-                LOG.error("Unable to render errors view: " + e.getMessage(), e);
-                throw new GrailsRuntimeException(e);
+    protected void resolveView(HttpServletRequest request, UrlMappingInfo info, ModelAndView mv) throws Exception {
+        ViewResolver viewResolver = WebUtils.lookupViewResolver(servletContext);
+        View v = WebUtils.resolveView(request, info, info.getViewName(), viewResolver);
+        if (v != null) {
+            mv.setView(v);
+        }
+    }
+
+    protected UrlMappingInfo matchStatusCode(Exception ex, UrlMappingsHolder urlMappings) {
+        UrlMappingInfo info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, ex);
+        if (info == null) {
+            info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    getRootCause(ex));
+        }
+        if (info == null) {
+            info = urlMappings.matchStatusCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+        return info;
+    }
+
+    protected void logStackTrace(Exception e, HttpServletRequest request) {
+        LOG.error(getRequestLogMessage(e, request), e);
+    }
+
+    protected Exception findWrappedException(Exception e) {
+        if ((e instanceof InvokerInvocationException)||(e instanceof GrailsMVCException)) {
+            Throwable t = getRootCause(e);
+            if (t instanceof Exception) {
+                e = (Exception) t;
             }
         }
-
-        return mv;
+        return e;
     }
 
     /**
@@ -153,10 +200,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             ex = ex.getCause();
         }
         return ex;
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
     }
 
     public static int extractLineNumber(CompilationFailedException e) {
@@ -183,10 +226,8 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         return null;
     }
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-    private String getRequestLogMessage(String exceptionName, HttpServletRequest request, String message) {
+    protected String getRequestLogMessage(String exceptionName, HttpServletRequest request, String message) {
         StringBuilder sb = new StringBuilder();
-
 
         sb.append(exceptionName)
           .append(" occurred when processing request: ")
@@ -261,12 +302,16 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         return getRequestLogMessage("Exception", request, null);
     }
 
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
+
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
         createStackFilterer();
     }
 
-    private void createStackFilterer() {
+    protected void createStackFilterer() {
         try {
             stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
                     grailsApplication.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());

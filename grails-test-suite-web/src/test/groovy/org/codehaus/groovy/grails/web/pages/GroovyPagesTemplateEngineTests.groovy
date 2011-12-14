@@ -5,6 +5,7 @@ import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
@@ -172,6 +173,14 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"></g:actionSubmit>''', sw.toString()
     }
 
+    private GrailsApplication createMockGrailsApplication(ConfigObject config = null) {
+        if(config==null) {
+            config=new ConfigObject()
+            config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
+        }
+        [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }, getArtefactByLogicalPropertyName: { String type, String logicalName ->  null} ] as GrailsApplication
+    }
+
     void testParsingNestedCurlyBraces() {
         // GRAILS-7915
         //if(notYetImplemented()) return
@@ -179,9 +188,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-        ConfigObject config=new ConfigObject()
-        config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
-        gpte.grailsApplication = [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }] as GrailsApplication
+        gpte.grailsApplication = createMockGrailsApplication()
         gpte.afterPropertiesSet()
 
         def src = '${people.collect {it.firstName}}'
@@ -292,30 +299,154 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         assertEquals "hello", sw.toString()
     }
-	
-	void testParsingQuotes() {
-		GrailsWebUtil.bindMockWebRequest()
 
-		def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
-		gpte.afterPropertiesSet()
 
-		def src = '''<g:if test="${var=="1" || var=="2" || var=='}' || var=="{" || var=='"' || var=="\\"" }">hello</g:if>'''
+    void testParsingMultilineQuotes() {
+        GrailsWebUtil.bindMockWebRequest()
 
-		def t = gpte.createTemplate(src, "if_test")
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
 
-		def w = t.make(var: '1')
-		def sw = new StringWriter()
-		def pw = new PrintWriter(sw)
-		w.writeTo(pw)
+        def src = '''${{var=='1'}()?"""start.
+This is a multi-line string. } 
+end.""":''}
+<g:if test="${var=='1' || var=='2'}">hello</g:if>
+'''
 
-		assertEquals "hello", sw.toString()
-		
-		w = t.make(var: '"')
-		sw = new StringWriter()
-		pw = new PrintWriter(sw)
-		w.writeTo(pw)
-		assertEquals "hello", sw.toString()
-	}
+        def t = gpte.createTemplate(src, "test_multiline_str")
+
+        def w = t.make(var: '1')
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        def result='''start.
+This is a multi-line string. } 
+end.
+hello
+'''
+
+        assertEquals result, sw.toString()
+    }
+
+    void testParsingMultilineQuotes2() {
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def src = '''${{var=='1'}()?\'\'\'start.
+This is a multi-line string. }
+end.\'\'\':''}
+<g:if test="${var=='1' || var=='2'}">hello</g:if>
+'''
+
+        def t = gpte.createTemplate(src, "test_multiline_str")
+
+        def w = t.make(var: '1')
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        def result='''start.
+This is a multi-line string. }
+end.
+hello
+'''
+
+        assertEquals result, sw.toString()
+    }
+
+    void testGscript() {
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.grailsApplication = createMockGrailsApplication()
+        gpte.afterPropertiesSet()
+
+        def src = '''@{page defaultCodec="HTML"}%{if(var=='1') { out.print('hello') } else { out.print('not_ok') } }%'''
+
+        def t = gpte.createTemplate(src, "gscript_test")
+
+        def w = t.make(var: '1')
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "hello", sw.toString()
+    }
+
+    void testGRAILS8218() {
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+
+        gpte.afterPropertiesSet()
+
+        def src = '''<g:if test='[pwd:"${actionName}-xx"]'>ok</g:if>'''
+
+        def t = gpte.createTemplate(src, "testGRAILS8218")
+
+        def w = t.make(actionName: 'hello')
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "ok", sw.toString()
+    }
+
+    void testGRAILS8199() {
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+
+        gpte.afterPropertiesSet()
+
+        def src = '''<div id='${map["${id}_postfix"]}'/>'''
+
+        def t = gpte.createTemplate(src, "testGRAILS8199")
+
+        def w = t.make(id: 'id', map:[id_postfix:'hello'])
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "<div id='hello'/>", sw.toString()
+    }
+
+    void testParsingQuotes() {
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def src = '''<g:if test="${var=="1" || var=="2" || var=='}' || var=="{" || var=='"' || var=="\\"" || var=='' || var=="" }">hello</g:if>'''
+
+        def t = gpte.createTemplate(src, "if_test")
+
+        def w = t.make(var: '1')
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+        w.writeTo(pw)
+
+        assertEquals "hello", sw.toString()
+
+        w = t.make(var: '"')
+        sw = new StringWriter()
+        pw = new PrintWriter(sw)
+        w.writeTo(pw)
+        assertEquals "hello", sw.toString()
+    }
 
     void testCreateTemplateWithBinding() {
 
@@ -333,6 +464,60 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
         w.writeTo(pw)
 
         assertEquals "Hello World", sw.toString()
+    }
+
+    void testInlineScriptWithValidUnmatchedBrackets() {
+
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def t = gpte.createTemplate('''
+<% if(true) { %>
+Hello ${foo}
+<% } %>
+<% if(false) { %>
+never
+<% } else { %>
+  
+<% } %>
+''', "hello_test")
+        def w = t.make(foo:"World")
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "Hello World", sw.toString().trim()
+    }
+
+    void testInlineScriptWithValidUnmatchedBracketsGspSyntax() {
+
+        GrailsWebUtil.bindMockWebRequest()
+
+        def gpte = new GroovyPagesTemplateEngine(new MockServletContext())
+        gpte.afterPropertiesSet()
+
+        def t = gpte.createTemplate('''
+%{ if(true) { }%
+Hello ${foo}
+%{ } }%
+%{ if(false) { }%
+never
+%{ } else { }%
+  
+%{ } }%
+''', "hello_test")
+        def w = t.make(foo:"World")
+
+        def sw = new StringWriter()
+        def pw = new PrintWriter(sw)
+
+        w.writeTo(pw)
+
+        assertEquals "Hello World", sw.toString().trim()
     }
 
     void testCreateTemplateFromText() {

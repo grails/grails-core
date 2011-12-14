@@ -29,7 +29,6 @@ import groovy.lang.GroovySystem;
 import groovy.util.AntBuilder;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -161,7 +160,7 @@ public class GrailsScriptRunner {
         BuildSettings build = null;
         try {
             build = new BuildSettings(new File(grailsHome));
-            build.setModified(commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT));
+            build.setModified(commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT));
             build.setOffline(commandLine.hasOption(CommandLine.OFFLINE_ARGUMENT));
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
@@ -189,7 +188,7 @@ public class GrailsScriptRunner {
 
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
-        boolean resolveDeps = commandLine.hasOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT);
+        boolean resolveDeps = commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT);
         if(resolveDeps) {
             if(commandLine.hasOption("include-source")) {
                 build.setIncludeSource(true);
@@ -239,7 +238,7 @@ public class GrailsScriptRunner {
 
     public static CommandLineParser getCommandLineParser() {
         CommandLineParser parser = new CommandLineParser();
-        parser.addOption(CommandLine.RESOLVE_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
+        parser.addOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT, "Whether to force a resolve of dependencies (skipping any caching)");
         parser.addOption(CommandLine.VERBOSE_ARGUMENT, "Enable verbose output");
         parser.addOption(CommandLine.OFFLINE_ARGUMENT, "Indicates that Grails should not connect to any remote servers during processing of the build");
         parser.addOption(CommandLine.STACKTRACE_ARGUMENT, "Enable stack traces in output");
@@ -324,7 +323,7 @@ public class GrailsScriptRunner {
         }
 
         CommandLineParser parser = getCommandLineParser();
-        CommandLine commandLine = parser.parseString(args);
+        CommandLine commandLine = parser.parseString(scriptName,args);
 
         return executeCommand(commandLine, scriptName, env);
     }
@@ -455,6 +454,20 @@ public class GrailsScriptRunner {
                 }
 
                 loadScriptClass(gant, scriptName);
+
+                // at this point if they were calling a script that has a non-default
+                // env (e.g. war or test-app) it wouldn't have been correctly set, so
+                // set it now, but only if they didn't specify the env (e.g. "grails test war" -> "grails test war")
+
+                if (Boolean.TRUE.toString().equals(System.getProperty(Environment.DEFAULT))) {
+                    commandLine.setCommand(GrailsNameUtils.getScriptName(scriptName));
+                    env = commandLine.lookupEnvironmentForCommand();
+                    binding.setVariable("grailsEnv", env);
+                    settings.setGrailsEnv(env);
+                    System.setProperty(Environment.KEY, env);
+                    settings.setDefaultEnv(false);
+                    System.setProperty(Environment.DEFAULT, Boolean.FALSE.toString());
+                }
             } else {
                 throw e;
             }

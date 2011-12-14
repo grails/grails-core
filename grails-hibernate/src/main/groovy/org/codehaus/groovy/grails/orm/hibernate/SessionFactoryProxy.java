@@ -48,6 +48,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.InfrastructureProxy;
 import org.springframework.orm.hibernate3.SpringSessionContext;
 import org.springframework.util.ReflectionUtils;
 
@@ -72,7 +73,7 @@ import java.util.Set;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class SessionFactoryProxy extends GroovyObjectSupport implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean  {
+public class SessionFactoryProxy extends GroovyObjectSupport implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean, InfrastructureProxy  {
 
     private static final long serialVersionUID = 1;
 
@@ -98,7 +99,6 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
         }
     }
 
-
     /**
      * The class to use for the current session context
      *
@@ -121,7 +121,7 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
      * @return The current SessionFactoryImplementor being proxied
      */
     public SessionFactoryImplementor getCurrentSessionFactoryImplementor() {
-         return (SessionFactoryImplementor) getCurrentSessionFactory();
+        return (SessionFactoryImplementor) getCurrentSessionFactory();
     }
 
     public Session openSession() throws HibernateException {
@@ -410,7 +410,6 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
             Class<? extends SessionFactory> sessionFactoryClass = sessionFactory.getClass();
             Field currentSessionContextField = sessionFactoryClass.getDeclaredField("currentSessionContext");
             if (currentSessionContextField != null) {
-
                 ReflectionUtils.makeAccessible(currentSessionContextField);
                 currentSessionContextField.set(sessionFactory, ssc);
             }
@@ -437,5 +436,9 @@ public class SessionFactoryProxy extends GroovyObjectSupport implements SessionF
         } catch (NoSuchMethodException e) {
             return new SpringSessionContext(this);
         }
+    }
+
+    public Object getWrappedObject() {
+        return getCurrentSessionFactory();
     }
 }

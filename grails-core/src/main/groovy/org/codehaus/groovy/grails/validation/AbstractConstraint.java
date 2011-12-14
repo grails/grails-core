@@ -244,4 +244,13 @@ public abstract class AbstractConstraint implements Constraint {
     public String toString() {
         return new ToStringBuilder(this).append(constraintParameter).toString();
     }
+
+    /**
+     * Return whether the constraint is valid for the owning class
+     *
+     * @return True if it is
+     */
+    public boolean isValid() {
+        return true;
+    }
 }

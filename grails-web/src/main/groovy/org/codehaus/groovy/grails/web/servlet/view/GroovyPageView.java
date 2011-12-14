@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
@@ -140,7 +141,7 @@ public class GroovyPageView extends AbstractUrlBasedView {
     @SuppressWarnings({ "rawtypes", "unused" })
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
-
+        request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
         GSPResponseWriter out = null;
         try {
             out = createResponseWriter(response);
@@ -231,24 +232,25 @@ public class GroovyPageView extends AbstractUrlBasedView {
         this.scriptSource = scriptSource;
     }
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		super.afterPropertiesSet();
-		try {
-			initTemplate();
-		} catch(Exception e) {
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        super.afterPropertiesSet();
+        try {
+            initTemplate();
+        } catch(Exception e) {
             handleException(e, templateEngine);
         }
-	}
-	
-	protected void initTemplate() throws IOException {
-	    if (scriptSource == null) {
-	        template = templateEngine.createTemplate(getUrl());
-	    } else {
-	    	template = templateEngine.createTemplate(scriptSource);
-	    }
-		if (template instanceof GroovyPageTemplate) {
-		    ((GroovyPageTemplate)template).setAllowSettingContentType(true);
-		}
-	}
+    }
+
+    @SuppressWarnings("unused")
+    protected void initTemplate() throws IOException {
+        if (scriptSource == null) {
+            template = templateEngine.createTemplate(getUrl());
+        } else {
+            template = templateEngine.createTemplate(scriptSource);
+        }
+        if (template instanceof GroovyPageTemplate) {
+            ((GroovyPageTemplate)template).setAllowSettingContentType(true);
+        }
+    }
 }

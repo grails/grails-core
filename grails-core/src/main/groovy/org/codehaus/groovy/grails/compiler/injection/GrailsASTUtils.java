@@ -18,21 +18,21 @@ package org.codehaus.groovy.grails.compiler.injection;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import groovy.lang.MissingMethodException;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -44,6 +44,12 @@ public class GrailsASTUtils {
 
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
+    public static final Token EQUALS_OPERATOR = Token.newSymbol("==", 0, 0);
+    public static final Token NOT_EQUALS_OPERATOR = Token.newSymbol("!=", 0, 0);
+
+    public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
+    public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
+    public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
 
     /**
      * Returns whether a classNode has the specified property or not
@@ -192,7 +198,11 @@ public class GrailsASTUtils {
 
         MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, methodName, arguments);
         methodCallExpression.setMethodTarget(declaredMethod);
-        methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+        ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, declaredMethod);
+        VariableExpression apiVar = addApiVariableDeclaration(delegate, declaredMethod, methodBody);
+        IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
+
+        methodBody.addStatement(ifStatement);
         MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
@@ -200,6 +210,29 @@ public class GrailsASTUtils {
 
         classNode.addMethod(methodNode);
         return methodNode;
+    }
+
+    private static IfStatement createIfElseStatementForApiMethodCall(MethodCallExpression methodCallExpression, VariableExpression apiVar, ThrowStatement missingMethodException) {
+        BlockStatement ifBlock = new BlockStatement();
+        ifBlock.addStatement(missingMethodException);
+        BlockStatement elseBlock = new BlockStatement();
+        elseBlock.addStatement(new ExpressionStatement(methodCallExpression));
+
+        return new IfStatement(new BooleanExpression(new BinaryExpression(apiVar, EQUALS_OPERATOR, NULL_EXPRESSION)),ifBlock,elseBlock);
+    }
+
+    private static VariableExpression addApiVariableDeclaration(Expression delegate, MethodNode declaredMethod, BlockStatement methodBody) {
+        VariableExpression apiVar = new VariableExpression("$api_"+declaredMethod.getName());
+        DeclarationExpression de = new DeclarationExpression(apiVar, ASSIGNMENT_OPERATOR, delegate);
+        methodBody.addStatement(new ExpressionStatement(de));
+        return apiVar;
+    }
+
+    private static ThrowStatement createMissingMethodThrowable(ClassNode classNode, MethodNode declaredMethodNode) {
+        ArgumentListExpression exceptionArgs = new ArgumentListExpression();
+        exceptionArgs.addExpression(new ConstantExpression(declaredMethodNode.getName()));
+        exceptionArgs.addExpression(new ClassExpression(classNode));
+        return new ThrowStatement(new ConstructorCallExpression(MISSING_METHOD_EXCEPTION, exceptionArgs));
     }
 
     /**
@@ -276,7 +309,12 @@ public class GrailsASTUtils {
         MethodCallExpression methodCallExpression = new MethodCallExpression(
                 expression, declaredMethodName, arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
-        methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+
+        ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
+        VariableExpression apiVar = addApiVariableDeclaration(expression, delegateMethod, methodBody);
+        IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
+
+        methodBody.addStatement(ifStatement);
         ClassNode returnType = nonGeneric(delegateMethod.getReturnType());
         if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
             declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
@@ -310,7 +348,7 @@ public class GrailsASTUtils {
         constructCallExpression.setMethodTarget(constructorMethod);
         ExpressionStatement constructorInitExpression = new ExpressionStatement(constructCallExpression);
         if(constructorParams.length>0) {
-            constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(classNode, GrailsArtefactClassInjector.ZERO_ARGS)));
+            constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(ClassNode.THIS, GrailsArtefactClassInjector.ZERO_ARGS)));
         }
         constructorBody.addStatement(constructorInitExpression);
 
@@ -319,17 +357,21 @@ public class GrailsASTUtils {
 
             ConstructorNode constructorNode = getDefaultConstructor(classNode);
             if (constructorNode != null) {
-                Statement existingBodyCode = constructorNode.getCode();
-                if(existingBodyCode instanceof BlockStatement) {
-                    ((BlockStatement) existingBodyCode).addStatement(constructorInitExpression);
-                }
-                else {
-
-                    constructorNode.setCode(constructorBody);
+                List<AnnotationNode> annotations = constructorNode.getAnnotations(new ClassNode(GrailsDelegatingConstructor.class));
+                if(annotations.size() == 0) {
+                    Statement existingBodyCode = constructorNode.getCode();
+                    if(existingBodyCode instanceof BlockStatement) {
+                        ((BlockStatement) existingBodyCode).addStatement(constructorInitExpression);
+                    }
+                    else {
+                        constructorNode.setCode(constructorBody);
+                    }
                 }
             } else {
-                classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, constructorBody));
+                constructorNode = new ConstructorNode(Modifier.PUBLIC, constructorBody);
+                classNode.addConstructor(constructorNode);
             }
+            constructorNode.addAnnotation(new AnnotationNode(new ClassNode(GrailsDelegatingConstructor.class)));
         }
         else {
             // create new constructor, restoring default constructor if there is none
@@ -339,9 +381,12 @@ public class GrailsASTUtils {
                 classNode.addConstructor(cn);
             }
             else {
-                Statement code = cn.getCode();
-                constructorBody.addStatement(code);
-                cn.setCode(constructorBody);
+                List<AnnotationNode> annotations = cn.getAnnotations(new ClassNode(GrailsDelegatingConstructor.class));
+                if(annotations.size() == 0) {
+                    Statement code = cn.getCode();
+                    constructorBody.addStatement(code);
+                    cn.setCode(constructorBody);
+                }
             }
 
             ConstructorNode defaultConstructor = getDefaultConstructor(classNode);
@@ -349,6 +394,7 @@ public class GrailsASTUtils {
                 // add empty
                 classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, new BlockStatement()));
             }
+            cn.addAnnotation(new AnnotationNode(new ClassNode(GrailsDelegatingConstructor.class)));
         }
     }
 
@@ -500,7 +546,7 @@ public class GrailsASTUtils {
         }
     }
 
-    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
+    public static void addAnnotationIfNecessary(ClassNode classNode, @SuppressWarnings("unused") Class<Entity> entityClass) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = new ClassNode(Entity.class);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
@@ -514,11 +560,11 @@ public class GrailsASTUtils {
     }
 
     public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations){
-         for (AnnotationNode annotation : annotations) {
-                if(annotation.getClassNode().equals(annotationClassNode)) {
-                    return annotation;
-                }
+        for (AnnotationNode annotation : annotations) {
+            if (annotation.getClassNode().equals(annotationClassNode)) {
+                return annotation;
             }
+        }
         return null;
     }
 
@@ -528,4 +574,36 @@ public class GrailsASTUtils {
             controllerClassNode.addMethod(methodNode);
         }
     }
+
+    public static ExpressionStatement createPrintlnStatement(String message) {
+        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new ConstantExpression(message))));
+    }
+
+    public static ExpressionStatement createPrintlnStatement(String message, String variable) {
+        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new BinaryExpression(new ConstantExpression(message),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression(variable)))));
+    }
+
+    /**
+     * Wraps a method body in try / catch logic that catches any errors and logs an error, but does not rethrow!
+     *
+     * @param methodNode The method node
+     */
+    public static void wrapMethodBodyInTryCatchDebugStatements(MethodNode methodNode) {
+        BlockStatement code = (BlockStatement) methodNode.getCode();
+        BlockStatement newCode = new BlockStatement();
+        TryCatchStatement tryCatchStatement = new TryCatchStatement(code, new BlockStatement());
+        newCode.addStatement(tryCatchStatement);
+        methodNode.setCode(newCode);
+        BlockStatement catchBlock = new BlockStatement();
+        ArgumentListExpression logArguments = new ArgumentListExpression();
+        logArguments.addExpression(new BinaryExpression(new ConstantExpression("Error initializing class: "),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression("e")));
+        logArguments.addExpression(new VariableExpression("e"));
+        catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("log"), "error", logArguments)));
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
+    }
+
+    @Target(ElementType.CONSTRUCTOR)
+    @Retention(RetentionPolicy.SOURCE)
+    private static @interface GrailsDelegatingConstructor {}
 }
+

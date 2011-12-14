@@ -27,7 +27,7 @@ import java.util.List;
  * a completion matches a list of candidates
  *
  * @author Graeme Rocher
- * @since 1.4
+ * @since 2.0
  */
 public class CandidateListCompletionHandler implements CompletionHandler {
 

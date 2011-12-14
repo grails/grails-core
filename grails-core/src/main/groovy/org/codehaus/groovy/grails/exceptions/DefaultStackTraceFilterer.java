@@ -35,6 +35,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     public static final Log STACK_LOG = LogFactory.getLog("StackTrace");
 
     private static final String[] DEFAULT_INTERNAL_PACKAGES = new String[] {
+        "org.grails.plugin.resource.DevMode",
         "org.codehaus.groovy.grails.",
         "gant.",
         "org.codehaus.groovy.runtime.",

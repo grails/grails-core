@@ -13,6 +13,65 @@ class WhereMethodSpec extends GormSpec{
         [Person, Pet]
     }
 
+
+    def "Test whereAny method"() {
+        given:"some people"
+            createPeople()
+
+        when:"An or is used in a where query"
+            def people = Person.whereAny {
+                firstName == "Homer"
+                firstName == "Bart"
+            }.list(sort:"firstName")
+
+        then:"The right results are returned"
+            people.size() == 2
+            people[0].firstName == "Bart"
+            people[1].firstName == "Homer"
+    }
+
+    def "Test where query that uses a captured variable inside an association query"() {
+        given:"people and pets"
+            createPeopleWithPets()
+
+        when:"A where query that queries an association from a captured variable is used"
+            def fn = "Joe"
+            def pets = Pet.where {
+                owner { firstName == fn }
+            }.list()
+
+        then:"The correct result is returned"
+            pets.size() == 2
+
+    }
+
+    def "Test where with multiple property projections using chaining"() {
+        given:"A bunch of people"
+            createPeople()
+
+        when:"Multiple property projections are used"
+            def people = Person.where { lastName == "Simpson" }
+            def results = people.property("lastName").property('firstName').list()
+
+        then:"The correct results are returned"
+            results == [["Simpson", "Homer"], ["Simpson", "Marge"], ["Simpson", "Bart"], ["Simpson", "Lisa"]]
+    }
+
+    def "Test where with multiple property projections"() {
+        given:"A bunch of people"
+            createPeople()
+
+        when:"Multiple property projections are used"
+            def people = Person.where { lastName == "Simpson" }
+            def results = people.projections {
+                property "lastName"
+                property "firstName"
+            }.list()
+
+        then:"The correct results are returned"
+            results == [["Simpson", "Homer"], ["Simpson", "Marge"], ["Simpson", "Bart"], ["Simpson", "Lisa"]]
+    }
+
     def "Test error when using unknown domain property of an association"() {
         when:"A an unknown domain class property of an association is referenced"
            queryReferencingNonExistentPropertyOfAssociation()
@@ -41,6 +100,54 @@ class CallMe {
 }
 ''')
     }
+
+
+    def "Test parameterized where query"() {
+        given:"A bunch of people"
+              createPeople()
+
+        when:"parameters are used instead of literals"
+            def fn = "Bart"
+            def ln = "Simpson"
+
+
+            def query = Person.where { firstName != fn && lastName == ln }.sort("firstName", "desc")
+            def people = query.list()
+
+        then:"The correct results are returned"
+            people.size() == 3
+    }
+
+
+    def "Test property projection"() {
+        given:"A bunch of people"
+          createPeople()
+
+        when:"We create a where query and combine it with a property projection"
+          def query = Person.where {
+              lastName == "Simpson"
+          }
+          def results = query.property("firstName").list()
+
+        then:"The correct result is returned"
+            results == ["Homer", "Marge", "Bart", "Lisa"]
+    }
+
+  def "Test invoke dynamic finder on where query"() {
+      given:"A bunch of people"
+        createPeople()
+
+      when:"We create a where query and combine it with a dynamic finder"
+        def query = Person.where {
+            lastName == "Simpson"
+        }
+        Person p = query.findByFirstName("Bart")
+
+      then:"The correct result is returned"
+        p != null
+        p.firstName == "Bart"
+
+  }
 
   def "Test function execution"() {
       given:"A bunch of people with pets"
@@ -371,6 +478,29 @@ class CallMe {
             results.size() == 1
             results[0].firstName == "Ed"
 
+       when:"We query for people with greater than 2 pets"
+            def petCount = 2
+            query = Person.where {
+                pets.size() > petCount
+            }
+            results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 1
+            results[0].firstName == "Ed"
+
+       when:"We query for people with greater than 2 pets"
+
+            query = Person.where {
+                pets.size() > getPetCount()
+            }
+            results = query.list(sort:"firstName")
+
+       then:"The correct results are returned"
+            results.size() == 1
+            results[0].firstName == "Ed"
+
+
      when:"We query for people with greater than 2 pets"
             query = Person.where {
                 pets.size() > 1 && firstName != "Joe"
@@ -382,6 +512,7 @@ class CallMe {
             results[1].firstName == "Fred"
    }
 
+   private getPetCount(arg) { 2 }
    def "Test subquery usage combined with logical query"() {
        given:"a bunch of people"
          createPeople()

@@ -48,6 +48,131 @@ final class PluginResolveEngine {
     }
 
     /**
+     * Renders plugin info to the target writer
+     *
+     * @param pluginName The plugin name
+     * @param pluginVersion The plugin version
+     * @param output The target writer
+     */
+    GPathResult renderPluginInfo(String pluginName, String pluginVersion, OutputStream outputStream) {
+        renderPluginInfo(pluginName, pluginVersion, new OutputStreamWriter(outputStream))
+    }
+    /**
+     * Renders plugin info to the target writer
+     *
+     * @param pluginName The plugin name
+     * @param pluginVersion The plugin version
+     * @param output The target writer
+     */
+    GPathResult renderPluginInfo(String pluginName, String pluginVersion, Writer writer) {
+        def pluginXml = resolvePluginMetadata(pluginName, pluginVersion)
+
+        if(pluginXml != null) {
+            def output = new PrintWriter(writer)
+            def line = "Name: ${pluginName}"
+            line += "\t| Latest release: ${pluginXml.@version}"
+            output.println getPluginInfoHeader()
+            output.println line
+            printLineSeparator(output)
+            def release = pluginXml
+            if (release) {
+                if (release.'title'.text()) {
+                    output.println "${release.'title'.text()}"
+                }
+                else {
+                    output.println "No info about this plugin available"
+                }
+                printLineSeparator(output)
+                if (release.'author'.text()) {
+                    output.println "Author: ${release.'author'.text()}"
+                    printLineSeparator(output)
+                }
+                if (release.'authorEmail'.text()) {
+                    output.println "Author's e-mail: ${release.'authorEmail'.text()}"
+                    printLineSeparator(output)
+                }
+                if (release.'documentation'.text()) {
+                    output.println "Find more info here: ${release.'documentation'.text()}"
+                    printLineSeparator(output)
+                }
+                if (release.'description'.text()) {
+                    output.println "${release.'description'.text()}"
+                    printLineSeparator(output)
+                }
+
+                if(release.repositories) {
+                    printSectionTitle(output, "Required Repositories")
+                    release.repositories.repository.each { repo ->
+                        output.println("- ${repo.@url}")
+                    }
+                    printLineSeparator(output)
+                }
+
+                if(release.dependencies.size()) {
+                    printSectionTitle(output, "Required Dependencies")
+                    printDependencies(output, release.dependencies)
+                    printLineSeparator(output)
+                }
+                if(release.plugins.size()) {
+                    printSectionTitle(output, "Required Plugins")
+                    printDependencies(output, release.plugins)
+                    printLineSeparator(output)
+                }
+            }
+            else {
+                output.println "<release not found for this plugin>"
+                printLineSeparator(output)
+            }
+
+            output.println getPluginInfoFooter()
+            output.flush()
+        }
+
+        return pluginXml
+    }
+
+    protected def printDependencies(output, dependencies) {
+        dependencies.children().each { scope ->
+            def scopeName = scope.name()
+            scope.dependency.each { dep ->
+                output.println("- ${dep.@group}:${dep.@name}:${dep.@version} ($scopeName)")
+            }
+        }
+    }
+
+    protected def printSectionTitle(PrintWriter output, String title) {
+        output.println()
+        output.println title
+        printLineSeparator(output)
+    }
+
+    protected def printLineSeparator(PrintWriter output) {
+        output.println '--------------------------------------------------------------------------'
+    }
+
+    protected String getPluginInfoHeader() {
+    '''
+--------------------------------------------------------------------------
+Information about Grails plugin
+--------------------------------------------------------------------------\
+'''
+    }
+
+    protected String getPluginInfoFooter() {
+'''
+To get info about specific release of plugin 'grails plugin-info [NAME] [VERSION]'
+
+To get list of all plugins type 'grails list-plugins'
+
+To install latest version of plugin type 'grails install-plugin [NAME]'
+
+To install specific version of plugin type 'grails install-plugin [NAME] [VERSION]'
+
+For further info visit http://grails.org/Plugins
+'''
+    }
+
+    /**
      * Resolves a list of plugins and produces a ResolveReport
      *
      * @param pluginsToInstall The list of plugins
@@ -127,7 +252,7 @@ final class PluginResolveEngine {
             ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
             def location = origin.location
             def parent = location[0..location.lastIndexOf('/')-1]
-            for (DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
+            for (DependencyResolver dr in this.dependencyManager.chainResolver.resolvers) {
                 if (dr instanceof RepositoryResolver) {
                     Repository r = dr.repository
 

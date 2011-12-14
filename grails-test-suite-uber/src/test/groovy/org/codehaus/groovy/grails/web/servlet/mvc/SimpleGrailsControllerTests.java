@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
@@ -107,6 +108,10 @@ public class SimpleGrailsControllerTests extends TestCase {
 
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
         assertNotNull(appCtx);
+        GrailsClass[] controllerArtefacts = grailsApplication.getArtefacts(ControllerArtefactHandler.TYPE);
+        for(GrailsClass grailsClass : controllerArtefacts) {
+            ((GrailsControllerClass)grailsClass).initialize();
+        }
         super.setUp();
     }
 

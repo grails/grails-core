@@ -40,5 +40,5 @@ public interface StaticMethodInvocation {
      * @param arguments the arguments supplied
      * @return the return value of the static method invocation
      */
-    Object invoke(Class<?> clazz, String methodName, Object[] arguments);
+    Object invoke(@SuppressWarnings("rawtypes") Class clazz, String methodName, Object[] arguments);
 }

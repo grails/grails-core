@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.context;
 
+import grails.util.Holders;
+
 import javax.servlet.ServletContext;
 
 /**
@@ -24,23 +26,11 @@ import javax.servlet.ServletContext;
  */
 public class ServletContextHolder {
 
-    /**
-     * @return The ServletContext instance
-     * @deprecated Use dependency injection instead
-     */
-    @Deprecated
+    public static void setServletContext(final ServletContext servletContext) {
+        Holders.setServletContext(servletContext);
+    }
+
     public static ServletContext getServletContext() {
-        return servletContext;
+        return Holders.getServletContext();
     }
-
-    /**
-     * @param servletContext The ServletContext instance
-     * @deprecated Use dependency injection instead
-     */
-    @Deprecated
-    public static void setServletContext(ServletContext servletContext) {
-        ServletContextHolder.servletContext = servletContext;
-    }
-
-    private static ServletContext servletContext;
 }

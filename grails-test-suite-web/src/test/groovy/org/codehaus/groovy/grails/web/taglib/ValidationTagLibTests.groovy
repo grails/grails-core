@@ -119,7 +119,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         def template = '''<g:fieldValue bean="${book}" field="title" />'''
 
-        assertOutputEquals("&lt;script&gt;alert('escape me')&lt;/script&gt;", template, [book:b])
+        assertOutputEquals("&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;", template, [book:b])
 
         request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", 'html')
 
@@ -202,10 +202,10 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue b.hasErrors()
         assertOutputEquals("success", '''<g:hasErrors bean="${book}" field="releaseDate">success</g:hasErrors>''', [book:b])
         assertOutputEquals("success", '''<g:hasErrors model="[book:book]" field="releaseDate">success</g:hasErrors>''', [book:b])
-        assertOutputEquals("success", '''${hasErrors(bean: book, field:"releaseDate") { "success" }''', [book:b])
-        assertOutputEquals("success", '''${hasErrors(model: [book: book], field:"releaseDate") { "success" }''', [book:b])
-        assertOutputEquals("success", '''${g.hasErrors(bean: book, field:"releaseDate") { "success" }''', [book:b])
-        assertOutputEquals("success", '''${g.hasErrors(model: [book: book], field:"releaseDate") { "success" }''', [book:b])
+        assertOutputEquals("success", '''${hasErrors(bean: book, field:"releaseDate") { "success" }}''', [book:b])
+        assertOutputEquals("success", '''${hasErrors(model: [book: book], field:"releaseDate") { "success" }}''', [book:b])
+        assertOutputEquals("success", '''${g.hasErrors(bean: book, field:"releaseDate") { "success" }}''', [book:b])
+        assertOutputEquals("success", '''${g.hasErrors(model: [book: book], field:"releaseDate") { "success" }}''', [book:b])
         assertOutputEquals("", '''<g:hasErrors bean="${book}" field="title">success</g:hasErrors>''', [book:b])
         assertOutputEquals("", '''<g:hasErrors model="[book:book]" field="title">success</g:hasErrors>''', [book:b])
 

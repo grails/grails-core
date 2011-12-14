@@ -35,23 +35,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.EmptyExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
-import org.codehaus.groovy.ast.expr.TernaryExpression;
-import org.codehaus.groovy.ast.expr.TupleExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
@@ -62,7 +46,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
-import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
@@ -143,7 +126,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             ClassHelper.Byte_TYPE, "byte",
             ClassHelper.Character_TYPE, "char");
     private static List<ClassNode> PRIMITIVE_CLASS_NODES = CollectionUtils.<ClassNode>newList(
-    		ClassHelper.boolean_TYPE,
+            ClassHelper.boolean_TYPE,
             ClassHelper.char_TYPE,
             ClassHelper.int_TYPE,
             ClassHelper.short_TYPE,
@@ -275,20 +258,23 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void addMethodToInvokeClosure(ClassNode controllerClassNode,
             PropertyNode closureProperty) {
-        ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
-        final Parameter[] parameters = closureExpression.getParameters();
-        final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, parameters);
+        MethodNode method = controllerClassNode.getMethod(closureProperty.getName(), ZERO_PARAMETERS);
+        if(method == null || !method.getDeclaringClass().equals(controllerClassNode)) {
+            ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
+            final Parameter[] parameters = closureExpression.getParameters();
+            final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, parameters);
 
-        final ArgumentListExpression closureInvocationArguments = new ArgumentListExpression();
-        for (Parameter p : parameters) {
-            closureInvocationArguments.addExpression(new VariableExpression(p.getName()));
+            final ArgumentListExpression closureInvocationArguments = new ArgumentListExpression();
+            for (Parameter p : parameters) {
+                closureInvocationArguments.addExpression(new VariableExpression(p.getName()));
+            }
+            final MethodCallExpression methodCallExpression = new MethodCallExpression(closureExpression, "call", closureInvocationArguments);
+            newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
+            final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
+
+            annotateActionMethod(parameters, methodNode);
+            controllerClassNode.addMethod(methodNode);
         }
-        final MethodCallExpression methodCallExpression = new MethodCallExpression(closureExpression, "call", closureInvocationArguments);
-        newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
-        final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
-
-        annotateActionMethod(parameters, methodNode);
-        GrailsASTUtils.addMethodIfNotPresent(controllerClassNode, methodNode);
     }
 
     protected void annotateActionMethod(final Parameter[] parameters,
@@ -340,8 +326,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
         wrapper.addStatement(new ExpressionStatement(errorsAssignmentExpression));
 
-        for (Parameter param : actionParameters) {
-            initializeMethodParameter(classNode, wrapper, param);
+        if(actionParameters != null) {
+            for (Parameter param : actionParameters) {
+                initializeMethodParameter(classNode, wrapper, param);
+            }
         }
         return wrapper;
     }
@@ -356,7 +344,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
 
         if ((PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) ||
-        		 TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
+                 TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
             initializePrimitiveOrTypeWrapperParameter(wrapper, param, requestParameterName);
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param, requestParameterName);

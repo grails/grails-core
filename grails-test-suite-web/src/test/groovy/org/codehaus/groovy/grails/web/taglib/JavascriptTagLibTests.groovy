@@ -10,6 +10,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.util.WebUtils
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
 class JavascriptTagLibTests extends AbstractGrailsTagTests {
 
@@ -77,6 +78,27 @@ class TestUrlMappings {
         def template = '<g:javascript src="foo.js" />'
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, new GroovyPageBinding("plugin/one"))
         assertOutputContains '<script src="/plugin/one/js/foo.js" type="text/javascript"></script>' + EOL, template
+    }
+
+    /**
+     * Tests that the INCLUDED_JS_LIBRARIES attribute is set correctly without resources plugin
+     */
+    void testLibraryAttributeSet() {
+        def template = '<g:javascript library="testing"/>'
+
+        assertOutputContains('<script src="/js/testing.js" type="text/javascript"></script>', template)
+        assertEquals(['testing'], request.getAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES"))
+    }
+
+    def replaceMetaClass(Object o) {
+        def old = o.metaClass
+
+        // Create a new EMC for the class and attach it.
+        def emc = new ExpandoMetaClass(o.class, true, true)
+        emc.initialize()
+        o.metaClass = emc
+
+        return old
     }
 
     /**

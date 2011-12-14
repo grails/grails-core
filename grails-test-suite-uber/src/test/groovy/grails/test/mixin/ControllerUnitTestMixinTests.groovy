@@ -33,6 +33,15 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         mockController(TestController)
     }
 
+
+    void testCallingSuperMethod() {
+        def subController = mockController(SubController)
+        
+        subController.method1()
+        assert response.status == HttpServletResponse.SC_OK
+        assert response.contentAsString == 'method 1'
+    }
+
     void testSimpleControllerRedirect() {
 
         def controller = getMockController()
@@ -237,6 +246,8 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testAllowedMethods() {
+        if(notYetImplemented()) return
+
         def controller = getMockController()
 
         controller.action1()
@@ -516,5 +527,11 @@ class TestCommand {
 
     static constraints = {
         name blank:false
+    }
+}
+
+class SubController extends TestController {
+    def method1() {
+        super.method1()
     }
 }

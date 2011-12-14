@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import org.springframework.beans.factory.Aware;
+
 /**
  * For implementors interested in obtaining a reference to the Grails PluginManager instance.
  *
@@ -22,7 +24,7 @@ package org.codehaus.groovy.grails.plugins;
  * @author Graeme Rocher
  * @since 0.6
  */
-public interface PluginManagerAware {
+public interface PluginManagerAware extends Aware {
 
     /**
      * Sets the plug-in manager on this instance

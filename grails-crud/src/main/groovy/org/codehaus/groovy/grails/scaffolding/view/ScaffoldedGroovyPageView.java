@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.util.Assert;
 
 /**
@@ -71,13 +72,14 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    protected void renderWithTemplateEngine(GroovyPagesTemplateEngine templateEngine, Map model,
+    protected void renderWithTemplateEngine(@SuppressWarnings("hiding") GroovyPagesTemplateEngine templateEngine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Rendering scaffolded view ["+getUrl()+"] with model ["+model+"]");
         }
 
+        request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
         Writable w = template.make(model);
         Writer out = null;
         try {
@@ -93,12 +95,12 @@ public class ScaffoldedGroovyPageView extends GroovyPageView {
             }
         }
     }
-    
+
+    @Override
     protected void initTemplate() throws IOException {
         template = templateEngine.createTemplate(contents, getUrl());
         if (template instanceof GroovyPageTemplate) {
             ((GroovyPageTemplate)template).setAllowSettingContentType(true);
         }
-    	
     }
 }

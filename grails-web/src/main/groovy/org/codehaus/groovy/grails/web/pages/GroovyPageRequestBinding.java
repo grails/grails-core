@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.Environment;
-import groovy.lang.Binding;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +37,7 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
     private static Log log = LogFactory.getLog(GroovyPageRequestBinding.class);
     private GrailsWebRequest webRequest;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
+    private boolean developmentMode = Environment.isDevelopmentMode();
 
     private static Map<String, LazyRequestBasedValue> lazyRequestBasedValuesMap = new HashMap<String, LazyRequestBasedValue>();
     static {
@@ -132,7 +132,7 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
             }
 
             // warn about missing variables in development mode
-            if (val == null && Environment.isDevelopmentMode()) {
+            if (val == null && developmentMode) {
                 if (log.isDebugEnabled()) {
                     log.debug("Variable '" + name + "' not found in binding or the value is null.");
                 }
@@ -149,15 +149,15 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
         public Object evaluate(GrailsWebRequest webRequest);
     }
 
-	@Override
-	public Set<String> getVariableNames() {
-		if(getVariablesMap().size()==0) {
-			return lazyRequestBasedValuesMap.keySet();
-		} else {
-			HashSet<String> variableNames=new HashSet<String>();
-			variableNames.addAll(lazyRequestBasedValuesMap.keySet());
-			variableNames.addAll(getVariablesMap().keySet());
-			return variableNames;
-		}
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<String> getVariableNames() {
+        if (getVariablesMap().isEmpty()) {
+            return lazyRequestBasedValuesMap.keySet();
+        }
+
+        Set<String> variableNames = new HashSet<String>(lazyRequestBasedValuesMap.keySet());
+        variableNames.addAll(getVariablesMap().keySet());
+        return variableNames;
+    }
 }

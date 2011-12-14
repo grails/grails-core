@@ -66,28 +66,30 @@ public class RangeConstraint extends AbstractConstraint {
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (!range.contains(propertyValue)) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass,
-                    propertyValue, range.getFrom(), range.getTo()};
+        if (range.contains(propertyValue)) {
+            return;
+        }
 
-            Comparable from = range.getFrom();
-            Comparable to = range.getTo();
+        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass,
+                propertyValue, range.getFrom(), range.getTo()};
 
-            if (from instanceof Number && propertyValue instanceof Number) {
-                // Upgrade the numbers to Long, so all integer types can be compared.
-                from = new Long(((Number) from).longValue());
-                to = new Long(((Number) to).longValue());
-                propertyValue = new Long(((Number) propertyValue).longValue());
-            }
+        Comparable from = range.getFrom();
+        Comparable to = range.getTo();
 
-            if (from.compareTo(propertyValue) > 0) {
-                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
-                       ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX, args);
-            }
-            else if (to.compareTo(propertyValue) < 0) {
-                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
-                       ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX, args);
-            }
+        if (from instanceof Number && propertyValue instanceof Number) {
+            // Upgrade the numbers to Long, so all integer types can be compared.
+            from = ((Number) from).longValue();
+            to = ((Number) to).longValue();
+            propertyValue = ((Number) propertyValue).longValue();
+        }
+
+        if (from.compareTo(propertyValue) > 0) {
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
+                   ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOSMALL_SUFFIX, args);
+        }
+        else if (to.compareTo(propertyValue) < 0) {
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_RANGE_MESSAGE_CODE,
+                   ConstrainedProperty.RANGE_CONSTRAINT + ConstrainedProperty.TOOBIG_SUFFIX, args);
         }
     }
 }

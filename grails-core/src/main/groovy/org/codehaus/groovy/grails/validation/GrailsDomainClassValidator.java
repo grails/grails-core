@@ -36,7 +36,6 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.Validator;
 
 /**
  * A specialised Spring validator that validates a domain class instance using the constraints defined in the
@@ -45,7 +44,7 @@ import org.springframework.validation.Validator;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class GrailsDomainClassValidator implements Validator, CascadingValidator, GrailsApplicationAware {
+public class GrailsDomainClassValidator implements CascadingValidator, GrailsApplicationAware {
 
     private static final List<String> EMBEDDED_EXCLUDES = Arrays.asList(
         GrailsDomainClassProperty.IDENTITY,
@@ -67,7 +66,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void validate(Object obj, Errors errors, boolean cascade) {
-        if (!domainClass.getClazz().isInstance(obj)) {
+        if (obj == null || !domainClass.getFullName().equals(obj.getClass().getName())) {
             throw new IllegalArgumentException("Argument [" + obj + "] is not an instance of [" +
                     domainClass.getClazz() + "] which this validator is configured for");
         }
@@ -81,7 +80,7 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
             String propertyName = (String) key;
             validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
         }
-        
+
         GrailsDomainClassProperty[] persistentProperties = domainClass.getPersistentProperties();
 
         for (GrailsDomainClassProperty persistentProperty : persistentProperties) {
@@ -99,13 +98,6 @@ public class GrailsDomainClassValidator implements Validator, CascadingValidator
         // Now process the remaining constrained properties, for example any transients.
         for (String name : constrainedPropertyNames) {
             validatePropertyWithConstraint(name, obj, errors, bean, constrainedProperties);
-        }
-
-        if (obj instanceof GroovyObject) {
-            ((GroovyObject)obj).setProperty(ERRORS_PROPERTY, errors);
-        }
-        else {
-            InvokerHelper.setProperty(obj,ERRORS_PROPERTY,errors);
         }
 
         postValidate(obj,errors);

@@ -68,7 +68,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
 
     def installEngine = createPluginInstallEngine()
     for (zip in pluginZips) {
-        installEngine.installPlugin(zip)
+        installEngine.installResolvedPlugin(zip)
     }
 
     installEngine.checkPluginsToUninstall()
@@ -122,7 +122,7 @@ generatePluginXml = { File descriptor, boolean compilePlugin = true ->
 
     // Use MarkupBuilder with indenting to generate the file.
     pluginXml.withWriter { writer ->
-        def generator = new PluginDescriptorGenerator(pluginName, resourceList)
+        def generator = new PluginDescriptorGenerator(grailsSettings, pluginName, resourceList)
 
         pluginProps["type"] = descriptor.name - '.groovy'
         generator.generatePluginXml(pluginProps, writer)
@@ -210,7 +210,7 @@ target(loadPlugins:"Loads Grails' plugins") {
         }
     }
     catch (Exception e) {
-        PluginManagerHolder.inCreation = false        
+        PluginManagerHolder.inCreation = false
         grailsConsole.error "Error loading plugin manager: " + e.message , e
         exit(1)
     }

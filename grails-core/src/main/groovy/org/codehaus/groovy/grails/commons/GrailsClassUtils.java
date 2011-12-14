@@ -678,6 +678,24 @@ public class GrailsClassUtils {
     }
 
     /**
+     * <p>Get a static field value.</p>
+     *
+     * @param clazz The class to check for static property
+     * @param name The field name
+     * @return The value if there is one, or null if unset OR there is no such field
+     */
+    public static Object getStaticFieldValue(Class<?> clazz, String name) {
+        Field field = ReflectionUtils.findField(clazz, name);
+        if (field != null) {
+            ReflectionUtils.makeAccessible(field);
+            try {
+                return field.get(clazz);
+            } catch (IllegalAccessException ignored) {}
+        }
+        return null;
+    }
+
+    /**
      * <p>Get a static property value, which has a public static getter or is just a public static field.</p>
      *
      * @param clazz The class to check for static property
@@ -690,10 +708,7 @@ public class GrailsClassUtils {
             if (getter != null) {
                 return getter.invoke(null);
             }
-            Field f = clazz.getDeclaredField(name);
-            if (f != null) {
-                return f.get(null);
-            }
+            return getStaticFieldValue(clazz, name);
         }
         catch (Exception ignored) {
             // ignored
@@ -1095,11 +1110,11 @@ public class GrailsClassUtils {
     }
 
     @SuppressWarnings("unchecked")
-	public static Object instantiateFromConfig(ConfigObject config, String configKey, String defaultClassName)
+    public static Object instantiateFromConfig(ConfigObject config, String configKey, String defaultClassName)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
         return instantiateFromFlatConfig(config.flatten(), configKey, defaultClassName);
     }
-    
+
     public static Object instantiateFromFlatConfig(Map<String, Object> flatConfig, String configKey, String defaultClassName)
             throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
         String className = defaultClassName;

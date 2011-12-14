@@ -30,7 +30,8 @@ import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareJoin
 import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareSingleTableEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.validation.*;
+import org.codehaus.groovy.grails.validation.Constraint;
 import org.hibernate.FetchMode;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.*;
@@ -1375,7 +1376,7 @@ public final class GrailsDomainBinder {
      */
     private static void bindSubClasses(GrailsDomainClass domainClass, PersistentClass parent,
             Mappings mappings, String sessionFactoryBeanName) {
-        Set<GrailsDomainClass> subClasses = domainClass.getSubClasses();
+        Set<GrailsDomainClass> subClasses = new HashSet<GrailsDomainClass>(domainClass.getSubClasses());
 
         for (GrailsDomainClass sub : subClasses) {
             if (sub.getClazz().getSuperclass().equals(domainClass.getClazz())) {
@@ -1407,6 +1408,9 @@ public final class GrailsDomainBinder {
             // to perform polymorphic queries
             Mapping subMapping = getMapping(sub);
             subClass.setDiscriminatorValue(subMapping != null && subMapping.getDiscriminator() != null ? subMapping.getDiscriminator() : sub.getFullName());
+            if(subMapping != null) {
+                configureDerivedProperties(sub, subMapping);
+            }
         }
 
         subClass.setEntityName(sub.getFullName());
@@ -1889,6 +1893,7 @@ public final class GrailsDomainBinder {
         PropertyConfig propertyConfig = getPropertyConfig(property);
         if (propertyConfig != null && !propertyConfig.getColumns().isEmpty()) {
             bindIndex(columnName, column, propertyConfig.getColumns().get(0), t);
+            bindColumnConfigToColumn(column, propertyConfig.getColumns().get(0));
         }
     }
 
@@ -2589,12 +2594,15 @@ public final class GrailsDomainBinder {
 
         ConstrainedProperty cp = getConstrainedProperty(property);
         if (cp != null && cp.hasAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT)) {
-            UniqueConstraint uc = (UniqueConstraint) cp.getAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT);
-            if (uc != null && uc.isUnique()) {
-                if (!uc.isUniqueWithinGroup()) {
-                    column.setUnique(true);
-                } else if (uc.getUniquenessGroup().size() > 0) {
-                    createKeyForProps(property, path, table, columnName, uc.getUniquenessGroup(), sessionFactoryBeanName);
+            Constraint appliedConstraint = cp.getAppliedConstraint(UniqueConstraint.UNIQUE_CONSTRAINT);
+            if(appliedConstraint instanceof UniqueConstraint) {
+                UniqueConstraint uc = (UniqueConstraint) appliedConstraint;
+                if (uc != null && uc.isUnique()) {
+                    if (!uc.isUniqueWithinGroup()) {
+                        column.setUnique(true);
+                    } else if (uc.getUniquenessGroup().size() > 0) {
+                        createKeyForProps(property, path, table, columnName, uc.getUniquenessGroup(), sessionFactoryBeanName);
+                    }
                 }
             }
         } else {
@@ -2859,13 +2867,13 @@ public final class GrailsDomainBinder {
         if ((minConstraintValue != null) && (minConstraintValue instanceof Number)) {
             minConstraintValueLength = Math.max(
                     countDigits((Number) minConstraintValue),
-                    countDigits(new Long(((Number) minConstraintValue).longValue())) + scale);
+                    countDigits(((Number) minConstraintValue).longValue()) + scale);
         }
         int maxConstraintValueLength = 0;
         if ((maxConstraintValue != null) && (maxConstraintValue instanceof Number)) {
             maxConstraintValueLength = Math.max(
                     countDigits((Number) maxConstraintValue),
-                    countDigits(new Long(((Number) maxConstraintValue).longValue())) + scale);
+                    countDigits(((Number) maxConstraintValue).longValue()) + scale);
         }
 
         if (minConstraintValueLength > 0 && maxConstraintValueLength > 0) {

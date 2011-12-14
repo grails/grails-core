@@ -19,13 +19,13 @@ public class MaxSizeConstraintTests extends AbstractConstraintTests {
     @SuppressWarnings({"unchecked","rawtypes"})
     public void testValidation() {
         testConstraintMessageCodes(
-                getConstraint("testString", new Integer(10)),
+                getConstraint("testString", 10),
                 "12345678901",
                 new String[] {"testClass.testString.maxSize.error","testClass.testString.maxSize.exceeded"},
-                new Object[] {"testString",TestClass.class,"12345678901",new Integer(10)});
+                new Object[] {"testString",TestClass.class,"12345678901",10});
 
         testConstraintFailed(
-                getConstraint("testArray", new Integer(2)),
+                getConstraint("testArray", 2),
                 new String[] {"one","two","three"});
 
         List list = new ArrayList();
@@ -34,30 +34,30 @@ public class MaxSizeConstraintTests extends AbstractConstraintTests {
         list.add("three");
 
         testConstraintFailed(
-                getConstraint("testCollection", new Integer(2)),
+                getConstraint("testCollection", 2),
                 list);
 
         testConstraintPassed(
-                getConstraint("testCollection", new Integer(3)),
+                getConstraint("testCollection", 3),
                 list);
 
         testConstraintPassed(
-                getConstraint("testString", new Integer(5)),
+                getConstraint("testString", 5),
                 "12345");
 
         // must always pass for null value
         testConstraintPassed(
-                getConstraint("testString", new Integer(5)),
+                getConstraint("testString", 5),
                 null);
 
         testConstraintDefaultMessage(
-                getConstraint("testString", new Integer(5)),
+                getConstraint("testString", 5),
                 "123456",
                 "Property [{0}] of class [{1}] with value [{2}] exceeds the maximum size of [{3}]");
     }
 
     public void testCreation() {
-        MaxSizeConstraint constraint = (MaxSizeConstraint) getConstraint("testString", new Integer(10));
+        MaxSizeConstraint constraint = (MaxSizeConstraint) getConstraint("testString", 10);
         assertEquals(ConstrainedProperty.MAX_SIZE_CONSTRAINT, constraint.getName());
         assertTrue(constraint.supports(String.class));
         assertTrue(constraint.supports(Object[].class));

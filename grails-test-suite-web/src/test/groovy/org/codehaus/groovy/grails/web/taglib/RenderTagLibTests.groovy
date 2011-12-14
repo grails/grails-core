@@ -75,8 +75,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         template = '${tmpl.tableRow(label:"one", value:"two")}'
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
-		// execute twice to make sure methodMissing works
-		assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
+        // execute twice to make sure methodMissing works
+        assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
     }
 
     void testRenderWithNonExistantTemplate() {
@@ -506,29 +506,29 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals 'hello world', template
         assertEquals 'my/contenttype', response.getContentType()
     }
-	
-	void testApplyLayout() {
-		GrailsLayoutDecoratorMapper decoratorMapper=new GrailsLayoutDecoratorMapper()
-		decoratorMapper.groovyPageLayoutFinder = appCtx.groovyPageLayoutFinder
-		FactoryHolder.setFactory([getDecoratorMapper: { -> decoratorMapper}] as com.opensymphony.module.sitemesh.Factory)
+
+    void testApplyLayout() {
+        GrailsLayoutDecoratorMapper decoratorMapper=new GrailsLayoutDecoratorMapper()
+        decoratorMapper.groovyPageLayoutFinder = appCtx.groovyPageLayoutFinder
+        FactoryHolder.setFactory([getDecoratorMapper: { -> decoratorMapper}] as com.opensymphony.module.sitemesh.Factory)
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/layouts/layout.gsp', '<layoutapplied><g:layoutTitle /> - <g:layoutBody/></layoutapplied>')
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
-		def template='<g:applyLayout name="layout"><html><head><title>title here</title></head><body>Hello world!</body></html></g:applyLayout>'
-		assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
-	}
+        def template='<g:applyLayout name="layout"><html><head><title>title here</title></head><body>Hello world!</body></html></g:applyLayout>'
+        assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
+    }
 
-	void testApplyLayoutParse() {
-		GrailsLayoutDecoratorMapper decoratorMapper=new GrailsLayoutDecoratorMapper()
-		decoratorMapper.groovyPageLayoutFinder = appCtx.groovyPageLayoutFinder
-		FactoryHolder.setFactory([getDecoratorMapper: { -> decoratorMapper}, getPageParser: { String contentType -> new HTMLPageParser() }] as com.opensymphony.module.sitemesh.Factory)
-		def resourceLoader = new MockStringResourceLoader()
-		resourceLoader.registerMockResource('/layouts/layout.gsp', '<layoutapplied><g:layoutTitle /> - <g:layoutBody/></layoutapplied>')
-		appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
-		def template='<g:applyLayout name="layout" parse="${true}"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
-		assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
-		
-		template='<g:applyLayout name="layout" parse="false"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
-		assertOutputEquals '<layoutapplied> - Hello world!</layoutapplied>', template
-	}
+    void testApplyLayoutParse() {
+        GrailsLayoutDecoratorMapper decoratorMapper=new GrailsLayoutDecoratorMapper()
+        decoratorMapper.groovyPageLayoutFinder = appCtx.groovyPageLayoutFinder
+        FactoryHolder.setFactory([getDecoratorMapper: { -> decoratorMapper}, getPageParser: { String contentType -> new HTMLPageParser() }] as com.opensymphony.module.sitemesh.Factory)
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/layouts/layout.gsp', '<layoutapplied><g:layoutTitle /> - <g:layoutBody/></layoutapplied>')
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+        def template='<g:applyLayout name="layout" parse="${true}"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
+        assertOutputEquals '<layoutapplied>title here - Hello world!</layoutapplied>', template
+
+        template='<g:applyLayout name="layout" parse="false"><html><head><${"title"}>title here</${"title"}></head><body>Hello world!</body></html></g:applyLayout>'
+        assertOutputEquals '<layoutapplied> - Hello world!</layoutapplied>', template
+    }
 }

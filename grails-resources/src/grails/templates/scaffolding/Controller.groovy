@@ -8,10 +8,9 @@ class ${className}Controller {
         redirect(action: "list", params: params)
     }
 
-    def list() {
-        params.max = Math.min(params.max ? params.int('max') : 10, 100)
-        def ${propertyName}List = ${className}.list(params)
-        [${propertyName}List: ${propertyName}List, ${propertyName}Total: ${propertyName}List.totalCount]
+    def list(Integer max) {
+        params.max = Math.min(max ?: 10, 100)
+        [${propertyName}List: ${className}.list(params), ${propertyName}Total: ${className}.count()]
     }
 
     def create() {
@@ -25,14 +24,14 @@ class ${className}Controller {
             return
         }
 
-		flash.message = message(code: 'default.created.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
+        flash.message = message(code: 'default.created.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
         redirect(action: "show", id: ${propertyName}.id)
     }
 
-    def show() {
-        def ${propertyName} = ${className}.get(params.id)
+    def show(Long id) {
+        def ${propertyName} = ${className}.get(id)
         if (!${propertyName}) {
-			flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
             redirect(action: "list")
             return
         }
@@ -40,10 +39,10 @@ class ${className}Controller {
         [${propertyName}: ${propertyName}]
     }
 
-    def edit() {
-        def ${propertyName} = ${className}.get(params.id)
+    def edit(Long id) {
+        def ${propertyName} = ${className}.get(id)
         if (!${propertyName}) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
             redirect(action: "list")
             return
         }
@@ -51,16 +50,15 @@ class ${className}Controller {
         [${propertyName}: ${propertyName}]
     }
 
-    def update() {
-        def ${propertyName} = ${className}.get(params.id)
+    def update(Long id, Long version) {
+        def ${propertyName} = ${className}.get(id)
         if (!${propertyName}) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
             redirect(action: "list")
             return
         }
 
-        if (params.version) {
-            def version = params.version.toLong()
+        if (version != null) {
             if (${propertyName}.version > version) {<% def lowerCaseName = grails.util.GrailsNameUtils.getPropertyName(className) %>
                 ${propertyName}.errors.rejectValue("version", "default.optimistic.locking.failure",
                           [message(code: '${domainClass.propertyName}.label', default: '${className}')] as Object[],
@@ -77,26 +75,26 @@ class ${className}Controller {
             return
         }
 
-		flash.message = message(code: 'default.updated.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
+        flash.message = message(code: 'default.updated.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
         redirect(action: "show", id: ${propertyName}.id)
     }
 
-    def delete() {
-        def ${propertyName} = ${className}.get(params.id)
+    def delete(Long id) {
+        def ${propertyName} = ${className}.get(id)
         if (!${propertyName}) {
-			flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
             redirect(action: "list")
             return
         }
 
         try {
             ${propertyName}.delete(flush: true)
-			flash.message = message(code: 'default.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
+            flash.message = message(code: 'default.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
             redirect(action: "list")
         }
         catch (DataIntegrityViolationException e) {
-			flash.message = message(code: 'default.not.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])
-            redirect(action: "show", id: params.id)
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
+            redirect(action: "show", id: id)
         }
     }
 }

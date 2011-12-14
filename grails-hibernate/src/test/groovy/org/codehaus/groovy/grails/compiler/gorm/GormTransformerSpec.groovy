@@ -14,6 +14,28 @@ import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInj
 
 class GormTransformerSpec extends Specification {
 
+    void "Test missing method thrown for uninitialized entity"() {
+        given:
+              def gcl = new GrailsAwareClassLoader()
+              def gormTransformer = new GormTransformer() {
+                  @Override
+                  boolean shouldInject(URL url) { true }
+              }
+              gcl.classInjectors = [gormTransformer] as ClassInjector[]
+
+          when:
+              def cls = gcl.parseClass('''
+@grails.persistence.Entity
+class TestEntity {
+    Long id
+}
+  ''')
+             cls.load(1)
+          then:
+               def e = thrown(MissingMethodException)
+               e.message.contains '''No signature of method: TestEntity.load() is applicable for argument types'''
+    }
+
     void "Test that generic information is added to hasMany collections"() {
         given:
               def gcl = new GrailsAwareClassLoader()
@@ -115,14 +137,14 @@ class TestEntity {
               cls.count()
 
           then:
-             thrown IllegalStateException
+             thrown MissingMethodException
 
           when:
             cls.metaClass.static.currentGormStaticApi = {-> null}
             cls.count()
 
           then:
-            thrown NullPointerException
+            thrown MissingMethodException
 
 
           when:

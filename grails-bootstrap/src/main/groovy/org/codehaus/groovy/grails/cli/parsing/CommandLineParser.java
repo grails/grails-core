@@ -82,6 +82,26 @@ public class CommandLineParser {
         }
     }
 
+   /**
+     * Parses a string of all the command line options converting them into an array of arguments to pass to #parse(String..args)
+     *
+    *  @param commandName The command name
+     * @param args The string
+     * @return The command line
+     */
+    public CommandLine parseString(String commandName, String args) {
+        // Steal ants implementation for argument splitting. Handles quoted arguments with " or '.
+        // Doesn't handle escape sequences with \
+        try {
+            String[] argArray = Commandline.translateCommandline(args);
+            DefaultCommandLine cl = createCommandLine();
+            cl.setCommandName(commandName);
+            parseInternal(cl, argArray, false);
+            return cl;
+        } catch (BuildException e) {
+            throw new ParseException(e); //Rethrow as an error that clients can expect.
+        }
+    }
     /**
      * Parses the given list of command line arguments. Arguments starting with -D become system properties,
      * arguments starting with -- or - become either declared or undeclared options. All other arguments are
@@ -92,7 +112,11 @@ public class CommandLineParser {
      */
     public CommandLine parse(String... args) {
         DefaultCommandLine cl = createCommandLine();
-        boolean beforeCommand = true;
+        parseInternal(cl, args, true);
+        return cl;
+    }
+
+    private void parseInternal(DefaultCommandLine cl, String[] args, boolean firstArgumentIsCommand) {
         for (String arg : args) {
             if (arg == null) continue;
             String trimmed = arg.trim();
@@ -101,13 +125,13 @@ public class CommandLineParser {
                     processOption(cl, trimmed);
                 }
                 else {
-                    if (beforeCommand && ENV_ARGS.containsKey(trimmed)) {
+                    if (firstArgumentIsCommand && ENV_ARGS.containsKey(trimmed)) {
                         cl.setEnvironment(ENV_ARGS.get(trimmed));
                     }
                     else {
-                       if (beforeCommand) {
+                       if (firstArgumentIsCommand) {
                            cl.setCommandName(trimmed);
-                           beforeCommand = false;
+                           firstArgumentIsCommand = false;
                        }
                        else {
                            cl.addRemainingArg(trimmed);
@@ -116,8 +140,6 @@ public class CommandLineParser {
                 }
             }
         }
-
-        return cl;
     }
 
     public String getHelpMessage() {

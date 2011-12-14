@@ -50,7 +50,6 @@ class ControllersGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def observe= ['domainClass']
     def dependsOn = [core: version, i18n: version, urlMappings: version]
-    def nonEnhancedControllerClasses = []
 
     def doWithSpring = {
         simpleControllerHandlerAdapter(SimpleControllerHandlerAdapter)
@@ -100,13 +99,6 @@ class ControllersGrailsPlugin {
                 "${controller.fullName}"(cls) { bean ->
                     bean.scope = controller.getPropertyValue("scope") ?: defaultScope
                     bean.autowire = "byName"
-                    def enhancedAnn = cls.getAnnotation(Enhanced)
-                    if (enhancedAnn != null) {
-                        instanceControllersApi = ref("instanceControllersApi")
-                    }
-                    else {
-                        nonEnhancedControllerClasses << controller
-                    }
                 }
             }
         }
@@ -190,14 +182,15 @@ class ControllersGrailsPlugin {
 
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi(controllerApi)
-
+        
         for (controller in application.controllerClasses) {
             def controllerClass = controller
             def mc = controllerClass.metaClass
             mc.constructor = {-> ctx.getBean(controllerClass.fullName)}
-            if (nonEnhancedControllerClasses.contains(controllerClass)) {
+            if(controllerClass.clazz.getAnnotation(Enhanced)==null) {
                 enhancer.enhance mc
             }
+            controllerClass.initialize()
         }
 
         for (GrailsDomainClass domainClass in application.domainClasses) {
@@ -214,40 +207,34 @@ class ControllersGrailsPlugin {
     }
 
     def onChange = {event ->
-        if (application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) {
-            def dc = application.getDomainClass(event.source.name)
-            enhanceDomainWithBinding(event.ctx, dc, GroovySystem.metaClassRegistry.getMetaClass(event.source))
-        }
-        else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            def context = event.ctx
-            if (!context) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Application context not found. Can't reload")
+        if(event.source instanceof Class) {
+            if (application.isArtefactOfType(DomainClassArtefactHandler.TYPE, event.source)) {
+                def dc = application.getDomainClass(event.source.name)
+                enhanceDomainWithBinding(event.ctx, dc, GroovySystem.metaClassRegistry.getMetaClass(event.source))
+            }
+            else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
+                def context = event.ctx
+                if (!context) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Application context not found. Can't reload")
+                    }
+                    return
                 }
 
-                return
-            }
+                def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
 
-            def defaultScope = application.config.grails.controllers.defaultScope ?: 'prototype'
-
-            def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
-            def beanDefinitions = beans {
-                "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
-                    bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
-                    bean.autowire = true
-                    def enhancedAnn = controllerClass.clazz.getAnnotation(Enhanced)
-                    if (enhancedAnn != null) {
-                        instanceControllersApi = ref("instanceControllersApi")
-                    }
-                    else {
-                        nonEnhancedControllerClasses << controllerClass
+                def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
+                def beanDefinitions = beans {
+                    "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
+                        bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
+                        bean.autowire = true
                     }
                 }
+                // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
+                // register the necessary beans with the given app ctx
+                beanDefinitions.registerBeans(event.ctx)
+                controllerClass.initialize()
             }
-            // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
-            // register the necessary beans with the given app ctx
-            beanDefinitions.registerBeans(event.ctx)
-
         }
     }
 }

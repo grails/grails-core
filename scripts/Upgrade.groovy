@@ -35,6 +35,7 @@ target(upgrade: "main upgrade target") {
 
     depends(createStructure, parseArguments)
 
+    System.properties.put('runningGrailsUpgrade', 'true')
     boolean force = argsMap.force || !isInteractive ?: false
 
     if (appGrailsVersion != grailsVersion) {
@@ -150,8 +151,8 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
 
         def dsFile = new File(baseFile, "grails-app/conf/DataSource.groovy")
         if (dsFile.exists() && argsMap.'update-data-source') {
-            replace file:dsFile, token:"jdbc:hsqldb:mem:devDB", value:"jdbc:h2:mem:devDb"
-            replace file:dsFile, token:"jdbc:hsqldb:mem:testDb",value: "jdbc:h2:mem:testDb"
+            replace file:dsFile, token:"jdbc:hsqldb:mem:devDB", value:"jdbc:h2:mem:devDb;MVCC=TRUE"
+            replace file:dsFile, token:"jdbc:hsqldb:mem:testDb",value: "jdbc:h2:mem:testDb;MVCC=TRUE"
             replace file:dsFile, token:"org.hsqldb.jdbcDriver", value:"org.h2.Driver"
         }
         // if Config.groovy exists and it does not contain values for
@@ -191,7 +192,15 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
     }
 
     // Add the app name and Grails version to the metadata.
-    updateMetadata(metadata, ["app.name": "$grailsAppName", "app.grails.version": "$grailsVersion"])
+    def newMetadata = ["app.name": "$grailsAppName", "app.grails.version": "$grailsVersion"]
+    for (pluginEntry in grailsSettings.defaultPluginMap) {
+        def pluginName = pluginEntry.key
+        def pluginKey = "plugins.$pluginName".toString()
+        if (metadata.containsKey(pluginKey)) {
+            newMetadata[pluginKey] = pluginEntry.value
+        }
+    }
+    updateMetadata(metadata, newMetadata)
 
     // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
     def plugins = pluginSettings.pluginBaseDirectories

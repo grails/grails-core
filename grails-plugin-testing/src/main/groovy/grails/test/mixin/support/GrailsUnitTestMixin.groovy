@@ -40,6 +40,8 @@ import org.junit.BeforeClass
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.support.StaticMessageSource
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.springframework.context.MessageSource
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -52,12 +54,9 @@ class GrailsUnitTestMixin {
     static GrailsWebApplicationContext applicationContext
     static GrailsApplication grailsApplication
     static ConfigObject config
-    static StaticMessageSource messageSource
+    static MessageSource messageSource
 
-    private static Set changedMetaClasses = []
-    private static metaClassRegistryListener = { MetaClassRegistryChangeEvent event ->
-        GrailsUnitTestMixin.changedMetaClasses << event.getClassToUpdate()
-    } as MetaClassRegistryChangeEventListener
+    private static metaClassRegistryListener = new MetaClassRegistryCleaner()
 
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
@@ -87,7 +86,7 @@ class GrailsUnitTestMixin {
             applicationContext.refresh()
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
-            messageSource = applicationContext.getBean("messageSource")
+            messageSource = applicationContext.getBean("messageSource", MessageSource)
 
             def mainContext = new MockApplicationContext()
             mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
@@ -113,10 +112,12 @@ class GrailsUnitTestMixin {
 
 
     static void cleanupModifiedMetaClasses() {
+        metaClassRegistryListener.clean()
+    }
+
+    @AfterClass
+    static void deregisterMetaClassCleaner() {
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
-        for(Class cls in changedMetaClasses) {
-            GroovySystem.metaClassRegistry.removeMetaClass(cls)
-        }
     }
 
     /**
@@ -226,6 +227,5 @@ class GrailsUnitTestMixin {
 
         applicationContext = null
         grailsApplication = null
-        changedMetaClasses.clear()
     }
 }

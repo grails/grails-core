@@ -85,6 +85,10 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
         super.reset()
     }
 
+    String getRedirectUrl() {
+        getRedirectedUrl()
+    }
+
     @Override
     String getRedirectedUrl() {
         final webRequest = GrailsWebRequest.lookup()

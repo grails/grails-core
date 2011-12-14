@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.util.Assert
 import org.springframework.util.LinkedMultiValueMap
@@ -40,6 +42,12 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
 
     boolean invalidToken
     MultiValueMap<String, MultipartFile> multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
+
+    private Map<String, String> multipartContentTypes = Collections.emptyMap();
+    private Map<String, HttpHeaders> multipartHeaders = Collections.emptyMap();
+    private HttpHeaders httpHeaders = new HttpHeaders();
+    private String requestHeaders = null;
+    private HttpMethod requestMethod = HttpMethod.GET;
 
     private cachedJson
     private cachedXml
@@ -337,5 +345,39 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     void clearAttributes() {
         super.clearAttributes()
         multipartFiles.clear();
+        multipartContentTypes.clear();
+        httpHeaders.clear();
+    }
+
+    String getMultipartContentType(String paramOrFileName) {
+        return multipartContentTypes.get(paramOrFileName);
+    }
+
+    String setMultipartContentType(String paramOrFileName, String contentType) {
+        return multipartContentTypes.put(paramOrFileName, contentType);
+    }
+
+    HttpHeaders getMultipartHeaders(String paramOrFileName) {
+        return multipartHeaders.get(paramOrFileName);
+    }
+
+    HttpHeaders setMultipartHeaders(String paramOrFileName, HttpHeaders headers) {
+        return multipartHeaders.put(paramOrFileName, headers);
+    }
+
+    HttpHeaders getRequestHeaders() {
+        return requestHeaders;
+    }
+
+    void setRequestHeaders(HttpHeaders headers) {
+        requestHeaders = headers;
+    }
+
+    HttpMethod getRequestMethod() {
+        return requestMethod;
+    }
+
+    HttpMethod setRequestMethod(HttpMethod method) {
+        requestMethod = method;
     }
 }

@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -104,7 +103,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     private boolean reloadEnabled;
     private TagLibraryLookup tagLibraryLookup;
     private TagLibraryResolver jspTagLibraryResolver;
-    private Map<String, GroovyPageMetaInfo> precompiledCache = new ConcurrentHashMap<String, GroovyPageMetaInfo>();
     private boolean cacheResources=true;
 
     private GrailsApplication grailsApplication;
@@ -284,54 +282,28 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         return createTemplateForUri(uri);
     }
 
-    private Template createTemplateFromPrecompiled(final String uri, Class<?> gspClass) {
-        GroovyPageMetaInfo meta = precompiledCache.get(uri);
-        if (meta == null) {
-            meta = loadPrecompiledGsp(gspClass);
-            if (meta != null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Adding GSP class GroovyPageMetaInfo in cache. GSP classname is " + meta.getPageClass().getName());
-                }
-                precompiledCache.put(uri, meta);
+    private Template createTemplateFromPrecompiled(GroovyPageCompiledScriptSource compiledScriptSource) {
+        GroovyPageMetaInfo meta = initializeCompiledMetaInfo(compiledScriptSource.getGroovyPageMetaInfo());
+        if (isReloadEnabled()) {
+            GroovyPageResourceScriptSource changedResourceScriptSource = compiledScriptSource.getReloadableScriptSource();
+            if(changedResourceScriptSource != null) {
+                groovyPageLocator.removePrecompiledPage(compiledScriptSource);
+                return createTemplate(changedResourceScriptSource);
             }
         }
-        if (meta != null) {
-            if (isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
-                public Resource run() {
-                    return getResourceForUri(uri);
-                }
-            })) {
-                if (LOG.isInfoEnabled()) {
-                    LOG.info("Precompiled GSP for uri " + uri + " is newer in reload location. Ignoring the precompiled GSP.");
-                }
-                // remove the precompiled version from caches & mapping
-                precompiledCache.remove(uri);
-                groovyPageLocator.removePrecompiledPage(uri);
-                
-                return createTemplateForUri(uri);
+        return new GroovyPageTemplate(meta);
+    }
+
+    private GroovyPageMetaInfo initializeCompiledMetaInfo(GroovyPageMetaInfo meta) {
+        meta.initializeOnDemand(new GroovyPageMetaInfo.GroovyPageMetaInfoInitializer() {
+            public void initialize(GroovyPageMetaInfo metaInfo) {
+                metaInfo.setGrailsApplication(grailsApplication);
+                metaInfo.setJspTagLibraryResolver(jspTagLibraryResolver);
+                metaInfo.setTagLibraryLookup(tagLibraryLookup);
+                metaInfo.initialize();
+                GroovyPagesMetaUtils.registerMethodMissingForGSP(metaInfo.getPageClass(), tagLibraryLookup);
             }
-            return new GroovyPageTemplate(meta);
-        }
-        return null;
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private GroovyPageMetaInfo loadPrecompiledGsp(Class gspClass) {
-        GroovyPageMetaInfo meta = null;
-        if (gspClass != null) {
-            meta = createPreCompiledGroovyPageMetaInfo(gspClass);
-        }
-        return meta;
-    }
-
-    private GroovyPageMetaInfo createPreCompiledGroovyPageMetaInfo(Class<GroovyPage> gspClass) {
-        GroovyPageMetaInfo meta;
-        meta = new GroovyPageMetaInfo(gspClass);
-        meta.setGrailsApplication(grailsApplication);
-        meta.setJspTagLibraryResolver(jspTagLibraryResolver);
-        meta.setTagLibraryLookup(tagLibraryLookup);
-        meta.initialize();
-        GroovyPagesMetaUtils.registerMethodMissingForGSP(gspClass, tagLibraryLookup);
+        });
         return meta;
     }
 
@@ -340,37 +312,46 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     public Template createTemplateForUri(String[] uris)  {
+        GroovyPageScriptSource scriptSource = findScriptSource(uris);
+
+        if (scriptSource != null) {
+            return createTemplate(scriptSource);
+        }
+        return null;
+    }
+
+    public GroovyPageScriptSource findScriptSource(String uri) {
+        return findScriptSource(new String[]{uri});
+    }
+
+    public GroovyPageScriptSource findScriptSource(String[] uris) {
         GroovyPageScriptSource scriptSource = null;
 
         for (String uri : uris) {
             scriptSource = groovyPageLocator.findPage(uri);
             if (scriptSource != null) break;
         }
-
-        if(scriptSource!=null) {
-        	return createTemplate(scriptSource);
-        } else {
-        	return null;
-        }
+        return scriptSource;
     }
 
-	public Template createTemplate(ScriptSource scriptSource) {
-		if (scriptSource instanceof ResourceScriptSource) {
-			ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
+    public Template createTemplate(ScriptSource scriptSource) {
+        if (scriptSource instanceof GroovyPageCompiledScriptSource) {
+            // handle pre-compiled
+            return createTemplateFromPrecompiled((GroovyPageCompiledScriptSource) scriptSource);
+        }
+
+        if (scriptSource instanceof ResourceScriptSource) {
+            ResourceScriptSource resourceSource = (ResourceScriptSource) scriptSource;
             Resource resource = resourceSource.getResource();
             return createTemplate(resource, true);
-        }  else if (scriptSource instanceof GroovyPageCompiledScriptSource) {
-            // handle pre-compiled
-            GroovyPageCompiledScriptSource compiledSource = (GroovyPageCompiledScriptSource) scriptSource;
-            return createTemplateFromPrecompiled(compiledSource.getURI(),compiledSource.getCompiledClass());
-        } else {
-        	try {
-				return createTemplate(scriptSource.getScriptAsString(), scriptSource.suggestedClassName());
-			} catch (IOException e) {
-				throw new RuntimeException("IOException in createTemplate", e);
-			}
         }
-	}
+
+        try {
+            return createTemplate(scriptSource.getScriptAsString(), scriptSource.suggestedClassName());
+        } catch (IOException e) {
+            throw new RuntimeException("IOException in createTemplate", e);
+        }
+    }
 
     /**
      * Creates a Template using the given text for the Template and the given name. The name
@@ -381,7 +362,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      *
      * @return The Template instance
      * @throws CompilationFailedException
-     * @throws java.io.IOException Thrown if an IO exception occurs creating the Template
+     * @throws IOException Thrown if an IO exception occurs creating the Template
      */
     public Template createTemplate(String txt, String pageName) throws IOException {
         Assert.hasLength(txt, "Argument [txt] cannot be null or blank");
@@ -561,7 +542,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         try {
             String encoding = GroovyPageParser.DEFAULT_ENCODING;
             if (grailsApplication != null) {
-            	Map<String,Object> config = grailsApplication.getFlatConfig();
+                Map<String,Object> config = grailsApplication.getFlatConfig();
                 Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
                     encoding = gspEnc.toString();
@@ -669,7 +650,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             throw new GroovyPagesException("IO exception parsing script ["+ relativePageName + "]: " + e.getMessage(), e);
         }
         GroovyPagesMetaUtils.registerMethodMissingForGSP(scriptClass, tagLibraryLookup);
-        
+
         return scriptClass;
     }
 
@@ -820,7 +801,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      */
     public void clearPageCache() {
         pageCache.clear();
-        precompiledCache.clear();
     }
 
     public boolean isCacheResources() {

@@ -15,10 +15,7 @@
 package org.codehaus.groovy.grails.web.mapping.filter
 
 import grails.util.GrailsWebUtil
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.mapping.AbstractGrailsMappingTests
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
@@ -145,6 +142,7 @@ mappings {
 
         def app = creategGrailsApplication()
         app.initialise()
+        app.getControllerClass('blogs.BlogController').initialize()
 
         appCtx.registerMockBean("grailsApplication", app)
 
@@ -176,6 +174,8 @@ mappings {
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
+        app.getControllerClass('NoIndexController').initialize()
+        app.getControllerClass('OtherController').initialize()
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
@@ -220,6 +220,7 @@ class IndexAndActionController {
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
+        app.getControllerClass('IndexAndActionController').initialize()
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 
@@ -311,6 +312,7 @@ class BlogController {
         app.initialise()
 
         appCtx.registerMockBean("grailsApplication", app)
+        app.getControllerClass('blogs.BlogController').initialize()
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
 

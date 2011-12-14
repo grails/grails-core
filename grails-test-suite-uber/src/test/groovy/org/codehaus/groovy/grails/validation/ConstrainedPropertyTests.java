@@ -217,26 +217,26 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNull(cp.getMin());
 
         // validate that getMin returns the correct value when the min constraint is defined for the property (but no range constraint is defined)
-        cp.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new Double(123.45));
-        assertEquals(new Double(123.45), cp.getMin());
+        cp.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, 123.45d);
+        assertEquals(123.45d, cp.getMin());
 
         // validate that getMin returns the correct value when the range constraint is defined for the property (but no min constraint is defined)
         cp = new ConstrainedProperty(TestClass.class, "testDouble", Double.class);
-        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(new Double(123.45), new Double(678.90)));
-        assertEquals(new Double(123.45), cp.getMin());
+        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(123.45d, 678.9d));
+        assertEquals(123.45d, cp.getMin());
 
         // validate that getMin returns the maximum of the min constraint and the lower bound of the range constraint
         //   1) validate where the lower bound of the range constraint is greater than the min constraint
         cp = new ConstrainedProperty(TestClass.class, "testDouble", Double.class);
-        cp.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new Double(1.23));
-        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(new Double(4.56), new Double(7.89)));
-        assertEquals(new Double(4.56), cp.getMin());
+        cp.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, 1.23d);
+        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(4.56d, 7.89d));
+        assertEquals(4.56d, cp.getMin());
 
         //   2) validate where the min constraint is greater than the lower bound of the range constraint
         cp = new ConstrainedProperty(TestClass.class, "testDouble", Double.class);
-        cp.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, new Double(4.56));
-        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(new Double(1.23), new Double(7.89)));
-        assertEquals(new Double(4.56), cp.getMin());
+        cp.applyConstraint(ConstrainedProperty.MIN_CONSTRAINT, 4.56d);
+        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(1.23d, 7.89d));
+        assertEquals(4.56d, cp.getMin());
     }
 
     public void testGetMinSize() {
@@ -245,7 +245,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNull(cp.getMinSize());
 
         // validate that getMinSize returns the correct value when the minSize constraint is defined for the property (but no size constraint is defined)
-        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(5));
+        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, 5);
         assertEquals(5, cp.getMinSize().intValue());
 
         // validate that getMinSize returns the correct value when the size constraint is defined for the property (but no minSize constraint is defined)
@@ -256,13 +256,13 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that getMinSize returns the maximum of the minSize constraint and the lower bound of the size constraint
         //   1) validate where the lower bound of the size constraint is greater than the minSize constraint
         cp = new ConstrainedProperty(getClass(), "testURL", String.class);
-        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(6));
+        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, 6);
         cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(11, 21));
         assertEquals(11, cp.getMinSize().intValue());
 
         //   2) validate where the minSize constraint is greater than the lower bound of the size constraint
         cp = new ConstrainedProperty(getClass(), "testURL", String.class);
-        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, new Integer(12));
+        cp.applyConstraint(ConstrainedProperty.MIN_SIZE_CONSTRAINT, 12);
         cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(9, 22));
         assertEquals(12, cp.getMinSize().intValue());
     }
@@ -273,26 +273,26 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNull(cp.getMax());
 
         // validate that getMax returns the correct value when the max constraint is defined for the property (but no range constraint is defined)
-        cp.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new Double(123.45));
-        assertEquals(new Double(123.45), cp.getMax());
+        cp.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, 123.45d);
+        assertEquals(123.45d, cp.getMax());
 
         // validate that getMax returns the correct value when the range constraint is defined for the property (but no max constraint is defined)
         cp = new ConstrainedProperty(TestClass.class, "testDouble", Double.class);
-        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(new Double(123.45), new Double(678.90)));
-        assertEquals(new Double(678.90), cp.getMax());
+        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(123.45d, 678.9d));
+        assertEquals(678.9d, cp.getMax());
 
         // validate that getMax returns the minimum of the max constraint and the upper bound of the range constraint
         //   1) validate where the upper bound of the range constraint is less than the max constraint
         cp = new ConstrainedProperty(TestClass.class, "testDouble", Double.class);
-        cp.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new Double(7.89));
-        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(new Double(1.23), new Double(4.56)));
-        assertEquals(new Double(4.56), cp.getMax());
+        cp.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, 7.89d);
+        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(1.23d, 4.56d));
+        assertEquals(4.56d, cp.getMax());
 
         //   2) validate where the max constraint is less than the upper bound of the range constraint
         cp = new ConstrainedProperty(TestClass.class, "testDouble", Double.class);
-        cp.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, new Double(4.56));
-        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(new Double(1.23), new Double(7.89)));
-        assertEquals(new Double(4.56), cp.getMax());
+        cp.applyConstraint(ConstrainedProperty.MAX_CONSTRAINT, 4.56d);
+        cp.applyConstraint(ConstrainedProperty.RANGE_CONSTRAINT, new ObjectRange(1.23d, 7.89d));
+        assertEquals(4.56d, cp.getMax());
     }
 
     public void testGetMaxSize() {
@@ -301,7 +301,7 @@ public class ConstrainedPropertyTests extends TestCase {
         assertNull(cp.getMaxSize());
 
         // validate that getMaxSize returns the correct value when the maxSize constraint is defined for the property (but no size constraint is defined)
-        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(5));
+        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 5);
         assertEquals(5, cp.getMaxSize().intValue());
 
         // validate that getMaxSize returns the correct value when the size constraint is defined for the property (but no maxSize constraint is defined)
@@ -312,13 +312,13 @@ public class ConstrainedPropertyTests extends TestCase {
         // validate that getMaxSize returns the minimum of the maxSize constraint and the upper bound of the size constraint
         //   1) validate where the upper bound of the size constraint is less than the maxSize constraint
         cp = new ConstrainedProperty(getClass(), "testURL", String.class);
-        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(29));
+        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 29);
         cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(11, 21));
         assertEquals(21, cp.getMaxSize().intValue());
 
         //   2) validate where the maxSize constraint is less than the upper bound of the size constraint
         cp = new ConstrainedProperty(getClass(), "testURL", String.class);
-        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, new Integer(12));
+        cp.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 12);
         cp.applyConstraint(ConstrainedProperty.SIZE_CONSTRAINT, new IntRange(9, 22));
         assertEquals(12, cp.getMaxSize().intValue());
     }

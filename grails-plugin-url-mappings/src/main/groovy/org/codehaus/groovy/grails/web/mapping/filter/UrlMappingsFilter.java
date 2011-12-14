@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
+import grails.util.Metadata;
 import grails.web.UrlConverter;
 
 import java.io.IOException;
@@ -53,6 +54,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.multipart.MultipartException;
@@ -71,6 +73,7 @@ import org.springframework.web.util.UrlPathHelper;
  */
 public class UrlMappingsFilter extends OncePerRequestFilter {
 
+    public static final boolean WAR_DEPLOYED = Metadata.getCurrent().isWarDeployed();
     private UrlPathHelper urlHelper = new UrlPathHelper();
     private static final Log LOG = LogFactory.getLog(UrlMappingsFilter.class);
     private static final String GSP_SUFFIX = ".gsp";
@@ -177,6 +180,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                             if (controller == null) {
                                 continue;
                             }
+
+                            webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
                         }
                     }
                     catch (Exception e) {
@@ -190,7 +195,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                     dispatched = true;
 
-                    checkForCompilationErrors(request);
+                    if (!WAR_DEPLOYED) {
+                        checkDevelopmentReloadingState(request);
+                    }
+
 
                     request = checkMultipart(request);
 
@@ -230,15 +238,15 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         List<String> excludePatterns = holder.getExcludePatterns();
         if (excludePatterns != null && excludePatterns.size() > 0) {
             for (String excludePattern : excludePatterns) {
-            	int wildcardLen = 0;
-            	if(excludePattern.endsWith("**")) {
-            		wildcardLen = 2;
-            	} else if (excludePattern.endsWith("*")) {
-            		wildcardLen = 1;
-            	}
-            	if(wildcardLen > 0) {
-            		excludePattern = excludePattern.substring(0,excludePattern.length() - wildcardLen); 
-            	}
+                int wildcardLen = 0;
+                if (excludePattern.endsWith("**")) {
+                    wildcardLen = 2;
+                } else if (excludePattern.endsWith("*")) {
+                    wildcardLen = 1;
+                }
+                if (wildcardLen > 0) {
+                    excludePattern = excludePattern.substring(0,excludePattern.length() - wildcardLen);
+                }
                 if ((wildcardLen==0 && uri.equals(excludePattern)) || (wildcardLen > 0 && uri.startsWith(excludePattern))) {
                     isExcluded = true;
                     break;
@@ -272,15 +280,22 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
        return controllers == null || controllers.length == 0;
     }
 
-    private void checkForCompilationErrors(HttpServletRequest request) {
-        if (application.isWarDeployed()) {
-            return;
+    private void checkDevelopmentReloadingState(HttpServletRequest request) {
+        while(GrailsProjectWatcher.isReloadInProgress()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // ignore
+            }
         }
-
         if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
         MultipleCompilationErrorsException compilationError = GrailsProjectWatcher.getCurrentCompilationError();
         if (compilationError != null) {
             throw compilationError;
+        }
+        Throwable currentReloadError = GrailsProjectWatcher.getCurrentReloadError();
+        if(currentReloadError != null) {
+            throw new RuntimeException(currentReloadError);
         }
     }
 

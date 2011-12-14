@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
  */
 public class GrailsConsoleAppender extends AppenderSkeleton {
 
+    public static final String MESSAGE_PREFIX = "Message: ";
     GrailsConsole console = GrailsConsole.getInstance();
     private StackTracePrinter stackTracePrinter;
     private StackTraceFilterer stackTraceFilterer;
@@ -78,6 +79,7 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
             if (throwableInformation != null) {
                 Throwable throwable = throwableInformation.getThrowable();
                 if (throwable != null) {
+                    b.append(MESSAGE_PREFIX).append(throwable.getMessage()).append(Layout.LINE_SEP);
                     stackTraceFilterer.filter(throwable, true);
                     b.append(stackTracePrinter.prettyPrint(throwable));
                 }

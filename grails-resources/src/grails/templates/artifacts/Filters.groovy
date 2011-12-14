@@ -5,10 +5,10 @@
             before = {
 
             }
-            after = {
+            after = { Map model ->
 
             }
-            afterView = {
+            afterView = { Exception e ->
 
             }
         }

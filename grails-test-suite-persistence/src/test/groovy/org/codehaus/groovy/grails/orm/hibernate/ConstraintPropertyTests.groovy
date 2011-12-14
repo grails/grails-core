@@ -10,7 +10,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 class ConstraintPropertyTests  extends AbstractGrailsHibernateTests {
 
     void testConstraintsProperty() {
-        def bookClass = ga.getDomainClass("Book").clazz
+        def bookClass = ConstrainedBook
 
         def constraints = bookClass.constraints
 
@@ -18,24 +18,28 @@ class ConstraintPropertyTests  extends AbstractGrailsHibernateTests {
 
         assertEquals 250, constraints.name.maxSize
 
-        def b = bookClass.newInstance()
+        def b = new ConstrainedBook()
 
         constraints = b.constraints
         assertTrue constraints instanceof Map
         assertEquals 250, constraints.name.maxSize
     }
 
-    void onSetUp() {
-        gcl.parseClass '''
-class Book {
-    Long id
-    Long version
+    @Override
+    protected getDomainClasses() {
+        return [ConstrainedBook]
+    }
+
+
+}
+import grails.persistence.*
+
+@Entity
+class ConstrainedBook {
     String name
+    String load
     static constraints = {
         name(maxSize:250)
-        nonExistentProperty nullable: true // test that this is ignored
-    }
-}
-'''
+        load blank:false // property with the same name as a static method
     }
 }

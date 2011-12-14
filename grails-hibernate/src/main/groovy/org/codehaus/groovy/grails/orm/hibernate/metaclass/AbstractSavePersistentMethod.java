@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.validation.AbstractPersistentConstraint;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
@@ -99,7 +100,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
               ClassLoader classLoader, GrailsApplication application,
-              GrailsDomainClass domainClass, HibernateDatastore datastore) {
+              @SuppressWarnings("unused") GrailsDomainClass domainClass, HibernateDatastore datastore) {
         super(pattern, sessionFactory, classLoader, application);
 
         this.datastore = datastore;
@@ -157,11 +158,18 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                 if (argsMap != null && argsMap.containsKey(ARGUMENT_DEEP_VALIDATE)) {
                     deepValidate = GrailsClassUtils.getBooleanFromMap(ARGUMENT_DEEP_VALIDATE, argsMap);
                 }
-                if (deepValidate && (validator instanceof CascadingValidator)) {
-                    ((CascadingValidator)validator).validate(target, errors, deepValidate);
+
+                AbstractPersistentConstraint.sessionFactory.set(datastore.getSessionFactory());
+                try {
+                    if (deepValidate && (validator instanceof CascadingValidator)) {
+                        ((CascadingValidator)validator).validate(target, errors, deepValidate);
+                    }
+                    else {
+                        validator.validate(target,errors);
+                    }
                 }
-                else {
-                    validator.validate(target,errors);
+                finally {
+                    AbstractPersistentConstraint.sessionFactory.remove();
                 }
 
                 if (errors.hasErrors()) {

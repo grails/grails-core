@@ -20,8 +20,9 @@ import spock.lang.Specification
 
 class ControllerActionTransformerCommandObjectSpec extends Specification {
 
-    static controllerClass
-    def controller
+    static testControllerClass
+    static subclassControllerClass
+    def testController
 
     void setupSpec() {
         def gcl = new GrailsAwareClassLoader()
@@ -38,7 +39,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                     }
                 }
         gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
-        controllerClass = gcl.parseClass('''
+        testControllerClass = gcl.parseClass('''
         class TestController {
 
             def closureAction = { PersonCommand p ->
@@ -107,16 +108,38 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         class DateComamndObject {
             Date birthday
         }
+        abstract class MyAbstractController {
+            def index = {
+                [name: 'Abstract Parent Controller']
+            }
+        }
+        class SubClassController extends MyAbstractController {
+            def index = {
+                [name: 'Subclass Controller']
+            }
+        }
         ''')
+
+        // Make sure this parent controller is compiled before the subclass.  This is relevant to GRAILS-8268
+        gcl.parseClass('''
+        abstract class MyAbstractController {
+            def index = {
+                [name: 'Abstract Parent Controller']
+            }
+        }
+''')
+        subclassControllerClass = gcl.parseClass('''
+        class SubClassController extends MyAbstractController {
+            def index = {
+                [name: 'Subclass Controller']
+            }
+        }
+''')
     }
 
     def setup() {
         initRequest()
-        controller = controllerClass.newInstance()
-    }
-
-    def cleanup() {
-        ContextLoader.@currentContext = null
+        testController = testControllerClass.newInstance()
     }
 
     def initRequest() {
@@ -132,7 +155,6 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
         beans.registerBeans(appCtx)
-        ContextLoader.@currentContext = appCtx
 
         def request = new MockHttpServletRequest();
         def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -143,8 +165,8 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
     void "Test binding to multiple command objects"() {
         when:
-            controller.params.name = 'Emerson'
-            def model = controller.methodActionWithMultipleCommandObjects()
+            testController.params.name = 'Emerson'
+            def model = testController.methodActionWithMultipleCommandObjects()
 
         then:
             model.person
@@ -153,8 +175,8 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.person.name == 'Emerson'
 
         when:
-            controller.params.name = 'Emerson'
-            model = controller.closureActionWithMultipleCommandObjects()
+            testController.params.name = 'Emerson'
+            model = testController.closureActionWithMultipleCommandObjects()
 
         then:
             model.person
@@ -165,9 +187,9 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
     void "Test binding to multiple command objects with param name prefixes"() {
         when:
-            controller.params.person = [name: 'Emerson']
-            controller.params.artist = [name: 'Lake']
-            def model = controller.methodActionWithMultipleCommandObjects()
+            testController.params.person = [name: 'Emerson']
+            testController.params.artist = [name: 'Lake']
+            def model = testController.methodActionWithMultipleCommandObjects()
 
         then:
             model.person
@@ -176,9 +198,9 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.person.name == 'Emerson'
 
         when:
-            controller.params.person = [name: 'Emerson']
-            controller.params.artist = [name: 'Lake']
-            model = controller.closureActionWithMultipleCommandObjects()
+            testController.params.person = [name: 'Emerson']
+            testController.params.artist = [name: 'Lake']
+            model = testController.closureActionWithMultipleCommandObjects()
 
         then:
             model.person
@@ -189,7 +211,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
     void "Test clearErrors"() {
         when:
-        def model = controller.methodActionWithArtist()
+        def model = testController.methodActionWithArtist()
 
         then:
             model.artist
@@ -207,7 +229,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
     void "Test nullability"() {
         when:
-            def model = controller.methodActionWithArtist()
+            def model = testController.methodActionWithArtist()
             def nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
 
         then:
@@ -217,7 +239,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             'artistCommand.name.nullable.error' in nameErrorCodes
 
         when:
-            model = controller.closureActionWithArtist()
+            model = testController.closureActionWithArtist()
             nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
 
         then:
@@ -227,48 +249,71 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             'artistCommand.name.nullable.error' in nameErrorCodes
     }
 
+    void 'Test constraints property'() {
+        when:
+            def model = testController.methodAction()
+            def person = model.person
+            def constrainedProperties = person.constraints
+            def nameConstrainedProperty = constrainedProperties.name
+            def matchesProperty = nameConstrainedProperty.matches
+
+        then:
+            /[A-Z]+/ == matchesProperty
+    }
+
     void "Test command object gets autowired"() {
         when:
-            def model = controller.methodAction()
+            def model = testController.methodAction()
 
         then:
             model.person.theAnswer == 42
 
         when:
-            model = controller.closureAction()
+            model = testController.closureAction()
 
         then:
             model.person.theAnswer == 42
     }
 
+    void 'Test subscript operator on command object errors'() {
+        when:
+            testController.params.name = 'Maynard'
+            def model = testController.closureAction()
+
+        then:
+            model.person.hasErrors()
+            model.person.name == 'Maynard'
+            'matches.invalid.name' in model.person.errors['name'].codes
+    }
+    
     void "Test validation"() {
         when:
-            controller.params.name = 'JFK'
-            def model = controller.methodAction()
+            testController.params.name = 'JFK'
+            def model = testController.methodAction()
 
         then:
             !model.person.hasErrors()
             model.person.name == 'JFK'
 
         when:
-            controller.params.name = 'JFK'
-            model = controller.closureAction()
+            testController.params.name = 'JFK'
+            model = testController.closureAction()
 
         then:
             !model.person.hasErrors()
             model.person.name == 'JFK'
 
         when:
-            controller.params.name = 'Maynard'
-            model = controller.closureAction()
+            testController.params.name = 'Maynard'
+            model = testController.closureAction()
 
         then:
             model.person.hasErrors()
             model.person.name == 'Maynard'
 
         when:
-            controller.params.name = 'Maynard'
-            model = controller.methodAction()
+            testController.params.name = 'Maynard'
+            model = testController.methodAction()
 
         then:
             model.person.hasErrors()
@@ -278,9 +323,9 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
     void "Test validation with inherited constraints"() {
 
         when:
-            controller.params.name = 'Emerson'
-            controller.params.bandName = 'Emerson Lake and Palmer'
-            def model = controller.closureActionWithArtistSubclass()
+            testController.params.name = 'Emerson'
+            testController.params.bandName = 'Emerson Lake and Palmer'
+            def model = testController.closureActionWithArtistSubclass()
 
         then:
             model.artist
@@ -289,9 +334,9 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             !model.artist.hasErrors()
 
         when:
-            controller.params.name = 'Emerson'
-            controller.params.bandName = 'Emerson Lake and Palmer'
-            model = controller.methodActionWithArtistSubclass()
+            testController.params.name = 'Emerson'
+            testController.params.bandName = 'Emerson Lake and Palmer'
+            model = testController.methodActionWithArtistSubclass()
 
         then:
             model.artist
@@ -300,8 +345,8 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             !model.artist.hasErrors()
 
         when:
-            controller.params.clear()
-            model = controller.closureActionWithArtistSubclass()
+            testController.params.clear()
+            model = testController.closureActionWithArtistSubclass()
 
         then:
             model.artist
@@ -309,7 +354,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.artist.errors.errorCount == 2
 
         when:
-            model = controller.methodActionWithArtistSubclass()
+            model = testController.methodActionWithArtistSubclass()
 
         then:
             model.artist
@@ -319,32 +364,32 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
     void "Test validation with shared constraints"() {
         when:
-            controller.params.name = 'Emerson'
-            def model = controller.closureActionWithArtist()
+            testController.params.name = 'Emerson'
+            def model = testController.closureActionWithArtist()
 
         then:
             model.artist
             !model.artist.hasErrors()
 
         when:
-            controller.params.name = 'Emerson'
-            model = controller.methodActionWithArtist()
+            testController.params.name = 'Emerson'
+            model = testController.methodActionWithArtist()
 
         then:
             model.artist
             !model.artist.hasErrors()
 
         when:
-            controller.params.name = 'Hendrix'
-            model = controller.closureActionWithArtist()
+            testController.params.name = 'Hendrix'
+            model = testController.closureActionWithArtist()
 
         then:
             model.artist
             model.artist.hasErrors()
 
         when:
-            controller.params.name = 'Hendrix'
-            model = controller.methodActionWithArtist()
+            testController.params.name = 'Hendrix'
+            model = testController.methodActionWithArtist()
 
         then:
             model.artist
@@ -361,11 +406,11 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             def expectedDate = expectedCalendar.time
 
         when:
-            controller.params.birthday = "struct"
-            controller.params.birthday_day = "03"
-            controller.params.birthday_month = "05"
-            controller.params.birthday_year = "1973"
-            def model = controller.closureActionWithDate()
+            testController.params.birthday = "struct"
+            testController.params.birthday_day = "03"
+            testController.params.birthday_month = "05"
+            testController.params.birthday_year = "1973"
+            def model = testController.closureActionWithDate()
             def birthday = model.command?.birthday
 
         then:
@@ -375,11 +420,11 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             expectedDate == birthday
 
         when:
-            controller.params.birthday = "struct"
-            controller.params.birthday_day = "03"
-            controller.params.birthday_month = "05"
-            controller.params.birthday_year = "1973"
-            model = controller.methodActionWithDate()
+            testController.params.birthday = "struct"
+            testController.params.birthday_day = "03"
+            testController.params.birthday_month = "05"
+            testController.params.birthday_year = "1973"
+            model = testController.methodActionWithDate()
             birthday = model.command?.birthday
 
         then:
@@ -389,8 +434,18 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             expectedDate == birthday
     }
 
+    void 'Test overriding closure actions in subclass'() {
+        given:
+            def subclassController = subclassControllerClass.newInstance()
+
+        when:
+            def model = subclassController.index()
+
+        then:
+            'Subclass Controller' == model.name
+    }
+
     def cleanupSpec() {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
-

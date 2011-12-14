@@ -18,9 +18,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 
-public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
+public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     private PrintWriter destination;
     private DestinationFactory factory;
@@ -54,15 +54,6 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriter {
     @Override
     public Writer getOut() {
         return getDestination();
-    }
-
-    @Override
-    public Writer getFinalTarget() {
-        if (getDestination() instanceof GrailsPrintWriter) {
-            return ((GrailsPrintWriter)getDestination()).getOut();
-        }
-
-        return getOut();
     }
 
     private PrintWriter getDestination() {

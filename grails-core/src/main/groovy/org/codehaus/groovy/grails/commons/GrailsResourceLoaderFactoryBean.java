@@ -57,23 +57,25 @@ public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResour
 
     public void afterPropertiesSet() throws Exception {
         resourceLoader = GrailsResourceLoaderHolder.getResourceLoader();
-        if (resourceLoader == null) {
-            if (Environment.getCurrent().isReloadEnabled()) {
-                ResourcePatternResolver resolver = new  PathMatchingResourcePatternResolver();
-                try {
-                    Resource[] resources = resolver.getResources("file:" +
-                            Environment.getCurrent().getReloadLocation() + "/grails-app/**/*.groovy");
-                    resourceLoader = new GrailsResourceLoader(resources);
-                }
-                catch (IOException e) {
-                    createDefaultInternal();
-                }
+        if (resourceLoader != null) {
+            return;
+        }
+
+        if (Environment.getCurrent().isReloadEnabled()) {
+            ResourcePatternResolver resolver = new  PathMatchingResourcePatternResolver();
+            try {
+                Resource[] resources = resolver.getResources("file:" +
+                        Environment.getCurrent().getReloadLocation() + "/grails-app/**/*.groovy");
+                resourceLoader = new GrailsResourceLoader(resources);
             }
-            else {
+            catch (IOException e) {
                 createDefaultInternal();
             }
-            GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
         }
+        else {
+            createDefaultInternal();
+        }
+        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader);
     }
 
     private void createDefaultInternal() {

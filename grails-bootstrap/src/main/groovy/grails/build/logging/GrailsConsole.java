@@ -56,6 +56,7 @@ public class GrailsConsole {
     public static final String SPACE = " ";
     public static final String ERROR = "Error";
     public static final String WARNING = "Warning";
+    public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     private StringBuilder maxIndicatorString;
     private int cursorMove;
@@ -506,12 +507,11 @@ public class GrailsConsole {
         }
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
-        if (message != null) {
-            ps.println(message);
+        message = message != null ? message : error.getMessage();
+        if(!isVerbose()) {
+            message = message + STACKTRACE_FILTERED_MESSAGE;
         }
-        else {
-            ps.println(error.getMessage());
-        }
+        ps.println(message);
         error.printStackTrace(ps);
         error(sw.toString());
     }
@@ -688,7 +688,7 @@ public class GrailsConsole {
     }
 
     private Ansi erasePreviousLine(String categoryName) {
-        int cursorMove = this.cursorMove;
+        @SuppressWarnings("hiding") int cursorMove = this.cursorMove;
         if(userInputActive) cursorMove++;
         if (cursorMove > 0) {
             int moveLeftLength = categoryName.length() + lastMessage.length();

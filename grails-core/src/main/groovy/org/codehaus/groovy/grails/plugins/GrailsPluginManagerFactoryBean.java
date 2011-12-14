@@ -76,7 +76,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
                 GPathResult plugins = (GPathResult) root.getProperty("plugins");
                 GPathResult nodes = (GPathResult) plugins.getProperty("plugin");
 
-                for (int i = 0; i < nodes.size(); i++) {
+                for (int i = 0, count = nodes.size(); i < count; i++) {
                     GPathResult node = (GPathResult) nodes.getAt(i);
                     final String pluginName = node.text();
                     Class<?> clazz;
@@ -84,7 +84,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
                         clazz = classLoader.loadClass(pluginName);
                     }
                     else {
-                        clazz = Class.forName(pluginName,true,classLoader);
+                        clazz = Class.forName(pluginName, true, classLoader);
                     }
                     if (!classes.contains(clazz)) {
                         classes.add(clazz);
@@ -99,7 +99,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
 
             Class<?>[] loadedPlugins = classes.toArray(new Class[classes.size()]);
 
-            pluginManager = new     DefaultGrailsPluginManager(loadedPlugins, application);
+            pluginManager = new DefaultGrailsPluginManager(loadedPlugins, application);
             pluginManager.setApplicationContext(applicationContext);
             PluginManagerHolder.setPluginManager(pluginManager);
             pluginManager.loadPlugins();

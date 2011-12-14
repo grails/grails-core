@@ -35,8 +35,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-import org.springframework.orm.hibernate3.SessionFactoryBuilder;
 
+import javax.naming.NameNotFoundException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -131,9 +131,9 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     @Override
-    public SessionFactoryBuilder setClassLoader(ClassLoader beanClassLoader) {
+    public void setBeanClassLoader(ClassLoader beanClassLoader) {
         this.classLoader = beanClassLoader;
-        return super.setClassLoader(beanClassLoader);
+        super.setBeanClassLoader(beanClassLoader);
     }
 
     @Override
@@ -149,9 +149,9 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     @Override
-    protected SessionFactory newSessionFactory() throws HibernateException {
+    protected SessionFactory newSessionFactory(Configuration configuration) throws HibernateException {
         try {
-            SessionFactory sf = super.newSessionFactory();
+            SessionFactory sf = super.newSessionFactory(configuration);
 
             if (!grails.util.Environment.getCurrent().isReloadEnabled() || !proxyIfReloadEnabled) {
                 return sf;
@@ -199,23 +199,33 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     @Override
     public void destroy() throws HibernateException {
-        MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-        Map<?, ?> classMetaData = getSessionFactory().getAllClassMetadata();
-        for (Object o : classMetaData.values()) {
-            ClassMetadata classMetadata = (ClassMetadata) o;
-            Class<?> mappedClass = classMetadata.getMappedClass(EntityMode.POJO);
-            registry.removeMetaClass(mappedClass);
+        if(this.grailsApplication.isWarDeployed()) {
+            MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+            Map<?, ?> classMetaData = getSessionFactory().getAllClassMetadata();
+            for (Object o : classMetaData.values()) {
+                ClassMetadata classMetadata = (ClassMetadata) o;
+                Class<?> mappedClass = classMetadata.getMappedClass(EntityMode.POJO);
+                registry.removeMetaClass(mappedClass);
+            }
         }
-        super.destroy();
+
+        try {
+            super.destroy();
+        } catch (HibernateException e) {
+            if(e.getCause() instanceof NameNotFoundException) {
+                LOG.debug(e.getCause().getMessage(), e);
+            }
+            else {
+                throw e;
+            }
+        }
     }
 
     @Override
-    protected void postProcessConfiguration() throws HibernateException {
+    protected void postProcessConfiguration(Configuration config) throws HibernateException {
         if (hibernateEventListeners == null || hibernateEventListeners.getListenerMap() == null) {
             return;
         }
-
-        Configuration config = getConfiguration();
 
         EventListeners listeners = config.getEventListeners();
         Map<String,Object> listenerMap = hibernateEventListeners.getListenerMap();

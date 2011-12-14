@@ -61,58 +61,55 @@ public class HibernateQuery extends Query {
     private int aliasCount;
     private Map<String, CriteriaAndAlias> createdAssociationPaths = new HashMap<String, CriteriaAndAlias> ();
     private static final String ALIAS = "_alias";
-    private Field opField;
-
+    private static Field opField = ReflectionUtils.findField(SimpleExpression.class, "op");
 
     public HibernateQuery(Criteria criteria, HibernateSession session, PersistentEntity entity) {
         super(session, entity);
         this.criteria = criteria;
-        this.opField = ReflectionUtils.findField(SimpleExpression.class, "op");
         ReflectionUtils.makeAccessible(opField);
-
     }
 
     public HibernateQuery(Criteria subCriteria, HibernateSession session, PersistentEntity associatedEntity, String newAlias) {
         this(subCriteria, session, associatedEntity);
-        this.alias = newAlias;
+        alias = newAlias;
     }
 
     @Override
     public Query isEmpty(String property) {
-        org.hibernate.criterion.Criterion criterion = Restrictions.isEmpty(calculatePropertyName(property, this.alias));
+        org.hibernate.criterion.Criterion criterion = Restrictions.isEmpty(calculatePropertyName(property));
         addToCriteria(criterion);
         return this;
     }
 
     @Override
     public Query isNotEmpty(String property) {
-        addToCriteria(Restrictions.isNotEmpty(calculatePropertyName(property, this.alias)));
+        addToCriteria(Restrictions.isNotEmpty(calculatePropertyName(property)));
         return this;
     }
 
     @Override
     public Query isNull(String property) {
-        addToCriteria(Restrictions.isNull(calculatePropertyName(property, this.alias)));
+        addToCriteria(Restrictions.isNull(calculatePropertyName(property)));
         return this;
     }
 
     @Override
     public Query isNotNull(String property) {
-        addToCriteria(Restrictions.isNotNull(calculatePropertyName(property, this.alias)));
+        addToCriteria(Restrictions.isNotNull(calculatePropertyName(property)));
         return this;
     }
 
     @Override
     public void add(Criterion criterion) {
-        if(criterion instanceof FunctionCallingCriterion) {
+        if (criterion instanceof FunctionCallingCriterion) {
             org.hibernate.criterion.Criterion sqlRestriction = getRestrictionForFunctionCall((FunctionCallingCriterion) criterion, entity);
-            if(sqlRestriction != null) {
+            if (sqlRestriction != null) {
                 addToCriteria(sqlRestriction);
             }
         }
-        else if(criterion instanceof PropertyCriterion) {
+        else if (criterion instanceof PropertyCriterion) {
             PropertyCriterion pc = (PropertyCriterion) criterion;
-            if(pc.getValue() instanceof QueryableCriteria) {
+            if (pc.getValue() instanceof QueryableCriteria) {
                 DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) pc.getValue());
                 pc.setValue(hibernateDetachedCriteria);
             }
@@ -123,15 +120,17 @@ public class HibernateQuery extends Query {
         }
     }
 
-    org.hibernate.criterion.Criterion getRestrictionForFunctionCall(FunctionCallingCriterion criterion, PersistentEntity entity) {
-        org.hibernate.criterion.Criterion sqlRestriction;HibernateTemplate hibernateSession = (HibernateTemplate) this.session.getNativeInterface();
+    org.hibernate.criterion.Criterion getRestrictionForFunctionCall(FunctionCallingCriterion criterion, @SuppressWarnings("hiding") PersistentEntity entity) {
+        org.hibernate.criterion.Criterion sqlRestriction;HibernateTemplate hibernateSession = (HibernateTemplate)session.getNativeInterface();
 
         SessionFactory sessionFactory = hibernateSession.getSessionFactory();
         String property = criterion.getProperty();
-        PropertyCriterion propertyCriterion = criterion.getPropertyCriterion();
+        Criterion datastoreCriterion = criterion.getPropertyCriterion();
         PersistentProperty pp = entity.getPropertyByName(property);
 
-        if(pp == null) throw new InvalidDataAccessResourceUsageException("Cannot execute function defined in query ["+ criterion.getFunctionName()+"] on non-existent property ["+property+"] of ["+ this.entity.getJavaClass()+"]");
+        if (pp == null) throw new InvalidDataAccessResourceUsageException(
+             "Cannot execute function defined in query [" + criterion.getFunctionName() +
+             "] on non-existent property [" + property + "] of [" + entity.getJavaClass() + "]");
 
         String functionName = criterion.getFunctionName();
 
@@ -139,27 +138,30 @@ public class HibernateQuery extends Query {
         SessionFactoryImplementor impl = (SessionFactoryImplementor) sessionFactory;
         Dialect dialect = impl.getDialect();
         SQLFunction sqlFunction = dialect.getFunctions().get(functionName);
-        if(sqlFunction != null) {
+        if (sqlFunction != null) {
             TypeResolver typeResolver = impl.getTypeResolver();
             BasicType basic = typeResolver.basic(pp.getType().getName());
-            if(basic != null) {
+            if (basic != null && datastoreCriterion instanceof PropertyCriterion) {
 
-                final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(propertyCriterion, this.alias).toHibernateCriterion(this);
-                if(hibernateCriterion instanceof SimpleExpression) {
+                PropertyCriterion pc = (PropertyCriterion) datastoreCriterion;
+                final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(datastoreCriterion, alias).toHibernateCriterion(this);
+                if (hibernateCriterion instanceof SimpleExpression) {
                     SimpleExpression expr = (SimpleExpression) hibernateCriterion;
                     Object op = ReflectionUtils.getField(opField, expr);
                     PropertyMapping mapping = (PropertyMapping) impl.getEntityPersister(entity.getJavaClass().getName());
                     String[] columns;
-                    if(this.alias != null)
-                        columns = mapping.toColumns(this.alias, property);
+                    if (alias != null)
+                        columns = mapping.toColumns(alias, property);
                     else
                         columns = mapping.toColumns(property);
                     String root = sqlFunction.render(basic, Arrays.asList(columns), impl);
-                    Object value = propertyCriterion.getValue();
-                    if(value != null)
+                    Object value = pc.getValue();
+                    if (value != null) {
                         sqlRestriction = Restrictions.sqlRestriction(root + op + "?", value, typeResolver.basic(value.getClass().getName()));
-                    else
-                        sqlRestriction = Restrictions.sqlRestriction(root + op + "?", value, basic );
+                    }
+                    else {
+                        sqlRestriction = Restrictions.sqlRestriction(root + op + "?", value, basic);
+                    }
                 }
                 else {
                     throw new InvalidDataAccessResourceUsageException("Unsupported function ["+functionName+"] defined in query for property ["+property+"] with type ["+pp.getType()+"]");
@@ -179,19 +181,19 @@ public class HibernateQuery extends Query {
     public Junction disjunction() {
         final org.hibernate.criterion.Disjunction disjunction = Restrictions.disjunction();
         addToCriteria(disjunction);
-        return new HibernateJunction(disjunction, this.alias);
+        return new HibernateJunction(disjunction, alias);
     }
 
     @Override
     public Junction negation() {
         final org.hibernate.criterion.Disjunction disjunction = Restrictions.disjunction();
         addToCriteria(Restrictions.not(disjunction));
-        return new HibernateJunction(disjunction, this.alias);
+        return new HibernateJunction(disjunction, alias);
     }
 
     @Override
     public Query eq(String property, Object value) {
-        addToCriteria(Restrictions.eq(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.eq(calculatePropertyName(property), value));
         return this;
     }
 
@@ -203,7 +205,7 @@ public class HibernateQuery extends Query {
 
     @Override
     public Query gt(String property, Object value) {
-        addToCriteria(Restrictions.gt(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.gt(calculatePropertyName(property), value));
         return this;
     }
 
@@ -233,93 +235,94 @@ public class HibernateQuery extends Query {
 
     @Override
     public Query ge(String property, Object value) {
-        addToCriteria(Restrictions.ge(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.ge(calculatePropertyName(property), value));
         return this;
     }
 
     @Override
     public Query le(String property, Object value) {
-        addToCriteria(Restrictions.le(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.le(calculatePropertyName(property), value));
         return this;
     }
 
     @Override
     public Query gte(String property, Object value) {
-        addToCriteria(Restrictions.ge(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.ge(calculatePropertyName(property), value));
         return this;
     }
 
     @Override
     public Query lte(String property, Object value) {
-        addToCriteria(Restrictions.le(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.le(calculatePropertyName(property), value));
         return this;
     }
 
     @Override
     public Query lt(String property, Object value) {
-        addToCriteria(Restrictions.lt(calculatePropertyName(property, this.alias), value));
+        addToCriteria(Restrictions.lt(calculatePropertyName(property), value));
         return this;
     }
 
     @Override
     public Query in(String property, List values) {
-        addToCriteria(Restrictions.in(calculatePropertyName(property, this.alias), values));
+        addToCriteria(Restrictions.in(calculatePropertyName(property), values));
         return this;
     }
 
     @Override
     public Query between(String property, Object start, Object end) {
-        addToCriteria(Restrictions.between(calculatePropertyName(property, this.alias), start, end));
+        addToCriteria(Restrictions.between(calculatePropertyName(property), start, end));
         return this;
     }
 
     @Override
     public Query like(String property, String expr) {
-        addToCriteria(Restrictions.like(calculatePropertyName(property, this.alias), calculatePropertyName(expr, this.alias)));
+        addToCriteria(Restrictions.like(calculatePropertyName(property), calculatePropertyName(expr)));
         return this;
     }
 
     @Override
     public Query ilike(String property, String expr) {
-        addToCriteria(Restrictions.ilike(calculatePropertyName(property, this.alias), calculatePropertyName(expr, this.alias)));
+        addToCriteria(Restrictions.ilike(calculatePropertyName(property), calculatePropertyName(expr)));
         return this;
     }
 
     @Override
     public Query rlike(String property, String expr) {
-        addToCriteria(new RlikeExpression(calculatePropertyName(property, this.alias), calculatePropertyName(expr, this.alias)));
+        addToCriteria(new RlikeExpression(calculatePropertyName(property), calculatePropertyName(expr)));
         return this;
     }
 
     @Override
     public AssociationQuery createQuery(String associationName) {
-        final PersistentProperty property = entity.getPropertyByName(calculatePropertyName(associationName, this.alias));
+        final PersistentProperty property = entity.getPropertyByName(calculatePropertyName(associationName));
         if (property != null && (property instanceof Association)) {
-            String alias = generateAlias(associationName);
+            @SuppressWarnings("hiding") String alias = generateAlias(associationName);
             CriteriaAndAlias subCriteria = getOrCreateAlias(associationName, alias);
 
             Association association = (Association) property;
             return new HibernateAssociationQuery(subCriteria.criteria, (HibernateSession) getSession(), association.getAssociatedEntity(), association, alias);
         }
-        throw new InvalidDataAccessApiUsageException("Cannot query association [" + calculatePropertyName(associationName, this.alias) + "] of entity [" + entity + "]. Property is not an association!");
+        throw new InvalidDataAccessApiUsageException("Cannot query association [" + calculatePropertyName(associationName) + "] of entity [" + entity + "]. Property is not an association!");
     }
 
-    private CriteriaAndAlias getOrCreateAlias(String associationName, String alias) {
+    private CriteriaAndAlias getOrCreateAlias(String associationName, @SuppressWarnings("hiding") String alias) {
         CriteriaAndAlias subCriteria;
-        if(createdAssociationPaths.containsKey(associationName)) {
+        if (createdAssociationPaths.containsKey(associationName)) {
             subCriteria = createdAssociationPaths.get(associationName);
         }
         else {
             Criteria sc = criteria.createAlias(associationName, alias);
             subCriteria = new CriteriaAndAlias(sc, alias);
-            createdAssociationPaths.put(associationName,subCriteria );
+            createdAssociationPaths.put(associationName,subCriteria);
         }
         return subCriteria;
     }
 
     @Override
     public ProjectionList projections() {
-        hibernateProjectionList = new HibernateProjectionList();
+        if(hibernateProjectionList == null)
+            hibernateProjectionList = new HibernateProjectionList();
         return hibernateProjectionList;
     }
 
@@ -351,14 +354,23 @@ public class HibernateQuery extends Query {
     public Query order(Order order) {
         super.order(order);
         criteria.addOrder(order.getDirection() == Order.Direction.ASC ?
-                org.hibernate.criterion.Order.asc(calculatePropertyName(order.getProperty(), this.alias)) :
-                org.hibernate.criterion.Order.desc(calculatePropertyName(order.getProperty(), this.alias)));
+                org.hibernate.criterion.Order.asc(calculatePropertyName(order.getProperty())) :
+                org.hibernate.criterion.Order.desc(calculatePropertyName(order.getProperty())));
         return this;
     }
 
     @Override
     public List list() {
-        criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        int projectionLength = 0;
+        if (hibernateProjectionList != null) {
+            org.hibernate.criterion.ProjectionList projectionList = hibernateProjectionList.getHibernateProjectionList();
+            projectionLength = projectionList.getLength();
+            this.criteria.setProjection(projectionList);
+        }
+
+
+        if(projectionLength<2)
+            criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.list();
     }
 
@@ -370,7 +382,7 @@ public class HibernateQuery extends Query {
     @Override
     public Object singleResult() {
         if (hibernateProjectionList != null) {
-            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
+            criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
         }
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         return criteria.uniqueResult();
@@ -379,15 +391,11 @@ public class HibernateQuery extends Query {
     @SuppressWarnings("hiding")
     @Override
     protected List executeQuery(PersistentEntity entity, Junction criteria) {
-        if (hibernateProjectionList != null) {
-            this.criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
-        }
-        this.criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
-        return this.criteria.list();
+        return list();
     }
 
-    String handleAssociationQuery(Association<?> association, List<Criterion> criteriaList) {
-        String associationName = calculatePropertyName(association.getName(), this.alias);
+    String handleAssociationQuery(Association<?> association, @SuppressWarnings("unused") List<Criterion> criteriaList) {
+        String associationName = calculatePropertyName(association.getName());
         String newAlias = generateAlias(associationName);
         CriteriaAndAlias criteriaAndAlias = getOrCreateAlias(associationName, newAlias);
 
@@ -400,45 +408,38 @@ public class HibernateQuery extends Query {
         }
     }
 
-    private String calculatePropertyName(String property, String alias) {
+    private String calculatePropertyName(String property) {
         if (alias != null) {
             return alias + '.' + property;
-        } else {
-            return property;
         }
+        return property;
     }
 
     private String generateAlias(String associationName) {
-        return calculatePropertyName(associationName, this.alias) + calculatePropertyName(ALIAS, this.alias) + aliasCount++;
+        return calculatePropertyName(associationName) + calculatePropertyName(ALIAS) + aliasCount++;
     }
-
 
     private class HibernateJunction extends Junction {
 
         private org.hibernate.criterion.Junction hibernateJunction;
-        private String alias;
-
-        public HibernateJunction(org.hibernate.criterion.Junction junction) {
-            this.hibernateJunction = junction;
-        }
+        @SuppressWarnings("hiding") private String alias;
 
         public HibernateJunction(org.hibernate.criterion.Junction junction, String alias) {
-            this.hibernateJunction = junction;
+            hibernateJunction = junction;
             this.alias = alias;
         }
 
         @Override
         public Junction add(Criterion c) {
             if (c != null) {
-                if(c instanceof FunctionCallingCriterion) {
+                if (c instanceof FunctionCallingCriterion) {
                     org.hibernate.criterion.Criterion sqlRestriction = getRestrictionForFunctionCall((FunctionCallingCriterion) c, entity);
-                    if(sqlRestriction != null) {
+                    if (sqlRestriction != null) {
                         hibernateJunction.add(sqlRestriction);
                     }
                 }
                 else {
-
-                    HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(c, this.alias);
+                    HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(c, alias);
                     org.hibernate.criterion.Criterion criterion = adapter.toHibernateCriterion(HibernateQuery.this);
                     if (criterion != null) {
                         hibernateJunction.add(criterion);
@@ -458,14 +459,20 @@ public class HibernateQuery extends Query {
         }
 
         @Override
+        public ProjectionList add(Projection p) {
+            projectionList.add(new HibernateProjectionAdapter(p).toHibernateProjection());
+            return this;
+        }
+
+        @Override
         public org.grails.datastore.mapping.query.api.ProjectionList countDistinct(String property) {
-            projectionList.add(Projections.countDistinct(calculatePropertyName(property, HibernateQuery.this.alias)));
+            projectionList.add(Projections.countDistinct(calculatePropertyName(property)));
             return this;
         }
 
         @Override
         public org.grails.datastore.mapping.query.api.ProjectionList distinct(String property) {
-            projectionList.add(Projections.distinct(Projections.property(calculatePropertyName(property, HibernateQuery.this.alias))));
+            projectionList.add(Projections.distinct(Projections.property(calculatePropertyName(property))));
             return this;
         }
 
@@ -489,31 +496,31 @@ public class HibernateQuery extends Query {
 
         @Override
         public ProjectionList property(String name) {
-            projectionList.add(Projections.property(calculatePropertyName(name, HibernateQuery.this.alias)));
+            projectionList.add(Projections.property(calculatePropertyName(name)));
             return this;
         }
 
         @Override
         public ProjectionList sum(String name) {
-            projectionList.add(Projections.sum(calculatePropertyName(name, HibernateQuery.this.alias)));
+            projectionList.add(Projections.sum(calculatePropertyName(name)));
             return this;
         }
 
         @Override
         public ProjectionList min(String name) {
-            projectionList.add(Projections.min(calculatePropertyName(name, HibernateQuery.this.alias)));
+            projectionList.add(Projections.min(calculatePropertyName(name)));
             return this;
         }
 
         @Override
         public ProjectionList max(String name) {
-            projectionList.add(Projections.max(calculatePropertyName(name, HibernateQuery.this.alias)));
+            projectionList.add(Projections.max(calculatePropertyName(name)));
             return this;
         }
 
         @Override
         public ProjectionList avg(String name) {
-            projectionList.add(Projections.avg(calculatePropertyName(name, HibernateQuery.this.alias)));
+            projectionList.add(Projections.avg(calculatePropertyName(name)));
             return this;
         }
 
@@ -526,25 +533,25 @@ public class HibernateQuery extends Query {
 
     private class HibernateAssociationQuery extends AssociationQuery {
 
-        private String alias;
+        @SuppressWarnings("hiding") private String alias;
         private org.hibernate.criterion.Junction hibernateJunction;
         private Criteria assocationCriteria;
 
         public HibernateAssociationQuery(Criteria criteria, HibernateSession session, PersistentEntity associatedEntity, Association association, String alias) {
             super(session, associatedEntity, association);
             this.alias = alias;
-            this.assocationCriteria = criteria;
+            assocationCriteria = criteria;
         }
 
         @Override
         public Query isEmpty(String property) {
-            org.hibernate.criterion.Criterion criterion = Restrictions.isEmpty(calculatePropertyName(property, this.alias));
+            org.hibernate.criterion.Criterion criterion = Restrictions.isEmpty(calculatePropertyName(property));
             addToCriteria(criterion);
             return this;
         }
 
         private void addToCriteria(org.hibernate.criterion.Criterion criterion) {
-           if(hibernateJunction != null) {
+           if (hibernateJunction != null) {
                hibernateJunction.add(criterion);
            }
            else {
@@ -554,19 +561,19 @@ public class HibernateQuery extends Query {
 
         @Override
         public Query isNotEmpty(String property) {
-            addToCriteria(Restrictions.isNotEmpty(calculatePropertyName(property, this.alias)));
+            addToCriteria(Restrictions.isNotEmpty(calculatePropertyName(property)));
             return this;
         }
 
         @Override
         public Query isNull(String property) {
-            addToCriteria(Restrictions.isNull(calculatePropertyName(property, this.alias)));
+            addToCriteria(Restrictions.isNull(calculatePropertyName(property)));
             return this;
         }
 
         @Override
         public Query isNotNull(String property) {
-            addToCriteria(Restrictions.isNotNull(calculatePropertyName(property, this.alias)));
+            addToCriteria(Restrictions.isNotNull(calculatePropertyName(property)));
             return this;
         }
 
@@ -582,19 +589,19 @@ public class HibernateQuery extends Query {
         public Junction disjunction() {
             final org.hibernate.criterion.Disjunction disjunction = Restrictions.disjunction();
             addToCriteria(disjunction);
-            return new HibernateJunction(disjunction, this.alias);
+            return new HibernateJunction(disjunction, alias);
         }
 
         @Override
         public Junction negation() {
             final org.hibernate.criterion.Disjunction disjunction = Restrictions.disjunction();
             addToCriteria(Restrictions.not(disjunction));
-            return new HibernateJunction(disjunction, this.alias);
+            return new HibernateJunction(disjunction, alias);
         }
 
         @Override
         public Query eq(String property, Object value) {
-            addToCriteria(Restrictions.eq(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.eq(calculatePropertyName(property), value));
             return this;
         }
 
@@ -606,10 +613,9 @@ public class HibernateQuery extends Query {
 
         @Override
         public Query gt(String property, Object value) {
-            addToCriteria(Restrictions.gt(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.gt(calculatePropertyName(property), value));
             return this;
         }
-
 
         @Override
         public Query and(Criterion a, Criterion b) {
@@ -625,7 +631,6 @@ public class HibernateQuery extends Query {
             HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
             addToCriteria(Restrictions.or(aa.toHibernateCriterion(HibernateQuery.this), ab.toHibernateCriterion(HibernateQuery.this)));
             return this;
-
         }
 
         @Override
@@ -636,75 +641,71 @@ public class HibernateQuery extends Query {
 
         @Override
         public Query ge(String property, Object value) {
-            addToCriteria(Restrictions.ge(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.ge(calculatePropertyName(property), value));
             return this;
         }
 
         @Override
         public Query le(String property, Object value) {
-            addToCriteria(Restrictions.le(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.le(calculatePropertyName(property), value));
             return this;
         }
 
         @Override
         public Query gte(String property, Object value) {
-            addToCriteria(Restrictions.ge(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.ge(calculatePropertyName(property), value));
             return this;
         }
 
         @Override
         public Query lte(String property, Object value) {
-            addToCriteria(Restrictions.le(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.le(calculatePropertyName(property), value));
             return this;
         }
 
         @Override
         public Query lt(String property, Object value) {
-            addToCriteria(Restrictions.lt(calculatePropertyName(property, this.alias), value));
+            addToCriteria(Restrictions.lt(calculatePropertyName(property), value));
             return this;
         }
 
         @Override
         public Query in(String property, List values) {
-            addToCriteria(Restrictions.in(calculatePropertyName(property, this.alias), values));
+            addToCriteria(Restrictions.in(calculatePropertyName(property), values));
             return this;
         }
 
         @Override
         public Query between(String property, Object start, Object end) {
-            addToCriteria(Restrictions.between(calculatePropertyName(property, this.alias), start, end));
+            addToCriteria(Restrictions.between(calculatePropertyName(property), start, end));
             return this;
         }
 
         @Override
         public Query like(String property, String expr) {
-            addToCriteria(Restrictions.like(calculatePropertyName(property, this.alias), calculatePropertyName(expr, this.alias)));
+            addToCriteria(Restrictions.like(calculatePropertyName(property), calculatePropertyName(expr)));
             return this;
         }
 
         @Override
         public Query ilike(String property, String expr) {
-            addToCriteria(Restrictions.ilike(calculatePropertyName(property, this.alias), calculatePropertyName(expr, this.alias)));
+            addToCriteria(Restrictions.ilike(calculatePropertyName(property), calculatePropertyName(expr)));
             return this;
         }
 
         @Override
         public Query rlike(String property, String expr) {
-            addToCriteria(new RlikeExpression(calculatePropertyName(property, this.alias), calculatePropertyName(expr, this.alias)));
+            addToCriteria(new RlikeExpression(calculatePropertyName(property), calculatePropertyName(expr)));
             return this;
-        }
-
-        public void setJunction(org.hibernate.criterion.Junction hibernateJunction) {
-            this.hibernateJunction = hibernateJunction;
         }
     }
 
     private class CriteriaAndAlias {
-        private Criteria criteria;
-        private String alias;
+        @SuppressWarnings("hiding") private Criteria criteria;
+        @SuppressWarnings("hiding") private String alias;
 
         public CriteriaAndAlias(Criteria subCriteria, String alias) {
-            this.criteria = subCriteria;
+            criteria = subCriteria;
             this.alias = alias;
         }
     }

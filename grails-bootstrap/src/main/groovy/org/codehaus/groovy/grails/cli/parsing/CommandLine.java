@@ -32,7 +32,7 @@ public interface CommandLine {
     String STACKTRACE_ARGUMENT = "stacktrace";
     String AGENT_ARGUMENT = "reloading";
     String VERSION_ARGUMENT = "version";
-    String RESOLVE_DEPENDENCIES_ARGUMENT = "force-resolve";
+    String REFRESH_DEPENDENCIES_ARGUMENT = "refresh-dependencies";
     String HELP_ARGUMENT = "help";
     String NOANSI_ARGUMENT = "plain-output";
     String NON_INTERACTIVE_ARGUMENT = "non-interactive";
@@ -91,4 +91,8 @@ public interface CommandLine {
     String getRemainingArgsLineSeparated();
 
     Map<String, Object> getUndeclaredOptions();
+
+    String lookupEnvironmentForCommand();
+
+    void setCommand(String scriptName);
 }

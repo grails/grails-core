@@ -24,7 +24,7 @@ class YamlTocStrategySpec extends Specification {
                 intro:
                   title: Introduction
                   whatsNew:
-                    title: What's new in Grails 1.4?
+                    title: What's new in Grails 2.0?
                     devEnvFeatures: Development Environment Features
                     coreFeatures: Core Features
                     webFeatures: Web Features
@@ -47,7 +47,7 @@ class YamlTocStrategySpec extends Specification {
         toc.children[0].file == "intro.gdoc"
         toc.children[0].parent == toc
         toc.children[0].children*.name == ["whatsNew", "changes"]
-        toc.children[0].children*.title == ["What's new in Grails 1.4?", "Breaking Changes"]
+        toc.children[0].children*.title == ["What's new in Grails 2.0?", "Breaking Changes"]
         toc.children[0].children*.file == ["intro" + File.separatorChar + "whatsNew.gdoc", "intro" + File.separatorChar + "changes.gdoc"]
         toc.children[0].children[0].children[1].name == "coreFeatures"
         toc.children[0].children[0].children[1].title == "Core Features"

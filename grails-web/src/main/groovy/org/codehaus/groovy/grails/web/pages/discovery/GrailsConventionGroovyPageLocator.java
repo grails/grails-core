@@ -48,6 +48,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * @return The script source
      */
     public GroovyPageScriptSource findViewByPath(String uri) {
+        if(uri==null) return null;
         return findPage(uriService.getAbsoluteViewURI(uri));
     }
 
@@ -75,7 +76,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         return scriptSource;
     }
 
-    private String resolveViewFormat(String viewName) {
+    public static String resolveViewFormat(String viewName) {
         String format = lookupRequestFormat();
         if (format == null) {
             return viewName;
@@ -101,9 +102,9 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         String controllerName = getNameForController(controller);
         String viewNameWithFormat = resolveViewFormat(viewName);
 
-        GroovyPageScriptSource scriptSource = findResourceScriptSource(uriService.getViewURI(controllerName, viewNameWithFormat));
+        GroovyPageScriptSource scriptSource = findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
         if (scriptSource == null) {
-            scriptSource = findResourceScriptSource(uriService.getViewURI(controllerName, viewName));
+            scriptSource = findPage(uriService.getViewURI(controllerName, viewName));
         }
         if (scriptSource == null && pluginManager != null) {
             String pathToView = pluginManager.getPluginViewsPathForInstance(controller);
@@ -209,7 +210,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         return findPage(uriService.getAbsoluteTemplateURI(uri));
     }
 
-    private String lookupRequestFormat() {
+    static String lookupRequestFormat() {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest == null) {
             return null;

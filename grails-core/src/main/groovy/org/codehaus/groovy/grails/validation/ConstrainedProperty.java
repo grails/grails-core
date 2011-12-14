@@ -121,7 +121,7 @@ public class ConstrainedProperty {
     protected static final String TOOSMALL_SUFFIX = ".toosmall";
     protected static final String TOOSHORT_SUFFIX = ".tooshort";
 
-    protected static Map<String, Object> constraints = new HashMap<String, Object>();
+    protected static Map<String, List<Object>> constraints = new HashMap<String, List<Object>>();
     protected static final Map<String, String> DEFAULT_MESSAGES = new HashMap<String, String>();
 
     static {
@@ -141,22 +141,54 @@ public class ConstrainedProperty {
         DEFAULT_MESSAGES.put(DEFAULT_NULL_MESSAGE_CODE,DEFAULT_NULL_MESSAGE);
         DEFAULT_MESSAGES.put(DEFAULT_INVALID_VALIDATOR_MESSAGE_CODE, DEFAULT_INVALID_VALIDATOR_MESSAGE);
 
-        constraints.put(CREDIT_CARD_CONSTRAINT, CreditCardConstraint.class);
-        constraints.put(EMAIL_CONSTRAINT, EmailConstraint.class);
-        constraints.put(BLANK_CONSTRAINT, BlankConstraint.class);
-        constraints.put(RANGE_CONSTRAINT, RangeConstraint.class);
-        constraints.put(IN_LIST_CONSTRAINT, InListConstraint.class);
-        constraints.put(URL_CONSTRAINT, UrlConstraint.class);
-        constraints.put(SIZE_CONSTRAINT, SizeConstraint.class);
-        constraints.put(MATCHES_CONSTRAINT, MatchesConstraint.class);
-        constraints.put(MIN_CONSTRAINT, MinConstraint.class);
-        constraints.put(MAX_CONSTRAINT, MaxConstraint.class);
-        constraints.put(MAX_SIZE_CONSTRAINT, MaxSizeConstraint.class);
-        constraints.put(MIN_SIZE_CONSTRAINT, MinSizeConstraint.class);
-        constraints.put(SCALE_CONSTRAINT, ScaleConstraint.class);
-        constraints.put(NULLABLE_CONSTRAINT, NullableConstraint.class);
-        constraints.put(NOT_EQUAL_CONSTRAINT, NotEqualConstraint.class);
-        constraints.put(VALIDATOR_CONSTRAINT, ValidatorConstraint.class);
+        constraints.put(CREDIT_CARD_CONSTRAINT, new ArrayList<Object>() {{
+            add(CreditCardConstraint.class);
+        }});
+        constraints.put(EMAIL_CONSTRAINT, new ArrayList<Object>() {{
+            add(EmailConstraint.class);
+        }});
+        constraints.put(BLANK_CONSTRAINT, new ArrayList<Object>() {{
+            add(BlankConstraint.class);
+        }});
+        constraints.put(RANGE_CONSTRAINT, new ArrayList<Object>() {{
+            add(RangeConstraint.class);
+        }});
+        constraints.put(IN_LIST_CONSTRAINT, new ArrayList<Object>() {{
+            add(InListConstraint.class);
+        }});
+        constraints.put(URL_CONSTRAINT, new ArrayList<Object>() {{
+            add(UrlConstraint.class);
+        }});
+        constraints.put(SIZE_CONSTRAINT, new ArrayList<Object>() {{
+            add(SizeConstraint.class);
+        }});
+        constraints.put(MATCHES_CONSTRAINT, new ArrayList<Object>() {{
+            add(MatchesConstraint.class);
+        }});
+        constraints.put(MIN_CONSTRAINT, new ArrayList<Object>() {{
+            add(MinConstraint.class);
+        }});
+        constraints.put(MAX_CONSTRAINT, new ArrayList<Object>() {{
+            add(MaxConstraint.class);
+        }});
+        constraints.put(MAX_SIZE_CONSTRAINT, new ArrayList<Object>() {{
+            add(MaxSizeConstraint.class);
+        }});
+        constraints.put(MIN_SIZE_CONSTRAINT, new ArrayList<Object>() {{
+            add(MinSizeConstraint.class);
+        }});
+        constraints.put(SCALE_CONSTRAINT, new ArrayList<Object>() {{
+            add(ScaleConstraint.class);
+        }});
+        constraints.put(NULLABLE_CONSTRAINT, new ArrayList<Object>() {{
+            add(NullableConstraint.class);
+        }});
+        constraints.put(NOT_EQUAL_CONSTRAINT, new ArrayList<Object>() {{
+            add(NotEqualConstraint.class);
+        }});
+        constraints.put(VALIDATOR_CONSTRAINT, new ArrayList<Object>() {{
+            add(ValidatorConstraint.class);
+        }});
     }
 
     protected static final Log LOG = LogFactory.getLog(ConstrainedProperty.class);
@@ -197,6 +229,20 @@ public class ConstrainedProperty {
         bean = new BeanWrapperImpl(this);
     }
 
+    public static void removeConstraint(String name, Class constraintClass) {
+        Assert.hasLength(name, "Argument [name] cannot be null");
+
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.remove(constraintClass);
+    }
+
+    public static void removeConstraint(String name) {
+        Assert.hasLength(name, "Argument [name] cannot be null");
+
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.clear();
+    }
+
     public static void registerNewConstraint(String name, Class<?> constraintClass) {
         Assert.hasLength(name, "Argument [name] cannot be null");
         if (constraintClass == null || !Constraint.class.isAssignableFrom(constraintClass)) {
@@ -204,13 +250,24 @@ public class ConstrainedProperty {
                     "] is not a valid constraint");
         }
 
-        constraints.put(name, constraintClass);
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.add(constraintClass);
+    }
+
+    private static List<Object> getOrInitializeConstraint(String name) {
+        List<Object> objects = constraints.get(name);
+        if(objects == null) {
+            objects = new ArrayList<Object>();
+            constraints.put(name, objects);
+        }
+        return objects;
     }
 
     public static void registerNewConstraint(String name, ConstraintFactory factory) {
         Assert.hasLength(name, "Argument [name] cannot be null or blank");
         Assert.notNull(factory, "Argument [factory] cannot be null");
-        constraints.put(name, factory);
+        List<Object> objects = getOrInitializeConstraint(name);
+        objects.add(factory);
     }
 
     public static boolean hasRegisteredConstraint(String constraintName) {
@@ -667,7 +724,7 @@ public class ConstrainedProperty {
         if ((maxSizeConstraint != null) || (sizeConstraint != null)) {
             int maxSizeConstraintValue = maxSizeConstraint != null ? maxSizeConstraint.getMaxSize() : Integer.MAX_VALUE;
             int sizeConstraintHighValue = sizeConstraint != null ? sizeConstraint.getRange().getToInt() : Integer.MAX_VALUE;
-            maxSize = new Integer(Math.min(maxSizeConstraintValue, sizeConstraintHighValue));
+            maxSize = Math.min(maxSizeConstraintValue, sizeConstraintHighValue);
         }
 
         return maxSize;
@@ -703,7 +760,7 @@ public class ConstrainedProperty {
             int minSizeConstraintValue = minSizeConstraint != null ? minSizeConstraint.getMinSize() : Integer.MIN_VALUE;
             int sizeConstraintLowValue = sizeConstraint != null ? sizeConstraint.getRange().getFromInt() : Integer.MIN_VALUE;
 
-            minSize = new Integer(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
+            minSize = Integer.valueOf(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
         }
 
         return minSize;
@@ -949,8 +1006,8 @@ public class ConstrainedProperty {
         }
 
         try {
-            Constraint c = instantiateConstraint(constraintName);
-            return c.supports(propertyType);
+            Constraint c = instantiateConstraint(constraintName, false);
+            return c != null && c.supports(propertyType);
         }
         catch (Exception e) {
             LOG.error("Exception thrown instantiating constraint [" + constraintName +
@@ -976,12 +1033,11 @@ public class ConstrainedProperty {
             }
             else {
                 try {
-                    Constraint c = instantiateConstraint(constraintName);
-
-                    c.setOwningClass(owningClass);
-                    c.setPropertyName(propertyName);
-                    c.setParameter(constrainingValue);
-                    appliedConstraints.put(constraintName, c);
+                    Constraint c = instantiateConstraint(constraintName, true);
+                    if(c != null) {
+                        c.setParameter(constrainingValue);
+                        appliedConstraints.put(constraintName, c);
+                    }
                 }
                 catch (Exception e) {
                     LOG.error("Exception thrown applying constraint [" + constraintName +
@@ -1000,13 +1056,32 @@ public class ConstrainedProperty {
         }
     }
 
-    private Constraint instantiateConstraint(String constraintName) throws InstantiationException, IllegalAccessException {
-        Object constraintFactory = constraints.get(constraintName);
-        if (constraintFactory instanceof ConstraintFactory) {
-            return ((ConstraintFactory)constraintFactory).newInstance();
-        }
+    private Constraint instantiateConstraint(String constraintName, boolean validate) throws InstantiationException, IllegalAccessException {
+        List<Object> candidateConstraints = constraints.get(constraintName);
 
-        return (Constraint)((Class<?>)constraintFactory).newInstance();
+        for (Object constraintFactory : candidateConstraints) {
+
+            Constraint c;
+            if (constraintFactory instanceof ConstraintFactory) {
+                c = ((ConstraintFactory)constraintFactory).newInstance();
+            }
+            else {
+                c = (Constraint)((Class<?>)constraintFactory).newInstance();
+            }
+
+            c.setOwningClass(owningClass);
+            c.setPropertyName(propertyName);
+
+            if(validate && c.isValid()) {
+
+                return c;
+            }
+            else if(!validate) {
+                return c;
+            }
+
+        }
+        return null;
     }
 
     /* (non-Javadoc)

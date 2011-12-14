@@ -54,6 +54,7 @@ public class GrailsContextLoader extends ContextLoader {
         if (metadata != null && metadata.isWarDeployed()) {
             Grape.setEnableAutoDownload(false);
             Grape.setEnableGrapes(false);
+            Environment.cacheCurrentEnvironment();
         }
 
         if (LOG.isDebugEnabled()) {
@@ -131,9 +132,9 @@ public class GrailsContextLoader extends ContextLoader {
         ConfigurableApplicationContext parent = ctx != null ? (ConfigurableApplicationContext) ctx.getParent() : null;
 
         try {
-            super.closeWebApplicationContext(servletContext);
-        } finally {
             ShutdownOperations.runOperations();
+        } finally {
+            super.closeWebApplicationContext(servletContext);
         }
 
         if (parent != null) {

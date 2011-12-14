@@ -22,14 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Adapts Grails datastore API to Hibernate projections
+ * Adapts Grails datastore API to Hibernate projections.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
 public class HibernateProjectionAdapter {
     private Query.Projection projection;
-    private static Map<Class, ProjectionAdapter> adapterMap = new HashMap<Class, ProjectionAdapter>();
+    private static Map<Class<?>, ProjectionAdapter> adapterMap = new HashMap<Class<?>, ProjectionAdapter>();
 
     static {
         adapterMap.put(Query.AvgProjection.class, new ProjectionAdapter() {

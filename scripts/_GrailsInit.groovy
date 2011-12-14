@@ -92,8 +92,7 @@ target(checkVersion: "Stops build if app expects different Grails version") {
         }
     }
     else {
-        // We know this is pre-0.5 application
-        event("StatusFinal", ["Application is pre-Grails 0.5, please run: grails upgrade"])
+        event("StatusFinal", ["Application metadata not found, please run: grails upgrade"])
         exit(1)
     }
 }

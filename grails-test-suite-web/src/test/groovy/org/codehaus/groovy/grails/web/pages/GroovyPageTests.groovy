@@ -6,6 +6,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.springframework.context.ApplicationContext
 
 /**
@@ -67,7 +68,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         def result = null
         runTest {
             StringWriter sw = new StringWriter()
-            PrintWriter pw = new GrailsPrintWriter(sw)
+            PrintWriter pw = new GrailsPrintWriterAdapter(sw)
 
             String contentType = "text/html;charset=UTF-8"
             response.setContentType(contentType) // must come before response.getWriter()
@@ -85,7 +86,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         GroovyPage gspScript = gcl.parseClass(pageCode).newInstance()
         gspScript.setJspTagLibraryResolver(appCtx.getBean("jspTagLibraryResolver"))
         gspScript.setGspTagLibraryLookup(appCtx.getBean("gspTagLibraryLookup"))
-		GroovyPagesMetaUtils.registerMethodMissingForGSP(gspScript.getClass(), appCtx.getBean("gspTagLibraryLookup"))
+        GroovyPagesMetaUtils.registerMethodMissingForGSP(gspScript.getClass(), appCtx.getBean("gspTagLibraryLookup"))
         return gspScript
     }
 

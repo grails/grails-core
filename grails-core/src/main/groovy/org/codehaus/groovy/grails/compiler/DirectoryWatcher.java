@@ -35,6 +35,7 @@ import org.springframework.util.StringUtils;
  */
 public class DirectoryWatcher extends Thread {
 
+    public static final String SVN_DIR_NAME = ".svn";
     protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
     private List<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
 
@@ -185,9 +186,11 @@ public class DirectoryWatcher extends Thread {
 
         for (File file : files) {
             if (file.isDirectory()) {
-                cacheFilesForDirectory(file, fileExtensions, fireEvent);
+                if(!SVN_DIR_NAME.equals(file.getName())) {
+                    cacheFilesForDirectory(file, fileExtensions, fireEvent);
+                }
             }
-            else if (isValidFileToMonitor(file.getName(), fileExtensions)) {
+            else if (isValidFileToMonitor(file, fileExtensions)) {
                 if (!lastModifiedMap.containsKey(file) && fireEvent) {
                     for (FileChangeListener listener : listeners) {
                         listener.onNew(file);
@@ -214,7 +217,10 @@ extension = extension.substring(1);
         return extension;
     }
 
-    private boolean isValidFileToMonitor(String name, Collection<String> fileExtensions) {
-        return fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name));
+    private boolean isValidFileToMonitor(File file, Collection<String> fileExtensions) {
+        String name = file.getName();
+        String path = file.getAbsolutePath();
+        boolean isSvnFile = path.indexOf(File.separator + SVN_DIR_NAME + File.separator) > 0;
+        return !isSvnFile && (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
     }
 }

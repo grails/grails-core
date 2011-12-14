@@ -96,7 +96,7 @@ public class ParseTests extends TestCase {
             parseCode("myTest3", "<g:message value=\"${boom\">");
         }
         catch (GrailsTagException e) {
-            assertEquals("Unexpected end of file encountered parsing Tag [message] for myTest3. Are you missing a closing brace '}'?", e.getMessage());
+            assertEquals("Unclosed GSP expression", e.getMessage());
             return;
         }
         fail("Expected parse exception not thrown");

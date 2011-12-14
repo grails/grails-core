@@ -54,41 +54,10 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '/test/images/foo.jpg', template
     }
 
-    def replaceMetaClass(Class c) {
-        def old = c.metaClass
-
-        // Create a new EMC for the class and attach it.
-        def emc = new ExpandoMetaClass(c, true, true)
-        emc.initialize()
-        GroovySystem.metaClassRegistry.setMetaClass(c, emc)
-
-        return old
-    }
-
     void testResourceTagDirOnly() {
         request.contextPath = '/test'
         def template = '${resource(dir:"jquery")}'
         assertOutputEquals '/test/jquery', template
-    }
-
-    void testResourceTagDirOnlyWithResourcesHooks() {
-        request.contextPath = '/test'
-        def template = '${resource(dir:"jquery")}'
-
-        def oldMC = replaceMetaClass(ApplicationTagLib)
-
-        // Dummy r.resource impl
-        def mockRes = [
-            resource: { attrs -> "WRONG"}
-        ]
-        def tagLibrary = grailsApplication.getArtefactForFeature(TagLibArtefactHandler.TYPE, "g:resource")
-        tagLibrary.clazz.metaClass.getR = { -> mockRes }
-        tagLibrary.clazz.metaClass.getResourceService = { -> [something:'value'] }
-        try {
-            assertOutputEquals '/test/jquery', template
-        } finally {
-            ApplicationTagLib.metaClass = oldMC
-        }
     }
 
     void testUseJessionIdWithCreateLink() {
@@ -108,7 +77,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals "/foo/test", template
     }
 
-  void testObtainCookieValue() {
+    void testObtainCookieValue() {
         def cookie = new Cookie("foo", "bar")
         request.cookies = [cookie] as Cookie[]
 

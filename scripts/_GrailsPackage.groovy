@@ -57,13 +57,9 @@ target(packageApp : "Implementation of package target") {
 
     configureServerContextPath()
 
-    if (grailsSettings.modified || !webXmlFile.exists()) {
-        loadPlugins()
-        generateWebXml()
-    }
-    else {
-        loadPlugins()
-    }
+    loadPlugins()
+    generateWebXml()
+
     event("PackagingEnd",[])
 }
 

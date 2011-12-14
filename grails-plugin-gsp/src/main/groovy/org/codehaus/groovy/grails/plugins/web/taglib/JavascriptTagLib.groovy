@@ -14,10 +14,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
+import javax.annotation.PostConstruct;
+
 import grails.artefact.Artefact
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.ClassUtils
 
 /**
@@ -26,8 +30,8 @@ import org.springframework.util.ClassUtils
  * @author Graeme Rocher
  */
 @Artefact("TagLibrary")
-class JavascriptTagLib {
-
+class JavascriptTagLib implements ApplicationContextAware {
+    ApplicationContext applicationContext
     /**
      * Mappings to the relevant files to be included for each library.
      */
@@ -39,9 +43,8 @@ class JavascriptTagLib {
 
     GrailsPluginManager pluginManager
 
-    def resourceService
-
     Class<JavascriptProvider> defaultProvider
+    boolean hasResourceProcessor = false
 
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
@@ -54,7 +57,13 @@ class JavascriptTagLib {
             }
         }
     }
-/**
+
+    @PostConstruct
+    private void initHasResourceProcessor() {
+        hasResourceProcessor = applicationContext.containsBean('grailsResourceProcessor')
+    }
+
+    /**
      * Includes a javascript src file, library or inline script
      * if the tag has no 'src' or 'library' attributes its assumed to be an inline script:<br/>
      *
@@ -84,8 +93,9 @@ class JavascriptTagLib {
             javascriptInclude(attrs)
         }
         else if (attrs.library) {
-            if (resourceService) {
+            if (hasResourceProcessor) {
                 out << r.require(module:attrs.library)
+                includedLibrary(attrs.library)
             } else {
                 if (LIBRARY_MAPPINGS.containsKey(attrs.library)) {
                     LIBRARY_MAPPINGS[attrs.library].each {
@@ -96,25 +106,33 @@ class JavascriptTagLib {
                             javascriptInclude(newattrs)
                         }
                     }
-                    if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
-                        request[INCLUDED_LIBRARIES] << attrs.library
-                    }
+                    includedLibrary(attrs.library)
                 }
                 else {
                     if (!request[INCLUDED_LIBRARIES].contains(attrs.library)) {
                         def newattrs = [:] + attrs
                         newattrs.src = String.valueOf(newattrs.remove('library')) + '.js'
                         javascriptInclude(newattrs)
-                        request[INCLUDED_LIBRARIES] << attrs.library
+                        includedLibrary(attrs.library)
                         request[INCLUDED_JS] << attrs.library
                     }
                 }
             }
         }
         else {
-            out.println '<script type="text/javascript">'
-            out.println body()
-            out.println '</script>'
+            if (hasResourceProcessor) {
+                out << r.script(Collections.EMPTY_MAP, body)
+            } else {
+                out.println '<script type="text/javascript">'
+                out.println body()
+                out.println '</script>'
+            }
+        }
+    }
+
+    private includedLibrary(library) {
+        if (!request[INCLUDED_LIBRARIES].contains(library)) {
+            request[INCLUDED_LIBRARIES] << library
         }
     }
 

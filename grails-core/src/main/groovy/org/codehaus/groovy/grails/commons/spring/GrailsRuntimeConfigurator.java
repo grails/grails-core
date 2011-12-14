@@ -89,13 +89,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public GrailsRuntimeConfigurator(GrailsApplication application, ApplicationContext parent) {
         this.application = application;
         this.parent = parent;
-        if (parent != null) {
-            parent.containsBean(DATA_SOURCE_BEAN);
-        }
 
         try {
-            pluginManager = parent != null ? parent.getBean(GrailsPluginManager.class) : null;
-            pluginManager = pluginManager != null ? pluginManager : PluginManagerHolder.getPluginManager();
+            pluginManager = parent == null ? null : parent.getBean(GrailsPluginManager.class);
+            pluginManager = pluginManager == null ? PluginManagerHolder.getPluginManager() : pluginManager;
         } catch (BeansException e) {
             // ignore
         }
@@ -257,14 +254,17 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
     private void doPostResourceConfiguration(GrailsApplication app, RuntimeSpringConfiguration springConfig) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        String resourceName = null;
         try {
             Resource springResources;
             if (app.isWarDeployed()) {
-                springResources = parent.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML);
+                resourceName = GrailsRuntimeConfigurator.SPRING_RESOURCES_XML;
+                springResources = parent.getResource(resourceName);
             }
             else {
+                resourceName = DEVELOPMENT_SPRING_RESOURCES_XML;
                 ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
-                springResources = patternResolver.getResource(DEVELOPMENT_SPRING_RESOURCES_XML);
+                springResources = patternResolver.getResource(resourceName);
             }
 
             if (springResources != null && springResources.exists()) {
@@ -292,14 +292,14 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
                 }
             }
             else if (LOG.isDebugEnabled()) {
-                LOG.debug("[RuntimeConfiguration] " + GrailsRuntimeConfigurator.SPRING_RESOURCES_XML + " not found. Skipping configuration.");
+                LOG.debug("[RuntimeConfiguration] " + resourceName + " not found. Skipping configuration.");
             }
-
-            GrailsRuntimeConfigurator.loadSpringGroovyResources(springConfig, app);
         }
         catch (Exception ex) {
-            LOG.warn("[RuntimeConfiguration] Unable to perform post initialization config: " + SPRING_RESOURCES_XML, ex);
+            LOG.error("[RuntimeConfiguration] Unable to perform post initialization config: " + resourceName, ex);
         }
+
+        GrailsRuntimeConfigurator.loadSpringGroovyResources(springConfig, app);
     }
 
     private static volatile BeanBuilder springGroovyResourcesBeanBuilder = null;

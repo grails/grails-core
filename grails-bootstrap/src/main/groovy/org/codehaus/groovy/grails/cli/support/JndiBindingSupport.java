@@ -67,6 +67,9 @@ public class JndiBindingSupport {
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
 
         if (jndiConfig != null) {
+            // ensure the commons-dbcp factory is used
+            System.setProperty("javax.sql.DataSource.Factory","org.apache.commons.dbcp.BasicDataSourceFactory");
+
             for (Object o : jndiConfig.entrySet()) {
                 Map.Entry entry = (Map.Entry)o;
 

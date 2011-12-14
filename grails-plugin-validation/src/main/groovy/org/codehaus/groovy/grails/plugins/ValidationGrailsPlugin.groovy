@@ -26,6 +26,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 
 class ValidationGrailsPlugin {
 
@@ -33,7 +34,13 @@ class ValidationGrailsPlugin {
     def dependsOn = [:]
     def loadAfter = ['hibernate', 'controllers']
 
-    static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+    static final ThreadLocal PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+
+    static {
+        ShutdownOperations.addOperation({
+            PROPERTY_INSTANCE_MAP.remove()
+        } as Runnable)
+    }
 
     def doWithDynamicMethods = { ApplicationContext ctx ->
         // grab all of the classes specified in the application config
@@ -99,10 +106,10 @@ class ValidationGrailsPlugin {
             def constrainedPropertyBuilder = new ConstrainedPropertyBuilder(validateable)
             validationClosure.setDelegate(constrainedPropertyBuilder)
             validationClosure()
-            metaClass.constrainedProperties = constrainedPropertyBuilder.constrainedProperties
+            metaClass.constraints = constrainedPropertyBuilder.constrainedProperties
         }
         else {
-            metaClass.constrainedProperties = [:]
+            metaClass.constraints = [:]
         }
 
         if (!metaClass.respondsTo(validateable, "validate")) {

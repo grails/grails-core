@@ -39,6 +39,10 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.Validator
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.grails.datastore.gorm.validation.constraints.UniqueConstraint
+import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
+import org.junit.AfterClass
 
 /**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support
@@ -67,7 +71,7 @@ import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
-    static Datastore simpleDatastore
+    static SimpleMapDatastore simpleDatastore
 
     protected Session currentSession
 
@@ -80,12 +84,18 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         simpleDatastore = new SimpleMapDatastore(applicationContext)
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
+        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
 
         defineBeans {
             "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
                 defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
             }
         }
+    }
+
+    @AfterClass
+    static void cleanupDatastore() {
+        ConstrainedProperty.removeConstraint("unique")
     }
 
     @Before
@@ -96,7 +106,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     @After
     void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
-        simpleDatastore = new SimpleMapDatastore(applicationContext)
+        DatastoreUtils.unbindSession(currentSession)
+        simpleDatastore.clearData()
     }
 
     /**

@@ -50,7 +50,6 @@ class DomainClassControllerUnitTestMixinTests {
 
         assert book.errors.allErrors.size() == 1
         assert book.errors['title'].code == 'blank'
-        assert book.errors instanceof ValidationErrors
 
         book.clearErrors()
 

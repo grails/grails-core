@@ -15,20 +15,16 @@
  */
 package org.codehaus.groovy.grails.io.support;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Utility methods for resource handling / figuring out class names.
@@ -58,18 +54,20 @@ public class GrailsResourceUtils {
      */
     public static final String VIEWS_DIR_PATH = GRAILS_APP_DIR + "/views/";
 
+    public static final String REGEX_FILE_SEPARATOR = "[\\\\/]"; // backslashes need escaping in regexes
+
     /*
      Domain path is always matched against the normalized File representation of an URL and
      can therefore work with slashes as separators.
      */
-    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+/" + GRAILS_APP_DIR + "/domain/(.+)\\.(groovy|java)");
+    public static Pattern DOMAIN_PATH_PATTERN = Pattern.compile(".+" + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + "domain" + REGEX_FILE_SEPARATOR + "(.+)\\.(groovy|java)");
 
     /*
      This pattern will match any resource within a given directory inside grails-app
      */
-    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?/" + GRAILS_APP_DIR + "/(.+?)/(.+?\\.(groovy|java))");
+    public static Pattern RESOURCE_PATH_PATTERN = Pattern.compile(".+?" + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + "(.+?)"+ REGEX_FILE_SEPARATOR +"(.+?\\.(groovy|java))");
 
-    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?/" + GRAILS_APP_DIR + "/conf/spring/(.+?\\.groovy)");
+    public static Pattern SPRING_SCRIPTS_PATH_PATTERN = Pattern.compile(".+?" + REGEX_FILE_SEPARATOR + GRAILS_APP_DIR + REGEX_FILE_SEPARATOR + "conf"+ REGEX_FILE_SEPARATOR +"spring"+ REGEX_FILE_SEPARATOR +"(.+?\\.groovy)");
 
     public static Pattern[] COMPILER_ROOT_PATTERNS = {
         SPRING_SCRIPTS_PATH_PATTERN,
@@ -93,8 +91,7 @@ public class GrailsResourceUtils {
     public static final Pattern GRAILS_RESOURCE_PATTERN_ELEVENTH_MATCH;
 
     static {
-        String fs = File.separator;
-        if (fs.equals("\\")) fs = "\\\\"; // backslashes need escaping in regexes
+        String fs = REGEX_FILE_SEPARATOR;
 
         GRAILS_RESOURCE_PATTERN_FIRST_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs+ "conf" +fs + "spring"));
         GRAILS_RESOURCE_PATTERN_THIRD_MATCH = Pattern.compile(createGrailsResourcePattern(fs, GRAILS_APP_DIR +fs +"[\\w-]+"));
@@ -379,25 +376,25 @@ public class GrailsResourceUtils {
      * @return a uri
      */
     public static String appendPiecesForUri(String... pieces) {
-    	if(pieces==null || pieces.length==0) return "";
-    	
-    	// join parts && strip double slashes
+        if (pieces==null || pieces.length==0) return "";
+
+        // join parts && strip double slashes
         StringBuilder builder = new StringBuilder(16 * pieces.length);
-        char previous=0;
+        char previous = 0;
         for(int i=0; i < pieces.length;i++) {
             String piece = pieces[i];
-            if(piece != null && piece.length() > 0) {
-            	for(int j=0, maxlen=piece.length();j < maxlen;j++) {
-            		char current=piece.charAt(j);
-                	if(!(previous=='/' && current=='/')) {
-                		builder.append(current);
-                    	previous = current;
-                	}
-            	}
-            	if (i + 1 < pieces.length && previous != '/') {
-            		builder.append('/');
-            		previous='/';
-            	}
+            if (piece != null && piece.length() > 0) {
+                for(int j=0, maxlen=piece.length();j < maxlen;j++) {
+                    char current=piece.charAt(j);
+                    if (!(previous=='/' && current=='/')) {
+                        builder.append(current);
+                        previous = current;
+                    }
+                }
+                if (i + 1 < pieces.length && previous != '/') {
+                    builder.append('/');
+                    previous='/';
+                }
             }
         }
         return builder.toString();

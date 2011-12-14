@@ -15,12 +15,15 @@
  */
 package org.codehaus.groovy.grails.orm.support;
 
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
+import org.springframework.core.Ordered;
+import org.springframework.core.PriorityOrdered;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 
@@ -30,11 +33,10 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware {
-
+public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements BeanFactoryAware, PriorityOrdered {
     private ConfigurableListableBeanFactory beanFactory;
     private PlatformTransactionManager transactionManager;
-    private boolean initialized = false;
+    private int order = Ordered.LOWEST_PRECEDENCE;
 
     /**
      * Gets the platform transaction manager from the bean factory if
@@ -47,6 +49,7 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
                 "TransactionManagerPostProcessor requires a ConfigurableListableBeanFactory");
 
         this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        initialize();
     }
 
     /**
@@ -58,11 +61,18 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
      * @throws BeansException
      */
     @Override
-    public synchronized boolean postProcessAfterInstantiation(Object bean, String name) throws BeansException {
-        // Lazily retrieve the transaction manager from the bean factory.
-        // Attempting to retrieve it within 'setBeanFactory()' blocks
-        // other bean post processors from processing the beans in the factory!
-        if (!initialized) {
+    public boolean postProcessAfterInstantiation(Object bean, String name) throws BeansException {
+        if (bean instanceof TransactionManagerAware) {
+            TransactionManagerAware tma = (TransactionManagerAware) bean;
+            tma.setTransactionManager(transactionManager);
+        }
+        return true;
+    }
+
+    private void initialize() {
+        if(beanFactory.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN)) {
+            transactionManager = beanFactory.getBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN, PlatformTransactionManager.class);
+        } else {
             // Fetch the names of all the beans that are of type
             // PlatformTransactionManager. Note that we have to pass
             // "false" for the last argument to avoid eager initialisation,
@@ -75,15 +85,10 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
             if (beanNames.length > 0) {
                 transactionManager = (PlatformTransactionManager)beanFactory.getBean(beanNames[0]);
             }
-
-            // Don't attempt to retrieve the transaction manager again.
-            initialized = true;
         }
+    }
 
-        if (bean instanceof TransactionManagerAware) {
-            TransactionManagerAware tma = (TransactionManagerAware) bean;
-            tma.setTransactionManager(transactionManager);
-        }
-        return true;
+    public int getOrder() {
+        return order;
     }
 }

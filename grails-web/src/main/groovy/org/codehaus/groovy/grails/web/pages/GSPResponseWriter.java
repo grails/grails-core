@@ -15,18 +15,22 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
-import com.opensymphony.module.sitemesh.RequestConstants;
+import java.io.IOException;
+import java.io.Writer;
+
+import javax.servlet.ServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 
-import javax.servlet.ServletResponse;
-import java.io.IOException;
-import java.io.Writer;
+import com.opensymphony.module.sitemesh.RequestConstants;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -46,8 +50,8 @@ import java.io.Writer;
  *
  * Date: Jan 10, 2004
  */
-public class GSPResponseWriter extends GrailsPrintWriter {
-
+public class GSPResponseWriter extends GrailsPrintWriterAdapter {
+    protected static final Log LOG = LogFactory.getLog(GSPResponseWriter.class);
     private ServletResponse response;
     private BoundedCharsAsEncodedBytesCounter bytesCounter;
     public static final boolean CONTENT_LENGTH_COUNTING_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableContentLength");
@@ -152,7 +156,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
             }
             flushResponse();
         }
-        else if (!trouble) {
+        else if (!isTrouble()) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
             if (webRequest != null && webRequest.getCurrentRequest().getAttribute(RequestConstants.PAGE) != null) {
                 // flush the response if its a layout
@@ -162,7 +166,7 @@ public class GSPResponseWriter extends GrailsPrintWriter {
     }
 
     private boolean canFlushContentLengthAwareResponse() {
-        return CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted() && !trouble;
+        return CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted() && !isTrouble();
     }
 
     private void flushResponse() {

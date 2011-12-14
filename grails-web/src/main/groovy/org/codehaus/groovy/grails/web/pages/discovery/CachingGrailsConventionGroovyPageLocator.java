@@ -15,13 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.pages.discovery;
 
-import grails.util.Environment;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
-import org.springframework.core.io.ByteArrayResource;
-
+import java.security.PrivilegedAction;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
+import org.codehaus.groovy.grails.web.util.CacheEntry;
+import org.springframework.core.io.ByteArrayResource;
 
 /**
  * Extends GrailsConventionGroovyPageLocator adding caching of the located GrailsPageScriptSource
@@ -30,62 +31,168 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 2.0
  */
 public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGroovyPageLocator {
-
     private static final GroovyPageResourceScriptSource NULL_SCRIPT = new GroovyPageResourceScriptSource("/null",new ByteArrayResource("".getBytes()));
-    private Map<String, GroovyPageScriptSource> uriResolveCache = new ConcurrentHashMap<String, GroovyPageScriptSource>();
+    private Map<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> uriResolveCache = new ConcurrentHashMap<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>();
+    private long cacheTimeout = -1;
 
     @Override
-    public GroovyPageScriptSource findViewByPath(String uri) {
+    public GroovyPageScriptSource findPageInBinding(final String uri, final GroovyPageBinding binding) {
         if (uri == null) return null;
-        return super.findViewByPath(uri);
+
+        PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
+            public GroovyPageScriptSource run() {
+                GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPageInBinding(uri, binding);
+                if (scriptSource == null) {
+                    scriptSource = NULL_SCRIPT;
+                }
+                return scriptSource;
+            }
+        };
+
+        return lookupCache(GroovyPageLocatorCacheKey.build(uri, null, binding), updater);
     }
 
     @Override
-    public GroovyPageScriptSource findPageInBinding(String uri, GroovyPageBinding binding) {
-        if (uri == null) return null;
-        GroovyPageScriptSource scriptSource = uriResolveCache.get(uri);
-        if (scriptSource == null) {
-            scriptSource = super.findPageInBinding(uri, binding);
-            if (scriptSource == null && Environment.isWarDeployed()) {
-                uriResolveCache.put(uri, NULL_SCRIPT);
-            }
-            else if (scriptSource != null) {
-                uriResolveCache.put(uri, scriptSource);
-            }
-        }
-        return scriptSource == NULL_SCRIPT ? null : scriptSource;
-    }
-
-    @Override
-    public GroovyPageScriptSource findPageInBinding(String pluginName, String uri, GroovyPageBinding binding) {
+    public GroovyPageScriptSource findPageInBinding(final String pluginName, final String uri, final GroovyPageBinding binding) {
         if (uri == null || pluginName == null) return null;
-        String cacheKey = GrailsResourceUtils.appendPiecesForUri(pluginName, uri);
-        GroovyPageScriptSource scriptSource = uriResolveCache.get(cacheKey);
-        if (scriptSource == null) {
-            scriptSource = super.findPageInBinding(pluginName, uri, binding);
-            if (scriptSource == null && Environment.isWarDeployed()) {
-                uriResolveCache.put(cacheKey, NULL_SCRIPT);
+
+        PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
+            public GroovyPageScriptSource run() {
+                GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPageInBinding(pluginName, uri, binding);
+                if (scriptSource == null) {
+                    scriptSource = NULL_SCRIPT;
+                }
+                return scriptSource;
             }
-            else if (scriptSource != null) {
-                uriResolveCache.put(cacheKey, scriptSource);
+        };
+
+        return lookupCache(GroovyPageLocatorCacheKey.build(uri, pluginName, binding), updater);
+    }
+
+    @Override
+    public GroovyPageScriptSource findPage(final String uri) {
+       if (uri == null) return null;
+
+       PrivilegedAction<GroovyPageScriptSource> updater = new PrivilegedAction<GroovyPageScriptSource>() {
+           public GroovyPageScriptSource run() {
+               GroovyPageScriptSource scriptSource = CachingGrailsConventionGroovyPageLocator.super.findPage(uri);
+               if (scriptSource == null) {
+                   scriptSource = NULL_SCRIPT;
+               }
+               return scriptSource;
+           }
+       };
+
+       return lookupCache(GroovyPageLocatorCacheKey.build(uri, null, null), updater);
+    }
+
+    protected GroovyPageScriptSource lookupCache(final GroovyPageLocatorCacheKey cacheKey, PrivilegedAction<GroovyPageScriptSource> updater) {
+        GroovyPageScriptSource scriptSource = null;
+        if(cacheTimeout==0) {
+            scriptSource = updater.run();
+        } else {
+            CacheEntry<GroovyPageScriptSource> entry = uriResolveCache.get(cacheKey);
+            if(entry==null) {
+                scriptSource = updater.run();
+                uriResolveCache.put(cacheKey, new CustomCacheEntry<GroovyPageScriptSource>(scriptSource));
+            } else {
+                scriptSource = entry.getValue(cacheTimeout, updater);
             }
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }
 
-    @Override
-    public GroovyPageScriptSource findPage(String uri) {
-       if (uri == null) return null;
-       GroovyPageScriptSource scriptSource = uriResolveCache.get(uri);
-        if (scriptSource == null) {
-            scriptSource = super.findPage(uri);
-            if (scriptSource == null && Environment.isWarDeployed()) {
-                uriResolveCache.put(uri, NULL_SCRIPT);
+    public long getCacheTimeout() {
+        return cacheTimeout;
+    }
+
+    public void setCacheTimeout(long cacheTimeout) {
+        this.cacheTimeout = cacheTimeout;
+    }
+
+    private static final class GroovyPageLocatorCacheKey {
+        private final String uri;
+        private final String pluginName;
+        private final String contextPath;
+
+        private GroovyPageLocatorCacheKey(String uri, String pluginName, String contextPath) {
+            this.uri = uri;
+            this.pluginName = pluginName;
+            this.contextPath = contextPath;
+        }
+
+        public static final GroovyPageLocatorCacheKey build(final String uri, final String pluginName, final GroovyPageBinding binding) {
+            String pluginNameInCacheKey = (pluginName == null) ? ( binding != null ? (binding.getPagePlugin() != null ? binding.getPagePlugin().getName() : null) : null) : pluginName;
+            return new GroovyPageLocatorCacheKey(uri, pluginNameInCacheKey, binding != null ? binding.getPluginContextPath() : null);
+        }
+
+        @Override
+        public final int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
+            result = prime * result + ((pluginName == null) ? 0 : pluginName.hashCode());
+            result = prime * result + ((uri == null) ? 0 : uri.hashCode());
+            return result;
+        }
+
+        @Override
+        public final boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            GroovyPageLocatorCacheKey other = (GroovyPageLocatorCacheKey)obj;
+            if (contextPath == null) {
+                if (other.contextPath != null)
+                    return false;
             }
-            else if (scriptSource != null){
-                uriResolveCache.put(uri, scriptSource);
+            else if (!contextPath.equals(other.contextPath))
+                return false;
+            if (pluginName == null) {
+                if (other.pluginName != null)
+                    return false;
+            }
+            else if (!pluginName.equals(other.pluginName))
+                return false;
+            if (uri == null) {
+                if (other.uri != null)
+                    return false;
+            }
+            else if (!uri.equals(other.uri))
+                return false;
+            return true;
+        }
+    }
+
+    @Override
+    public void removePrecompiledPage(GroovyPageCompiledScriptSource scriptSource) {
+        super.removePrecompiledPage(scriptSource);
+        // remove the entry from uriResolveCache
+        for(Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> entry : new HashSet<Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>>(uriResolveCache.entrySet())) {
+            GroovyPageScriptSource ss=entry.getValue().getValue();
+            if(ss==scriptSource || (ss instanceof GroovyPageCompiledScriptSource && scriptSource.getURI().equals(((GroovyPageCompiledScriptSource)ss).getURI()))) {
+                uriResolveCache.remove(entry.getKey());
             }
         }
-        return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }
+    
+    private static class CustomCacheEntry<T> extends CacheEntry<T> {
+        public CustomCacheEntry(T value) {
+            super(value);
+        }
+
+        @Override
+        protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
+            // Never expire GroovyPageCompiledScriptSource entry in cache
+            boolean compiledScriptSourceInstance=getValue() instanceof GroovyPageCompiledScriptSource;
+            if(compiledScriptSourceInstance) {
+                resetTimestamp();
+            }
+            return !compiledScriptSourceInstance && super.shouldUpdate(beforeLockingCreatedMillis);
+        }
+    }
+
 }

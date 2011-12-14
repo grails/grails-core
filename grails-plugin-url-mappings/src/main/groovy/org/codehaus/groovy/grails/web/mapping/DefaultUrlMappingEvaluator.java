@@ -36,6 +36,7 @@ import javax.servlet.ServletContext;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -51,6 +52,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -90,6 +92,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
      * @deprecated Used DefaultUrLMappingsEvaluator(ApplicationContext) instead
      * @param servletContext The servlet context
      */
+    @Deprecated
     public DefaultUrlMappingEvaluator(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
@@ -138,7 +141,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 "]. A URL mapping must be an instance of groovy.lang.Script.");
     }
 
-    private List evaluateMappings(GroovyObject go, Closure mappings, Binding binding) {
+    private List<?> evaluateMappings(GroovyObject go, Closure<?> mappings, Binding binding) {
         UrlMappingBuilder builder = new UrlMappingBuilder(binding, servletContext);
         mappings.setDelegate(builder);
         mappings.call();
@@ -235,6 +238,18 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         public List<UrlMapping> getUrlMappings() {
             return urlMappings;
+        }
+
+        public ServletContext getServletContext() {
+            return sc;
+        }
+
+        public ApplicationContext getApplicationContext() {
+            return WebApplicationContextUtils.getRequiredWebApplicationContext(sc);
+        }
+
+        public GrailsApplication getGrailsApplication() {
+            return getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
         }
 
         @Override

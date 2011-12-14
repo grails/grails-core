@@ -50,6 +50,14 @@ class BuildSettings extends AbstractBuildSettings {
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 
     /**
+     * The compiler source level to use
+     */
+    public static final String COMPILER_SOURCE_LEVEL = "grails.project.source.level"
+    /**
+     * The compiler source level to use
+     */
+    public static final String COMPILER_TARGET_LEVEL = "grails.project.target.level"
+    /**
      * The version of the servlet API
      */
     public static final String SERVLET_VERSION = "grails.servlet.version"
@@ -129,7 +137,7 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_TEST_REPORTS_DIR = "grails.project.test.reports.dir"
 
     /**
-     * The name of the system property for {@link #testReportsDir}.
+     * The name of the system property for {@link #docsOutputDir}.
      */
     public static final String PROJECT_DOCS_OUTPUT_DIR = "grails.project.docs.output.dir"
 
@@ -204,6 +212,16 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** The environment for the current script.  */
     String grailsEnv
+
+    /**
+     * The compiler source level to use
+     */
+    String compilerSourceLevel
+
+    /**
+     * The compiler target level to use
+     */
+    String compilerTargetLevel = "1.6"
 
     /** <code>true</code> if the default environment for a script should be used.  */
     boolean defaultEnv
@@ -1158,8 +1176,14 @@ class BuildSettings extends AbstractBuildSettings {
 
         def grailsConfig = config.grails
 
+        // If grails.dependency.cache.dir is set, use it for Ivy.
+        if (grailsConfig.dependency.cache.dir) {
+            dependencyManager.ivySettings.defaultCache = grailsConfig.dependency.cache.dir as File
+        }
+
         if (!dependenciesExternallyConfigured) {
             coreDependencies = new GrailsCoreDependencies(grailsVersion, servletVersion)
+            coreDependencies.java5compatible = !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", compilerTargetLevel)
             grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
             def credentials = grailsConfig.project.ivy.authentication
             if (credentials instanceof Closure) {
@@ -1219,6 +1243,10 @@ class BuildSettings extends AbstractBuildSettings {
             def matcher = pluginName =~ /(\S+?)-(\d\S+)/
             pluginName = matcher ? matcher[0][1] : pluginName
 
+
+            // The logic here tries to establish if the plugin has been declared anywhere by the application. Only plugins that have
+            // been declared should have their transitive dependencies resolved. Unfortunately it is fairly complicated to establish what plugins are declared since
+            // there may be a mixture of plugins defined in BuildConfig, inline plugins and plugins installed via install-plugin
             if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
                 return
             }
@@ -1292,6 +1320,8 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         servletVersion = getPropertyValue(SERVLET_VERSION, props, "2.5")
+        compilerSourceLevel = getPropertyValue(COMPILER_SOURCE_LEVEL, props, null)
+        compilerTargetLevel = getPropertyValue(COMPILER_TARGET_LEVEL, props, "1.6")
 
         if (!projectWorkDirSet) {
             def workingDirName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME

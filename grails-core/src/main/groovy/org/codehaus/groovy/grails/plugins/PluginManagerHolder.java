@@ -36,7 +36,7 @@ public abstract class PluginManagerHolder {
      * Bind the given GrailsPluginManager instance to the current Thread
      * @param pluginManager The GrailsPluginManager to expose
      *
-    * @deprecated Use dependency injection instead (implement the {@link org.springframework.web.context.ServletContextAware} interface)
+     * @deprecated Use dependency injection instead (implement the {@link org.springframework.web.context.ServletContextAware} interface)
      */
     @Deprecated
     public static void setPluginManager(GrailsPluginManager pluginManager) {

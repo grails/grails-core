@@ -614,6 +614,35 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assert publication
         assertEquals 'Some New Book', publication.title
     }
+    
+    void testGetWithNoArgument() {
+        def now = new Date()
+        def lastWeek = now - 7
+        def lastYear = now - 365
+        
+        assert new NamedCriteriaPublication(title: 'Some Book', datePublished: now).save()
+        assert new NamedCriteriaPublication(title: 'Some Book', datePublished: lastWeek).save()
+        assert new NamedCriteriaPublication(title: 'Some Book', datePublished: lastYear).save()
+        def result = NamedCriteriaPublication.publishedAfter(lastYear - 1).list()
+        assert 3 == result?.size()
+        result = NamedCriteriaPublication.publishedAfter(lastYear - 1).get()
+        assert result instanceof NamedCriteriaPublication
+        
+        result = NamedCriteriaPublication.publishedAfter(lastWeek - 1).list()
+        assert 2 == result?.size()
+        result = NamedCriteriaPublication.publishedAfter(lastWeek - 1).get()
+        assert result instanceof NamedCriteriaPublication
+        
+        result = NamedCriteriaPublication.publishedAfter(now - 1).list()
+        assert 1 == result?.size()
+        result = NamedCriteriaPublication.publishedAfter(now - 1).get()
+        assert result instanceof NamedCriteriaPublication
+        
+        result = NamedCriteriaPublication.publishedAfter(now + 1).list()
+        assert 0 == result?.size()
+        result = NamedCriteriaPublication.publishedAfter(now + 1).get()
+        assert result == null
+    }
 
     void testGetReturnsNull() {
         def now = new Date()
@@ -684,7 +713,7 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
                     datePublished: new Date()).save()
         }
 
-        def pubs = NamedCriteriaPublication.recentPublications.list(max: 10, offset: new Integer(5))
+        def pubs = NamedCriteriaPublication.recentPublications.list(max: 10, offset: 5)
         assertEquals 10, pubs?.size()
 
         (6..15).each {num ->

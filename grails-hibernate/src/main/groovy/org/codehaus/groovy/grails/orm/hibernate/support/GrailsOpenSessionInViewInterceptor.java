@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod;
@@ -92,14 +93,14 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
 
             GrailsWebRequest webRequest = (GrailsWebRequest) request;
             HttpServletResponse response = webRequest.getCurrentResponse();
-            if (!(response instanceof GrailsContentBufferingResponse)) {
+            GrailsContentBufferingResponse contentBufferingResponse = getContentBufferingResponse(response);
+            if (contentBufferingResponse == null) {
                 super.afterCompletion(request, ex);
                 return;
             }
 
-            GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response;
             // if Sitemesh is still active disconnect the session, but don't close the session
-            if (!bufferingResponse.isActive()) {
+            if (!contentBufferingResponse.isActive()) {
                 super.afterCompletion(request, ex);
                 return;
             }
@@ -116,6 +117,16 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
         } finally {
             AbstractSavePersistentMethod.clearDisabledValidations();
         }
+    }
+
+    private GrailsContentBufferingResponse getContentBufferingResponse(HttpServletResponse response) {
+        while(response instanceof HttpServletResponseWrapper) {
+            if(response instanceof GrailsContentBufferingResponse) {
+                return (GrailsContentBufferingResponse) response;
+            }
+            response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
+        }
+        return null;
     }
 
     @Override

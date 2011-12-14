@@ -180,6 +180,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean("grailsApplication",grailsApplication)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
+        onInitMockBeans()
+
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin")
@@ -219,8 +221,10 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         GroovySystem.metaClassRegistry.removeMetaClass(String)
         GroovySystem.metaClassRegistry.removeMetaClass(Object)
+
         // Why are the TagLibClasses removed?
         //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
+
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         initThemeSource(request, messageSource)
@@ -248,6 +252,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     protected void onInit() {}
     protected void onDestroy() {}
+    protected void onInitMockBeans() {}
 
     protected MockServletContext createMockServletContext() { new MockServletContext() }
 
@@ -291,12 +296,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     void assertOutputContains(expected, template, params = [:]) {
         def result = applyTemplate(template, params)
-        assertTrue "Output does not contain expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertTrue "Output does not contain expected string [$expected]. Output was: [${result}]", result.indexOf(expected) > -1
     }
 
     void assertOutputNotContains(expected, template, params = [:]) {
         def result = applyTemplate(template, params)
-        assertFalse "Output should not contain the expected string [$expected]. Output was: ${result}", result.indexOf(expected) > -1
+        assertFalse "Output should not contain the expected string [$expected]. Output was: [${result}]", result.indexOf(expected) > -1
     }
 
     /**
@@ -314,20 +319,29 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
      */
     void assertOutputEquals(expected, template, params = [:], Closure transform = { it.toString() }) {
 
-        def engine = appCtx.groovyPagesTemplateEngine
-
-        //printCompiledSource(template)
-
-        assert engine
-        def t = engine.createTemplate(template, "test_"+ System.currentTimeMillis())
-        t.allowSettingContentType = true
+        GroovyPageTemplate t = createTemplate(template)
 
         /*
         println "------------HTMLPARTS----------------------"
         t.metaInfo.htmlParts.eachWithIndex {it, i -> print "htmlpart[${i}]:\n>${it}<\n--------\n" }
         */
 
-        def w = t.make(params)
+        assertTemplateOutputEquals(expected, t, params, transform)
+    }
+
+    protected GroovyPageTemplate createTemplate(template) {
+        GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
+
+        //printCompiledSource(template)
+
+        assert engine
+        GroovyPageTemplate t = engine.createTemplate(template, "test_" + System.currentTimeMillis())
+        t.allowSettingContentType = true
+        return t
+    }
+
+    protected def assertTemplateOutputEquals(expected, GroovyPageTemplate template, params = [:], Closure transform = { it.toString() }) {
+        def w = template.make(params)
 
         MockHttpServletResponse mockResponse = new MockHttpServletResponse()
         mockResponse.setCharacterEncoding("UTF-8")
@@ -336,7 +350,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         w.writeTo(writer)
 
         writer.flush()
-        assertEquals expected, transform(mockResponse.contentAsString)
+        assert expected == transform(mockResponse.contentAsString)
     }
 
     def applyTemplate(template, params = [:], target = null, String filename = null) {

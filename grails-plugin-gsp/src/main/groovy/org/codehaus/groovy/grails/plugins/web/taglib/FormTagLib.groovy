@@ -238,10 +238,10 @@ class FormTagLib {
     void outputAttributes(attrs, writer) {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
-			writer << k
+            writer << k
             writer << '="'
-			writer << v.encodeAsHTML()
-			writer << '" '
+            writer << v.encodeAsHTML()
+            writer << '" '
         }
     }
 
@@ -288,8 +288,8 @@ class FormTagLib {
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
 
         writer << "<form action=\""
-		writer << createLink(linkAttrs)
-		writer << "\" "
+        writer << createLink(linkAttrs)
+        writer << "\" "
 
         // if URL is not nul remove attributes
         if (attrs.url == null) {
@@ -433,6 +433,7 @@ class FormTagLib {
      * @attr precision The desired granularity of the date to be rendered
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank.
      * @attr years A list or range of years to display, in the order specified. i.e. specify 2007..1900 for a reverse order list going back to 1900. If this attribute is not specified, a range of years from the current year - 100 to current year + 100 will be shown.
+     * @attr relativeYears A range of int representing values relative to value. For example, a relativeYears of -2..7 and a value of today will render a list of 10 years starting with 2 years ago through 7 years in the future. This can be useful for things like credit card expiration dates or birthdates which should be bound relative to today.
      * @attr id the DOM element id
      */
     Closure datePicker = { attrs ->
@@ -524,7 +525,11 @@ class FormTagLib {
                 tempyear = year
             }
             if (relativeYears) {
-                 years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)
+                if (relativeYears.reverse) {
+                    years = (tempyear + relativeYears.toInt)..(tempyear + relativeYears.fromInt)
+                } else {
+                    years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)
+                }
             } else {
                 years = (tempyear - 100)..(tempyear + 100)
             }

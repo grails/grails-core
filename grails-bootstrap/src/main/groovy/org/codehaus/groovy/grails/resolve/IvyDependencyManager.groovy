@@ -92,7 +92,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
         copy
     }
-    
+
     /**
      * Allows settings an alternative chain resolver to be used
      * @param resolver The resolver to be used
@@ -174,6 +174,16 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     Set<DependencyDescriptor> getApplicationDependencyDescriptors(String scope = null) {
         dependencyDescriptors.findAll { EnhancedDefaultDependencyDescriptor dd ->
             !dd.inherited && (!scope || dd.scope == scope)
+        }
+    }
+
+    /**
+     * Returns all of the dependency descriptors for dependencies of the application and not
+     * those inherited from frameworks or plugins
+     */
+    Set<DependencyDescriptor> getApplicationPluginDependencyDescriptors(String scope = null) {
+        pluginDependencyDescriptors.findAll { EnhancedDefaultDependencyDescriptor dd ->
+            !dd.inherited && dd.exported && (!scope || dd.scope == scope)
         }
     }
 

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import org.apache.tools.ant.BuildException
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
- * Gant script that compiles Groovy and Java files in the src tree
+ * Gant script that compiles Groovy and Java files in the src tree.
  *
  * @author Graeme Rocher
  *
@@ -42,14 +44,9 @@ target(setCompilerSettings: "Updates the compile build settings based on args") 
 target(compile : "Implementation of compilation phase") {
     depends(compilePlugins)
     profile("Compiling sources to location [$classesDirPath]") {
-        try {
+        withCompilationErrorHandling {
             projectCompiler.compile()
         }
-        catch (Exception e) {
-            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
-            exit(1)
-        }
-
         classLoader.addURL(grailsSettings.classesDir.toURI().toURL())
         classLoader.addURL(grailsSettings.pluginClassesDir.toURI().toURL())
     }
@@ -61,16 +58,30 @@ target(compilePlugins: "Compiles source files of all referenced plugins.") {
     profile("Compiling sources to location [$classesDirPath]") {
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.
-        try {
+        withCompilationErrorHandling {
             projectCompiler.compilePlugins()
-        }
-        catch (Exception e) {
-            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
-            exit(1)
         }
     }
 }
 
+private withCompilationErrorHandling(Closure callable) {
+    try {
+        callable.call()
+    }
+    catch (BuildException e) {
+        if (e.cause instanceof MultipleCompilationErrorsException) {
+            event("StatusError", ["Compilation error: ${e.cause.message}"])
+        }
+        else {
+            grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
+        }
+        exit 1
+    }
+    catch(Throwable e) {
+        grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
+        exit 1
+    }
+}
 
 target(compilepackage : "Compile & Compile GSP files") {
     depends(compile, compilegsp)
@@ -85,7 +96,9 @@ target(compilegsp : "Compile GSP files") {
             event("StatusError", ["GSP Compilation error in file $e.cause.fileName at line $e.cause.lineNumber: $e.cause.message"])
             exit(1)
         }
-        event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
-        exit(1)
+        else {
+            event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
+            exit(1)
+        }
     }
 }

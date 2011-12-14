@@ -77,8 +77,19 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         results = domainClass.withCriteria {
             sqlRestriction "char_length(first_name) > 2"
         }
+        
+        // should retrieve homer, not bart, lisa and maggie
+        results = domainClass.withCriteria {
+            sqlRestriction 'char_length(first_name) > ? AND char_length(first_name) < ?', [4, 6]
+        }
 
-        assertEquals 4, results?.size()
+        
+        // should retrieve homer, bart and lisa, not maggie
+        results = domainClass.withCriteria {
+            sqlRestriction 'char_length(first_name) > ? AND char_length(first_name) < ?', [2, 6]
+        }
+        
+        assertEquals 3, results?.size()
     }
 
     void testOrderByProjection() {
@@ -250,6 +261,122 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
             }
         }
         assertEquals 1 , results.size()
+    }
+
+    void testInList() {
+        createDomainData()
+        def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
+        List results = domainClass.createCriteria().list {
+            inList 'firstName', ['homer', 'bart']
+        }
+        assertEquals 2, results.size()
+        def firstNames = results*.firstName
+        assertTrue 'homer' in firstNames
+        assertTrue 'bart' in firstNames
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', []
+                eq 'lastName', 'simpson'
+            }
+        }
+        assertEquals 4, results.size()
+        firstNames = results*.firstName
+        assertTrue 'homer' in firstNames
+        assertTrue 'bart' in firstNames
+        assertTrue 'lisa' in firstNames
+        assertTrue 'maggie' in firstNames
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', []
+                inList 'lastName', ['simpson', 'adams']
+            }
+        }
+        assertEquals 4, results.size()
+        firstNames = results*.firstName
+        assertTrue 'homer' in firstNames
+        assertTrue 'bart' in firstNames
+        assertTrue 'lisa' in firstNames
+        assertTrue 'maggie' in firstNames
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', []
+            }
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            inList 'firstName', []
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            inList 'firstName', []
+            inList 'lastName', []
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', []
+                inList 'lastName', []
+            }
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', null
+                eq 'lastName', 'simpson'
+            }
+        }
+        assertEquals 4, results.size()
+        firstNames = results*.firstName
+        assertTrue 'homer' in firstNames
+        assertTrue 'bart' in firstNames
+        assertTrue 'lisa' in firstNames
+        assertTrue 'maggie' in firstNames
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', null
+                inList 'lastName', ['simpson', 'adams']
+            }
+        }
+        assertEquals 4, results.size()
+        firstNames = results*.firstName
+        assertTrue 'homer' in firstNames
+        assertTrue 'bart' in firstNames
+        assertTrue 'lisa' in firstNames
+        assertTrue 'maggie' in firstNames
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', null
+            }
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            inList 'firstName', null
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            inList 'firstName', null
+            inList 'lastName', null
+        }
+        assertEquals 0, results.size()
+
+        results = domainClass.createCriteria().list {
+            or {
+                inList 'firstName', null
+                inList 'lastName', null
+            }
+        }
+        assertEquals 0, results.size()
     }
 
     private createDomainData() {
@@ -986,7 +1113,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj.invokeMethod("save", null)
 
         GroovyObject obj2 = domainClass.newInstance()
-        //obj.setProperty("id", new Long(2)
+        //obj.setProperty("id", 2L)
         obj2.setProperty("firstName", "zulu")
         obj2.setProperty("lastName", "alpha")
         obj2.setProperty("age", 45)

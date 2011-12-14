@@ -15,11 +15,14 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.web.CamelCaseUrlConverter;
+import grails.web.HyphenatedUrlConverter;
 import grails.web.UrlConverter;
 import groovy.lang.GroovyClassLoader;
 import junit.framework.TestCase;
 
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
@@ -48,6 +51,7 @@ public class GrailsDispatcherServletTests extends TestCase {
             System.setProperty("grails.env", "development");
             appCtx.registerMockBean("localeInterceptor", new LocaleChangeInterceptor());
             appCtx.registerMockBean("openSessionInView", new OpenSessionInViewInterceptor());
+            appCtx.registerMockBean("grailsUrlConverter", new HyphenatedUrlConverter());
 
             SimpleGrailsController controller = new SimpleGrailsController();
             appCtx.registerMockBean("mainSimpleController", controller);
@@ -75,9 +79,11 @@ public class GrailsDispatcherServletTests extends TestCase {
 
             handlerMapping.setGrailsApplication(grailsApplication);
             handlerMapping.setApplicationContext(appCtx);
-
+            grailsApplication.setMainContext(appCtx);
             dispatcherServlet.setApplication(grailsApplication);
             dispatcherServlet.init(new MockServletConfig(new MockServletContext()));
+            GrailsControllerClass controllerClass = (GrailsControllerClass) grailsApplication.getArtefact(ControllerArtefactHandler.TYPE, "TestController");
+            controllerClass.initialize();
 
             MockHttpServletRequest request = new MockHttpServletRequest("GET", "/test/action");
             HandlerExecutionChain executionChain = dispatcherServlet.getHandler(request);

@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
+import grails.gorm.DetachedCriteria;
 import grails.orm.PagedResultList;
 import groovy.lang.Closure;
 
@@ -28,7 +29,6 @@ import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Projections;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 /**
@@ -56,33 +56,31 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
         return getHibernateTemplate().executeFind(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 Criteria c =  session.createCriteria(clazz);
+                getHibernateTemplate().applySettings(c);
                 if (arguments.length > 0 && arguments[0] instanceof Map) {
                     Map argMap = (Map)arguments[0];
                     if(argMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
-                        c.setFirstResult(0);
                         c.setMaxResults(Integer.MAX_VALUE);
-                        c.setProjection(Projections.rowCount());
-                        int totalCount = ((Number)c.uniqueResult()).intValue();
-
-                        c.setProjection(null);
                         GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
                         c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-
-                        PagedResultList pagedResultList = new PagedResultList(c.list());
-                        pagedResultList.setTotalCount(totalCount);
-                        return pagedResultList;
-                    } else {
-                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
-                        c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-                        return c.list();
+                        return new PagedResultList(getHibernateTemplate(), c);
                     }
-                }
-                else {
-                    GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c, Collections.EMPTY_MAP);
+
+                    GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
                     c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
                     return c.list();
                 }
+
+                GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c, Collections.EMPTY_MAP);
+                c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                return c.list();
             }
         });
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
+        return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;
     }
 }

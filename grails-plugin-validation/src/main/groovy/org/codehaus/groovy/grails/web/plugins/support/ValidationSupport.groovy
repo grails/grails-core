@@ -15,28 +15,31 @@
  */
 package org.codehaus.groovy.grails.web.plugins.support
 
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.springframework.validation.BeanPropertyBindingResult
-import org.springframework.web.context.ContextLoader
+import grails.validation.ValidationErrors
+
+import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.springframework.web.context.support.WebApplicationContextUtils
 
 
 class ValidationSupport {
 
     static validateInstance(object, List fieldsToValidate = null) {
-        if (!object.hasProperty('constrainedProperties')) {
+        if (!object.hasProperty('constraints')) {
             return true
         }
-        def ctx = ContextLoader.currentWebApplicationContext
 
-        def constraints = object.constrainedProperties
-        if(constraints == null) {
-            def constraintsEvaluator = ctx?.containsBean(ConstraintsEvaluator.BEAN_NAME) ? ctx.getBean(ConstraintsEvaluator.BEAN_NAME) : new DefaultConstraintEvaluator()
-            constraints = object.constrainedProperties = constraintsEvaluator.evaluate(object)
-        }
+        def constraints = object.constraints
+
         if (constraints) {
+            def ctx = null
+
+            def sch = ServletContextHolder.servletContext
+            if(sch) {
+                ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
+            }
+
             def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
-            def localErrors = new BeanPropertyBindingResult(object, object.class.name)
+            def localErrors = new ValidationErrors(object, object.class.name)
             def originalErrors = object.errors
             for(originalError in originalErrors.allErrors) {
                 if(originalErrors.getFieldError(originalError.field)?.bindingFailure) {

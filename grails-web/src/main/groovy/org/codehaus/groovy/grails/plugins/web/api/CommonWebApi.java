@@ -33,6 +33,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.Serializable;
 
 /**
  * API shared by controllers, tag libraries and any other web artifact.
@@ -40,14 +41,19 @@ import javax.servlet.http.HttpSession;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware{
-    private GrailsPluginManager pluginManager;
-    private GrailsApplication grailsApplication;
-    private ServletContext servletContext;
-    private ApplicationContext applicationContext;
+public class CommonWebApi implements GrailsApplicationAware, ServletContextAware, ApplicationContextAware, Serializable{
+    private static final long serialVersionUID = 1;
+
+    private transient GrailsPluginManager pluginManager;
+    private transient GrailsApplication grailsApplication;
+    private transient ServletContext servletContext;
+    private transient ApplicationContext applicationContext;
 
     public CommonWebApi(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
+    }
+
+    public CommonWebApi() {
     }
 
     /**
@@ -180,8 +186,17 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * @return The plugin context path
      */
     public String getPluginContextPath(Object delegate) {
-        final String pluginPath = pluginManager != null ? pluginManager.getPluginPathForInstance(delegate) : null;
+        GrailsPluginManager manager = getPluginManagerInternal(delegate);
+        final String pluginPath = manager != null ? manager.getPluginPathForInstance(delegate) : null;
         return pluginPath !=null ? pluginPath : "";
+    }
+
+    private GrailsPluginManager getPluginManagerInternal(Object delegate) {
+        if(this.pluginManager == null) {
+            ApplicationContext ctx = getApplicationContext(delegate);
+            pluginManager = ctx != null ? ctx.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null;
+        }
+        return pluginManager;
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

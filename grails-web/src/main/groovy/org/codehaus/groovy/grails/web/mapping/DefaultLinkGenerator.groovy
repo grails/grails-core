@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrat
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 
 /**
  * A link generating service for applications to use when generating links
@@ -42,6 +43,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     GrailsPluginManager pluginManager
 
     @Autowired
+    @Qualifier("grailsUrlMappingsHolder")
     UrlMappingsHolder urlMappingsHolder
 
     @Autowired

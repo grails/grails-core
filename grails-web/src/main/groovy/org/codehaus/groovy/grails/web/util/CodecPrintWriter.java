@@ -2,12 +2,13 @@ package org.codehaus.groovy.grails.web.util;
 
 import groovy.lang.Closure;
 import groovy.lang.Writable;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
+
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.runtime.GStringImpl;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
     private Closure<?> encodeClosure;
@@ -18,7 +19,22 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 
         initEncode(grailsApplication,codecClass);
     }
-
+    
+    @Override
+    public void setOut(Writer newOut) {
+        this.out = newOut;
+    }    
+    
+    @Override
+    public boolean isUsed() {
+        return usageFlag;
+    }
+    
+    @Override
+    protected Writer findStreamCharBufferTarget(boolean markUsed) {
+        return unwrapWriter(getOut());
+    }
+    
     private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
         if (grailsApplication != null && codecClass != null) {
             GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
@@ -50,21 +66,22 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     public void print(final Object obj) {
         encodeAndPrint(obj);
     }
-
+    
     private void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;
             return;
         }
         Object encoded=encodeObject(obj);
-        if(encoded==null) return;
+        if (encoded==null) return;
         Class<?> clazz=encoded.getClass();
         if (clazz == String.class) {
-        	super.write((String)encoded);
+            super.write((String)encoded);
         } else if (clazz == StreamCharBuffer.class) {
             super.write((StreamCharBuffer)encoded);
-        }
-        else if (encoded instanceof Writable) {
+        } else if (clazz == GStringImpl.class) {
+            super.write((Writable)encoded);
+        } else if (encoded instanceof Writable) {
             super.write((Writable)encoded);
         }
         else if (obj instanceof CharSequence) {
@@ -142,122 +159,14 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         encodeAndPrint(new String(buf));
     }
 
-    /** delegate methods, not synchronized **/
-
     @Override
-    public void print(final boolean b) {
-        if (b) {
-            write("true");
-        }
-        else {
-            write("false");
-        }
-    }
-
-    @Override
-    public void print(final char c) {
-        write(c);
-    }
-
-    @Override
-    public void print(final int i) {
-        write(String.valueOf(i));
-    }
-
-    @Override
-    public void print(final long l) {
-        write(String.valueOf(l));
-    }
-
-    @Override
-    public void print(final float f) {
-        write(String.valueOf(f));
-    }
-
-    @Override
-    public void print(final double d) {
-        write(String.valueOf(d));
-    }
-
-    @Override
-    public void print(final char s[]) {
-        write(s);
-    }
-
-    @Override
-    public void println() {
-        usageFlag = true;
-        write(CRLF);
-    }
-
-    @Override
-    public void println(final boolean b) {
-        print(b);
-        println();
-    }
-
-    @Override
-    public void println(final char c) {
-        print(c);
-        println();
-    }
-
-    @Override
-    public void println(final int i) {
-        print(i);
-        println();
-    }
-
-    @Override
-    public void println(final long l) {
-        print(l);
-        println();
-    }
-
-    @Override
-    public void println(final float f) {
-        print(f);
-        println();
-    }
-
-    @Override
-    public void println(final double d) {
-        print(d);
-        println();
-    }
-
-    @Override
-    public void println(final char c[]) {
-        print(c);
-        println();
-    }
-
-    @Override
-    public void println(final String s) {
-        print(s);
-        println();
-    }
-
-    @Override
-    public void println(final Object o) {
-        print(o);
-        println();
-    }
-
-    @Override
-    public PrintWriter append(final char c) {
-        write(c);
-        return this;
-    }
-
-    @Override
-    public PrintWriter append(final CharSequence csq, final int start, final int end) {
+    public GrailsPrintWriter append(final CharSequence csq, final int start, final int end) {
         encodeAndPrint(csq.subSequence(start, end));
         return this;
     }
 
     @Override
-    public PrintWriter append(final CharSequence csq) {
+    public GrailsPrintWriter append(final CharSequence csq) {
         encodeAndPrint(csq);
         return this;
     }
@@ -313,16 +222,5 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         catch (IOException e) {
             handleIOException(e);
         }
-    }
-
-    @Override
-    public void print(final Writable writable) {
-        write(writable);
-    }
-
-    @Override
-    public GrailsPrintWriter leftShift(final Writable writable) {
-        write(writable);
-        return this;
     }
 }

@@ -1,8 +1,12 @@
 dependencies {
 
-    testCompile "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}"
+    testCompile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 
-    testCompile "net.sf.ehcache:ehcache-core:$ehcacheVersion"
+    testCompile ("net.sf.ehcache:ehcache-core:$ehcacheVersion") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 
     testCompile project(':grails-test-suite-base'),
                 project(':grails-plugin-domain-class'),

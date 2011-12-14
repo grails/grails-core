@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.support;
 
+import org.springframework.beans.factory.Aware;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -23,6 +24,6 @@ import org.springframework.context.ApplicationContext;
  * @author Graeme Rocher
  * @since 0.4
  */
-public interface ParentApplicationContextAware {
+public interface ParentApplicationContextAware  extends Aware {
     void setParentApplicationContext(ApplicationContext parent);
 }

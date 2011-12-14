@@ -15,15 +15,19 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import grails.util.Environment
+import grails.util.Holder
 import grails.util.Metadata
+
+import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
+
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 
- /**
+/**
  * Helper methods for initialising config object.
  *
  * @author Graeme Rocher
@@ -31,14 +35,14 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
  */
 class ConfigurationHelper {
 
-    private static final LOG = LogFactory.getLog(ConfigurationHelper)
+    private static final LOG = LogFactory.getLog(this)
 
     private static final String CONFIG_BINDING_USER_HOME = "userHome"
     private static final String CONFIG_BINDING_GRAILS_HOME = "grailsHome"
     private static final String CONFIG_BINDING_APP_NAME = "appName"
     private static final String CONFIG_BINDING_APP_VERSION = "appVersion"
 
-    private static Map<Integer, ConfigObject> cachedConfigs = new ConcurrentHashMap<Integer, ConfigObject>();
+    private static Holder<Map<Integer, ConfigObject>> cachedConfigs = new Holder<Map<Integer, ConfigObject>>('cachedConfigs')
     public static final int DEV_CACHE_KEY = -1
 
     static ConfigObject loadConfigFromClasspath(String environment) {
@@ -46,11 +50,11 @@ class ConfigurationHelper {
     }
 
     static void clearCachedConfigs() {
-        cachedConfigs.clear()
+        getCachedConfigs().clear()
     }
 
-    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null, String environment = Environment.current.name) {
-
+    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null,
+            String environment = Environment.current.name) {
 
         ConfigObject co
         ClassLoader classLoader
@@ -70,7 +74,7 @@ class ConfigurationHelper {
             classLoader = Thread.currentThread().contextClassLoader
         }
 
-        co = cachedConfigs.get(cacheKey)
+        co = getCachedConfigs().get(cacheKey)
         if (co == null) {
             ConfigSlurper configSlurper = getConfigSlurper(environment, application)
             try {
@@ -104,7 +108,7 @@ class ConfigurationHelper {
             if (co == null) co = new ConfigObject()
 
             initConfig(co, null, classLoader)
-            cachedConfigs.put(cacheKey, co)
+            getCachedConfigs().put(cacheKey, co)
             ConfigurationHolder.config = co
         }
 
@@ -125,7 +129,6 @@ class ConfigurationHelper {
             binding.put(GrailsApplication.APPLICATION_ID, application);
         }
 
-
         configSlurper.setBinding(binding)
         return configSlurper
     }
@@ -136,7 +139,7 @@ class ConfigurationHelper {
     static void initConfig(ConfigObject config, ResourceLoader resourceLoader = null, ClassLoader classLoader = null) {
 
         if (Environment.isWithinShell()) {
-            cachedConfigs.put(DEV_CACHE_KEY, config)
+            getCachedConfigs().put(DEV_CACHE_KEY, config)
         }
         def resolver = resourceLoader ?
                 new PathMatchingResourcePatternResolver(resourceLoader) :
@@ -160,8 +163,7 @@ class ConfigurationHelper {
         }
     }
 
-
-    static private void mergeInLocations(ConfigObject config, List locations, PathMatchingResourcePatternResolver resolver, ClassLoader classLoader) {
+    private static void mergeInLocations(ConfigObject config, List locations, PathMatchingResourcePatternResolver resolver, ClassLoader classLoader) {
         for (location in locations) {
             if (!location) {
                 continue
@@ -215,7 +217,16 @@ class ConfigurationHelper {
         }
     }
 
-    static private boolean isLocations(locations) {
-        locations != null && locations instanceof List
+    private static boolean isLocations(locations) {
+        locations instanceof List
+    }
+
+    private static Map<Integer, ConfigObject> getCachedConfigs() {
+        Map<Integer, ConfigObject> configs = cachedConfigs.get()
+        if (configs == null) {
+            configs = new ConcurrentHashMap<Integer, ConfigObject>()
+            cachedConfigs.set configs
+        }
+        configs
     }
 }

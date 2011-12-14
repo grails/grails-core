@@ -18,8 +18,6 @@ package org.codehaus.groovy.grails.web.pages;
 import groovy.text.Template;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,15 +32,17 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.FrameworkServlet;
+import org.springframework.web.util.WebUtils;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -118,25 +118,31 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 
-        if (isSecurePath(pageName)) {
+
+        boolean isNotInclude = !WebUtils.isIncludeRequest(request) ;
+        if (isNotInclude && isSecurePath(pageName)) {
             sendNotFound(response, pageName);
         }
         else {
 
-            Template template = groovyPagesTemplateEngine.createTemplateForUri(pageName);
+            GroovyPageScriptSource scriptSource = groovyPagesTemplateEngine.findScriptSource(pageName);
 
-            if (template == null) {
-                template = findPageInBinaryPlugins(pageName);
+            if (scriptSource == null) {
+                scriptSource = findPageInBinaryPlugins(pageName);
             }
 
-            if (template == null) {
+            if (scriptSource == null || (isNotInclude && !scriptSource.isPublic())) {
                 sendNotFound(response, pageName);
                 return;
             }
 
-            renderPageWithEngine(groovyPagesTemplateEngine, request, response, template);
+            renderPageWithEngine(groovyPagesTemplateEngine, request, response, scriptSource);
         }
 
+    }
+
+    public GroovyPagesTemplateEngine getGroovyPagesTemplateEngine() {
+        return groovyPagesTemplateEngine;
     }
 
     protected boolean isSecurePath(String pageName) {
@@ -148,7 +154,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         response.sendError(404, "\"" + pageName + "\" not found.");
     }
 
-    protected Template findPageInBinaryPlugins(String pageName) {
+    protected GroovyPageScriptSource findPageInBinaryPlugins(String pageName) {
         if (pageName != null) {
             Class<?> pageClass = binaryPluginViewsMap.get(pageName);
             if (pageClass == null && pluginManager != null) {
@@ -166,7 +172,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
                 }
             }
             if (pageClass != null) {
-                return groovyPagesTemplateEngine.createTemplate(new GroovyPageCompiledScriptSource(pageName, pageClass));
+                return new GroovyPageCompiledScriptSource(pageName, pageName, pageClass);
             }
         }
         return null;
@@ -175,18 +181,21 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     /**
      * Attempts to render the page with the given arguments
      *
+     *
      * @param engine The GroovyPagesTemplateEngine to use
      * @param request The HttpServletRequest
      * @param response The HttpServletResponse
-     * @param template The template
+     * @param scriptSource The template
      *
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      */
     protected void renderPageWithEngine(@SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
             @SuppressWarnings("unused") HttpServletRequest request,
-            HttpServletResponse response, Template template) throws Exception {
-        GrailsPrintWriter out = (GrailsPrintWriter) createResponseWriter(response);
+            HttpServletResponse response, GroovyPageScriptSource scriptSource) throws Exception {
+        request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
+        GSPResponseWriter out = createResponseWriter(response);
         try {
+            Template template = engine.createTemplate(scriptSource);
             if(template instanceof GroovyPageTemplate) {
                 ((GroovyPageTemplate)template).setAllowSettingContentType(true);
             }
@@ -207,8 +216,8 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
      * @param response The HttpServletResponse
      * @return The created java.io.Writer
      */
-    protected Writer createResponseWriter(HttpServletResponse response) {
-        PrintWriter out = GSPResponseWriter.getInstance(response);
+    protected GSPResponseWriter createResponseWriter(HttpServletResponse response) {
+        GSPResponseWriter out = GSPResponseWriter.getInstance(response);
         GrailsWebRequest webRequest =  (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
         webRequest.setOut(out);
         return out;

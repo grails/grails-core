@@ -17,12 +17,15 @@ package org.codehaus.groovy.grails.orm.hibernate;
 
 import java.io.Serializable;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.FlushModeType;
 
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext;
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.query.HibernateQuery;
 import org.grails.datastore.mapping.core.AbstractAttributeStoringSession;
 import org.grails.datastore.mapping.core.Datastore;
@@ -34,7 +37,11 @@ import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.grails.datastore.mapping.query.jpa.JpaQueryBuilder;
 import org.grails.datastore.mapping.query.jpa.JpaQueryInfo;
 import org.grails.datastore.mapping.transactions.Transaction;
-import org.hibernate.*;
+import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -48,19 +55,20 @@ import org.springframework.orm.hibernate3.HibernateTemplate;
 @SuppressWarnings("rawtypes")
 public class HibernateSession extends AbstractAttributeStoringSession {
 
-    private HibernateTemplate hibernateTemplate;
+    private GrailsHibernateTemplate hibernateTemplate;
     private HibernateDatastore datastore;
     private boolean connected = true;
 
     public HibernateSession(HibernateDatastore hibernateDatastore, SessionFactory sessionFactory) {
-        this.hibernateTemplate = new HibernateTemplate(sessionFactory);
-        this.datastore = hibernateDatastore;
-        
-        if (datastore.getMappingContext() instanceof GrailsDomainClassMappingContext) {
-			this.hibernateTemplate.setCacheQueries(GrailsHibernateUtil.isCacheQueriesByDefault(((GrailsDomainClassMappingContext)datastore.getMappingContext()).getGrailsApplication()));
-        }
+        datastore = hibernateDatastore;
 
-        
+        if (datastore.getMappingContext() instanceof GrailsDomainClassMappingContext) {
+            hibernateTemplate = new GrailsHibernateTemplate(sessionFactory,
+                    ((GrailsDomainClassMappingContext)datastore.getMappingContext()).getGrailsApplication());
+        }
+        else {
+            hibernateTemplate = new GrailsHibernateTemplate(sessionFactory);
+        }
     }
 
     @Override
@@ -70,8 +78,8 @@ public class HibernateSession extends AbstractAttributeStoringSession {
 
     @Override
     public void disconnect() {
-        super.disconnect();
-        connected = false;
+        connected = false; // don't actually do any disconnection here. This
+                           // will be handled by OSVI
     }
 
     public Transaction beginTransaction() {
@@ -120,11 +128,15 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     }
 
     public FlushModeType getFlushMode() {
-        switch(hibernateTemplate.getFlushMode()) {
-            case HibernateTemplate.FLUSH_AUTO: return FlushModeType.AUTO;
-            case HibernateTemplate.FLUSH_COMMIT: return FlushModeType.COMMIT;
-            case HibernateTemplate.FLUSH_ALWAYS: return FlushModeType.AUTO;
-            default: return FlushModeType.AUTO;
+        switch (hibernateTemplate.getFlushMode()) {
+            case HibernateTemplate.FLUSH_AUTO:
+                return FlushModeType.AUTO;
+            case HibernateTemplate.FLUSH_COMMIT:
+                return FlushModeType.COMMIT;
+            case HibernateTemplate.FLUSH_ALWAYS:
+                return FlushModeType.AUTO;
+            default:
+                return FlushModeType.AUTO;
         }
     }
 
@@ -165,7 +177,7 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     Collection getIterableAsCollection(Iterable objects) {
         Collection list;
         if (objects instanceof Collection) {
-            list = (Collection) objects;
+            list = (Collection)objects;
         }
         else {
             list = new ArrayList();
@@ -181,7 +193,7 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     }
 
     /**
-     * Deletes all objects matching the given criteria
+     * Deletes all objects matching the given criteria.
      *
      * @param criteria The criteria
      * @return The total number of records deleted
@@ -194,12 +206,13 @@ public class HibernateSession extends AbstractAttributeStoringSession {
                 JpaQueryInfo jpaQueryInfo = builder.buildDelete();
 
                 org.hibernate.Query query = session.createQuery(jpaQueryInfo.getQuery());
+                hibernateTemplate.applySettings(query);
 
                 List parameters = jpaQueryInfo.getParameters();
                 if (parameters != null) {
-                        for (int i = 0, count = parameters.size(); i < count; i++) {
-                            query.setParameter(i, parameters.get(i));
-                        }
+                    for (int i = 0, count = parameters.size(); i < count; i++) {
+                        query.setParameter(i, parameters.get(i));
+                    }
                 }
                 return query.executeUpdate();
             }
@@ -207,25 +220,26 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     }
 
     /**
-     * Updates all objects matching the given criteria and property values
+     * Updates all objects matching the given criteria and property values.
      *
-     * @param criteria   The criteria
+     * @param criteria The criteria
      * @param properties The properties
      * @return The total number of records updated
      */
     public int updateAll(final QueryableCriteria criteria, final Map<String, Object> properties) {
-       return hibernateTemplate.execute(new HibernateCallback<Integer>() {
+        return hibernateTemplate.execute(new HibernateCallback<Integer>() {
             public Integer doInHibernate(Session session) throws HibernateException, SQLException {
                 JpaQueryBuilder builder = new JpaQueryBuilder(criteria);
                 builder.setHibernateCompatible(true);
                 JpaQueryInfo jpaQueryInfo = builder.buildUpdate(properties);
 
                 org.hibernate.Query query = session.createQuery(jpaQueryInfo.getQuery());
+                hibernateTemplate.applySettings(query);
                 List parameters = jpaQueryInfo.getParameters();
                 if (parameters != null) {
-                        for (int i = 0, count = parameters.size(); i < count; i++) {
-                            query.setParameter(i, parameters.get(i));
-                        }
+                    for (int i = 0, count = parameters.size(); i < count; i++) {
+                        query.setParameter(i, parameters.get(i));
+                    }
                 }
                 return query.executeUpdate();
             }
@@ -235,13 +249,12 @@ public class HibernateSession extends AbstractAttributeStoringSession {
     public List retrieveAll(final Class type, final Iterable keys) {
         final PersistentEntity persistentEntity = getMappingContext().getPersistentEntity(type.getName());
         return hibernateTemplate.execute(new HibernateCallback<List>() {
-            public List doInHibernate(org.hibernate.Session session)
-                    throws HibernateException, SQLException {
-                return session.createCriteria(type)
-                                .add(Restrictions.in(persistentEntity
-                                                    .getIdentity()
-                                                    .getName(), getIterableAsCollection(keys)))
-                                .list();
+            public List doInHibernate(org.hibernate.Session session) throws HibernateException, SQLException {
+                Criteria criteria = session.createCriteria(type);
+                hibernateTemplate.applySettings(criteria);
+                return criteria.add(
+                        Restrictions.in(persistentEntity.getIdentity().getName(), getIterableAsCollection(keys)))
+                        .list();
             }
         });
     }
@@ -252,10 +265,8 @@ public class HibernateSession extends AbstractAttributeStoringSession {
 
     public Query createQuery(Class type) {
         final PersistentEntity persistentEntity = getMappingContext().getPersistentEntity(type.getName());
-        final Criteria criteria = hibernateTemplate
-                                    .getSessionFactory()
-                                    .getCurrentSession()
-                                    .createCriteria(type);
+        final Criteria criteria = hibernateTemplate.getSessionFactory().getCurrentSession().createCriteria(type);
+        hibernateTemplate.applySettings(criteria);
         return new HibernateQuery(criteria, this, persistentEntity);
     }
 

@@ -63,5 +63,5 @@ public interface GroovyPageLocator {
      *
      * @param uri The URI
      */
-    void removePrecompiledPage(String uri);
+    void removePrecompiledPage(GroovyPageCompiledScriptSource compiledScriptSource);
 }

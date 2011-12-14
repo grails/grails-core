@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.compiler.injection
 
+import grails.artefact.Enhanced
+import grails.util.GrailsUtil
 import spock.lang.Specification
 
 class GrailsArtefactTransformerSpec extends Specification {
@@ -103,23 +105,32 @@ class GrailsArtefactTransformerSpec extends Specification {
             String == oneArgGetters[0].returnType
             String == oneArgGetters[0].parameterTypes[0].theClass
     }
+    
+    void 'Test version attribute on @Enhanced'() {
+        given:
+            def testClass = gcl.parseClass('''
+            class TestClass {
+                String firstName
+            }
+            ''')
+
+        when:
+           def enhancedAnnotation = testClass.getAnnotation(Enhanced)
+           def version = enhancedAnnotation.version()
+
+        then:
+            version == GrailsUtil.grailsVersion
+    }
 }
 
 class TestTransformer extends AbstractGrailsArtefactTransformer {
-    public Class getInstanceImplementation() {
-        TestInstanceApi
-    }
+    Class getInstanceImplementation() { TestInstanceApi }
 
-    public Class getStaticImplementation() {
-    }
+    Class getStaticImplementation() {}
 
-    boolean shouldInject(URL arg0) {
-        true
-    }
-    
-    protected boolean requiresAutowiring() {
-        false
-	}
+    boolean shouldInject(URL arg0) { true }
+
+    protected boolean requiresAutowiring() { false }
 }
 
 class TestInstanceApi {
@@ -128,4 +139,3 @@ class TestInstanceApi {
     void setSomePropertyDefinedInTestInstanceApi(Object instance, String arg) {}
     String getSomePropertyDefinedInTestInstanceApi(Object instance) { }
 }
-

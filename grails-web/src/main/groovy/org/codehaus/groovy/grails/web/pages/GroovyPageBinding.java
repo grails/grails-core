@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Binding;
-import groovy.lang.MetaProperty;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,19 +71,14 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
         Object val = getVariablesMap().get(name);
         if (val == null && !getVariablesMap().containsKey(name)) {
             if (GroovyPage.PAGE_SCOPE.equals(name)) return this;
+            if ("variables".equals(name)) return getVariables();
+            if ("metaClass".equals(name)) return getMetaClass();
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
                     // cache variable in this context since parent context cannot change during usage of this context
                     getVariablesMap().put(name, val);
                     cachedParentVariableNames.add(name);
-                }
-            }
-            // stackover flow if pluginContextPath or pagePlugin is checked by MetaProperty
-            if (val==null && !name.equals(GroovyPage.PLUGIN_CONTEXT_PATH) && !name.equals("pagePlugin")) {
-                MetaProperty metaProperty = getMetaClass().getMetaProperty(name);
-                if (metaProperty != null) {
-                    val = metaProperty.getProperty(this);
                 }
             }
         }
@@ -139,10 +133,10 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
                     bindingToUse = this;
                 }
             }
-            if(bindingToUse instanceof AbstractGroovyPageBinding) {
-            	((AbstractGroovyPageBinding)bindingToUse).getVariablesMap().put(name, value);            	
+            if (bindingToUse instanceof AbstractGroovyPageBinding) {
+                ((AbstractGroovyPageBinding)bindingToUse).getVariablesMap().put(name, value);
             } else {
-                bindingToUse.getVariables().put(name, value);            	
+                bindingToUse.getVariables().put(name, value);
             }
 
             if (bindingToUse != this && cachedParentVariableNames.contains(name)) {
@@ -207,19 +201,19 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
     public void setRoot(boolean root) {
         this.root = root;
     }
-    
-	@Override
-	public Set<String> getVariableNames() {
-		HashSet<String> variableNames=new HashSet<String>();
-		if(parent != null) {
-			if(parent instanceof AbstractGroovyPageBinding) {
-				variableNames.addAll(((AbstractGroovyPageBinding)parent).getVariableNames());
-			} else {
-				variableNames.addAll(parent.getVariables().keySet());
-			}
-		}
-		variableNames.addAll(getVariablesMap().keySet());
-		return variableNames;
-	}
-}
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public Set<String> getVariableNames() {
+        Set<String> variableNames=new HashSet<String>();
+        if (parent != null) {
+            if (parent instanceof AbstractGroovyPageBinding) {
+                variableNames.addAll(((AbstractGroovyPageBinding)parent).getVariableNames());
+            } else {
+                variableNames.addAll(parent.getVariables().keySet());
+            }
+        }
+        variableNames.addAll(getVariablesMap().keySet());
+        return variableNames;
+    }
+}

@@ -17,6 +17,15 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.ivy.core.IvyPatternHelper;
 import org.apache.ivy.core.module.descriptor.Artifact;
 import org.apache.ivy.core.module.descriptor.DefaultArtifact;
@@ -30,14 +39,6 @@ import org.apache.ivy.util.ContextualSAXHandler;
 import org.apache.ivy.util.Message;
 import org.apache.ivy.util.XMLHelper;
 import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 
 /**
  * Fixes the broken snapshot support in IBiblioResolver.
@@ -153,7 +154,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
             return null;
         }
 
-        if (shouldUseMavenMetadata(getWholePattern())) {
+        if (shouldUseMavenMetadata()) {
             InputStream metadataStream = null;
             try {
                 String metadataLocation = IvyPatternHelper.substitute(
@@ -182,7 +183,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                         String baseRevision = snapshotRevision.substring(0, snapshotRevision.length() - "-SNAPSHOT".length());
                         String uniqueRevisionSuffix = new StringBuffer().append(timestamp).append("-").append(buildNumber).toString();
 
-                        return new SnapshotRevision(baseRevision, uniqueRevisionSuffix, Long.parseLong(lastUpdated.toString()));
+                        return new SnapshotRevision(baseRevision, uniqueRevisionSuffix, lastUpdated.toString());
                     }
                 } else {
                     Message.verbose("\tmaven-metadata not available: " + metadata);
@@ -214,12 +215,22 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
         public final String uniqueRevision;
         public final long lastModified;
 
-        private SnapshotRevision(String revision, String uniqueRevisionSuffix, long lastModified) {
+        private SnapshotRevision(String revision, String uniqueRevisionSuffix, String lastModified) {
             this.revision = revision + "-SNAPSHOT";
             this.uniqueRevision = revision + "-" + uniqueRevisionSuffix;
-            this.lastModified = lastModified;
+            this.lastModified = calculateLastModified(lastModified);
         }
 
+        private long calculateLastModified(String timestamp) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            try {
+                return format.parse(timestamp).getTime();
+            } catch (ParseException e) {
+                return -1;
+            }
+        }
+        
         @Override
         public String toString() {
             return uniqueRevision;
@@ -230,7 +241,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
         return getRoot() + getPattern();
     }
 
-    private boolean shouldUseMavenMetadata(String pattern) {
+    private boolean shouldUseMavenMetadata() {
         return isUseMavenMetadata() && isM2compatible() && getPattern().endsWith(M2_PATTERN);
     }
 }

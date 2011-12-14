@@ -64,6 +64,7 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.springframework.validation.Validator
 import org.springframework.transaction.PlatformTransactionManager
+import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -98,13 +99,9 @@ class HibernatePluginSupport {
             }
         }
 
-        for (String datasourceName in datasourceNames) {
-            boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
-            String suffix = isDefault ? '' : '_' + datasourceName
-            ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT,
-                new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(),
-                    UniqueConstraint, "sessionFactory$suffix"))
-        }
+        ConstrainedProperty.registerNewConstraint(UniqueConstraint.UNIQUE_CONSTRAINT,
+            new PersistentConstraintFactory(getSpringConfig().getUnrefreshedApplicationContext(),
+                UniqueConstraint))
 
         proxyHandler(HibernateProxyHandler)
 
@@ -147,7 +144,7 @@ class HibernatePluginSupport {
             def hibConfig = application.config["hibernate$suffix"] ?: application.config.hibernate
 
             def hibConfigClass = ds?.configClass
-            def hibProps = [(Environment.SESSION_FACTORY_NAME): ConfigurableLocalSessionFactoryBean.name + suffix]
+            def hibProps = [:]
 
             if (ds.loggingSql || ds.logSql) {
                 hibProps."hibernate.show_sql" = "true"
@@ -177,15 +174,24 @@ class HibernatePluginSupport {
             LOG.info "Set db generation strategy to '${hibProps.'hibernate.hbm2ddl.auto'}' for datasource $datasourceName"
 
             if (hibConfig) {
-                def cacheProvider = hibConfig.cache.provider_class ?: 'net.sf.ehcache.hibernate.EhCacheProvider'
-                if (cacheProvider.contains('OSCacheProvider')) {
-                    try {
-                        def cacheClass = getClass().classLoader.loadClass(cacheProvider)
-                    }
-                    catch (Throwable t) {
-                        hibConfig.cache.provider_class = 'net.sf.ehcache.hibernate.EhCacheProvider'
-                        log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the class for this provider cannot be found.
-Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'"""
+                def cacheProvider = hibConfig.cache?.provider_class
+                if (cacheProvider) {
+                    if (cacheProvider.contains('OSCacheProvider')) {
+                        try {
+                            def cacheClass = getClass().classLoader.loadClass(cacheProvider)
+                        }
+                        catch (Throwable t) {
+                            hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
+                            log.error """WARNING: Your cache provider is set to '${cacheProvider}' in DataSource.groovy, however the class for this provider cannot be found.
+    Using Grails' default cache region factory: 'net.sf.ehcache.hibernate.EhCacheRegionFactory'"""
+                        }
+                    } else if (!(hibConfig.cache.useCacheProvider) && (cacheProvider=='org.hibernate.cache.EhCacheProvider' || cacheProvider=='net.sf.ehcache.hibernate.EhCacheProvider')) {
+                        hibConfig.cache.region.factory_class='net.sf.ehcache.hibernate.EhCacheRegionFactory'
+                        hibConfig.cache.remove('provider_class')
+                        if (hibConfig.cache.provider_configuration_file_resource_path) {
+                            hibProps.'net.sf.ehcache.configurationResourceName' = hibConfig.cache.provider_configuration_file_resource_path
+                            hibConfig.cache.remove('provider_configuration_file_resource_path')
+                        }
                     }
                 }
 
@@ -198,7 +204,18 @@ Using Grails' default cache provider: 'net.sf.ehcache.hibernate.EhCacheProvider'
 Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 }
 
+                // allow adding hibernate properties that don't start with "hibernate."
+                if (hibConfig.get('properties') instanceof ConfigObject) {
+                    def hibernateProperties = hibConfig.remove('properties')
+                    hibProps.putAll(hibernateProperties.flatten().toProperties())
+                }
+
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
+
+                // move net.sf.ehcache.configurationResourceName to "top level"    if it exists
+                if (hibProps.'hibernate.net.sf.ehcache.configurationResourceName') {
+                    hibProps.'net.sf.ehcache.configurationResourceName' = hibProps.remove('hibernate.net.sf.ehcache.configurationResourceName')
+                }
             }
 
             "hibernateProperties$suffix"(PropertiesFactoryBean) { bean ->
@@ -355,12 +372,37 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 if (GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                     boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
                     String suffix = isDefault ? '' : '_' + datasourceName
-                    mappingContext.addEntityValidator(entity, ctx.getBean("${entity.name}Validator$suffix", Validator))
+                    final validator = ctx.getBean("${entity.name}Validator$suffix", Validator)
+                    mappingContext.addEntityValidator(entity, validator)
+                    if (isDefault) {
+                        GrailsDomainClass domainClass = application.getDomainClass(event.source.name)
+                        domainClass.setValidator(validator)
+                    }
                 }
             }
         }
 
         enhanceSessionFactories(ctx, event.application)
+
+        // Verify that the reload worked by executing a GORM method. If it failed try again
+        try {
+            event.source.count()
+        } catch (MissingMethodException mme) {
+
+           MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
+           final sessionFactory = ctx.getBean("sessionFactory", SessionFactory)
+           final txMgr = ctx.getBean("transactionManager", HibernateTransactionManager)
+           final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx, application.config)
+           def enhancer = new HibernateGormEnhancer(datastore, txMgr, application)
+           def entity = mappingContext.getPersistentEntity(event.source.name)
+           if (entity.javaClass.getAnnotation(Enhanced) == null) {
+              enhancer.enhance entity
+           }
+           else {
+              enhancer.enhance entity, true
+           }
+
+        }
     }
 
     static final doWithDynamicMethods = { ApplicationContext ctx ->
@@ -518,7 +560,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         String propertyName = property.name
         def getterName = GrailsClassUtils.getGetterName(propertyName)
         def setterName = GrailsClassUtils.getSetterName(propertyName)
-        domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.curry(propertyName)
+        domainClass.metaClass."${getterName}" = LAZY_PROPERTY_HANDLER.clone().curry(propertyName)
         domainClass.metaClass."${setterName}" = { PropertyUtils.setProperty(delegate, propertyName, it) }
 
         for (GrailsDomainClass sub in domainClass.subClasses) {

@@ -1,6 +1,12 @@
 configurations {
     agent.extendsFrom compile
 }
+
+eclipse {
+    classpath {
+        plusConfigurations += configurations.agent
+    }
+}
 dependencies {
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
@@ -8,20 +14,45 @@ dependencies {
     compile( "commons-validator:commons-validator:1.3.1" ) {
         exclude group: 'xml-apis', module:'xml-apis'
         exclude group: 'commons-digester', module:'commons-digester'
+        exclude group: 'commons-logging', module:'commons-logging'
+        exclude group: 'commons-beanutils', module:'commons-beanutils'
     }
-    compile "org.springframework:spring-aop:${springVersion}",
-            "org.springframework:spring-aspects:${springVersion}",
-            "org.springframework:spring-asm:${springVersion}",
-            "org.springframework:spring-core:${springVersion}",
-            "org.springframework:spring-beans:${springVersion}",
-            "org.springframework:spring-context:${springVersion}",
-            "org.springframework:spring-context-support:${springVersion}",
-            "org.springframework:spring-expression:${springVersion}",
-            "org.springframework:spring-test:${springVersion}",
-            "org.springframework:spring-web:${springVersion}"
+    compile("org.springframework:spring-aop:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-aspects:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-asm:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-core:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-beans:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-context:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-context-support:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    compile("org.springframework:spring-expression:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    compile("org.springframework:spring-test:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    compile("org.springframework:spring-web:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 
     runtime 'oro:oro:2.0.8'
-    runtime 'cglib:cglib-nodep:2.1_3' // Used to generate proxies for classes via Spring AOP
+    runtime 'cglib:cglib:2.2' // Used to generate proxies for classes via Spring AOP
+    runtime 'asm:asm:3.1'
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
@@ -56,3 +87,9 @@ compileGroovy.doFirst {
 }
 
 jar.appendix = 'core'
+
+eclipse {
+    classpath {
+       plusConfigurations += configurations.agent
+    }
+}

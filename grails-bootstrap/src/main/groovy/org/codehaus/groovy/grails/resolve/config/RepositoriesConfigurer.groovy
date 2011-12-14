@@ -94,6 +94,9 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
         flatDir(name:"grailsHome", dirs:"${grailsHome}/src/libs")
         flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
+        final workDir = dependencyManager.buildSettings?.grailsWorkDir
+        if(workDir)
+            flatDir(name:"grailsHome", dirs:"${workDir}/cached-installed-plugins")
         if (grailsHome!='.') {
             def resolver = createLocalPluginResolver("grailsHome", grailsHome)
             addToChainResolver(resolver)
@@ -170,7 +173,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     void grailsCentral() {
         if (!context.offline && isResolverNotAlreadyDefined('grailsCentral')) {
-            grailsRepo("http://svn.codehaus.org/grails-plugins", "grailsCentral")
+            grailsRepo("http://plugins.grails.org", "grailsCentral")
             mavenRepo("http://repo.grails.org/grails/plugins")
             mavenRepo("http://repo.grails.org/grails/core")
             grailsRepo("http://svn.codehaus.org/grails/trunk/grails-plugins", "grailsCore")

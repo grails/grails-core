@@ -40,7 +40,6 @@ target(uninstallPlugin:"Uninstalls a plug-in for a given name") {
 
         uninstallPluginForName(pluginName, pluginRelease)
 
-        event("PluginUninstalled", ["The plugin ${pluginName}-${pluginRelease} has been uninstalled from the current application"])
     }
     else {
         event("StatusError", ["You need to specify the plug-in name and (optional) version, e.g. \"grails uninstall-plugin feeds 1.0\""])

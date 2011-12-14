@@ -15,6 +15,13 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import groovy.lang.Script;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsUrlMappingsClass;
@@ -28,13 +35,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
-import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.ServletContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Constructs the UrlMappingsHolder from the registered UrlMappings class within a GrailsApplication.
@@ -43,12 +44,11 @@ import java.util.Map;
  * @since 0.5
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, ApplicationContextAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, ApplicationContextAware, GrailsApplicationAware, PluginManagerAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
     private UrlMappingsHolder urlMappingsHolder;
-    private ServletContext servletContext;
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
 
@@ -65,6 +65,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
     }
 
     public void afterPropertiesSet() throws Exception {
+        Assert.state(applicationContext != null, "Property [applicationContext] must be set!");
         Assert.state(grailsApplication != null, "Property [grailsApplication] must be set!");
 
         List urlMappings = new ArrayList();
@@ -130,14 +131,13 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         this.grailsApplication = grailsApplication;
     }
 
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
+    public void setServletContext(@SuppressWarnings("unused") ServletContext servletContext) {
+        // not used
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
-
 
     /**
      * Set the ApplicationContext that this object runs in.
@@ -155,11 +155,10 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
      *          if thrown by application context methods
      * @see org.springframework.beans.factory.BeanInitializationException
      */
-    @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         setGrailsApplication(applicationContext.getBean( GrailsApplication.APPLICATION_ID, GrailsApplication.class) );
         setServletContext(applicationContext instanceof WebApplicationContext ? ((WebApplicationContext) applicationContext).getServletContext() : null);
-        setPluginManager( applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class));
+        setPluginManager( applicationContext.containsBean(GrailsPluginManager.BEAN_NAME) ? applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class) : null);
     }
 }

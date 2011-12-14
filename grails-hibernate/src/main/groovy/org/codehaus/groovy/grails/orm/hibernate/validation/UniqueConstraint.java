@@ -34,6 +34,7 @@ import org.hibernate.TransientObjectException;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 
 /**
@@ -76,13 +77,17 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
                 constraintParameter instanceof String ||
                 constraintParameter instanceof CharSequence ||
                 constraintParameter instanceof List<?>)) {
-            throw new IllegalArgumentException("Parameter for constraint ["+UNIQUE_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be a boolean or string value");
+            throw new IllegalArgumentException("Parameter for constraint [" + UNIQUE_CONSTRAINT +
+                  "] of property [" + constraintPropertyName + "] of class [" +
+                  constraintOwningClass + "] must be a boolean or string value");
         }
 
         if (constraintParameter instanceof List<?>) {
             for (Object parameter : ((List<?>) constraintParameter)) {
                 if (!(parameter instanceof String || parameter instanceof CharSequence)) {
-                    throw new IllegalArgumentException("Parameter for constraint [" + UNIQUE_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a boolean or string value");
+                    throw new IllegalArgumentException("Parameter for constraint [" + UNIQUE_CONSTRAINT +
+                          "] of property [" + constraintPropertyName + "] of class [" +
+                          constraintOwningClass + "] must be a boolean or string value");
                 }
                 uniquenessGroup.add(parameter.toString());
             }
@@ -100,7 +105,9 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
             for (Object anUniquenessGroup : uniquenessGroup) {
                 String propertyName = (String) anUniquenessGroup;
                 if (GrailsClassUtils.getPropertyType(constraintOwningClass, propertyName) == null) {
-                    throw new IllegalArgumentException("Scope for constraint [" + UNIQUE_CONSTRAINT + "] of property [" + constraintPropertyName + "] of class [" + constraintOwningClass + "] must be a valid property name of same class");
+                    throw new IllegalArgumentException("Scope for constraint [" + UNIQUE_CONSTRAINT +
+                          "] of property [" + constraintPropertyName + "] of class [" +
+                          constraintOwningClass + "] must be a valid property name of same class");
                 }
             }
         }
@@ -120,14 +127,17 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
 
         final Object id;
         try {
-            id = InvokerHelper.invokeMethod(target, "ident",null);
+            id = InvokerHelper.invokeMethod(target, "ident", null);
         }
         catch (Exception e) {
-            throw new GrailsRuntimeException("Target of [unique] constraints ["+ target +"] is not a domain instance. Unique constraint can only be applied to to domain classes and not custom user types or embedded instances");
+            throw new GrailsRuntimeException("Target of [unique] constraints [" + target +
+                  "] is not a domain instance. Unique constraint can only be applied to " +
+                  "domain classes and not custom user types or embedded instances");
         }
 
         HibernateTemplate hibernateTemplate = getHibernateTemplate();
-        if (hibernateTemplate == null) throw new IllegalStateException("Unable use [unique] constraint, no Hibernate SessionFactory found!");
+        Assert.state(hibernateTemplate != null,
+              "Unable use [unique] constraint, no Hibernate SessionFactory found!");
         List<?> results = hibernateTemplate.executeFind(new HibernateCallback<List<?>>() {
             public List<?> doInHibernate(Session session) throws HibernateException {
                 session.setFlushMode(FlushMode.MANUAL);
@@ -211,7 +221,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
             reject = true;
         }
         if (reject) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
+            Object[] args = { constraintPropertyName, constraintOwningClass, propertyValue };
             rejectValue(target, errors, UNIQUE_CONSTRAINT, args, getDefaultMessage(DEFAULT_NOT_UNIQUE_MESSAGE_CODE));
         }
     }
@@ -220,8 +230,4 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
         return uniquenessGroup;
     }
 
-    @SuppressWarnings("rawtypes")
-    public boolean supports(Class type) {
-        return true;
-    }
 }

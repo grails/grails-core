@@ -31,7 +31,7 @@ task instrumentForCoverage {
             taskdef(resource: 'tasks.properties', classpath: configurations.coverage.asPath)
         }
         copy {
-            from sourceSets.main.classes
+            from sourceSets.main.output
             into instrumentedClassesDir
         }
         ant {

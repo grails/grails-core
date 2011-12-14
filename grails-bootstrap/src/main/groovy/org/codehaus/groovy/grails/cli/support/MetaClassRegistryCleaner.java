@@ -15,12 +15,13 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClassRegistry;
-import groovy.lang.MetaClassRegistryChangeEvent;
-import groovy.lang.MetaClassRegistryChangeEventListener;
+import groovy.lang.*;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -32,16 +33,34 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @SuppressWarnings("rawtypes")
 public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventListener {
 
-    private Collection<Class> alteredClasses = new ConcurrentLinkedQueue<Class>();
+    private Map<Class, Object> alteredClasses = new ConcurrentHashMap<Class, Object> ();
+    private static final Object NO_CUSTOM_METACLASS = new Object();
 
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
-        alteredClasses.add(cmcu.getClassToUpdate());
+        MetaClass oldMetaClass = cmcu.getOldMetaClass();
+        Class classToUpdate = cmcu.getClassToUpdate();
+        if(oldMetaClass != null) {
+            Object current = alteredClasses.get(classToUpdate);
+            if(current == null || current == NO_CUSTOM_METACLASS) {
+                alteredClasses.put(classToUpdate, oldMetaClass);
+            }
+        }
+        else {
+            alteredClasses.put(classToUpdate, NO_CUSTOM_METACLASS);
+        }
     }
 
     public void clean() {
         MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
-        for (Class cls : alteredClasses) {
-            registry.removeMetaClass(cls);
+        Set<Class> classes = new HashSet<Class>(alteredClasses.keySet());
+        for (Class aClass : classes) {
+            Object alteredMetaClass = alteredClasses.get(aClass);
+            if(alteredMetaClass == NO_CUSTOM_METACLASS) {
+                registry.removeMetaClass(aClass);
+            }
+            else {
+                registry.setMetaClass(aClass, (MetaClass) alteredMetaClass);
+            }
         }
         alteredClasses.clear();
     }
