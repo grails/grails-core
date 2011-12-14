@@ -8,28 +8,28 @@ import org.springframework.webflow.engine.FlowInputMappingException
 class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
     def searchMoreAction = { [moreResults: ["one", "two", "three"]] }
-        def subber = {
-            input {
-                shortHand()
-                constantDefault1('constantDefault1Value')
-                constantDefault2(required: false, value: 'constantDefault2Value')
-                dynamicDefault1 {conversation.get('conversationAttribute1')}
-                dynamicDefault2(value: {conversation.get('conversationAttribute2')})
-            }
+    def subber = {
+        input {
+            shortHand()
+            constantDefault1('constantDefault1Value')
+            constantDefault2(required: false, value: 'constantDefault2Value')
+            dynamicDefault1 {conversation.get('conversationAttribute1')}
+            dynamicDefault2(value: {conversation.get('conversationAttribute2')})
+        }
 
-            subberStart {
-                on("next").to "subberEnd"
-            }
+        subberStart {
+            on("next").to "subberEnd"
+        }
 
-            subberEnd {
-                output {
-                    constantOut1('constantOut1Value')
-                    constantOut2(value: 'constantOut2Value')
-                    dynamicOut1 {conversation.get('conversationAttribute1')}
-                    dynamicOut2(value: {conversation.get('conversationAttribute2')})
-                }
+        subberEnd {
+            output {
+                constantOut1('constantOut1Value')
+                constantOut2(value: 'constantOut2Value')
+                dynamicOut1 {conversation.get('conversationAttribute1')}
+                dynamicOut2(value: {conversation.get('conversationAttribute2')})
             }
         }
+    }
 
     def requiredInputSubber = {
         input {
