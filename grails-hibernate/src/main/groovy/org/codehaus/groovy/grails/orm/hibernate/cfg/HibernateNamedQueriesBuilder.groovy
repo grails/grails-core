@@ -180,7 +180,7 @@ class NamedCriteriaProxy<T> {
         domainClass.clazz.withCriteria(countClosure)
     }
 
-    T findWhere(params) {
+    def findWhere(params) {
         findAllWhere(params, true)
     }
 
