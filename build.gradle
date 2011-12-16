@@ -263,5 +263,5 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    distributionUrl "http://repo.gradle.org/gradle/distributions-snapshots/gradle-1.0-milestone-7-20111214110828+0100-bin.zip"
+    distributionUrl "http://repo.gradle.org/gradle/distributions/gradle-1.0-milestone-6-bin.zip"
 }
