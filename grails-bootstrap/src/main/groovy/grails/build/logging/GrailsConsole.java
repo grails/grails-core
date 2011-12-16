@@ -58,6 +58,7 @@ public class GrailsConsole {
     public static final String WARNING = "Warning";
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
+    public static final Character SECURE_MASK_CHAR = new Character('*');
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -573,6 +574,22 @@ public class GrailsConsole {
      * string.
      */
     public String userInput(String msg) {
+        return doUserInput(msg, false);
+    }
+
+    /**
+     * Like {@link #userInput(String)} except that the user's entered characters will be replaced with ‘*’ on the CLI,
+     * masking the input (i.e. suitable for capturing passwords etc.).
+     * 
+     * @param msg The message/question to display.
+     * @return The line of text entered by the user. May be a blank
+     * string.
+     */
+    public String secureUserInput(String msg) {
+        return doUserInput(msg, true);
+    }
+
+    private String doUserInput(String msg, boolean secure) {
         // Add a space to the end of the message if there isn't one already.
         if (!msg.endsWith(" ") && !msg.endsWith("\t")) {
             msg += ' ';
@@ -581,7 +598,7 @@ public class GrailsConsole {
         lastMessage = "";
         msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
         try {
-            return readLine(msg);
+            return readLine(msg, secure);
         } finally {
             cursorMove = 0;
         }
@@ -595,17 +612,17 @@ public class GrailsConsole {
     private String showPrompt(String prompt) {
         cursorMove = 0;
         if (!userInputActive) {
-            return readLine(prompt);
+            return readLine(prompt, false);
         }
 
         out.print(prompt);
         return null;
     }
 
-    private String readLine(String prompt) {
+    private String readLine(String prompt, boolean secure) {
         userInputActive = true;
         try {
-            return reader.readLine(prompt);
+            return secure ? reader.readLine(prompt, SECURE_MASK_CHAR) : reader.readLine(prompt);
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
         }finally {
