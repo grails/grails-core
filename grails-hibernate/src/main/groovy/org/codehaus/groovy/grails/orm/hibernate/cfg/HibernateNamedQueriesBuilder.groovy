@@ -79,7 +79,7 @@ class HibernateNamedQueriesBuilder {
     }
 }
 
-class NamedCriteriaProxy {
+class NamedCriteriaProxy<T> {
 
     private criteriaClosure
     private GrailsDomainClass domainClass
@@ -147,7 +147,7 @@ class NamedCriteriaProxy {
         }
     }
 
-    def get() {
+    T get() {
         def getClosure = {
             queryBuilder = delegate
             invokeCriteriaClosure()
@@ -157,7 +157,7 @@ class NamedCriteriaProxy {
         domainClass.clazz.withCriteria(getClosure)
     }
     
-    def get(id) {
+    T get(id) {
         id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
             queryBuilder = delegate
@@ -168,7 +168,7 @@ class NamedCriteriaProxy {
         domainClass.clazz.withCriteria(getClosure)
     }
 
-    def count(Closure additionalCriteriaClosure = null) {
+    int count(Closure additionalCriteriaClosure = null) {
         def countClosure = {
             queryBuilder = delegate
             invokeCriteriaClosure(additionalCriteriaClosure)
