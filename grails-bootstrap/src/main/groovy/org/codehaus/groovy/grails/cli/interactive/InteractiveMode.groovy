@@ -81,7 +81,7 @@ class InteractiveMode {
     static boolean isActive() {
         getCurrent() != null && getCurrent().interactiveModeActive
     }
-
+    def lastScriptName = null
     void run() {
         current = this
         System.setProperty("grails.disable.exit", "true") // you can't exit completely in interactive mode from a script
@@ -97,6 +97,9 @@ class InteractiveMode {
         addStatus("Enter a script name to run. Use TAB for completion: ")
         while (interactiveModeActive) {
             def scriptName = showPrompt()
+            if(!scriptName.trim() && lastScriptName){
+                scriptName = lastScriptName
+            }
             try {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
@@ -168,6 +171,7 @@ class InteractiveMode {
                             console.stacktrace = commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)
                             console.verbose = commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)
                             scriptRunner.executeScriptWithCaching(commandLine)
+                            lastScriptName = scriptName
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"
                         }
