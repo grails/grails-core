@@ -41,18 +41,11 @@ public class GroovyPageTagBody extends Closure {
     private static final long serialVersionUID = 4396762064131558457L;
     private Closure<?> bodyClosure;
     private Binding originalBinding;
-    private boolean preferSubChunkWhenWritingToOtherBuffer;
     private GrailsWebRequest webRequest;
     private GroovyPage originalBindingPage;
 
     public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,
             Closure<?> bodyClosure) {
-        this(owner, webRequest, bodyClosure, false);
-    }
-
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,
-            Closure<?> bodyClosure,
-            boolean preferSubChunkWhenWritingToOtherBuffer) {
         super(owner);
 
         Assert.notNull(bodyClosure, "Argument [bodyClosure] cannot be null!");
@@ -60,7 +53,6 @@ public class GroovyPageTagBody extends Closure {
 
         this.bodyClosure = bodyClosure;
         this.webRequest = webRequest;
-        this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
 
         findPageScopeBinding();
     }
@@ -82,18 +74,9 @@ public class GroovyPageTagBody extends Closure {
                 GrailsApplicationAttributes.PAGE_SCOPE, currentBinding);
     }
 
-    public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
-        return preferSubChunkWhenWritingToOtherBuffer;
-    }
-
-    public void setPreferSubChunkWhenWritingToOtherBuffer(boolean prefer) {
-        this.preferSubChunkWhenWritingToOtherBuffer = prefer;
-    }
-
     @SuppressWarnings("unchecked")
     private Object captureClosureOutput(Object args) {
-        final GroovyPageTagWriter capturedOut = new GroovyPageTagWriter(
-                preferSubChunkWhenWritingToOtherBuffer);
+        final GroovyPageTagWriter capturedOut = new GroovyPageTagWriter();
         Binding currentBinding = originalBinding;
         boolean itChanged = false;
         Object originalIt = null;

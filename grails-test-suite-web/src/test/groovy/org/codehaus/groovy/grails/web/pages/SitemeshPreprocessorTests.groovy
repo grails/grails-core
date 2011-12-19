@@ -18,7 +18,7 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
 <html>
         <sitemesh:captureHead>
         <sitemesh:captureMeta gsp_sm_xmlClosingForEmptyTag="" http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:captureHead>
+        <sitemesh:wrapTitleTag><sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:wrapTitleTag></sitemesh:captureHead>
         <sitemesh:captureBody onload="test();">
             body text
         </sitemesh:captureBody>
@@ -42,7 +42,7 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
         def preprocessor = new SitemeshPreprocessor()
         def gspBodyExpected = '''
 <html>
-        <sitemesh:captureHead><sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:captureHead>
+        <sitemesh:captureHead><sitemesh:wrapTitleTag><sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:wrapTitleTag></sitemesh:captureHead>
         <sitemesh:captureBody onload="test();">
             body text
         </sitemesh:captureBody>
@@ -72,7 +72,7 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
         def preprocessor = new SitemeshPreprocessor()
         def gspBodyExpected = '''
 <html>
-        <sitemesh:captureHead><sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:captureHead>
+        <sitemesh:captureHead><sitemesh:wrapTitleTag><sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:wrapTitleTag></sitemesh:captureHead>
         <sitemesh:captureBody onload="test();">
             body text
         </sitemesh:captureBody>
@@ -101,7 +101,7 @@ class SitemeshPreprocessorTests extends GroovyTestCase {
         def preprocessor = new SitemeshPreprocessor()
         def gspBodyExpected = '''
 <html>
-        <sitemesh:captureHead><sitemesh:captureTitle>This is the title</sitemesh:captureTitle>
+        <sitemesh:captureHead><sitemesh:wrapTitleTag><sitemesh:captureTitle>This is the title</sitemesh:captureTitle></sitemesh:wrapTitleTag>
             <sitemesh:parameter name="foo" value="bar" />
         </sitemesh:captureHead>
         <sitemesh:captureBody>

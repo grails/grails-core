@@ -36,13 +36,22 @@ import com.opensymphony.sitemesh.compatability.Content2HTMLPage;
  * @author Lari Hotari, Sagire Software Oy
  */
 public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
-
     StreamCharBuffer headBuffer;
     StreamCharBuffer bodyBuffer;
     StreamCharBuffer pageBuffer;
+    StreamCharBuffer titleBuffer;
     boolean used = false;
     boolean titleCaptured = false;
     Map<String, StreamCharBuffer> contentBuffers;
+    private boolean renderingLayout;
+
+    public GSPSitemeshPage() {
+        this(false);
+    }
+    
+    public GSPSitemeshPage(boolean renderingLayout) {
+        this.renderingLayout=renderingLayout;
+    }
 
     public void addProperty(String name, Object value) {
         addProperty(name, (value == null ? null : String.valueOf(value)));
@@ -50,9 +59,6 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 
     @Override
     public void addProperty(String name, String value) {
-        if ("title".equals(name)) {
-            titleCaptured = true;
-        }
         super.addProperty(name, value);
         used = true;
     }
@@ -64,9 +70,14 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
         }
 
         if (titleCaptured) {
-            String headAsString = headBuffer.toString();
-            // strip out title for sitemesh version of <head>
-            out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
+            if(titleBuffer != null) {
+                titleBuffer.clear();
+                headBuffer.writeTo(out);
+            } else {
+                String headAsString = headBuffer.toString();
+                // strip out title for sitemesh version of <head>
+                out.write(headAsString.replaceFirst("<title(\\s[^>]*)?>(.*?)</title>",""));
+            }
         }
         else {
             headBuffer.writeTo(out);
@@ -124,16 +135,34 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
 
     public void setHeadBuffer(StreamCharBuffer headBuffer) {
         this.headBuffer = headBuffer;
+        applyStreamCharBufferSettings(headBuffer);
         used = true;
+    }
+
+    private void applyStreamCharBufferSettings(StreamCharBuffer buffer) {
+        if(!renderingLayout && buffer != null) {
+            buffer.setPreferSubChunkWhenWritingToOtherBuffer(true);
+        }
     }
 
     public void setBodyBuffer(StreamCharBuffer bodyBuffer) {
         this.bodyBuffer = bodyBuffer;
+        applyStreamCharBufferSettings(bodyBuffer);
         used = true;
     }
 
     public void setPageBuffer(StreamCharBuffer pageBuffer) {
         this.pageBuffer = pageBuffer;
+        applyStreamCharBufferSettings(pageBuffer);
+    }
+    
+    public void setTitleBuffer(StreamCharBuffer titleBuffer) {
+        this.titleBuffer = titleBuffer;
+        applyStreamCharBufferSettings(titleBuffer);
+    }
+    
+    public StreamCharBuffer getTitleBuffer() {
+        return titleBuffer;
     }
 
     public boolean isUsed() {
@@ -178,5 +207,13 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
             htmlPage = new Content2HTMLPage(content);
         }
         return htmlPage;
+    }
+
+    public boolean isTitleCaptured() {
+        return titleCaptured;
+    }
+
+    public void setTitleCaptured(boolean titleCaptured) {
+        this.titleCaptured = titleCaptured;
     }
 }
