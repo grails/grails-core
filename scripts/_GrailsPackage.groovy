@@ -88,30 +88,30 @@ target(startLogging:"Bootstraps logging") {
 
 target(generateWebXml : "Generates the web.xml file") {
     depends(classpath)
+    webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
+    def tmpWebXml = "${projectWorkDir}/web.xml.tmp"
 
-    if (buildConfig.grails.config.base.webXml) {
+    if(buildConfig.grails.config.base.webXml) {
         def customWebXml = resolveResources(buildConfig.grails.config.base.webXml)
-        if (customWebXml) {
-            webXml = customWebXml[0]
+        def customWebXmlFile = customWebXml[0].file
+        if (customWebXmlFile.exists()) {
+            ant.copy(file:customWebXmlFile, tofile:tmpWebXml, overwrite:true)
         }
         else {
             event("StatusError", [ "Custom web.xml defined in config [${buildConfig.grails.config.base.webXml}] could not be found." ])
             exit(1)
         }
-    }
-    else {
-        webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
-        def tmpWebXml = "${projectWorkDir}/web.xml.tmp"
+    } else {
         if (!webXml.exists()) {
             copyGrailsResource(tmpWebXml, grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"))
         }
         else {
             ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
         }
-        webXml = new FileSystemResource(tmpWebXml)
-        ant.replace(file:tmpWebXml, token:"@grails.project.key@",
-                    value:"${grailsAppName}-${grailsEnv}-${grailsAppVersion}")
     }
+    webXml = new FileSystemResource(tmpWebXml)
+    ant.replace(file:tmpWebXml, token:"@grails.project.key@",
+                    value:"${grailsAppName}-${grailsEnv}-${grailsAppVersion}")
 
     def sw = new StringWriter()
 
