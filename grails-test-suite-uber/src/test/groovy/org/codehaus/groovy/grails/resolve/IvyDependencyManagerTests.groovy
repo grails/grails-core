@@ -877,6 +877,17 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assert md.moduleRevisionId.revision == "0.1"
     }
 
+    void testCanAccessCoreDependenciesInDependenciesDsl() {
+        def manager = new IvyDependencyManager("test", "0.1", new BuildSettings())
+        def deps = manager.buildSettings.coreDependencies
+
+        manager.parseDependencies {
+            plugins { assert grailsCoreDependencies.is(deps) }
+            dependencies { assert grailsCoreDependencies.is(deps) }
+            repositories { assert grailsCoreDependencies.is(deps) }
+        }
+    }
+
     static final TEST_DATA = {
         repositories {
             flatDir name: 'mine', dirs: "lib"

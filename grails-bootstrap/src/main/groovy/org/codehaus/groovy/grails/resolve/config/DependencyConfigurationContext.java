@@ -15,9 +15,11 @@
 package org.codehaus.groovy.grails.resolve.config;
 
 import grails.util.Metadata;
+import grails.util.BuildSettings;
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies;
 
 public class DependencyConfigurationContext {
 
@@ -60,5 +62,19 @@ public class DependencyConfigurationContext {
 
     public DependencyConfigurationContext createInheritedContext() {
         return new DependencyConfigurationContext(dependencyManager, pluginName, true);
+    }
+
+    /**
+     * Gives access to the grails core dependencies.
+     * 
+     * @throws IllegalStateException If the dependency manager is unable to provide this information
+     */
+    public GrailsCoreDependencies getGrailsCoreDependencies() {
+        BuildSettings buildSettings = dependencyManager.getBuildSettings();
+        if (buildSettings == null) {
+            throw new IllegalStateException("Cannot ask for grails core dependencies if the dependency manager was configured without build settings, as it was in this case.");
+        }
+
+        return buildSettings.getCoreDependencies();
     }
 }
