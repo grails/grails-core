@@ -97,11 +97,12 @@ class InteractiveMode {
         addStatus("Enter a script name to run. Use TAB for completion: ")
         while (interactiveModeActive) {
             def scriptName = showPrompt()
-            if(!scriptName.trim() && lastScriptName){
-                scriptName = lastScriptName
-            }
             try {
                 def trimmed = scriptName.trim()
+                if(!trimmed && lastScriptName){
+                    trimmed = lastScriptName
+                    scriptName = lastScriptName
+                }
                 if (trimmed) {
                     if(trimmed.startsWith("create-app")) {
                         error "You cannot create an application in interactive mode."
@@ -171,7 +172,7 @@ class InteractiveMode {
                             console.stacktrace = commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)
                             console.verbose = commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)
                             scriptRunner.executeScriptWithCaching(commandLine)
-                            lastScriptName = scriptName
+                            lastScriptName = scriptName.trim()
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"
                         }
