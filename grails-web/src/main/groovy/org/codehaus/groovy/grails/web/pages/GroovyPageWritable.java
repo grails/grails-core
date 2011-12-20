@@ -213,7 +213,7 @@ class GroovyPageWritable implements Writable {
                 if (hasRequest) {
                     if (newParentCreated) {
                         request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-                    } else {
+                    } else  {
                         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
                     }
                 }

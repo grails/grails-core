@@ -2,16 +2,13 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     repositories {
-        mavenRepo(urls: "http://repo.grails.org/grails/core")
+        maven { url "http://repo.grails.org/grails/core" }
 	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
     dependencies {
         classpath "commons-io:commons-io:2.1"
         //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
-}
-repositories {
-    mavenRepo(urls: "http://repo.grails.org/grails/core")
 }
 
 apply plugin: 'idea'
@@ -25,7 +22,7 @@ commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
 commonsIOVersion = "2.1"
 commonsLangVersion = "2.6"
-datastoreVersion = "1.0.0.RC3"
+datastoreVersion = "1.0.0.BUILD-SNAPSHOT"
 gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
 groovyVersion = "1.8.4"
@@ -37,7 +34,7 @@ jlineVersion = "1.0"
 jnaVersion = "3.2.3"
 slf4jVersion = "1.6.2"
 springLoadedVersion = "1.0.2"
-springVersion = "3.1.0.RC2"
+springVersion = "3.1.0.RELEASE"
 springWebflowVersion= "2.0.8.RELEASE"
 hibernateVersion = "3.6.8.Final"
 ehcacheVersion = "2.4.6"
@@ -68,6 +65,37 @@ if(System.getProperty('groovy.jar')) {
     gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 }
 
+// Prevent multiple repositories being used, commented out as currently doesn't work.
+/*gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.hasTask(populateDependencies)) {
+        def projectsWithMultipleRepos = allprojects.findAll { repositories.size() > 1 }
+        println "projectsWithMultipleRepos: $projectsWithMultipleRepos"
+        if (projectsWithMultipleRepos) {
+            throw new GradleException(
+                "There are projects with more than one repository defined. \n" +
+                "This isn't allowed as it breaks the populateDependencies task. You can only use the grails central repo. \n" +
+                "This is a temporary workaround for the Gradle issue: http://issues.gradle.org/browse/GRADLE-1989"
+            )
+        }
+    }
+}
+*/
+
+allprojects {
+    repositories {
+        maven { url "http://repo.grails.org/grails/core" }
+    }
+
+    configurations {
+        all {
+            resolutionStrategy {
+                def cacheHours = isCiBuild ? 1 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
+            }
+        }
+    }
+}
 
 subprojects { project ->
     apply plugin: 'groovy'
@@ -82,6 +110,8 @@ subprojects { project ->
     archivesBaseName = 'grails'
     version = grailsVersion
     group = "org.grails"
+
+    isCiBuild = project.hasProperty("isCiBuild")
 
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
@@ -101,22 +131,11 @@ subprojects { project ->
         options.debug = true
     }
 
-    ideaModule {
-        // pathVariables GRADLE_USER_HOME: file('/home/myuser/.gradle') // that does not work
-        whenConfigured { module ->
-            // adding slf4j-simple with scope TEST to .iml
-            module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
-                [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
-            )
-        }
-    }
-
-    repositories {
-        mavenRepo(urls: "http://repo.grails.org/grails/core") {
-            if (project.hasProperty('snapshotTimeout')) {
-                setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
-            }
-        }
+    idea.module.iml.whenMerged { module ->
+        // adding slf4j-simple with scope TEST to .iml
+        module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
+            [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
+        )
     }
 
     dependencies {
@@ -187,13 +206,10 @@ subprojects { project ->
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
 
-
-        mavenRepo urls: url
-
         project.deployer = repositories.mavenDeployer {
           repository(url: url) {
-              final username = project.properties["artifactoryPublishUsername"]
-              final password = project.properties["artifactoryPublishPassword"]
+              final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
+              final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
 
               if(username && password) {
                 org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
@@ -246,5 +262,6 @@ apply {
     from 'gradle/findbugs.gradle'
 }
 
-
-
+task wrapper(type: Wrapper) {
+    distributionUrl "http://repo.gradle.org/gradle/distributions-snapshots/gradle-1.0-milestone-7-20111219065105+0100-bin.zip"
+}

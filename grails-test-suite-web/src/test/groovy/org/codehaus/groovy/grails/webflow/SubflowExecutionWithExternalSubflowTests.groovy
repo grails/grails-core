@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExec
 class SubflowExecutionWithExternalSubflowTests extends AbstractGrailsTagAwareFlowExecutionTests {
 
     void testSubFlowExecution() {
+        registerFlow('otherSubflow/subber', new OtherSubflowController().subberFlow)
         startFlow()
         assertCurrentStateEquals "start"
 

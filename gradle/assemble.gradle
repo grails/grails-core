@@ -2,20 +2,17 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin: org.grails.gradle.GrailsBuildPlugin
 
-// This is a little fragile, need to find a way to ask Gradle for this info.
-def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
-
 def libsConfigurations = []
 subprojects { subproject ->
     configurations {
-        libsConfigurations << libs { 
+        libsConfigurations << libs {
             extendsFrom compile, runtime
             ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
         }
     }
 }
 
-task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency', 
+task checkDuplicateDependencies(description: 'Checks the dependency graph for multiple versions of the same dependency',
                                 dependsOn: libsConfigurations) << {
     def moduleToVersionsMap = [:]
     libsConfigurations.each { configuration ->
@@ -24,7 +21,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
 
             def key = "${dependency.moduleGroup}/${dependency.moduleName}".toString()
             def value = dependency.moduleVersion
-                    
+
             def versions = moduleToVersionsMap[key]
             if(!versions) {
                 versions = [] as Set
@@ -48,29 +45,35 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
 
 task populateDependencies(type: Sync) {
     into homeLibDir
-    
+    includeEmptyDirs = false
+
+    grailsRepoCacheHash = "0176b65cdea0460180d870500d4c646f"
+    eachFile { file -> file.path -= "$grailsRepoCacheHash/" }
+
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
     // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
     // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
     gradle.taskGraph.whenReady { taskGraph ->
         if (taskGraph.hasTask(':populateDependencies')) {
             def projectNames = rootProject.subprojects*.name
-            
-            from(gradleArtifactCache) {
-                libsConfigurations.each { configuration ->
-                    configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                        def dependency = artifact.resolvedDependency
-                        
-                        if (!projectNames.contains(dependency.moduleName)) { // filter out the jars produced by this build
-                            def file = artifact.file
-                            include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
-                            include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                            include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
-                        }
+
+            baseCacheDir = "$gradle.gradleUserHomeDir/caches"
+            versionedCacheDir = "$baseCacheDir/artifacts-4"
+
+            from versionedCacheDir
+            libsConfigurations.each { configuration ->
+                configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                    def dependency = artifact.moduleVersion.id
+
+                    if (!projectNames.contains(dependency.name)) {
+                        def base = "${dependency.group}/${dependency.name}/$grailsRepoCacheHash"
+                        include "${base}/*-${dependency.version}.*"
+                        include "${base}/jars/${dependency.name}-${dependency.version}.jar"
+                        include "${base}/bundles/${dependency.name}-${dependency.version}.jar"
                     }
                 }
-           }
-       }
+            }
+        }
     }
 }
 
@@ -87,11 +90,11 @@ task pluginsFromSvn {
     plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
-        resources: "1.1.3",
-        webxml: "1.3.1",        
-        jquery: "1.7"
+        resources: "1.1.5",
+        webxml: "1.4.1",
+        jquery: "1.7.1"
     ]
-    
+
     dir = file("$buildDir/pluginsFromSvn")
     outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
@@ -108,7 +111,7 @@ task pluginsFromSvn {
 
 task installResources(type: Copy) {
     into projectDir // not actually used, but has to be set to something
-    
+
     into(homeLibDir.name) {
         from('grails-resources/src/grails/home/tests')
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
@@ -130,7 +133,7 @@ task installResources(type: Copy) {
 
     into(homeConfDir.name) {
         from("grails-resources/src/grails/home/conf")
-        
+
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         filter(ReplaceTokens, tokens: ['jline.version': jlineVersion])
@@ -141,11 +144,11 @@ task installResources(type: Copy) {
         filter(ReplaceTokens, tokens: ['gant.version': gantVersion])
         filter(ReplaceTokens, tokens: ['ivy.version': ivyVersion])
     }
-    
+
     into(homeDslSupportDir.name) {
         from 'grails-resources/src/grails/home/dsl-support'
     }
-    
+
     into ("$homeSrcDir.name/war/WEB-INF") {
         from "grails-resources/src/war/WEB-INF"
     }
@@ -153,12 +156,12 @@ task installResources(type: Copy) {
 
 // Make the install task for each subproject place the output jar into the dist dir
 subprojects {
-    install.doLast {
-         copy {
-             from jar.outputs.files
-             into homeDistDir
-         }
+    task installToHomeDist(type: Copy) {
+        from jar.outputs.files
+        into homeDistDir
     }
+
+    install.dependsOn installToHomeDist
 }
 
 task install(dependsOn: [populateDependencies, installResources] + subprojects*.install)
@@ -169,7 +172,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
     appendix = grailsVersion
 
     exclude "**/CVS/**"
-            
+
     into("grails-$grailsVersion") {
         from(projectDir) {
             include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties', 'dependencies.txt',
