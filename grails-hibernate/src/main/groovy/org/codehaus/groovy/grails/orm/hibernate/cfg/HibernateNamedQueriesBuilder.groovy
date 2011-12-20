@@ -187,9 +187,9 @@ class NamedCriteriaProxy<T> {
         findAllWhere(params, true)
     }
     
-    void order(String propName, String orderBy) {
+    void order(String propName, String direction) {
         if(!inCountMethod) {
-            queryBuilder?.order propName, orderBy
+            queryBuilder?.order propName, direction
         }
     }
 
