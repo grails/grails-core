@@ -88,6 +88,15 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         results = NamedCriteriaPublication.paperbacksOrderedByDatePublished.list(max: 25)
         assertEquals 3, results.totalCount
         assertEquals 3, NamedCriteriaPublication.paperbacksOrderedByDatePublished.count()
+                
+        results = NamedCriteriaPublication.paperbacksOrderedByDatePublishedDescending.list()
+        assertEquals 3, results.size()
+        assertEquals "Last Week's Paperback", results[2].title
+        assertEquals "Today's Paperback", results[1].title
+        assertEquals "Next Week's Paperback", results[0].title
+        results = NamedCriteriaPublication.paperbacksOrderedByDatePublishedDescending.list(max: 25)
+        assertEquals 3, results.totalCount
+        assertEquals 3, NamedCriteriaPublication.paperbacksOrderedByDatePublishedDescending.count()
     }
     
     void testSorting() {

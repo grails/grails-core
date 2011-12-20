@@ -186,7 +186,13 @@ class NamedCriteriaProxy<T> {
     def findWhere(params) {
         findAllWhere(params, true)
     }
-    
+
+    void order(String propName) {
+        if(!inCountMethod) {
+            queryBuilder?.order propName
+        }
+    }
+
     void order(String propName, String direction) {
         if(!inCountMethod) {
             queryBuilder?.order propName, direction

@@ -15,9 +15,14 @@ class NamedCriteriaPublication {
             eq 'paperback', true
         }
 
+        paperbacksOrderedByDatePublishedDescending {
+            eq 'paperback', true
+            order 'datePublished', 'desc'
+        }
+        
         paperbacksOrderedByDatePublished {
             eq 'paperback', true
-            order 'datePublished', 'asc'
+            order 'datePublished'
         }
         
         lastPublishedBefore { date ->
