@@ -87,7 +87,8 @@ class NamedCriteriaProxy<T> {
     private namedCriteriaParams
     private previousInChain
     private queryBuilder
-
+    private inCountMethod = false
+    
     private invokeCriteriaClosure(additionalCriteriaClosure = null) {
         def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
         crit()
@@ -170,18 +171,26 @@ class NamedCriteriaProxy<T> {
 
     int count(Closure additionalCriteriaClosure = null) {
         def countClosure = {
+            inCountMethod = true
             queryBuilder = delegate
             invokeCriteriaClosure(additionalCriteriaClosure)
             uniqueResult = true
             projections {
                 rowCount()
             }
+            inCountMethod = false
         }
         domainClass.clazz.withCriteria(countClosure)
     }
 
     def findWhere(params) {
         findAllWhere(params, true)
+    }
+    
+    void order(String propName, String orderBy) {
+        if(!inCountMethod) {
+            queryBuilder?.order propName, orderBy
+        }
     }
 
     def findAllWhere(Map params, Boolean uniq = false) {

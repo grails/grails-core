@@ -15,6 +15,11 @@ class NamedCriteriaPublication {
             eq 'paperback', true
         }
 
+        paperbacksOrderedByDatePublished {
+            eq 'paperback', true
+            order 'datePublished', 'asc'
+        }
+        
         lastPublishedBefore { date ->
             uniqueResult = true
             le 'datePublished', date
