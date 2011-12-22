@@ -27,7 +27,6 @@ environments {
         dataSource {
             dbCreate = "update"
             url = "jdbc:h2:prodDb;MVCC=TRUE"
-            pooled = true
             properties {
                maxActive = -1
                minEvictableIdleTimeMillis=1800000
