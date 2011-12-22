@@ -16,12 +16,10 @@ package org.codehaus.groovy.grails.orm.hibernate.validation;
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.validation.AbstractConstraint;
 import org.hibernate.SessionFactory;
-import org.hibernate.metadata.ClassMetadata;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -62,23 +60,25 @@ public abstract class AbstractPersistentConstraint extends AbstractConstraint im
      * Returns whether the constraint supports being applied against the specified type;
      *
      * @param type The type to support
-     * @return True if the constraint can be applied against the specified type
+     * @return true if the constraint can be applied against the specified type
      */
-    public boolean supports(Class type) {
+    public boolean supports(@SuppressWarnings("rawtypes") Class type) {
         return true;
     }
 
     /**
      * Return whether the constraint is valid for the owning class
      *
-     * @return True if it is
+     * @return true if it is
      */
     @Override
     public boolean isValid() {
-        if(applicationContext.containsBean("sessionFactory")) {
-            GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-            GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, constraintOwningClass.getName());
-            if(domainClass != null ) {
+        if (applicationContext.containsBean("sessionFactory")) {
+            GrailsApplication grailsApplication = applicationContext.getBean(
+                    GrailsApplication.APPLICATION_ID, GrailsApplication.class);
+            GrailsDomainClass domainClass = (GrailsDomainClass)grailsApplication.getArtefact(
+                    DomainClassArtefactHandler.TYPE, constraintOwningClass.getName());
+            if (domainClass != null) {
                 String mappingStrategy = domainClass.getMappingStrategy();
                 return mappingStrategy.equals(GrailsDomainClass.GORM);
             }

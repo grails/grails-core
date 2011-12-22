@@ -14,7 +14,7 @@ class TagLibMethodMissingSpec extends AbstractGrailsEnvChangingSpec {
     def setupSpec() {
         mockTagLib(TagLibMethodMissingBTagLib)
     }
-    
+
     def "Test tag library method missing handling"(template, expectedContent, grailsEnv) {
         when:'We call a tag that invokes an existing tag in other TagLib'
             changeGrailsEnv(grailsEnv)
@@ -23,7 +23,7 @@ class TagLibMethodMissingSpec extends AbstractGrailsEnvChangingSpec {
         then:"The expected result is rendered and when we call it a second time the cached version is used so we test that too"
             content == expectedContent
             content == content2
-        where: 
+        where:
             [template, expectedContent, grailsEnv] <<  createCombinationsForGrailsEnvs([
                 ['<a:zeroArguments />', 'ab'],
                 ['${a.zeroArguments()}', 'ab'],
@@ -33,20 +33,20 @@ class TagLibMethodMissingSpec extends AbstractGrailsEnvChangingSpec {
                 ['<a:myLink2/>', '<a href="/one/two"></a><a href="/foo/bar">Hello World</a>'],
                 ['<a:bodyTag>hello</a:bodyTag>', 'hellohellohellohello'],
                 ['hello ${other.printBody{"world"}}!', 'hello world!']
-            ])           
+            ])
     }
 }
 @Artefact("TagLibrary")
 class TagLibMethodMissingTagLib {
     static namespace = "a"
-    
+
     def zeroArguments = { attrs, body ->
         out << 'a'
         g.renderErrors()
         renderErrors()
         out << 'b'
     }
-    
+
     def myLink = { attrs, body ->
        out << g.link(controller:"one", action:"two")
        out << g.link(controller: "foo", action:"bar") {
@@ -59,15 +59,15 @@ class TagLibMethodMissingTagLib {
         out << link(controller: "foo", action:"bar") {
             setLink(attrs, "World")
         }
-     }
-    
+    }
+
     def bodyTag = { attrs, body ->
-        out << other.printBody(body)   
+        out << other.printBody(body)
         out << other.printBody([:], body() as String)
         out << other.printBody([:], body())
         out << other.printBody{body()}
     }
- 
+
     private setLink(attrs, name) {
         "Hello $name"
     }

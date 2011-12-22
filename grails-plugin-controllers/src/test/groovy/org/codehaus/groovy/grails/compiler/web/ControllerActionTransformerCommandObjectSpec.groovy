@@ -285,7 +285,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.person.name == 'Maynard'
             'matches.invalid.name' in model.person.errors['name'].codes
     }
-    
+
     void "Test validation"() {
         when:
             testController.params.name = 'JFK'

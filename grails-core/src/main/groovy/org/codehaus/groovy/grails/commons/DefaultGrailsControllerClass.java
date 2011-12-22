@@ -144,7 +144,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         }
 
         if (!isActionMethod(defaultActionName) && methodNames.size() == 1 && !isReadableProperty("scaffold")) {
-       		defaultActionName = methodNames.iterator().next();
+            defaultActionName = methodNames.iterator().next();
         }
     }
 

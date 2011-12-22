@@ -36,12 +36,12 @@ import org.slf4j.helpers.MessageFormatter;
  * @since 2.0
  */
 @SuppressWarnings("serial")
-public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.slf4j.Logger {
+public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
 
     static final String FQCN = GrailsLog4jLoggerAdapter.class.getName();
 
     private Logger log4jLogger;
-    @SuppressWarnings("hiding") private String name;
+    private String name;
 
     public GrailsLog4jLoggerAdapter(org.apache.log4j.Logger logger) {
         this.log4jLogger = logger;

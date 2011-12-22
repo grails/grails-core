@@ -61,15 +61,15 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     def mockTagLib(Class tagLibClass) {
         GrailsTagLibClass tagLib = grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibClass)
         final tagLookup = applicationContext.getBean(TagLibraryLookup)
-        
-        if(!applicationContext.containsBean('instanceTagLibraryApi')) {
+
+        if (!applicationContext.containsBean('instanceTagLibraryApi')) {
             defineBeans {
                 instanceTagLibraryApi(TagLibraryApi) { bean ->
                     bean.autowire = true
                 }
             }
         }
-        
+
         if (!tagLibClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
             enhancer.addApi(applicationContext.getBean('instanceTagLibraryApi'))

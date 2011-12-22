@@ -229,10 +229,9 @@ public class TestForTransformation extends TestMixinTransformation {
                     }
                     return testForMethod;
                 }
-                else {
-                    addMockCollaboratorToSetup(classNode, value, artefactType);
-                    return null;
-                }
+
+                addMockCollaboratorToSetup(classNode, value, artefactType);
+                return null;
             }
         }
 

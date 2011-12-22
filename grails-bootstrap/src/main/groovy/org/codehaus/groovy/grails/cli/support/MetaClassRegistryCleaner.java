@@ -15,14 +15,16 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import groovy.lang.*;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.MetaClassRegistryChangeEvent;
+import groovy.lang.MetaClassRegistryChangeEventListener;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Allows clean-up of changes made to the MetaClassRegistry.

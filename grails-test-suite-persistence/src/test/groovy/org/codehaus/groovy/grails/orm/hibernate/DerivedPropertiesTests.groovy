@@ -54,7 +54,7 @@ class SubClass extends AbstractBaseClass {
         def mc = mdc.clazz
         assertFalse 'three should not have been constrained', mdc.constrainedProperties.containsKey('three')
     }
-    
+
     void testDerivedPropertiesCannotBeMadeValidateable() {
 
         def myDomainClass = ga.getDomainClass('ClassWithConstrainedDerivedProperty')

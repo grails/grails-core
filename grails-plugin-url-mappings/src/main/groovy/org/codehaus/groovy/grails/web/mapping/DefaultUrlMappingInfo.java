@@ -44,7 +44,7 @@ import org.springframework.web.servlet.DispatcherServlet;
  * @author Graeme Rocher
  * @since 0.5
  */
-public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo implements UrlMappingInfo {
+public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     private Object controllerName;
     private Object actionName;

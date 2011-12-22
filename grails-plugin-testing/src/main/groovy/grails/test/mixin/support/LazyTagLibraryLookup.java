@@ -70,15 +70,13 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
             else {
                 tagClassesByNamespace.get(GrailsTagLibClass.DEFAULT_NAMESPACE).add(providedArtefact);
             }
-
         }
-
     }
 
     @Override
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
         String tagKey = tagNameKey(namespace, tagName);
-        
+
         if (resolveTagLibraries.containsKey(tagKey)) {
             return applicationContext.getBean(resolveTagLibraries.get(tagKey), GroovyObject.class);
         }
@@ -117,16 +115,15 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
 
     protected String tagNameKey(String namespace, String tagName) {
         return namespace + ':' + tagName;
-    }    
-    
+    }
+
     @Override
     protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib){
         tags.put(name, taglib.getFullName());
     }
-    
+
     @Override
     public void registerTagLib(GrailsTagLibClass taglib) {
-
         super.registerTagLib(taglib);
 
         String ns = taglib.getNamespace();

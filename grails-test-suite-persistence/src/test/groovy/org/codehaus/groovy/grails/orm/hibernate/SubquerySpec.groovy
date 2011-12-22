@@ -2,14 +2,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.gorm.DetachedCriteria
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 9/13/11
- * Time: 10:12 AM
- * To change this template use File | Settings | File Templates.
- */
-class SubquerySpec extends GormSpec{
+
+class SubquerySpec extends GormSpec {
     @Override
     List getDomainClasses() {
         return [Person, Pet]

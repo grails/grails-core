@@ -257,7 +257,7 @@ class GroovyPagesGrailsPlugin {
             }
         }
     }
-    
+
     private void enhanceClasses(classes, apiObject) {
         def nonEnhancedClasses = [] as Set
         for (Class clazz in classes) {
@@ -278,7 +278,6 @@ class GroovyPagesGrailsPlugin {
             nonEnhancedClasses.each { enhancer.enhance it.getMetaClass() }
         }
     }
-    
 
     /**
      * Sets up dynamic methods required by the GSP implementation including dynamic tag method dispatch
@@ -293,17 +292,17 @@ class GroovyPagesGrailsPlugin {
             def controllerClasses = application.controllerClasses*.clazz
             enhanceClasses(controllerClasses, ctx.getBean("instanceControllerTagLibraryApi"))
         }
-        
+
         def tagLibClasses = application.tagLibClasses*.clazz
         enhanceClasses(tagLibClasses, ctx.getBean("instanceTagLibraryApi"))
-        application.tagLibClasses.each { taglibClass -> 
+        application.tagLibClasses.each { taglibClass ->
             WebMetaUtils.enhanceTagLibMetaClass(taglibClass, gspTagLibraryLookup)
         }
     }
 
     def onChange = { event ->
         def ctx = event.ctx ?: application.mainContext
-        
+
         if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
             GrailsClass taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
             if (taglibClass) {
@@ -320,7 +319,7 @@ class GroovyPagesGrailsPlugin {
                 // so we need to update it now.
                 def lookup = event.ctx.getBean("gspTagLibraryLookup")
                 lookup.registerTagLib(taglibClass)
-                
+
                 enhanceClasses([taglibClass.clazz], ctx.getBean("instanceTagLibraryApi"))
                 WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
             }

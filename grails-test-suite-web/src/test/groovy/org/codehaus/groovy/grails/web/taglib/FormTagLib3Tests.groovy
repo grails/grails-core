@@ -352,7 +352,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         }
     }
 
-	void testDatePickerWithRelativeYearsAndReverseRange() {
+    void testDatePickerWithRelativeYearsAndReverseRange() {
         def now = Calendar.instance
         def currentYear = now.get(Calendar.YEAR)
 

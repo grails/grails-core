@@ -8,14 +8,14 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
 
 class GroovyPagesMetaUtils {
     private final static Object[] EMPTY_OBJECT_ARRAY=new Object[0];
-    
+
     public static void registerMethodMissingForGSP(Class gspClass, TagLibraryLookup gspTagLibraryLookup) {
         registerMethodMissingForGSP(GrailsMetaClassUtils.getExpandoMetaClass(gspClass), gspTagLibraryLookup)
     }
 
     public static void registerMethodMissingForGSP(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup) {
         final boolean addMethodsToMetaClass = !Environment.isDevelopmentMode()
-        
+
         mc.methodMissing = { String name, args ->
             methodMissingForTagLib(mc, mc.getTheClass(), gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, name, args, addMethodsToMetaClass)
         }
@@ -43,7 +43,7 @@ class GroovyPagesMetaUtils {
         // hasErrors gets mixed up by hasErrors method without this metaclass modification
         registerMethodMissingForTags(mc, gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, 'hasErrors', false)
     }
-    
+
     public static addTagLibMethodToMetaClass(final GroovyObject tagBean, final MetaMethod method, final MetaClass mc) {
         Class[] paramTypes = method.nativeParameterTypes
         Closure methodMissingClosure = null

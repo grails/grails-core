@@ -69,26 +69,21 @@ public class MinSizeConstraint extends AbstractConstraint {
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, minSize};
-
+        int length;
         if (propertyValue.getClass().isArray()) {
-            int length = Array.getLength(propertyValue);
-            if (length < minSize) {
-                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
-                        ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
-            }
+            length = Array.getLength(propertyValue);
         }
         else if (propertyValue instanceof Collection<?>) {
-            if (((Collection<?>)propertyValue).size() < minSize) {
-                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
-                        ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
-            }
+            length = ((Collection<?>)propertyValue).size();
         }
-        else if (propertyValue instanceof String) {
-            if (((String)propertyValue).length() < minSize) {
-                rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
-                        ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
-            }
+        else { // String
+            length = ((String)propertyValue).length();
+        }
+
+        if (length < minSize) {
+            Object[] args = { constraintPropertyName, constraintOwningClass, propertyValue, minSize};
+            rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE,
+                    ConstrainedProperty.MIN_SIZE_CONSTRAINT + ConstrainedProperty.NOTMET_SUFFIX, args);
         }
     }
 }

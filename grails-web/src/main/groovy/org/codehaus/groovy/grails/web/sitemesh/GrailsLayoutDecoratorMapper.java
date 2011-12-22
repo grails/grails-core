@@ -35,7 +35,7 @@ import com.opensymphony.module.sitemesh.mapper.AbstractDecoratorMapper;
  * @author Graeme Rocher
  * @author Lari Hotari
  */
-public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper implements DecoratorMapper {
+public class GrailsLayoutDecoratorMapper extends AbstractDecoratorMapper {
     private GroovyPageLayoutFinder groovyPageLayoutFinder;
     public static final String LAYOUT_ATTRIBUTE = GroovyPageLayoutFinder.LAYOUT_ATTRIBUTE;
     public static final String RENDERING_VIEW = GroovyPageLayoutFinder.RENDERING_VIEW_ATTRIBUTE;

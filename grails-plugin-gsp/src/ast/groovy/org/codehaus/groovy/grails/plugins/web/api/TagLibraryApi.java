@@ -52,9 +52,9 @@ import org.springframework.web.context.request.RequestAttributes;
  * @since 2.0
  */
 public class TagLibraryApi extends CommonWebApi {
-    
+
     private static final long serialVersionUID = 1;
-    
+
     private transient TagLibraryLookup tagLibraryLookup;
     private boolean developmentMode = Environment.isDevelopmentMode();
 
@@ -182,7 +182,7 @@ public class TagLibraryApi extends CommonWebApi {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
                 WebMetaUtils.registerPropertyMissingForTag(mc, name, result);
             }
-            
+
             if (result != null) {
                 return result;
             }
@@ -206,11 +206,11 @@ public class TagLibraryApi extends CommonWebApi {
     public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
         this.tagLibraryLookup = gspTagLibraryLookup;
     }
-    
+
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
         this.tagLibraryLookup = tagLibraryLookup;
     }
-    
+
     public TagLibraryLookup getTagLibraryLookup() {
         if (this.tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);

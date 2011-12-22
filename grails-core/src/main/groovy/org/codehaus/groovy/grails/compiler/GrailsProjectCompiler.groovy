@@ -250,7 +250,7 @@ class GrailsProjectCompiler {
                }
             }
             javac(javaOptions) {
-            	compilerarg value:"-Xlint:-options"
+                compilerarg value:"-Xlint:-options"
             }
         }
 
@@ -331,8 +331,8 @@ class GrailsProjectCompiler {
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
                 javac(javaOptions) {
-            		compilerarg value:"-Xlint:-options"
-            	}
+                    compilerarg value:"-Xlint:-options"
+                }
             }
         }
 

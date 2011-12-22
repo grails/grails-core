@@ -230,7 +230,7 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                 return -1;
             }
         }
-        
+
         @Override
         public String toString() {
             return uniqueRevision;

@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.View;
 
 /**
@@ -38,7 +37,7 @@ import org.springframework.web.servlet.View;
  * @author Graeme Rocher
  * @since 1.1
  */
-public class ScaffoldingViewResolver extends GrailsViewResolver implements ApplicationContextAware {
+public class ScaffoldingViewResolver extends GrailsViewResolver {
 
     GrailsTemplateGenerator templateGenerator;
     Map<String, List<String>> scaffoldedActionMap = Collections.emptyMap();

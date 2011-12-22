@@ -73,8 +73,6 @@ class HibernateGormEnhancer extends GormEnhancer {
         // no-op
     }
 
-
-
     static List createPersistentMethods(GrailsApplication grailsApplication, ClassLoader classLoader, Datastore datastore) {
         def sessionFactory = datastore.sessionFactory
         Collections.unmodifiableList([
@@ -928,8 +926,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
     @Override
     boolean instanceOf(instance, Class cls) {
         if (instance instanceof HibernateProxy) {
-            def o = GrailsHibernateUtil.unwrapProxy(instance)
-            return cls.isInstance(o)
+            return cls.isInstance(GrailsHibernateUtil.unwrapProxy(instance))
         }
         return cls.isInstance(instance)
     }

@@ -41,9 +41,9 @@ import org.springframework.context.ApplicationContext;
  * @since 2.0
  */
 public class ControllerTagLibraryApi extends CommonWebApi {
-    
+
     private static final long serialVersionUID = 1;
-    
+
     private transient TagLibraryLookup tagLibraryLookup;
     private boolean developmentMode = Environment.isDevelopmentMode();
 
@@ -59,7 +59,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
     public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
         this.tagLibraryLookup = tagLibraryLookup;
     }
-    
+
     @Autowired
     public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
         this.tagLibraryLookup = gspTagLibraryLookup;
@@ -82,7 +82,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
                 if(!developmentMode) {
                     MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(instance);
                     WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
-                }                
+                }
                 List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args);
                 if (respondsTo.size()>0) {
                     return respondsTo.get(0).invoke(tagLibrary, args);

@@ -52,9 +52,6 @@ import org.springframework.util.ReflectionUtils;
 @SuppressWarnings("rawtypes")
 public class HibernateQuery extends Query {
 
-
-
-    @SuppressWarnings("hiding")
     private Criteria criteria;
     private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
     private String alias;
@@ -422,7 +419,7 @@ public class HibernateQuery extends Query {
     private class HibernateJunction extends Junction {
 
         private org.hibernate.criterion.Junction hibernateJunction;
-        @SuppressWarnings("hiding") private String alias;
+        private String alias;
 
         public HibernateJunction(org.hibernate.criterion.Junction junction, String alias) {
             hibernateJunction = junction;
@@ -533,7 +530,7 @@ public class HibernateQuery extends Query {
 
     private class HibernateAssociationQuery extends AssociationQuery {
 
-        @SuppressWarnings("hiding") private String alias;
+        private String alias;
         private org.hibernate.criterion.Junction hibernateJunction;
         private Criteria assocationCriteria;
 
@@ -701,8 +698,8 @@ public class HibernateQuery extends Query {
     }
 
     private class CriteriaAndAlias {
-        @SuppressWarnings("hiding") private Criteria criteria;
-        @SuppressWarnings("hiding") private String alias;
+        private Criteria criteria;
+        private String alias;
 
         public CriteriaAndAlias(Criteria subCriteria, String alias) {
             criteria = subCriteria;

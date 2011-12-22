@@ -6,15 +6,9 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Assert
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 11/14/11
- * Time: 2:49 PM
- * To change this template use File | Settings | File Templates.
- */
+
 @TestMixin(GrailsUnitTestMixin)
-class MetaClassCleanupSpec extends Specification{
+class MetaClassCleanupSpec extends Specification {
 
     def "Test that meta classes are restored to prior state after test run"() {
         when:"A meta class is modified in the test"

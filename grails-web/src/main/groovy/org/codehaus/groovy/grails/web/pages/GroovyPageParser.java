@@ -170,7 +170,7 @@ public class GroovyPageParser implements Tokens {
         boolean hasAttributes;
         int lineNumber;
         boolean emptyTag;
-        @SuppressWarnings("hiding") int tagIndex;
+        int tagIndex;
         boolean bufferMode=false;
         int bufferPartNumber = -1;
 

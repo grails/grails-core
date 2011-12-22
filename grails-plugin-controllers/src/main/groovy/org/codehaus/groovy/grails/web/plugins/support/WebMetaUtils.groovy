@@ -257,13 +257,13 @@ class WebMetaUtils {
         mc.getControllerName = {-> RCH.currentRequestAttributes().controllerName }
         mc.getWebRequest = {-> RCH.currentRequestAttributes() }
     }
-    
-    // used for testing (GroovyPageUnitTestMixin.mockTagLib) and "nonEnhancedTagLibClasses" in GroovyPagesGrailsPlugin 
+
+    // used for testing (GroovyPageUnitTestMixin.mockTagLib) and "nonEnhancedTagLibClasses" in GroovyPagesGrailsPlugin
     static void enhanceTagLibMetaClass(final GrailsTagLibClass taglib, TagLibraryLookup gspTagLibraryLookup) {
         if (!taglib.clazz.getAnnotation(Enhanced)) {
             final MetaClass mc = taglib.getMetaClass()
             final String namespace = taglib.namespace ?: GroovyPage.DEFAULT_NAMESPACE
-            
+
             for (tag in taglib.tagNames) {
                 WebMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, namespace, tag)
             }

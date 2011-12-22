@@ -29,12 +29,10 @@ import org.springframework.util.Assert;
  * @since 1.0-RC1
  */
 @SuppressWarnings("rawtypes")
-public class ResponseCodeUrlMapping extends AbstractUrlMapping implements UrlMapping {
+public class ResponseCodeUrlMapping extends AbstractUrlMapping {
 
     private final ResponseCodeMappingData urlData;
-    @SuppressWarnings("hiding")
     private final ConstrainedProperty[] constraints = new ConstrainedProperty[0];
-    @SuppressWarnings("hiding")
     private Map parameterValues = Collections.EMPTY_MAP;
     private Class<?> exceptionType;
 

@@ -57,7 +57,7 @@ import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
  */
-public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSONWriter> {
+public class JSON extends AbstractConverter<JSONWriter> {
 
     private final static Log log = LogFactory.getLog(JSON.class);
     private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
@@ -488,7 +488,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
         private Stack<BuilderMode> stack = new Stack<BuilderMode>();
         private boolean start = true;
-        @SuppressWarnings("hiding")
         private JSONWriter writer;
 
         @Override

@@ -16,13 +16,11 @@
 package org.codehaus.groovy.grails.compiler.web;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;

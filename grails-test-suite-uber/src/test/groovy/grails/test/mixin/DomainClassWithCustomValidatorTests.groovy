@@ -21,16 +21,16 @@ class DomainClassWithCustomValidatorTests {
 
 @Entity
 class Uniqueable {
-	String word = "something"
+    String word = "something"
 
-	static constraints = {
-		word validator: onlyOneSomething
-	}
+    static constraints = {
+        word validator: onlyOneSomething
+    }
 
-	static onlyOneSomething = { value, obj ->
-		if (value == "something" && Uniqueable.countByWordAndIdNot("something", obj.id)){
-			return "unique"
-		}
-	}
+    static onlyOneSomething = { value, obj ->
+        if (value == "something" && Uniqueable.countByWordAndIdNot("something", obj.id)){
+            return "unique"
+        }
+    }
 }
 

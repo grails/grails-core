@@ -36,7 +36,6 @@ import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.View;
@@ -49,7 +48,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class GrailsViewResolver extends InternalResourceViewResolver implements ApplicationContextAware, PluginManagerAware, GrailsApplicationAware {
+public class GrailsViewResolver extends InternalResourceViewResolver implements PluginManagerAware, GrailsApplicationAware {
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
 
     public static final String GSP_SUFFIX = ".gsp";
@@ -87,7 +86,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         }
 
         String viewCacheKey = GrailsConventionGroovyPageLocator.resolveViewFormat(viewName);
-        
+
         CacheEntry<View> entry = VIEW_CACHE.get(viewCacheKey);
 
         final String lookupViewName = viewName;

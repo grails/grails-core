@@ -4,6 +4,7 @@ import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 
+
 /**
  * Tests that Groovy's @Mixin works on a controller
  */
@@ -19,19 +20,19 @@ class ControllerWithGroovyMixinSpec extends Specification {
     }
 
 }
+
 @Artefact("Controller")
 @Mixin(Timestamps)
 class MixedController {
 
     def index() {
-		render contentType: "text/plain", text: "O HAI ITS $timestamp"
-	}
-
+        render contentType: "text/plain", text: "O HAI ITS $timestamp"
+    }
 }
+
 class Timestamps {
 
-	String getTimestamp() {
-		new Date().format("HH:mm")
-	}
-
+    String getTimestamp() {
+        new Date().format("HH:mm")
+    }
 }

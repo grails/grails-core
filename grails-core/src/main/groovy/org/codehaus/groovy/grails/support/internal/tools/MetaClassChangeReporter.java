@@ -19,7 +19,7 @@ public class MetaClassChangeReporter implements MetaClassRegistryChangeEventList
      * @param cmcu - the change event
      */
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
-        Class classToUpdate = cmcu.getClassToUpdate();
+        Class<?> classToUpdate = cmcu.getClassToUpdate();
         MetaClass newMetaClass = cmcu.getNewMetaClass();
 
         System.out.println("Class ["+classToUpdate+"] updated MetaClass to ["+newMetaClass+"]");

@@ -98,32 +98,32 @@ public class DefaultGrailsControllerClass2Tests extends TestCase {
         assignGrailsApplication(cl, grailsClass);
         grailsClass.initialize();
         assertEquals("index", grailsClass.getDefaultAction());
-        
+
         clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MyTestController { static scaffold = true; def test =  {}} ");
         grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass);
         grailsClass.initialize();
         assertEquals("index", grailsClass.getDefaultAction());
-        
+
         clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MyTestController { static scaffold = true; def one() {}; def two(){};} ");
         grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass);
         grailsClass.initialize();
         assertEquals("index", grailsClass.getDefaultAction());
-        
+
         clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MyTestController { static scaffold = true; def one = {}; def two ={};} ");
         grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass);
         grailsClass.initialize();
         assertEquals("index", grailsClass.getDefaultAction());
-        
+
         clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MyTestController { static scaffold = true; def one(){}; def two ={};} ");
         grailsClass = new DefaultGrailsControllerClass(clazz);
         assignGrailsApplication(cl, grailsClass);
         grailsClass.initialize();
         assertEquals("index", grailsClass.getDefaultAction());
-        
     }
+
     public void testMappingToControllerBeginningWith2UpperCaseLetters() {
         GroovyClassLoader cl = new GrailsAwareClassLoader();
         Class<?> clazz = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class MYdemoController { def action = { return null }; } ");

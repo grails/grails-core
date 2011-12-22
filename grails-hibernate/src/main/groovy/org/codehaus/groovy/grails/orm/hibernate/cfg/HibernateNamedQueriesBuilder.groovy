@@ -88,7 +88,7 @@ class NamedCriteriaProxy<T> {
     private previousInChain
     private queryBuilder
     private inCountMethod = false
-    
+
     private invokeCriteriaClosure(additionalCriteriaClosure = null) {
         def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
         crit()
@@ -157,7 +157,7 @@ class NamedCriteriaProxy<T> {
         }
         domainClass.clazz.withCriteria(getClosure)
     }
-    
+
     T get(id) {
         id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {

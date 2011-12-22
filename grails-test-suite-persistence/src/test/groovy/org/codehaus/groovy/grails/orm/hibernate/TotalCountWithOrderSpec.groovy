@@ -5,7 +5,7 @@ import grails.persistence.Entity
 /**
  * Tests usage of total count when an order by is used
  */
-class TotalCountWithOrderSpec extends GormSpec{
+class TotalCountWithOrderSpec extends GormSpec {
 
     void "Test total with with order by"() {
         when:"A pagination query is used with order by"
@@ -18,7 +18,7 @@ class TotalCountWithOrderSpec extends GormSpec{
             results.size() == 0
             results.totalCount == 0
     }
-    
+
     void "Test total count with order by and association query"() {
         when:"A pagination query is used with order by"
             def criteria = Post.createCriteria()

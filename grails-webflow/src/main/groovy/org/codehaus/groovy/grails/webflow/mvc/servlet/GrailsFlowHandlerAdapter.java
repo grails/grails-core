@@ -23,7 +23,6 @@ import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.webflow.mvc.servlet.FlowHandlerAdapter;
@@ -34,7 +33,7 @@ import org.springframework.webflow.mvc.servlet.FlowHandlerAdapter;
  * @author Graeme Rocher
  * @since 1.1.1
  */
-public class GrailsFlowHandlerAdapter extends FlowHandlerAdapter implements GrailsApplicationAware, ApplicationContextAware {
+public class GrailsFlowHandlerAdapter extends FlowHandlerAdapter implements GrailsApplicationAware {
 
     private GrailsApplication grailsApplication;
 

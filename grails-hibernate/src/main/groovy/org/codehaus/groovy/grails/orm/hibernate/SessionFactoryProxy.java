@@ -73,7 +73,7 @@ import java.util.Set;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class SessionFactoryProxy extends GroovyObjectSupport implements SessionFactory, SessionFactoryImplementor, ApplicationContextAware, InitializingBean, InfrastructureProxy  {
+public class SessionFactoryProxy extends GroovyObjectSupport implements SessionFactoryImplementor, ApplicationContextAware, InitializingBean, InfrastructureProxy  {
 
     private static final long serialVersionUID = 1;
 

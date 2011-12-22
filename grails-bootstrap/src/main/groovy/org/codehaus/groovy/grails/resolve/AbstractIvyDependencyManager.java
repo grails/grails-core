@@ -715,7 +715,7 @@ public abstract class AbstractIvyDependencyManager {
     private void addMetadataPluginDependencies(Map<String, String> plugins) {
         for (Map.Entry<String, String> plugin : plugins.entrySet()) {
             String name = plugin.getKey().contains(":") ? plugin.getKey().split(":")[1] : plugin.getKey();
-			String group = plugin.getKey().contains(":") ? plugin.getKey().split(":")[0] : "org.grails.plugins";
+            String group = plugin.getKey().contains(":") ? plugin.getKey().split(":")[0] : "org.grails.plugins";
             String version = plugin.getValue();
 
             if (pluginNameToDescriptorMap.containsKey(name)) {

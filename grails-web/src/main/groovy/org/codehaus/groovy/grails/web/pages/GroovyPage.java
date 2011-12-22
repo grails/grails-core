@@ -127,14 +127,16 @@ public abstract class GroovyPage extends Script {
             super(null);
             this.retval = retval;
         }
-        
+
+        @Override
         public int getMaximumNumberOfParameters() {
             return 0;
         }
-        
+
+        @Override
         public Class[] getParameterTypes() {
             return EMPTY_CLASS_ARR;
-        }        
+        }
 
         public Object doCall(@SuppressWarnings("unused") Object obj) {
             return retval;

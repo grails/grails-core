@@ -63,7 +63,7 @@ public class GrailsASTUtils {
             return false;
         }
 
-        final MethodNode method = classNode.getMethod(GrailsNameUtils.getGetterName(propertyName), new Parameter[0]);
+        final MethodNode method = classNode.getMethod(GrailsNameUtils.getGetterName(propertyName), Parameter.EMPTY_ARRAY);
         if (method != null) return true;
 
         for (PropertyNode pn : classNode.getProperties()) {
@@ -99,7 +99,7 @@ public class GrailsASTUtils {
      * @return True if it does implement the method
      */
     public static boolean implementsZeroArgMethod(ClassNode classNode, String methodName) {
-        MethodNode method = classNode.getDeclaredMethod(methodName, new Parameter[]{});
+        MethodNode method = classNode.getDeclaredMethod(methodName, Parameter.EMPTY_ARRAY);
         return method != null && (method.isPublic() || method.isProtected()) && !method.isAbstract();
     }
 
@@ -222,7 +222,7 @@ public class GrailsASTUtils {
     }
 
     private static VariableExpression addApiVariableDeclaration(Expression delegate, MethodNode declaredMethod, BlockStatement methodBody) {
-        VariableExpression apiVar = new VariableExpression("$api_"+declaredMethod.getName());
+        VariableExpression apiVar = new VariableExpression("$api_" + declaredMethod.getName());
         DeclarationExpression de = new DeclarationExpression(apiVar, ASSIGNMENT_OPERATOR, delegate);
         methodBody.addStatement(new ExpressionStatement(de));
         return apiVar;

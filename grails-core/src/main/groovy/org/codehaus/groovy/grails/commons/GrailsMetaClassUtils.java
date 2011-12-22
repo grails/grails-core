@@ -14,16 +14,24 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.*;
+import groovy.lang.AdaptingMetaClass;
+import groovy.lang.Closure;
+import groovy.lang.ClosureInvokingMethod;
+import groovy.lang.ExpandoMetaClass;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.MetaMethod;
+import groovy.lang.MetaProperty;
+
+import java.lang.reflect.Constructor;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
 import org.springframework.beans.BeanUtils;
-import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.List;
 
 /**
  * Provides utility methods for working with the Groovy MetaClass API.

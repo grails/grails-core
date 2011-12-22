@@ -102,14 +102,12 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         }
     }
 
-
-
-    private excludeForString (String dep) {
+    private excludeForString(String dep) {
         def mid = ModuleId.newInstance(WILDCARD, dep)
         addRuleForModuleId(mid, scope, WILDCARD, WILDCARD)
     }
 
-    private excludeForMap (Map args) {
+    private excludeForMap(Map args) {
         def mid = ModuleId.newInstance(args?.group ?: WILDCARD, args?.name ?: WILDCARD)
         addRuleForModuleId(mid, scope, args?.type ?: WILDCARD, args?.ext ?: WILDCARD)
     }

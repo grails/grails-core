@@ -1081,11 +1081,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     sqlRestriction + "] not allowed here."));
         }
         final int numberOfParameters = values.size();
-        
+
         final Type[] typesArray = new Type[numberOfParameters];
         final Object[] valuesArray = new Object[numberOfParameters];
-        
-        if(numberOfParameters > 0) {
+
+        if (numberOfParameters > 0) {
             final TypeHelper typeHelper = sessionFactory.getTypeHelper();
             for(int i = 0; i < typesArray.length; i++) {
                 final Object value = values.get(i);

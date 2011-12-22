@@ -105,7 +105,7 @@ class GrailsArtefactTransformerSpec extends Specification {
             String == oneArgGetters[0].returnType
             String == oneArgGetters[0].parameterTypes[0].theClass
     }
-    
+
     void 'Test version attribute on @Enhanced'() {
         given:
             def testClass = gcl.parseClass('''
