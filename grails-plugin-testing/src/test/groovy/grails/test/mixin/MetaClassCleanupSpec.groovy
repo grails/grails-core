@@ -13,9 +13,11 @@ class MetaClassCleanupSpec extends Specification {
     def "Test that meta classes are restored to prior state after test run"() {
         when:"A meta class is modified in the test"
             Author.metaClass.testMe = {-> "test"}
+            Author.metaClass.testToo = {-> "second"}
             def a = new Author()
-        then:"The method is available"
+        then:"The methods are available"
             a.testMe() == "test"
+            a.testToo() == "second"
     }
 
     @AfterClass
@@ -24,6 +26,12 @@ class MetaClassCleanupSpec extends Specification {
 
         try {
             a.testMe()
+            Assert.fail("Should have cleaned up meta class changes")
+        } catch (MissingMethodException) {
+        }
+        
+        try {
+            a.testToo()
             Assert.fail("Should have cleaned up meta class changes")
         } catch (MissingMethodException) {
         }
