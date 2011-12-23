@@ -59,6 +59,10 @@ homeSrcDir = file("src")
 // artifacts' POMs.
 if(System.getProperty('groovy.jar')) {
     groovyDependency = files(System.getProperty('groovy.jar'))
+    if(!groovyDependency?.singleFile?.exists()) {
+        def msg = "The groovy.jar system property points to ${System.getProperty('groovy.jar')} which does not exist."
+        throw new GradleException(msg)
+    }
     gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
 } else {
     groovyDependency = "org.codehaus.groovy:groovy-all:${groovyVersion}"
