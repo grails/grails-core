@@ -24,7 +24,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
     @Override
     protected Collection<Class> getDomainClasses() {
-        [XmlConverterTestBook, XmlConverterTestPublisher]
+        [XmlConverterTestBook, XmlConverterTestPublisher, XmlConverterTestBookData]
     }
 
     void testXMLConverter() {
@@ -34,6 +34,15 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         // @todo this test is fragile and depends on runtime environment because
         // of hash key ordering variations
         assertEquals '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString
+    }
+
+    void testXMLConverterWithByteArray() {
+        def c = new RestController()
+        c.testByteArray()
+
+        assertEquals '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBookData><data encoding="BASE-64">''' +
+                'It was the best of times, it was the worst...'.getBytes('UTF-8').encodeBase64() +
+                '''</data></xmlConverterTestBookData>''', response.contentAsString
     }
 
     void testConvertErrors() {
@@ -107,6 +116,11 @@ class RestController {
         render b as XML
     }
 
+    def testByteArray = {
+        def b = new XmlConverterTestBookData(data: 'It was the best of times, it was the worst...'.getBytes('UTF-8'))
+        render b as XML
+    }
+
     def testProxy = { render params.b as XML }
 
     def testProxyAssociations = { render params.b as XML }
@@ -135,4 +149,9 @@ class XmlConverterTestPublisher {
     Long version
     String name
 }
-
+@grails.persistence.Entity
+class XmlConverterTestBookData {
+    Long id
+    Long version
+    byte[] data
+}
