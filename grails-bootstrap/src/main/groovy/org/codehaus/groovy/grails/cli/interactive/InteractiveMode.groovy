@@ -179,9 +179,6 @@ class InteractiveMode {
                         }
                     }
                 }
-                else {
-                    error "No script name specified"
-                }
             }
             catch(ScriptExitException e) {
                 // do nothing. just return to cosuming input
