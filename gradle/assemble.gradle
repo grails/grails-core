@@ -69,7 +69,7 @@ task populateDependencies(type: Sync) {
                         def base = "${grailsRepoCacheHash}/${dependency.group}/${dependency.name}/${dependency.version}"
                         include "${base}/*-${dependency.version}.*"
                         include "${base}/jar/${dependency.name}-${dependency.version}.jar"
-                        include "${base}/bundles/${dependency.name}-${dependency.version}.jar"
+                        include "${base}/bundle/${dependency.name}-${dependency.version}.jar"
                     }
                 }
             }
