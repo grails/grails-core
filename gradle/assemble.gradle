@@ -47,7 +47,7 @@ task populateDependencies(type: Sync) {
     into homeLibDir
     includeEmptyDirs = false
 
-    grailsRepoCacheHash = "0176b65cdea0460180d870500d4c646f"
+    grailsRepoCacheHash = "a5610c5703557b062da6cb64b3488b38"
     eachFile { file -> file.path -= "$grailsRepoCacheHash/" }
 
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
@@ -58,7 +58,7 @@ task populateDependencies(type: Sync) {
             def projectNames = rootProject.subprojects*.name
 
             baseCacheDir = "$gradle.gradleUserHomeDir/caches"
-            versionedCacheDir = "$baseCacheDir/artifacts-4"
+            versionedCacheDir = "$baseCacheDir/artifacts-7/artifacts"
 
             from versionedCacheDir
             libsConfigurations.each { configuration ->
@@ -66,9 +66,9 @@ task populateDependencies(type: Sync) {
                     def dependency = artifact.moduleVersion.id
 
                     if (!projectNames.contains(dependency.name)) {
-                        def base = "${dependency.group}/${dependency.name}/$grailsRepoCacheHash"
+                        def base = "${grailsRepoCacheHash}/${dependency.group}/${dependency.name}/${dependency.version}"
                         include "${base}/*-${dependency.version}.*"
-                        include "${base}/jars/${dependency.name}-${dependency.version}.jar"
+                        include "${base}/jar/${dependency.name}-${dependency.version}.jar"
                         include "${base}/bundles/${dependency.name}-${dependency.version}.jar"
                     }
                 }
