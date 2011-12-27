@@ -97,6 +97,10 @@ class InteractiveMode {
         addStatus("Enter a script name to run. Use TAB for completion: ")
         while (interactiveModeActive) {
             def scriptName = showPrompt()
+            if(scriptName == null){
+                updateStatus "Good Bye!"
+                System.exit(0)
+            }
             try {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
@@ -104,6 +108,7 @@ class InteractiveMode {
                         error "You cannot create an application in interactive mode."
                     }
                     else if ("quit".equals(trimmed)) {
+                        updateStatus "Good Bye!"
                         System.exit(0)
                     }
                     else if ("exit".equals(trimmed)) {
@@ -119,6 +124,7 @@ class InteractiveMode {
                            }
                         }
                         else {
+                            updateStatus "Good Bye!"
                             System.exit(0)
                         }
                     }
@@ -172,9 +178,6 @@ class InteractiveMode {
                             error "Invalid command: ${e.message}"
                         }
                     }
-                }
-                else {
-                    error "No script name specified"
                 }
             }
             catch(ScriptExitException e) {
