@@ -9,20 +9,20 @@ public class HyphenatedUrlConverter implements UrlConverter {
         if(StringUtils.isBlank(propertyOrClassName)) {
             return propertyOrClassName;
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
 
         char[] charArray = propertyOrClassName.toCharArray();
         for(char c : charArray) {
             if(Character.isUpperCase(c)) {
-                if(buffer.length() > 0) {
-                    buffer.append("-");
+                if(builder.length() > 0) {
+                    builder.append("-");
                 }
-                buffer.append(Character.toLowerCase(c));
+                builder.append(Character.toLowerCase(c));
             } else {
-                buffer.append(c);
+                builder.append(c);
             }
         }
-        return buffer.toString();
+        return builder.toString();
     }
 
 }
