@@ -57,7 +57,7 @@ if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
 
 :init
 
-set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails
+set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/@spring.loaded.version@/jar/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails
 set DISABLE_RELOADING=
 if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
 
@@ -122,7 +122,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=%GRAILS_HOME%\lib\org.codehaus.groovy\groovy-all\jars\groovy-all-@groovy.version@.jar;%GRAILS_HOME%\dist\grails-bootstrap-@grails.version@.jar
+set STARTER_CLASSPATH=%GRAILS_HOME%\lib\org.codehaus.groovy\groovy-all\@groovy.version@\jar\groovy-all-@groovy.version@.jar;%GRAILS_HOME%\dist\grails-bootstrap-@grails.version@.jar
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
