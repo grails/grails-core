@@ -118,7 +118,7 @@ class RenderTagLib implements RequestConstants {
                     content = render(attrs)
                 }
                 else {
-                    def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest, true)
+                    def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest)
                     content = bodyClosure()
                 }
                 if (content instanceof StreamCharBuffer) {

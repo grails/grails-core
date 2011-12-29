@@ -318,7 +318,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
         allocBuffer = new AllocatedBuffer(chunkSize);
         dynamicChunkMap = new HashMap<StreamCharBufferKey, StreamCharBufferSubChunk>();
-        parentBuffers = null;
+    }
+    
+    
+    /**
+     * Clears the buffer and notifies the parents of this buffer of the change
+     * 
+     */
+    public final void clear() {
+        reset();
+        notifyBufferChange();        
     }
 
     /**
@@ -915,6 +924,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             }
             else if (subBuffer.preferSubChunkWhenWritingToOtherBuffer ||
                     subBuffer.isSizeLarger(Math.max(subBufferChunkMinSize, getNewChunkMinSize()))) {
+                if(subBuffer.preferSubChunkWhenWritingToOtherBuffer) {
+                    StreamCharBuffer.this.preferSubChunkWhenWritingToOtherBuffer = true;
+                }
                 appendStreamCharBufferChunk(subBuffer);
                 subBuffer.addParentBuffer(StreamCharBuffer.this);
             }

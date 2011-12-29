@@ -87,9 +87,3 @@ compileGroovy.doFirst {
 }
 
 jar.appendix = 'core'
-
-eclipse {
-    classpath {
-       plusConfigurations += configurations.agent
-    }
-}
