@@ -17,6 +17,7 @@
 package grails.build.logging;
 
 import jline.ConsoleReader;
+import jline.History;
 import jline.Terminal;
 import jline.UnsupportedTerminal;
 import jline.WindowsTerminal;
@@ -56,6 +57,7 @@ public class GrailsConsole {
     public static final String SPACE = " ";
     public static final String ERROR = "Error";
     public static final String WARNING = "Warning";
+    public static final String HISTORYFILE = ".grails_history";
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     public static final Character SECURE_MASK_CHAR = new Character('*');
@@ -93,6 +95,8 @@ public class GrailsConsole {
 
     PrintStream out;
 
+    History history;
+
     /**
      * The category of the current output
      */
@@ -127,6 +131,9 @@ public class GrailsConsole {
         reader.setCompletionHandler(new CandidateListCompletionHandler());
 
         terminal = createTerminal();
+
+        history = prepareHistory();
+        reader.setHistory(history);
 
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
@@ -164,6 +171,16 @@ public class GrailsConsole {
             terminal = Terminal.setupTerminal();
         }
         return terminal;
+    }
+
+    /**
+     * Prepares a history file to be used by the ConsoleReader. This file
+     * will live in the home directory of the user.
+     */
+    protected History prepareHistory() throws IOException {
+        String historyFile = System.getProperty("user.home") + File.separator + HISTORYFILE;
+        history = new History(new File(historyFile));
+        return history;
     }
 
     /**
