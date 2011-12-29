@@ -81,7 +81,7 @@ class InteractiveMode {
     static boolean isActive() {
         getCurrent() != null && getCurrent().interactiveModeActive
     }
-
+    def lastScriptName = null
     void run() {
         current = this
         System.setProperty("grails.disable.exit", "true") // you can't exit completely in interactive mode from a script
@@ -99,6 +99,10 @@ class InteractiveMode {
             def scriptName = showPrompt()
             try {
                 def trimmed = scriptName.trim()
+                if(!trimmed && lastScriptName){
+                    trimmed = lastScriptName
+                    scriptName = lastScriptName
+                }
                 if (trimmed) {
                     if(trimmed.startsWith("create-app")) {
                         error "You cannot create an application in interactive mode."
@@ -168,6 +172,7 @@ class InteractiveMode {
                             console.stacktrace = commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)
                             console.verbose = commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)
                             scriptRunner.executeScriptWithCaching(commandLine)
+                            lastScriptName = scriptName.trim()
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"
                         }
