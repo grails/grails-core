@@ -68,7 +68,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
     }
 
     /**
-     * Maps a URl and returns the appropriate controller instance
+     * Maps a URI and returns the appropriate controller instance
      *
      * @param uri The URI to map
      * @return The controller instance
