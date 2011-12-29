@@ -43,6 +43,27 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
          applyTemplate(template)
      }
 
+    void testPaginateOmissionAttributes() {
+        def template = '<g:paginate next="Forward" prev="Backward" max="5" total="20" offset="10" controller="book" action="list"/>'
+        assertOutputEquals '<a href="/book/list?offset=5&amp;max=5" class="prevLink">Backward</a><a href="/book/list?offset=0&amp;max=5" class="step">1</a><a href="/book/list?offset=5&amp;max=5" class="step">2</a><span class="currentStep">3</span><a href="/book/list?offset=15&amp;max=5" class="step">4</a><a href="/book/list?offset=15&amp;max=5" class="nextLink">Forward</a>', template
+
+        template = '<g:paginate next="Forward" prev="Backward" max="5" total="20" offset="10" controller="book" action="list" omitPrev="true"/>'
+        assertOutputNotContains 'Backward', template
+        assertOutputContains 'Forward', template
+
+        template = '<g:paginate next="Forward" prev="Backward" max="5" total="20" offset="10" controller="book" action="list" omitPrev="false"/>'
+        assertOutputContains 'Backward', template
+        assertOutputContains 'Forward', template
+
+        template = '<g:paginate next="Forward" prev="Backward" max="5" total="20" offset="10" controller="book" action="list" omitNext="true"/>'
+        assertOutputContains 'Backward', template
+        assertOutputNotContains 'Forward', template
+
+        template = '<g:paginate next="Forward" prev="Backward" max="5" total="20" offset="10" controller="book" action="list" omitNext="false"/>'
+        assertOutputContains 'Backward', template
+        assertOutputContains 'Forward', template
+    }
+
     void testPageProperty() {
 
         def template = '<g:pageProperty name="foo.bar" />'

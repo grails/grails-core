@@ -363,7 +363,7 @@ class RenderTagLib implements RequestConstants {
         int laststep = Math.round(Math.ceil(total / max))
 
         // display previous link when not on firststep unless omitPrev is true
-        if (currentstep > firststep && !attrs.omitPrev) {
+        if (currentstep > firststep && !attrs.boolean('omitPrev')) {
             linkTagAttrs.class = 'prevLink'
             linkParams.offset = offset - max
             writer << link(linkTagAttrs.clone()) {
@@ -392,12 +392,12 @@ class RenderTagLib implements RequestConstants {
             }
 
             // display firststep link when beginstep is not firststep
-            if (beginstep > firststep && !attrs.omitFirst) {
+            if (beginstep > firststep && !attrs.boolean('omitFirst')) {
                 linkParams.offset = 0
                 writer << link(linkTagAttrs.clone()) {firststep.toString()}	
             }
             //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev 
-            if (beginstep > firststep+1 && (!attrs.omitFirst || !attrs.omitPrev) ) {
+            if (beginstep > firststep+1 && (!attrs.boolean('omitFirst') || !attrs.boolean('omitPrev')) ) {
                 writer << '<span class="step gap">..</span>'
             }
 
@@ -413,18 +413,18 @@ class RenderTagLib implements RequestConstants {
             }
 
             //show a gap if beginstep isn't immediately before firststep, and if were not omitting first or rev 
-            if (endstep+1 < laststep && (!attrs.omitLast || !attrs.omitNext)) {
+            if (endstep+1 < laststep && (!attrs.boolean('omitLast') || !attrs.boolean('omitNext'))) {
                 writer << '<span class="step gap">..</span>'
             }
             // display laststep link when endstep is not laststep
-            if (endstep < laststep && !attrs.omitLast) {
+            if (endstep < laststep && !attrs.boolean('omitLast')) {
                 linkParams.offset = (laststep - 1) * max
                 writer << link(linkTagAttrs.clone()) { laststep.toString() }
             }
         }
 
         // display next link when not on laststep unless omitNext is true
-        if (currentstep < laststep && !attrs.omitNext) {
+        if (currentstep < laststep && !attrs.boolean('omitNext')) {
             linkTagAttrs.class = 'nextLink'
             linkParams.offset = offset + max
             writer << link(linkTagAttrs.clone()) {
