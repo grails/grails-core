@@ -57,7 +57,13 @@ if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
 
 :init
 
-set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails
+set SPRINGLOADED_PARAMS="profile=grails"
+if not "%GRAILS_AGENT_CACHE_DIR%" == "" (
+set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
+if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
+)
+set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%
+
 set DISABLE_RELOADING=
 if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
 
