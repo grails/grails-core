@@ -96,7 +96,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
         def c = new ContentController()
         webRequest.controllerName = 'content'
         c.testFormat.call()
-        assertEquals "html", response.contentAsString
+        assertEquals "all", response.contentAsString
     }
 
     void testWithContentTypeAndAcceptHeader() {

@@ -40,7 +40,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             requestMimeTypesApi.getFormat(request) == "xml"
             requestMimeTypesApi.getFormat(request) == "xml" // call twice to test cached value
             request.format == 'xml'
-            response.format == 'html'
+            response.format == 'all'
     }
 
     void "Test format property is valid for CONTENT_TYPE and ACCEPT header"() {
