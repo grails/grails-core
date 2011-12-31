@@ -95,6 +95,21 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     }
 
+    void "Test withFormat returns first block if no format provided"() {
+        when: "No Accept header, URI extension or format param"
+        final webRequest = GrailsWebUtil.bindMockWebRequest()
+        def request = webRequest.currentRequest
+        def response = webRequest.currentResponse
+
+        def responseResult = response.withFormat {
+            json { 'got json' }
+            xml { 'got xml' }
+        }
+
+        then: "The first withFormat block should be returned"
+        responseResult == 'got json'
+    }
+
     void "Test withFormat method when Accept header contains the all (*/*) and non-matching formats"() {
         setup: "The request Acept header is 'application/xml, text/csv, */*' and withFormat is used"
             final webRequest = GrailsWebUtil.bindMockWebRequest()
