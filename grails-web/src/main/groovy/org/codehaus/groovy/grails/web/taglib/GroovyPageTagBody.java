@@ -18,10 +18,13 @@ import groovy.lang.Binding;
 import groovy.lang.Closure;
 
 import java.io.Writer;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.groovy.grails.web.pages.AbstractGroovyPageBinding;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -31,7 +34,7 @@ import org.springframework.util.Assert;
 /**
  * Represents the body of a tag and captures its output returning the result
  * when invoked.
- *
+ * 
  * @author Graeme Rocher
  * @since 0.5
  */
@@ -40,18 +43,14 @@ public class GroovyPageTagBody extends Closure {
 
     private static final long serialVersionUID = 4396762064131558457L;
     private Closure<?> bodyClosure;
-    private Binding originalBinding;
     private boolean preferSubChunkWhenWritingToOtherBuffer;
     private GrailsWebRequest webRequest;
-    private GroovyPage originalBindingPage;
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,
-            Closure<?> bodyClosure) {
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure) {
         this(owner, webRequest, bodyClosure, false);
     }
 
-    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,
-            Closure<?> bodyClosure,
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure,
             boolean preferSubChunkWhenWritingToOtherBuffer) {
         super(owner);
 
@@ -62,24 +61,6 @@ public class GroovyPageTagBody extends Closure {
         this.webRequest = webRequest;
         this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
 
-        findPageScopeBinding();
-    }
-
-    private void findPageScopeBinding() {
-        originalBinding = (Binding) webRequest.getCurrentRequest()
-                .getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-        if (originalBinding instanceof GroovyPageBinding) {
-            originalBindingPage = ((GroovyPageBinding) originalBinding)
-                    .getOwner();
-        }
-    }
-
-    private void changeBinding(Binding currentBinding) {
-        if (originalBindingPage != null) {
-            originalBindingPage.setBinding(currentBinding);
-        }
-        webRequest.getCurrentRequest().setAttribute(
-                GrailsApplicationAttributes.PAGE_SCOPE, currentBinding);
     }
 
     public boolean isPreferSubChunkWhenWritingToOtherBuffer() {
@@ -92,9 +73,11 @@ public class GroovyPageTagBody extends Closure {
 
     @SuppressWarnings("unchecked")
     private Object captureClosureOutput(Object args) {
-        final GroovyPageTagWriter capturedOut = new GroovyPageTagWriter(
-                preferSubChunkWhenWritingToOtherBuffer);
-        Binding currentBinding = originalBinding;
+        final GroovyPageTagWriter capturedOut = new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
+        Binding currentBinding = (Binding)webRequest.getCurrentRequest().getAttribute(
+                GrailsApplicationAttributes.PAGE_SCOPE);
+        Map<String,Object> savedVariablesMap = null;
+        Set<String> bodyArgumentKeys = null;
         boolean itChanged = false;
         Object originalIt = null;
         try {
@@ -103,13 +86,13 @@ public class GroovyPageTagBody extends Closure {
             Object bodyResult;
 
             if (args != null) {
-                Map variablesMap = (currentBinding instanceof AbstractGroovyPageBinding) ? ((AbstractGroovyPageBinding) currentBinding)
+                Map<String,Object> variablesMap = (currentBinding instanceof AbstractGroovyPageBinding) ? ((AbstractGroovyPageBinding)currentBinding)
                         .getVariablesMap() : currentBinding.getVariables();
                 originalIt = variablesMap.get("it");
                 variablesMap.put("it", args);
                 itChanged = true;
 
-                if (args instanceof Map && ((Map) args).size() > 0) {
+                if (args instanceof Map && ((Map)args).size() > 0) {
                     // The body can be passed a set of variables as a map that
                     // are then made available in the binding. This allows the
                     // contents of the body to reference any of these variables
@@ -127,38 +110,60 @@ public class GroovyPageTagBody extends Closure {
                     // GRAILS-2675: Copy the current binding so that we can
                     // restore
                     // it to its original state.
-                    currentBinding = new GroovyPageBinding(originalBinding);
-                    ((GroovyPageBinding) currentBinding).addMap((Map) args);
 
+                    savedVariablesMap = new LinkedHashMap<String,Object>(variablesMap);
+                    bodyArgumentKeys = new HashSet<String>();
+                    for (Iterator<Object> i = ((Map)args).keySet().iterator(); i.hasNext(); ) {
+                        bodyArgumentKeys.add(String.valueOf(i.next()));
+                    }
+                    ((GroovyPageBinding)currentBinding).addMap((Map)args);
                     // Binding is only changed currently when body gets a map
                     // argument
-                    changeBinding(currentBinding);
                 }
             }
             bodyResult = executeClosure(args);
 
-            if (!capturedOut.isUsed() && bodyResult != null
-                    && !(bodyResult instanceof Writer)) {
+            if (!capturedOut.isUsed() && bodyResult != null && !(bodyResult instanceof Writer)) {
                 return bodyResult;
             }
             return capturedOut.getBuffer();
-        } finally {
-            if (currentBinding != originalBinding) {
-                changeBinding(originalBinding);
-            }
+        }
+        finally {
+            Map<String,Object> variablesMap = (currentBinding instanceof AbstractGroovyPageBinding) ? ((AbstractGroovyPageBinding)currentBinding)
+                    .getVariablesMap() : currentBinding.getVariables();
+            restoreVariables(variablesMap, savedVariablesMap, bodyArgumentKeys);
             if (itChanged) {
-                Map variablesMap = (currentBinding instanceof AbstractGroovyPageBinding) ? ((AbstractGroovyPageBinding) currentBinding)
-                        .getVariablesMap() : currentBinding.getVariables();
                 variablesMap.put("it", originalIt);
             }
             popCapturedOut();
         }
     }
 
+    protected void restoreVariables(Map<String,Object> variablesMap, Map<String, Object> savedVariablesMap, Set<String> bodyArgumentKeys) {
+
+        if (savedVariablesMap != null) {
+            for(Iterator<Map.Entry<String, Object>> mapIt = variablesMap.entrySet().iterator();mapIt.hasNext();) {
+                Map.Entry<String, Object> entry = mapIt.next();
+                String varname = entry.getKey();
+                if(!savedVariablesMap.containsKey(varname)) {
+                    mapIt.remove();
+                } else if (bodyArgumentKeys.contains(varname)) {
+                    entry.setValue(savedVariablesMap.get(varname));
+                }
+            }
+            for(Map.Entry<String, Object> entry : savedVariablesMap.entrySet()) {
+                if(!variablesMap.containsKey(entry.getKey())) {
+                    variablesMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+    }
+
     private void popCapturedOut() {
         if (webRequest != null && webRequest.isActive()) {
             GroovyPageOutputStack.currentStack(webRequest).pop();
-        } else {
+        }
+        else {
             GroovyPageOutputStack.currentStack().pop();
         }
     }
@@ -166,7 +171,8 @@ public class GroovyPageTagBody extends Closure {
     private void pushCapturedOut(GroovyPageTagWriter capturedOut) {
         if (webRequest != null && webRequest.isActive()) {
             GroovyPageOutputStack.currentStack(webRequest).push(capturedOut);
-        } else {
+        }
+        else {
             GroovyPageOutputStack.currentStack().push(capturedOut);
         }
     }
