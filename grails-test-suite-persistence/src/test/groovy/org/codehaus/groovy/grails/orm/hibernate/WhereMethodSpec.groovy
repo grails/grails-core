@@ -153,13 +153,13 @@ class CallMe {
       given:"A bunch of people with pets"
           createPeopleWithPets()
           def p = new Person(firstName: "Old", lastName: "Person").save()
-          new Pet(owner:p, birthDate: new Date() - 750, name:"Old Dog").save()
+          new Pet(owner:p, birthDate: Date.parse('yyyy-MM-dd','2009-06-01'), name:"Old Dog").save()
 
 
 
       when:"A function is used on the property"
         def query = Pet.where {
-              year(birthDate) == 2011
+              year(birthDate) == 2012
         }
         def results = query.list()
 
