@@ -48,7 +48,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
     void testMultiSelect() {
         def template = '<g:select name="foo" from="[1,2,3]" value="[2,3]" />'
 
-        assertOutputContains('<select name="foo" id="foo" multiple="multiple" >', template)
+        assertOutputContains('<select name="foo" multiple="multiple" id="foo" >', template)
         assertOutputContains('<option value="1" >1</option>', template)
         assertOutputContains('<option value="2" selected="selected" >2</option>', template)
         assertOutputContains('<option value="3" selected="selected" >3</option>', template)
