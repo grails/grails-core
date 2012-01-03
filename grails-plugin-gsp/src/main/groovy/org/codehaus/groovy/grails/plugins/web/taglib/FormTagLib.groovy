@@ -117,12 +117,19 @@ class FormTagLib {
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
-        attrs.id = attrs.id ?: attrs.name
         out << "<input type=\"${attrs.remove('type')}\" "
-        outputAttributes(attrs, out)
+        outputAttributes(attrs, out, true)
         out << "/>"
     }
 
+    private outputNameAsIdIfIdDoesNotExist(attrs, out) {
+        if(!attrs.containsKey('id')) {
+            out << 'id="'
+            out << attrs.name?.encodeAsHTML()
+            out << '" '   
+        }
+    }
+    
     /**
      * A helper tag for creating checkboxes.
      *
@@ -135,7 +142,6 @@ class FormTagLib {
      * @attr id DOM element id; defaults to name
      */
     Closure checkBox = { attrs ->
-        attrs.id = attrs.id ?: attrs.name
         def value = attrs.remove('value')
         def name = attrs.remove('name')
         def disabled = attrs.remove('disabled')
@@ -173,7 +179,7 @@ class FormTagLib {
             out << "value=\"${value}\" "
         }
         // process remaining attributes
-        outputAttributes(attrs, out)
+        outputAttributes(attrs, out, true)
 
         // close the tag, with no body
         out << ' />'
@@ -189,7 +195,6 @@ class FormTagLib {
      */
     Closure textArea = { attrs, body ->
         resolveAttributes(attrs)
-        attrs.id = attrs.id ?: attrs.name
         // Pull out the value to use as content not attrib
         def value = attrs.remove('value')
         if (!value) {
@@ -203,7 +208,7 @@ class FormTagLib {
         }
 
         out << "<textarea "
-        outputAttributes(attrs, out)
+        outputAttributes(attrs, out, true)
         out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
     }
 
@@ -216,8 +221,6 @@ class FormTagLib {
         }
 
         attrs.remove('tagName')
-
-        attrs.id = attrs.id ?: attrs.name
 
         def val = attrs.remove('bean')
         if (val) {
@@ -235,13 +238,16 @@ class FormTagLib {
     /**
      * Dump out attributes in HTML compliant fashion.
      */
-    void outputAttributes(attrs, writer) {
+    void outputAttributes(attrs, writer, boolean useNameAsIdIfIdDoesNotExist = false) {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
             writer << k
             writer << '="'
             writer << v.encodeAsHTML()
             writer << '" '
+        }
+        if(useNameAsIdIfIdDoesNotExist) {
+            outputNameAsIdIfIdDoesNotExist(attrs, writer)
         }
     }
 
@@ -312,7 +318,6 @@ class FormTagLib {
         }
 
         // process remaining attributes
-        attrs.id = attrs.id ? attrs.id : attrs.name
         if (attrs.id == null) attrs.remove('id')
 
         outputAttributes(attrs, writer)
@@ -743,7 +748,6 @@ class FormTagLib {
         def messageSource = grailsAttributes.getApplicationContext().getBean("messageSource")
         def locale = RCU.getLocale(request)
         def writer = out
-        attrs.id = attrs.id ?: attrs.name
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
@@ -767,7 +771,7 @@ class FormTagLib {
 
         writer << "<select name=\"${attrs.remove('name')?.encodeAsHTML()}\" "
         // process remaining attributes
-        outputAttributes(attrs, writer)
+        outputAttributes(attrs, writer, true)
 
         writer << '>'
         writer.println()
@@ -898,7 +902,6 @@ class FormTagLib {
      */
     Closure radio = { attrs ->
         def value = attrs.remove('value')
-        attrs.id = attrs.id ?: attrs.name
         def name = attrs.remove('name')
         def disabled = attrs.remove('disabled')
         if (disabled && Boolean.valueOf(disabled)) {
@@ -907,7 +910,7 @@ class FormTagLib {
         def checked = attrs.remove('checked') ? true : false
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         // process remaining attributes
-        outputAttributes(attrs, out)
+        outputAttributes(attrs, out, true)
 
         // close the tag, with no body
         out << ' />'

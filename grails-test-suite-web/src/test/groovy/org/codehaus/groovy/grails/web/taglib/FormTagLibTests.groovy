@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
+
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the                                         l
  * creation of HTML forms
@@ -180,5 +182,45 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             tag.call(attributes,{})
             assertEquals '<textarea name="testField" id="testField" >1</textarea>', sw.toString()
         }
+    }
+
+    void testPassingTheSameMapToTextField() {
+        // GRAILS-8250
+        StringWriter sw = new StringWriter()
+
+        def attributes = [name: 'A']
+        withTag("textField", new PrintWriter(sw)) { tag ->
+            tag.call(attributes)
+            assertEquals '<input type="text" name="A" value="" id="A" />', sw.toString()
+        }
+
+        sw = new StringWriter()
+        attributes.name = 'B'
+        withTag("textField", new PrintWriter(sw)) { tag ->
+            tag.call(attributes)
+            assertEquals '<input type="text" name="B" value="" id="B" />', sw.toString()
+        }
+    }
+
+    void testFieldImplDoesNotApplyAttributesFromPreviousInvocation() {
+        // GRAILS-8250
+        def attrs = [:]
+        def out = new StringBuilder()
+        attrs.name = 'A'
+        attrs.type = 'text'
+        attrs.tagName = 'textField'
+
+        def tag = new FormTagLib()
+        tag.fieldImpl out, attrs
+        assert '<input type="text" name="A" value="" id="A" />' == out.toString()
+
+        out = new StringBuilder()
+        attrs.name = 'B'
+        attrs.type = 'text'
+        attrs.tagName = 'textField'
+
+        tag = new FormTagLib()
+        tag.fieldImpl out, attrs
+        assert '<input type="text" name="B" value="" id="B" />' == out.toString()
     }
 }
