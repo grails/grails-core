@@ -33,6 +33,13 @@ class OutScopeTagLib {
     Closure nestedinner = { attrs, body ->
         out << body(test2:2)
     }
+
+    Closure bodytag = { attrs, body ->
+        if (attrs.model)
+            out << body(attrs.model)
+        else
+            out << body()
+    }
 }
 '''
     }
@@ -74,5 +81,11 @@ class OutScopeTagLib {
     void testNestedScope() {
         def template = '''<g:nestedouter><g:nestedinner>${test1} ${test2}</g:nestedinner></g:nestedouter>'''
         assertOutputEquals '1 2', template
+    }
+    
+    // test for GRAILS-8569
+    void testGSetInBody() {
+        def template = '''<g:bodytag><g:set var="a" value="1"/></g:bodytag><g:bodytag model="[c:3]"><g:set var="b" value="2"/></g:bodytag>${a} ${b} ${c}'''
+        assertOutputEquals '1 2 ', template
     }
 }
