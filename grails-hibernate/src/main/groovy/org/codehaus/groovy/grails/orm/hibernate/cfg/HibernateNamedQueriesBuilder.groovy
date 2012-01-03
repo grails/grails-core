@@ -147,6 +147,16 @@ class NamedCriteriaProxy {
         }
     }
 
+    def get() {
+        def getClosure = {
+            queryBuilder = delegate
+            invokeCriteriaClosure()
+            maxResults 1
+            uniqueResult = true
+        }
+        domainClass.clazz.withCriteria(getClosure)
+    }
+    
     def get(id) {
         id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
