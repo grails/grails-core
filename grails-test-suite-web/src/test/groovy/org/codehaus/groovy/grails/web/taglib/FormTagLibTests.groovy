@@ -61,6 +61,14 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; &#39;" id="testField" />', template, [value:/foo > " & < '/])
     }
 
+    void testTextFieldTagWithRequired() {
+        def template = '<g:textField name="testField" value="${value}" required="false"/>'
+        assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; \'" id="testField" />', template, [value:/foo > " & < '/])
+
+        template = '<g:textField name="testField" value="${value}" required="true"/>'
+        assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; \'" id="testField" required="true" />', template, [value:/foo > " & < '/])
+    }
+
     void testTextAreaWithBody() {
         def template = '<g:textArea name="test">This is content</g:textArea>'
         assertOutputEquals '<textarea name="test" id="test" >This is content</textarea>', template
