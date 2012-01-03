@@ -123,7 +123,7 @@ class FormTagLib {
     }
 
     private outputNameAsIdIfIdDoesNotExist(attrs, out) {
-        if(!attrs.containsKey('id')) {
+        if(!attrs.containsKey('id') && attrs.containsKey('name')) {
             out << 'id="'
             out << attrs.name?.encodeAsHTML()
             out << '" '   
@@ -164,7 +164,6 @@ class FormTagLib {
         if (value == null) value = false
 
         out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
-
         if (checkedAttributeWasSpecified) {
             if (checked) {
                 out << 'checked="checked" '
@@ -179,7 +178,11 @@ class FormTagLib {
             out << "value=\"${value}\" "
         }
         // process remaining attributes
-        outputAttributes(attrs, out, true)
+        outputAttributes(attrs, out)
+
+        if(!attrs.containsKey('id')) {
+            out << """id="${name}" """
+        }
 
         // close the tag, with no body
         out << ' />'
@@ -320,7 +323,7 @@ class FormTagLib {
         // process remaining attributes
         if (attrs.id == null) attrs.remove('id')
 
-        outputAttributes(attrs, writer)
+        outputAttributes(attrs, writer, true)
 
         writer << ">"
         if (request['flowExecutionKey']) {
@@ -768,8 +771,8 @@ class FormTagLib {
         if (disabled && Boolean.valueOf(disabled)) {
             attrs.disabled = 'disabled'
         }
-
-        writer << "<select name=\"${attrs.remove('name')?.encodeAsHTML()}\" "
+        
+        writer << "<select "
         // process remaining attributes
         outputAttributes(attrs, writer, true)
 
@@ -909,8 +912,11 @@ class FormTagLib {
         }
         def checked = attrs.remove('checked') ? true : false
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
+        if(!attrs.containsKey('id')) {
+            out << """id="${name}" """
+        }
         // process remaining attributes
-        outputAttributes(attrs, out, true)
+        outputAttributes(attrs, out)
 
         // close the tag, with no body
         out << ' />'

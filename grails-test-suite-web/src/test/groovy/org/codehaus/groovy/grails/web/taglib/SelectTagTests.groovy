@@ -19,7 +19,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
         def template = '<g:select id="${foo}.genre" name="${foo}.genre" value="${book?.genre}" from="${[\'non-fiction\',\'fiction\']}" noSelection="[\'\':\'-Genre-\']" />'
         def result = applyTemplate(template, [foo:'bar" /><script>alert("gotcha")</script>'])
 
-        assertTrue "should have HTML escaped attributes", result.startsWith('<select name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
+        assertTrue "should have HTML escaped attributes", result.startsWith('<select id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
     }
 
     void testSelectUsesExpressionForDisable() {

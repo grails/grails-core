@@ -123,7 +123,7 @@ class TestUrlMappings {
 
         assertOutputEquals('''\
 <form onsubmit="<remote>return false" method="GET"\
- action="/dirt-grails/ruleDetails/saveDynamicParameters" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
+ action="/dirt-grails/ruleDetails/saveDynamicParameters" id="myForm"><input type="text" name="foo" value="" id="foo" /></form>''', template)
     }
 
     /**
@@ -143,7 +143,7 @@ class TestUrlMappings {
 
         assertOutputEquals('''\
 <form onsubmit="<remote>return false" method="GET"\
- action="/person/showOld?var1=one&var2=two" id="myForm"><input type="text" name="foo" id="foo" value="" /></form>''', template)
+ action="/person/showOld?var1=one&var2=two" id="myForm"><input type="text" name="foo" value="" id="foo" /></form>''', template)
     }
 
     void testRemoteLinkWithSpaceBeforeGStringVariable() {
