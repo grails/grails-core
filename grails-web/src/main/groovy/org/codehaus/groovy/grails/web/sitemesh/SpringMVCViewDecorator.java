@@ -61,7 +61,7 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
         if (!response.isCommitted()) {
             boolean dispatched = false;
             try {
-                request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage(true));
+                request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage());
                 request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, Boolean.TRUE);
                 try {
                     view.render(Collections.<String, Object>emptyMap(), request, response);
