@@ -118,6 +118,23 @@ class CallMe {
             people.size() == 3
     }
 
+    @Ignore    
+    def "Test .count on a query with sort parameters"() {
+        given:"A bunch of people"
+              createPeople()
+
+        when:"parameters are used instead of literals"
+            def fn = "Bart"
+            def ln = "Simpson"
+
+
+            def query = Person.where { firstName != fn && lastName == ln }.sort("firstName", "desc")
+            def cnt = query.count()
+
+        then:"The correct results are returned"
+            cnt == 3
+    }
+
 
     def "Test property projection"() {
         given:"A bunch of people"
