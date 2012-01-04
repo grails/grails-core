@@ -68,7 +68,7 @@ if not "%GRAILS_SL_CACHE_DIR%" == "" (
 set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_SL_CACHE_DIR%"
 if not exist "%GRAILS_SL_CACHE_DIR%" mkdir "%GRAILS_SL_CACHE_DIR%"
 )
-set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-1.0.2.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%
+set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/@spring.loaded.version@/jar/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%
 
 set DISABLE_RELOADING=
 if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
