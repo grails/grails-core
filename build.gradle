@@ -72,11 +72,11 @@ if (jointBuildGroovyJarProperty) {
     }
 }
 
-// Prevent multiple repositories being used, commented out as currently doesn't work.
-/*gradle.taskGraph.whenReady { taskGraph ->
+// Prevent multiple repositories being used because the populateDependencies task in assemble.gradle
+// will break down if this build uses multiple repositories.
+gradle.taskGraph.whenReady { taskGraph ->
     if (taskGraph.hasTask(populateDependencies)) {
         def projectsWithMultipleRepos = allprojects.findAll { repositories.size() > 1 }
-        println "projectsWithMultipleRepos: $projectsWithMultipleRepos"
         if (projectsWithMultipleRepos) {
             throw new GradleException(
                 "There are projects with more than one repository defined. \n" +
@@ -86,7 +86,6 @@ if (jointBuildGroovyJarProperty) {
         }
     }
 }
-*/
 
 allprojects {
     repositories {
