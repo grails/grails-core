@@ -259,5 +259,5 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    distributionUrl "http://repo.gradle.org/gradle/distributions-snapshots/gradle-1.0-milestone-7-20111219065105+0100-bin.zip"
+    gradleVersion "1.0-milestone-7"
 }
