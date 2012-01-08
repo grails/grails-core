@@ -62,6 +62,38 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         template = '<g:paginate next="Forward" prev="Backward" max="5" total="20" offset="10" controller="book" action="list" omitNext="false"/>'
         assertOutputContains 'Backward', template
         assertOutputContains 'Forward', template
+
+        template = '<g:paginate  max="2" total="20" offset="10" maxsteps="3" controller="book" action="list" omitPrev="true" omitNext="true" omitFirst="true" />'
+        assertOutputNotContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a>', template
+        assertOutputContains '<a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
+
+        template = '<g:paginate  max="2" total="20" offset="2" maxsteps="3" controller="book" action="list" omitPrev="true" omitNext="true" omitFirst="true" />'
+        assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a>', template
+
+        template = '<g:paginate  max="2" total="20" offset="10" maxsteps="3" controller="book" action="list" omitPrev="true" omitNext="true" omitFirst="false" />'
+        assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a>', template
+
+        template = '<g:paginate  max="2" total="20" offset="10" maxsteps="3" controller="book" action="list" omitPrev="true" omitNext="true" omitLast="true" />'
+        assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a>', template
+        assertOutputNotContains '<a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
+
+        template = '<g:paginate  max="2" total="20" offset="16" maxsteps="3" controller="book" action="list" omitPrev="true" omitNext="true" omitLast="true" />'
+        assertOutputContains '<a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
+
+        template = '<g:paginate  max="2" total="20" offset="10" maxsteps="3" controller="book" action="list" omitPrev="true" omitNext="true" omitLast="false" />'
+        assertOutputContains '<a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
+    }
+
+    void testPaginateGap() {
+        def template = '<g:paginate  max="2" total="20" offset="10" maxsteps="3" controller="book" action="list" />'
+        assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a><span class="step gap">..</span><a href="/book/list?offset=8&amp;max=2" class="step">5</a>', template
+        assertOutputContains '<a href="/book/list?offset=12&amp;max=2" class="step">7</a><span class="step gap">..</span><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
+
+	template = '<g:paginate  max="2" total="20" offset="4" maxsteps="3" controller="book" action="list" />'
+        assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a><a href="/book/list?offset=2&amp;max=2" class="step">2</a>', template
+
+	template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
+        assertOutputContains '<a href="/book/list?offset=16&amp;max=2" class="step">9</a><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
     }
 
     void testPageProperty() {
