@@ -42,6 +42,12 @@ def configureAlias() {
     def aliases = loadProperties()
     def numberOfParams = params.size()
     def alias = params[0]
+    if(aliases.containsKey(alias) && isInteractive) {
+        def oldValue = aliases.get(alias)
+        if(!confirmInput("An alias named ${alias} already exists.  The current value is ${oldValue}. Overwrite existing value? ")) {
+            exit 0
+        }
+    }
     def value = params[1..-1].join(' ')
     aliases.put alias, value
     aliases.store(new FileWriter(aliasFile), null)
