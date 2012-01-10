@@ -7,7 +7,7 @@ subprojects { subproject ->
     configurations {
         libsConfigurations << libs {
             extendsFrom compile, runtime
-            ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
+            ["jsp21"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
         }
     }
 }
