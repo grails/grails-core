@@ -359,10 +359,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
             Map model;
             if (!chainModel.isEmpty()) {
-                model = new CompositeMap(chainModel, new BeanMap(controller));
+                model = new CompositeMap(chainModel, new GrailsControllerBeanMap(controller));
             }
             else {
-                model = new BeanMap(controller);
+                model = new GrailsControllerBeanMap(controller);
             }
             return new ModelAndView(viewName, model);
         }
@@ -403,10 +403,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
         Map model;
         if (!chainModel.isEmpty()) {
-            model = new CompositeMap(chainModel, new BeanMap(controller));
+            model = new CompositeMap(chainModel, new GrailsControllerBeanMap(controller));
         }
         else {
-            model = new BeanMap(controller);
+            model = new GrailsControllerBeanMap(controller);
         }
         return new ModelAndView(viewName, model);
     }
