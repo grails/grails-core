@@ -64,9 +64,9 @@ if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 :init
 
 set SPRINGLOADED_PARAMS="profile=grails"
-if not "%GRAILS_SL_CACHE_DIR%" == "" (
-set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_SL_CACHE_DIR%"
-if not exist "%GRAILS_SL_CACHE_DIR%" mkdir "%GRAILS_SL_CACHE_DIR%"
+if not "%GRAILS_AGENT_CACHE_DIR%" == "" (
+set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
+if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
 )
 set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/@spring.loaded.version@/jar/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%
 

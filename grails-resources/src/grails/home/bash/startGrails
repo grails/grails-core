@@ -180,10 +180,10 @@ if $cygwin ; then
 fi
 
 SPRINGLOADED_PARAMS="profile=grails"
-if [ -n "$GRAILS_SL_CACHE_DIR" ]; then
-    SPRINGLOADED_PARAMS="$SPRINGLOADED_PARAMS;cacheDir=$GRAILS_SL_CACHE_DIR"
-    if [ ! -d "$GRAILS_SL_CACHE_DIR" ]; then
-        mkdir -p $GRAILS_SL_CACHE_DIR
+if [ -n "$GRAILS_AGENT_CACHE_DIR" ]; then
+    SPRINGLOADED_PARAMS="$SPRINGLOADED_PARAMS;cacheDir=$GRAILS_AGENT_CACHE_DIR"
+    if [ ! -d "$GRAILS_AGENT_CACHE_DIR" ]; then
+        mkdir -p $GRAILS_AGENT_CACHE_DIR
     fi
 fi
 
