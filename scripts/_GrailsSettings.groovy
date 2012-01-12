@@ -150,7 +150,7 @@ exit = {
  */
 confirmInput = {String message, code="confirm.message" ->
     if (!isInteractive) {
-        grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. You need to check the value of the 'isInteractive' variable before asking for input")
+        grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. Please switch back to interactive mode.")
         exit(1)
     }
     return 'y'.equalsIgnoreCase(grailsConsole.userInput(message, ["y","n"] as String[]))
