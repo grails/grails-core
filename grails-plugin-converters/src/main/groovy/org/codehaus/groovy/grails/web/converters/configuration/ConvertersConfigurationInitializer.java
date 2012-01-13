@@ -120,6 +120,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         LOG.debug("Initializing default XML Converters Configuration...");
 
         List<ObjectMarshaller<XML>> marshallers = new ArrayList<ObjectMarshaller<XML>>();
+        marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.Base64ByteArrayMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.ArrayMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.CollectionMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.MapMarshaller());
