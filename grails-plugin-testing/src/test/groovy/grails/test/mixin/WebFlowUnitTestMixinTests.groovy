@@ -69,11 +69,176 @@ class WebFlowUnitTestMixinTests {
     }
 
     @Test
+    void testSubflowArgs() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        def subflow = breakfastFlow.prepareBacon.subflow
+
+        assert 'prepareBacon' == breakfastFlow.prepareBacon.subflowArgs.action
+        assert 'meal' == breakfastFlow.prepareBacon.subflowArgs.controller
+        assert breakfastFlow.prepareBacon.subflowArgs.input.meal
+    }
+
+    @Test
+    void testFlowOutput() {
+        mockDomain(Meal)
+        mockController(MealController)
+        flow.baconFlow = 'bacon'
+
+        prepareBaconFlow.end.output()
+
+        assert 'bacon' == currentEvent.attributes.baconConst
+        assert 'bacon' == currentEvent.attributes.baconValue
+        assert 'bacon' == currentEvent.attributes.baconFlow
+    }
+
+    @Test
+    void testFlowInputDefault() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        def inputParams = [
+                defaultBaconInput: 'bacon',
+                requiredWithoutValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'bacon' == flow.defaultBaconInput
+        assert 'bacon' == flow.requiredWithoutValueBaconInput
+    }
+
+    @Test
+    void testFlowInputRequiredWithoutValue() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        def inputParams = [
+                defaultBaconInput: 'bacon'
+        ]
+
+        shouldFail MissingPropertyException, {
+            prepareBaconFlow.input(inputParams)
+        }
+
+        inputParams = [
+                defaultBaconInput: 'bacon',
+                requiredWithoutValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'bacon' == flow.requiredWithoutValueBaconInput
+    }
+
+    @Test
+    void testFlowInputRequiredWithValue() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        def inputParams = [
+                requiredWithoutValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'baconValue' == flow.requiredWithValueBaconInput
+
+        inputParams = [
+                requiredWithoutValueBaconInput: 'bacon',
+                requiredWithValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'bacon' == flow.requiredWithValueBaconInput
+    }
+
+    @Test
+    void testFlowInputNotRequiredWithValue() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        def inputParams = [
+                requiredWithoutValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'baconValue' == flow.notRequiredWithValueBaconInput
+
+        inputParams = [
+                requiredWithoutValueBaconInput: 'bacon',
+                notRequiredWithValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+        
+        assert 'bacon' == flow.notRequiredWithValueBaconInput
+    }
+
+    @Test
+    void testFlowInputClosure() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        flow.closureBaconInputValue = 'bacon'
+        
+        def inputParams = [
+                requiredWithoutValueBaconInput: 'bacon',
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'bacon' == flow.closureBaconInput
+    }
+
+    @Test
+    void testFlowInputClosureValue() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        flow.closureWithValueBaconInputValue = 'bacon'
+
+        def inputParams = [
+                requiredWithoutValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'bacon' == flow.closureWithValueBaconInput
+    }
+
+    @Test
+    void testFlowInputValue() {
+        mockDomain(Meal)
+        mockController(MealController)
+
+        def inputParams = [
+                requiredWithoutValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'baconValue' == flow.defaultValueBaconInput
+
+        inputParams = [
+                requiredWithoutValueBaconInput: 'bacon',
+                defaultValueBaconInput: 'bacon'
+        ]
+
+        prepareBaconFlow.input(inputParams)
+
+        assert 'bacon' == flow.defaultValueBaconInput
+
+    }
+
+    @Test
     void testGeneralTransitionStructure() {
         mockController(MealController)
 
         assert 'chooseMainDish' == breakfastFlow.init.on.success.to
-
         assert 'prepareEggs' == breakfastFlow.chooseMainDish.on.eggs.to
         assert 'prepareToast' == breakfastFlow.chooseMainDish.on.toast.to
         assert 'end' == breakfastFlow.chooseMainDish.on.nothing.to
@@ -128,6 +293,27 @@ class MealController {
         }
         end()
     }
+     def prepareBaconFlow = {
+        input {
+            defaultBaconInput()
+            requiredWithoutValueBaconInput required: true
+            requiredWithValueBaconInput required: true, value: 'baconValue'
+            notRequiredWithValueBaconInput required: false, value: 'baconValue'
+            defaultValueBaconInput 'baconValue'
+            closureBaconInput { flow.closureBaconInputValue }
+            closureWithValueBaconInput value: { flow.closureWithValueBaconInputValue }
+        }
+        fryBacon {
+            on 'sucess' to 'end'
+        }
+        end {
+            output {
+                baconConst("bacon")
+                baconValue(value: "bacon")
+                baconFlow { flow.baconFlow }
+            }
+}
+    }
     final breakfastFlow = {
         init {
             action {
@@ -139,6 +325,7 @@ class MealController {
         chooseMainDish {
             on('eggs').to('prepareEggs')
             on('toast').to('prepareToast')
+            on('bacon').to('prepareBacon')
             on('nothing'){
                 conversation.meal.skip(params.reason)
                 if (!conversation.meal.save()) {
@@ -156,6 +343,12 @@ class MealController {
 
         prepareToast{
             subflow(prepareToastFlow)
+            on('success').to('eatBreakfast')
+            on('errors').to('chooseMainDish')
+        }
+
+        prepareBacon{
+            subflow(controller: 'meal', action: 'prepareBacon', input: [meal: new Meal()])
             on('success').to('eatBreakfast')
             on('errors').to('chooseMainDish')
         }
@@ -185,7 +378,7 @@ class MealController {
             }.to('end')
             on('eatMore').to('chooseMainDish')
         }
-
+        
         end()
     }
 }
