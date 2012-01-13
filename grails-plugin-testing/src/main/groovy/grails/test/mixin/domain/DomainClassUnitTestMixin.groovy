@@ -37,6 +37,8 @@ import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
@@ -72,6 +74,7 @@ import org.junit.AfterClass
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     static SimpleMapDatastore simpleDatastore
+    static PlatformTransactionManager transactionManager
 
     protected Session currentSession
 
@@ -82,6 +85,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         }
 
         simpleDatastore = new SimpleMapDatastore(applicationContext)
+        transactionManager = new DatastoreTransactionManager(datastore: simpleDatastore)
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
         ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
@@ -144,7 +148,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         def validator = applicationContext.getBean(validationBeanName, Validator.class)
         simpleDatastore.mappingContext.addEntityValidator(entity, validator)
 
-        def enhancer = new GormEnhancer(simpleDatastore)
+        def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
         if (domainClassToMock.getAnnotation(Enhanced) != null) {
             enhancer.enhance(entity, true)
         }
