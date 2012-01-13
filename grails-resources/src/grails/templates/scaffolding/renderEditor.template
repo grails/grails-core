@@ -159,6 +159,7 @@
 				sb << '/>'
             } else {
 				sb << '<g:field type="number" name="' << property.name << '"'
+				if (cp.scale != null) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'                
 				if (cp.min != null) sb << ' min="' << cp.min << '"'
 				if (cp.max != null) sb << ' max="' << cp.max << '"'
 				if (isRequired()) sb << ' required=""'

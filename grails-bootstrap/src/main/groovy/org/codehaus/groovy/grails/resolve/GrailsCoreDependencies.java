@@ -180,7 +180,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed at compile time
                         ModuleRevisionId[] groovyDependencies = {
-                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.4")
+                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.5")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
 
@@ -189,7 +189,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("commons-el", "commons-el", "1.0"),
                             ModuleRevisionId.newInstance("commons-validator", "commons-validator", "1.3.1")
                         };
-                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
+                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-beanutils", "commons-digester");
 
                         String datastoreMappingVersion = "1.0.0.RELEASE";
                         ModuleRevisionId[] compileDependencies = {
@@ -316,22 +316,22 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies, "commons-pool");
                         if(java5compatible) {
-                            registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), } );
+                            registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), }, "commons-pool");
                         }
 
                         ModuleRevisionId[] ehcacheDependencies = {
                             ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.6")
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "jms", "commons-logging", "servlet-api");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "javax.jms:jms", "commons-logging", "javax.servlet:servlet-api");
 
                         ModuleRevisionId[] loggingDependencies = {
                             ModuleRevisionId.newInstance("log4j", "log4j", "1.2.16"),
                             ModuleRevisionId.newInstance("org.slf4j", "jcl-over-slf4j", slf4jVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "jul-to-slf4j", slf4jVersion)
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "mail", "jms", "jmxtools", "jmxri");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "com.sun.mail:javax.mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri");
 
                         return null;
                     }
