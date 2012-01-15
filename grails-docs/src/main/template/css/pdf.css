@@ -64,6 +64,10 @@
     padding: 0.2em 0;
 }
 
+div.project > h1 {
+    page-break-before: avoid;
+}
+
 h1 {
     font-family: helvetica,arial,sans-serif;
     font-size: 1.5em;
