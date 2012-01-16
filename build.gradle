@@ -25,7 +25,7 @@ commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
 commonsIOVersion = "2.1"
 commonsLangVersion = "2.6"
-datastoreVersion = "1.0.0.RELEASE"
+datastoreVersion = "1.0.1.BUILD-SNAPSHOT"
 gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
 groovyVersion = "1.8.5"
@@ -112,6 +112,8 @@ subprojects { project ->
     }
 
     repositories {
+		mavenLocal()
+
         mavenRepo(urls: "http://repo.grails.org/grails/core") {
             if (project.hasProperty('snapshotTimeout')) {
                 setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
