@@ -243,7 +243,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-webmvc", springVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion)
                         };
-                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies);
+                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies, "org.slf4j:slf4j-api", "net.sf.ehcache:ehcache-core", "commons-beanutils");
 
                         EnhancedDefaultDependencyDescriptor grailsDatastoreGorm = registerDependency(dependencyManager, compileTimeDependenciesMethod, ModuleRevisionId.newInstance("org.grails", "grails-datastore-gorm", datastoreMappingVersion));
                         grailsDatastoreGorm.exclude(ModuleId.newInstance("org.grails", "grails-bootstrap"));
@@ -324,7 +324,7 @@ public class GrailsCoreDependencies {
                         ModuleRevisionId[] ehcacheDependencies = {
                             ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.6")
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "javax.jms:jms", "commons-logging", "javax.servlet:servlet-api");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "javax.jms:jms", "commons-logging", "javax.servlet:servlet-api", "org.slf4j:slf4j-api");
 
                         ModuleRevisionId[] loggingDependencies = {
                             ModuleRevisionId.newInstance("log4j", "log4j", "1.2.16"),
