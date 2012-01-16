@@ -19,10 +19,14 @@ import grails.util.Environment
 
 import org.apache.log4j.Appender
 import org.apache.log4j.ConsoleAppender
+import org.apache.log4j.FileAppender
+import org.apache.log4j.HTMLLayout
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
+import org.apache.log4j.SimpleLayout
 import org.apache.log4j.WriterAppender
+import org.apache.log4j.xml.XMLLayout
 import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig
 
 class Log4jDslTests extends GroovyTestCase {
@@ -284,6 +288,44 @@ class Log4jDslTests extends GroovyTestCase {
         log4jConfig.configure(configData)
 
         assertEquals Level.WARN, Logger.getLogger("org.hibernate.SQL").level
+    }
+
+    void testLayouts() {
+
+        log4jConfig.configure {
+            appenders {
+                file name: 'fileXml',    layout: xml,    file: 'log.xml'
+                file name: 'fileHtml',   layout: html,   file: 'log.html'
+                file name: 'fileSimple', layout: simple, file: 'simple.log'
+            }
+            root {
+                debug 'fileXml', 'fileHtml', 'fileSimple'
+            }
+        }
+
+        Logger root = Logger.rootLogger
+
+        Appender appender = root.getAppender('fileXml')
+        assert appender instanceof FileAppender
+        FileAppender fa = appender
+        assert 'log.xml' == fa.file
+
+        assert fa.layout instanceof XMLLayout
+        assert fa.name == 'fileXml'
+
+        appender = root.getAppender('fileHtml')
+        assert appender instanceof FileAppender
+        fa = appender
+        assert 'log.html' == fa.file
+        assert fa.layout instanceof HTMLLayout
+        assert fa.name == 'fileHtml'
+
+        appender = root.getAppender('fileSimple')
+        assert appender instanceof FileAppender
+        fa = appender
+        assert 'simple.log' == fa.file
+        assert fa.layout instanceof SimpleLayout
+        assert fa.name == 'fileSimple'
     }
 
     private void setEnv(String name) {

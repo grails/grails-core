@@ -81,6 +81,14 @@ class Log4jConfig {
         }
     }
 
+    def propertyMissing(String name) {
+        if (LAYOUTS.containsKey(name)) {
+            return LAYOUTS[name].newInstance()
+        }
+
+        LogLog.error "Property missing when configuring log4j: $name"
+    }
+
     def methodMissing(String name, args) {
         if (APPENDERS.containsKey(name) && args) {
             def constructorArgs = args[0] instanceof Map ? args[0] : [:]
