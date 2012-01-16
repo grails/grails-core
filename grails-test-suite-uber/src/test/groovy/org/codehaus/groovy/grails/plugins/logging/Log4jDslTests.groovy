@@ -31,29 +31,26 @@ class Log4jDslTests extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
-        System.setProperty(Environment.KEY, "")
+        setEnv ''
+        LogManager.resetConfiguration()
     }
 
     protected void tearDown() {
-        System.setProperty(Environment.KEY, "")
+        super.tearDown()
+        setEnv ''
     }
 
     void testSingleDebugStatement() {
-        LogManager.resetConfiguration()
-
         log4jConfig.configure {
             debug 'org.hibernate.SQL'
         }
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
 
-        assertEquals hibernateLogger.level, Level.DEBUG
+        assertEquals Logger.getLogger("org.hibernate.SQL").level, Level.DEBUG
     }
 
     void testEnvironmentSpecificLogging() {
 
-        System.setProperty(Environment.KEY, "production")
-
-        LogManager.resetConfiguration()
+        setEnv 'production'
 
         log4jConfig.configure {
             environments {
@@ -72,18 +69,14 @@ class Log4jDslTests extends GroovyTestCase {
             }
         }
 
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
-        assertEquals hibernateLogger.level, Level.ERROR
+        assertEquals Logger.getLogger("org.hibernate.SQL").level, Level.ERROR
     }
 
     void testCustomEnvironment() {
 
-        System.setProperty(Environment.KEY, "firstCustomEnv")
+        setEnv 'firstCustomEnv'
 
-        LogManager.resetConfiguration()
-
-        Log4jConfig config = new Log4jConfig()
-        config.configure {
+        log4jConfig.configure {
             environments {
                 development {
                     trace 'org.hibernate.SQL'
@@ -100,24 +93,18 @@ class Log4jDslTests extends GroovyTestCase {
             }
         }
 
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
-        assertEquals hibernateLogger.level, Level.WARN
-
+        assertEquals Logger.getLogger("org.hibernate.SQL").level, Level.WARN
     }
 
     void testTraceLevel() {
-        LogManager.resetConfiguration()
-
         log4jConfig.configure {
             trace 'org.hibernate.SQL'
         }
 
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
-        assertEquals hibernateLogger.level, Level.TRACE
+        assertEquals Logger.getLogger("org.hibernate.SQL").level, Level.TRACE
     }
 
     void testConfigureRootLogger() {
-        LogManager.resetConfiguration()
 
         log4jConfig.configure {
             root {
@@ -131,7 +118,7 @@ class Log4jDslTests extends GroovyTestCase {
         assertEquals Level.DEBUG, r.level
         assertTrue r.additivity
         Appender a = r.allAppenders.nextElement()
-        assertEquals "stdout",a.name
+        assertEquals "stdout", a.name
 
         LogManager.resetConfiguration()
 
@@ -150,7 +137,7 @@ class Log4jDslTests extends GroovyTestCase {
         assertEquals Level.TRACE, r.level
         assertTrue r.additivity
         a = r.allAppenders.nextElement()
-        assertEquals "writerAppender",a.name
+        assertEquals "writerAppender", a.name
 
         LogManager.resetConfiguration()
 
@@ -170,13 +157,12 @@ class Log4jDslTests extends GroovyTestCase {
         assertTrue r.additivity
         Enumeration appenders = r.allAppenders
         a = appenders.nextElement()
-        assertEquals "writerAppender",a.name
+        assertEquals "writerAppender", a.name
         a = appenders.nextElement()
-        assertEquals "stdout",a.name
+        assertEquals "stdout", a.name
     }
 
     void testSensibleDefaults() {
-        LogManager.resetConfiguration()
 
         log4jConfig.configure {
             debug 'org.codehaus.groovy.grails.web.servlet',
@@ -207,8 +193,6 @@ class Log4jDslTests extends GroovyTestCase {
     }
 
     void testCustomAppender() {
-
-        LogManager.resetConfiguration()
 
         def consoleAppender
         log4jConfig.configure {
@@ -241,7 +225,6 @@ class Log4jDslTests extends GroovyTestCase {
     }
 
     void testCustomAppenderWithInstance() {
-        LogManager.resetConfiguration()
 
         log4jConfig.configure {
             appenders {
@@ -270,8 +253,6 @@ class Log4jDslTests extends GroovyTestCase {
      */
     void testRootLoggerModification() {
 
-        LogManager.resetConfiguration()
-
         log4jConfig.configure { root ->
             root.level = Level.DEBUG
         }
@@ -281,21 +262,17 @@ class Log4jDslTests extends GroovyTestCase {
     }
 
     void testConfigFromCollection() {
-        LogManager.resetConfiguration()
-
         log4jConfig.configure([{
             debug 'org.hibernate.SQL'
         },
         {
             warn 'org.hibernate.SQL'
         }])
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
 
-        assertEquals Level.WARN, hibernateLogger.level
+        assertEquals Level.WARN, Logger.getLogger("org.hibernate.SQL").level
     }
 
     void testConfigFromMap() {
-        LogManager.resetConfiguration()
 
         def configData = [:]
         configData.main = {
@@ -306,7 +283,10 @@ class Log4jDslTests extends GroovyTestCase {
         }
         log4jConfig.configure(configData)
 
-        def hibernateLogger = Logger.getLogger("org.hibernate.SQL")
-        assertEquals Level.WARN, hibernateLogger.level
+        assertEquals Level.WARN, Logger.getLogger("org.hibernate.SQL").level
+    }
+
+    private void setEnv(String name) {
+        System.setProperty Environment.KEY, name
     }
 }
