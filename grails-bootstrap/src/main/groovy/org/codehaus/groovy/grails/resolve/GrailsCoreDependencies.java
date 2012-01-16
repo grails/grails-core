@@ -308,15 +308,14 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.2"),
                             ModuleRevisionId.newInstance("oro", "oro", "2.0.8"),
                             // data source
-
-                            ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", java5compatible ? "1.3": "1.4"),
                             ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
+                            ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", java5compatible ? "1.3": "1.4"),
                             ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
                             // JSP support
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies, "commons-pool");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
                         if(java5compatible) {
                             registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), }, "commons-pool");
                         }
