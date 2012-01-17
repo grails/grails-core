@@ -132,7 +132,8 @@ class GrailsMock {
             }
         }
 
-        mock.metaClass = mockedClass.metaClass
+        if(!mockedClass.isInterface())
+            mock.metaClass = mockedClass.metaClass
         return mock
     }
 
