@@ -132,6 +132,7 @@ class GrailsMock {
             }
         }
 
+        mock.metaClass = mockedClass.metaClass
         return mock
     }
 
