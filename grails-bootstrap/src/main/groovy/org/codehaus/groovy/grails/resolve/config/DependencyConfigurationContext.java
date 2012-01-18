@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.resolve.config;
 import grails.util.Metadata;
 import grails.util.BuildSettings;
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
+import org.apache.ivy.core.module.descriptor.ExcludeRule;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies;
@@ -28,6 +29,7 @@ public class DependencyConfigurationContext {
     final public boolean inherited;
     final public boolean exported;
     private boolean offline;
+    private ExcludeRule[] excludeRules;
 
     private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String pluginName, boolean inherited) {
         this.dependencyManager = dependencyManager;
@@ -76,5 +78,12 @@ public class DependencyConfigurationContext {
         }
 
         return buildSettings.getCoreDependencies();
+    }
+    public void setExcludeRules(ExcludeRule[] excludeRules) {
+        this.excludeRules = excludeRules;
+    }
+
+    public ExcludeRule[] getExcludeRules() {
+        return excludeRules;
     }
 }
