@@ -209,10 +209,12 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
 
     private boolean isExcluded(DependencyConfigurationContext context, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
         ExcludeRule[] excludeRules = context.getExcludeRules();
-        ArtifactId aid = new ArtifactId(dependencyDescriptor.getDependencyId(),PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION);
-        for (ExcludeRule excludeRule : excludeRules) {
-            if(MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
-                return true;
+        if(excludeRules != null) {
+            ArtifactId aid = new ArtifactId(dependencyDescriptor.getDependencyId(),PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION);
+            for (ExcludeRule excludeRule : excludeRules) {
+                if(MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
+                    return true;
+                }
             }
         }
         return false;
