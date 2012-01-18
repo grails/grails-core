@@ -14,9 +14,12 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import grails.util.BuildSettings;
 import grails.util.Metadata;
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
+import org.apache.ivy.core.module.descriptor.ExcludeRule;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 
 public class DependencyConfigurationContext {
@@ -26,6 +29,7 @@ public class DependencyConfigurationContext {
     final public boolean inherited;
     final public boolean exported;
     private boolean offline;
+    private ExcludeRule[] excludeRules;
 
     private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String pluginName, boolean inherited) {
         this.dependencyManager = dependencyManager;
@@ -60,5 +64,26 @@ public class DependencyConfigurationContext {
 
     public DependencyConfigurationContext createInheritedContext() {
         return new DependencyConfigurationContext(dependencyManager, pluginName, true);
+    }
+
+    /**
+     * Gives access to the grails core dependencies.
+     * 
+     * @throws IllegalStateException If the dependency manager is unable to provide this information
+     */
+    public GrailsCoreDependencies getGrailsCoreDependencies() {
+        BuildSettings buildSettings = dependencyManager.getBuildSettings();
+        if (buildSettings == null) {
+            throw new IllegalStateException("Cannot ask for grails core dependencies if the dependency manager was configured without build settings, as it was in this case.");
+        }
+
+        return buildSettings.getCoreDependencies();
+    }
+    public void setExcludeRules(ExcludeRule[] excludeRules) {
+        this.excludeRules = excludeRules;
+    }
+
+    public ExcludeRule[] getExcludeRules() {
+        return excludeRules;
     }
 }
