@@ -1252,7 +1252,7 @@ class BuildSettings extends AbstractBuildSettings {
             }
 
             def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
-            if(pdd && pdd.transitive) {
+            if(isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
                 // Try BuildConfig.groovy first, which should work
                 // work for in-place plugins.
                 def path = dir.absolutePath

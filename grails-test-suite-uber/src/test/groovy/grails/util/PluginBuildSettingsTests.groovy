@@ -10,9 +10,18 @@ import org.springframework.core.io.Resource
  */
 class PluginBuildSettingsTests extends GroovyTestCase {
 
-    private static final File TEST_PROJ_DIR = new File("test/test-projects/plugin-build-settings")
-    private static final File NESTED_INLINE_PLUGIN_TEST_PROJ_DIR = new File("test/test-projects/nested-inline-plugins/app")
-    private static final File INLINE_PLUGINS_TEST_PROJ_DIR = new File("test/test-projects/inline-plugins/app")
+    private static final File TEST_PROJ_DIR = locateRelativeFile("test/test-projects/plugin-build-settings")
+    private static final File NESTED_INLINE_PLUGIN_TEST_PROJ_DIR = locateRelativeFile("test/test-projects/nested-inline-plugins/app")
+    private static final File INLINE_PLUGINS_TEST_PROJ_DIR = locateRelativeFile("test/test-projects/inline-plugins/app")
+
+    private static File locateRelativeFile(String path) {
+        def file = new File(path)
+        if(!file.exists()) {
+            file = new File("grails-test-suite-uber/$path")
+        }
+        return file
+    }
+
 
     def absoluteTestDir
 
