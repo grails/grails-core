@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 import static junit.framework.Assert.assertEquals
 import static junit.framework.Assert.assertNotNull
 
- /**
+/**
  * A mixin for testing URL mappings in Grails.
  *
  * @author Luke Daley
@@ -137,7 +137,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         def t = templateEngine.createTemplate(pathPattern)
         if (!t) {
             throw new AssertionFailedError(
-                (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view")
+                    (controller) ? "Url mapping assertion for '$url' failed, '$view' is not a valid view of controller '$controller'" : "Url mapping assertion for '$url' failed, '$view' is not a valid view")
         }
     }
 
@@ -179,7 +179,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         assertForwardUrlMapping(assertions, url, null)
     }
 
-    void assertForwardUrlMapping(assertions, url, paramAssertions) {
+    void assertForwardUrlMapping(assertions, url, Closure paramAssertions) {
 
         UrlMappingsHolder mappingsHolder = applicationContext.getBean("grailsUrlMappingsHolder", UrlMappingsHolder)
         if (assertions.action && !assertions.controller) {
@@ -202,7 +202,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
 
         if (mappingInfos.size() == 0) throw new AssertionFailedError("url '$url' did not match any mappings")
 
-        def mappingMatched = mappingInfos.any {mapping ->
+        def mappingMatched = mappingInfos.any {UrlMappingInfo mapping ->
             mapping.configure(webRequest)
             for (key in assertionKeys) {
                 if (assertions.containsKey(key)) {
@@ -233,8 +233,9 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
                 paramAssertions.delegate = params
                 paramAssertions.resolveStrategy = Closure.DELEGATE_ONLY
                 paramAssertions.call()
+
                 params.each {name, value ->
-                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value.toString(), mapping.params[name])
+                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value.toString(), webRequest.params[name])
                 }
             }
             return true
