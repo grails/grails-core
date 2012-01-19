@@ -17,11 +17,10 @@
 import grails.util.BuildScope
 import grails.util.Environment
 import grails.util.Metadata
-
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import grails.util.PluginBuildSettings
 import groovy.xml.MarkupBuilder
+
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**
  * Gant script that creates a WAR file from a Grails project
@@ -34,12 +33,9 @@ import groovy.xml.MarkupBuilder
 includeTargets << grailsScript("_GrailsClean")
 includeTargets << grailsScript("_GrailsPackage")
 
-generateLog4jFile = true
 includeJars = true
 buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
 warName = null
-
-
 
 defaultWarDependencies = { antBuilder ->
 
@@ -66,25 +62,22 @@ defaultWarDependencies = { antBuilder ->
         def dependencies = grailsSettings.runtimeDependencies
         if (dependencies) {
             for (File f in dependencies) {
-                if(f && f.name.endsWith(".jar"))
+                if (f && f.name.endsWith(".jar")) {
                     fileset(dir: f.parent, includes: f.name)
+                }
             }
         }
     }
 }
 
 target (configureRunningScript: "Sets the currently running script, in case called directly") {
-    System.setProperty('current.gant.script',"war")
+    System.setProperty('current.gant.script', "war")
 }
 
 target(checkInPlacePlugins: "Perform a check whether inplace plugins have been packaged") {
-    def inlinePluginDirs = pluginSettings.inlinePluginDirectories
-    if (inlinePluginDirs) {
-        for (pluginDir in inlinePluginDirs) {
-            def descriptor = pluginSettings.getPluginDescriptor(pluginDir)
-            grailsConsole.updateStatus "Generating plugin.xml for inline plugin"
-            generatePluginXml(descriptor.file,false)
-        }
+    for (pluginDir in pluginSettings.inlinePluginDirectories) {
+        grailsConsole.updateStatus "Generating plugin.xml for inline plugin"
+        generatePluginXml(pluginSettings.getPluginDescriptor(pluginDir).file, false)
     }
 }
 
@@ -126,8 +119,8 @@ target (war: "The implementation target") {
         def classesDirExcludes = {
             exclude(name: "hibernate")
             exclude(name: "spring")
-            exclude(name:"hibernate/*")
-            exclude(name:"spring/*")
+            exclude(name: "hibernate/*")
+            exclude(name: "spring/*")
         }
 
         ant.copy(todir:"${stagingDir}/WEB-INF/classes", preservelastmodified:true) {
@@ -181,7 +174,9 @@ target (war: "The implementation target") {
             }
         }
 
-        ant.copy(file:webXmlFile.absolutePath, tofile:"${stagingDir}/WEB-INF/web.xml", overwrite:true, preservelastmodified:true)
+        ant.copy(file: webXmlFile.absolutePath,
+                 tofile: "${stagingDir}/WEB-INF/web.xml",
+                 overwrite:true, preservelastmodified:true)
 
         def webXML = new File("${stagingDir}/WEB-INF/web.xml")
         def xmlInput = new XmlParser().parse(webXML)
@@ -197,15 +192,13 @@ target (war: "The implementation target") {
         def compileScopePluginInfos = ps.getCompileScopedSupportedPluginInfos()
         def resourceList = ps.getCompileScopedArtefactResources()
 
-        if (includeJars) {
-            if (compileScopePluginInfos) {
-                def libDir = "${stagingDir}/WEB-INF/lib"
-                // Copy embedded libs (dependencies declared inside dependencies.groovy are already provided)
-                ant.copy(todir:libDir, flatten:true, failonerror:false, preservelastmodified:true) {
-                    for (GrailsPluginInfo info in compileScopePluginInfos) {
-                        fileset(dir: info.pluginDir.file.path) {
-                            include(name:"lib/*.jar")
-                        }
+        if (includeJars && compileScopePluginInfos) {
+            def libDir = "${stagingDir}/WEB-INF/lib"
+            // Copy embedded libs (dependencies declared inside dependencies.groovy are already provided)
+            ant.copy(todir:libDir, flatten:true, failonerror:false, preservelastmodified:true) {
+                for (GrailsPluginInfo info in compileScopePluginInfos) {
+                    fileset(dir: info.pluginDir.file.path) {
+                        include(name:"lib/*.jar")
                     }
                 }
             }
