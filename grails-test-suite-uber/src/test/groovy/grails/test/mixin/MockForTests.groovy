@@ -14,7 +14,9 @@ class MockForTests {
     void testMockService() {
 
         def solrServerControl = mockFor(SolrServer), up
-        solrServerControl.demand.request { HttpServletRequest req -> up = req }
+        solrServerControl.demand.request { HttpServletRequest req ->
+            up = req
+        }
         def service = new SearchService(solrServer: solrServerControl.createMock())
         service.serviceMethod()
         assert up instanceof HttpServletRequest
