@@ -264,6 +264,17 @@ class GrailsMockTests extends GroovyTestCase {
         testClass.gmi = mockControl.createMock()
 
         assertEquals "brussels-5", testClass.testInterfaceCollaborator()
+
+        mockControl = new GrailsMock(GrailsMockInterface)
+        mockControl.demand.testMethod(1..1) { String name, int qty ->
+            assertEquals "brussels", name
+            assertEquals 5, qty
+            "brussels-5"
+        }
+
+        testClass.gmi = mockControl.createMock()
+
+        assertEquals "brussels-5", testClass.testInterfaceCollaborator()
     }
 
     /**

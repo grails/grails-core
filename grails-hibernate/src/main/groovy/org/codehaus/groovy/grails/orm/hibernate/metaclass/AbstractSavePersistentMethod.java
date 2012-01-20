@@ -28,13 +28,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.validation.AbstractPersistentConstraint;
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
@@ -145,6 +142,10 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         boolean shouldValidate = shouldValidate(arguments, domainClass);
         if (shouldValidate) {
             Validator validator = domainClass.getValidator();
+
+            if(domainClass instanceof DefaultGrailsDomainClass) {
+                GrailsHibernateUtil.autoAssociateBidirectionalOneToOnes((DefaultGrailsDomainClass) domainClass, target);
+            }
             Errors errors = setupErrorsProperty(target);
 
             if (validator != null) {

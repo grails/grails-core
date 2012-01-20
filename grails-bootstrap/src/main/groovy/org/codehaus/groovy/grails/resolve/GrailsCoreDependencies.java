@@ -189,9 +189,9 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("commons-el", "commons-el", "1.0"),
                             ModuleRevisionId.newInstance("commons-validator", "commons-validator", "1.3.1")
                         };
-                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-beanutils", "commons-digester");
+                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
 
-                        String datastoreMappingVersion = "1.0.0.RELEASE";
+                        String datastoreMappingVersion = "1.0.1.BUILD-SNAPSHOT";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
@@ -308,8 +308,9 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.2"),
                             ModuleRevisionId.newInstance("oro", "oro", "2.0.8"),
                             // data source
-                            ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
+
                             ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", java5compatible ? "1.3": "1.4"),
+                            ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
                             ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
                             // JSP support
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
@@ -317,7 +318,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
                         if(java5compatible) {
-                            registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), }, "commons-pool");
+                            registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), } );
                         }
 
                         ModuleRevisionId[] ehcacheDependencies = {
@@ -330,7 +331,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.slf4j", "jcl-over-slf4j", slf4jVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "jul-to-slf4j", slf4jVersion)
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "com.sun.mail:javax.mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "mail", "jms", "jmxtools", "jmxri");
 
                         return null;
                     }

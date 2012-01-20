@@ -30,12 +30,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
@@ -60,6 +55,8 @@ import org.hibernate.property.Getter;
 import org.hibernate.property.Setter;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.CompositeType;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
@@ -543,4 +540,30 @@ public class GrailsHibernateUtil {
         }
         return mapping.getDatasources();
     }
+
+    public static void autoAssociateBidirectionalOneToOnes(DefaultGrailsDomainClass domainClass, Object target) {
+        List<GrailsDomainClassProperty> associations = domainClass.getAssociations();
+        for (GrailsDomainClassProperty association : associations) {
+            if(association.isOneToOne() && association.isBidirectional() && association.isOwningSide()) {
+                if(isInitialized(target, association.getName())) {
+                    GrailsDomainClassProperty otherSide = association.getOtherSide();
+                    if(otherSide != null) {
+                        BeanWrapper bean = new BeanWrapperImpl(target);
+                        Object inverseObject = bean.getPropertyValue(association.getName());
+                        if(inverseObject != null) {
+
+                            if(isInitialized(inverseObject,otherSide.getName())) {
+                                BeanWrapper inverseBean = new BeanWrapperImpl(inverseObject);
+                                Object propertyValue = inverseBean.getPropertyValue(otherSide.getName());
+                                if(propertyValue == null) {
+                                    inverseBean.setPropertyValue(otherSide.getName(), target);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }

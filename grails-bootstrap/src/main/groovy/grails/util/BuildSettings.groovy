@@ -1251,41 +1251,45 @@ class BuildSettings extends AbstractBuildSettings {
                 return
             }
 
-            // Try BuildConfig.groovy first, which should work
-            // work for in-place plugins.
-            def path = dir.absolutePath
-            def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
+            def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
+            if(isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
+                // Try BuildConfig.groovy first, which should work
+                // work for in-place plugins.
+                def path = dir.absolutePath
+                def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
 
-            if (!pluginDependencyDescriptor.exists()) {
-                // OK, that doesn't exist, so try dependencies.groovy.
-                pluginDependencyDescriptor = new File("$path/dependencies.groovy")
-            }
+                if (!pluginDependencyDescriptor.exists()) {
+                    // OK, that doesn't exist, so try dependencies.groovy.
+                    pluginDependencyDescriptor = new File("$path/dependencies.groovy")
+                }
 
-            if (pluginDependencyDescriptor.exists()) {
-                def gcl = obtainGroovyClassLoader()
+                if (pluginDependencyDescriptor.exists()) {
+                    def gcl = obtainGroovyClassLoader()
 
-                try {
-                    Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
-                    def pluginConfig = pluginSlurper.parse(script)
-                    def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
-                    if (pluginDependencyConfig instanceof Closure) {
-                        dependencyManager.parseDependencies(pluginName, pluginDependencyConfig)
-                    }
+                    try {
+                        Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
+                        def pluginConfig = pluginSlurper.parse(script)
+                        def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
+                        if (pluginDependencyConfig instanceof Closure) {
+                            dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, pdd.getExcludeRules(dependencyManager.configurationNames))
+                        }
 
-                    def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
-                    if (inlinePlugins) {
-                        for (File inlinePlugin in inlinePlugins) {
-                            addPluginDirectory inlinePlugin, true
-                            // recurse
-                            def handleInlinePlugin = pluginDependencyHandler()
-                            handleInlinePlugin(inlinePlugin)
+                        def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
+                        if (inlinePlugins) {
+                            for (File inlinePlugin in inlinePlugins) {
+                                addPluginDirectory inlinePlugin, true
+                                // recurse
+                                def handleInlinePlugin = pluginDependencyHandler()
+                                handleInlinePlugin(inlinePlugin)
+                            }
                         }
                     }
-                }
-                catch (e) {
-                    CONSOLE.error "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}", e
+                    catch (e) {
+                        CONSOLE.error "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}", e
+                    }
                 }
             }
+
         }
         return handlePluginDirectory
     }

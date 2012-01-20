@@ -102,11 +102,10 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         }
     }
 
+
+
     private excludeForString (String dep) {
-		def tokens = dep.tokenize(':')
-		def organisation = tokens.size() > 1 ? tokens[0] : WILDCARD
-		def name = tokens.size() > 1 ? tokens[1] : dep
-        def mid = ModuleId.newInstance(organisation, name)
+        def mid = ModuleId.newInstance(WILDCARD, dep)
         addRuleForModuleId(mid, scope, WILDCARD, WILDCARD)
     }
 

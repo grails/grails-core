@@ -97,7 +97,7 @@ class GrailsMock {
         // to the expectation object which will throw an assertion
         // failure.
         if (!mockedClass.isInterface()) {
-            mockedClass.metaClass.invokeMethod = { String name, Object[] args ->
+            demand.mockMetaClass.invokeMethod = { String name, Object[] args ->
                 // Find an expando method with the same signature as the one being invoked.
                 def paramTypes = []
                 args.each {
@@ -131,7 +131,19 @@ class GrailsMock {
                 demand.expectation.match(name)
             }
         }
+        else {
+            def methods = demand.mockMetaClass.getMetaMethods()
+            def mockMetaClass = new ExpandoMetaClass(mock.getClass(), false, true)
+            mockMetaClass.initialize()
+            for(MetaMethod m in methods) {
+                mockMetaClass.registerInstanceMethod(m)
+            }
+            
+        }
 
+        if(!mockedClass.isInterface()) {
+            mock.metaClass = demand.mockMetaClass
+        }
         return mock
     }
 
@@ -150,6 +162,7 @@ class GrailsMock {
 class DemandProxy {
 
     Class mockedClass
+    MetaClass mockMetaClass
     Demand demand = new Demand()
     Object expectation
     boolean isStatic
@@ -159,6 +172,8 @@ class DemandProxy {
 
     DemandProxy(Class mockedClass, boolean loose) {
         this.mockedClass = mockedClass
+        this.mockMetaClass = new ExpandoMetaClass(mockedClass, false, true)
+        this.mockMetaClass.initialize()
         if (loose) {
             expectation = new LooseExpectation(demand)
         }
@@ -175,7 +190,7 @@ class DemandProxy {
             mockedClass.metaClass.static."${methodName}" = c
         }
         else {
-            mockedClass.metaClass."${methodName}" = c
+            mockMetaClass."${methodName}" = c
 
             // We keep track of the instance methods in a map so that
             // GrailsMock can use that map as the implementation of an
