@@ -9,13 +9,13 @@ class BidirectionalOneToOneCascadeSpec extends GormSpec{
 
     void "Test that child is saved correctly when associating only the owning side"() {
         when:"An owner is saved by the inverse child is not associated"
-            Face face = new Face()
-            Nose nose = new Nose()
+            BidirectionalOneToOneCascadeFace face = new BidirectionalOneToOneCascadeFace()
+            BidirectionalOneToOneCascadeNose nose = new BidirectionalOneToOneCascadeNose()
             face.nose = nose
             face.save(flush:true)
             session.clear()
         
-            face = Face.get(1)
+            face = BidirectionalOneToOneCascadeFace.get(1)
 
         then:"Both sides are correctly associated"
             face.nose != null
@@ -23,16 +23,16 @@ class BidirectionalOneToOneCascadeSpec extends GormSpec{
     }
     @Override
     List getDomainClasses() {
-        [Face, Nose]
+        [BidirectionalOneToOneCascadeFace, BidirectionalOneToOneCascadeNose]
     }
 }
 
 @Entity
-class Face {
-    static hasOne = [nose: Nose]
+class BidirectionalOneToOneCascadeFace {
+    static hasOne = [nose: BidirectionalOneToOneCascadeNose]
 }
 
 @Entity
-class Nose {
-    Face face
+class BidirectionalOneToOneCascadeNose {
+    BidirectionalOneToOneCascadeFace face
 }
