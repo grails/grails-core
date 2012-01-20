@@ -97,7 +97,7 @@ class GrailsMock {
         // to the expectation object which will throw an assertion
         // failure.
         if (!mockedClass.isInterface()) {
-            mockedClass.metaClass.invokeMethod = { String name, Object[] args ->
+            demand.mockMetaClass.invokeMethod = { String name, Object[] args ->
                 // Find an expando method with the same signature as the one being invoked.
                 def paramTypes = []
                 args.each {
@@ -141,8 +141,9 @@ class GrailsMock {
             
         }
 
-        if(!mockedClass.isInterface())
+        if(!mockedClass.isInterface()) {
             mock.metaClass = demand.mockMetaClass
+        }
         return mock
     }
 
@@ -186,7 +187,7 @@ class DemandProxy {
 
         def c = new MockClosureProxy(args[-1], methodName, expectation)
         if (isStatic) {
-            mockMetaClass.static."${methodName}" = c
+            mockedClass.metaClass.static."${methodName}" = c
         }
         else {
             mockMetaClass."${methodName}" = c
