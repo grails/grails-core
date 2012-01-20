@@ -550,11 +550,14 @@ public class GrailsHibernateUtil {
                     if(otherSide != null) {
                         BeanWrapper bean = new BeanWrapperImpl(target);
                         Object inverseObject = bean.getPropertyValue(association.getName());
-                        if(isInitialized(inverseObject,otherSide.getName())) {
-                            BeanWrapper inverseBean = new BeanWrapperImpl(inverseObject);
-                            Object propertyValue = inverseBean.getPropertyValue(otherSide.getName());
-                            if(propertyValue == null) {
-                                inverseBean.setPropertyValue(otherSide.getName(), target);
+                        if(inverseObject != null) {
+
+                            if(isInitialized(inverseObject,otherSide.getName())) {
+                                BeanWrapper inverseBean = new BeanWrapperImpl(inverseObject);
+                                Object propertyValue = inverseBean.getPropertyValue(otherSide.getName());
+                                if(propertyValue == null) {
+                                    inverseBean.setPropertyValue(otherSide.getName(), target);
+                                }
                             }
                         }
                     }
