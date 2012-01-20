@@ -9,13 +9,13 @@ class BidirectionalOneToOneBelongsToCascadeSpec extends GormSpec {
 
     void "Test that child is saved correctly when associating only the owning side"() {
         when:"An owner is saved by the inverse child is not associated"
-            def book = new Book()
+            def book = new BidirectionalOneToOneBelongsToCascadeBook()
             book.name = "A new book"
-            book.author = new Author(name:"Grails")
+            book.author = new BidirectionalOneToOneBelongsToCascadeAuthor(name:"Grails")
             book.save(flush:true)
             session.clear()
 
-            book = Book.get(1)
+            book = BidirectionalOneToOneBelongsToCascadeBook.get(1)
 
         then:"Both sides are correctly associated"
             book.author != null
@@ -23,22 +23,22 @@ class BidirectionalOneToOneBelongsToCascadeSpec extends GormSpec {
     }
     @Override
     List getDomainClasses() {
-        [Book,Author]
+        [BidirectionalOneToOneBelongsToCascadeBook,BidirectionalOneToOneBelongsToCascadeAuthor]
     }
 }
 
 @Entity
-class Book {
+class BidirectionalOneToOneBelongsToCascadeBook {
 
     String name
-    Author author
+    BidirectionalOneToOneBelongsToCascadeAuthor author
 
     static constraints = {
     }
 }
 @Entity
-class Author {
+class BidirectionalOneToOneBelongsToCascadeAuthor {
     String name
-    static belongsTo = [book:Book]
+    static belongsTo = [book:BidirectionalOneToOneBelongsToCascadeBook]
 
 }
