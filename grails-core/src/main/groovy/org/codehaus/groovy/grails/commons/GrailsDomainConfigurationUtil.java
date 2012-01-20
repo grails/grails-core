@@ -30,14 +30,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -425,4 +418,5 @@ public class GrailsDomainConfigurationUtil {
         }
         return classChain;
     }
+
 }

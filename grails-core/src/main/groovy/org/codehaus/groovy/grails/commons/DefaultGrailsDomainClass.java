@@ -60,6 +60,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     private Collection<String> embedded;
     private Map<String, Object> defaultConstraints;
     private List<GrailsDomainClass> components = new ArrayList<GrailsDomainClass>();
+    private List<GrailsDomainClassProperty> associations = new ArrayList<GrailsDomainClassProperty>();
 
     /**
      * Constructor.
@@ -262,9 +263,11 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 // otherwise if the type is a domain class establish relationship
                 else if (DomainClassArtefactHandler.isDomainClass(currentPropType) &&
                         currentProp.isPersistent()) {
+                    associations.add(currentProp);
                     establishDomainClassRelationship(currentProp);
                 }
                 else if (embedded.contains(currentProp.getName())) {
+                    associations.add(currentProp);
                     establishDomainClassRelationship(currentProp);
                 }
             }
@@ -283,6 +286,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
         if (relatedClassType != null) {
             // set the referenced type in the property
+            associations.add(property);
             property.setReferencedPropertyType(relatedClassType);
 
             // if the related type is a domain class
@@ -826,5 +830,9 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
     public List<GrailsDomainClass> getComponents() {
         return Collections.unmodifiableList(components);
+    }
+
+    public List<GrailsDomainClassProperty> getAssociations() {
+        return associations;
     }
 }
