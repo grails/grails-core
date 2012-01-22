@@ -92,7 +92,11 @@ class HibernatePluginSupport {
             }
         }
 
-        def datasourceNames = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
+        def datasourceNames = []
+        if (getSpringConfig().containsBean('dataSource')) {
+            datasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+        }
+
         for (name in application.config.keySet()) {
             if (name.startsWith('dataSource_')) {
                 datasourceNames << name - 'dataSource_'
