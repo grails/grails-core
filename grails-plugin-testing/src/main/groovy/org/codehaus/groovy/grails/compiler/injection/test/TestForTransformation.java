@@ -369,7 +369,7 @@ public class TestForTransformation extends TestMixinTransformation {
             BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
             getterBody.addStatement(new IfStatement(new BooleanExpression(new BinaryExpression(fieldExpression, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)), new ExpressionStatement(testTargetAssignment), new BlockStatement()));
 
-            IfStatement autowiringIfStatement = getAutowiringIfStatement(fieldExpression);
+            IfStatement autowiringIfStatement = getAutowiringIfStatement(targetClass,fieldExpression);
             getterBody.addStatement(autowiringIfStatement);
 
             getterBody.addStatement(new ReturnStatement(fieldExpression));
@@ -379,7 +379,7 @@ public class TestForTransformation extends TestMixinTransformation {
         return methodNode;
     }
 
-    private IfStatement getAutowiringIfStatement(VariableExpression fieldExpression) {
+    private IfStatement getAutowiringIfStatement(ClassExpression targetClass,VariableExpression fieldExpression) {
         VariableExpression appCtxVar = new VariableExpression("applicationContext");
         BooleanExpression applicationContextCheck = new BooleanExpression(new BinaryExpression(appCtxVar, GrailsASTUtils.NOT_EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION));
         BlockStatement performAutowireBlock = new BlockStatement();
@@ -387,6 +387,13 @@ public class TestForTransformation extends TestMixinTransformation {
         arguments.addExpression(fieldExpression);
         arguments.addExpression(new ConstantExpression(1));
         arguments.addExpression(new ConstantExpression(false));
+        BlockStatement assignFromApplicationContext = new BlockStatement();
+        ArgumentListExpression argWithClassName = new ArgumentListExpression();
+        MethodCallExpression getClassNameMethodCall = new MethodCallExpression(targetClass, "getName", new ArgumentListExpression());
+        argWithClassName.addExpression(getClassNameMethodCall);
+
+        assignFromApplicationContext.addStatement(new ExpressionStatement(new BinaryExpression(fieldExpression, ASSIGN, new MethodCallExpression(appCtxVar, "getBean", argWithClassName))));
+        performAutowireBlock.addStatement(new IfStatement(new BooleanExpression(new MethodCallExpression(appCtxVar, "containsBean", argWithClassName)), assignFromApplicationContext, new BlockStatement()));
         performAutowireBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new PropertyExpression(appCtxVar,"autowireCapableBeanFactory"), "autowireBeanProperties", arguments)));
         return new IfStatement(applicationContextCheck, performAutowireBlock, new BlockStatement());
     }
