@@ -51,7 +51,14 @@ class DataSourceGrailsPlugin {
     def doWithSpring = {
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
-        def dsConfigs = [dataSource: application.config.dataSource]
+        def dsConfigs = [:]
+        if (!application.config.dataSource && application.domainClasses.size() == 0) {
+            log.info "No default data source or domain classes found. Default datasource configuration skipped"
+        }
+        else {
+            dsConfigs.dataSource = application.config.dataSource
+        }
+
         application.config.each { name, value ->
             if (name.startsWith('dataSource_') && value instanceof ConfigObject) {
                 dsConfigs[name] = value
