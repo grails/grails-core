@@ -366,9 +366,9 @@ public class TestForTransformation extends TestMixinTransformation {
             getter = new MethodNode(getterName, Modifier.PUBLIC, targetClass.getType().getPlainNodeReference(),GrailsArtefactClassInjector.ZERO_PARAMETERS,null, getterBody);
 
             BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
-            getterBody.addStatement(new IfStatement(new BooleanExpression(new BinaryExpression(fieldExpression, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)), new ExpressionStatement(testTargetAssignment), new BlockStatement()));
 
-            IfStatement autowiringIfStatement = getAutowiringIfStatement(targetClass,fieldExpression);
+
+            IfStatement autowiringIfStatement = getAutowiringIfStatement(targetClass,fieldExpression, testTargetAssignment);
             getterBody.addStatement(autowiringIfStatement);
 
             getterBody.addStatement(new ReturnStatement(fieldExpression));
@@ -378,9 +378,14 @@ public class TestForTransformation extends TestMixinTransformation {
         return methodNode;
     }
 
-    private IfStatement getAutowiringIfStatement(ClassExpression targetClass,VariableExpression fieldExpression) {
+    private IfStatement getAutowiringIfStatement(ClassExpression targetClass, VariableExpression fieldExpression, BinaryExpression testTargetAssignment) {
         VariableExpression appCtxVar = new VariableExpression("applicationContext");
-        BooleanExpression applicationContextCheck = new BooleanExpression(new BinaryExpression(appCtxVar, GrailsASTUtils.NOT_EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION));
+
+        BooleanExpression applicationContextCheck = new BooleanExpression(
+                new BinaryExpression(
+                new BinaryExpression(fieldExpression, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION),
+                        Token.newSymbol("&&",0,0),
+                new BinaryExpression(appCtxVar, GrailsASTUtils.NOT_EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)));
         BlockStatement performAutowireBlock = new BlockStatement();
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(fieldExpression);
@@ -392,7 +397,9 @@ public class TestForTransformation extends TestMixinTransformation {
         argWithClassName.addExpression(getClassNameMethodCall);
 
         assignFromApplicationContext.addStatement(new ExpressionStatement(new BinaryExpression(fieldExpression, ASSIGN, new MethodCallExpression(appCtxVar, "getBean", argWithClassName))));
-        performAutowireBlock.addStatement(new IfStatement(new BooleanExpression(new MethodCallExpression(appCtxVar, "containsBean", argWithClassName)), assignFromApplicationContext, new BlockStatement()));
+        BlockStatement elseBlock = new BlockStatement();
+        elseBlock.addStatement(new ExpressionStatement(testTargetAssignment));
+        performAutowireBlock.addStatement(new IfStatement(new BooleanExpression(new MethodCallExpression(appCtxVar, "containsBean", argWithClassName)), assignFromApplicationContext, elseBlock));
         performAutowireBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new PropertyExpression(appCtxVar,"autowireCapableBeanFactory"), "autowireBeanProperties", arguments)));
         return new IfStatement(applicationContextCheck, performAutowireBlock, new BlockStatement());
     }
