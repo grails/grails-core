@@ -24,6 +24,23 @@ class MetaClassCleanupSpec extends Specification{
             a.testMe() == "test"
     }
 
+    def instance = new Author()
+    def "Test that changes made to an instance are cleaned up - step 1"() {
+        when:"a change is made to an instance"
+            instance.metaClass.doWork = {->"done"}
+
+        then:"The method is callable"
+            instance.doWork() == "done"
+    }
+
+    def "Test that changes made to an instance are cleaned up - step 2"() {
+        when:"when the method is called again"
+            instance.doWork()
+
+        then:"The method was cleaned by the registry cleaner"
+            thrown MissingMethodException
+    }    
+
     @AfterClass
     static void checkCleanup() {
         def a = new Author()
