@@ -292,6 +292,10 @@ class Log4jDslTests extends GroovyTestCase {
 
     void testLayouts() {
 
+        new File('log.xml').deleteOnExit()
+        new File('log.html').deleteOnExit()
+        new File('simple.log').deleteOnExit()
+
         log4jConfig.configure {
             appenders {
                 file name: 'fileXml',    layout: xml,    file: 'log.xml'
@@ -330,5 +334,6 @@ class Log4jDslTests extends GroovyTestCase {
 
     private void setEnv(String name) {
         System.setProperty Environment.KEY, name
+        //
     }
 }
