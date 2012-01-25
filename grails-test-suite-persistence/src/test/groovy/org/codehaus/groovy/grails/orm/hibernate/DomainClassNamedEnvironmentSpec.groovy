@@ -43,7 +43,9 @@ class Environment {
 
 class EnvironmentService {
     Environment environment
+    org.springframework.core.env.Environment springEnvironment
     List listEnvironments() {
+        springEnvironment != null
         Environment.list()
     }
 }
