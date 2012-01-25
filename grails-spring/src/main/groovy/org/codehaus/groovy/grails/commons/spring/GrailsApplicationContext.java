@@ -23,6 +23,7 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
@@ -43,6 +44,7 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
     protected MetaClass metaClass;
     private BeanWrapper ctxBean = new BeanWrapperImpl(this);
     private ThemeSource themeSource;
+    private static final String GRAILS_ENVIRONMENT_BEAN_NAME = "springEnvironment";
 
     public GrailsApplicationContext(DefaultListableBeanFactory defaultListableBeanFactory) {
         super(defaultListableBeanFactory);
@@ -156,5 +158,14 @@ public class GrailsApplicationContext extends GenericApplicationContext implemen
         bd.setBeanClass(clazz);
         bd.setPropertyValues(pvs);
         getDefaultListableBeanFactory().registerBeanDefinition(name, bd);
+    }
+
+    @Override
+    protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        super.prepareBeanFactory(beanFactory);
+
+        // workaround for GRAILS-7851, until Spring allows the environment bean name to be configurable
+        ((DefaultListableBeanFactory)beanFactory).destroySingleton(ENVIRONMENT_BEAN_NAME);
+        beanFactory.registerSingleton(GRAILS_ENVIRONMENT_BEAN_NAME,getEnvironment());
     }
 }
