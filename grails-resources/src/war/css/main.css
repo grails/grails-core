@@ -567,6 +567,11 @@ th:hover, tr:hover {
 	text-indent: 25px;
 }
 
+.ie6 .buttons input.delete, .ie6 .buttons input.edit, .ie6 .buttons input.save,
+.ie7 .buttons input.delete, .ie7 .buttons input.edit, .ie7 .buttons input.save {
+	padding-left: 36px;
+}
+
 .buttons .delete {
 	background-image: url(../images/skin/database_delete.png);
 }
