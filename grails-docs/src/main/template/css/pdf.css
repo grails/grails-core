@@ -1,3 +1,5 @@
+@import "custom-pdf.css";
+
 /* page layout and page numbering */
 @page {
    size: a4;
