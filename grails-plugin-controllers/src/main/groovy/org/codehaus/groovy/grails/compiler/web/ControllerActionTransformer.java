@@ -32,7 +32,6 @@ import java.util.Map;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -402,8 +401,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void enhanceCommandObjectClass(
             final ClassNode commandObjectTypeClassNode, final String actionName, final SourceUnit source) {
-        final CompileUnit compileUnit = commandObjectTypeClassNode.getCompileUnit();
-        if(compileUnit == null) {
+        if(!commandObjectTypeClassNode.isPrimaryClassNode()) {
             final List<MethodNode> validateMethods = commandObjectTypeClassNode.getMethods("validate");
             if(validateMethods.size() == 0) {
                 final String errorMessage = "The [" + actionName + "] action accepts a parameter of type [" +
