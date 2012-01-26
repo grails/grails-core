@@ -221,6 +221,9 @@ extension = extension.substring(1);
         String name = file.getName();
         String path = file.getAbsolutePath();
         boolean isSvnFile = path.indexOf(File.separator + SVN_DIR_NAME + File.separator) > 0;
-        return !isSvnFile && !file.isHidden() && !file.getName().startsWith(".") && (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
+        return !isSvnFile &&
+                !file.isHidden() &&
+                !file.getName().startsWith(".") &&
+                (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
     }
 }
