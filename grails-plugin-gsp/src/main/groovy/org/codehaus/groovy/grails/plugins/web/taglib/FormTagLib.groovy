@@ -139,15 +139,14 @@ class FormTagLib {
      * @attr value  the value of the checkbox
      * @attr checked if evaluates to true sets to checkbox to checked
      * @attr disabled if evaluates to true sets to checkbox to disabled
+     * @attr readonly if evaluates to true, sets to checkbox to read only
      * @attr id DOM element id; defaults to name
      */
     Closure checkBox = { attrs ->
         def value = attrs.remove('value')
         def name = attrs.remove('name')
-        def disabled = attrs.remove('disabled')
-        if (disabled && Boolean.valueOf(disabled)) {
-            attrs.disabled = 'disabled'
-        }
+        booleanToAttribute(attrs, 'disabled')
+        booleanToAttribute(attrs, 'readonly')
 
         // Deal with the "checked" attribute. If it doesn't exist, we
         // default to a value of "true", otherwise we use Groovy Truth
@@ -214,6 +213,18 @@ class FormTagLib {
         outputAttributes(attrs, out, true)
         out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
     }
+    
+    /**
+     * Some attributes can be defined as Boolean values, but the html specification
+     * mandates the attribute must have the same value as its name. For example, 
+     * disabled, readonly and checked.
+     */
+    private void booleanToAttribute(def attrs, String attrName) {
+        def attr = attrs.remove(attrName)
+        if (attr && Boolean.valueOf(attr)) {
+            attrs.put(attrName, attrName)
+        }
+    }
 
     /**
      * Check required attributes, set the id to name if no id supplied, extract bean values etc.
@@ -236,6 +247,12 @@ class FormTagLib {
             attrs.value = val
         }
         attrs.value = attrs.value != null ? attrs.value : "" // can't use ?: since 0 is groovy false
+        
+        // Some attributes can be treated as boolean, but must be converted to the
+        // expected value.
+        booleanToAttribute(attrs, 'disabled')
+        booleanToAttribute(attrs, 'checked')
+        booleanToAttribute(attrs, 'readonly')
     }
 
     /**
@@ -363,6 +380,7 @@ class FormTagLib {
      *
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
+     * @attr disabled Makes the button to be disabled. Will be interpreted as a Groovy Truth
      */
     Closure actionSubmit = { attrs ->
         if (!attrs.value) {
@@ -380,6 +398,7 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
+        booleanToAttribute(attrs, 'disabled')
 
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
 
@@ -403,6 +422,7 @@ class FormTagLib {
      * @attr value REQUIRED The title of the button and name of action when not explicitly defined.
      * @attr action The name of the action to be executed, otherwise it is derived from the value.
      * @attr src The source of the image to use
+     * @attr disabled Makes the button to be disabled. Will be interpreted as a Groovy Truth
      */
     Closure actionSubmitImage = { attrs ->
         attrs.tagName = "actionSubmitImage"
@@ -414,6 +434,7 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
+        booleanToAttribute(attrs, 'disabled')
 
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
 
@@ -443,6 +464,8 @@ class FormTagLib {
      * @attr years A list or range of years to display, in the order specified. i.e. specify 2007..1900 for a reverse order list going back to 1900. If this attribute is not specified, a range of years from the current year - 100 to current year + 100 will be shown.
      * @attr relativeYears A range of int representing values relative to value. For example, a relativeYears of -2..7 and a value of today will render a list of 10 years starting with 2 years ago through 7 years in the future. This can be useful for things like credit card expiration dates or birthdates which should be bound relative to today.
      * @attr id the DOM element id
+     * @attr disabled Makes the resulting inputs and selects to be disabled. Is treated as a Groovy Truth.
+     * @attr readonly Makes the resulting inputs and selects to be made read only. Is treated as a Groovy Truth.
      */
     Closure datePicker = { attrs ->
         def out = out // let x = x ?
@@ -542,12 +565,22 @@ class FormTagLib {
                 years = (tempyear - 100)..(tempyear + 100)
             }
         }
+        
+        booleanToAttribute(attrs, 'disabled')
+        booleanToAttribute(attrs, 'readonly')
 
         out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
-            out.println "<select name=\"${name}_day\" id=\"${id}_day\">"
+            out.println "<select name=\"${name}_day\" id=\"${id}_day\""
+            if (attrs.disabled) {
+                out << ' disabled="disabled"'
+            }
+            if (attrs.readonly) {
+                out << ' readonly="readonly"'
+            }
+            out << '>'
 
             if (noSelection) {
                 renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
@@ -562,7 +595,14 @@ class FormTagLib {
 
         // create month select
         if (precision >= PRECISION_RANKINGS["month"]) {
-            out.println "<select name=\"${name}_month\" id=\"${id}_month\">"
+            out.println "<select name=\"${name}_month\" id=\"${id}_month\""
+            if (attrs.disabled) {
+                out << ' disabled="disabled"'
+            }
+            if (attrs.readonly) {
+                out << ' readonly="readonly"'
+            }
+            out << '>'
 
             if (noSelection) {
                 renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
@@ -580,7 +620,14 @@ class FormTagLib {
 
         // create year select
         if (precision >= PRECISION_RANKINGS["year"]) {
-            out.println "<select name=\"${name}_year\" id=\"${id}_year\">"
+            out.println "<select name=\"${name}_year\" id=\"${id}_year\""
+            if (attrs.disabled) {
+                out << ' disabled="disabled"'
+            }
+            if (attrs.readonly) {
+                out << ' readonly="readonly"'
+            }
+            out << '>'
 
             if (noSelection) {
                 renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
@@ -595,7 +642,14 @@ class FormTagLib {
 
         // do hour select
         if (precision >= PRECISION_RANKINGS["hour"]) {
-            out.println "<select name=\"${name}_hour\" id=\"${id}_hour\">"
+            out.println "<select name=\"${name}_hour\" id=\"${id}_hour\""
+            if (attrs.disabled) {
+                out << ' disabled="disabled"'
+            }
+            if (attrs.readonly) {
+                out << ' readonly="readonly"'
+            }
+            out << '>'
 
             if (noSelection) {
                 renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
@@ -617,7 +671,14 @@ class FormTagLib {
 
         // do minute select
         if (precision >= PRECISION_RANKINGS["minute"]) {
-            out.println "<select name=\"${name}_minute\" id=\"${id}_minute\">"
+            out.println "<select name=\"${name}_minute\" id=\"${id}_minute\""
+            if (attrs.disabled) {
+                out << 'disabled="disabled"'
+            }
+            if (attrs.readonly) {
+                out << 'readonly="readonly"'
+            }
+            out << '>'
 
             if (noSelection) {
                 renderNoSelectionOptionImpl(out, noSelection.key, noSelection.value, '')
@@ -740,6 +801,7 @@ class FormTagLib {
      * @attr valueMessagePrefix By default the value "option" element will be the result of a "toString()" call on each element in the "from" attribute list. Setting this allows the value to be resolved from the I18n messages. The valueMessagePrefix will be suffixed with a dot ('.') and then the value attribute of the option to resolve the message. If the message could not be resolved, the value is presented.
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank - but you can also use 'null' in the case that you're passing the ID of an object
      * @attr disabled boolean value indicating whether the select is disabled or enabled (defaults to false - enabled)
+     * @attr readonly boolean value indicating whether the select is read only or editable (defaults to false - editable)
      */
     Closure select = { attrs ->
         if (!attrs.name) {
@@ -767,10 +829,8 @@ class FormTagLib {
         if (noSelection != null) {
             noSelection = noSelection.entrySet().iterator().next()
         }
-        def disabled = attrs.remove('disabled')
-        if (disabled && Boolean.valueOf(disabled)) {
-            attrs.disabled = 'disabled'
-        }
+        booleanToAttribute(attrs, 'disabled')
+        booleanToAttribute(attrs, 'readonly')
         
         writer << "<select "
         // process remaining attributes
@@ -901,15 +961,15 @@ class FormTagLib {
      * @attr name REQUIRED The name of the radio button
      * @attr checked boolean to indicate that the radio button should be checked
      * @attr disabled boolean to indicate that the radio button should be disabled
+     * @attr readonly boolean to indicate that the radio button should not be editable
      * @attr id the DOM element id
      */
     Closure radio = { attrs ->
         def value = attrs.remove('value')
         def name = attrs.remove('name')
-        def disabled = attrs.remove('disabled')
-        if (disabled && Boolean.valueOf(disabled)) {
-            attrs.disabled = 'disabled'
-        }
+        booleanToAttribute(attrs, 'disabled')
+        booleanToAttribute(attrs, 'readonly')
+        
         def checked = attrs.remove('checked') ? true : false
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         if(!attrs.containsKey('id')) {
@@ -929,12 +989,17 @@ class FormTagLib {
      * @attr values REQUIRED The list values for the radio buttons
      * @attr value The current selected value
      * @attr labels Labels for each value contained in the values list. If this is ommitted the label property on the iterator variable (see below) will default to 'Radio ' + value.
+     * @attr disabled Disables the resulting radio buttons.
+     * @attr readonly Makes the resulting radio buttons to not be editable
      */
     Closure radioGroup = { attrs, body ->
         def value = attrs.remove('value')
         def values = attrs.remove('values')
         def labels = attrs.remove('labels')
         def name = attrs.remove('name')
+        booleanToAttribute(attrs, 'disabled')
+        booleanToAttribute(attrs, 'readonly')
+        
         values.eachWithIndex {val, idx ->
             def it = new Expando()
             it.radio = new StringBuilder("<input type=\"radio\" name=\"${name}\" ")
