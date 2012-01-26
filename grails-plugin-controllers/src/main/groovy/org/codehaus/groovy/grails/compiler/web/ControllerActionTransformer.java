@@ -395,8 +395,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void enhanceCommandObjectClass(
             final ClassNode commandObjectTypeClassNode, final String actionName, final SourceUnit source) {
-        final CompileUnit compileUnit = commandObjectTypeClassNode.getCompileUnit();
-        if(compileUnit == null) {
+        if(!commandObjectTypeClassNode.isPrimaryClassNode()) {
             final List<MethodNode> validateMethods = commandObjectTypeClassNode.getMethods("validate");
             if(validateMethods.size() == 0) {
                 final String errorMessage = "The [" + actionName + "] action accepts a parameter of type [" +
