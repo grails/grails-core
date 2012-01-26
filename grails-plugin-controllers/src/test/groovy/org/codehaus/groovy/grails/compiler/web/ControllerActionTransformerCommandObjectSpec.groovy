@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.compiler.web
 import grails.spring.BeanBuilder
 import grails.util.ClosureToMapPopulator
 import grails.util.GrailsWebUtil
+import grails.validation.Validateable
 
 import java.util.Calendar
 
@@ -12,7 +13,6 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -80,6 +80,10 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
             def methodActionWithMultipleCommandObjects(PersonCommand p, ArtistCommand a)  {
                 [person: p, artist: a]
+            }
+
+            def methodActionWithValidateableParam(org.codehaus.groovy.grails.compiler.web.SomeValidateableClass svc) {
+                [commandObject: svc]
             }
         }
 
@@ -434,6 +438,28 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             expectedDate == birthday
     }
 
+    void 'Test command object that is a precompiled @Validatable'() {
+        when:
+            def model = testController.methodActionWithValidateableParam()
+
+        then:
+            model.commandObject.hasErrors()
+
+        when:
+            testController.params.name = 'mixedCase'
+            model = testController.methodActionWithValidateableParam()
+
+        then:
+            model.commandObject.hasErrors()
+
+        when:
+            testController.params.name = 'UPPERCASE'
+            model = testController.methodActionWithValidateableParam()
+
+        then:
+            !model.commandObject.hasErrors()
+    }
+
     void 'Test overriding closure actions in subclass'() {
         given:
             def subclassController = subclassControllerClass.newInstance()
@@ -447,5 +473,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
     def cleanupSpec() {
         RequestContextHolder.setRequestAttributes(null)
+    }
+}
+
+@Validateable
+class SomeValidateableClass {
+    String name
+
+    static constraints = {
+        name matches: /[A-Z]*/
     }
 }
