@@ -11,7 +11,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
         def obj = new PropertyMapTest(name:"Homer", age:45)
 
         assertFalse obj.properties.containsKey('properties')
-        assertEquals 5, obj.properties.size()
+        assertEquals 3, obj.properties.size()
     }
 
     void testSelectSubMap() {
@@ -26,7 +26,7 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
 
     void testSize() {
         def map = new LazyMetaPropertyMap(new PropertyMapTest())
-        assertEquals 5, map.size()
+        assertEquals 3, map.size()
     }
 
     void testIsEmpty() {
@@ -88,7 +88,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
 
         assertTrue keys.contains("name")
         assertTrue keys.contains("age")
-        assertTrue keys.contains("class")
     }
 
     void testValues() {
@@ -98,7 +97,6 @@ class LazyMetaPropertyMapTests extends GroovyTestCase {
 
         assertTrue values.contains("Bart")
         assertTrue values.contains(11)
-        assertTrue values.contains(PropertyMapTest)
     }
 }
 
