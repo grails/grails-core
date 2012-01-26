@@ -60,7 +60,7 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
 
     public void testIsNotConfigurational() {
         assertTrue(GrailsDomainConfigurationUtil.isNotConfigurational("foo"));
-        assertFalse(GrailsDomainConfigurationUtil.isNotConfigurational("id"));
+        assertFalse(GrailsDomainConfigurationUtil.isNotConfigurational("belongsTo"));
     }
     public void testIsBasicType() {
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(boolean.class));
