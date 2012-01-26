@@ -58,6 +58,10 @@ public class GrailsDomainConfigurationUtilTests extends TestCase {
         PluginManagerHolder.setPluginManager(null);
     }
 
+    public void testIsNotConfigurational() {
+        assertTrue(GrailsDomainConfigurationUtil.isNotConfigurational("foo"));
+        assertFalse(GrailsDomainConfigurationUtil.isNotConfigurational("id"));
+    }
     public void testIsBasicType() {
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(boolean.class));
         assertTrue(GrailsDomainConfigurationUtil.isBasicType(long.class));
