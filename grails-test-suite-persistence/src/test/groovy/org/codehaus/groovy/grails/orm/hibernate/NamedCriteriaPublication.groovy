@@ -54,7 +54,9 @@ class NamedCriteriaPublication {
         }
 
         publishedAfter { date ->
-            gt 'datePublished', date
+            if(date != null) {
+                gt 'datePublished', date
+            }
         }
 
         paperbackOrRecent {
