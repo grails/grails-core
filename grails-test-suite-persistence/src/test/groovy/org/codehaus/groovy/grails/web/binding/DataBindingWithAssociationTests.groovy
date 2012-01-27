@@ -4,6 +4,7 @@ import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
+import grails.persistence.Entity
 
 /**
  * @author Graeme Rocher
@@ -11,56 +12,22 @@ import org.springframework.web.context.request.RequestContextHolder
  */
 class DataBindingWithAssociationTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass('''
-import grails.persistence.*
-
-@Entity
-class Book {
-    static belongsTo = [author: Author]
-    String isbn
-    String title
-    static constraints = {
-        isbn(unique: true, size: 1..10)
-        title(size: 1..40)
-    }
-}
-
-@Entity
-class Author {
-    static hasMany = [books: Book]
-    String name
-    static constraints = {
-        name(size: 1..40)
-        books sort:"title"
-    }
-}
-
-@Entity
-class Ship {
-   String name
-   Captain captain
-}
-
-@Entity
-class Captain {
-   String name
-   static hasMany = [weapons: String]
-}
-''')
-    }
 
     @Override protected void onTearDown() {
         RequestContextHolder.setRequestAttributes(null)
     }
 
+    @Override
+    protected getDomainClasses() {
+        [DataBindingWithAssociationBook, DataBindingWithAssociationAuthor,DataBindingWithAssociationShip, DataBindingWithAssociationCaptain]
+    }
+
+
 
 
     void testDataBindingWithAssociation() {
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
 
-        def a = Author.newInstance(name:"Stephen").save(flush:true)
+        def a = new DataBindingWithAssociationAuthor(name:"Stephen").save(flush:true)
 
         assert a != null : "should have saved the Author"
 
@@ -70,7 +37,7 @@ class Captain {
         request.addParameter("author.id", "1")
         def params = new GrailsParameterMap(request)
 
-        def b2 = Book.newInstance()
+        def b2 = new DataBindingWithAssociationBook()
         b2.properties['title', 'isbn', 'author'] = params
 
         assert b2.save(flush:true) : "should have saved book"
@@ -83,16 +50,13 @@ class Captain {
         request.addParameter("author.id", "1")
         params = new GrailsParameterMap(request)
 
-        def b = Book.newInstance(params)
+        def b = new DataBindingWithAssociationBook(params)
 
         assert b.save(flush:true) : "should have saved book"
     }
 
     void testBindToSetCollection() {
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
-
-        def a = Author.newInstance(name:"Stephen King")
+        def a = new DataBindingWithAssociationAuthor(name:"Stephen King")
                     .addToBooks(title:"The Stand", isbn:"983479")
                     .addToBooks(title:"The Shining", isbn:"232309")
                     .save(flush:true)
@@ -100,9 +64,9 @@ class Captain {
 
         assert a != null : "should have saved the Author"
 
-        Author.withSession { session -> session.clear() }
+        DataBindingWithAssociationAuthor.withSession { session -> session.clear() }
 
-        a = Author.findByName("Stephen King")
+        a = DataBindingWithAssociationAuthor.findByName("Stephen King")
 
         def request = new MockHttpServletRequest()
         request.addParameter("books[0].isbn","12345")
@@ -117,10 +81,7 @@ class Captain {
 
     void testBindToNewInstance() {
         super.buildMockRequest()
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
-
-        def a = Author.newInstance(name:"Stephen King")
+        def a = new DataBindingWithAssociationAuthor(name:"Stephen King")
 
 
 
@@ -140,8 +101,7 @@ class Captain {
     }
 
     void testBindingToSetOfString() {
-        def shipClass = ga.getDomainClass('Ship').clazz
-        def ship = shipClass.newInstance()
+        def ship = new DataBindingWithAssociationShip()
 
         def request = new MockHttpServletRequest()
         request.addParameter 'name', 'Ship Name'
@@ -160,4 +120,39 @@ class Captain {
         assertTrue ship.captain.weapons.contains('sword')
         assertTrue ship.captain.weapons.contains('pistol')
     }
+}
+
+
+
+@Entity
+class DataBindingWithAssociationBook {
+    static belongsTo = [author: DataBindingWithAssociationAuthor]
+    String isbn
+    String title
+    static constraints = {
+        isbn(unique: true, size: 1..10)
+        title(size: 1..40)
+    }
+}
+
+@Entity
+class DataBindingWithAssociationAuthor {
+    static hasMany = [books: DataBindingWithAssociationBook]
+    String name
+    static constraints = {
+        name(size: 1..40)
+        books sort:"title"
+    }
+}
+
+@Entity
+class DataBindingWithAssociationShip {
+    String name
+    DataBindingWithAssociationCaptain captain
+}
+
+@Entity
+class DataBindingWithAssociationCaptain {
+    String name
+    static hasMany = [weapons: String]
 }

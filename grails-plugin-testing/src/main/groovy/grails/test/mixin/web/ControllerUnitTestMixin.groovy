@@ -167,6 +167,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         servletContext = new MockServletContext()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
+        applicationContext.setServletContext(servletContext)
         ServletContextHolder.servletContext = servletContext
 
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)

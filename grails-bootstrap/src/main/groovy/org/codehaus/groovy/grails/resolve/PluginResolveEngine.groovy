@@ -96,32 +96,35 @@ final class PluginResolveEngine {
                     printLineSeparator(output)
                 }
                 if (release.'description'.text()) {
+                    output.println()
                     output.println "${release.'description'.text()}"
-                    printLineSeparator(output)
+                    output.println()
                 }
 
-                if(release.repositories) {
+                printSectionTitle(output, "Dependency Definition")
+                output.println("    :${pluginName}:${pluginXml.@version}")
+                output.println()
+                if(release.repositories.children().size()) {
                     printSectionTitle(output, "Required Repositories")
                     release.repositories.repository.each { repo ->
-                        output.println("- ${repo.@url}")
+                        output.println("     ${repo.@url}")
                     }
-                    printLineSeparator(output)
                 }
 
-                if(release.dependencies.size()) {
-                    printSectionTitle(output, "Required Dependencies")
+                if(release.dependencies.children().size()) {
+                    printSectionTitle(output, "Transitive Dependencies")
                     printDependencies(output, release.dependencies)
-                    printLineSeparator(output)
                 }
-                if(release.plugins.size()) {
-                    printSectionTitle(output, "Required Plugins")
+
+                if(release.plugins.children().size()) {
+                    printSectionTitle(output, "Transitive Plugins")
                     printDependencies(output, release.plugins)
-                    printLineSeparator(output)
                 }
             }
             else {
                 output.println "<release not found for this plugin>"
                 printLineSeparator(output)
+
             }
 
             output.println getPluginInfoFooter()
@@ -135,7 +138,7 @@ final class PluginResolveEngine {
         dependencies.children().each { scope ->
             def scopeName = scope.name()
             scope.dependency.each { dep ->
-                output.println("- ${dep.@group}:${dep.@name}:${dep.@version} ($scopeName)")
+                output.println("     ${dep.@group}:${dep.@name}:${dep.@version} ($scopeName)")
             }
         }
     }

@@ -133,10 +133,10 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
     }
 
     protected void init() {
-        engineProperties.findAll { it.key.startsWith("api.")}.each {
+        engineProperties?.findAll { it.key?.startsWith("api.")}?.each {
             EXTERNAL_DOCS[it.key[4..-1]] = it.value
         }
-        engineProperties.findAll { it.key.startsWith("alias.")}.each {
+        engineProperties?.findAll { it.key?.startsWith("alias.")}?.each {
             ALIAS[it.key[6..-1]] = it.value
         }
 

@@ -25,6 +25,7 @@ class ControllerWithMockCollabTests {
         mockCallable.demand.callMe { -> called = true; println "called"}
         def mockCallableInstance = mockCallable.createMock()
         controller.myCallable = mockCallableInstance
+        
 
         //Call
         controller.index()

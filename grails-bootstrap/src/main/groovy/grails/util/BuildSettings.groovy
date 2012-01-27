@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 
 /**
  * <p>Represents the project paths and other build settings
@@ -1271,7 +1272,8 @@ class BuildSettings extends AbstractBuildSettings {
                         def pluginConfig = pluginSlurper.parse(script)
                         def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
                         if (pluginDependencyConfig instanceof Closure) {
-                            dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, pdd.getExcludeRules(dependencyManager.configurationNames))
+                            def excludeRules = pdd ? pdd.getExcludeRules(dependencyManager.configurationNames) : [] as ExcludeRule[]
+                            dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, excludeRules)
                         }
 
                         def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)

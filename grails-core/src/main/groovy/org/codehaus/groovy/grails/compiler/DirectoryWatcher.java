@@ -185,7 +185,7 @@ public class DirectoryWatcher extends Thread {
         }
 
         for (File file : files) {
-            if (file.isDirectory()) {
+            if (file.isDirectory() && !file.isHidden()) {
                 if(!SVN_DIR_NAME.equals(file.getName())) {
                     cacheFilesForDirectory(file, fileExtensions, fireEvent);
                 }
@@ -221,6 +221,6 @@ extension = extension.substring(1);
         String name = file.getName();
         String path = file.getAbsolutePath();
         boolean isSvnFile = path.indexOf(File.separator + SVN_DIR_NAME + File.separator) > 0;
-        return !isSvnFile && (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
+        return !isSvnFile && !file.isHidden() && !file.getName().startsWith(".") && (fileExtensions.contains("*") || fileExtensions.contains(StringUtils.getFilenameExtension(name)));
     }
 }

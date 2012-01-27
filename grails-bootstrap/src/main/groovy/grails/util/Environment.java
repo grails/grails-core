@@ -67,20 +67,30 @@ public enum Environment {
     public static final String RELOAD_LOCATION = "grails.reload.location";
 
     /**
+     * Whether interactive mode is enabled
+     */
+    public static final String INTERACTIVE_MODE_ENABLED = "grails.interactive.mode.enabled";
+
+    /**
      * Constants that indicates whether this GrailsApplication is running in the default environment
      */
     public static final String DEFAULT = "grails.env.default";
 
-    private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
-    private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
+    /**
+     * Whether Grails is in the middle of bootstrapping or not
+     */
+    public static final String INITIALIZING = "grails.env.initializing";
 
+    private static final String PRODUCTION_ENV_SHORT_NAME = "prod";
+
+    private static final String DEVELOPMENT_ENVIRONMENT_SHORT_NAME = "dev";
     private static final String TEST_ENVIRONMENT_SHORT_NAME = "test";
+
     @SuppressWarnings("unchecked")
     private static Map<String, String> envNameMappings = CollectionUtils.<String, String>newMap(
         DEVELOPMENT_ENVIRONMENT_SHORT_NAME, Environment.DEVELOPMENT.getName(),
         PRODUCTION_ENV_SHORT_NAME, Environment.PRODUCTION.getName(),
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
-
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
     private String name;
@@ -377,6 +387,21 @@ public enum Environment {
                 reloadOverride && reloadLocationSpecified;
     }
 
+    /**
+     *
+     * @return Whether interactive mode is enabled
+     */
+    public static boolean isInteractiveMode() {
+        return Boolean.getBoolean(INTERACTIVE_MODE_ENABLED);
+    }
+
+    /**
+     *
+     * @return Whether interactive mode is enabled
+     */
+    public static boolean isInitializing() {
+        return Boolean.getBoolean(INITIALIZING);
+    }
     /**
      * @return true if the reloading agent is active
      */
