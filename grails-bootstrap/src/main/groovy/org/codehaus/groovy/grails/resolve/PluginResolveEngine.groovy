@@ -122,6 +122,7 @@ final class PluginResolveEngine {
             else {
                 output.println "<release not found for this plugin>"
                 printLineSeparator(output)
+
             }
 
             output.println getPluginInfoFooter()
