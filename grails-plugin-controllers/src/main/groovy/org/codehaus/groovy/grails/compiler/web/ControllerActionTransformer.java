@@ -21,26 +21,9 @@ import grails.validation.ASTValidateableHelper;
 import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
-
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.IfStatement;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
@@ -164,14 +147,14 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
-                if(method.getReturnType().getName().equals(VOID_TYPE)) continue;
+                if (method.getReturnType().getName().equals(VOID_TYPE)) continue;
                 List<MethodNode> declaredMethodsWithThisName = classNode.getDeclaredMethods(method.getName());
-                if(declaredMethodsWithThisName != null && declaredMethodsWithThisName.size() > 1) {
+                if (declaredMethodsWithThisName != null && declaredMethodsWithThisName.size() > 1) {
                     String message = "Controller actions may not be overloaded.  The [" +
-                                     method.getName() +
-                                     "] action has been overloaded in [" +
-                                     classNode.getName() +
-                                     "].";
+                            method.getName() +
+                            "] action has been overloaded in [" +
+                            classNode.getName() +
+                            "].";
                     error(source, message);
                 }
                 MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
@@ -212,11 +195,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         MethodNode method = null;
         if (_method.getParameters().length > 0) {
             method = new MethodNode(
-                _method.getName(),
-                Modifier.PUBLIC, returnType,
-                ZERO_PARAMETERS,
-                EMPTY_CLASS_ARRAY,
-                addOriginalMethodCall(_method, initializeActionParameters(classNode, _method.getName(), parameters, source)));
+                    _method.getName(),
+                    Modifier.PUBLIC, returnType,
+                    ZERO_PARAMETERS,
+                    EMPTY_CLASS_ARRAY,
+                    addOriginalMethodCall(_method, initializeActionParameters(classNode, _method.getName(), parameters, source)));
             annotateActionMethod(parameters, method);
         } else {
             annotateActionMethod(parameters, _method);
@@ -272,7 +255,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     protected void addMethodToInvokeClosure(ClassNode controllerClassNode,
-            PropertyNode closureProperty, SourceUnit source) {
+                                            PropertyNode closureProperty, SourceUnit source) {
         MethodNode method = controllerClassNode.getMethod(closureProperty.getName(), ZERO_PARAMETERS);
         if (method == null || !method.getDeclaringClass().equals(controllerClassNode)) {
             ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
@@ -411,14 +394,14 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void enhanceCommandObjectClass(
             final ClassNode commandObjectTypeClassNode, final String actionName, final SourceUnit source) {
-        if(!commandObjectTypeClassNode.isPrimaryClassNode()) {
+        if (!commandObjectTypeClassNode.isPrimaryClassNode()) {
             final List<MethodNode> validateMethods = commandObjectTypeClassNode.getMethods("validate");
-            if(validateMethods.size() == 0) {
+            if (validateMethods.size() == 0) {
                 final String errorMessage = "The [" + actionName + "] action accepts a parameter of type [" +
-                                          commandObjectTypeClassNode.getName() +
-                                          "] which does not appear to be a command object class.  " +
-                                          "This can happen if the source code for this class is not in this " +
-                                          "project and the class is not marked with @Validateable.";
+                        commandObjectTypeClassNode.getName() +
+                        "] which does not appear to be a command object class.  " +
+                        "This can happen if the source code for this class is not in this " +
+                        "project and the class is not marked with @Validateable.";
                 error(source, errorMessage);
             }
         }
