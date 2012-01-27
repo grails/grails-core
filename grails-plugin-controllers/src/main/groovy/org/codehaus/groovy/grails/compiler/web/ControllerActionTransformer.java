@@ -155,8 +155,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                                      "] action has been overloaded in [" +
                                      classNode.getName() +
                                      "].";
-                    String formattedMessage = String.format(message, method.getName(), classNode.getName());
-                    error(source, formattedMessage);
+                    error(source, message);
                 }
                 MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
                 if (wrapperMethod != null) {
