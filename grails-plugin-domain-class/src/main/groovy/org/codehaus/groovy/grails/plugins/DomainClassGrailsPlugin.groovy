@@ -37,6 +37,8 @@ import org.springframework.validation.Errors
 import org.springframework.validation.Validator
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import grails.util.Environment
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -201,7 +203,8 @@ class DomainClassGrailsPlugin {
                     }
                 }
                 metaClass.static.autowireDomain = { instance ->
-                    ctx.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                    if(!Environment.isInitializing())
+                        ctx.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
                 }
             }
         }
