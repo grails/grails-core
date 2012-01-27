@@ -53,11 +53,17 @@ import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.validation.MapBindingResult;
 
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * Enhances controller classes by converting closures actions to method actions and binding
  * request parameters to action arguments.
- *
  */
 /*
 
@@ -115,7 +121,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
-    @SuppressWarnings({ "unchecked"})
+    @SuppressWarnings({"unchecked"})
     private static final Map<ClassNode, String> TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME = CollectionUtils.<ClassNode, String>newMap(
             ClassHelper.Integer_TYPE, "int",
             ClassHelper.Float_TYPE, "float",
@@ -175,7 +181,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             }
         }
 
-        for (MethodNode newMethod : deferredNewMethods){
+        for (MethodNode newMethod : deferredNewMethods) {
             classNode.addMethod(newMethod);
         }
     }
@@ -185,7 +191,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
      * a no-arg counterpart is created which delegates to the original.
      *
      * @param classNode The controller class
-     * @param _method The method to be converted
+     * @param _method   The method to be converted
      * @return The no-arg wrapper method, or null if none was created.
      */
     private MethodNode convertToMethodAction(ClassNode classNode, MethodNode _method, SourceUnit source) {
@@ -221,10 +227,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     private Statement addOriginalMethodCall(MethodNode _method, BlockStatement blockStatement) {
 
-        if (blockStatement != null){
+        if (blockStatement != null) {
 
             final ArgumentListExpression arguments = new ArgumentListExpression();
-            for (Parameter p : _method.getParameters()){
+            for (Parameter p : _method.getParameters()) {
                 arguments.addExpression(new VariableExpression(p.getName(), p.getType()));
             }
 
@@ -268,17 +274,22 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     protected void addMethodToInvokeClosure(ClassNode controllerClassNode,
             PropertyNode closureProperty, SourceUnit source) {
         MethodNode method = controllerClassNode.getMethod(closureProperty.getName(), ZERO_PARAMETERS);
-        if(method == null || !method.getDeclaringClass().equals(controllerClassNode)) {
+        if (method == null || !method.getDeclaringClass().equals(controllerClassNode)) {
             ClosureExpression closureExpression = (ClosureExpression) closureProperty.getInitialExpression();
             final Parameter[] parameters = closureExpression.getParameters();
             final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, closureProperty.getName(), parameters, source);
 
             final ArgumentListExpression closureInvocationArguments = new ArgumentListExpression();
-            for (Parameter p : parameters) {
-                closureInvocationArguments.addExpression(new VariableExpression(p.getName()));
+            if (parameters != null) {
+                for (Parameter p : parameters) {
+                    closureInvocationArguments.addExpression(new VariableExpression(p.getName()));
+                }
             }
+
             final MethodCallExpression methodCallExpression = new MethodCallExpression(closureExpression, "call", closureInvocationArguments);
             newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
+
+
             final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC, new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
 
             annotateActionMethod(parameters, methodNode);
@@ -287,7 +298,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     protected void annotateActionMethod(final Parameter[] parameters,
-            final MethodNode methodNode) {
+                                        final MethodNode methodNode) {
         if (isCommandObjectAction(parameters)) {
             ListExpression initArray = new ListExpression();
             for (Parameter parameter : parameters) {
@@ -303,7 +314,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     protected void transformClosureToMethod(ClassNode classNode,
-            ClosureExpression closureAction, PropertyNode property, SourceUnit source) {
+                                            ClosureExpression closureAction, PropertyNode property, SourceUnit source) {
         final MethodNode actionMethod = new MethodNode(property.getName(),
                 Modifier.PUBLIC, property.getType(),
                 closureAction.getParameters(), EMPTY_CLASS_ARRAY,
@@ -337,7 +348,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
         wrapper.addStatement(new ExpressionStatement(errorsAssignmentExpression));
 
-        if(actionParameters != null) {
+        if (actionParameters != null) {
             for (Parameter param : actionParameters) {
                 initializeMethodParameter(classNode, wrapper, actionName, param, source);
             }
@@ -355,7 +366,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
 
         if ((PRIMITIVE_CLASS_NODES.contains(paramTypeClassNode) ||
-                 TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
+                TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(paramTypeClassNode))) {
             initializePrimitiveOrTypeWrapperParameter(wrapper, param, requestParameterName);
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param, requestParameterName);
@@ -516,7 +527,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
         final VariableExpression methodParamExpression = new VariableExpression(methodParamName, paramTypeClassNode);
         final DeclarationExpression declareParameterVariableStatement = new DeclarationExpression(methodParamExpression,
-            equalsToken, new EmptyExpression());
+                equalsToken, new EmptyExpression());
         declareVariableStatement = new ExpressionStatement(
                 declareParameterVariableStatement);
         wrapper.addStatement(declareVariableStatement);
@@ -535,8 +546,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                 Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null)));
         final ExpressionStatement assignConvertedValueToParamStatement = new ExpressionStatement(new BinaryExpression(methodParamExpression, equalsToken, convertedValueExpression));
         final Statement ifStatement = new IfStatement(isConvertedValueNullExpression,
-                                                ifConvertedValueIsNullBlockStatement,
-                                                assignConvertedValueToParamStatement);
+                ifConvertedValueIsNullBlockStatement,
+                assignConvertedValueToParamStatement);
 
         wrapper.addStatement(new IfStatement(new BooleanExpression(containsKeyExpression), ifStatement, new ExpressionStatement(new EmptyExpression())));
     }
@@ -558,6 +569,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     protected void error(SourceUnit source, String me) {
-        source.getErrorCollector().addError(new SimpleMessage(me,source), true);
+        source.getErrorCollector().addError(new SimpleMessage(me, source), true);
     }
 }
