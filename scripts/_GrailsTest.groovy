@@ -320,9 +320,12 @@ unitTestPhaseCleanUp = {}
 /**
  * Initialises a persistence context and bootstraps the application.
  */
+def registryCleaner = new org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner()
+
 integrationTestPhasePreparation = {
+    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
     packageTests()
-    bootstrapOnce()
+    bootstrap()
 
     // Get the Grails application instance created by the bootstrap process.
     def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
@@ -347,18 +350,23 @@ integrationTestPhasePreparation = {
  * Shuts down the bootstrapped Grails application.
  */
 integrationTestPhaseCleanUp = {
-    if (!(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
-        destroyPersistenceContext()
-        if (binding.variables.containsKey("appCtx")) {
-            appCtx?.close()
-        }
+    destroyPersistenceContext()
+    if (binding.variables.containsKey("appCtx")) {
+        appCtx?.close()
     }
+    registryCleaner.clean()
+    GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+}
+
+boolean notReloadingActive() {
+    !(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())
 }
 
 /**
  * Starts up the test server.
  */
 functionalTestPhasePreparation = {
+    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)    
     runningFunctionalTestsAgainstWar = testOptions.war
     runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
@@ -405,6 +413,9 @@ functionalTestPhaseCleanUp = {
 
     functionalBaseUrl = null
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
+    registryCleaner.clean()
+    GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+    
 }
 
 otherTestPhasePreparation = {}

@@ -88,6 +88,7 @@ class InteractiveMode {
 
         console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         interactiveModeActive = true
+        System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
         if(UaaIntegration.isAvailable() && !UaaIntegration.isEnabled()) {
             UaaIntegration.enable(settings, new PluginBuildSettings(settings), true)
@@ -228,6 +229,9 @@ class InteractiveMode {
                 }
             }
         }
+        
+        interactiveModeActive = false
+        System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
     }
 
     void parseAndExecute(String scriptName) throws ParseException {
