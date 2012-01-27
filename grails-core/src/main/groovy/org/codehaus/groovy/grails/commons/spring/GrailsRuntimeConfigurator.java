@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
 import grails.util.CollectionUtils;
+import grails.util.Environment;
+import grails.util.Metadata;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
@@ -76,6 +78,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public static final String CLASS_LOADER_BEAN = "classLoader";
 
     private static final Log LOG = LogFactory.getLog(GrailsRuntimeConfigurator.class);
+    public static final String GRAILS_INITIALIZING = "org.grails.internal.INITIALIZING";
 
     private GrailsApplication application;
     private ApplicationContext parent;
@@ -162,7 +165,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             reset();
 
             application.setMainContext(springConfig.getUnrefreshedApplicationContext());
+            
+            System.setProperty(Environment.INITIALIZING, "true");
             ctx = (WebApplicationContext) springConfig.getApplicationContext();
+            System.setProperty(Environment.INITIALIZING, "");
 
             pluginManager.setApplicationContext(ctx);
             pluginManager.doDynamicMethods();
