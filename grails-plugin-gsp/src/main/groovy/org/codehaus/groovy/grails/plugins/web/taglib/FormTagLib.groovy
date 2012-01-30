@@ -212,12 +212,16 @@ class FormTagLib {
      * disabled, readonly and checked.
      */
     private void booleanToAttribute(def attrs, String attrName) {
-        // We'll not remove the value, so it will be passed along if it's not a boolean
-        def attrValue = attrs.get(attrName)
+        def attrValue = attrs.remove(attrName)
         // If the value is the same as the name or if it is a boolean value,
-        // reintroduce the attribute to the map, so it is output later
-        if (attrValue && (attrValue.equalsIgnoreCase(attrName) || Boolean.valueOf(attrValue))) {
+        // reintroduce the attribute to the map according to the w3c rules, so it is output later
+        if (Boolean.valueOf(attrValue) || 
+           (attrValue instanceof String && attrValue?.equalsIgnoreCase(attrName))) {
             attrs.put(attrName, attrName)
+        } else if (attrValue instanceof String && !attrValue?.equalsIgnoreCase('false')) {
+            // If the value is not the string 'false', then we should just pass it on to
+            // keep compatibility with existing code
+            attrs.put(attrName, attrValue)
         }
     }
 
