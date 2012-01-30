@@ -1,3 +1,5 @@
+@import "custom-pdf.css";
+
 /* page layout and page numbering */
 @page {
    size: a4;
@@ -23,18 +25,24 @@
 }
 
 .body {
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     font-size: 12pt;
+	background-color: white;
+}
+
+#navigation {
+    display:none;
 }
 
 #main {
     margin: 0;
+	border: none;
 }
 
 #header {
-    margin:0px;
-    padding:0px;
+    margin:0;
+    padding:0;
     background:url(../img/bg.png) no-repeat;
 }
 
@@ -57,6 +65,10 @@
     text-align:center;
     margin: 0.2em 0;
     padding: 0.2em 0;
+}
+
+div.project > h1 {
+    page-break-before: avoid;
 }
 
 h1 {
@@ -107,7 +119,7 @@ h1, h2, h3, h1>a, h2>a, h3>a {
 }
 
 #col2 {
-    width: 0px;
+    width: 0;
 }
 
 #col2 .local {
