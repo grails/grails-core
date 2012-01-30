@@ -267,9 +267,13 @@ class DataSourceGrailsPlugin {
         Connection connection
         try {
             connection = dataSource.getConnection()
-            def dbName = connection.metaData.databaseProductName
-            if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
-                connection.createStatement().executeUpdate('SHUTDOWN')
+            try {
+                def dbName = connection.metaData.databaseProductName
+                if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
+                    connection.createStatement().executeUpdate('SHUTDOWN')
+                }
+            } catch (e) {
+                // already closed, ignore
             }
         }
         catch (e) {
