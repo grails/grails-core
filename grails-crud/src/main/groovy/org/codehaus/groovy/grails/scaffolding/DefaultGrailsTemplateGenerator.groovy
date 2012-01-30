@@ -211,21 +211,24 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     void generateView(GrailsDomainClass domainClass, String viewName, Writer out) {
         def templateText = getTemplateText("${viewName}.gsp")
 
-        def t = engine.createTemplate(templateText)
-        def multiPart = domainClass.properties.find {it.type == ([] as Byte[]).class || it.type == ([] as byte[]).class}
+        if(templateText) {
+            def t = engine.createTemplate(templateText)
+            def multiPart = domainClass.properties.find {it.type == ([] as Byte[]).class || it.type == ([] as byte[]).class}
 
-        boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate')
-        def packageName = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
-        def binding = [pluginManager: pluginManager,
-                       packageName: packageName,
-                       domainClass: domainClass,
-                       multiPart: multiPart,
-                       className: domainClass.shortName,
-                       propertyName:  getPropertyName(domainClass),
-                       renderEditor: renderEditor,
-                       comparator: hasHibernate ? DomainClassPropertyComparator : SimpleDomainClassPropertyComparator]
+            boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate')
+            def packageName = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
+            def binding = [pluginManager: pluginManager,
+                    packageName: packageName,
+                    domainClass: domainClass,
+                    multiPart: multiPart,
+                    className: domainClass.shortName,
+                    propertyName:  getPropertyName(domainClass),
+                    renderEditor: renderEditor,
+                    comparator: hasHibernate ? DomainClassPropertyComparator : SimpleDomainClassPropertyComparator]
 
-        t.make(binding).writeTo(out)
+            t.make(binding).writeTo(out)
+        }
+
     }
 
     void generateController(GrailsDomainClass domainClass, Writer out) {
@@ -294,7 +297,9 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")
             }
         }
-        return templateFile.inputStream.getText()
+        if(templateFile.exists()) {
+            return templateFile.inputStream.getText()
+        }
     }
 
     def getTemplateNames() {

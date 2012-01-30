@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.View;
 
 /**
@@ -84,8 +85,10 @@ public class ScaffoldingViewResolver extends GrailsViewResolver {
                         LOG.error("Error generating scaffolded view [" + viewName + "]: " + e.getMessage(),e);
                         return resolvedView;
                     }
-                    v = createScaffoldedView(viewName, viewCode);
-                    scaffoldedViews.put(viewKey, v);
+                    if(StringUtils.hasLength( viewCode )) {
+                        v = createScaffoldedView(viewName, viewCode);
+                        scaffoldedViews.put(viewKey, v);
+                    }
                 }
                 if (v != null) {
                     return v;
