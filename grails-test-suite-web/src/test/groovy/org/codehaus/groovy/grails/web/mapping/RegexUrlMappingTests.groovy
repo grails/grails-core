@@ -33,6 +33,20 @@ mappings {
   }
   "/foo"(controller:"foo", parseRequest:true)
 
+  "/foo2"(controller: "foo") {
+       parseRequest = true
+   }
+
+  "/foo3" {
+       controller = "foo"
+       parseRequest = true
+   }
+
+  name foo4: "/foo4" {
+       controller = "foo"
+       parseRequest = true
+  }
+
   "/bar"(uri:"/x/y")
 
   "/surveys/view/$id" {
@@ -66,7 +80,15 @@ mappings {
         def holder = new DefaultUrlMappingsHolder(mappings)
 
         def info = holder.match("/foo")
+        assertTrue "should have been a request parsing mapping", info.parsingRequest
 
+        info = holder.match("/foo2")
+        assertTrue "should have been a request parsing mapping", info.parsingRequest
+
+        info = holder.match("/foo3")
+        assertTrue "should have been a request parsing mapping", info.parsingRequest
+
+        info = holder.match("/foo4")
         assertTrue "should have been a request parsing mapping", info.parsingRequest
     }
 

@@ -383,6 +383,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
                         }
 
+                        if(binding != null) {
+                            Map bindingVariables = binding.getVariables();
+                            Object parseRequest = getParseRequest(Collections.EMPTY_MAP,bindingVariables);
+                            if(parseRequest instanceof Boolean) {
+                                urlMapping.setParseRequest((Boolean)parseRequest);
+                            }
+                        }
                         configureUrlMapping(urlMapping);
                         return urlMapping;
                     }
