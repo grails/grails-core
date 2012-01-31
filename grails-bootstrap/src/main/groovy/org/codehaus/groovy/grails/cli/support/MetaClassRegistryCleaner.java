@@ -42,15 +42,18 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private Map<Class, Object> alteredClasses = new ConcurrentHashMap<Class, Object> ();
     private Map<IdentityWeakReference, Object> alteredInstances = new ConcurrentHashMap<IdentityWeakReference, Object>();
     private static final Object NO_CUSTOM_METACLASS = new Object();
+    private static boolean cleaning;
 
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
-        MetaClass oldMetaClass = cmcu.getOldMetaClass();
-        Class classToUpdate = cmcu.getClassToUpdate();
-        Object instanceToUpdate = cmcu.getInstance();
-        if (instanceToUpdate == null) {
-            updateMetaClassOfClass(oldMetaClass, classToUpdate);
-        } else {
-            updateMetaClassOfInstance(oldMetaClass, instanceToUpdate);
+        if(!cleaning) {
+            MetaClass oldMetaClass = cmcu.getOldMetaClass();
+            Class classToUpdate = cmcu.getClassToUpdate();
+            Object instanceToUpdate = cmcu.getInstance();
+            if (instanceToUpdate == null) {
+                updateMetaClassOfClass(oldMetaClass, classToUpdate);
+            } else {
+                updateMetaClassOfInstance(oldMetaClass, instanceToUpdate);
+            }
         }
     }
 
@@ -79,9 +82,14 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     }
 
     public void clean() {
-        MetaClassRegistryImpl registry = (MetaClassRegistryImpl) GroovySystem.getMetaClassRegistry();
-        cleanMetaClassOfClass(registry);
-        cleanMetaClassOfInstance(registry);
+        try {
+            cleaning = true;
+            MetaClassRegistryImpl registry = (MetaClassRegistryImpl) GroovySystem.getMetaClassRegistry();
+            cleanMetaClassOfClass(registry);
+            cleanMetaClassOfInstance(registry);
+        } finally {
+            cleaning = false;
+        }
     }
 
     private void cleanMetaClassOfInstance(MetaClassRegistryImpl registry) {
