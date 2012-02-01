@@ -131,6 +131,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
         ControllersGrailsPlugin.enhanceDomainWithBinding(applicationContext, domain, mc)
         DomainClassGrailsPlugin.registerConstraintsProperty(mc, domain)
+//        DomainClassGrailsPlugin.addRelationshipManagementMethods(domain, applicationContext)
         def validationBeanName = "${domain.fullName}Validator"
         defineBeans {
             "${domain.fullName}"(domain.clazz) { bean ->

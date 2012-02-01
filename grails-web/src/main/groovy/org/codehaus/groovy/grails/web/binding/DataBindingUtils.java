@@ -206,7 +206,9 @@ public class DataBindingUtils {
         }
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass());
         if (mc.hasProperty(object, "errors")!=null && bindingResult!=null) {
-            mc.setProperty(object,"errors", bindingResult);
+            ValidationErrors errors = new ValidationErrors(object);
+            errors.addAllErrors(errors);
+            mc.setProperty(object,"errors", errors);
         }
         return bindingResult;
     }

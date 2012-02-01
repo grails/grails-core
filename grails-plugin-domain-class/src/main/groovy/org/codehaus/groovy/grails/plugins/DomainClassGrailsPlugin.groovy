@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import grails.util.Environment
+import grails.validation.ValidationErrors
 
 /**
  * A plugin that configures the domain classes in the spring context.
@@ -247,7 +248,7 @@ class DomainClassGrailsPlugin {
             def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             errors = get(key)
             if (!errors) {
-                errors =  new BeanPropertyBindingResult(delegate, delegate.getClass().getName())
+                errors =  new ValidationErrors(delegate)
                 put key, errors
             }
             errors
@@ -285,9 +286,9 @@ class DomainClassGrailsPlugin {
         }
         obj
     }
-    private static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
+    public static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
-        for (p in dc.persistantProperties) {
+        for (p in dc.persistentProperties) {
             def prop = p
             if (prop.basicCollectionType) {
                 def collectionName = GrailsClassUtils.getClassNameRepresentation(prop.name)

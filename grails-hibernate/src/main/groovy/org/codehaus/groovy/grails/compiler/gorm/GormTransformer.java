@@ -91,7 +91,7 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
     }
 
     @Override
-    protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
+    protected MethodNode populateAutowiredApiLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
         return new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);
     }
 
