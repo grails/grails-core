@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins
 
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
+import grails.validation.ValidationErrors
 
 /**
  * @author Graeme Rocher
@@ -28,7 +29,7 @@ class DomainClassPluginSupport {
      * Validates a domain class (or command object) instance.
      */
     static validateInstance(object, ApplicationContext ctx) {
-        def localErrors = new BeanPropertyBindingResult(object, object.class.name)
+        def localErrors = new ValidationErrors(object)
         if (!object.hasProperty('constraints')) {
             return true
         }

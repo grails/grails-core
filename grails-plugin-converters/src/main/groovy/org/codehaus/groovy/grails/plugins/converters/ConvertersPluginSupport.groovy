@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
 import org.springframework.validation.BeanPropertyBindingResult
+import grails.validation.ValidationErrors
+import org.grails.datastore.mapping.validation.ValidationErrors
 
 /**
  * @author Graeme Rocher
@@ -44,7 +46,7 @@ class ConvertersPluginSupport {
         enhancer.addApi(new ConvertersApi(applicationContext:applicationContext))
 
         // Override GDK asType for some common Interfaces and Classes
-        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {
+        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ValidationErrors, ValidationErrors, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {
             GrailsMetaClassUtils.getExpandoMetaClass(it)
         })
 
