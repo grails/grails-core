@@ -52,6 +52,15 @@ class GrailsMockErrors extends BeanPropertyBindingResult {
         super(instance, instance.getClass().name)
     }
 
+    def getAt(String field) {
+        def code = getFieldError(name)?.code
+        return ERROR_CODE_TABLE[code] ?: code
+    }
+
+    def putAt(String field, String errorCode) {
+        rejectValue(field, errorCode)
+    }
+
     def propertyMissing(String name) {
         def code = getFieldError(name)?.code
         return ERROR_CODE_TABLE[code] ?: code

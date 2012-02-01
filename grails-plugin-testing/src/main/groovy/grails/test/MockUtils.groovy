@@ -1071,7 +1071,7 @@ class MockUtils {
         clazz.metaClass.validate = { List fieldsToValidate ->
             beforeValidateHelper.invokeBeforeValidate delegate, fieldsToValidate
             if (!validate([:]) && fieldsToValidate != null && !fieldsToValidate.isEmpty()) {
-                def result = new BeanPropertyBindingResult(delegate, delegate.getClass().name)
+                def result = new GrailsMockErrors(delegate)
                 for (e in errors.allErrors) {
                     if (e instanceof FieldError && !fieldsToValidate.contains(e.field)) {
                         continue
