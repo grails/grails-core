@@ -185,7 +185,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                             "] action has been overloaded in [" +
                             classNode.getName() +
                             "].";
-                    error(source, message);
+                    error(source, method, message);
                 }
                 MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
                 if (wrapperMethod != null) {
@@ -219,7 +219,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                 String methodDeclaration = _method.getText();
                 String message = "Parameter [%s] to method [%s] has default value [%s].  Default parameter values are not allowed in controller action methods. ([%s])";
                 String formattedMessage = String.format(message, paramName, methodName, initialValue, methodDeclaration);
-                error(source, formattedMessage);
+                error(source, _method, formattedMessage);
             }
         }
         MethodNode method = null;
@@ -581,10 +581,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
-    }
-
-    protected void error(SourceUnit source, String me) {
-        source.getErrorCollector().addError(new SimpleMessage(me, source), true);
     }
     
     protected void error(final SourceUnit sourceUnit, final ASTNode astNode, final String message) {
