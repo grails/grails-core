@@ -204,52 +204,52 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
      * a no-arg counterpart is created which delegates to the original.
      *
      * @param classNode The controller class
-     * @param _method   The method to be converted
+     * @param methodNode   The method to be converted
      * @return The no-arg wrapper method, or null if none was created.
      */
-    private MethodNode convertToMethodAction(ClassNode classNode, MethodNode _method, SourceUnit source) {
-        final ClassNode returnType = _method.getReturnType();
-        Parameter[] parameters = _method.getParameters();
+    private MethodNode convertToMethodAction(ClassNode classNode, MethodNode methodNode, SourceUnit source) {
+        final ClassNode returnType = methodNode.getReturnType();
+        Parameter[] parameters = methodNode.getParameters();
 
         for (Parameter param : parameters) {
             if (param.hasInitialExpression()) {
                 String paramName = param.getName();
-                String methodName = _method.getName();
+                String methodName = methodNode.getName();
                 String initialValue = param.getInitialExpression().getText();
-                String methodDeclaration = _method.getText();
+                String methodDeclaration = methodNode.getText();
                 String message = "Parameter [%s] to method [%s] has default value [%s].  Default parameter values are not allowed in controller action methods. ([%s])";
                 String formattedMessage = String.format(message, paramName, methodName, initialValue, methodDeclaration);
-                error(source, _method, formattedMessage);
+                error(source, methodNode, formattedMessage);
             }
         }
         MethodNode method = null;
-        if (_method.getParameters().length > 0) {
+        if (methodNode.getParameters().length > 0) {
             method = new MethodNode(
-                    _method.getName(),
+                    methodNode.getName(),
                     Modifier.PUBLIC, returnType,
                     ZERO_PARAMETERS,
                     EMPTY_CLASS_ARRAY,
-                    addOriginalMethodCall(_method, initializeActionParameters(classNode, _method, _method.getName(), parameters, source)));
+                    addOriginalMethodCall(methodNode, initializeActionParameters(classNode, methodNode, methodNode.getName(), parameters, source)));
             annotateActionMethod(parameters, method);
         } else {
-            annotateActionMethod(parameters, _method);
+            annotateActionMethod(parameters, methodNode);
         }
 
         return method;
     }
 
-    private Statement addOriginalMethodCall(MethodNode _method, BlockStatement blockStatement) {
+    private Statement addOriginalMethodCall(MethodNode methodNode, BlockStatement blockStatement) {
 
         if (blockStatement != null) {
 
             final ArgumentListExpression arguments = new ArgumentListExpression();
-            for (Parameter p : _method.getParameters()) {
+            for (Parameter p : methodNode.getParameters()) {
                 arguments.addExpression(new VariableExpression(p.getName(), p.getType()));
             }
 
             MethodCallExpression callExpression = new MethodCallExpression(
-                    THIS_EXPRESSION, _method.getName(), arguments);
-            callExpression.setMethodTarget(_method);
+                    THIS_EXPRESSION, methodNode.getName(), arguments);
+            callExpression.setMethodTarget(methodNode);
 
             blockStatement.addStatement(new ReturnStatement(callExpression));
         }
