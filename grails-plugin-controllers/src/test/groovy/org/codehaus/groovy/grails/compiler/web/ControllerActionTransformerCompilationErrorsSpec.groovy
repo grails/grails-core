@@ -66,7 +66,7 @@ class ControllerActionTransformerCompilationErrorsSpec extends Specification {
             ''')
 
         then:
-            MultipleCompilationErrorsException e = thrown()
+            CompilationFailedException e = thrown()
             e.message.contains 'The [methodAction] action accepts a parameter of type [org.codehaus.groovy.grails.compiler.web.SomeClass] which does not appear to be a command object class.'
 
         when:
