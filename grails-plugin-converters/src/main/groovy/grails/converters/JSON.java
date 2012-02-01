@@ -20,6 +20,7 @@ import groovy.util.BuilderSupport;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
@@ -331,7 +332,19 @@ public class JSON extends AbstractConverter<JSONWriter> {
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
         }
         try {
-            json = parse(request.getInputStream(), encoding);
+            PushbackInputStream pushbackInputStream = null;
+            int firstByte = -1;
+            try {
+                pushbackInputStream = new PushbackInputStream(request.getInputStream());
+                firstByte = pushbackInputStream.read();
+            } catch (IOException ioe) {}
+            
+            if(firstByte == -1) {
+                return new JSONObject();
+            }
+            
+            pushbackInputStream.unread(firstByte);
+            json = parse(pushbackInputStream, encoding);
             request.setAttribute(CACHED_JSON, json);
             return json;
         }
