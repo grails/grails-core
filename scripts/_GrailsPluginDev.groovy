@@ -96,7 +96,7 @@ target(packagePlugin: "Implementation target") {
         IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
         def deps = dependencyManager.resolveExportedDependencies()
         if (dependencyManager.resolveErrors) {
-            println "Error: There was an error resolving plugin JAR dependencies"
+            grailsConsole.error "Error: There was an error resolving plugin JAR dependencies"
             exit 1
         }
 
@@ -108,7 +108,19 @@ target(packagePlugin: "Implementation target") {
     event("PackagePluginStart", [pluginInfo.name])
 
     // Package plugin's zip distribution
-    pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
+    try {
+        pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
+    }
+    catch ( e) {
+        if(e.cause instanceof org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException) {
+            grailsConsole.error "GSP Compilation Error (${e.cause.fileName}:${e.cause.lineNumber}) - $e.cause.message", e.cause            
+        }
+        else {
+            grailsConsole.error "Plugin Packaging Error: ${e.message}", e
+        }
+        exit 1
+    }
+    
 
     grailsConsole.addStatus "Plugin packaged ${new File(pluginZip).name}"
 
