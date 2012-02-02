@@ -53,7 +53,7 @@ class GrailsMockErrors extends BeanPropertyBindingResult {
     }
 
     def getAt(String field) {
-        def code = getFieldError(name)?.code
+        def code = getFieldError(field)?.code
         return ERROR_CODE_TABLE[code] ?: code
     }
 
