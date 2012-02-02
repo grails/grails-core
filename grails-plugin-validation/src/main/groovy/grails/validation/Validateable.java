@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.validation.ValidateableTransformation")
 public @interface Validateable {

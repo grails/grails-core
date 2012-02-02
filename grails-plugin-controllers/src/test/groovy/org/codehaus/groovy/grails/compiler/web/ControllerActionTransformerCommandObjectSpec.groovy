@@ -40,6 +40,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 }
         gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
         testControllerClass = gcl.parseClass('''
+        import grails.validation.Validateable
         class TestController {
 
             def closureAction = { PersonCommand p ->
@@ -66,6 +67,10 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 [artist: a]
             }
 
+            def closureActionWithNonValidateableCommandObject = { NonValidateableCommand co ->
+                [commandObject: co]
+            }
+
             def methodActionWithDate(DateComamndObject co) {
                 [command: co]
             }
@@ -85,8 +90,17 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             def methodActionWithValidateableParam(org.codehaus.groovy.grails.compiler.web.SomeValidateableClass svc) {
                 [commandObject: svc]
             }
+
+            def methodActionWithNonValidateableCommandObject(NonValidateableCommand co) {
+                [commandObject: co]
+            }
         }
 
+        class NonValidateableCommand {
+            String name
+        }
+
+        @Validateable
         class PersonCommand {
             String name
             def theAnswer
@@ -96,6 +110,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
 
+        @Validateable
         class ArtistCommand {
             String name
             static constraints = {
@@ -103,12 +118,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
 
+        @Validateable
         class ArtistSubclass extends ArtistCommand {
             String bandName
             static constraints = {
                 bandName matches: /[A-Z].*/
             }
         }
+        @Validateable
         class DateComamndObject {
             Date birthday
         }
@@ -165,6 +182,22 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+    }
+    
+    void 'Test non validateable command object'() {
+        when:
+            testController.params.name = 'Beardfish'
+            def model = testController.methodActionWithNonValidateableCommandObject()
+            
+        then:
+            model.commandObject.name == 'Beardfish'
+            
+        when:
+            testController.params.name = "Spock's Beard"
+            model = testController.closureActionWithNonValidateableCommandObject()
+            
+        then:
+            model.commandObject.name == "Spock's Beard"
     }
 
     void "Test binding to multiple command objects"() {
