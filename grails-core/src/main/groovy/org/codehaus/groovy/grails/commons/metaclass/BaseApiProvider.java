@@ -43,6 +43,7 @@ public abstract class BaseApiProvider {
     @SuppressWarnings("rawtypes")
     protected List instanceMethods = new ArrayList();
     protected List<Method> staticMethods = new ArrayList<Method>();
+    protected List<Method> constructors = new ArrayList<Method>();
 
     @SuppressWarnings("unchecked")
     public void addApi(final Object apiInstance) {
@@ -54,22 +55,27 @@ public abstract class BaseApiProvider {
         while (currentClass != Object.class) {
             final Method[] declaredMethods = currentClass.getDeclaredMethods();
 
-            for (final Method method : declaredMethods) {
-                final int modifiers = method.getModifiers();
-                if (!isNotExcluded(method, modifiers)) {
+            for (final Method javaMethod : declaredMethods) {
+                final int modifiers = javaMethod.getModifiers();
+                if (!isNotExcluded(javaMethod, modifiers)) {
                     continue;
                 }
 
                 if (Modifier.isStatic(modifiers)) {
-                    staticMethods.add(method);
+                    if(isConstructorCallMethod(javaMethod)) {
+                        constructors.add(javaMethod);
+                    }
+                    else {
+                        staticMethods.add(javaMethod);
+                    }
                 }
                 else {
-                    instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(method)) {
+                    instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(javaMethod)) {
                         @Override
                         public String getName() {
 
                             String methodName = super.getName();
-                            if (methodName.equals(CONSTRUCTOR_METHOD)) {
+                            if (isConstructorCallMethod(javaMethod)) {
                                 return CTOR_GROOVY_METHOD;
                             }
                             return methodName;
@@ -105,6 +111,10 @@ public abstract class BaseApiProvider {
             }
             currentClass = currentClass.getSuperclass();
         }
+    }
+
+    private boolean isConstructorCallMethod(Method method) {
+        return method != null && Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && method.getName().equals(CONSTRUCTOR_METHOD) && method.getParameterTypes().length>0;
     }
 
     private boolean isNotExcluded(Method method, final int modifiers) {
