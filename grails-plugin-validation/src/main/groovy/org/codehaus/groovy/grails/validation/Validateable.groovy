@@ -24,7 +24,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 /**
  * @deprecated Use {@link grails.validation.Validateable} instead.
  */
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 @Target([ElementType.TYPE])
 @GroovyASTTransformationClass("org.codehaus.groovy.grails.compiler.validation.ValidateableTransformation")
 @interface Validateable {}
