@@ -43,6 +43,17 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private static final Object NO_CUSTOM_METACLASS = new Object();
     private static boolean cleaning;
 
+    public static MetaClassRegistryCleaner createAndRegister() {
+        MetaClassRegistryCleaner mcr = new MetaClassRegistryCleaner();
+        GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(mcr);
+        return mcr;
+    }
+
+    public static void cleanAndRemove(MetaClassRegistryCleaner cleaner) {
+        cleaner.clean();
+        GroovySystem.getMetaClassRegistry().removeMetaClassRegistryChangeEventListener(cleaner);
+    }
+
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
         if(!cleaning) {
             MetaClass oldMetaClass = cmcu.getOldMetaClass();
