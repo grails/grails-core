@@ -301,6 +301,7 @@ class DocPublisher {
         vars.path = pathToRoot
         vars.resourcesPath = calculatePathToResources(pathToRoot)
 
+        // Generate the reference section of the guide.
         for (f in files) {
             if (f.directory && !f.name.startsWith(".")) {
                 def section = f.name
@@ -313,6 +314,7 @@ class DocPublisher {
                     def data = usageFile.text
                     context.set(DocEngine.SOURCE_FILE, usageFile)
                     context.set(DocEngine.CONTEXT_PATH, pathToRoot)
+                    context.set(DocEngine.API_CONTEXT_PATH, vars.resourcesPath)
                     vars.content = engine.render(data, context)
 
                     new File("${refDocsDir}/ref/${section}/Usage.html").withWriter(encoding) {out ->
@@ -324,6 +326,7 @@ class DocPublisher {
                     def data = txt.text
                     context.set(DocEngine.SOURCE_FILE, txt.name)
                     context.set(DocEngine.CONTEXT_PATH, pathToRoot)
+                    context.set(DocEngine.API_CONTEXT_PATH, vars.resourcesPath)
                     vars.content = engine.render(data, context)
 
                     new File("${refDocsDir}/ref/${section}/${name}.html").withWriter(encoding) {out ->
