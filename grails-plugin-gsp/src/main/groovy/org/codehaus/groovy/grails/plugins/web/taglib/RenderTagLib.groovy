@@ -90,10 +90,13 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:applyLayout name="myLayout"&gt;some text&lt;/g:applyLayout&gt;<br/>
      * &lt;g:applyLayout name="myLayout" template="mytemplate" /&gt;<br/>
      * &lt;g:applyLayout name="myLayout" url="http://www.google.com" /&gt;<br/>
+     * &lt;g:applyLayout name="myLayout" action="myAction" controller="myController"&gt;<br/>
      *
      * @attr name The name of the layout
      * @attr template Optional. The template to apply the layout to
      * @attr url Optional. The URL to retrieve the content from and apply a layout to
+     * @attr action Optional. The action to be called to generate the content to apply the layout to
+     * @attr controller Optional. The controller that contains the action that will generate the content to apply the layout to
      * @attr contentType Optional. The content type to use, default is "text/html"
      * @attr encoding Optional. The encoding to use
      * @attr params Optional. The params to pass onto the page object
@@ -108,6 +111,9 @@ class RenderTagLib implements RequestConstants {
         GSPSitemeshPage gspSiteMeshPage = null
         if (attrs.url) {
             content = new URL(attrs.url).text
+        }
+        else if (attrs.action && attrs.controller) {
+            content = g.include(action:attrs.action,controller:attrs.controller,params:attrs.params)
         }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
