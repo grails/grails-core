@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
+import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -25,6 +26,7 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.Janitor;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -199,7 +201,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     Modifier.PUBLIC, returnType,
                     ZERO_PARAMETERS,
                     EMPTY_CLASS_ARRAY,
-                    addOriginalMethodCall(_method, initializeActionParameters(classNode, _method.getName(), parameters, source)));
+                    addOriginalMethodCall(_method, initializeActionParameters(classNode, _method, _method.getName(), parameters, source)));
             annotateActionMethod(parameters, method);
         } else {
             annotateActionMethod(parameters, _method);
@@ -269,7 +271,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             }
 
             final MethodCallExpression methodCallExpression = new MethodCallExpression(closureExpression, "call", closureInvocationArguments);
-            final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, closureProperty.getName(), parameters, source);
+            final BlockStatement newMethodCode = initializeActionParameters(controllerClassNode, closureProperty, closureProperty.getName(), parameters, source);
             newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
 
 
@@ -314,6 +316,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     protected BlockStatement initializeActionParameters(ClassNode classNode,
+                                                        ASTNode actionNode,
                                                         String actionName,
                                                         Parameter[] actionParameters,
                                                         SourceUnit source) {
@@ -333,13 +336,13 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
         if (actionParameters != null) {
             for (Parameter param : actionParameters) {
-                initializeMethodParameter(classNode, wrapper, actionName, param, source);
+                initializeMethodParameter(classNode, wrapper, actionNode, actionName, param, source);
             }
         }
         return wrapper;
     }
 
-    protected void initializeMethodParameter(final ClassNode classNode, final BlockStatement wrapper, final String actionName, final Parameter param, SourceUnit source) {
+    protected void initializeMethodParameter(final ClassNode classNode, final BlockStatement wrapper, final ASTNode actionNode, final String actionName, final Parameter param, SourceUnit source) {
         final ClassNode paramTypeClassNode = param.getType();
         final String paramName = param.getName();
         String requestParameterName = paramName;
@@ -354,13 +357,14 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         } else if (paramTypeClassNode.equals(new ClassNode(String.class))) {
             initializeStringParameter(wrapper, param, requestParameterName);
         } else if (!paramTypeClassNode.equals(OBJECT_CLASS)) {
-            initializeCommandObjectParameter(wrapper, classNode, paramTypeClassNode, actionName, paramName, source);
+            initializeCommandObjectParameter(wrapper, classNode, paramTypeClassNode, actionNode, actionName, paramName, source);
         }
     }
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
                                                     final ClassNode classNode,
                                                     final ClassNode commandObjectTypeClassNode,
+                                                    final ASTNode actionNode,
                                                     final String actionName,
                                                     final String paramName,
                                                     SourceUnit source) {
@@ -390,6 +394,29 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             validateMethodCallExpression.setMethodTarget(validateMethod);
         }
         wrapper.addStatement(new ExpressionStatement(validateMethodCallExpression));
+        
+        boolean argumentIsValidateable = false;
+        List<AnnotationNode> validateableAnnotations = commandObjectTypeClassNode.getAnnotations(new ClassNode(grails.validation.Validateable.class));
+        if(validateableAnnotations.size() > 0) {
+            argumentIsValidateable = true;
+        } else {
+            validateableAnnotations = commandObjectTypeClassNode.getAnnotations(new ClassNode(org.codehaus.groovy.grails.validation.Validateable.class));
+            if(validateableAnnotations.size() > 0) {
+                argumentIsValidateable = true;
+            }
+        }
+        if(!argumentIsValidateable) {
+            final String warningMessage = "The [" + actionName + "] action in [" +
+                    classNode.getName() +
+                    "] accepts a parameter of type [" +
+                    commandObjectTypeClassNode.getName() +
+                    "] which has not been marked with @grails.validation.Validateable.  This may lead to reloading problems related to the validation " +
+                    "capabilities added to command object classes.  " +
+                    "It is recommended that command object classes be marked with @grails.validation.Validateable.  In a future " +
+                    "version of Grails the @grails.validation.Validateable annotation will be required for command object classes " +
+                    "which use validation.";
+            warning(source, actionNode, warningMessage);
+        }
     }
 
     protected void enhanceCommandObjectClass(
@@ -553,5 +580,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     protected void error(SourceUnit source, String me) {
         source.getErrorCollector().addError(new SimpleMessage(me, source), true);
+    }
+    
+    protected void warning(SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
+        final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
+        GrailsConsole.getInstance().warning(warningMessage + "\n\n" + sample);
     }
 }
