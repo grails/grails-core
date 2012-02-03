@@ -55,42 +55,4 @@ class ControllerActionTransformerCompilationErrorsSpec extends Specification {
             MultipleCompilationErrorsException e = thrown()
             e.message.contains 'Parameter [i] to method [methodAction] has default value [42].  Default parameter values are not allowed in controller action methods.'
     }
-
-
-    void "Test a non-validateable command object"() {
-        when:
-            gcl.parseClass('''
-            class TestController {
-                def methodAction(org.codehaus.groovy.grails.compiler.web.SomeClass sc){}
-            }
-            ''')
-
-        then:
-            CompilationFailedException e = thrown()
-            e.message.contains 'The [methodAction] action accepts a parameter of type [org.codehaus.groovy.grails.compiler.web.SomeClass] which does not appear to be a command object class.'
-
-        when:
-            gcl.parseClass('''
-            class TestController {
-                def closureAction = {org.codehaus.groovy.grails.compiler.web.SomeClass sc->}
-            }
-            ''')
-
-        then:
-            e = thrown()
-            e.message.contains 'The [closureAction] action accepts a parameter of type [org.codehaus.groovy.grails.compiler.web.SomeClass] which does not appear to be a command object class.'
-    }
-
-    def cleanupSpec() {
-        RequestContextHolder.setRequestAttributes(null)
-    }
 }
-
-/**
- * This class needs to be defined out here and not loaded/compiled by the gcl.  The idea is that
- * this class is not to be made validateable at compile time.  This simulates a class defined in a plugin
- * and then used as a command object in the application.
- */
-class SomeClass {
-}
-
