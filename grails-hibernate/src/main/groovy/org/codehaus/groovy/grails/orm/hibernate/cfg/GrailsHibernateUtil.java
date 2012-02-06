@@ -541,8 +541,8 @@ public class GrailsHibernateUtil {
         return mapping.getDatasources();
     }
 
-    private static boolean isMappedWithHibernate(GrailsDomainClass domainClass) {
-        return domainClass.getMappingStrategy().equals( GrailsDomainClass.GORM );
+    public static boolean isMappedWithHibernate(GrailsDomainClass domainClass) {
+        return domainClass instanceof GrailsHibernateDomainClass || domainClass.getMappingStrategy().equals( GrailsDomainClass.GORM );
     }
 
     public static void autoAssociateBidirectionalOneToOnes(DefaultGrailsDomainClass domainClass, Object target) {
