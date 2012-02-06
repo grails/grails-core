@@ -18,9 +18,12 @@ package org.codehaus.groovy.grails.compiler.web;
 import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
+import grails.validation.ASTValidateableHelper;
+import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
@@ -64,6 +68,7 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -389,17 +394,17 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
-                                                    final ClassNode classNode,
-                                                    final ClassNode commandObjectTypeClassNode,
+                                                    final ClassNode controllerNode,
+                                                    final ClassNode commandObjectNode,
                                                     final ASTNode actionNode,
                                                     final String actionName,
                                                     final String paramName,
                                                     SourceUnit source) {
         final Expression constructorCallExpression = new ConstructorCallExpression(
-                commandObjectTypeClassNode, EMPTY_TUPLE);
+                commandObjectNode, EMPTY_TUPLE);
 
         final Statement newCommandCode = new ExpressionStatement(
-                new DeclarationExpression(new VariableExpression(paramName, commandObjectTypeClassNode),
+                new DeclarationExpression(new VariableExpression(paramName, commandObjectNode),
                         Token.newSymbol(Types.EQUALS, 0, 0),
                         constructorCallExpression));
 
@@ -409,35 +414,70 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         wrapper.addStatement(autoWireCommandObjectStatement);
 
         final Statement statement = getCommandObjectDataBindingStatement(
-                classNode, paramName, commandObjectTypeClassNode);
+                controllerNode, paramName, commandObjectNode);
         wrapper.addStatement(statement);
         
-        boolean argumentIsValidateable = false;
-        List<AnnotationNode> validateableAnnotations = commandObjectTypeClassNode.getAnnotations(new ClassNode(grails.validation.Validateable.class));
-        if(validateableAnnotations.size() > 0) {
-            argumentIsValidateable = true;
-        } else {
-            validateableAnnotations = commandObjectTypeClassNode.getAnnotations(new ClassNode(org.codehaus.groovy.grails.validation.Validateable.class));
-            if(validateableAnnotations.size() > 0) {
-                argumentIsValidateable = true;
+        @SuppressWarnings("unchecked")
+        boolean argumentIsValidateable = GrailsASTUtils.hasAnyAnnotations(commandObjectNode,
+                                                                          grails.validation.Validateable.class,
+                                                                          org.codehaus.groovy.grails.validation.Validateable.class, 
+                                                                          grails.persistence.Entity.class, 
+                                                                          javax.persistence.Entity.class);
+
+        if(!argumentIsValidateable) {
+            final ModuleNode commandObjectModule = commandObjectNode.getModule();
+            if(commandObjectModule != null) {
+                if(commandObjectModule == controllerNode.getModule() || doesModulePathIncludeSubstring(commandObjectModule, "grails-app" + File.separator + "controllers" + File.separator)) {
+                    final ASTValidateableHelper h = new DefaultASTValidateableHelper();
+                    h.injectValidateableCode(commandObjectNode);
+                    argumentIsValidateable = true;
+                } else if(doesModulePathIncludeSubstring(commandObjectModule, "grails-app" + File.separator + "domain" + File.separator)) {
+                    argumentIsValidateable = true;
+                }
             }
         }
+        
         if(argumentIsValidateable) {
             final MethodCallExpression validateMethodCallExpression =
                     new MethodCallExpression(new VariableExpression(paramName), "validate", EMPTY_TUPLE);
-            MethodNode validateMethod =
-                    commandObjectTypeClassNode.getMethod("validate", new Parameter[0]);
+            final MethodNode validateMethod =
+                    commandObjectNode.getMethod("validate", new Parameter[0]);
             if (validateMethod != null) {
                 validateMethodCallExpression.setMethodTarget(validateMethod);
             }
             wrapper.addStatement(new ExpressionStatement(validateMethodCallExpression));
         } else {
+            // try to dynamically invoke the .validate() method if it is available at runtime...
+            final Expression respondsToValidateMethodCallExpression = new MethodCallExpression(new VariableExpression(paramName), "respondsTo", new ArgumentListExpression(new ConstantExpression("validate")));
+            final Expression validateMethodCallExpression = new MethodCallExpression(new VariableExpression(paramName), "validate", new ArgumentListExpression());
+            final Statement ifRespondsToValidateThenValidateStatement = new IfStatement(new BooleanExpression(respondsToValidateMethodCallExpression), new ExpressionStatement(validateMethodCallExpression), new ExpressionStatement(new EmptyExpression()));
+            wrapper.addStatement(ifRespondsToValidateThenValidateStatement);
+            
             final String warningMessage = "The [" + actionName + "] action accepts a parameter of type [" +
-                    commandObjectTypeClassNode.getName() +
+                    commandObjectNode.getName() +
                     "] which has not been marked with @Validateable.  Data binding will still be applied " +
                     "to this command object but the instance will not be validateable.";
             warning(source, actionNode, warningMessage);
         }
+    }
+
+    /**
+     * Checks to see if a Module is defined at a path which includes the specified substring
+     * 
+     * @param moduleNode a ModuleNode
+     * @param substring The substring to search for
+     * @return true if moduleNode is defined at a path which includes the specified substring
+     */
+    private boolean doesModulePathIncludeSubstring(
+            ModuleNode moduleNode, final String substring) {
+        boolean substringFoundInDescription = false;
+        if(moduleNode != null) {
+            String commandObjectModuleDescription = moduleNode.getDescription();
+            if(commandObjectModuleDescription != null) {
+                substringFoundInDescription = commandObjectModuleDescription.contains(substring);
+            }
+        }
+        return substringFoundInDescription;
     }
 
     protected Statement getCommandObjectDataBindingStatement(
