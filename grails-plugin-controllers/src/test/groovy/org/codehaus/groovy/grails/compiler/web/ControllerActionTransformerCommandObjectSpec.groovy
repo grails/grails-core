@@ -40,7 +40,6 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 }
         gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
         testControllerClass = gcl.parseClass('''
-        import grails.validation.Validateable
         class TestController {
 
             def closureAction = { PersonCommand p ->
@@ -67,7 +66,11 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 [artist: a]
             }
 
-            def closureActionWithNonValidateableCommandObject = { NonValidateableCommand co ->
+            def closureActionWithNonValidateableCommandObjectWithAValidateMethod = { org.codehaus.groovy.grails.compiler.web.ClassWithNoValidateMethod co ->
+                [co: co]
+            }
+
+            def closureActionWithNonValidateableCommandObject = { org.codehaus.groovy.grails.compiler.web.NonValidateableCommand co ->
                 [commandObject: co]
             }
 
@@ -91,16 +94,15 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 [commandObject: svc]
             }
 
-            def methodActionWithNonValidateableCommandObject(NonValidateableCommand co) {
+            def methodActionWithNonValidateableCommandObjectWithAValidateMethod(org.codehaus.groovy.grails.compiler.web.ClassWithNoValidateMethod co) {
+                [co: co]
+            }
+
+            def methodActionWithNonValidateableCommandObject(org.codehaus.groovy.grails.compiler.web.NonValidateableCommand co) {
                 [commandObject: co]
             }
         }
 
-        class NonValidateableCommand {
-            String name
-        }
-
-        @Validateable
         class PersonCommand {
             String name
             def theAnswer
@@ -110,7 +112,6 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
 
-        @Validateable
         class ArtistCommand {
             String name
             static constraints = {
@@ -118,14 +119,12 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             }
         }
 
-        @Validateable
         class ArtistSubclass extends ArtistCommand {
             String bandName
             static constraints = {
                 bandName matches: /[A-Z].*/
             }
         }
-        @Validateable
         class DateComamndObject {
             Date birthday
         }
@@ -503,6 +502,37 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         then:
             'Subclass Controller' == model.name
     }
+    
+    void "Test a command object that does not have a validate method at compile time but does at runtime"() {
+        when:
+            def model = testController.methodActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            0 == model.co.validationCounter
+            
+        when:
+            model = testController.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            0 == model.co.validationCounter
+            
+        when:
+            ClassWithNoValidateMethod.metaClass.validate = { ->
+                ++ delegate.validationCounter
+            }
+            model = testController.methodActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            1 == model.co.validationCounter
+            
+        when:
+            model = testController.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            1 == model.co.validationCounter
+            
+    }
+
 
     def cleanupSpec() {
         RequestContextHolder.setRequestAttributes(null)
@@ -517,3 +547,13 @@ class SomeValidateableClass {
         name matches: /[A-Z]*/
     }
 }
+
+class ClassWithNoValidateMethod {
+    int validationCounter = 0
+}
+
+class NonValidateableCommand {
+    String name
+}
+
+
