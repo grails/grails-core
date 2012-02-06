@@ -127,7 +127,7 @@ class HibernatePluginSupport {
 
             for (GrailsDomainClass dc in application.domainClasses) {
 
-                if (!dc.abstract && dc.getMappingStrategy() == GrailsDomainClass.GORM && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+                if (!dc.abstract && GrailsHibernateUtil.isMappedWithHibernate(dc) && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                     "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
                         messageSource = ref("messageSource")
                         domainClass = ref("${dc.fullName}DomainClass")
@@ -508,7 +508,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)
         for (PersistentEntity entity in mappingContext.getPersistentEntities()) {
             GrailsDomainClass dc = application.getDomainClass(entity.javaClass.name)
-            if (dc.getMappingStrategy() != GrailsDomainClass.GORM || !GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+            if (!GrailsHibernateUtil.isMappedWithHibernate(dc) || !GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                 continue
             }
 
