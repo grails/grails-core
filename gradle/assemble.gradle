@@ -69,6 +69,11 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
                 configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
                     def dependency = artifact.moduleVersion.id
 
+                    // Force the download of the binary artifact
+                    // Gradle 1.0-milestone-7 will get the file until this is called with the way 
+                    // we are using the API.
+                    artifact.file
+
                     if (!projectNames.contains(dependency.name)) {
                         def base = "${dependency.group}/${dependency.name}/$grailsRepoCacheHash"
                         include "${base}/*-${dependency.version}.*"
