@@ -420,11 +420,10 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     classNode.getName() +
                     "] accepts a parameter of type [" +
                     commandObjectTypeClassNode.getName() +
-                    "] which has not been marked with @grails.validation.Validateable.  This may lead to reloading problems related to the validation " +
-                    "capabilities added to command object classes.  " +
-                    "It is recommended that command object classes be marked with @grails.validation.Validateable.  In a future " +
-                    "version of Grails the @grails.validation.Validateable annotation will be required for command object classes " +
-                    "which use validation.";
+                    "] which has not been marked with @grails.validation.Validateable. " +
+                    "This may lead to an intermittent MissingMethodException for validate(). " +
+                    "We strongly recommend that you mark command object classes with @Validateable " +
+                    "in order to avoid the problem.";
             warning(source, actionNode, warningMessage);
         }
     }
