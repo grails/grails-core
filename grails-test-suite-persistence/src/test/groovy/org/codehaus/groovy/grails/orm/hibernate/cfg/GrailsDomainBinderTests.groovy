@@ -43,8 +43,6 @@ import org.springframework.beans.BeanWrapperImpl
  * @author Jason Rudolph
  * @author Sergey Nebolsin
  * @since 0.4
- *
- * Created: 06-Jan-2007
  */
 class GrailsDomainBinderTests extends GroovyTestCase {
 
@@ -878,6 +876,34 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testCustomNamingStrategyAsInstance() {
+
+        // somewhat artificial in that it doesn't test that setting the property
+        // in DataSource.groovy works, but that's handled in DataSourceConfigurationTests
+        def instance = new CustomNamingStrategy()
+        GrailsDomainBinder.configureNamingStrategy(instance)
+
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class TestOneSide {
+    Long id
+    Long version
+    String fooName
+    String barDescriPtion
+}'''))
+
+        assert instance.is(GrailsDomainBinder.getNamingStrategy('sessionFactory'))
+        assert instance.is(GrailsDomainBinder.NAMING_STRATEGIES.DEFAULT)
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, [oneClass.clazz])
+
+        PersistentClass persistentClass = config.getClassMapping("TestOneSide")
+        assertEquals("table_TestOneSide", persistentClass.table.name)
+
+        Column column = persistentClass.getProperty("id").columnIterator.next()
+        assertEquals("col_id", column.name)
+    }
+
     void testManyToManyWithBag() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(BAG_MANY_TO_MANY_CLASSES_DEFINITION)
 
@@ -1007,12 +1033,12 @@ class Alert {
 
        @Override
        String classToTableName(String className) {
-           return "table_" + StringHelper.unqualify(className)
+           "table_" + StringHelper.unqualify(className)
        }
 
        @Override
        String propertyToColumnName(String propertyName) {
-           return "col_" + StringHelper.unqualify(propertyName)
+           "col_" + StringHelper.unqualify(propertyName)
        }
    }
 }
