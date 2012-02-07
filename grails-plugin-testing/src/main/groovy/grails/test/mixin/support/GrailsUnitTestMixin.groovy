@@ -33,6 +33,8 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBe
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.AfterClass
@@ -81,7 +83,7 @@ class GrailsUnitTestMixin {
                 grailsProxyHandler(DefaultProxyHandler)
                 grailsApplication(DefaultGrailsApplication)
                 pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
-                messageSource(StaticMessageSource)
+                "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             }
             applicationContext.refresh()
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
