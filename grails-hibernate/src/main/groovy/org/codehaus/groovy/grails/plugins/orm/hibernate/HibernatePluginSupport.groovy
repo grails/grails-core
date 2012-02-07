@@ -207,6 +207,7 @@ class HibernatePluginSupport {
                 catch (Throwable t) {
                     log.error """WARNING: You've configured a custom Hibernate naming strategy '$namingStrategy' in DataSource.groovy, however the class cannot be found.
 Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
+                    GrailsDomainBinder.configureNamingStrategy datasourceName, ImprovedNamingStrategy
                 }
 
                 // allow adding hibernate properties that don't start with "hibernate."
