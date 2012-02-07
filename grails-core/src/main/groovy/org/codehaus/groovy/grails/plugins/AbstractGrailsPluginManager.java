@@ -54,7 +54,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     private static final Log LOG = LogFactory.getLog(AbstractGrailsPluginManager.class);
     private static final String BLANK = "";
     public static final String CONFIG_FILE = "Config";
-    private static final String DATA_SOURCE_CLASS = "DataSource";
     protected List<GrailsPlugin> pluginList = new ArrayList<GrailsPlugin>();
     protected GrailsApplication application;
     protected Resource[] pluginResources = new Resource[0];
@@ -349,14 +348,13 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     }
 
     public void informOfClassChange(File file, @SuppressWarnings("rawtypes") Class cls) {
-        if (cls != null && (cls.getName().equals(CONFIG_FILE) || cls.getName().equals(DATA_SOURCE_CLASS))) {
+        if (cls != null && (cls.getName().equals(CONFIG_FILE) || cls.getName().equals(GrailsApplication.DATA_SOURCE_CLASS))) {
             ConfigSlurper configSlurper = ConfigurationHelper.getConfigSlurper(Environment.getCurrent().getName(), application);
             ConfigObject c;
             try {
                 c = configSlurper.parse(file.toURI().toURL());
                 application.getConfig().merge(c);
                 informPluginsOfConfigChange();
-
             } catch (Exception e) {
                 // ignore
             }
