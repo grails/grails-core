@@ -36,7 +36,7 @@ Brief summary/description of the plugin.
 //    def issueManagement = [ system: "JIRA", url: "http://jira.grails.org/browse/GPMYPLUGIN" ]
 
     // Online location of the plugin's browseable source code.
-//    def scm = [ url: "http://svn.grails-plugins.codehaus.org/browse/grails-plugins/" ]
+//    def scm = [ url: "http://svn.codehaus.org/grails-plugins/" ]
 
     def doWithWebDescriptor = { xml ->
         // TODO Implement additions to web.xml (optional), this event occurs before
