@@ -488,16 +488,16 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         switch(dependencyConfiguration) {
             case IvyDependencyManager.RUNTIME_CONFIGURATION:
                 settings.runtimeDependencies.addAll(pluginJars)
-            break
+                break
             case IvyDependencyManager.BUILD_CONFIGURATION:
                 settings.buildDependencies.addAll(pluginJars)
-            break
+                break
             case IvyDependencyManager.PROVIDED_CONFIGURATION:
                 settings.providedDependencies.addAll(pluginJars)
-            break
+                break
             case IvyDependencyManager.TEST_CONFIGURATION:
                 settings.testDependencies.addAll(pluginJars)
-            break
+                break
         }
     }
 
@@ -633,7 +633,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 if (type in ['build', 'test']) {
                     toAdd.each {
                         if (it) {
-                            settings.rootLoader.addURL(it.toURL())
+                            settings.rootLoader.addURL(it.toURI().toURL())
                         }
                     }
                 }
