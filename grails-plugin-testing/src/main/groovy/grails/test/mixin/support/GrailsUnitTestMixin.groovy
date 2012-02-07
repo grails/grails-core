@@ -83,6 +83,7 @@ class GrailsUnitTestMixin {
                 grailsProxyHandler(DefaultProxyHandler)
                 grailsApplication(DefaultGrailsApplication)
                 pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
+                messageSource(StaticMessageSource)
                 "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             }
             applicationContext.refresh()
