@@ -125,7 +125,7 @@ target(allTests: "Runs the project's tests.") {
     if (reRunTests) testNames = getFailedTests()
 
     // add the test classes to the classpath
-    classLoader.addURL(grailsSettings.testClassesDir.toURL())
+    classLoader.addURL(grailsSettings.testClassesDir.toURI().toURL())
 
     testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
 

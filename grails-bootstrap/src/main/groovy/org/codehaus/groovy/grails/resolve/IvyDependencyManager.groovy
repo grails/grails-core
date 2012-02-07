@@ -323,7 +323,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
             def urls = rootLoader.URLs.toList()
             ResolveReport report = resolveDependencies(conf)
             for (ArtifactDownloadReport downloadReport in report.allArtifactsReports) {
-                def url = downloadReport.localFile.toURL()
+                def url = downloadReport.localFile.toURI().toURL()
                 if (!urls.contains(url)) {
                     rootLoader.addURL(url)
                 }
