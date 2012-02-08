@@ -44,7 +44,6 @@ public abstract class ApplicationHolder {
      */
     @Deprecated
     public static void setApplication(GrailsApplication application) {
-        GrailsUtil.deprecated("Method ApplicationHolder.setApplication(application) is deprecated and will be removed in a future version of Grails.");
         Holders.setGrailsApplication(application);
     }
 }
