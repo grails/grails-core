@@ -117,7 +117,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
 
         ant.copy(todir:buildSettings.getClassesDir(), failonerror:false) {
-            fileset(dir:"${basedir}", includes:metadataFile.name)
+            fileset(dir: basedir, includes:metadataFile.name)
         }
 
         startLogging(config)
@@ -168,7 +168,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             }
         }
 
-        def dataSourceFile = new File("${basedir}/grails-app/conf/DataSource.groovy")
+        def dataSourceFile = new File(basedir, "grails-app/conf/DataSource.groovy")
         if (dataSourceFile.exists()) {
             try {
                 def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
@@ -274,7 +274,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 def pluginName = "${info.name}-${info.version}"
 
                 packageConfigFiles(pluginBase.path)
-                if (new File("${pluginPath}/web-app").exists()) {
+                if (new File(pluginPath, "web-app").exists()) {
                     ant.mkdir(dir:"${targetDir}/plugins/${pluginName}")
                     ant.copy(todir: "${targetDir}/plugins/${pluginName}") {
                         fileset(dir: "${pluginBase}/web-app", includes: "**",
@@ -321,7 +321,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
     void packageTemplates(scaffoldDir) {
         ant.mkdir(dir:scaffoldDir)
-        if (new File("${basedir}/src/templates/scaffolding").exists()) {
+        if (new File(basedir, "src/templates/scaffolding").exists()) {
             ant.copy(todir:scaffoldDir, overwrite:true) {
                 fileset(dir:"${basedir}/src/templates/scaffolding", includes:"**")
             }

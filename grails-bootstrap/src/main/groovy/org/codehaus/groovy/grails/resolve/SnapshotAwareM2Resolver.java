@@ -178,10 +178,11 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
                             super.endElement(uri, localName, qName);
                         }
                     }, null);
+
                     if (timestamp.length() > 0) { // we have found a timestamp, so this is a snapshot unique version
                         String snapshotRevision = mrid.getRevision();
                         String baseRevision = snapshotRevision.substring(0, snapshotRevision.length() - "-SNAPSHOT".length());
-                        String uniqueRevisionSuffix = new StringBuffer().append(timestamp).append("-").append(buildNumber).toString();
+                        String uniqueRevisionSuffix = timestamp + "-" + buildNumber;
 
                         return new SnapshotRevision(baseRevision, uniqueRevisionSuffix, lastUpdated.toString());
                     }

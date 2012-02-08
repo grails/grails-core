@@ -7,11 +7,10 @@ import grails.test.mixin.*
 @Mock(${className})
 class ${className}ControllerTests {
 
-
     def populateValidParams(params) {
-      assert params != null
-      // TODO: Populate valid properties like...
-      //params["name"] = 'someValidName'
+        assert params != null
+        // TODO: Populate valid properties like...
+        //params["name"] = 'someValidName'
     }
 
     void testIndex() {
@@ -28,9 +27,9 @@ class ${className}ControllerTests {
     }
 
     void testCreate() {
-       def model = controller.create()
+        def model = controller.create()
 
-       assert model.${propertyName}Instance != null
+        assert model.${propertyName}Instance != null
     }
 
     void testSave() {
@@ -55,7 +54,6 @@ class ${className}ControllerTests {
         assert flash.message != null
         assert response.redirectedUrl == '/${propertyName}/list'
 
-
         populateValidParams(params)
         def ${propertyName} = new ${className}(params)
 
@@ -73,7 +71,6 @@ class ${className}ControllerTests {
 
         assert flash.message != null
         assert response.redirectedUrl == '/${propertyName}/list'
-
 
         populateValidParams(params)
         def ${propertyName} = new ${className}(params)
@@ -94,7 +91,6 @@ class ${className}ControllerTests {
         assert response.redirectedUrl == '/${propertyName}/list'
 
         response.reset()
-
 
         populateValidParams(params)
         def ${propertyName} = new ${className}(params)

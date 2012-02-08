@@ -61,19 +61,19 @@ public class BaseSettingsApi {
 
     public BaseSettingsApi(final BuildSettings buildSettings, boolean interactive) {
         this.buildSettings = buildSettings;
-        this.buildProps = buildSettings.getConfig().toProperties();
-        this.grailsHome = buildSettings.getGrailsHome();
+        buildProps = buildSettings.getConfig().toProperties();
+        grailsHome = buildSettings.getGrailsHome();
 
-        metadataFile = new File(buildSettings.getBaseDir()+"/application.properties");
+        metadataFile = new File(buildSettings.getBaseDir(), "application.properties");
 
         metadata = metadataFile.exists() ? Metadata.getInstance(metadataFile) : Metadata.getCurrent();
 
-        this.metadataFile = metadata.getMetadataFile();
-        this.enableProfile = Boolean.valueOf(getPropertyValue("grails.script.profile", false).toString());
-        this.pluginsHome = buildSettings.getProjectPluginsDir().getPath();
-        this.pluginSettings = new PluginBuildSettings(buildSettings);
-        this.grailsAppName = metadata.getApplicationName();
-        this.isInteractive = interactive;
+        metadataFile = metadata.getMetadataFile();
+        enableProfile = Boolean.valueOf(getPropertyValue("grails.script.profile", false).toString());
+        pluginsHome = buildSettings.getProjectPluginsDir().getPath();
+        pluginSettings = new PluginBuildSettings(buildSettings);
+        grailsAppName = metadata.getApplicationName();
+        isInteractive = interactive;
 
         // If no app name property (upgraded/new/edited project) default to basedir.
         if (grailsAppName == null) {
@@ -86,8 +86,8 @@ public class BaseSettingsApi {
         else {
             appClassName = GrailsNameUtils.getClassNameRepresentation(grailsAppName);
         }
-        this.configSlurper = buildSettings.createConfigSlurper();
-        this.configSlurper.setEnvironment(buildSettings.getGrailsEnv());
+        configSlurper = buildSettings.createConfigSlurper();
+        configSlurper.setEnvironment(buildSettings.getGrailsEnv());
     }
 
     public void enableUaa() {
