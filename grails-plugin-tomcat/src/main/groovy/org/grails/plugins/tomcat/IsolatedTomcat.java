@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.tomcat;
 
+import grails.build.logging.GrailsConsole;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
@@ -61,7 +62,7 @@ public class IsolatedTomcat {
         tomcat.setPort(port);
 
         if (Boolean.getBoolean("tomcat.nio")) {
-            System.out.println("Enabling Tomcat NIO Connector");
+            GrailsConsole.getInstance().addStatus("Enabling Tomcat NIO Connector");
             Connector connector = new Connector(Http11NioProtocol.class.getName());
             connector.setPort(port);
             tomcat.getService().addConnector(connector);
@@ -73,7 +74,7 @@ public class IsolatedTomcat {
             tomcat.addWebapp(contextPath, warPath);
         } catch (ServletException e) {
             e.printStackTrace();
-            System.err.println("Error loading Tomcat: " + e.getMessage());
+            GrailsConsole.getInstance().error("Error loading Tomcat: " + e.getMessage());
             System.exit(1);
         }
         tomcat.enableNaming();
@@ -134,10 +135,9 @@ public class IsolatedTomcat {
         try {
             tomcat.start();
             String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
-            System.out.println(message);
+            GrailsConsole.getInstance().addStatus(message);
         } catch (LifecycleException e) {
-            e.printStackTrace();
-            System.err.println("Error loading Tomcat: " + e.getMessage());
+            GrailsConsole.getInstance().error("Error loading Tomcat: " + e.getMessage(), e);
             System.exit(1);
         }
     }
