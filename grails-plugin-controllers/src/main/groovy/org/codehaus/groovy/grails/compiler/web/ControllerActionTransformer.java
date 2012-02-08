@@ -31,6 +31,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
@@ -38,6 +39,7 @@ import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.validation.MapBindingResult;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
@@ -395,26 +397,33 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
         wrapper.addStatement(new ExpressionStatement(validateMethodCallExpression));
         
-        boolean argumentIsValidateable = false;
-        List<AnnotationNode> validateableAnnotations = commandObjectTypeClassNode.getAnnotations(new ClassNode(grails.validation.Validateable.class));
-        if(validateableAnnotations.size() > 0) {
-            argumentIsValidateable = true;
-        } else {
-            validateableAnnotations = commandObjectTypeClassNode.getAnnotations(new ClassNode(org.codehaus.groovy.grails.validation.Validateable.class));
-            if(validateableAnnotations.size() > 0) {
-                argumentIsValidateable = true;
+        @SuppressWarnings("unchecked")
+        boolean argumentIsValidateable = GrailsASTUtils.hasAnyAnnotations(commandObjectTypeClassNode,
+                                                                          grails.validation.Validateable.class,
+                                                                          org.codehaus.groovy.grails.validation.Validateable.class, 
+                                                                          grails.persistence.Entity.class, 
+                                                                          javax.persistence.Entity.class);
+
+        if(!argumentIsValidateable) {
+            final ModuleNode commandObjectModule = commandObjectTypeClassNode.getModule();
+            if(commandObjectModule != null) {
+                if(commandObjectModule == classNode.getModule() || 
+                   doesModulePathIncludeSubstring(commandObjectModule, "grails-app" + File.separator + "controllers" + File.separator) ||
+                   doesModulePathIncludeSubstring(commandObjectModule, "grails-app" + File.separator + "domain" + File.separator)) {
+                    argumentIsValidateable = true;
+                }
             }
         }
+
         if(!argumentIsValidateable) {
             final String warningMessage = "The [" + actionName + "] action in [" +
                     classNode.getName() +
                     "] accepts a parameter of type [" +
                     commandObjectTypeClassNode.getName() +
-                    "] which has not been marked with @grails.validation.Validateable.  This may lead to reloading problems related to the validation " +
-                    "capabilities added to command object classes.  " +
-                    "It is recommended that command object classes be marked with @grails.validation.Validateable.  In a future " +
-                    "version of Grails the @grails.validation.Validateable annotation will be required for command object classes " +
-                    "which use validation.";
+                    "] which has not been marked with @grails.validation.Validateable. " +
+                    "This may lead to an intermittent MissingMethodException for validate(). " +
+                    "We strongly recommend that you mark command object classes with @Validateable " +
+                    "in order to avoid the problem.";
             warning(source, actionNode, warningMessage);
         }
     }
@@ -434,6 +443,25 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
         final ASTValidateableHelper h = new DefaultASTValidateableHelper();
         h.injectValidateableCode(commandObjectTypeClassNode);
+    }
+
+    /**
+     * Checks to see if a Module is defined at a path which includes the specified substring
+     * 
+     * @param moduleNode a ModuleNode
+     * @param substring The substring to search for
+     * @return true if moduleNode is defined at a path which includes the specified substring
+     */
+    private boolean doesModulePathIncludeSubstring(
+            ModuleNode moduleNode, final String substring) {
+        boolean substringFoundInDescription = false;
+        if(moduleNode != null) {
+            String commandObjectModuleDescription = moduleNode.getDescription();
+            if(commandObjectModuleDescription != null) {
+                substringFoundInDescription = commandObjectModuleDescription.contains(substring);
+            }
+        }
+        return substringFoundInDescription;
     }
 
     protected Statement getCommandObjectDataBindingStatement(

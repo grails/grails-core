@@ -17,19 +17,44 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
+import groovy.lang.MissingMethodException;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.List;
 
-import groovy.lang.MissingMethodException;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.*;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.IfStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.ThrowStatement;
+import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -566,6 +591,30 @@ public class GrailsASTUtils {
             }
         }
         return null;
+    }
+    
+    /**
+     * Returns true if classNode is marked with annotationClass
+     * @param classNode A ClassNode to inspect
+     * @param annotationClass an annotation to look for
+     * @return true if classNode is marked with annotationClass, otherwise false
+     */
+    public static boolean hasAnnotation(final ClassNode classNode, final Class<? extends Annotation> annotationClass) {
+        List<AnnotationNode> annotations = classNode.getAnnotations(new ClassNode(annotationClass));
+        return annotations.size() > 0;
+    }
+    
+    /**
+     * @param classNode a ClassNode to search
+     * @param annotationsToLookFor Annotations to look for
+     * @return true if classNode is marked with any of the annotations in annotationsToLookFor
+     */
+    public static boolean hasAnyAnnotations(final ClassNode classNode, final Class<? extends Annotation>... annotationsToLookFor) {
+        return CollectionUtils.exists(Arrays.asList(annotationsToLookFor), new Predicate() {
+            public boolean evaluate(Object object) {
+                return hasAnnotation(classNode, (Class)object);
+            }
+        });
     }
 
     public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
