@@ -575,9 +575,6 @@ public class GrailsConsole {
      */
     public void log(String msg) {
         PrintStream printStream = out;
-        if(!(System.out instanceof GrailsConsolePrintStream)) {
-            printStream = System.out;
-        }
         try {
             if (msg.endsWith(LINE_SEPARATOR)) {
                 printStream.print(msg);
