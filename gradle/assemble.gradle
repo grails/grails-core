@@ -36,26 +36,15 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
     gradle.taskGraph.whenReady { taskGraph ->
         if (taskGraph.hasTask(':populateDependencies')) {
-            def projectNames = rootProject.subprojects*.name
+            from(gradleArtifactCache) {
+                libsConfigurations.each { project, configuration ->
+                    configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                        def dependency = artifact.resolvedDependency
 
-            baseCacheDir = "$gradle.gradleUserHomeDir/caches"
-            versionedCacheDir = "$baseCacheDir/artifacts-7/artifacts"
-
-            from versionedCacheDir
-            libsConfigurations.each { configuration ->
-                configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                    def dependency = artifact.moduleVersion.id
-
-                    // Force the download of the binary artifact
-                    // Gradle 1.0-milestone-7 will get the file until this is called with the way 
-                    // we are using the API.
-                    artifact.file
-
-                    if (!projectNames.contains(dependency.name)) {
-                        def base = "${grailsRepoCacheHash}/${dependency.group}/${dependency.name}/${dependency.version}"
-                        include "${base}/*-${dependency.version}.*"
-                        include "${base}/jar/${dependency.name}-${dependency.version}.jar"
-                        include "${base}/bundle/${dependency.name}-${dependency.version}.jar"
+                        def file = artifact.file
+                        include "${dependency.moduleGroup}/${dependency.moduleName}/*-${dependency.moduleVersion}.*"
+                        include "${dependency.moduleGroup}/${dependency.moduleName}/jars/${dependency.moduleName}-${dependency.moduleVersion}.jar"
+                        include "${dependency.moduleGroup}/${dependency.moduleName}/bundles/${dependency.moduleName}-${dependency.moduleVersion}.jar"
                     }
                 }
            }
