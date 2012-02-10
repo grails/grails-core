@@ -122,10 +122,15 @@ public class TestForTransformation extends TestMixinTransformation {
         }
 
         ClassNode classNode = (ClassNode) parent;
-        String cName = classNode.getName();
-        if (classNode.isInterface()) {
-                error(source, "Error processing interface '" + cName + "'. " + MY_TYPE_NAME + " not allowed for interfaces.");
+        if (classNode.isInterface() || Modifier.isAbstract(classNode.getModifiers())) {
+            return;
         }
+
+        boolean junit3Test = isJunit3Test(classNode);
+        boolean spockTest = isSpockTest(classNode);
+        boolean isJunit = classNode.getName().endsWith("Tests");
+
+        if(!junit3Test && !spockTest && !isJunit) return;
 
         Expression value = node.getMember("value");
         ClassExpression ce;
@@ -133,41 +138,42 @@ public class TestForTransformation extends TestMixinTransformation {
             ce = (ClassExpression) value;
             testFor(classNode, ce);
         }
-        else if (!isJunit3Test(classNode)){
-            List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
-            if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
-            // no explicit class specified try by convention
-            String fileName = source.getName();
-            String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
-            if (className != null) {
-                boolean isJunit = className.endsWith("Tests");
-                boolean isSpock = className.endsWith("Spec");
-                String targetClassName = null;
+        else {
+            if (!junit3Test){
+                List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
+                if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
+                // no explicit class specified try by convention
+                String fileName = source.getName();
+                String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
+                if (className != null) {
+                    boolean isSpock = className.endsWith("Spec");
+                    String targetClassName = null;
 
-                if (isJunit) {
-                    targetClassName = className.substring(0, className.indexOf("Tests"));
-                }
-                else if (isSpock) {
-                    targetClassName = className.substring(0, className.indexOf("Spec"));
-                }
+                    if (isJunit) {
+                        targetClassName = className.substring(0, className.indexOf("Tests"));
+                    }
+                    else if (isSpock) {
+                        targetClassName = className.substring(0, className.indexOf("Spec"));
+                    }
 
-                if (targetClassName != null) {
-                    Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
-                    if (targetResource != null) {
-                        try {
-                            if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
-                                testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
-                            }
-                            else {
-                                for (String artefactType : artefactTypeToTestMap.keySet()) {
-                                    if (classNode.getName().endsWith(artefactType)) {
-                                        testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
-                                        break;
+                    if (targetClassName != null) {
+                        Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
+                        if (targetResource != null) {
+                            try {
+                                if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
+                                    testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                                }
+                                else {
+                                    for (String artefactType : artefactTypeToTestMap.keySet()) {
+                                        if (classNode.getName().endsWith(artefactType)) {
+                                            testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                                            break;
+                                        }
                                     }
                                 }
+                            } catch (IOException e) {
+                                // ignore
                             }
-                        } catch (IOException e) {
-                            // ignore
                         }
                     }
                 }
