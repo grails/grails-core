@@ -189,7 +189,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                             "] action has been overloaded in [" +
                             classNode.getName() +
                             "].";
-                    error(source, method, message);
+                    GrailsASTUtils.error(source, method, message);
                 }
                 MethodNode wrapperMethod = convertToMethodAction(classNode, method, source);
                 if (wrapperMethod != null) {
@@ -223,7 +223,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                 String methodDeclaration = methodNode.getText();
                 String message = "Parameter [%s] to method [%s] has default value [%s].  Default parameter values are not allowed in controller action methods. ([%s])";
                 String formattedMessage = String.format(message, paramName, methodName, initialValue, methodDeclaration);
-                error(source, methodNode, formattedMessage);
+                GrailsASTUtils.error(source, methodNode, formattedMessage);
             }
         }
         MethodNode method = null;
@@ -457,7 +457,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     commandObjectNode.getName() +
                     "] which has not been marked with @Validateable.  Data binding will still be applied " +
                     "to this command object but the instance will not be validateable.";
-            warning(source, actionNode, warningMessage);
+            GrailsASTUtils.warning(source, actionNode, warningMessage);
         }
     }
 
@@ -620,16 +620,5 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
 
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
-    }
-    
-    protected void error(final SourceUnit sourceUnit, final ASTNode astNode, final String message) {
-        final SyntaxException syntaxException = new SyntaxException(message, astNode.getLineNumber(), astNode.getColumnNumber());
-        final SyntaxErrorMessage syntaxErrorMessage = new SyntaxErrorMessage(syntaxException, sourceUnit);
-        sourceUnit.getErrorCollector().addError(syntaxErrorMessage, true);
-    }
-    
-    protected void warning(SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
-        final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
-        GrailsConsole.getInstance().warning(warningMessage + "\n\n" + sample);
     }
 }
