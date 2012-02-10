@@ -39,7 +39,25 @@ class MetaClassCleanupSpec extends Specification{
 
         then:"The method was cleaned by the registry cleaner"
             thrown MissingMethodException
-    }    
+    }
+
+    def "Test that meta class cleanup doesn't break XmlSlurper - step 1"() {
+        given:"A service that uses XmlSlurper"
+            def service = new HelloService()
+        when:"A method is invoked that uses XmlSlurper"
+            def greeting = service.greet('hello')
+        then:"The correct result is returned"
+            greeting == 'hello'
+    }
+
+    def "Test that meta class cleanup doesn't break XmlSlurper - step 2"() {
+        given:"A service that uses XmlSlurper"
+        def service = new HelloService()
+        when:"A method is invoked that uses XmlSlurper"
+        def greeting = service.greet('goodbye')
+        then:"The correct result is returned"
+        greeting == 'goodbye'
+    }
 
     @AfterClass
     static void checkCleanup() {
@@ -57,3 +75,12 @@ class Author {
     String name
 }
 
+class HelloService {
+
+    def greet(message) {
+        def xml = "<greeting message='${message}'/>"
+
+        new XmlParser().parseText(xml).@message
+    }
+
+}
