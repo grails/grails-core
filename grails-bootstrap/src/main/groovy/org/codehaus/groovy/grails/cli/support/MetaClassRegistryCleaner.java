@@ -15,15 +15,13 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
+import groovy.lang.*;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import groovy.lang.MetaClassRegistry;
 import groovy.lang.MetaClassRegistryChangeEvent;
 import groovy.lang.MetaClassRegistryChangeEventListener;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -60,9 +58,9 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
             MetaClass oldMetaClass = cmcu.getOldMetaClass();
             Class classToUpdate = cmcu.getClassToUpdate();
             Object instanceToUpdate = cmcu.getInstance();
-            if (instanceToUpdate == null) {
+            if (instanceToUpdate == null && (cmcu.getNewMetaClass() instanceof ExpandoMetaClass)) {
                 updateMetaClassOfClass(oldMetaClass, classToUpdate);
-            } else {
+            } else if(instanceToUpdate != null) {
                 updateMetaClassOfInstance(oldMetaClass, instanceToUpdate);
             }
         }
