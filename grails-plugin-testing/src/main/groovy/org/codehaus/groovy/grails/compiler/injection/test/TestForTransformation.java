@@ -165,7 +165,7 @@ public class TestForTransformation extends TestMixinTransformation {
                                 }
                                 else {
                                     for (String artefactType : artefactTypeToTestMap.keySet()) {
-                                        if (classNode.getName().endsWith(artefactType)) {
+                                        if (targetClassName.endsWith(artefactType)) {
                                             testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
                                             break;
                                         }
