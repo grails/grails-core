@@ -32,7 +32,6 @@ class TestForSpec extends Specification{
 
         then:
             test != null
-            test.getClass().getDeclaredMethod("Test index", null).getAnnotation(Test.class) == null
             test.retrieveLog() instanceof Log
     }
     
