@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import groovy.lang.MissingMethodException;
@@ -31,6 +32,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -55,7 +57,11 @@ import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
+import org.codehaus.groovy.control.Janitor;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
@@ -76,6 +82,37 @@ public class GrailsASTUtils {
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
 
+    
+    public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
+        final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
+        GrailsConsole.getInstance().warning(warningMessage + "\n\n" + sample);
+    }
+    
+    /**
+     * Generates a fatal compilation error
+     * 
+     * @param sourceUnit the SourceUnit
+     * @param astNode the ASTNode which caused the error
+     * @param message The error message
+     */
+    public static void error(final SourceUnit sourceUnit, final ASTNode astNode, final String message) {
+        error(sourceUnit, astNode, message, true);
+    }
+
+    /**
+     * Generates a fatal compilation error
+     * 
+     * @param sourceUnit the SourceUnit
+     * @param astNode the ASTNode which caused the error
+     * @param message The error message
+     * @param fatal indicates if this is a fatal error
+     */
+    public static void error(final SourceUnit sourceUnit, final ASTNode astNode, final String message, final boolean fatal) {
+        final SyntaxException syntaxException = new SyntaxException(message, astNode.getLineNumber(), astNode.getColumnNumber());
+        final SyntaxErrorMessage syntaxErrorMessage = new SyntaxErrorMessage(syntaxException, sourceUnit);
+        sourceUnit.getErrorCollector().addError(syntaxErrorMessage, fatal);
+    }
+    
     /**
      * Returns whether a classNode has the specified property or not
      *
