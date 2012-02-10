@@ -522,12 +522,16 @@ public class GrailsConsole {
      * @param msg The message to log
      */
     public void log(String msg) {
+        PrintStream printStream = out;
+        if(!(System.out instanceof GrailsConsolePrintStream)) {
+            printStream = System.out;
+        }
         try {
             if (msg.endsWith(LINE_SEPARATOR)) {
-                out.print(msg);
+                printStream.print(msg);
             }
             else {
-                out.println(msg);
+                printStream.println(msg);
             }
             cursorMove = 0;
         } finally {
