@@ -110,7 +110,7 @@ createTestReports = true
 testsFailed = false
 
 target(allTests: "Runs the project's tests.") {
-    def dependencies = [compile, packagePlugins]
+    def dependencies = [compile,startLogging, packagePlugins]
     if (testOptions.clean) dependencies = [clean] + dependencies
     depends(*dependencies)
 
