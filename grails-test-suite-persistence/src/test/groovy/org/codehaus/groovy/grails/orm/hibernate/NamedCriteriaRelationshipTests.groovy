@@ -6,7 +6,10 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
         [NamedCriteriaPlantCategory,
-         NamedCriteriaPlant]
+         NamedCriteriaPlant,
+         Book,
+         OneBookAuthor,
+         OneAuthorPublisher]
     }
 
     void testFetch() {
@@ -137,5 +140,82 @@ class NamedCriteriaRelationshipTests extends AbstractGrailsHibernateTests {
         assertTrue 'grapes' in names
     }
 
+    void testNamedQueryWithAssociationClosure() {
+        def book = new Book(title: 'First Popular Book')
+        book.popularity = new Popularity(liked: 42)
+        assert book.save(flush: true)
+        
+        book = new Book(title: 'Second Popular Book')
+        book.popularity = new Popularity(liked: 2112)
+        assert book.save(flush: true)
+
+        book = new Book(title: 'First Unpopular Book')
+        book.popularity = new Popularity(liked: 0)
+        assert book.save(flush: true)
+        
+        book = new Book(title: 'Second Unpopular Book')
+        book.popularity = new Popularity(liked: 0)
+        assert book.save(flush: true)
+        
+        session.clear()
+        
+        //def result = Book.popularBooks.list()
+        
+        def result = Book.withCriteria {
+            popularity {
+                gt 'liked', 0
+            }
+        }
+        assertEquals 2, result?.size()
+        
+        def titles = result.title
+        assertTrue 'First Popular Book' in titles
+        assertTrue 'Second Popular Book' in titles
+    }
+    
+    void testNamedQueryInvolvingNestedRelationshipsSomeOfWhichAreEmbedded() {
+        def book = new Book(title: 'First Popular Book')
+        book.popularity = new Popularity(liked: 42)
+        assert book.save(flush: true)
+
+        def author = new OneBookAuthor()
+        author.book = book
+        assert author.save(flush: true)
+        
+        def publisher = new OneAuthorPublisher(name: 'First Good Publisher')
+        publisher.author = author
+        assert publisher.save(flush: true)
+        
+        book = new Book(title: 'Second Popular Book')
+        book.popularity = new Popularity(liked: 2112)
+        assert book.save(flush: true)
+
+        author = new OneBookAuthor()
+        author.book = book
+        assert author.save(flush: true)
+        
+        publisher = new OneAuthorPublisher(name: 'Second Good Publisher')
+        publisher.author = author
+        assert publisher.save(flush: true)
+        
+        book = new Book(title: 'First Unppular Book')
+        book.popularity = new Popularity(liked: 0)
+        assert book.save(flush: true)
+
+        author = new OneBookAuthor()
+        author.book = book
+        assert author.save(flush: true)
+        
+        publisher = new OneAuthorPublisher(name: 'First Bad Publisher')
+        publisher.author = author
+        assert publisher.save(flush: true)
+        
+        def result = OneAuthorPublisher.withPopularBooks.list()
+        assertEquals 2, result?.size()
+        
+        def names = result.name
+        assert 'First Good Publisher' in names
+        assert 'Second Good Publisher' in names
+    }
 
 }
