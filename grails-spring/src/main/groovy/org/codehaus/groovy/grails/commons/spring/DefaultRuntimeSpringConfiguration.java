@@ -89,7 +89,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     }
 
     public DefaultRuntimeSpringConfiguration() {
-        // default
+        super();
     }
 
     public DefaultRuntimeSpringConfiguration(ApplicationContext parent) {
@@ -147,7 +147,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     }
 
     public ApplicationContext getApplicationContext() {
-        long now = LOG.isDebugEnabled() ?  System.currentTimeMillis() : 0;
+        long now = LOG.isDebugEnabled() ? System.currentTimeMillis() : 0;
         initialiseApplicationContext();
         registerBeansWithContext(context);
         context.refresh();
@@ -250,6 +250,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         registerUnrefreshedBeansWithRegistry(registry);
         registerBeanConfigsWithRegistry(registry);
         registerBeanDefinitionsWithRegistry(registry);
+        registerBeanAliasesWithRegistry(registry);
     }
 
     private void registerUnrefreshedBeansWithRegistry(BeanDefinitionRegistry registry) {
@@ -280,7 +281,6 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
             }
 
             registry.registerBeanDefinition(beanName, bc.getBeanDefinition());
-            registerBeanAliases(registry, beanName);
         }
     }
 
@@ -302,7 +302,6 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
             }
 
             registry.registerBeanDefinition(beanName, bd);
-            registerBeanAliases(registry, beanName);
         }
     }
 
@@ -322,19 +321,22 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
         }
     }
 
-    private void registerBeanAliases(BeanDefinitionRegistry beanDefinitionRegistry, String beanName) {
-        List<String> beanAliases = aliases.get(beanName);
-        if (beanAliases != null && !beanAliases.isEmpty()) {
-            for (String alias : beanAliases) {
-                beanDefinitionRegistry.registerAlias(beanName, alias);
+    private void registerBeanAliasesWithRegistry(BeanDefinitionRegistry beanDefinitionRegistry) {
+        for (Map.Entry<String, List<String>> entry : aliases.entrySet()) {
+            String beanName = entry.getKey();
+            List<String> beanAliases = entry.getValue();
+            if (beanAliases != null && !beanAliases.isEmpty()) {
+                for (String alias : beanAliases) {
+                    beanDefinitionRegistry.registerAlias(beanName, alias);
+                }
             }
         }
     }
 
     private void removeBeanDefinition(BeanDefinitionRegistry registry, String beanName) {
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(registry.getClass());
-        if (mc.respondsTo(registry, "removeBeanDefinition").size()>0) {
-            mc.invokeMethod(registry,"removeBeanDefinition",new Object[]{beanName});
+        if (!mc.respondsTo(registry, "removeBeanDefinition").isEmpty()) {
+            mc.invokeMethod(registry, "removeBeanDefinition", new Object[] { beanName });
         }
     }
 
