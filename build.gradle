@@ -16,7 +16,7 @@ repositories {
 
 apply plugin: 'idea'
 
-grailsVersion = '2.0.1.BUILD-SNAPSHOT'
+grailsVersion = '2.0.1'
 antTraxVersion = "1.7.1"
 antVersion = "1.8.2"
 aspectjVersion = "1.6.10"
@@ -25,7 +25,7 @@ commonsCliVersion = "1.2"
 commonsCollectionsVersion = "3.2.1"
 commonsIOVersion = "2.1"
 commonsLangVersion = "2.6"
-datastoreVersion = "1.0.2.BUILD-SNAPSHOT"
+datastoreVersion = "1.0.2.RELEASE"
 gantVersion = "1.9.6"
 gdocEngineVersion = "1.0.1"
 groovyVersion = "1.8.6"
