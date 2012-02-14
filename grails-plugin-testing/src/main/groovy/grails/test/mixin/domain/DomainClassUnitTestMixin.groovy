@@ -45,6 +45,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.grails.datastore.gorm.validation.constraints.UniqueConstraint
 import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
 import org.junit.AfterClass
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 
 /**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support
@@ -80,6 +81,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     @BeforeClass
     static void initializeDatastoreImplementation() {
+        ClassPropertyFetcher.clearCache()
         if (applicationContext == null) {
             super.initGrailsApplication()
         }
@@ -99,6 +101,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     @AfterClass
     static void cleanupDatastore() {
+        ClassPropertyFetcher.clearCache()
         ConstrainedProperty.removeConstraint("unique")
     }
 
@@ -110,7 +113,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     @After
     void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
-        DatastoreUtils.unbindSession(currentSession)
+        if(currentSession != null)
+            DatastoreUtils.unbindSession(currentSession)
         simpleDatastore.clearData()
     }
 
