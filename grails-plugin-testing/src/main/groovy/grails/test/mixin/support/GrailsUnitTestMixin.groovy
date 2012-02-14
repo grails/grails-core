@@ -44,6 +44,7 @@ import org.springframework.context.support.StaticMessageSource
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.springframework.context.MessageSource
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.springframework.beans.CachedIntrospectionResults
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -75,6 +76,8 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
         registerMetaClassRegistryWatcher()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
@@ -107,7 +110,6 @@ class GrailsUnitTestMixin {
 
     @After
     void resetGrailsApplication() {
-        grailsApplication?.clear()
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         cleanupModifiedMetaClasses()

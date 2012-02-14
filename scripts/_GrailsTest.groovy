@@ -108,6 +108,7 @@ ant.taskdef (name: 'testc', classname:'org.codehaus.groovy.grails.test.compiler.
 createTestReports = true
 
 testsFailed = false
+projectWatcher = null
 
 target(allTests: "Runs the project's tests.") {
     def dependencies = [compile,startLogging, packagePlugins]
@@ -131,6 +132,10 @@ target(allTests: "Runs the project's tests.") {
 
     event("TestPhasesStart", [phasesToRun])
 
+    if (InteractiveMode.current && GrailsProjectWatcher.isReloadingAgentPresent()) {
+        startPluginScanner()
+    }
+    
     // Handle pre 1.2 style testing configuration
     def convertedPhases = [:]
     phasesToRun.each { phaseName ->
@@ -332,16 +337,14 @@ integrationTestPhasePreparation = {
     if (app.parentContext == null) {
         app.applicationContext = appCtx
     }
+    
+    if(projectWatcher) {
+        projectWatcher.pluginManager = pluginManager
+    }
 
     initPersistenceContext()
 
-    if (InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent()) {
-        // if interactive mode is running start the project change watcher
-        if (!GrailsProjectWatcher.isActive()) {
-            def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-            watcher.start()
-        }
-    }
+
     GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
 }

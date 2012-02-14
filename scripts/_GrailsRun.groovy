@@ -203,7 +203,10 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-    new GrailsProjectWatcher(projectCompiler, pluginManager).start()
+    if(GrailsProjectWatcher.isReloadingAgentPresent() && !GrailsProjectWatcher.isActive()) {
+        projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
+        projectWatcher.start()        
+    }
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
