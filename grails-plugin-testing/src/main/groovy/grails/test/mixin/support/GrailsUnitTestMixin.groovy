@@ -112,6 +112,7 @@ class GrailsUnitTestMixin {
     void resetGrailsApplication() {
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        grailsApplication.clear()
         cleanupModifiedMetaClasses()
     }
 
