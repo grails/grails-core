@@ -27,6 +27,7 @@ import org.springframework.beans.SimpleTypeConverter
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
+import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
  * Tags for working with form controls.
@@ -117,6 +118,11 @@ class FormTagLib {
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
+        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            def requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+            def newValue = requestDataValueProcessor.processFormFieldValue(request,attrs.name,attrs.value,attrs.type)
+            attrs.value= newValue
+        }
         out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs, out, true)
         out << "/>"
@@ -297,7 +303,16 @@ class FormTagLib {
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
 
         writer << "<form action=\""
-        writer << createLink(linkAttrs)
+
+        // Call RequestDataValueProcessor to modify url if necessary
+        def link = createLink(linkAttrs)
+        def requestDataValueProcessor = null;
+        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+            link= requestDataValueProcessor.processAction(request,link)
+        }
+
+        writer << link
         writer << "\" "
 
         // if URL is not nul remove attributes
@@ -346,10 +361,26 @@ class FormTagLib {
         // output the body
         writer << body()
 
+        //Write RequestDataValueProcessor hidden fields if necessary
+        if (requestDataValueProcessor != null){
+            def hiddenFields = requestDataValueProcessor.getExtraHiddenFields(request)
+            writeHiddenFields(hiddenFields) 
+        }
         // close tag
         writer << "</form>"
     }
 
+    /**
+    * Method to generate hidden inputs
+    */
+    private writeHiddenFields(hiddenFields) {
+        def writer = getOut()
+        if(hiddenFields != null) {
+            hiddenFields.each() { key, value -> writer << "<input type=\"hidden\" name=\"${key}\" value=\"${value}\" />\n"
+            }
+        }
+    }
+    
     /**
      * Creates a submit button that submits to an action in the controller specified by the form action.<br/>
      * The name of the action attribute is translated into the action name, for example "Edit" becomes

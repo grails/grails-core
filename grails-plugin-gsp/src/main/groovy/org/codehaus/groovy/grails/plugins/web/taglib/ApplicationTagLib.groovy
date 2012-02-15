@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
@@ -208,7 +209,15 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             linkAttrs = [:]
         }
         writer <<  '<a href=\"'
-        writer << createLink(attrs).encodeAsHTML()
+
+        // RequestDataValueProcessor change link if necessary
+        def currentLink = createLink(attrs).encodeAsHTML()
+        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            def requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+            currentLink = requestDataValueProcessor.processUrl(request,currentLink)
+        }
+        writer << currentLink
+
         writer << '"'
         if (elementId) {
             writer << " id=\"${elementId}\""
