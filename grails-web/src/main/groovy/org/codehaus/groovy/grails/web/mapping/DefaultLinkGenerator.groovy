@@ -97,14 +97,16 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
                 def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
 
-                controller = grailsUrlConverter.toUrlElement(controller)
+                def convertedControllerName = grailsUrlConverter.toUrlElement(controller)
+
                 boolean isDefaultAction = false
                 if (controller && !action) {
-                    action = requestStateLookupStrategy.getActionName(controller)
+                    action = requestStateLookupStrategy.getActionName(convertedControllerName)
                     isDefaultAction = true
                 }
+                def convertedActionName = action
                 if(action) {
-                    action = grailsUrlConverter.toUrlElement(action)
+                    convertedActionName = grailsUrlConverter.toUrlElement(action)
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
                 def frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
@@ -140,8 +142,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                         } catch(e){}
                     }
                 }
+                
                 if (!absolute) {
-                    url = mapping.createRelativeURL(controller, action, params, encoding, frag)
+                    url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                     final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
@@ -154,7 +157,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     writer << url
                 }
                 else {
-                    url = mapping.createRelativeURL(controller, action, params, encoding, frag)
+                    url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
                     writer << handleAbsolute(attrs)
                     writer << url
                 }

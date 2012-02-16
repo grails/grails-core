@@ -108,9 +108,10 @@ ant.taskdef (name: 'testc', classname:'org.codehaus.groovy.grails.test.compiler.
 createTestReports = true
 
 testsFailed = false
+projectWatcher = null
 
 target(allTests: "Runs the project's tests.") {
-    def dependencies = [compile, packagePlugins]
+    def dependencies = [compile,startLogging, packagePlugins]
     if (testOptions.clean) dependencies = [clean] + dependencies
     depends(*dependencies)
 
@@ -125,12 +126,16 @@ target(allTests: "Runs the project's tests.") {
     if (reRunTests) testNames = getFailedTests()
 
     // add the test classes to the classpath
-    classLoader.addURL(grailsSettings.testClassesDir.toURL())
+    classLoader.addURL(grailsSettings.testClassesDir.toURI().toURL())
 
     testTargetPatterns = testNames.collect { new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
 
     event("TestPhasesStart", [phasesToRun])
 
+    if (InteractiveMode.current && GrailsProjectWatcher.isReloadingAgentPresent()) {
+        startPluginScanner()
+    }
+    
     // Handle pre 1.2 style testing configuration
     def convertedPhases = [:]
     phasesToRun.each { phaseName ->
@@ -320,25 +325,26 @@ unitTestPhaseCleanUp = {}
 /**
  * Initialises a persistence context and bootstraps the application.
  */
+def registryCleaner = new org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner()
+
 integrationTestPhasePreparation = {
+    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
     packageTests()
-    bootstrapOnce()
+    bootstrap()
 
     // Get the Grails application instance created by the bootstrap process.
     def app = appCtx.getBean(GrailsApplication.APPLICATION_ID)
     if (app.parentContext == null) {
         app.applicationContext = appCtx
     }
+    
+    if(projectWatcher) {
+        projectWatcher.pluginManager = pluginManager
+    }
 
     initPersistenceContext()
 
-    if (InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent()) {
-        // if interactive mode is running start the project change watcher
-        if (!GrailsProjectWatcher.isActive()) {
-            def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-            watcher.start()
-        }
-    }
+
     GrailsConfigUtils.configureServletContextAttributes(appCtx.servletContext, app, pluginManager, appCtx)
     GrailsConfigUtils.executeGrailsBootstraps(app, appCtx, appCtx.servletContext)
 }
@@ -347,18 +353,23 @@ integrationTestPhasePreparation = {
  * Shuts down the bootstrapped Grails application.
  */
 integrationTestPhaseCleanUp = {
-    if (!(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())) {
-        destroyPersistenceContext()
-        if (binding.variables.containsKey("appCtx")) {
-            appCtx?.close()
-        }
+    destroyPersistenceContext()
+    if (binding.variables.containsKey("appCtx")) {
+        appCtx?.close()
     }
+    registryCleaner.clean()
+    GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+}
+
+boolean notReloadingActive() {
+    !(InteractiveMode.current || GrailsProjectWatcher.isReloadingAgentPresent())
 }
 
 /**
  * Starts up the test server.
  */
 functionalTestPhasePreparation = {
+    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)    
     runningFunctionalTestsAgainstWar = testOptions.war
     runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
@@ -405,6 +416,9 @@ functionalTestPhaseCleanUp = {
 
     functionalBaseUrl = null
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
+    registryCleaner.clean()
+    GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+    
 }
 
 otherTestPhasePreparation = {}

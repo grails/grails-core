@@ -59,6 +59,7 @@ import org.springframework.validation.Errors;
  * @author Graeme Rocher
  * @since 07-Nov-2005
  */
+@SuppressWarnings("serial")
 public class ConstrainedProperty {
 
     static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
@@ -229,7 +230,7 @@ public class ConstrainedProperty {
         bean = new BeanWrapperImpl(this);
     }
 
-    public static void removeConstraint(String name, Class constraintClass) {
+    public static void removeConstraint(String name, Class<?> constraintClass) {
         Assert.hasLength(name, "Argument [name] cannot be null");
 
         List<Object> objects = getOrInitializeConstraint(name);

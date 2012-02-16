@@ -19,7 +19,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
         def template = '<g:select id="${foo}.genre" name="${foo}.genre" value="${book?.genre}" from="${[\'non-fiction\',\'fiction\']}" noSelection="[\'\':\'-Genre-\']" />'
         def result = applyTemplate(template, [foo:'bar" /><script>alert("gotcha")</script>'])
 
-        assertTrue "should have HTML escaped attributes", result.startsWith('<select name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
+        assertTrue "should have HTML escaped attributes", result.startsWith('<select id="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" name="bar&quot; /&gt;&lt;script&gt;alert(&quot;gotcha&quot;)&lt;/script&gt;.genre" >')
     }
 
     void testSelectUsesExpressionForDisable() {
@@ -48,7 +48,7 @@ class SelectTagTests extends AbstractGrailsTagTests {
     void testMultiSelect() {
         def template = '<g:select name="foo" from="[1,2,3]" value="[2,3]" />'
 
-        assertOutputContains('<select name="foo" id="foo" multiple="multiple" >', template)
+        assertOutputContains('<select name="foo" multiple="multiple" id="foo" >', template)
         assertOutputContains('<option value="1" >1</option>', template)
         assertOutputContains('<option value="2" selected="selected" >2</option>', template)
         assertOutputContains('<option value="3" selected="selected" >3</option>', template)

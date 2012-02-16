@@ -51,7 +51,14 @@ class DataSourceGrailsPlugin {
     def doWithSpring = {
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
-        def dsConfigs = [dataSource: application.config.dataSource]
+        def dsConfigs = [:]
+        if (!application.config.dataSource && application.domainClasses.size() == 0) {
+            log.info "No default data source or domain classes found. Default datasource configuration skipped"
+        }
+        else {
+            dsConfigs.dataSource = application.config.dataSource
+        }
+
         application.config.each { name, value ->
             if (name.startsWith('dataSource_') && value instanceof ConfigObject) {
                 dsConfigs[name] = value
@@ -260,9 +267,13 @@ class DataSourceGrailsPlugin {
         Connection connection
         try {
             connection = dataSource.getConnection()
-            def dbName = connection.metaData.databaseProductName
-            if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
-                connection.createStatement().executeUpdate('SHUTDOWN')
+            try {
+                def dbName = connection.metaData.databaseProductName
+                if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
+                    connection.createStatement().executeUpdate('SHUTDOWN')
+                }
+            } catch (e) {
+                // already closed, ignore
             }
         }
         catch (e) {

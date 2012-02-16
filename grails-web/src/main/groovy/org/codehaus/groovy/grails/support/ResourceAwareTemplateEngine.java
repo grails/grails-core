@@ -42,6 +42,7 @@ import org.springframework.core.io.Resource;
  * @since 0.4
  */
 public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
+
     /**
      * Creates the specified Template using the given Spring Resource
      *
@@ -50,7 +51,6 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
      * @throws IOException Thrown when there was an error reading the Template
      * @throws ClassNotFoundException Thrown when there was a problem loading the Template into a class
      */
-    @SuppressWarnings("unused")
     public Template createTemplate(Resource resource) throws IOException, ClassNotFoundException {
         return createTemplateAndCloseInput(resource.getInputStream());
     }

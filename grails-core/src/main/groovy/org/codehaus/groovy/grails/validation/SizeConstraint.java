@@ -73,48 +73,31 @@ public class SizeConstraint extends AbstractConstraint {
     @SuppressWarnings("unchecked")
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, range.getFrom(), range.getTo() };
+        Object[] args = { constraintPropertyName, constraintOwningClass, propertyValue,
+                          range.getFrom(), range.getTo() };
 
-        // size of the property (e.g. String length(), Collection size(), etc.)
-        Integer size = null;
-
-        // determine the value of size based on the property's type
+        int size;
         if (propertyValue.getClass().isArray()) {
-            size = Integer.valueOf(Array.getLength(propertyValue));
+            size = Array.getLength(propertyValue);
         }
         else if (propertyValue instanceof Collection<?>) {
-            size = Integer.valueOf(((Collection<?>)propertyValue).size());
+            size = ((Collection<?>)propertyValue).size();
         }
-        else if (propertyValue instanceof String) {
-            size = Integer.valueOf(((String)propertyValue).length());
+        else { // String
+            size = ((String)propertyValue).length();
         }
 
         if (!range.contains(size)) {
             if (range.getFrom().compareTo(size) == 1) {
-                rejectValueTooSmall(args, errors, target);
+                rejectValue(args, errors, target, ConstrainedProperty.TOOSMALL_SUFFIX);
             }
             else if (range.getTo().compareTo(size) == -1) {
-                rejectValueTooBig(args, errors, target);
+                rejectValue(args, errors, target, ConstrainedProperty.TOOBIG_SUFFIX);
             }
         }
     }
 
-    private void rejectValueTooSmall(Object[] args, Errors errors, Object target) {
-        rejectValue(args, errors, target, false);
-    }
-
-    private void rejectValueTooBig(Object[] args, Errors errors, Object target) {
-        rejectValue(args, errors, target, true);
-    }
-
-    private void rejectValue(Object[] args, Errors errors, Object target, boolean tooBig) {
-        String suffix;
-        if (tooBig) {
-            suffix = ConstrainedProperty.TOOBIG_SUFFIX;
-        }
-        else {
-            suffix = ConstrainedProperty.TOOSMALL_SUFFIX;
-        }
+    private void rejectValue(Object[] args, Errors errors, Object target, String suffix) {
         rejectValue(target,errors, ConstrainedProperty.DEFAULT_INVALID_SIZE_MESSAGE_CODE,
                 ConstrainedProperty.SIZE_CONSTRAINT + suffix, args);
     }

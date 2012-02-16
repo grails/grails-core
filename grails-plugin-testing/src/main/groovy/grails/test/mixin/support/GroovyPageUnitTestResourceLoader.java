@@ -39,7 +39,7 @@ public class GroovyPageUnitTestResourceLoader extends DefaultResourceLoader{
         }
         if (groovyPages.containsKey(location)) {
             try {
-                return new ByteArrayResource(groovyPages.get(location).getBytes("UTF-8"));
+                return new ByteArrayResource(groovyPages.get(location).getBytes("UTF-8"), location);
             } catch (UnsupportedEncodingException e) {
                 // continue
             }

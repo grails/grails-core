@@ -40,7 +40,7 @@ class SimpleController {
     }
 
     def simpleService
-    def hello = {
+    def hello() {
         render simpleService.sayHello()
     }
 }

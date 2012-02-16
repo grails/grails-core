@@ -90,10 +90,13 @@ class RenderTagLib implements RequestConstants {
      * &lt;g:applyLayout name="myLayout"&gt;some text&lt;/g:applyLayout&gt;<br/>
      * &lt;g:applyLayout name="myLayout" template="mytemplate" /&gt;<br/>
      * &lt;g:applyLayout name="myLayout" url="http://www.google.com" /&gt;<br/>
+     * &lt;g:applyLayout name="myLayout" action="myAction" controller="myController"&gt;<br/>
      *
      * @attr name The name of the layout
      * @attr template Optional. The template to apply the layout to
      * @attr url Optional. The URL to retrieve the content from and apply a layout to
+     * @attr action Optional. The action to be called to generate the content to apply the layout to
+     * @attr controller Optional. The controller that contains the action that will generate the content to apply the layout to
      * @attr contentType Optional. The content type to use, default is "text/html"
      * @attr encoding Optional. The encoding to use
      * @attr params Optional. The params to pass onto the page object
@@ -109,6 +112,9 @@ class RenderTagLib implements RequestConstants {
         if (attrs.url) {
             content = new URL(attrs.url).text
         }
+        else if (attrs.action && attrs.controller) {
+            content = g.include(action:attrs.action,controller:attrs.controller,params:attrs.params)
+        }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
             try {
@@ -118,7 +124,7 @@ class RenderTagLib implements RequestConstants {
                     content = render(attrs)
                 }
                 else {
-                    def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest, true)
+                    def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest)
                     content = bodyClosure()
                 }
                 if (content instanceof StreamCharBuffer) {
@@ -310,6 +316,10 @@ class RenderTagLib implements RequestConstants {
      * @attr params A map containing request parameters
      * @attr prev The text to display for the previous link (defaults to "Previous" as defined by default.paginate.prev property in I18n messages.properties)
      * @attr next The text to display for the next link (defaults to "Next" as defined by default.paginate.next property in I18n messages.properties)
+     * @attr omitPrev Whether to not show the previous link (if set to true, the previous link will not be shown)
+     * @attr omitNext Whether to not show the next link (if set to true, the next link will not be shown)
+     * @attr omitFirst Whether to not show the first link (if set to true, the first link will not be shown)
+     * @attr omitLast Whether to not show the last link (if set to true, the last link will not be shown)
      * @attr max The number of records displayed per page (defaults to 10). Used ONLY if params.max is empty
      * @attr maxsteps The number of steps displayed for pagination (defaults to 10). Used ONLY if params.maxsteps is empty
      * @attr offset Used only if params.offset is empty
@@ -358,8 +368,8 @@ class RenderTagLib implements RequestConstants {
         int firststep = 1
         int laststep = Math.round(Math.ceil(total / max))
 
-        // display previous link when not on firststep
-        if (currentstep > firststep) {
+        // display previous link when not on firststep unless omitPrev is true
+        if (currentstep > firststep && !attrs.boolean('omitPrev')) {
             linkTagAttrs.class = 'prevLink'
             linkParams.offset = offset - max
             writer << link(linkTagAttrs.clone()) {
@@ -388,10 +398,13 @@ class RenderTagLib implements RequestConstants {
             }
 
             // display firststep link when beginstep is not firststep
-            if (beginstep > firststep) {
+            if (beginstep > firststep && !attrs.boolean('omitFirst')) {
                 linkParams.offset = 0
-                writer << link(linkTagAttrs.clone()) {firststep.toString()}
-                writer << '<span class="step">..</span>'
+                writer << link(linkTagAttrs.clone()) {firststep.toString()}	
+            }
+            //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev 
+            if (beginstep > firststep+1 && (!attrs.boolean('omitFirst') || !attrs.boolean('omitPrev')) ) {
+                writer << '<span class="step gap">..</span>'
             }
 
             // display paginate steps
@@ -405,16 +418,19 @@ class RenderTagLib implements RequestConstants {
                 }
             }
 
+            //show a gap if beginstep isn't immediately before firststep, and if were not omitting first or rev 
+            if (endstep+1 < laststep && (!attrs.boolean('omitLast') || !attrs.boolean('omitNext'))) {
+                writer << '<span class="step gap">..</span>'
+            }
             // display laststep link when endstep is not laststep
-            if (endstep < laststep) {
-                writer << '<span class="step">..</span>'
+            if (endstep < laststep && !attrs.boolean('omitLast')) {
                 linkParams.offset = (laststep - 1) * max
                 writer << link(linkTagAttrs.clone()) { laststep.toString() }
             }
         }
 
-        // display next link when not on laststep
-        if (currentstep < laststep) {
+        // display next link when not on laststep unless omitNext is true
+        if (currentstep < laststep && !attrs.boolean('omitNext')) {
             linkTagAttrs.class = 'nextLink'
             linkParams.offset = offset + max
             writer << link(linkTagAttrs.clone()) {

@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import groovy.lang.GroovyObjectSupport;
 
@@ -31,5 +32,9 @@ abstract class AbstractDependencyManagementConfigurer extends GroovyObjectSuppor
 
     public DependencyConfigurationContext getContext() {
         return context;
+    }
+
+    public GrailsCoreDependencies getGrailsCoreDependencies() {
+        return context.getGrailsCoreDependencies();
     }
 }

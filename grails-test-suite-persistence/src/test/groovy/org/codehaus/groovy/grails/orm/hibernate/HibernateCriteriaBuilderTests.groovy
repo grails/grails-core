@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [CriteriaBuilderTestClass, CriteriaBuilderTestClass2]
+        [CriteriaBuilderTestClass, CriteriaBuilderTestClass2, OneAuthorPublisher, OneBookAuthor, Book]
     }
 
     List retrieveListOfNames() { ['bart'] }
@@ -77,18 +77,17 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         results = domainClass.withCriteria {
             sqlRestriction "char_length(first_name) > 2"
         }
-        
+
         // should retrieve homer, not bart, lisa and maggie
         results = domainClass.withCriteria {
             sqlRestriction 'char_length(first_name) > ? AND char_length(first_name) < ?', [4, 6]
         }
 
-        
         // should retrieve homer, bart and lisa, not maggie
         results = domainClass.withCriteria {
             sqlRestriction 'char_length(first_name) > ? AND char_length(first_name) < ?', [2, 6]
         }
-        
+
         assertEquals 3, results?.size()
     }
 
@@ -1628,6 +1627,61 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         assertEquals 1 , results.size()
         assertTrue 'Result list should contain Strings', results[0] instanceof String
+    }
+    
+    
+    void testCriteriaInvolvingNestedRelationshipsSomeOfWhichAreEmbedded() {
+        def newBook = new Book(title: 'First Popular Book')
+        newBook.popularity = new Popularity(liked: 42)
+        assert newBook.save(flush: true)
+
+        def newAuthor = new OneBookAuthor()
+        newAuthor.book = newBook
+        assert newAuthor.save(flush: true)
+        
+        def newPublisher = new OneAuthorPublisher(name: 'First Good Publisher')
+        newPublisher.author = newAuthor
+        assert newPublisher.save(flush: true)
+        
+        newBook = new Book(title: 'Second Popular Book')
+        newBook.popularity = new Popularity(liked: 2112)
+        assert newBook.save(flush: true)
+
+        newAuthor = new OneBookAuthor()
+        newAuthor.book = newBook
+        assert newAuthor.save(flush: true)
+        
+        newPublisher = new OneAuthorPublisher(name: 'Second Good Publisher')
+        newPublisher.author = newAuthor
+        assert newPublisher.save(flush: true)
+        
+        newBook = new Book(title: 'First Unppular Book')
+        newBook.popularity = new Popularity(liked: 0)
+        assert newBook.save(flush: true)
+
+        newAuthor = new OneBookAuthor()
+        newAuthor.book = newBook
+        assert newAuthor.save(flush: true)
+        
+        newPublisher = new OneAuthorPublisher(name: 'First Bad Publisher')
+        newPublisher.author = newAuthor
+        assert newPublisher.save(flush: true)
+
+        def result = OneAuthorPublisher.withCriteria {
+            author {
+                book {
+                    popularity {
+                        gt 'liked', 0
+                    }
+                }
+            }
+        }
+        
+        assertEquals 2, result?.size()
+        
+        def names = result.name
+        assert 'First Good Publisher' in names
+        assert 'Second Good Publisher' in names
     }
 
     private Object parse(String groovy,String testClassName, String criteriaClassName, boolean uniqueResult) {

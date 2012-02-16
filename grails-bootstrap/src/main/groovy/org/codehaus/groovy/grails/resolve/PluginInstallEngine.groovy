@@ -196,7 +196,7 @@ class PluginInstallEngine {
      */
     boolean installResolvedPlugin(File zipFile) {
         if (!zipFile.exists()) {
-            errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
+            errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}. Potential corrupt cache. Try running: grails --refresh-dependencies compile"
         }
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
@@ -213,7 +213,7 @@ class PluginInstallEngine {
     boolean installPlugin(File zipFile, boolean globalInstall = false, boolean overwrite = false) {
 
         if (!zipFile.exists()) {
-            errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}"
+            errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}. Potential corrupt cache. Try running: grails --refresh-dependencies compile"
         }
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
@@ -286,7 +286,7 @@ class PluginInstallEngine {
 
         assertNoExistingInlinePlugin(name)
 
-        def abort = checkExistingPluginInstall(name, version, isResolve)
+        def abort = checkExistingPluginInstall(name, version, pluginZip,isResolve)
 
         if (abort && !overwrite) {
 
@@ -380,7 +380,7 @@ class PluginInstallEngine {
      * @param version The plugin version
      * @return true if the installation should be aborted
      */
-    protected boolean checkExistingPluginInstall(String name, version, boolean isResolve = true) {
+    protected boolean checkExistingPluginInstall(String name, version, File pluginZip, boolean isResolve = true) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
 
         if (!currentInstall?.exists()) {
@@ -391,7 +391,8 @@ class PluginInstallEngine {
         def pluginDir = currentInstall.file.canonicalFile
         def pluginInfo = pluginSettings.getPluginInfo(pluginDir.absolutePath)
         // if the versions are the same no need to continue
-        if (version == pluginInfo?.version) {
+        boolean isSnapshotUpdate = pluginDir.lastModified() < pluginZip.lastModified() && version.toString().endsWith("-SNAPSHOT")
+        if (version == pluginInfo?.version && !isSnapshotUpdate) {
             if(!isResolve)
                 GrailsConsole.instance.addStatus("Plugin '$name' with version '${pluginInfo?.version}' is already installed")
             return true
@@ -402,7 +403,10 @@ class PluginInstallEngine {
             return true
         }
 
-            if (!isInteractive || confirmInput("You currently already have a version of the plugin installed [${pluginDir.name}]. Do you want to update to [$name-$version]? ")) {
+        if (!isInteractive || isSnapshotUpdate || confirmInput("You currently already have a version of the plugin installed [${pluginDir.name}]. Do you want to update to [$name-$version]? ")) {
+            if(isSnapshotUpdate) {
+                GrailsConsole.instance.addStatus("Updating snapshot plugin '$name' with version '${pluginInfo?.version}'")
+            }
             ant.delete(dir: currentInstall.file)
             return false
         }
@@ -484,16 +488,16 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         switch(dependencyConfiguration) {
             case IvyDependencyManager.RUNTIME_CONFIGURATION:
                 settings.runtimeDependencies.addAll(pluginJars)
-            break
+                break
             case IvyDependencyManager.BUILD_CONFIGURATION:
                 settings.buildDependencies.addAll(pluginJars)
-            break
+                break
             case IvyDependencyManager.PROVIDED_CONFIGURATION:
                 settings.providedDependencies.addAll(pluginJars)
-            break
+                break
             case IvyDependencyManager.TEST_CONFIGURATION:
                 settings.testDependencies.addAll(pluginJars)
-            break
+                break
         }
     }
 
@@ -629,7 +633,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
                 if (type in ['build', 'test']) {
                     toAdd.each {
                         if (it) {
-                            settings.rootLoader.addURL(it.toURL())
+                            settings.rootLoader.addURL(it.toURI().toURL())
                         }
                     }
                 }

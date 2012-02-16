@@ -127,14 +127,16 @@ public abstract class GroovyPage extends Script {
             super(null);
             this.retval = retval;
         }
-        
+
+        @Override
         public int getMaximumNumberOfParameters() {
             return 0;
         }
-        
+
+        @Override
         public Class[] getParameterTypes() {
             return EMPTY_CLASS_ARR;
-        }        
+        }
 
         public Object doCall(@SuppressWarnings("unused") Object obj) {
             return retval;
@@ -371,12 +373,6 @@ public abstract class GroovyPage extends Script {
                         Closure tag = (Closure) ((Closure) tagLibProp).clone();
                         Object tagresult = null;
 
-                        // GSP<->Sitemesh integration requires that the body or head subchunk isn't written to output
-                        boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(tagNamespace, tagName);
-                        if (body instanceof GroovyPageTagBody && preferSubChunkWhenWritingToOtherBuffer) {
-                            ((GroovyPageTagBody) body).setPreferSubChunkWhenWritingToOtherBuffer(true);
-                        }
-
                         if (!(attrs instanceof GroovyPageAttributes)) {
                             attrs = new GroovyPageAttributes(attrs);
                         }
@@ -463,14 +459,6 @@ public abstract class GroovyPage extends Script {
                 ">: " + e.getMessage(), e, getGroovyPageFileName(), lineNumber);
     }
 
-    private static boolean resolvePreferSubChunk(String tagNamespace, String tagName) {
-        boolean preferSubChunkWhenWritingToOtherBuffer = false;
-        if ("sitemesh".equals(tagNamespace) && tagName.startsWith("capture")) {
-            preferSubChunkWhenWritingToOtherBuffer = true;
-        }
-        return preferSubChunkWhenWritingToOtherBuffer;
-    }
-
     private GroovyObject getTagLib(String namespace, String tagName) {
         return lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
     }
@@ -488,10 +476,9 @@ public abstract class GroovyPage extends Script {
             throw new GrailsTagException("Tag [" + tagName + "] does not exist. No corresponding tag library found.");
         }
 
-        boolean preferSubChunkWhenWritingToOtherBuffer = resolvePreferSubChunk(namespace, tagName);
-        Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest, preferSubChunkWhenWritingToOtherBuffer);
+        Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest);
 
-        final GroovyPageTagWriter out = new GroovyPageTagWriter(preferSubChunkWhenWritingToOtherBuffer);
+        final GroovyPageTagWriter out = new GroovyPageTagWriter();
         try {
             GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(webRequest, false);
             if (outputStack == null) {
@@ -548,14 +535,13 @@ public abstract class GroovyPage extends Script {
     }
 
     public final static Closure<?> createOutputCapturingClosure(Object wrappedInstance, final Object body1,
-                                                                final GrailsWebRequest webRequest, boolean preferSubChunkWhenWritingToOtherBuffer) {
+                                                                final GrailsWebRequest webRequest) {
         if (body1 == null) {
             return EMPTY_BODY_CLOSURE;
         }
 
         if (body1 instanceof GroovyPageTagBody) {
             GroovyPageTagBody gptb = (GroovyPageTagBody) body1;
-            gptb.setPreferSubChunkWhenWritingToOtherBuffer(preferSubChunkWhenWritingToOtherBuffer);
             return gptb;
         }
 
@@ -564,7 +550,7 @@ public abstract class GroovyPage extends Script {
         }
 
         if (body1 instanceof Closure) {
-            return new GroovyPageTagBody(wrappedInstance, webRequest, (Closure<?>) body1, preferSubChunkWhenWritingToOtherBuffer);
+            return new GroovyPageTagBody(wrappedInstance, webRequest, (Closure<?>) body1);
         }
 
         return new ConstantClosure(body1);

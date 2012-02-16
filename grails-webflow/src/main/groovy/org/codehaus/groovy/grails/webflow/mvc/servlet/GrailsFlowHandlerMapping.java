@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsControllerHandlerMapping;
-import org.springframework.core.Ordered;
 import org.springframework.webflow.mvc.servlet.AbstractFlowHandler;
 
 /**
@@ -28,7 +27,7 @@ import org.springframework.webflow.mvc.servlet.AbstractFlowHandler;
  * @author Graeme Rocher
  * @since 1.2
  */
-public class GrailsFlowHandlerMapping extends GrailsControllerHandlerMapping implements Ordered {
+public class GrailsFlowHandlerMapping extends GrailsControllerHandlerMapping {
 
     @Override
     protected Object getHandlerForControllerClass(GrailsControllerClass controllerClass, HttpServletRequest request) {

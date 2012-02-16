@@ -30,14 +30,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.LinkedList;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -54,6 +47,7 @@ public class GrailsDomainConfigurationUtil {
     public static final String PROPERTY_NAME = "constraints";
 
     private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
+    public static final String PROPERTIES_PROPERTY = "properties";
 
     public static Serializable getAssociationIdentifier(Object target, String propertyName,
             GrailsDomainClass referencedDomainClass) {
@@ -308,8 +302,16 @@ public class GrailsDomainConfigurationUtil {
             return false;
         }
 
-        return !Errors.class.isAssignableFrom(descriptor.getPropertyType()) &&
-                !name.equals(GrailsDomainClassProperty.META_CLASS) &&
+        return !Errors.class.isAssignableFrom(descriptor.getPropertyType())
+                && isNotConfigurational(name);
+    }
+
+    public static boolean isConfigurational(String name) {
+        return !isNotConfigurational(name);
+    }
+
+    public static boolean isNotConfigurational(String name) {
+        return !name.equals(GrailsDomainClassProperty.META_CLASS) &&
                 !name.equals(GrailsDomainClassProperty.CLASS) &&
                 !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
                 !name.equals(GrailsDomainClassProperty.ATTACHED) &&
@@ -319,8 +321,12 @@ public class GrailsDomainConfigurationUtil {
                 !name.equals(GrailsDomainClassProperty.CONSTRAINTS) &&
                 !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
                 !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
-                !name.equals(GrailsDomainClassProperty.BELONGS_TO);
+                !name.equals(GrailsDomainClassProperty.BELONGS_TO) &&
+                !name.equals(PROPERTIES_PROPERTY);
+
+
     }
+
 
     /**
      * Evaluates the constraints closure to build the list of constraints
@@ -425,4 +431,5 @@ public class GrailsDomainConfigurationUtil {
         }
         return classChain;
     }
+
 }

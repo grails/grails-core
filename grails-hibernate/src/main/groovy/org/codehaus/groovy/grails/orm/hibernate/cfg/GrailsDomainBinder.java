@@ -280,23 +280,33 @@ public final class GrailsDomainBinder {
     }
 
     /**
-     * Override the default naming strategy given a Class or a full class name.
+     * Override the default naming strategy given a Class or a full class name,
+     * or an instance of a NamingStrategy.
+     *
      * @param datasourceName the datasource name
-     * @param strategy  the class or name
+     * @param strategy  the class, name, or instance
      * @throws ClassNotFoundException
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
    public static void configureNamingStrategy(final String datasourceName, final Object strategy) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        Class<?> namingStrategyClass;
+        Class<?> namingStrategyClass = null;
+        NamingStrategy namingStrategy;
         if (strategy instanceof Class<?>) {
             namingStrategyClass = (Class<?>)strategy;
         }
-        else {
+        else if (strategy instanceof CharSequence) {
             namingStrategyClass = Thread.currentThread().getContextClassLoader().loadClass(strategy.toString());
         }
 
-        NAMING_STRATEGIES.put(datasourceName, (NamingStrategy)namingStrategyClass.newInstance());
+        if (namingStrategyClass == null) {
+            namingStrategy = (NamingStrategy)strategy;
+        }
+        else {
+            namingStrategy = (NamingStrategy)namingStrategyClass.newInstance();
+        }
+
+        NAMING_STRATEGIES.put(datasourceName, namingStrategy);
     }
 
     private static void bindMapSecondPass(GrailsDomainClassProperty property, Mappings mappings,

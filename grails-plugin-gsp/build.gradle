@@ -36,7 +36,7 @@ eclipse {
        file {        
            whenMerged { classpath ->       
                 // remove invalid build/resources/ast entry
-                classpath.entries.removeAll { entry -> entry?.kind == 'lib' && entry?.path?.endsWith('build/resources/ast') }
+                classpath.entries.removeAll { entry -> entry?.kind == 'lib' && entry?.path ==~ ".+/build/\\w+/ast\$" }
            }
        }
     }

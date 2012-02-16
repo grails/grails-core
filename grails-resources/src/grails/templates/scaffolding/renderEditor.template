@@ -22,8 +22,12 @@
         out << renderByteArrayEditor(domainClass, property)
     else if (property.manyToOne || property.oneToOne)
         out << renderManyToOne(domainClass, property)
-    else if ((property.oneToMany && !property.bidirectional) || (property.manyToMany && property.isOwningSide()))
-        out << renderManyToMany(domainClass, property)
+    else if ((property.oneToMany && !property.bidirectional) || (property.manyToMany && property.isOwningSide())) {
+        def str = renderManyToMany(domainClass, property)
+        if(str != null) {
+            out << str
+        }
+    }
     else if (property.oneToMany)
         out << renderOneToMany(domainClass, property)
 
@@ -104,17 +108,28 @@
     }
 
     private renderManyToMany(domainClass, property) {
-		def sb = new StringBuilder()
-        sb << '<g:select name="' << property.name << '"'
- 		sb << ' from="${' << property.referencedDomainClass.fullName << '.list()}"'
- 		sb << ' multiple="multiple"'
- 		sb << ' optionKey="id"'
- 		sb << ' size="5"'
-		if (isRequired()) sb << ' required=""'
- 		sb << ' value="${' << "${domainInstance}?.${property.name}" << '*.id}"'
- 		sb << ' class="many-to-many"'
- 		sb << '/>'
-		sb as String
+        def cls = property.referencedDomainClass?.clazz
+        if(cls == null) {
+            if(property.type instanceof Collection) {
+                cls = org.springframework.core.GenericCollectionTypeResolver.getCollectionType(property.type)
+            }
+        }
+
+        if(cls != null) {
+            def sb = new StringBuilder()
+            sb << '<g:select name="' << property.name << '"'
+            sb << ' from="${' << cls.name << '.list()}"'
+            sb << ' multiple="multiple"'
+            sb << ' optionKey="id"'
+            sb << ' size="5"'
+            if (isRequired()) sb << ' required=""'
+            sb << ' value="${' << "${domainInstance}?.${property.name}" << '*.id}"'
+            sb << ' class="many-to-many"'
+            sb << '/>'
+            sb as String
+
+        }
+
     }
 
     private renderOneToMany(domainClass, property) {
@@ -159,6 +174,7 @@
 				sb << '/>'
             } else {
 				sb << '<g:field type="number" name="' << property.name << '"'
+				if (cp.scale != null) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'                
 				if (cp.min != null) sb << ' min="' << cp.min << '"'
 				if (cp.max != null) sb << ' max="' << cp.max << '"'
 				if (isRequired()) sb << ' required=""'

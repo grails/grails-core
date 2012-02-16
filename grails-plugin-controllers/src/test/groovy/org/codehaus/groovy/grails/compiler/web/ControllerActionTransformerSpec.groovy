@@ -56,6 +56,67 @@ class ControllerActionTransformerSpec extends Specification {
           controller
           controller.getClass().getMethod("action", [] as Class[]) != null
     }
+    
+    void 'Test action overiding'() {
+        given:
+            def superControllerClass = gcl.parseClass('''
+            class SuperController {
+                def methodAction() {
+                    [ actionInvoked: 'SuperController.methodAction' ]
+                }
+                def methodActionWithParam(String s) {
+                    [ paramValue: s ]
+                }
+            }
+''')
+            def superController = superControllerClass.newInstance()
+            def subControllerClass = gcl.parseClass('''
+            class SubController extends SuperController {
+                def methodAction() {
+                    [ actionInvoked: 'SubController.methodAction' ]
+                }
+                def methodActionWithParam(Integer i) {
+                    [ paramValue: i ]
+                }
+            }
+''')
+            def subController = subControllerClass.newInstance()
+            
+
+        when:
+            def model = superController.methodAction()
+            
+        then:
+            'SuperController.methodAction' == model.actionInvoked
+            
+        when:
+            superController.params.s = 'Super Controller Param'
+            model = superController.methodActionWithParam()
+            
+        then:
+            'Super Controller Param' == model.paramValue
+            
+        when:
+            model = subController.methodAction()
+            
+        then:
+            'SubController.methodAction' == model.actionInvoked
+            
+        when:
+            subController.params.s = 'Super Controller Param'
+            model = subController.methodActionWithParam()
+            
+        then:
+            null == model.paramValue
+            
+        when:
+            subController.params.i = 42
+            model = subController.methodActionWithParam()
+            
+        then:
+            42 == model.paramValue
+            
+    }
 
    /* void "Test annotated controllers"() {
         when:

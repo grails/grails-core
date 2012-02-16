@@ -28,7 +28,6 @@ import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.PropertyMapping;
-import org.grails.datastore.mapping.model.lifecycle.Initializable;
 import org.grails.datastore.mapping.model.types.Association;
 import org.grails.datastore.mapping.model.types.Embedded;
 import org.grails.datastore.mapping.model.types.ManyToMany;
@@ -43,7 +42,7 @@ import org.grails.datastore.mapping.model.types.OneToOne;
  * @since 1.0
  */
 @SuppressWarnings("rawtypes")
-public class GrailsDomainClassPersistentEntity implements PersistentEntity, Initializable {
+public class GrailsDomainClassPersistentEntity implements PersistentEntity {
 
     private GrailsDomainClass domainClass;
     private GrailsDomainClassMappingContext mappingContext;

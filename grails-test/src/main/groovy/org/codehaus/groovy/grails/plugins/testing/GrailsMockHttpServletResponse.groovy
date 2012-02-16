@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import javax.servlet.http.HttpServletResponse
+import org.springframework.util.ReflectionUtils
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
@@ -82,6 +83,10 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
         final webRequest = GrailsWebRequest.lookup()
         webRequest?.currentRequest?.removeAttribute("org.codehaus.groovy.grails.REDIRECT_ISSUED")
         setCommitted(false)
+        def field = ReflectionUtils.findField(MockHttpServletResponse, "writer")
+        ReflectionUtils.makeAccessible(field)
+        field.set(this, null)
+        webRequest.setOut(getWriter())
         super.reset()
     }
 

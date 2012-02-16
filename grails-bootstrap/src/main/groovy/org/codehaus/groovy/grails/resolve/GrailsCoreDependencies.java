@@ -25,9 +25,6 @@ import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer;
 
 /**
  * Encapsulates information about the core dependencies of Grails.
- *
- * This may eventually expand to expose information such as Spring version etc.
- * and be made available in the binding for user dependency declarations.
  */
 public class GrailsCoreDependencies {
 
@@ -35,10 +32,13 @@ public class GrailsCoreDependencies {
     public final String servletVersion;
     public boolean java5compatible;
 
+    private final String springVersion = "3.1.0.RELEASE";
+
     public GrailsCoreDependencies(String grailsVersion) {
         this.grailsVersion = grailsVersion;
         this.servletVersion = "2.5";
     }
+
     public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
         this.grailsVersion = grailsVersion;
         this.servletVersion = servletVersion != null ? servletVersion : "2.5";
@@ -76,6 +76,8 @@ public class GrailsCoreDependencies {
     /**
      * Returns a closure suitable for passing to a DependencyDefinitionParser that will configure
      * the necessary core dependencies for Grails.
+     * 
+     * This method is used internally and should not be called in user code.
      */
     @SuppressWarnings({ "serial", "rawtypes" })
     public Closure createDeclaration() {
@@ -112,7 +114,6 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed by the Grails build system
 
-                        String springVersion = "3.1.0.RELEASE";
                         String antVersion = "1.8.2";
                         String slf4jVersion = "1.6.2";
                         String junitVersion = "4.10";
@@ -158,7 +159,7 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, "docs", docDependencies);
 
                         // dependencies needed during development, but not for deployment
-                        String tomcatVersion = "7.0.16";
+                        String tomcatVersion = "7.0.25";
                         ModuleRevisionId[] providedDependencies = {
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-core", tomcatVersion),
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-jasper",tomcatVersion),
@@ -168,7 +169,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed at compile time
                         ModuleRevisionId[] groovyDependencies = {
-                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.4")
+                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.6")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
 
@@ -179,7 +180,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
 
-                        String datastoreMappingVersion = "1.0.0.BUILD-SNAPSHOT";
+                        String datastoreMappingVersion = "1.0.2.BUILD-SNAPSHOT";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
@@ -328,5 +329,12 @@ public class GrailsCoreDependencies {
                 return null;
             }
         }; // end root closure
+    }
+
+    /**
+     * The version of core spring dependencies such as {@code spring-core}, {@code spring-beans} etc.
+     */
+    public String getSpringVersion() {
+        return this.springVersion;
     }
 }

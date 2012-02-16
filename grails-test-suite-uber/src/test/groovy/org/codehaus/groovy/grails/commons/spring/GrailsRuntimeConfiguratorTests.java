@@ -164,6 +164,34 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         }
     }
 
+    // test for GRAILS-8764
+    public void testAliasRegistrationInResources() throws Exception {
+
+        GroovyClassLoader gcl = new GroovyClassLoader();
+        gcl.parseClass(
+                "beans = {\n" +
+                "   foo(HashMap)\n" +
+                "   springConfig.addAlias 'bar', 'foo'\n" +
+                "   springConfig.addAlias 'grapp', 'grailsApplication'\n" +
+                "}",
+                "resources.groovy");
+
+        GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
+
+        MockApplicationContext parent = new MockApplicationContext();
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+        GrailsRuntimeConfigurator conf = new GrailsRuntimeConfigurator(app, parent);
+        GrailsApplicationContext ctx = (GrailsApplicationContext)conf.configure(new MockServletContext());
+
+        WebRuntimeSpringConfiguration springConfig = conf.getWebRuntimeSpringConfiguration();
+        GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, app);
+
+        springConfig.registerBeansWithContext(ctx);
+        assertTrue(ctx.containsBean("foo"));
+        assertTrue(ctx.containsBean("bar"));
+        assertTrue(ctx.containsBean("grapp"));
+    }
+
     @SuppressWarnings("unchecked")
     private <T> T getBean(ApplicationContext ctx, String name) {
         return (T)ctx.getBean(name);

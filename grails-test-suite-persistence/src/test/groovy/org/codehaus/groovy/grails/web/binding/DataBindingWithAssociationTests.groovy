@@ -16,7 +16,7 @@ class DataBindingWithAssociationTests extends AbstractGrailsHibernateTests {
 import grails.persistence.*
 
 @Entity
-class Book {
+class Book3 {
     static belongsTo = [author: Author]
     String isbn
     String title
@@ -28,7 +28,7 @@ class Book {
 
 @Entity
 class Author {
-    static hasMany = [books: Book]
+    static hasMany = [books: Book3]
     String name
     static constraints = {
         name(size: 1..40)
@@ -54,11 +54,9 @@ class Captain {
         RequestContextHolder.setRequestAttributes(null)
     }
 
-
-
     void testDataBindingWithAssociation() {
         def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
+        def Book = ga.getDomainClass("Book3").clazz
 
         def a = Author.newInstance(name:"Stephen").save(flush:true)
 
@@ -90,13 +88,12 @@ class Captain {
 
     void testBindToSetCollection() {
         def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
+        def Book = ga.getDomainClass("Book3").clazz
 
         def a = Author.newInstance(name:"Stephen King")
                     .addToBooks(title:"The Stand", isbn:"983479")
                     .addToBooks(title:"The Shining", isbn:"232309")
                     .save(flush:true)
-
 
         assert a != null : "should have saved the Author"
 
@@ -118,11 +115,9 @@ class Captain {
     void testBindToNewInstance() {
         super.buildMockRequest()
         def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book").clazz
+        def Book = ga.getDomainClass("Book3").clazz
 
         def a = Author.newInstance(name:"Stephen King")
-
-
 
         def request = new MockHttpServletRequest()
         request.addParameter("books[0].isbn","12345")

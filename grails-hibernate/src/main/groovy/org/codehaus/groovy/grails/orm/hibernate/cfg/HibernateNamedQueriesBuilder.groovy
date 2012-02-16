@@ -87,6 +87,7 @@ class NamedCriteriaProxy<T> {
     private namedCriteriaParams
     private previousInChain
     private queryBuilder
+    private inCountMethod = false
 
     private invokeCriteriaClosure(additionalCriteriaClosure = null) {
         def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
@@ -156,7 +157,7 @@ class NamedCriteriaProxy<T> {
         }
         domainClass.clazz.withCriteria(getClosure)
     }
-    
+
     T get(id) {
         id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
@@ -170,18 +171,32 @@ class NamedCriteriaProxy<T> {
 
     int count(Closure additionalCriteriaClosure = null) {
         def countClosure = {
+            inCountMethod = true
             queryBuilder = delegate
             invokeCriteriaClosure(additionalCriteriaClosure)
             uniqueResult = true
             projections {
                 rowCount()
             }
+            inCountMethod = false
         }
         domainClass.clazz.withCriteria(countClosure)
     }
 
     def findWhere(params) {
         findAllWhere(params, true)
+    }
+
+    void order(String propName) {
+        if(!inCountMethod) {
+            queryBuilder?.order propName
+        }
+    }
+
+    void order(String propName, String direction) {
+        if(!inCountMethod) {
+            queryBuilder?.order propName, direction
+        }
     }
 
     def findAllWhere(Map params, Boolean uniq = false) {

@@ -33,6 +33,8 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBe
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.AfterClass
@@ -42,6 +44,7 @@ import org.springframework.context.support.StaticMessageSource
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.springframework.context.MessageSource
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.springframework.beans.CachedIntrospectionResults
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -50,6 +53,10 @@ import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
  * @since 2.0
  */
 class GrailsUnitTestMixin {
+
+    static {
+        ExpandoMetaClass.enableGlobally()
+    }
 
     static GrailsWebApplicationContext applicationContext
     static GrailsApplication grailsApplication
@@ -69,6 +76,8 @@ class GrailsUnitTestMixin {
 
     @BeforeClass
     static void initGrailsApplication() {
+        ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
         registerMetaClassRegistryWatcher()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
@@ -82,6 +91,7 @@ class GrailsUnitTestMixin {
                 grailsApplication(DefaultGrailsApplication)
                 pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
                 messageSource(StaticMessageSource)
+                "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             }
             applicationContext.refresh()
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
@@ -100,9 +110,9 @@ class GrailsUnitTestMixin {
 
     @After
     void resetGrailsApplication() {
-        grailsApplication?.clear()
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
+        grailsApplication?.clear()
         cleanupModifiedMetaClasses()
     }
 

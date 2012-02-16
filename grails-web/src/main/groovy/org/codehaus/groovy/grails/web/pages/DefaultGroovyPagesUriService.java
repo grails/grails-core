@@ -16,7 +16,7 @@ import org.springframework.util.Assert;
  *
  * @author Lari Hotari , Sagire Software Oy
  */
-public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport implements GroovyPagesUriService {
+public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport {
 
     ConcurrentMap<TupleStringKey, String> templateURICache = new ConcurrentHashMap<TupleStringKey, String>();
     ConcurrentMap<TupleStringKey, String> deployedViewURICache = new ConcurrentHashMap<TupleStringKey, String>();

@@ -43,8 +43,6 @@ import org.springframework.beans.BeanWrapperImpl
  * @author Jason Rudolph
  * @author Sergey Nebolsin
  * @since 0.4
- *
- * Created: 06-Jan-2007
  */
 class GrailsDomainBinderTests extends GroovyTestCase {
 
@@ -257,7 +255,7 @@ class TablePerSubclassSubclass extends TablePerSubclassSuperclass {
     /**
      * Test for GRAILS-4200
      */
-    void te2stEmbeddedComponentMapping() {
+    void testEmbeddedComponentMapping() {
         DefaultGrailsDomainConfiguration config = getDomainConfig('''
 class Widget {
     Long id
@@ -278,7 +276,7 @@ class EmbeddedWidget {
         assertEquals("widget_name", embeddedComponentMappedColumn.name)
     }
 
-    void te2stLengthProperty() {
+    void testLengthProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig('''
 class Widget {
     Long id
@@ -297,7 +295,7 @@ class Widget {
         assertEquals(Column.DEFAULT_LENGTH, descriptionColumn.length)
     }
 
-    void te2stUniqueProperty() {
+    void testUniqueProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig('''
 class Widget {
     Long id
@@ -316,7 +314,7 @@ class Widget {
         assertFalse descriptionColumn.isUnique()
     }
 
-    void te2stPrecisionProperty() {
+    void testPrecisionProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig('''
 class Widget {
     Long id
@@ -334,7 +332,7 @@ class Widget {
         assertEquals(Column.DEFAULT_PRECISION, heightColumn.precision)
     }
 
-    void te2stScaleProperty() {
+    void testScaleProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig('''
 class Widget {
     Long id
@@ -353,13 +351,13 @@ class Widget {
         assertEquals(Column.DEFAULT_SCALE, heightColumn.scale)
     }
 
-    void te2stCachedMapProperty() {
+    void testCachedMapProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(CACHED_MAP)
         Table table = getTableMapping("area_names", config)
         assertEquals(255, table.getColumn(new Column("names_elt")).length)
     }
 
-    void te2stColumnNullabilityWithTablePerHierarchy() {
+    void testColumnNullabilityWithTablePerHierarchy() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_HIERARCHY)
 
         // with tablePerHierarchy all columns related to properties defined in subclasses must
@@ -380,7 +378,7 @@ class Widget {
         assertColumnNullable("table_per_hierarchy_superclass", "some_optional_product_status", config)
     }
 
-    void te2stColumnNullabilityWithTablePerSubclass() {
+    void testColumnNullabilityWithTablePerSubclass() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(TABLE_PER_SUBCLASS)
 
         // with tablePerSubclass columns related to required properties defined in subclasses
@@ -404,7 +402,7 @@ class Widget {
         assertColumnNullable("table_per_subclass_superclass", "some_optional_product_status", config)
     }
 
-    void te2stUniqueConstraintGeneration() {
+    void testUniqueConstraintGeneration() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(UNIQUE_PROPERTIES)
         assertEquals("Tables created", 1, getTableCount(config))
         List expectedKeyColumns1 = [new Column("camel_cased"), new Column("group"), new Column("login")]
@@ -428,7 +426,7 @@ class Widget {
         assertTrue found2
     }
 
-    void te2stInsertableHibernateMapping() {
+    void testInsertableHibernateMapping() {
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
             cl.parseClass('''
 class TestInsertableDomain {
@@ -453,7 +451,7 @@ class TestInsertableDomain {
         assertTrue persistentClass.getProperty("testString2").isInsertable()
     }
 
-    void te2stUpdateableHibernateMapping() {
+    void testUpdateableHibernateMapping() {
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
             cl.parseClass('''
 class TestInsertableDomain {
@@ -476,7 +474,7 @@ class TestInsertableDomain {
         assertTrue persistentClass.getProperty("testString2").isUpdateable()
     }
 
-    void te2stInsertableUpdateableHibernateMapping() {
+    void testInsertableUpdateableHibernateMapping() {
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
             cl.parseClass('''
 class TestInsertableUpdateableDomain {
@@ -504,48 +502,48 @@ class TestInsertableUpdateableDomain {
         assertFalse property2.isInsertable()
     }
 
-    void te2stOneToOneBindingTables() {
+    void testOneToOneBindingTables() {
         assertEquals("Tables created", 2, getTableCount(getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION)))
     }
 
-    void te2stOneToOneBindingFk() {
+    void testOneToOneBindingFk() {
         assertForeignKey("species", "pet", getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION))
     }
 
-    void te2stOneToOneBindingFkColumn() {
+    void testOneToOneBindingFkColumn() {
         assertColumnNotNullable("pet", "species_id", getDomainConfig(ONE_TO_ONE_CLASSES_DEFINITION))
     }
 
-    void te2stOneToManyBindingTables() {
+    void testOneToManyBindingTables() {
         assertEquals("Tables created", 2, getTableCount(getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION)))
     }
 
-    void te2stOneToManyBindingFk() {
+    void testOneToManyBindingFk() {
         assertForeignKey("pet", "visit", getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION))
     }
 
-/*    void te2stOneToManyBindingFkColumn() {
+/*    void testOneToManyBindingFkColumn() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(ONE_TO_MANY_CLASSES_DEFINITION)
         assertColumnNotNullable("visit", "pet_visits_id", config)
     }*/
 
-    void te2stManyToManyBindingTables() {
+    void testManyToManyBindingTables() {
         assertEquals("Tables created", 3, getTableCount(getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION)))
     }
 
-    void te2stManyToManyBindingPk() {
+    void testManyToManyBindingPk() {
         Table table = getTableMapping("vet_specialities", getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION))
         assertNotNull("VET_SPECIALTY table has a PK", table.primaryKey)
         assertEquals("VET_SPECIALTY table has a 2 column PK", 2, table.primaryKey.columns.size())
     }
 
-    void te2stManyToManyBindingFk() {
+    void testManyToManyBindingFk() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION)
         assertForeignKey("specialty", "vet_specialities", config)
         assertForeignKey("vet", "vet_specialities", config)
     }
 
-    void te2stManyToManyBindingFkColumn() {
+    void testManyToManyBindingFkColumn() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(MANY_TO_MANY_CLASSES_DEFINITION)
         assertColumnNotNullable("vet_specialities", "vet_id", config)
         assertColumnNotNullable("vet_specialities", "specialty_id", config)
@@ -555,7 +553,7 @@ class TestInsertableUpdateableDomain {
      * Tests that single- and multi-column user type mappings work
      * correctly. Also Checks that the "sqlType" property is honoured.
      */
-    void te2stUserTypeMappings() {
+    void testUserTypeMappings() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(MULTI_COLUMN_USER_TYPE_DEFINITION)
         PersistentClass persistentClass = config.getClassMapping("Item")
 
@@ -597,7 +595,7 @@ class TestInsertableUpdateableDomain {
         assertEquals("text", column.sqlType)
     }
 
-    void te2stDomainClassBinding() {
+    void testDomainClassBinding() {
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
             cl.parseClass('''
 class BinderTestClass {
@@ -633,7 +631,7 @@ class BinderTestClass {
         assertTrue("Property [age] must be optional", domainClass.getPropertyByName("age").isOptional())
     }
 
-    void te2stForeignKeyColumnBinding() {
+    void testForeignKeyColumnBinding() {
         GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
                 cl.parseClass('''
 class TestOneSide {
@@ -669,7 +667,7 @@ class TestManySide {
     /**
      * @see GrailsDomainBinder#bindStringColumnConstraints(Column, ConstrainedProperty)
      */
-    void te2stBindStringColumnConstraints() {
+    void testBindStringColumnConstraints() {
         // Verify that the correct length is set when a maxSize constraint is applied
         ConstrainedProperty constrainedProperty = getConstrainedStringProperty()
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 30)
@@ -700,7 +698,7 @@ class TestManySide {
     /**
      * @see GrailsDomainBinder#bindNumericColumnConstraints(Column, ConstrainedProperty)
      */
-    void te2stBindNumericColumnConstraints() {
+    void testBindNumericColumnConstraints() {
         ConstrainedProperty constrainedProperty = getConstrainedBigDecimalProperty()
         // maxSize and minSize constraint has the number with the most digits
         constrainedProperty.applyConstraint(ConstrainedProperty.MAX_SIZE_CONSTRAINT, 123)
@@ -764,7 +762,7 @@ class TestManySide {
         assertColumnPrecisionAndScale(constrainedProperty, 24, Column.DEFAULT_SCALE)
     }
 
-    void te2stDefaultNamingStrategy() {
+    void testDefaultNamingStrategy() {
 
         GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
             cl.parseClass('''
@@ -819,7 +817,7 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
-    void te2stCustomNamingStrategy() {
+    void testCustomNamingStrategy() {
 
         // somewhat artificial in that it doesn't test that setting the property
         // in DataSource.groovy works, but that's handled in DataSourceConfigurationTests
@@ -878,6 +876,34 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testCustomNamingStrategyAsInstance() {
+
+        // somewhat artificial in that it doesn't test that setting the property
+        // in DataSource.groovy works, but that's handled in DataSourceConfigurationTests
+        def instance = new CustomNamingStrategy()
+        GrailsDomainBinder.configureNamingStrategy(instance)
+
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class TestOneSide {
+    Long id
+    Long version
+    String fooName
+    String barDescriPtion
+}'''))
+
+        assert instance.is(GrailsDomainBinder.getNamingStrategy('sessionFactory'))
+        assert instance.is(GrailsDomainBinder.NAMING_STRATEGIES.DEFAULT)
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, [oneClass.clazz])
+
+        PersistentClass persistentClass = config.getClassMapping("TestOneSide")
+        assertEquals("table_TestOneSide", persistentClass.table.name)
+
+        Column column = persistentClass.getProperty("id").columnIterator.next()
+        assertEquals("col_id", column.name)
+    }
+
     void testManyToManyWithBag() {
         DefaultGrailsDomainConfiguration config = getDomainConfig(BAG_MANY_TO_MANY_CLASSES_DEFINITION)
 
@@ -900,7 +926,6 @@ class TestManySide {
         assertSame getTableMapping('bagger', config), c.table
     }
 
-    
     void testEnumProperty() {
         DefaultGrailsDomainConfiguration config = getDomainConfig('''
 enum AlertType {
@@ -1008,12 +1033,12 @@ class Alert {
 
        @Override
        String classToTableName(String className) {
-           return "table_" + StringHelper.unqualify(className)
+           "table_" + StringHelper.unqualify(className)
        }
 
        @Override
        String propertyToColumnName(String propertyName) {
-           return "col_" + StringHelper.unqualify(propertyName)
+           "col_" + StringHelper.unqualify(propertyName)
        }
    }
 }

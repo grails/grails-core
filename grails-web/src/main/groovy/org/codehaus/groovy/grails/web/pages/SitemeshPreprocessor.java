@@ -64,7 +64,7 @@ public class SitemeshPreprocessor {
 
     String addTitleCapturing(String headContent) {
         Matcher m = titlePattern.matcher(headContent);
-        return m.replaceAll("<sitemesh:captureTitle$1>$2</sitemesh:captureTitle>");
+        return m.replaceAll("<sitemesh:wrapTitleTag><sitemesh:captureTitle$1>$2</sitemesh:captureTitle></sitemesh:wrapTitleTag>");
     }
 
     StringBuffer addBodyCapturing(StringBuffer sb) {

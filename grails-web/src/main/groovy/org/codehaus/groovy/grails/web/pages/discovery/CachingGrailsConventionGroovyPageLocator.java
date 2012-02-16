@@ -178,7 +178,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             }
         }
     }
-    
+
     private static class CustomCacheEntry<T> extends CacheEntry<T> {
         public CustomCacheEntry(T value) {
             super(value);

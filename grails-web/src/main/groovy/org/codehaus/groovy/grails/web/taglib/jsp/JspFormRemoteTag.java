@@ -25,7 +25,7 @@ public class JspFormRemoteTag extends JspInvokeGrailsTagLibTag {
 
     private String controller;
     private String action;
-    @SuppressWarnings("hiding") private String id;
+    private String id;
     private String update;
     private String before;
     private String after;

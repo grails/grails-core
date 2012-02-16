@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.util
 
 import org.apache.commons.lang.builder.HashCodeBuilder
 
+
 /**
  * A category for use with maps that want type conversion capabilities.
  *
@@ -26,7 +27,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder
  * @author Graeme Rocher
  * @since 1.2
  */
-class TypeConvertingMap extends AbstractTypeConvertingMap implements Cloneable {
+class TypeConvertingMap extends AbstractTypeConvertingMap {
     TypeConvertingMap() {
         super()
     }

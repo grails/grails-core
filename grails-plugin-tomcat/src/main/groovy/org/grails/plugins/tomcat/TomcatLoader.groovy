@@ -33,7 +33,7 @@ import org.apache.naming.resources.DirContextURLStreamHandlerFactory
  * @author Graeme Rocher
  * @since 2.0
  */
-class TomcatLoader extends LifecycleBase implements Loader, Lifecycle {
+class TomcatLoader extends LifecycleBase implements Loader {
 
     private static Log log = LogFactory.getLog(TomcatLoader.name)
 

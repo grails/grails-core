@@ -37,12 +37,15 @@ import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
+import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.grails.datastore.gorm.validation.constraints.UniqueConstraint
 import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
 import org.junit.AfterClass
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 
 /**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support
@@ -72,16 +75,19 @@ import org.junit.AfterClass
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     static SimpleMapDatastore simpleDatastore
+    static PlatformTransactionManager transactionManager
 
     protected Session currentSession
 
     @BeforeClass
     static void initializeDatastoreImplementation() {
+        ClassPropertyFetcher.clearCache()
         if (applicationContext == null) {
             super.initGrailsApplication()
         }
 
         simpleDatastore = new SimpleMapDatastore(applicationContext)
+        transactionManager = new DatastoreTransactionManager(datastore: simpleDatastore)
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
         ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
@@ -95,6 +101,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     @AfterClass
     static void cleanupDatastore() {
+        ClassPropertyFetcher.clearCache()
         ConstrainedProperty.removeConstraint("unique")
     }
 
@@ -106,7 +113,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     @After
     void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
-        DatastoreUtils.unbindSession(currentSession)
+        if(currentSession != null)
+            DatastoreUtils.unbindSession(currentSession)
         simpleDatastore.clearData()
     }
 
@@ -127,6 +135,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
         ControllersGrailsPlugin.enhanceDomainWithBinding(applicationContext, domain, mc)
         DomainClassGrailsPlugin.registerConstraintsProperty(mc, domain)
+//        DomainClassGrailsPlugin.addRelationshipManagementMethods(domain, applicationContext)
         def validationBeanName = "${domain.fullName}Validator"
         defineBeans {
             "${domain.fullName}"(domain.clazz) { bean ->
@@ -144,7 +153,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         def validator = applicationContext.getBean(validationBeanName, Validator.class)
         simpleDatastore.mappingContext.addEntityValidator(entity, validator)
 
-        def enhancer = new GormEnhancer(simpleDatastore)
+        def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
         if (domainClassToMock.getAnnotation(Enhanced) != null) {
             enhancer.enhance(entity, true)
         }

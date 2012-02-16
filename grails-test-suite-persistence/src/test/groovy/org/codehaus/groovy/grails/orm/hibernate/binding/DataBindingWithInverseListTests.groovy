@@ -117,7 +117,7 @@ class NullablePart {
     // GRAILS-8289
     void testUpdatingManySide() {
         buildMockRequest()
-        
+
         def Item = ga.getDomainClass("Item").clazz
         def Part = ga.getDomainClass("Part").clazz
 

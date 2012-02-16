@@ -8,7 +8,7 @@ class InheritedUniqueConstraintTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class Parent {
+class InheritedUniqueConstraintTestsParent {
 
     Long id
     Long version
@@ -19,26 +19,26 @@ class Parent {
     }
 }
 
-class Child extends Parent {}
+class InheritedUniqueConstraintTestsChild extends InheritedUniqueConstraintTestsParent {}
 '''
     }
 
     void testInheritedUniqueConstraint() {
-        def Parent = ga.getDomainClass("Parent").clazz
-        def Child = ga.getDomainClass("Child").clazz
+        def InheritedUniqueConstraintTestsParent = ga.getDomainClass("InheritedUniqueConstraintTestsParent").clazz
+        def InheritedUniqueConstraintTestsChild = ga.getDomainClass("InheritedUniqueConstraintTestsChild").clazz
 
-        def child1 = Child.newInstance(username:'mos')
+        def child1 = InheritedUniqueConstraintTestsChild.newInstance(username:'mos')
         assertNotNull "should have saved unqiue child",child1.save(flush:true)
 
-        def child2 = Child.newInstance(username:'mos')
+        def child2 = InheritedUniqueConstraintTestsChild.newInstance(username:'mos')
         assertNull "should not have saved non-unqiue child",child2.save(flush:true)
 
         //// now with parent
 
-        def parent1 = Parent.newInstance(username:'graeme')
+        def parent1 = InheritedUniqueConstraintTestsParent.newInstance(username:'graeme')
         assertNotNull "should have saved unqiue parent",parent1.save(flush:true)
 
-        def child = Child.newInstance(username:'graeme')
+        def child = InheritedUniqueConstraintTestsChild.newInstance(username:'graeme')
         assertNull "should not have saved non-unqiue child",child.save(flush:true)
     }
 }

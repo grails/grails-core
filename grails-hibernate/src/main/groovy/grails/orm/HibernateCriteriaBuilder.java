@@ -64,6 +64,7 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.type.AssociationType;
+import org.hibernate.type.EmbeddedComponentType;
 import org.hibernate.type.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
@@ -1081,11 +1082,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     sqlRestriction + "] not allowed here."));
         }
         final int numberOfParameters = values.size();
-        
+
         final Type[] typesArray = new Type[numberOfParameters];
         final Object[] valuesArray = new Object[numberOfParameters];
-        
-        if(numberOfParameters > 0) {
+
+        if (numberOfParameters > 0) {
             final TypeHelper typeHelper = sessionFactory.getTypeHelper();
             for(int i = 0; i < typesArray.length; i++) {
                 final Object value = values.get(i);
@@ -1637,6 +1638,19 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     associationStack.remove(associationStack.size()-1);
                     targetClass = oldTargetClass;
 
+                    return name;
+                } else if(type instanceof EmbeddedComponentType) {
+                    associationStack.add(name);
+                    logicalExpressionStack.add(new LogicalExpression(AND));
+                    Class oldTargetClass = targetClass;
+                    targetClass = pd.getPropertyType();
+                    invokeClosureNode(callable);
+                    targetClass = oldTargetClass;
+                    LogicalExpression logicalExpression = logicalExpressionStack.remove(logicalExpressionStack.size()-1);
+                    if (!logicalExpression.args.isEmpty()) {
+                        addToCriteria(logicalExpression.toCriterion());
+                    }
+                    associationStack.remove(associationStack.size()-1);
                     return name;
                 }
             }

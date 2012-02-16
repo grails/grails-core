@@ -118,7 +118,7 @@ fi
 if [ -z "$STARTER_CONF" ]; then
     STARTER_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
-STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-@groovy.version@.jar:$GRAILS_HOME/dist/grails-bootstrap-@grails.version@.jar"
+STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/@groovy.version@/jar/groovy-all-@groovy.version@.jar:$GRAILS_HOME/dist/grails-bootstrap-@grails.version@.jar"
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then
@@ -178,8 +178,18 @@ if $cygwin ; then
     [ -n "$GRAILS_HOME" ] &&
         AGENT_GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
 fi
+
+SPRINGLOADED_PARAMS="profile=grails"
+if [ -n "$GRAILS_AGENT_CACHE_DIR" ]; then
+    SPRINGLOADED_PARAMS="$SPRINGLOADED_PARAMS;cacheDir=$GRAILS_AGENT_CACHE_DIR"
+    if [ ! -d "$GRAILS_AGENT_CACHE_DIR" ]; then
+        mkdir -p $GRAILS_AGENT_CACHE_DIR
+    fi
+fi
+
 # Process JVM args
-AGENT_STRING="-javaagent:$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=profile=grails"
+AGENT_STRING="-javaagent:$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/@spring.loaded.version@/jar/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=$SPRINGLOADED_PARAMS"
+
 CMD_LINE_ARGS=""
 DISABLE_RELOADING=false
 
@@ -238,9 +248,10 @@ fi
 
 # For Darwin, use classes.jar for TOOLS_JAR
 TOOLS_JAR="$JAVA_HOME/lib/tools.jar"
-#if $darwin; then
+if $darwin; then
+    JAVA_OPTS="-Xdock:name=Grails -Xdock:icon=$GRAILS_HOME/media/icons/grails.icns $JAVA_OPTS"
 #   TOOLS_JAR="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Classes/classes.jar"
-#fi
+fi
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then

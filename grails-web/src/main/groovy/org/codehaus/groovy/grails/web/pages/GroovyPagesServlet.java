@@ -189,8 +189,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
      *
      * @throws IOException Thrown when an I/O exception occurs rendering the page
      */
-    protected void renderPageWithEngine(@SuppressWarnings("unused") GroovyPagesTemplateEngine engine,
-            @SuppressWarnings("unused") HttpServletRequest request,
+    protected void renderPageWithEngine(GroovyPagesTemplateEngine engine, HttpServletRequest request,
             HttpServletResponse response, GroovyPageScriptSource scriptSource) throws Exception {
         request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
         GSPResponseWriter out = createResponseWriter(response);

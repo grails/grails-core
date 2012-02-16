@@ -16,7 +16,11 @@ package org.codehaus.groovy.grails.resolve.config;
 
 import grails.build.logging.GrailsConsole;
 import groovy.lang.Closure;
+import org.apache.ivy.core.module.descriptor.ExcludeRule;
+import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.plugins.matcher.MatcherHelper;
+import org.apache.ivy.plugins.matcher.PatternMatcher;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 import java.util.Arrays;
@@ -197,8 +201,23 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         if (configurer != null) {
             dependencyDescriptor.configure(configurer);
         }
+        if(!isExcluded(context, dependencyDescriptor)) {
 
-        addDependency(scope, dependencyDescriptor);
+            addDependency(scope, dependencyDescriptor);
+        }
+    }
+
+    private boolean isExcluded(DependencyConfigurationContext context, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
+        ExcludeRule[] excludeRules = context.getExcludeRules();
+        if(excludeRules != null) {
+            ArtifactId aid = new ArtifactId(dependencyDescriptor.getDependencyId(),PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION);
+            for (ExcludeRule excludeRule : excludeRules) {
+                if(MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     protected Boolean getExportSetting(Map<Object, Object> dependency) {

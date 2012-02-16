@@ -7,7 +7,7 @@ subprojects { subproject ->
     configurations {
         libsConfigurations << libs {
             extendsFrom compile, runtime
-            ["jsp21", "agent"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
+            ["jsp21"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
         }
     }
 }
@@ -47,7 +47,7 @@ task populateDependencies(type: Sync) {
     into homeLibDir
     includeEmptyDirs = false
 
-    grailsRepoCacheHash = "0176b65cdea0460180d870500d4c646f"
+    grailsRepoCacheHash = "a5610c5703557b062da6cb64b3488b38"
     eachFile { file -> file.path -= "$grailsRepoCacheHash/" }
 
     // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
@@ -58,18 +58,23 @@ task populateDependencies(type: Sync) {
             def projectNames = rootProject.subprojects*.name
 
             baseCacheDir = "$gradle.gradleUserHomeDir/caches"
-            versionedCacheDir = "$baseCacheDir/artifacts-4"
+            versionedCacheDir = "$baseCacheDir/artifacts-7/artifacts"
 
             from versionedCacheDir
             libsConfigurations.each { configuration ->
                 configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
                     def dependency = artifact.moduleVersion.id
 
+                    // Force the download of the binary artifact
+                    // Gradle 1.0-milestone-7 will get the file until this is called with the way 
+                    // we are using the API.
+                    artifact.file
+
                     if (!projectNames.contains(dependency.name)) {
-                        def base = "${dependency.group}/${dependency.name}/$grailsRepoCacheHash"
+                        def base = "${grailsRepoCacheHash}/${dependency.group}/${dependency.name}/${dependency.version}"
                         include "${base}/*-${dependency.version}.*"
-                        include "${base}/jars/${dependency.name}-${dependency.version}.jar"
-                        include "${base}/bundles/${dependency.name}-${dependency.version}.jar"
+                        include "${base}/jar/${dependency.name}-${dependency.version}.jar"
+                        include "${base}/bundle/${dependency.name}-${dependency.version}.jar"
                     }
                 }
             }
@@ -90,7 +95,7 @@ task pluginsFromSvn {
     plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
-        resources: "1.1.5",
+        resources: "1.1.6",
         webxml: "1.4.1",
         jquery: "1.7.1"
     ]

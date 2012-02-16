@@ -75,24 +75,25 @@ class GrailsProjectCompiler {
     GrailsProjectCompiler(PluginBuildSettings pluginBuildSettings, ClassLoader rootLoader = Thread.currentThread().getContextClassLoader()) {
         pluginSettings = pluginBuildSettings
         buildSettings = pluginBuildSettings.buildSettings
-        this.targetClassesDir = buildSettings.classesDir
-        this.targetPluginClassesDir = buildSettings.pluginClassesDir
-        this.basedir = buildSettings.baseDir.absolutePath
-        this.srcdir = buildSettings.sourceDir.absolutePath
-        this.classLoader = rootLoader
-        this.pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
+        targetClassesDir = buildSettings.classesDir
+        targetPluginClassesDir = buildSettings.pluginClassesDir
+        basedir = buildSettings.baseDir.absolutePath
+        srcdir = buildSettings.sourceDir.absolutePath
+        classLoader = rootLoader
+        pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
         this.config = config
         isPluginProject = pluginDescriptor != null
 
         initializeSrcDirectories()
         initializeAntClasspaths()
 
-        if(buildSettings.compilerSourceLevel)
+        if (buildSettings.compilerSourceLevel) {
             javaOptions.source = buildSettings.compilerSourceLevel
+        }
         javaOptions.target = buildSettings.compilerTargetLevel
 
-
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
+        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(
+            pluginSettings.getArtefactResourcesForCurrentEnvironment())
         GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
     }
 
@@ -104,14 +105,10 @@ class GrailsProjectCompiler {
 
         def excludedPaths = EXCLUDED_PATHS
 
-        final grailsAppDirs = new File("${basedir}/grails-app").listFiles()
-        if (grailsAppDirs != null) {
-            for (dir in grailsAppDirs) {
-                if (dir != null) {
-                    if (!excludedPaths?.contains(dir.name) && dir.isDirectory() && !DirectoryWatcher.SVN_DIR_NAME.equals(dir.name)) {
-                        srcDirectories << "${dir}".toString()
-                    }
-                }
+        for (dir in new File(basedir, "grails-app").listFiles()) {
+            if (dir == null) continue
+            if (!excludedPaths?.contains(dir.name) && dir.isDirectory() && !DirectoryWatcher.SVN_DIR_NAME.equals(dir.name)) {
+                srcDirectories << dir.toString()
             }
         }
     }
@@ -138,7 +135,7 @@ class GrailsProjectCompiler {
         ant.path(id: "grails.test.classpath", testClasspath)
         ant.path(id: "grails.runtime.classpath", runtimeClasspath)
 
-        def grailsDir = new File("${basedir}/grails-app").listFiles()
+        def grailsDir = new File(basedir, "grails-app").listFiles()
         StringBuilder cpath = new StringBuilder()
 
         def jarFiles = getJarFiles()
@@ -250,7 +247,7 @@ class GrailsProjectCompiler {
                }
             }
             javac(javaOptions) {
-            	compilerarg value:"-Xlint:-options"
+                compilerarg value:"-Xlint:-options"
             }
         }
 
@@ -331,8 +328,8 @@ class GrailsProjectCompiler {
                 exclude(name: "**/UrlMappings.groovy")
                 exclude(name: "**/resources.groovy")
                 javac(javaOptions) {
-            		compilerarg value:"-Xlint:-options"
-            	}
+                    compilerarg value:"-Xlint:-options"
+                }
             }
         }
 
@@ -341,7 +338,7 @@ class GrailsProjectCompiler {
             config.setTargetDirectory(classesDirString)
 
             def cl = new GrailsAwareClassLoader(classLoader)
-            cl.addURL(new File(classesDirString).toURL())
+            cl.addURL(new File(classesDirString).toURI().toURL())
             def unit = new CompilationUnit (config , null , cl)
             unit.addPhaseOperation(new GrailsAwareInjectionOperation(), Phases.CANONICALIZATION);
             def pluginFiles = pluginCompileInfo.pluginDescriptors
@@ -349,7 +346,7 @@ class GrailsProjectCompiler {
             for (plugin in pluginFiles) {
                 def pluginFile = plugin.file
                 def className = pluginFile.name - '.groovy'
-                def classFile = new File("${classesDirPath}/${className}.class")
+                def classFile = new File(classesDirPath, "${className}.class")
 
                 if (pluginFile.lastModified() > classFile.lastModified()) {
                     unit.addSource (pluginFile)
@@ -380,7 +377,7 @@ class GrailsProjectCompiler {
         // compile gsps in web-app directory
         ant.gspc(destdir:classesDir,
                  srcdir:"${basedir}/web-app",
-                 packagename:"${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName)}_webapp",
+                 packagename: GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(grailsAppName) + "_webapp",
                  serverpath:"/",
                  classpathref:"grails.compile.classpath",
                  tmpdir:gspTmpDir)
@@ -413,7 +410,7 @@ class GrailsProjectCompiler {
         if (descriptor.lastModified() > classFile.lastModified()) {
             ant.echo(message: "Compiling plugin descriptor...")
             config.setTargetDirectory(classesDir)
-            def cl = new URLClassLoader([classesDir,targetPluginClassesDir]*.toURL() as URL[], classLoader)
+            def cl = new URLClassLoader([classesDir,targetPluginClassesDir]*.toURI()*.toURL() as URL[], classLoader)
 
             def unit = new CompilationUnit(config, null, new GroovyClassLoader(cl))
             unit.addSource(descriptor)
@@ -424,9 +421,8 @@ class GrailsProjectCompiler {
     private initializeAntClasspaths() {
 
         commonClasspath = {
-            def grailsDir = new File("${basedir}/grails-app").listFiles()
-            for (File file in grailsDir) {
-                pathelement(location: "${file.absolutePath}")
+            for (File file in new File(basedir, "grails-app").listFiles()) {
+                pathelement(location: file.absolutePath)
             }
 
             def pluginLibDirs = pluginSettings.pluginLibDirectories.findAll { it.exists() }
@@ -447,7 +443,7 @@ class GrailsProjectCompiler {
                     }
                 }
             }
-            pathelement(location: "${targetPluginClassesDir.absolutePath}")
+            pathelement(location: targetPluginClassesDir.absolutePath)
         }
 
         testClasspath = {
@@ -464,9 +460,9 @@ class GrailsProjectCompiler {
                 }
             }
 
-            pathelement(location: "${buildSettings.testClassesDir.absolutePath}")
-            pathelement(location: "${targetClassesDir.absolutePath}")
-            pathelement(location: "${targetPluginClassesDir.absolutePath}")
+            pathelement(location: buildSettings.testClassesDir.absolutePath)
+            pathelement(location: targetClassesDir.absolutePath)
+            pathelement(location: targetPluginClassesDir.absolutePath)
         }
 
         runtimeClasspath = {
@@ -482,8 +478,8 @@ class GrailsProjectCompiler {
                 }
             }
 
-            pathelement(location: "${targetPluginClassesDir.absolutePath}")
-            pathelement(location: "${targetClassesDir.absolutePath}")
+            pathelement(location: targetPluginClassesDir.absolutePath)
+            pathelement(location: targetClassesDir.absolutePath)
         }
     }
 }

@@ -27,9 +27,8 @@ public class GroovyPageTagWriter extends FastStringWriter {
 
     private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("groovypagetagwriter.chunksize", 512);
 
-    public GroovyPageTagWriter(boolean preferSubChunkWhenWritingToOtherBuffer) {
+    public GroovyPageTagWriter() {
         super(DEFAULT_CHUNK_SIZE);
-        getBuffer().setPreferSubChunkWhenWritingToOtherBuffer(preferSubChunkWhenWritingToOtherBuffer);
     }
 
     @Override

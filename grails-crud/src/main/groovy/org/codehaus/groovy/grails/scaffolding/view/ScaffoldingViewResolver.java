@@ -29,7 +29,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver;
 import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.View;
 
 /**
@@ -38,7 +38,7 @@ import org.springframework.web.servlet.View;
  * @author Graeme Rocher
  * @since 1.1
  */
-public class ScaffoldingViewResolver extends GrailsViewResolver implements ApplicationContextAware {
+public class ScaffoldingViewResolver extends GrailsViewResolver {
 
     GrailsTemplateGenerator templateGenerator;
     Map<String, List<String>> scaffoldedActionMap = Collections.emptyMap();
@@ -85,8 +85,10 @@ public class ScaffoldingViewResolver extends GrailsViewResolver implements Appli
                         LOG.error("Error generating scaffolded view [" + viewName + "]: " + e.getMessage(),e);
                         return resolvedView;
                     }
-                    v = createScaffoldedView(viewName, viewCode);
-                    scaffoldedViews.put(viewKey, v);
+                    if(StringUtils.hasLength( viewCode )) {
+                        v = createScaffoldedView(viewName, viewCode);
+                        scaffoldedViews.put(viewKey, v);
+                    }
                 }
                 if (v != null) {
                     return v;

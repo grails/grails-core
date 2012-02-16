@@ -62,7 +62,6 @@ public class RenderInputTag extends RequestContextTag {
 
     private static final String BEAN_PROPERTY = "bean";
 
-    @SuppressWarnings("hiding")
     private Object bean;
     private String property;
     private BeanWrapper beanWrapper;

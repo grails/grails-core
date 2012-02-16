@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
 
 /**
@@ -29,7 +28,7 @@ import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
  * Used by org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin.
  */
 @SuppressWarnings("serial")
-public class TypeSpecifyableTransactionProxyFactoryBean extends TransactionProxyFactoryBean implements FactoryBean<Object> {
+public class TypeSpecifyableTransactionProxyFactoryBean extends TransactionProxyFactoryBean {
 
     private Class<?> type;
 

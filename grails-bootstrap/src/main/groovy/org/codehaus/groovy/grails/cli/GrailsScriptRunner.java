@@ -29,6 +29,7 @@ import groovy.lang.GroovySystem;
 import groovy.util.AntBuilder;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -397,6 +398,51 @@ public class GrailsScriptRunner {
         setDefaultInputStream(binding);
 
         // Now find what scripts match the one requested by the user.
+        potentialScripts = getPotentialScripts(scriptName, allScripts);
+        
+        if(potentialScripts.size() == 0) {
+            try {
+                File aliasFile = new File(settings.getUserHome(), ".grails/.aliases");
+                if(aliasFile.exists()) {
+                    Properties aliasProperties = new Properties();
+                    aliasProperties.load(new FileReader(aliasFile));
+                    if(aliasProperties.containsKey(commandLine.getCommandName())) {
+                        String aliasValue = (String) aliasProperties.get(commandLine.getCommandName());
+                        String[] aliasPieces = aliasValue.split(" ");
+                        String commandName = aliasPieces[0];
+                        String correspondingScriptName = GrailsNameUtils.getNameFromScript(commandName);
+                        potentialScripts = getPotentialScripts(correspondingScriptName, allScripts);
+                        
+                        if(potentialScripts.size() > 0) {
+                            String[] additionalArgs = new String[aliasPieces.length - 1];
+                            System.arraycopy(aliasPieces, 1, additionalArgs, 0, additionalArgs.length);
+                            insertArgumentsInFrontOfExistingArguments(commandLine, additionalArgs);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                console.error(e);
+            }
+        }
+
+        // First try to load the script from its file. If there is no
+        // file, then attempt to load it as a pre-compiled script. If
+        // that fails, then let the user know and then exit.
+        if (potentialScripts.size() > 0) {
+            potentialScripts = (List) DefaultGroovyMethods.unique(potentialScripts);
+            final Resource scriptFile = potentialScripts.get(0);
+            if (!isGrailsProject() && !isExternalScript(scriptFile)) {
+                return handleScriptExecutedOutsideProjectError();
+            }
+            return executeScriptFile(commandLine, scriptName, env, binding, scriptFile);
+        }
+
+        return attemptPrecompiledScriptExecute(commandLine, scriptName, env, binding, allScripts);
+    }
+
+    private List<Resource> getPotentialScripts(String scriptName,
+            List<Resource> allScripts) {
+        List<Resource> potentialScripts;
         boolean exactMatchFound = false;
         potentialScripts = new ArrayList<Resource>();
         for (Resource scriptPath : allScripts) {
@@ -416,20 +462,15 @@ public class GrailsScriptRunner {
                 potentialScripts.add(scriptPath);
             }
         }
+        return potentialScripts;
+    }
 
-        // First try to load the script from its file. If there is no
-        // file, then attempt to load it as a pre-compiled script. If
-        // that fails, then let the user know and then exit.
-        if (potentialScripts.size() > 0) {
-            potentialScripts = (List) DefaultGroovyMethods.unique(potentialScripts);
-            final Resource scriptFile = potentialScripts.get(0);
-            if (!isGrailsProject() && !isExternalScript(scriptFile)) {
-                return handleScriptExecutedOutsideProjectError();
-            }
-            return executeScriptFile(commandLine, scriptName, env, binding, scriptFile);
+    private void insertArgumentsInFrontOfExistingArguments(CommandLine commandLine,
+            String[] argumentsToInsert) {
+        List<String> remainingArgs = commandLine.getRemainingArgs();
+        for(int i = argumentsToInsert.length - 1; i >= 0; i-- ) {
+            remainingArgs.add(0, argumentsToInsert[i]);
         }
-
-        return attemptPrecompiledScriptExecute(commandLine, scriptName, env, binding, allScripts);
     }
 
     private int attemptPrecompiledScriptExecute(CommandLine commandLine, String scriptName, String env, GantBinding binding, List<Resource> allScripts) {

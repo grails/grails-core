@@ -13,6 +13,14 @@ import grails.validation.ValidationErrors
 class DomainClassControllerUnitTestMixinTests {
 
     @Test
+    void testRelationshipManagementMethods() {
+       def a = new Author(name: "Stephen King")
+        
+       a.addToBooks(title: "The Stand", pages: 1100)
+        
+       assert a.save(flush: true) != null
+    }
+    @Test
     void testIndex() {
         controller.index()
 
@@ -213,8 +221,11 @@ class Book {
     String title
     Date releaseDate = new Date()
     int pages
+    
+    static belongsTo = [author:Author]
     static constraints = {
         title blank:false, nullable:false
+        author nullable: true
     }
     static mapping = {
         title index:true
@@ -224,6 +235,8 @@ class Book {
 @Entity
 class Author {
     String name
+    
+    static hasMany = [books: Book]
 }
 
 class BookController {

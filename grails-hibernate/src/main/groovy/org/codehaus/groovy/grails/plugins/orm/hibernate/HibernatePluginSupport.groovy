@@ -92,7 +92,11 @@ class HibernatePluginSupport {
             }
         }
 
-        def datasourceNames = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
+        def datasourceNames = []
+        if (getSpringConfig().containsBean('dataSource')) {
+            datasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+        }
+
         for (name in application.config.keySet()) {
             if (name.startsWith('dataSource_')) {
                 datasourceNames << name - 'dataSource_'
@@ -122,7 +126,8 @@ class HibernatePluginSupport {
             String prefix = isDefault ? '' : datasourceName + '_'
 
             for (GrailsDomainClass dc in application.domainClasses) {
-                if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+
+                if (!dc.abstract && GrailsHibernateUtil.isMappedWithHibernate(dc) && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                     "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
                         messageSource = ref("messageSource")
                         domainClass = ref("${dc.fullName}DomainClass")
@@ -202,6 +207,7 @@ class HibernatePluginSupport {
                 catch (Throwable t) {
                     log.error """WARNING: You've configured a custom Hibernate naming strategy '$namingStrategy' in DataSource.groovy, however the class cannot be found.
 Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
+                    GrailsDomainBinder.configureNamingStrategy datasourceName, ImprovedNamingStrategy
                 }
 
                 // allow adding hibernate properties that don't start with "hibernate."
@@ -503,7 +509,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)
         for (PersistentEntity entity in mappingContext.getPersistentEntities()) {
             GrailsDomainClass dc = application.getDomainClass(entity.javaClass.name)
-            if (!GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+            if (!GrailsHibernateUtil.isMappedWithHibernate(dc) || !GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                 continue
             }
 

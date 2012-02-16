@@ -9,15 +9,14 @@ import spock.lang.Specification;
 
 /**
  * Grails internal class for running Spec in a defined Grails Environment
- * 
- * returns Grails Environment (System Properties) back to original after running the Spec.
- * 
- * For example
- * String grailsEnvName = "test" 
- * runs the test in "test" Grails Environment
- * 
- * @author Lari Hotari
  *
+ * returns Grails Environment (System Properties) back to original after running the Spec.
+ *
+ * For example
+ * String grailsEnvName = "test"
+ * runs the test in "test" Grails Environment
+ *
+ * @author Lari Hotari
  */
 public abstract class AbstractGrailsEnvChangingSpec extends Specification {
     @Shared
@@ -25,22 +24,22 @@ public abstract class AbstractGrailsEnvChangingSpec extends Specification {
     @Shared
     String originalGrailsEnvDefault
     static List<String> grailsEnvs = [Environment.DEVELOPMENT.name, Environment.TEST.name, Environment.PRODUCTION.name]
-    
+
     public String getGrailsEnvName() {
         null
     }
-    
+
     def setup() {
-        // set grails.env before each test 
+        // set grails.env before each test
         changeGrailsEnv(grailsEnvName)
     }
-    
+
     def setupSpec() {
         // save grails.env and grails.env.default keys before running this spec
         originalGrailsEnv = System.getProperty(Environment.KEY)
         originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
     }
-    
+
     def cleanupSpec() {
         // reset grails.env and grails.env.default keys after running this spec
         resetGrailsEnvironment()
@@ -52,7 +51,7 @@ public abstract class AbstractGrailsEnvChangingSpec extends Specification {
             System.setProperty(Environment.KEY, newEnv)
         }
     }
-    
+
     protected void resetGrailsEnvironment() {
         if (originalGrailsEnv != null) {
             System.setProperty(Environment.KEY, originalGrailsEnv)
@@ -66,7 +65,7 @@ public abstract class AbstractGrailsEnvChangingSpec extends Specification {
             System.clearProperty(Environment.DEFAULT)
         }
     }
-    
+
     protected createCombinationsForGrailsEnvs(params) {
         [params,grailsEnvs].combinations().collect { it.flatten() }
     }

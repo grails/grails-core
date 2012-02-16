@@ -136,7 +136,7 @@ public class IsolatedTomcat {
             String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
             System.out.println(message);
         } catch (LifecycleException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
             System.err.println("Error loading Tomcat: " + e.getMessage());
             System.exit(1);
         }

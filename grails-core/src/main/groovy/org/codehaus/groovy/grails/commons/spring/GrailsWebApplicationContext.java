@@ -16,7 +16,10 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
-import groovy.lang.GroovyObject;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.env.GrailsEnvironment;
 import org.springframework.beans.BeansException;
@@ -35,9 +38,6 @@ import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.context.support.ServletContextResourcePatternResolver;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-
 /**
  * A WebApplicationContext that extends StaticApplicationContext to allow for programmatic
  * configuration at runtime. The code is adapted from StaticWebApplicationContext.
@@ -46,7 +46,7 @@ import javax.servlet.ServletContext;
  * @since 0.3
  */
 public class GrailsWebApplicationContext extends GrailsApplicationContext
-        implements ConfigurableWebApplicationContext, GroovyObject, ThemeSource {
+        implements ConfigurableWebApplicationContext, ThemeSource {
 
     private ServletContext servletContext;
     private String namespace;

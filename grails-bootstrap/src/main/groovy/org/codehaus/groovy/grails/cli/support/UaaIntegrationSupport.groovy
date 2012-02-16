@@ -17,6 +17,10 @@ class UaaIntegrationSupport {
             return null
         }
 
-        pluginList.plugin.find { it.@name == pluginName }
+        def p = pluginList.plugin.find { plugin -> plugin.@name?.text() == pluginName }
+        if(p) {
+            return p
+        }
+
     }
 }

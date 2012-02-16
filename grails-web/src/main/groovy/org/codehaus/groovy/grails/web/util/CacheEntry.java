@@ -52,7 +52,7 @@ public class CacheEntry<T> {
 
         return valueRef.get();
     }
-    
+
     public T getValue() {
         return valueRef.get();
     }

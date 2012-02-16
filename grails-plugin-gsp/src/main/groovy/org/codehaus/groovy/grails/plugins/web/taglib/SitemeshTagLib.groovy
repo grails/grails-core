@@ -102,6 +102,7 @@ class SitemeshTagLib implements RequestConstants {
             def newbuffer = new FastStringWriter()
             newbuffer.print(content)
             content = newbuffer.buffer
+            content.setPreferSubChunkWhenWritingToOtherBuffer(true)
         }
         content
     }
@@ -129,7 +130,7 @@ class SitemeshTagLib implements RequestConstants {
         GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
         def name = attrs.name?.toString()
         def val = attrs.value?.toString()
-        if (smpage && name && val) {
+        if (smpage && name && val != null) {
             smpage.addProperty("page.$name", val)
         }
     }
@@ -192,6 +193,23 @@ class SitemeshTagLib implements RequestConstants {
         def content = captureTagContent(out, 'title', attrs, body)
         if (smpage && content != null) {
             smpage.addProperty('title', content?.toString())
+            smpage.setTitleCaptured(true)
+        }
+    }
+    
+    /**
+     * Wraps the title tag so that the buffer can be cleared out from the head buffer
+     */
+    Closure wrapTitleTag = { attrs, body ->
+        if (body != null) {
+            GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            if (smpage) {
+                def wrapped = wrapContentInBuffer(body)
+                smpage.setTitleBuffer(wrapped)
+                out << wrapped
+            } else {
+                out << body()
+            }
         }
     }
 }

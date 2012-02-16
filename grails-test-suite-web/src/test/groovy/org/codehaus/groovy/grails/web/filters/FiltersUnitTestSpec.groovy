@@ -6,13 +6,7 @@ import grails.test.mixin.TestFor
 import grails.test.mixin.Mock
 import spock.lang.Specification
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 11/9/11
- * Time: 3:48 PM
- * To change this template use File | Settings | File Templates.
- */
+
 @TestFor(UserController)
 @Mock(AuthenticationFilters)
 class FiltersUnitTestSpec extends Specification{

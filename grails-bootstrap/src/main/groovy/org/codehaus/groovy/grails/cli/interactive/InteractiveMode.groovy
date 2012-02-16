@@ -88,6 +88,7 @@ class InteractiveMode {
 
         console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         interactiveModeActive = true
+        System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
         if(UaaIntegration.isAvailable() && !UaaIntegration.isEnabled()) {
             UaaIntegration.enable(settings, new PluginBuildSettings(settings), true)
@@ -97,6 +98,10 @@ class InteractiveMode {
         addStatus("Enter a script name to run. Use TAB for completion: ")
         while (interactiveModeActive) {
             def scriptName = showPrompt()
+            if(scriptName == null){
+                updateStatus "Good Bye!"
+                System.exit(0)
+            }
             try {
                 def trimmed = scriptName.trim()
                 if (trimmed) {
@@ -104,6 +109,7 @@ class InteractiveMode {
                         error "You cannot create an application in interactive mode."
                     }
                     else if ("quit".equals(trimmed)) {
+                        updateStatus "Good Bye!"
                         System.exit(0)
                     }
                     else if ("exit".equals(trimmed)) {
@@ -119,16 +125,8 @@ class InteractiveMode {
                            }
                         }
                         else {
+                            updateStatus "Good Bye!"
                             System.exit(0)
-                        }
-                    }
-                    else if (scriptName.startsWith("!")) {
-                        try {
-                            def args = scriptName[1..-1].split(ARG_SPLIT_PATTERN).collect { unescape(it) }
-                            def process = new ProcessBuilder(args).redirectErrorStream(true).start()
-                            log process.inputStream.text
-                        } catch (e) {
-                            error "Error occurred executing process: ${e.message}"
                         }
                     }
                     else if(scriptName.startsWith("open ")) {
@@ -160,21 +158,46 @@ class InteractiveMode {
                             error "Could not open file $fileName: ${e.message}"
                         }
                     }
-                    else {
-                        def parser = GrailsScriptRunner.getCommandLineParser()
+                    else if("!".equals(trimmed)){
+                        def history = console.reader.history
+
+                        //move one step back to !
+                        history.previous()
+
+                        //another step to previous command
+                        if(history.previous()){
+                            scriptName = history.current()
+                            if(scriptName.startsWith("!")){
+                                error "Can not repeat command: ${scriptName}"
+                            }
+                            else {
+                                try {
+                                    parseAndExecute(scriptName)
+                                } catch (ParseException e) {
+                                    error "Invalid command: ${e.message}"
+                                }
+                            }
+                        }
+                        else {
+                            error "! not valid. Can not repeat without history"
+                        }
+                    }
+                    else if (scriptName.startsWith("!")) {
                         try {
-                            def commandLine = parser.parseString(scriptName)
-                            final console = GrailsConsole.instance
-                            console.stacktrace = commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)
-                            console.verbose = commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)
-                            scriptRunner.executeScriptWithCaching(commandLine)
+                            def args = scriptName[1..-1].split(ARG_SPLIT_PATTERN).collect { unescape(it) }
+                            def process = new ProcessBuilder(args).redirectErrorStream(true).start()
+                            log process.inputStream.text
+                        } catch (e) {
+                            error "Error occurred executing process: ${e.message}"
+                        }
+                    }
+                    else {
+                        try {
+                            parseAndExecute(scriptName)
                         } catch (ParseException e) {
                             error "Invalid command: ${e.message}"
                         }
                     }
-                }
-                else {
-                    error "No script name specified"
                 }
             }
             catch(ScriptExitException e) {
@@ -206,6 +229,22 @@ class InteractiveMode {
                 }
             }
         }
+        
+        interactiveModeActive = false
+        System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
+    }
+
+    void parseAndExecute(String scriptName) throws ParseException {
+        def parser = GrailsScriptRunner.getCommandLineParser()
+        def commandLine = parser.parseString(scriptName)
+        prepareConsole(commandLine)
+        scriptRunner.executeScriptWithCaching(commandLine)
+    }
+
+    void prepareConsole(commandLine){
+        final console = GrailsConsole.instance
+        console.stacktrace = commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT)
+        console.verbose = commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT)
     }
 
     /**

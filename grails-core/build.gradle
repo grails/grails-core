@@ -1,12 +1,3 @@
-configurations {
-    agent.extendsFrom compile
-}
-
-eclipse {
-    classpath {
-        plusConfigurations += configurations.agent
-    }
-}
 dependencies {
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
@@ -62,34 +53,20 @@ dependencies {
         exclude group: 'xml-apis', module:'xml-apis'
     }
 
-    agent "com.springsource.springloaded:springloaded-core:$springLoadedVersion"
+    compile ("com.springsource.springloaded:springloaded-core:$springLoadedVersion") {
+        notInPom = true
+    }
 
     compile "org.springframework:spring-tx:${springVersion}"
     compile project(":grails-bootstrap"), project(":grails-spring")
 }
 
-sourceSets {
-    main {
-        compileClasspath = configurations.agent
-    }
-}
-
-javadoc {
-    classpath += configurations.agent
-}
-
 compileGroovy.doFirst {
     delete("${buildDir}/classes/main/META-INF")
-    ant.mkdir(dir:sourceSets.main.classesDir)
-    ant.propertyfile(file:"${sourceSets.main.classesDir}/grails.build.properties") {
+    ant.mkdir(dir:sourceSets.main.output.classesDir)
+    ant.propertyfile(file:"${sourceSets.main.output.classesDir}/grails.build.properties") {
          entry key:"grails.version", value:version
     }
 }
 
 jar.appendix = 'core'
-
-eclipse {
-    classpath {
-       plusConfigurations += configurations.agent
-    }
-}

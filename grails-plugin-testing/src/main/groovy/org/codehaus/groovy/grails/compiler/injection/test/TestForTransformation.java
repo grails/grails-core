@@ -122,10 +122,15 @@ public class TestForTransformation extends TestMixinTransformation {
         }
 
         ClassNode classNode = (ClassNode) parent;
-        String cName = classNode.getName();
-        if (classNode.isInterface()) {
-                error(source, "Error processing interface '" + cName + "'. " + MY_TYPE_NAME + " not allowed for interfaces.");
+        if (classNode.isInterface() || Modifier.isAbstract(classNode.getModifiers())) {
+            return;
         }
+
+        boolean junit3Test = isJunit3Test(classNode);
+        boolean spockTest = isSpockTest(classNode);
+        boolean isJunit = classNode.getName().endsWith("Tests");
+
+        if(!junit3Test && !spockTest && !isJunit) return;
 
         Expression value = node.getMember("value");
         ClassExpression ce;
@@ -133,41 +138,42 @@ public class TestForTransformation extends TestMixinTransformation {
             ce = (ClassExpression) value;
             testFor(classNode, ce);
         }
-        else if (!isJunit3Test(classNode)){
-            List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
-            if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
-            // no explicit class specified try by convention
-            String fileName = source.getName();
-            String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
-            if (className != null) {
-                boolean isJunit = className.endsWith("Tests");
-                boolean isSpock = className.endsWith("Spec");
-                String targetClassName = null;
+        else {
+            if (!junit3Test){
+                List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
+                if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
+                // no explicit class specified try by convention
+                String fileName = source.getName();
+                String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
+                if (className != null) {
+                    boolean isSpock = className.endsWith("Spec");
+                    String targetClassName = null;
 
-                if (isJunit) {
-                    targetClassName = className.substring(0, className.indexOf("Tests"));
-                }
-                else if (isSpock) {
-                    targetClassName = className.substring(0, className.indexOf("Spec"));
-                }
+                    if (isJunit) {
+                        targetClassName = className.substring(0, className.indexOf("Tests"));
+                    }
+                    else if (isSpock) {
+                        targetClassName = className.substring(0, className.indexOf("Spec"));
+                    }
 
-                if (targetClassName != null) {
-                    Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
-                    if (targetResource != null) {
-                        try {
-                            if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
-                                testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
-                            }
-                            else {
-                                for (String artefactType : artefactTypeToTestMap.keySet()) {
-                                    if (classNode.getName().endsWith(artefactType)) {
-                                        testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
-                                        break;
+                    if (targetClassName != null) {
+                        Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
+                        if (targetResource != null) {
+                            try {
+                                if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
+                                    testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                                }
+                                else {
+                                    for (String artefactType : artefactTypeToTestMap.keySet()) {
+                                        if (targetClassName.endsWith(artefactType)) {
+                                            testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                                            break;
+                                        }
                                     }
                                 }
+                            } catch (IOException e) {
+                                // ignore
                             }
-                        } catch (IOException e) {
-                            // ignore
                         }
                     }
                 }
@@ -229,10 +235,9 @@ public class TestForTransformation extends TestMixinTransformation {
                     }
                     return testForMethod;
                 }
-                else {
-                    addMockCollaboratorToSetup(classNode, value, artefactType);
-                    return null;
-                }
+
+                addMockCollaboratorToSetup(classNode, value, artefactType);
+                return null;
             }
         }
 
@@ -367,9 +372,9 @@ public class TestForTransformation extends TestMixinTransformation {
             getter = new MethodNode(getterName, Modifier.PUBLIC, targetClass.getType().getPlainNodeReference(),GrailsArtefactClassInjector.ZERO_PARAMETERS,null, getterBody);
 
             BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
-            getterBody.addStatement(new IfStatement(new BooleanExpression(new BinaryExpression(fieldExpression, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)), new ExpressionStatement(testTargetAssignment), new BlockStatement()));
 
-            IfStatement autowiringIfStatement = getAutowiringIfStatement(fieldExpression);
+
+            IfStatement autowiringIfStatement = getAutowiringIfStatement(targetClass,fieldExpression, testTargetAssignment);
             getterBody.addStatement(autowiringIfStatement);
 
             getterBody.addStatement(new ReturnStatement(fieldExpression));
@@ -379,14 +384,28 @@ public class TestForTransformation extends TestMixinTransformation {
         return methodNode;
     }
 
-    private IfStatement getAutowiringIfStatement(VariableExpression fieldExpression) {
+    private IfStatement getAutowiringIfStatement(ClassExpression targetClass, VariableExpression fieldExpression, BinaryExpression testTargetAssignment) {
         VariableExpression appCtxVar = new VariableExpression("applicationContext");
-        BooleanExpression applicationContextCheck = new BooleanExpression(new BinaryExpression(appCtxVar, GrailsASTUtils.NOT_EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION));
+
+        BooleanExpression applicationContextCheck = new BooleanExpression(
+                new BinaryExpression(
+                new BinaryExpression(fieldExpression, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION),
+                        Token.newSymbol("&&",0,0),
+                new BinaryExpression(appCtxVar, GrailsASTUtils.NOT_EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)));
         BlockStatement performAutowireBlock = new BlockStatement();
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(fieldExpression);
         arguments.addExpression(new ConstantExpression(1));
         arguments.addExpression(new ConstantExpression(false));
+        BlockStatement assignFromApplicationContext = new BlockStatement();
+        ArgumentListExpression argWithClassName = new ArgumentListExpression();
+        MethodCallExpression getClassNameMethodCall = new MethodCallExpression(targetClass, "getName", new ArgumentListExpression());
+        argWithClassName.addExpression(getClassNameMethodCall);
+
+        assignFromApplicationContext.addStatement(new ExpressionStatement(new BinaryExpression(fieldExpression, ASSIGN, new MethodCallExpression(appCtxVar, "getBean", argWithClassName))));
+        BlockStatement elseBlock = new BlockStatement();
+        elseBlock.addStatement(new ExpressionStatement(testTargetAssignment));
+        performAutowireBlock.addStatement(new IfStatement(new BooleanExpression(new MethodCallExpression(appCtxVar, "containsBean", argWithClassName)), assignFromApplicationContext, elseBlock));
         performAutowireBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new PropertyExpression(appCtxVar,"autowireCapableBeanFactory"), "autowireBeanProperties", arguments)));
         return new IfStatement(applicationContextCheck, performAutowireBlock, new BlockStatement());
     }

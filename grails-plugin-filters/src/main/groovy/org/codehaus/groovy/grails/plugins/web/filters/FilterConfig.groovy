@@ -40,6 +40,7 @@ class FilterConfig extends ControllersApi{
     Closure before
     Closure after
     Closure afterView
+    // this modelAndView overrides ControllersApi's modelAndView
     ModelAndView modelAndView
     boolean initialised = false
 
@@ -130,15 +131,6 @@ class FilterConfig extends ControllersApi{
 
     Errors getErrors() {
         return super.getErrors(this)
-    }
-
-    void setModelAndView(ModelAndView mav) {
-        super.setModelAndView(this, mav)
-    }
-
-
-    ModelAndView getModelAndView() {
-        return super.getModelAndView(this)
     }
 
     Map getChainModel() {

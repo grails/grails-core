@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
 import grails.util.CollectionUtils;
+import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
@@ -76,10 +77,12 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
     public static final String CLASS_LOADER_BEAN = "classLoader";
 
     private static final Log LOG = LogFactory.getLog(GrailsRuntimeConfigurator.class);
+    public static final String GRAILS_INITIALIZING = "org.grails.internal.INITIALIZING";
 
     private GrailsApplication application;
     private ApplicationContext parent;
     private GrailsPluginManager pluginManager;
+    private WebRuntimeSpringConfiguration webSpringConfig;
     private static final String DEVELOPMENT_SPRING_RESOURCES_XML = "file:./grails-app/conf/spring/resources.xml";
 
     public GrailsRuntimeConfigurator(GrailsApplication application) {
@@ -130,11 +133,11 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         // TODO GRAILS-720 this causes plugin beans to be re-created - should get getApplicationContext always call refresh?
         WebApplicationContext ctx;
         try {
-            WebRuntimeSpringConfiguration springConfig = createWebRuntimeSpringConfiguration(application, parent, application.getClassLoader());
-            springConfig.setBeanFactory(new ReloadAwareAutowireCapableBeanFactory());
+            webSpringConfig = createWebRuntimeSpringConfiguration(application, parent, application.getClassLoader());
+            webSpringConfig.setBeanFactory(new ReloadAwareAutowireCapableBeanFactory());
 
             if (context != null) {
-                springConfig.setServletContext(context);
+                webSpringConfig.setServletContext(context);
                 pluginManager.setServletContext(context);
             }
             if (!pluginManager.isInitialised()) {
@@ -148,21 +151,24 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
             pluginManager.registerProvidedArtefacts(application);
 
-            registerParentBeanFactoryPostProcessors(springConfig);
+            registerParentBeanFactoryPostProcessors(webSpringConfig);
 
-            pluginManager.doRuntimeConfiguration(springConfig);
+            pluginManager.doRuntimeConfiguration(webSpringConfig);
 
             // configure scaffolding
             LOG.debug("[RuntimeConfiguration] Processing additional external configurations");
 
             if (loadExternalBeans) {
-                doPostResourceConfiguration(application,springConfig);
+                doPostResourceConfiguration(application,webSpringConfig);
             }
 
             reset();
 
-            application.setMainContext(springConfig.getUnrefreshedApplicationContext());
-            ctx = (WebApplicationContext) springConfig.getApplicationContext();
+            application.setMainContext(webSpringConfig.getUnrefreshedApplicationContext());
+            
+            System.setProperty(Environment.INITIALIZING, "true");
+            ctx = (WebApplicationContext) webSpringConfig.getApplicationContext();
+            System.setProperty(Environment.INITIALIZING, "");
 
             pluginManager.setApplicationContext(ctx);
             pluginManager.doDynamicMethods();
@@ -392,5 +398,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      */
     public static void reset() {
         springGroovyResourcesBeanBuilder = null;
+    }
+
+    // for testing
+    WebRuntimeSpringConfiguration getWebRuntimeSpringConfiguration() {
+        return webSpringConfig;
     }
 }

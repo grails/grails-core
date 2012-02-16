@@ -80,9 +80,8 @@ p = new Permission(user:u, permission:"uber")
         assert entity != null
         assert entity.enabled
         assert entity.cash == 42
-
     }
-    
+
     void testAnnotatedEntity() {
         def entity = evaluate("""
           import grails.persistence.*
@@ -94,7 +93,6 @@ p = new Permission(user:u, permission:"uber")
           }
           new EntityTransformTest(id:1L, version:2L)
         """)
-
 
         assertEquals 1L, entity.id
         assertEquals 2L, entity.version

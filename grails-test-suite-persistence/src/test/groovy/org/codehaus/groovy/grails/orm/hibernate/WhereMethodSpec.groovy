@@ -118,6 +118,23 @@ class CallMe {
             people.size() == 3
     }
 
+    @Ignore    
+    def "Test .count on a query with sort parameters"() {
+        given:"A bunch of people"
+              createPeople()
+
+        when:"parameters are used instead of literals"
+            def fn = "Bart"
+            def ln = "Simpson"
+
+
+            def query = Person.where { firstName != fn && lastName == ln }.sort("firstName", "desc")
+            def cnt = query.count()
+
+        then:"The correct results are returned"
+            cnt == 3
+    }
+
 
     def "Test property projection"() {
         given:"A bunch of people"
@@ -153,13 +170,13 @@ class CallMe {
       given:"A bunch of people with pets"
           createPeopleWithPets()
           def p = new Person(firstName: "Old", lastName: "Person").save()
-          new Pet(owner:p, birthDate: new Date() - 750, name:"Old Dog").save()
+          new Pet(owner:p, birthDate: Date.parse('yyyy-MM-dd','2009-06-01'), name:"Old Dog").save()
 
 
 
       when:"A function is used on the property"
         def query = Pet.where {
-              year(birthDate) == 2011
+              year(birthDate) == 2012
         }
         def results = query.list()
 

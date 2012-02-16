@@ -138,7 +138,7 @@ public class GroovyPageView extends AbstractUrlBasedView {
      *
      * @throws java.io.IOException Thrown when an error occurs writing the response
      */
-    @SuppressWarnings({ "rawtypes", "unused" })
+    @SuppressWarnings("rawtypes")
     protected void renderWithTemplateEngine(GroovyPagesTemplateEngine engine, Map model,
             HttpServletResponse response, HttpServletRequest request) throws IOException {
         request.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, Boolean.TRUE);
@@ -242,7 +242,6 @@ public class GroovyPageView extends AbstractUrlBasedView {
         }
     }
 
-    @SuppressWarnings("unused")
     protected void initTemplate() throws IOException {
         if (scriptSource == null) {
             template = templateEngine.createTemplate(getUrl());

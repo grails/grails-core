@@ -293,11 +293,17 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             secondAttempt = true;
         }
         if (null == mappingKeysSet) return null;
+        
+        Set<String> lookupParams = new HashSet<String>(params.keySet());
+        if (secondAttempt) {
+            lookupParams.removeAll(DEFAULT_ACTION_PARAMS);
+            lookupParams.addAll(DEFAULT_ACTION_PARAMS);
+        }
 
         UrlMappingKey[] mappingKeys = (UrlMappingKey[]) mappingKeysSet.toArray(new UrlMappingKey[mappingKeysSet.size()]);
         for (int i = mappingKeys.length; i > 0; i--) {
             UrlMappingKey mappingKey = mappingKeys[i - 1];
-            if (params.keySet().containsAll(mappingKey.paramNames)) {
+            if (lookupParams.containsAll(mappingKey.paramNames)) {
                 final UrlMapping mapping = mappingsLookup.get(mappingKey);
                 if (canInferAction(actionName, secondAttempt, isIndexAction, mapping)) {
                     return mapping;

@@ -81,6 +81,14 @@ class Log4jConfig {
         }
     }
 
+    def propertyMissing(String name) {
+        if (LAYOUTS.containsKey(name)) {
+            return LAYOUTS[name].newInstance()
+        }
+
+        LogLog.error "Property missing when configuring log4j: $name"
+    }
+
     def methodMissing(String name, args) {
         if (APPENDERS.containsKey(name) && args) {
             def constructorArgs = args[0] instanceof Map ? args[0] : [:]
@@ -217,15 +225,12 @@ class Log4jConfig {
         }
 
         def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
-        if (Environment.current == Environment.DEVELOPMENT) {
-            BuildSettings settings = BuildSettingsHolder.getSettings()
-            def targetDir = settings?.getProjectTargetDir()
-            if (targetDir) targetDir.mkdirs()
-            fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
-        }
-        else {
-            fileAppender.file = "stacktrace.log"
-        }
+
+        BuildSettings settings = BuildSettingsHolder.getSettings()
+        def targetDir = settings?.getProjectTargetDir()
+        targetDir?.mkdirs()
+        fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
+
         fileAppender.activateOptions()
         appenders.stacktrace = fileAppender
         return fileAppender
@@ -375,16 +380,16 @@ class RootLog4jConfig {
     Logger root
     Log4jConfig config
 
-    def RootLog4jConfig(root, config) {
+    RootLog4jConfig(root, config) {
         this.root = root
         this.config = config
     }
 
     def debug(Object[] appenders = null) {
-        setLevelAndAppender(Level.DEBUG,appenders)
+        setLevelAndAppender(Level.DEBUG, appenders)
     }
 
-    private setLevelAndAppender(Level level,Object[] appenders) {
+    private setLevelAndAppender(Level level, Object[] appenders) {
         root.level = level
         for (appName in appenders) {
             Appender app
@@ -401,34 +406,34 @@ class RootLog4jConfig {
     }
 
     def info(Object[] appenders = null) {
-        setLevelAndAppender(Level.INFO,appenders)
+        setLevelAndAppender(Level.INFO, appenders)
     }
 
     def warn(Object[] appenders = null) {
-        setLevelAndAppender(Level.WARN,appenders)
+        setLevelAndAppender(Level.WARN, appenders)
     }
 
     def trace(Object[] appenders = null) {
-        setLevelAndAppender(Level.TRACE,appenders)
+        setLevelAndAppender(Level.TRACE, appenders)
     }
 
     def all(Object[] appenders = null) {
-        setLevelAndAppender(Level.ALL,appenders)
+        setLevelAndAppender(Level.ALL, appenders)
     }
 
     def error(Object[] appenders = null) {
-        setLevelAndAppender(Level.ERROR,appenders)
+        setLevelAndAppender(Level.ERROR, appenders)
     }
 
     def fatal(Object[] appenders = null) {
-        setLevelAndAppender(Level.FATAL,appenders)
+        setLevelAndAppender(Level.FATAL, appenders)
     }
 
     def off(Object[] appenders = null) {
-        setLevelAndAppender(Level.OFF,appenders)
+        setLevelAndAppender(Level.OFF, appenders)
     }
 
-    void setProperty(String s, Object o) {
+    void setProperty(String s, o) {
         root."$s" = o
     }
 }

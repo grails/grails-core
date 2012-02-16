@@ -29,6 +29,8 @@ class TestUrlMappings {
         "/searchable/$action?" {
             controller = "searchable"
         }
+
+        "/dummy/$action/$name/$id"(controller: "test2")
     }
 }
         ''')
@@ -153,4 +155,14 @@ class TestUrlMappings {
             template,
             [:])
     }
+
+    void testCreateLinkWithExtraParamsGRAILS8249() {
+        def template = '''<g:createLink controller="test2" action="show" id="jim" params="[name: 'Jim Doe', age: 31]" />'''
+        assertOutputEquals("/dummy/show/Jim+Doe/jim?age=31", template, [:])
+
+        // Ensure that without the required name param that it falls back to the conventional mapping
+        template = '''<g:createLink controller="test2" action="show" id="jim" params="[age: 31]" />'''
+        assertOutputEquals("/test2/show/jim?age=31", template, [:])
+    }
+
 }

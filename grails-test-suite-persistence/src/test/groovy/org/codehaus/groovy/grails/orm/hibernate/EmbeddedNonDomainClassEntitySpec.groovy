@@ -28,20 +28,17 @@ class EmbeddedNonDomainClassEntitySpec extends GormSpec{
 
 
 /**
- *
  * a business place for displaying on map
- *
  */
 @Entity
 class Place {
-
-	PlaceAddress address
-	String name
-	static embedded = ['address']
+    PlaceAddress address
+    String name
+    static embedded = ['address']
 }
 
 @Entity
 class PlaceAddress {
-	String street
-	String postcode
+    String street
+    String postcode
 }

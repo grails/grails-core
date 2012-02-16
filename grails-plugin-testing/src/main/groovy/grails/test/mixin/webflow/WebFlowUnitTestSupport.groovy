@@ -148,12 +148,27 @@ class WebFlowUnitTestSupport {
         currentEvent.subflow = wrapWithEventName(subflow)
     }
 
-    Closure wrapWithEventName(Closure action) {
+    void subflow(LinkedHashMap subflowArgs) {
+        currentEvent.subflowArgs = subflowArgs
+    }
+
+    void output(Closure action) {
+        currentEvent.output = wrapWithEventName(action, [isOutput: true])
+    }
+
+    void input(Closure action) {
+        flowMap.input = { input ->
+            wrapWithEventName(action, [isInput: true, inputParams: input])()
+        }
+    }
+
+    Closure wrapWithEventName(Closure action, Map params = [:]) {
         String event = currentEventName
         String transition = currentOnEvent
+        Map callbackParams = [event:event, transition:transition] + params
 
         Closure wrap = {->
-            setEventOnActionCallback.call(event:event, transition:transition)
+            setEventOnActionCallback.call(callbackParams)
             return action()
         }
 

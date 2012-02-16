@@ -293,6 +293,7 @@ whereQuery.accept {
 	method name:"hour", type:Integer, params:[prop:Date], doc:"The hour of a date property"
 	method name:"day", type:Integer, params:[prop:Date], doc:"The day of a date property"
 	method name:"year", type:Integer, params:[prop:Date], doc:"The year of a date property"
+	method name:"month", type:Integer, params:[prop:Date], doc:"The month of a date property"
 
 	method name:"lower", type:String, params:[prop:String], doc:"Converts a string property to lower case"
 	method name:"upper", type:String, params:[prop:String], doc:"Converts a string property to upper case"
@@ -303,7 +304,7 @@ whereQuery.accept {
 // here are nested queries
 (whereQuery & enclosingCallName(names : name())).accept {
 	// grab each enclosing name and see if it is a property of the current domain class
-	// it may be a synthetic proeprty
+	// it may be a synthetic property
 	names.each {
 		def prop = currentType.getProperty(it)
 		def maybe
@@ -339,8 +340,13 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
-	delegatesTo type:"org.hibernate.Criteria", isStatic:true
+	method name : "maxResults", type : void, params : [num : int]
+	
+	delegatesTo type:"org.hibernate.Criteria", except:["list", "scroll"]
+	method name : "list", declaringType : "grails.orm.HibernateCriteriaBuilder", type: List, params : [query : Closure]
+	method name : "scroll", declaringType : "grails.orm.HibernateCriteriaBuilder", type: "org.hibernate.ScrollableResults", params : [query : Closure]
 }
+
 
 // namedQueries field
 // not exactly right since HibernateCriteriaBuilder methods should only be available
@@ -354,7 +360,7 @@ contribute(enclosingField("namedQueries") & domainClass) {
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	delegatesTo type:"grails.orm.HibernateCriteriaBuilder", isStatic:true
 	delegatesTo type:"org.hibernate.Criteria", isStatic:true
-}
+} 
 
 
 // -----------------------------------------------------

@@ -53,7 +53,7 @@ import java.util.Stack;
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
  */
-public class XML extends AbstractConverter<XMLStreamWriter> implements Converter<XMLStreamWriter> {
+public class XML extends AbstractConverter<XMLStreamWriter> {
 
     public static final Log log = LogFactory.getLog(XML.class);
 

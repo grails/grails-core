@@ -98,7 +98,7 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         mockController.renderMap.call()
 
         def response = mockController.response
-        assertEquals '["a":1, "b":2]', response.contentAsString
+        assertEquals "['a':1, 'b':2]", response.contentAsString
     }
 
     void testRenderGString() {

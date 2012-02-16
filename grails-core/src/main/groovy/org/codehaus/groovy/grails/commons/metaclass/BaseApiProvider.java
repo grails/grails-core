@@ -43,6 +43,7 @@ public abstract class BaseApiProvider {
     @SuppressWarnings("rawtypes")
     protected List instanceMethods = new ArrayList();
     protected List<Method> staticMethods = new ArrayList<Method>();
+    protected List<Method> constructors = new ArrayList<Method>();
 
     @SuppressWarnings("unchecked")
     public void addApi(final Object apiInstance) {
@@ -54,22 +55,27 @@ public abstract class BaseApiProvider {
         while (currentClass != Object.class) {
             final Method[] declaredMethods = currentClass.getDeclaredMethods();
 
-            for (final Method method : declaredMethods) {
-                final int modifiers = method.getModifiers();
-                if (!isNotExcluded(method, modifiers)) {
+            for (final Method javaMethod : declaredMethods) {
+                final int modifiers = javaMethod.getModifiers();
+                if (!isNotExcluded(javaMethod, modifiers)) {
                     continue;
                 }
 
                 if (Modifier.isStatic(modifiers)) {
-                    staticMethods.add(method);
+                    if(isConstructorCallMethod(javaMethod)) {
+                        constructors.add(javaMethod);
+                    }
+                    else {
+                        staticMethods.add(javaMethod);
+                    }
                 }
                 else {
-                    instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(method)) {
+                    instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(javaMethod)) {
                         @Override
                         public String getName() {
 
                             String methodName = super.getName();
-                            if (methodName.equals(CONSTRUCTOR_METHOD)) {
+                            if (isConstructorCallMethod(javaMethod)) {
                                 return CTOR_GROOVY_METHOD;
                             }
                             return methodName;
@@ -107,18 +113,22 @@ public abstract class BaseApiProvider {
         }
     }
 
+    private boolean isConstructorCallMethod(Method method) {
+        return method != null && Modifier.isStatic(method.getModifiers()) && Modifier.isPublic(method.getModifiers()) && method.getName().equals(CONSTRUCTOR_METHOD) && method.getParameterTypes().length>0;
+    }
+
     private boolean isNotExcluded(Method method, final int modifiers) {
         final String name = method.getName();
 
         if (EXCLUDED_METHODS.contains(name)) return false;
 
         boolean isStatic = Modifier.isStatic(modifiers);
-        
+
         // skip plain setters/getters by default for instance methods (non-static)
-        if(!isStatic && (GrailsClassUtils.isSetter(name, method.getParameterTypes()) || GrailsClassUtils.isGetter(name, method.getParameterTypes()))) {
+        if (!isStatic && (GrailsClassUtils.isSetter(name, method.getParameterTypes()) || GrailsClassUtils.isGetter(name, method.getParameterTypes()))) {
             return false;
-        }        
-        
+        }
+
         int minParameters = isStatic ? 0 : 1;
 
         return Modifier.isPublic(modifiers) &&

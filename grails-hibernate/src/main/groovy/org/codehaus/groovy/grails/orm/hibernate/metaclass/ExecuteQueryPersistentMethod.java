@@ -99,7 +99,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_TIMEOUT)) {
                     Integer timeoutParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_TIMEOUT), Integer.class);
-                    q.setFetchSize(timeoutParam.intValue());
+                    q.setTimeout(timeoutParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) {
                     q.setReadOnly(((Boolean) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_READ_ONLY)).booleanValue());

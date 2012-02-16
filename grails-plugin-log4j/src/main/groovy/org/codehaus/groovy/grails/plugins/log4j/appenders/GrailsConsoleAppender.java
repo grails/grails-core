@@ -25,6 +25,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
@@ -54,11 +55,22 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     protected void append(LoggingEvent event) {
         Level level = event.getLevel();
         String message = buildMessage(event);
-        if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
-            console.error(message);
+        if(System.out instanceof GrailsConsolePrintStream) {
+
+            if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
+                console.error(message);
+            }
+            else {
+                console.log(message);
+            }
         }
         else {
-            console.log(message);
+            if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
+                System.err.println(message);
+            }
+            else {
+                System.out.println(message);
+            }            
         }
     }
 

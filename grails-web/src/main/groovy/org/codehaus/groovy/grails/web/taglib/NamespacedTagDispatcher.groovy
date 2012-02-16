@@ -44,7 +44,7 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
         this.type = callingType
         initializeMetaClass()
     }
-    
+
     void initializeMetaClass() {
         // use per-instance metaclass
         ExpandoMetaClass emc = new ExpandoMetaClass(getClass(), false, true)
@@ -54,7 +54,7 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
             GroovyPagesMetaUtils.registerMethodMissingWorkaroundsForDefaultNamespace(emc, lookup)
         }
     }
-    
+
     def methodMissing(String name, args) {
         GroovyPagesMetaUtils.methodMissingForTagLib(getMetaClass(), type, lookup, namespace, name, args, !developmentMode)
     }

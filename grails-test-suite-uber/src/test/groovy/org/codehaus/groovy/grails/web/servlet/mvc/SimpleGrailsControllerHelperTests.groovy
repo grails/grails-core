@@ -19,6 +19,14 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
         }
     }
 
+    void testAmbiguousGetterNameForAction() {
+            runTest {
+                def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
+                def mv = helper.handleURI("/test3/list", webRequest)
+                assert !mv.getModel()["someAmbiguousActionName"]
+            }
+        }
+
     void testCallsAfterInterceptorWithModel() {
         runTest {
             def helper = new MixedGrailsControllerHelper(application:ga, applicationContext: appCtx, servletContext: servletContext)
@@ -76,6 +84,7 @@ class Test1Controller {
     }
 }
 
+@Artefact("Controller")
 class Test2Controller {
     @Action def list(){}
 
@@ -85,15 +94,17 @@ class Test2Controller {
     }
 }
 
+@Artefact("Controller")
 class Test3Controller {
     @Action def list(){}
-
+    @Action def getSomeAmbiguousActionName(){[a:true]}
     def afterInterceptor = { model, modelAndView ->
          model.put("after", modelAndView.getViewName())
          return true
     }
 }
 
+@Artefact("Controller")
 class Test4Controller {
     @Action def list(){}
 

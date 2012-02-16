@@ -106,6 +106,7 @@ public abstract class AbstractIvyDependencyManager {
             TEST_CONFIGURATION,
             PROVIDED_CONFIGURATION,
             DOCS_CONFIGURATION);
+    public static final ExcludeRule[] NO_EXCLUDE_RULES = new ExcludeRule[0];
 
     @SuppressWarnings("unchecked")
     Map<String, List<String>> configurationMappings = CollectionUtils.<String, List<String>>newMap(
@@ -436,7 +437,13 @@ public abstract class AbstractIvyDependencyManager {
         if (existing != null && descriptor.isTransitivelyIncluded()) {
             ModuleRevisionId dependencyRevisionId = existing.getDependencyRevisionId();
             if (dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
+            else if(descriptor.getPlugin() != null && (existing instanceof EnhancedDefaultDependencyDescriptor) && ((EnhancedDefaultDependencyDescriptor)existing).getPlugin() == null ) {
+                // if the descriptor is coming from a plugin and the dependency is already declared in an application then the one declared in the application takes priority
+                return;
+            }
         }
+
+
 
         String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
         String packaging;
@@ -485,7 +492,7 @@ public abstract class AbstractIvyDependencyManager {
             setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
         }
 
-        doParseDependencies(definition, null);
+        doParseDependencies(definition, null, NO_EXCLUDE_RULES);
 
         // The dependency config can use the pom(Boolean) method to declare
         // that this project has a POM and it has the dependencies, which means
@@ -521,7 +528,25 @@ public abstract class AbstractIvyDependencyManager {
             throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
         }
 
-        doParseDependencies(definition, pluginName);
+        doParseDependencies(definition, pluginName, NO_EXCLUDE_RULES);
+    }
+
+    /**
+     * Parses dependencies of a plugin.
+     *
+     * @param pluginName the name of the plugin
+     * @param definition the Ivy DSL definition
+     */
+    public void parseDependencies(String pluginName, Closure<?> definition, ExcludeRule[] excludeRules) throws IllegalStateException {
+        if (definition == null) {
+            return;
+        }
+
+        if (moduleDescriptor == null) {
+            throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
+        }
+
+        doParseDependencies(definition, pluginName, excludeRules);
     }
 
     /**
@@ -531,7 +556,7 @@ public abstract class AbstractIvyDependencyManager {
      *
      * @see EnhancedDefaultDependencyDescriptor#plugin
      */
-    private void doParseDependencies(Closure<?> definition, String pluginName) {
+    private void doParseDependencies(Closure<?> definition, String pluginName, ExcludeRule[] excludeRules) {
         DependencyConfigurationContext context;
 
         // Temporary while we move all of the Groovy super class here
@@ -544,6 +569,7 @@ public abstract class AbstractIvyDependencyManager {
         }
 
         context.setOffline(this.offline);
+        context.setExcludeRules(excludeRules);
 
         definition.setDelegate(new DependencyConfigurationConfigurer(context));
         definition.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -715,7 +741,7 @@ public abstract class AbstractIvyDependencyManager {
     private void addMetadataPluginDependencies(Map<String, String> plugins) {
         for (Map.Entry<String, String> plugin : plugins.entrySet()) {
             String name = plugin.getKey().contains(":") ? plugin.getKey().split(":")[1] : plugin.getKey();
-			String group = plugin.getKey().contains(":") ? plugin.getKey().split(":")[0] : "org.grails.plugins";
+            String group = plugin.getKey().contains(":") ? plugin.getKey().split(":")[0] : "org.grails.plugins";
             String version = plugin.getValue();
 
             if (pluginNameToDescriptorMap.containsKey(name)) {

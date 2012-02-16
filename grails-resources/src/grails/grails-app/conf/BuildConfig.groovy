@@ -9,7 +9,7 @@ grails.project.source.level = 1.6
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
-        // uncomment to disable ehcache
+        // specify dependency exclusions here; for example, uncomment this to disable ehcache:
         // excludes 'ehcache'
     }
     log "error" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
@@ -17,14 +17,15 @@ grails.project.dependency.resolution = {
 
     repositories {
         inherits true // Whether to inherit repository definitions from plugins
+
         grailsPlugins()
         grailsHome()
         grailsCentral()
+
+        mavenLocal()
         mavenCentral()
 
-        // uncomment these to enable remote dependency resolution from public Maven repositories
-        //mavenCentral()
-        //mavenLocal()
+        // uncomment these (or add new ones) to enable remote dependency resolution from public Maven repositories
         //mavenRepo "http://snapshots.repository.codehaus.org"
         //mavenRepo "http://repository.codehaus.org"
         //mavenRepo "http://download.java.net/maven/2/"
@@ -33,13 +34,18 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
-        // runtime 'mysql:mysql-connector-java:5.1.16'
+        // runtime 'mysql:mysql-connector-java:5.1.18'
     }
 
     plugins {
         runtime ":hibernate:$grailsVersion"
         runtime ":jquery:1.7.1"
-        runtime ":resources:1.1.5"
+        runtime ":resources:1.1.6"
+
+        // Uncomment these (or add new ones) to enable additional resources capabilities
+        //runtime ":zipped-resources:1.0"
+        //runtime ":cached-resources:1.0"
+        //runtime ":yui-minify-resources:0.1.4"
 
         build ":tomcat:$grailsVersion"
 

@@ -56,7 +56,7 @@ import java.util.regex.PatternSyntaxException;
  * @since 0.5
  */
 @SuppressWarnings("rawtypes")
-public class RegexUrlMapping extends AbstractUrlMapping implements UrlMapping {
+public class RegexUrlMapping extends AbstractUrlMapping {
 
     private Pattern[] patterns;
     private UrlMappingData urlData;

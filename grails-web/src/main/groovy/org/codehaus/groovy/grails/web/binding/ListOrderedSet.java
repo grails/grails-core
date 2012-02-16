@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class ListOrderedSet extends AbstractSerializableSetDecorator implements Set, List {
+public class ListOrderedSet extends AbstractSerializableSetDecorator implements List {
     private static final long serialVersionUID = -228664372470420141L;
 
     /** Internal list to hold the sequence of objects */

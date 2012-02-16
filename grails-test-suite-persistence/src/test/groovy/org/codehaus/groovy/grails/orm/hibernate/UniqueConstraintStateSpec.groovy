@@ -2,14 +2,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 11/30/11
- * Time: 3:07 PM
- * To change this template use File | Settings | File Templates.
- */
-class UniqueConstraintStateSpec extends GormSpec{
+
+class UniqueConstraintStateSpec extends GormSpec {
 
     void "Test that the domain validator state is correct for a unique constraint"() {
         when:"The domain is retrieved from the application"

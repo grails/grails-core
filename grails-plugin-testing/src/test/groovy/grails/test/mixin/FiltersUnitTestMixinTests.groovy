@@ -84,8 +84,8 @@ class SimpleFilters {
             before = {
                 request.filterBefore = "one"
             }
-            after = {
-                request.filterAfter = "two ${modelAndView.model}"
+            after = { model ->
+                request.filterAfter = "two ${model}"
             }
             afterView = {
                 request.filterView = "done"
@@ -101,8 +101,8 @@ class CancellingFilters {
                 redirect(controller:"book", action:"list")
                 return false
             }
-            after = {
-                request.filterAfter = "two ${modelAndView.model}"
+            after = { model ->
+                request.filterAfter = "two ${model}"
             }
             afterView = {
                 request.filterView = "done"
@@ -116,8 +116,8 @@ class ExceptionThrowingFilters {
             before = {
                 throw new Exception("bad")
             }
-            after = {
-                request.filterAfter = "two ${modelAndView.model}"
+            after = { model ->
+                request.filterAfter = "two ${model}"
             }
             afterView = { e ->
                 request.exception = e

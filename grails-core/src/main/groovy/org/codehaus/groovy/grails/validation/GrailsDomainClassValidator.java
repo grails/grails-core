@@ -15,7 +15,6 @@
 package org.codehaus.groovy.grails.validation;
 
 import groovy.lang.GString;
-import groovy.lang.GroovyObject;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +29,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
@@ -38,8 +36,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
 /**
- * A specialised Spring validator that validates a domain class instance using the constraints defined in the
- * static constraints closure.
+ * A specialised Spring validator that validates a domain class instance using
+ * the constraints defined in the static constraints closure.
  *
  * @author Graeme Rocher
  * @since 0.1
@@ -54,7 +52,6 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
     protected GrailsDomainClass domainClass;
     protected MessageSource messageSource;
     protected GrailsApplication grailsApplication;
-    private static final String ERRORS_PROPERTY = "errors";
 
     @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz) {
@@ -157,7 +154,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
         Object collection = bean.getPropertyValue(propertyName);
         if (collection instanceof List || collection instanceof SortedSet) {
             int idx = 0;
-             for (Object associatedObject : ((Collection)collection)) {
+            for (Object associatedObject : ((Collection)collection)) {
                 cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]", idx);
             }
         }

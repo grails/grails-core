@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.compiler.web
 import grails.spring.BeanBuilder
 import grails.util.ClosureToMapPopulator
 import grails.util.GrailsWebUtil
+import grails.validation.Validateable
 
 import java.util.Calendar
 
@@ -12,7 +13,6 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.web.context.ContextLoader
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -66,6 +66,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 [artist: a]
             }
 
+            def closureActionWithNonValidateableCommandObjectWithAValidateMethod = { org.codehaus.groovy.grails.compiler.web.ClassWithNoValidateMethod co ->
+                [co: co]
+            }
+
+            def closureActionWithNonValidateableCommandObject = { org.codehaus.groovy.grails.compiler.web.NonValidateableCommand co ->
+                [commandObject: co]
+            }
+
             def methodActionWithDate(DateComamndObject co) {
                 [command: co]
             }
@@ -80,6 +88,18 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
             def methodActionWithMultipleCommandObjects(PersonCommand p, ArtistCommand a)  {
                 [person: p, artist: a]
+            }
+
+            def methodActionWithValidateableParam(org.codehaus.groovy.grails.compiler.web.SomeValidateableClass svc) {
+                [commandObject: svc]
+            }
+
+            def methodActionWithNonValidateableCommandObjectWithAValidateMethod(org.codehaus.groovy.grails.compiler.web.ClassWithNoValidateMethod co) {
+                [co: co]
+            }
+
+            def methodActionWithNonValidateableCommandObject(org.codehaus.groovy.grails.compiler.web.NonValidateableCommand co) {
+                [commandObject: co]
             }
         }
 
@@ -161,6 +181,22 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+    }
+    
+    void 'Test non validateable command object'() {
+        when:
+            testController.params.name = 'Beardfish'
+            def model = testController.methodActionWithNonValidateableCommandObject()
+            
+        then:
+            model.commandObject.name == 'Beardfish'
+            
+        when:
+            testController.params.name = "Spock's Beard"
+            model = testController.closureActionWithNonValidateableCommandObject()
+            
+        then:
+            model.commandObject.name == "Spock's Beard"
     }
 
     void "Test binding to multiple command objects"() {
@@ -285,7 +321,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.person.name == 'Maynard'
             'matches.invalid.name' in model.person.errors['name'].codes
     }
-    
+
     void "Test validation"() {
         when:
             testController.params.name = 'JFK'
@@ -434,6 +470,28 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             expectedDate == birthday
     }
 
+    void 'Test command object that is a precompiled @Validatable'() {
+        when:
+            def model = testController.methodActionWithValidateableParam()
+
+        then:
+            model.commandObject.hasErrors()
+
+        when:
+            testController.params.name = 'mixedCase'
+            model = testController.methodActionWithValidateableParam()
+
+        then:
+            model.commandObject.hasErrors()
+
+        when:
+            testController.params.name = 'UPPERCASE'
+            model = testController.methodActionWithValidateableParam()
+
+        then:
+            !model.commandObject.hasErrors()
+    }
+
     void 'Test overriding closure actions in subclass'() {
         given:
             def subclassController = subclassControllerClass.newInstance()
@@ -444,8 +502,58 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         then:
             'Subclass Controller' == model.name
     }
+    
+    void "Test a command object that does not have a validate method at compile time but does at runtime"() {
+        when:
+            def model = testController.methodActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            0 == model.co.validationCounter
+            
+        when:
+            model = testController.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            0 == model.co.validationCounter
+            
+        when:
+            ClassWithNoValidateMethod.metaClass.validate = { ->
+                ++ delegate.validationCounter
+            }
+            model = testController.methodActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            1 == model.co.validationCounter
+            
+        when:
+            model = testController.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
+
+        then:
+            1 == model.co.validationCounter
+            
+    }
+
 
     def cleanupSpec() {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
+
+@Validateable
+class SomeValidateableClass {
+    String name
+
+    static constraints = {
+        name matches: /[A-Z]*/
+    }
+}
+
+class ClassWithNoValidateMethod {
+    int validationCounter = 0
+}
+
+class NonValidateableCommand {
+    String name
+}
+
+

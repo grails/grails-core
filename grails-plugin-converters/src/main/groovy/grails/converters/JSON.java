@@ -20,6 +20,7 @@ import groovy.util.BuilderSupport;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
@@ -57,7 +58,7 @@ import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
  */
-public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSONWriter> {
+public class JSON extends AbstractConverter<JSONWriter> {
 
     private final static Log log = LogFactory.getLog(JSON.class);
     private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
@@ -331,7 +332,19 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
             encoding = Converter.DEFAULT_REQUEST_ENCODING;
         }
         try {
-            json = parse(request.getInputStream(), encoding);
+            PushbackInputStream pushbackInputStream = null;
+            int firstByte = -1;
+            try {
+                pushbackInputStream = new PushbackInputStream(request.getInputStream());
+                firstByte = pushbackInputStream.read();
+            } catch (IOException ioe) {}
+            
+            if(firstByte == -1) {
+                return new JSONObject();
+            }
+            
+            pushbackInputStream.unread(firstByte);
+            json = parse(pushbackInputStream, encoding);
             request.setAttribute(CACHED_JSON, json);
             return json;
         }
@@ -488,7 +501,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements Converter<JSO
 
         private Stack<BuilderMode> stack = new Stack<BuilderMode>();
         private boolean start = true;
-        @SuppressWarnings("hiding")
         private JSONWriter writer;
 
         @Override

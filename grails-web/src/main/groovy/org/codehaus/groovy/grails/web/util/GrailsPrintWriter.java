@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import groovy.lang.GString;
 import groovy.lang.Writable;
 
 import java.io.IOException;
@@ -71,11 +70,10 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     }
 
     protected Writer unwrapWriter(Writer writer) {
-        if(writer instanceof GrailsWrappedWriter ) {
+        if (writer instanceof GrailsWrappedWriter ) {
             return ((GrailsWrappedWriter)writer).unwrap();
-        } else {
-            return writer;
         }
+        return writer;
     }
 
     /**
@@ -521,14 +519,14 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     }
 
     public void print(final GStringImpl gstring) {
-        write((Writable)gstring);
+        write(gstring);
     }
 
     public GrailsPrintWriter leftShift(final GStringImpl gstring) {
-        write((Writable)gstring);
+        write(gstring);
         return this;
     }
-    
+
     public boolean isUsed() {
         if (usageFlag) {
             return true;

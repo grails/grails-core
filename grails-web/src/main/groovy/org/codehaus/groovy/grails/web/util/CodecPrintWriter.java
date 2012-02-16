@@ -19,22 +19,22 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 
         initEncode(grailsApplication,codecClass);
     }
-    
+
     @Override
     public void setOut(Writer newOut) {
         this.out = newOut;
-    }    
-    
+    }
+
     @Override
     public boolean isUsed() {
         return usageFlag;
     }
-    
+
     @Override
     protected Writer findStreamCharBufferTarget(boolean markUsed) {
         return unwrapWriter(getOut());
     }
-    
+
     private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
         if (grailsApplication != null && codecClass != null) {
             GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
@@ -66,7 +66,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     public void print(final Object obj) {
         encodeAndPrint(obj);
     }
-    
+
     private void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;

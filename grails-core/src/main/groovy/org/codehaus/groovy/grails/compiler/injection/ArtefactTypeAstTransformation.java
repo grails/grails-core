@@ -28,7 +28,6 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
@@ -40,7 +39,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
  * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation implements ASTTransformation {
+public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation {
     private static final ClassNode MY_TYPE = new ClassNode(Artefact.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 

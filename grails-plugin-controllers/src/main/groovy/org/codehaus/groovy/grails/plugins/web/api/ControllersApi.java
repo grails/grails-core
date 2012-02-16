@@ -20,7 +20,6 @@ import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -54,18 +53,18 @@ import org.springframework.web.servlet.ModelAndView;
  * @since 2.0
  */
 @SuppressWarnings("rawtypes")
-public class ControllersApi extends CommonWebApi implements Serializable {
+public class ControllersApi extends CommonWebApi {
 
     private static final long serialVersionUID = 1;
 
     private static final String RENDER_METHOD_NAME = "render";
     private static final String BIND_DATA_METHOD = "bindData";
     private static final String SLASH = "/";
-    private RedirectDynamicMethod redirect;
+    private RedirectDynamicMethod redirect = new RedirectDynamicMethod();
     private RenderDynamicMethod render = new RenderDynamicMethod();
     private BindDynamicMethod bind = new BindDynamicMethod();
     private WithFormMethod withFormMethod = new WithFormMethod();
-    private ForwardMethod forwardMethod;
+    private ForwardMethod forwardMethod = new ForwardMethod();
 
     public ControllersApi() {
         this(null);
@@ -73,9 +72,6 @@ public class ControllersApi extends CommonWebApi implements Serializable {
 
     public ControllersApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
-
-        this.redirect = new RedirectDynamicMethod();
-        this.forwardMethod= new ForwardMethod();
     }
 
     public static ApplicationContext getStaticApplicationContext() {
@@ -107,17 +103,21 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * Constructor used by controllers
      *
      * @param instance The instance
-
      */
     public static void initialize(Object instance) {
         ApplicationContext applicationContext = getStaticApplicationContext();
-        if (applicationContext != null) {
-            applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
-            if(Environment.getCurrent() == Environment.TEST) {
-                GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-                if(webRequest != null) {
-                    webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(instance.getClass().getName(), ControllerArtefactHandler.TYPE));
-                }
+        if (applicationContext == null) {
+            return;
+        }
+
+        applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(
+                instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+
+        if (Environment.getCurrent() == Environment.TEST) {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if (webRequest != null) {
+                webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(
+                        instance.getClass().getName(), ControllerArtefactHandler.TYPE));
             }
         }
     }
@@ -127,9 +127,8 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      *
      * @return The action URI
      */
-    public String getActionUri(@SuppressWarnings("unused") Object instance) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return SLASH + webRequest.getControllerName() + SLASH + webRequest.getActionName();
+    public String getActionUri(Object instance) {
+        return SLASH + getControllerName(instance) + SLASH + getActionName(instance);
     }
 
     /**
@@ -146,9 +145,8 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @param name The name of the template
      * @return The template URI
      */
-    public String getTemplateUri(@SuppressWarnings("unused") Object instance, String name) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return webRequest.getAttributes().getTemplateUri(name, webRequest.getCurrentRequest());
+    public String getTemplateUri(Object instance, String name) {
+        return getGrailsAttributes(instance).getTemplateUri(name, getRequest(instance));
     }
 
     /**
@@ -157,9 +155,8 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @param name The name of the view
      * @return The template URI
      */
-    public String getViewUri(@SuppressWarnings("unused") Object instance, String name) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return webRequest.getAttributes().getViewUri(name, webRequest.getCurrentRequest());
+    public String getViewUri(Object instance, String name) {
+        return getGrailsAttributes(instance).getViewUri(name, getRequest(instance));
     }
 
     /**
@@ -168,8 +165,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @param errors The error instance
      */
     public void setErrors(@SuppressWarnings("unused") Object instance, Errors errors) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        webRequest.setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
     }
 
     /**
@@ -178,8 +174,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @return The Errors instance
      */
     public Errors getErrors(@SuppressWarnings("unused") Object instance) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return (Errors) webRequest.getAttribute(GrailsApplicationAttributes.ERRORS, 0);
+        return (Errors)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0);
     }
 
     /**
@@ -188,9 +183,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @param mav The ModelAndView
      */
     public void setModelAndView(@SuppressWarnings("unused") Object instance, ModelAndView mav) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-
-        webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0);
+        currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0);
     }
 
     /**
@@ -199,9 +192,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @return The ModelAndView
      */
     public ModelAndView getModelAndView(@SuppressWarnings("unused") Object instance) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-
-        return (ModelAndView) webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
+        return (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
     }
 
     /**
@@ -209,7 +200,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @return The chainModel
      */
     public Map getChainModel(Object instance) {
-        return (Map) getFlash(instance).get("chainModel");
+        return (Map)getFlash(instance).get("chainModel");
     }
 
     /**
@@ -244,50 +235,56 @@ public class ControllersApi extends CommonWebApi implements Serializable {
 
     // the render method
     public Object render(Object instance, Object o) {
-        return render.invoke(instance, RENDER_METHOD_NAME, new Object[] { DefaultGroovyMethods.inspect(o) });
+        return invokeRender(instance, DefaultGroovyMethods.inspect(o));
     }
 
     public Object render(Object instance, String txt) {
-        return render.invoke(instance, RENDER_METHOD_NAME, new Object[] { txt });
+        return invokeRender(instance, txt);
     }
 
     public Object render(Object instance, Map args) {
-        return render.invoke(instance, RENDER_METHOD_NAME, new Object[] { args });
+        return invokeRender(instance, args);
     }
 
     public Object render(Object instance, Closure c) {
-        return render.invoke(instance, RENDER_METHOD_NAME, new Object[] { c });
+        return invokeRender(instance, c);
     }
 
     public Object render(Object instance, Map args, Closure c) {
-        return render.invoke(instance, RENDER_METHOD_NAME, new Object[] { args , c});
+        return invokeRender(instance, args, c);
+    }
+
+    private Object invokeRender(Object instance, Object... args) {
+        return render.invoke(instance, RENDER_METHOD_NAME, args);
     }
 
     // the bindData method
     public Object bindData(Object instance, Object target, Object args) {
-        return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args});
+        return invokeBindData(instance, target, args);
     }
 
     public Object bindData(Object instance, Object target, Object args, final List disallowed) {
-        return bind.invoke(instance, BIND_DATA_METHOD,
-                new Object[] { target, args, CollectionUtils.newMap("exclude", disallowed) });
+        return invokeBindData(instance, target, args, CollectionUtils.newMap("exclude", disallowed));
     }
 
     public Object bindData(Object instance, Object target, Object args, final List disallowed, String filter) {
-        return bind.invoke(instance, BIND_DATA_METHOD,
-                new Object[] { target, args, CollectionUtils.newMap("exclude", disallowed), filter});
+        return invokeBindData(instance, target, args, CollectionUtils.newMap("exclude", disallowed), filter);
     }
 
     public Object bindData(Object instance, Object target, Object args, Map includeExclude) {
-        return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args, includeExclude});
+        return invokeBindData(instance, target, args, includeExclude);
     }
 
     public Object bindData(Object instance, Object target, Object args, Map includeExclude, String filter) {
-        return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args, includeExclude, filter});
+        return invokeBindData(instance, target, args, includeExclude, filter);
     }
 
     public Object bindData(Object instance, Object target, Object args, String filter) {
-        return bind.invoke(instance, BIND_DATA_METHOD, new Object[] { target, args, filter});
+        return invokeBindData(instance, target, args, filter);
+    }
+
+    private Object invokeBindData(Object instance, Object... args) {
+        return bind.invoke(instance, BIND_DATA_METHOD, args);
     }
 
     /**
@@ -324,8 +321,7 @@ public class ControllersApi extends CommonWebApi implements Serializable {
      * @param params The parameters
      * @return The forwarded URL
      */
-    public String forward(@SuppressWarnings("unused") Object instance, Map params) {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
-        return forwardMethod.forward(webRequest.getCurrentRequest(), webRequest.getCurrentResponse(), params);
+    public String forward(Object instance, Map params) {
+        return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
     }
 }

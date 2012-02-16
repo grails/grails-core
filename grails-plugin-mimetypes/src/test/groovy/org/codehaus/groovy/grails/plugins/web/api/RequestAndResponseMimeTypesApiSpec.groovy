@@ -40,7 +40,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             requestMimeTypesApi.getFormat(request) == "xml"
             requestMimeTypesApi.getFormat(request) == "xml" // call twice to test cached value
             request.format == 'xml'
-            response.format == 'html'
+            response.format == 'all'
     }
 
     void "Test format property is valid for CONTENT_TYPE and ACCEPT header"() {
@@ -93,6 +93,21 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             requestResult == 'got xml'
             responseResult == 'got html'
 
+    }
+
+    void "Test withFormat returns first block if no format provided"() {
+        when: "No Accept header, URI extension or format param"
+        final webRequest = GrailsWebUtil.bindMockWebRequest()
+        def request = webRequest.currentRequest
+        def response = webRequest.currentResponse
+
+        def responseResult = response.withFormat {
+            json { 'got json' }
+            xml { 'got xml' }
+        }
+
+        then: "The first withFormat block should be returned"
+        responseResult == 'got json'
     }
 
     void "Test withFormat method when Accept header contains the all (*/*) and non-matching formats"() {

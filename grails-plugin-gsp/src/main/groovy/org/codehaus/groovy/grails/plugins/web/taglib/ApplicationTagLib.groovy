@@ -40,11 +40,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 @Artefact("TagLibrary")
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware {
     static returnObjectForTags = ['createLink', 'resource', 'createLinkTo', 'cookie', 'header', 'img', 'join', 'meta', 'set']
-    
+
     ApplicationContext applicationContext
     GrailsPluginManager pluginManager
     GrailsApplication grailsApplication
-
     UrlMappingsHolder grailsUrlMappingsHolder
 
     @Autowired

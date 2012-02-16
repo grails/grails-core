@@ -25,14 +25,8 @@ import org.springframework.core.type.ClassMetadata
 import org.hibernate.EntityMode
 import org.springframework.orm.hibernate3.SessionHolder
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 9/8/11
- * Time: 4:02 PM
- * To change this template use File | Settings | File Templates.
- */
-abstract class GormSpec extends Specification{
+
+abstract class GormSpec extends Specification {
 
     MockApplicationContext parentCtx
     ApplicationContext applicationContext

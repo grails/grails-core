@@ -78,7 +78,7 @@ onclick="if (testForm.testField.value=='') { alert('Please enter some text.'); r
 </head>
 <body>
 <form action="/begin/create" method="post" name="testForm" id="testForm" >
-<input type="text" name="testField" id="testField" value="" />
+<input type="text" name="testField" value="" id="testField" />
 <input type="submit" name="_action_testAction" value="This
 is a test action description" class="buttons" onclick="if (testForm.testField.value==&#39;&#39;) { alert(&#39;Please enter some text.&#39;); return false; }" />
 </form>

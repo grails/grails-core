@@ -182,7 +182,7 @@ class ControllersGrailsPlugin {
 
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi(controllerApi)
-        
+
         for (controller in application.controllerClasses) {
             def controllerClass = controller
             def mc = controllerClass.metaClass

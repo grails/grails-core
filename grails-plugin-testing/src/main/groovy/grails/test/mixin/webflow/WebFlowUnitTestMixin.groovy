@@ -29,15 +29,20 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
     String stateTransition
     String lastEventName
     String lastTransitionName
+    Boolean isOutput
+    Boolean isInput
     Map conversation = [:]
     Map flow = [:]
     Map flowMap = [:]
+    Map currentEvent = [:]
+    Map inputParams = [:]
 
     @Override
     def <T> T mockController(Class<T> controllerClass) {
         super.mockController(controllerClass)
         controllerClass.metaClass.getFlow = {-> flow }
         controllerClass.metaClass.getConversation = {-> conversation }
+        controllerClass.metaClass.getCurrentEvent = {-> currentEvent }
         return controllerClass.newInstance()
     }
 
@@ -58,6 +63,9 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
             flowMap = grails.test.mixin.webflow.WebFlowUnitTestSupport.translate(webFlowClosure, {
                 lastEventName = it.event;
                 lastTransitionName = it.transition
+                isOutput = it.isOutput
+                isInput = it.isInput
+                inputParams = it.inputParams
             })
             webFlowClosure.delegate = this
             return flowMap
@@ -69,6 +77,14 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
      * <code>return success()</code>
      */
     protected Object methodMissing(String name, Object args) {
+        if (isOutput) {
+            doOutput(name, args[0])
+            return
+        }
+        if (isInput) {
+            args ? doInput(name, args[0]) : doInput(name)
+            return
+        }
         if (lastEventName && flowMap[lastEventName].on."$name") {
             stateTransition = name
             return name
@@ -84,5 +100,55 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
             }
         }
         throw new MissingMethodException(name, this.class, args)
+    }
+
+    protected doOutput(String name, Closure valueClosure) {
+        if (currentEvent.attributes == null) {
+            currentEvent.attributes = [:]
+        }
+        currentEvent.attributes[name] = valueClosure()
+    }
+
+    protected doOutput(String name, Map valueMap) {
+        if (currentEvent.attributes == null) {
+            currentEvent.attributes = [:]
+        }
+        currentEvent.attributes[name] = valueMap.value
+    }
+
+    protected doOutput(String name, Object value) {
+        if (currentEvent.attributes == null) {
+            currentEvent.attributes = [:]
+        }
+        currentEvent.attributes[name] = value
+    }
+
+    protected doInput(String name) {
+        doInput (name, false, null)
+    }
+
+    protected doInput(String name, Closure valueClosure) {
+        doInput(name, false, valueClosure)
+    }
+
+    protected doInput(String name, Object defaultValue) {
+        doInput(name, false, defaultValue)
+    }
+
+    protected doInput(String name, Map map) {
+        doInput(name, map.required, map.value)
+    }
+
+    protected doInput(String name, Boolean required, Closure valueClosure) {
+        def value = valueClosure()
+        doInput(name, required, value)
+    }
+
+    protected doInput(String name, Boolean required, Object defaultValue) {
+        def value = inputParams[name] ?: defaultValue
+        if (required && !value) {
+            throw new MissingPropertyException("Missing required attribute $name")
+        }
+        flow[name] = value
     }
 }

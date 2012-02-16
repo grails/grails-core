@@ -61,6 +61,44 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         }
     }
 
+    void testCountMethodOnSortedNamedQuery() {
+        def today = new Date()
+        def nextWeek = today + 7
+        def lastWeek = today - 7
+        assert new NamedCriteriaPublication(title: "Today's Paperback",
+                datePublished: today, paperback: true).save()
+        assert new NamedCriteriaPublication(title: "Today's Hardback",
+                datePublished: today, paperback: false).save()
+
+        assert new NamedCriteriaPublication(title: "Next Week's Paperback",
+                datePublished: nextWeek, paperback: true).save()
+        assert new NamedCriteriaPublication(title: "Next Week's Hardback",
+                datePublished: nextWeek, paperback: false).save()
+
+        assert new NamedCriteriaPublication(title: "Last Week's Paperback",
+                datePublished: lastWeek, paperback: true).save()
+        assert new NamedCriteriaPublication(title: "Last Week's Hardback",
+                datePublished: lastWeek, paperback: false).save()
+
+        def results = NamedCriteriaPublication.paperbacksOrderedByDatePublished.list()
+        assertEquals 3, results.size()
+        assertEquals "Last Week's Paperback", results[0].title
+        assertEquals "Today's Paperback", results[1].title
+        assertEquals "Next Week's Paperback", results[2].title
+        results = NamedCriteriaPublication.paperbacksOrderedByDatePublished.list(max: 25)
+        assertEquals 3, results.totalCount
+        assertEquals 3, NamedCriteriaPublication.paperbacksOrderedByDatePublished.count()
+
+        results = NamedCriteriaPublication.paperbacksOrderedByDatePublishedDescending.list()
+        assertEquals 3, results.size()
+        assertEquals "Last Week's Paperback", results[2].title
+        assertEquals "Today's Paperback", results[1].title
+        assertEquals "Next Week's Paperback", results[0].title
+        results = NamedCriteriaPublication.paperbacksOrderedByDatePublishedDescending.list(max: 25)
+        assertEquals 3, results.totalCount
+        assertEquals 3, NamedCriteriaPublication.paperbacksOrderedByDatePublishedDescending.count()
+    }
+
     void testSorting() {
         def now = new Date()
         assert new NamedCriteriaPublication(title: "ZZZ New Paperback",
@@ -295,7 +333,30 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
 
         assertEquals 3, results.size()
     }
+    /*
+    void testPassingNullArgumentToAChainedNamedQuery() {
+        if(notYetImplemented()) return
+        // See http://jira.grails.org/browse/GRAILS-8672 and http://jira.codehaus.org/browse/GROOVY-5262
+        
+        def now = new Date()
+        assert new NamedCriteriaPublication(title: "Some Book", datePublished: now).save()
+        assert new NamedCriteriaPublication(title: "Some Book", datePublished: now - 10).save()
+        assert new NamedCriteriaPublication(title: "Some Book", datePublished: now - 100).save()
+        assert new NamedCriteriaPublication(title: "Some Book", datePublished: now - 1000).save()
 
+        session.clear()
+        
+        // See http://jira.grails.org/browse/GRAILS-8672 and http://jira.codehaus.org/browse/GROOVY-5262
+        def results = NamedCriteriaPublication.publishedAfter(null).publishedAfter(null).list()
+        assertEquals 4, results?.size()
+        
+        results = NamedCriteriaPublication.publishedAfter(now - 50).publishedAfter(null).list()
+        assertEquals 2, results?.size()
+        
+        results = NamedCriteriaPublication.publishedAfter(null).publishedAfter(now - 50).list()
+        assertEquals 2, results?.size()
+    }
+*/
     void testChainingNamedQueries() {
         def now = new Date()
         [true, false].each { isPaperback ->
@@ -614,12 +675,12 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assert publication
         assertEquals 'Some New Book', publication.title
     }
-    
+
     void testGetWithNoArgument() {
         def now = new Date()
         def lastWeek = now - 7
         def lastYear = now - 365
-        
+
         assert new NamedCriteriaPublication(title: 'Some Book', datePublished: now).save()
         assert new NamedCriteriaPublication(title: 'Some Book', datePublished: lastWeek).save()
         assert new NamedCriteriaPublication(title: 'Some Book', datePublished: lastYear).save()
@@ -627,17 +688,17 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assert 3 == result?.size()
         result = NamedCriteriaPublication.publishedAfter(lastYear - 1).get()
         assert result instanceof NamedCriteriaPublication
-        
+
         result = NamedCriteriaPublication.publishedAfter(lastWeek - 1).list()
         assert 2 == result?.size()
         result = NamedCriteriaPublication.publishedAfter(lastWeek - 1).get()
         assert result instanceof NamedCriteriaPublication
-        
+
         result = NamedCriteriaPublication.publishedAfter(now - 1).list()
         assert 1 == result?.size()
         result = NamedCriteriaPublication.publishedAfter(now - 1).get()
         assert result instanceof NamedCriteriaPublication
-        
+
         result = NamedCriteriaPublication.publishedAfter(now + 1).list()
         assert 0 == result?.size()
         result = NamedCriteriaPublication.publishedAfter(now + 1).get()

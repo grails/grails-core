@@ -3,16 +3,9 @@ package grails.test.mixin
 import grails.persistence.Entity
 import org.junit.Test
 
-/**
- * Created by IntelliJ IDEA.
- * User: graemerocher
- * Date: 9/20/11
- * Time: 9:56 AM
- * To change this template use File | Settings | File Templates.
- */
+
 @Mock([Parent, Child])
 class BidirectionalOneToManyUnitTestTests {
-
 
    // test for GRAILS-8030
    @Test

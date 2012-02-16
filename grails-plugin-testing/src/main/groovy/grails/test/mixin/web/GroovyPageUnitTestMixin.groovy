@@ -28,6 +28,10 @@ import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.junit.Assert
+import org.junit.Before
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.junit.After
 
 /**
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
@@ -50,6 +54,23 @@ import org.junit.Assert
  */
 class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
 
+    GroovyPageBinding pageScope
+
+    @Override
+    @Before
+    void bindGrailsWebRequest() {
+        super.bindGrailsWebRequest()
+        pageScope = new GroovyPageBinding()
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
+
+    }
+
+    @After
+    void clearPageScope() {
+        pageScope = null
+    }
+
+
     /**
      * Mocks a tag library, making it available to subsequent calls to controllers mocked via
      * {@link #mockController(Class) } and GSPs rendered via {@link #applyTemplate(String, Map) }
@@ -61,15 +82,15 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     def mockTagLib(Class tagLibClass) {
         GrailsTagLibClass tagLib = grailsApplication.addArtefact(TagLibArtefactHandler.TYPE, tagLibClass)
         final tagLookup = applicationContext.getBean(TagLibraryLookup)
-        
-        if(!applicationContext.containsBean('instanceTagLibraryApi')) {
+
+        if (!applicationContext.containsBean('instanceTagLibraryApi')) {
             defineBeans {
                 instanceTagLibraryApi(TagLibraryApi) { bean ->
                     bean.autowire = true
                 }
             }
         }
-        
+
         if (!tagLibClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
             enhancer.addApi(applicationContext.getBean('instanceTagLibraryApi'))

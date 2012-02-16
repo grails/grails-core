@@ -22,7 +22,7 @@ package org.codehaus.groovy.grails.commons.metaclass;
  * @author Graeme Rocher
  */
 public abstract class AbstractDynamicMethodsInterceptor extends AbstractDynamicMethods
-        implements Interceptor, PropertyAccessInterceptor, ConstructorInterceptor {
+        implements PropertyAccessInterceptor, ConstructorInterceptor {
 
     public AbstractDynamicMethodsInterceptor() {
         super();

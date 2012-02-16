@@ -12,6 +12,8 @@ import org.springframework.web.context.request.RequestContextHolder
 
 class MetaClassEnhancerTests extends GroovyTestCase {
 
+
+
     void testEnhanceMetaClass() {
         def ctx = new MockApplicationContext()
 

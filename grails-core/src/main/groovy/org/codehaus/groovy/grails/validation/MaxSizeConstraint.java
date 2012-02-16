@@ -82,8 +82,7 @@ public class MaxSizeConstraint extends AbstractConstraint {
         }
 
         if (length > maxSize) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass,
-                    propertyValue, Integer.valueOf(maxSize)};
+            Object[] args = { constraintPropertyName, constraintOwningClass, propertyValue, maxSize};
             rejectValue(target, errors, ConstrainedProperty.DEFAULT_INVALID_MAX_SIZE_MESSAGE_CODE,
                     ConstrainedProperty.MAX_SIZE_CONSTRAINT + ConstrainedProperty.EXCEEDED_SUFFIX, args);
         }
