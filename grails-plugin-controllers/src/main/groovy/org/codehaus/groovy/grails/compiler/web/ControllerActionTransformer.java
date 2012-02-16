@@ -140,8 +140,11 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        annotateCandidateActionMethods(classNode, source);
-        processClosures(classNode, source);
+        final String className = classNode.getName();
+        if(className.endsWith(ControllerArtefactHandler.TYPE)) {
+            annotateCandidateActionMethods(classNode, source);
+            processClosures(classNode, source);
+        }
     }
 
     private void annotateCandidateActionMethods(ClassNode classNode, SourceUnit source) {
