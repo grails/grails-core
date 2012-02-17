@@ -118,8 +118,8 @@ class FormTagLib {
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
-        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
-            def requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+        def requestDataValueProcessor = getRequestDataValueProcessor()
+        if (requestDataValueProcessor != null) {
             def newValue = requestDataValueProcessor.processFormFieldValue(request,attrs.name,attrs.value,attrs.type)
             attrs.value= newValue
         }
@@ -168,8 +168,13 @@ class FormTagLib {
         if (checked instanceof String) checked = Boolean.valueOf(checked)
 
         if (value == null) value = false
-
-        out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
+        def hiddenValue = null;
+        def requestDataValueProcessor = getRequestDataValueProcessor()
+        if (requestDataValueProcessor != null) {
+            value = requestDataValueProcessor.processFormFieldValue(request,name,""+value,"checkbox")
+            hiddenValue = requestDataValueProcessor.processFormFieldValue(request, "_${name}",hiddenValue,"hidden")
+        }
+        out << "<input type=\"hidden\" name=\"_${name}\" value=\"${hiddenValue}\" /><input type=\"checkbox\" name=\"${name}\" "
         if (checkedAttributeWasSpecified) {
             if (checked) {
                 out << 'checked="checked" '
@@ -215,7 +220,7 @@ class FormTagLib {
             escapeHtml = attrs.boolean('escapeHtml')
             attrs.remove 'escapeHtml'
         }
-
+        //TODO Change this textarea to use requestDataValueProcessor
         out << "<textarea "
         outputAttributes(attrs, out, true)
         out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
@@ -306,9 +311,8 @@ class FormTagLib {
 
         // Call RequestDataValueProcessor to modify url if necessary
         def link = createLink(linkAttrs)
-        def requestDataValueProcessor = null;
-        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
-            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+        def requestDataValueProcessor = getRequestDataValueProcessor()
+        if (requestDataValueProcessor != null) {
             link= requestDataValueProcessor.processAction(request,link)
         }
 
@@ -411,7 +415,7 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
-
+        //TODO Change this submit to use requestDataValueProcessor
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
 
         // process remaining attributes
@@ -445,7 +449,7 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
-
+        //TODO Change this image to use requestDataValueProcessor
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
 
         // add image src
@@ -573,7 +577,7 @@ class FormTagLib {
                 years = (tempyear - 100)..(tempyear + 100)
             }
         }
-
+        //TODO Change this hidden to use requestDataValueProcessor
         out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"
 
         // create day select
@@ -586,6 +590,7 @@ class FormTagLib {
             }
 
             for (i in 1..31) {
+                //TODO Change this options to use requestDataValueProcessor
                 out.println "<option value=\"${i}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
@@ -603,6 +608,7 @@ class FormTagLib {
             dfs.months.eachWithIndex {m, i ->
                 if (m) {
                     def monthIndex = i + 1
+                    //TODO Change this option to use requestDataValueProcessor
                     out.println "<option value=\"${monthIndex}\"${i == month ? ' selected="selected"' : ''}>$m</option>"
                 }
             }
@@ -619,6 +625,7 @@ class FormTagLib {
             }
 
             for (i in years) {
+                //TODO Change this option to use requestDataValueProcessor
                 out.println "<option value=\"${i}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
@@ -636,6 +643,7 @@ class FormTagLib {
             for (i in 0..23) {
                 def h = '' + i
                 if (i < 10) h = '0' + h
+                //TODO Change this option to use requestDataValueProcessor
                 out.println "<option value=\"${h}\"${i == hour ? ' selected="selected"' : ''}>$h</option>"
             }
             out.println '</select> :'
@@ -658,6 +666,7 @@ class FormTagLib {
             for (i in 0..59) {
                 def m = '' + i
                 if (i < 10) m = '0' + m
+                //TODO Change this option to use requestDataValueProcessor
                 out.println "<option value=\"${m}\"${i == minute ? ' selected="selected"' : ''}>$m</option>"
             }
             out.println '</select>'
@@ -815,6 +824,8 @@ class FormTagLib {
             writer.println()
         }
 
+
+        def requestDataValueProcessor = getRequestDataValueProcessor()
         // create options from list
         if (from) {
             from.eachWithIndex {el, i ->
@@ -822,6 +833,9 @@ class FormTagLib {
                 writer << '<option '
                 if (keys) {
                     keyValue = keys[i]
+                    if(requestDataValueProcessor != null) {
+                        keyValue = requestDataValueProcessor.processFormFieldValue(request, attrs.name, "${keyValue}","option")
+                    }
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 else if (optionKey) {
@@ -837,10 +851,17 @@ class FormTagLib {
                         keyValue = el[optionKey]
                         keyValueObject = el
                     }
+                    if(requestDataValueProcessor != null) {
+                        keyValue = requestDataValueProcessor.processFormFieldValue(request, attrs.name, "${keyValue}","option")
+                    }
                     writeValueAndCheckIfSelected(keyValue, value, writer, keyValueObject)
                 }
                 else {
                     keyValue = el
+                    if(requestDataValueProcessor != null) {
+                        keyValue = requestDataValueProcessor.processFormFieldValue(request, attrs.name, "${keyValue}","option")
+                    }
+
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 writer << '>'
@@ -942,6 +963,10 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
         def checked = attrs.remove('checked') ? true : false
+        def requestDataValueProcessor = getRequestDataValueProcessor()
+        if(requestDataValueProcessor != null) {
+            value = requestDataValueProcessor.processFormFieldValue(request,name,"${value}","radio")
+        }
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         if(!attrs.containsKey('id')) {
             out << """id="${name}" """
@@ -972,7 +997,13 @@ class FormTagLib {
             if (value?.toString().equals(val.toString())) {
                 it.radio << 'checked="checked" '
             }
-            it.radio << "value=\"${val.toString().encodeAsHTML()}\" "
+            // Generate 
+            def newVal = val.toString().encodeAsHTML();
+            def requestDataValueProcessor = getRequestDataValueProcessor()
+            if(requestDataValueProcessor != null) {
+                newVal = requestDataValueProcessor.processFormFieldValue(request,name,"${newVal}","radio")
+            }
+            it.radio << "value=\"${newVal}\" "
 
             // process remaining attributes
             outputAttributes(attrs, it.radio)
@@ -984,4 +1015,16 @@ class FormTagLib {
             out.println()
         }
     }
+
+    /**
+    * getter to obtain RequestDataValueProcessor from 
+    */
+    private getRequestDataValueProcessor() {
+        def requestDataValueProcessor = null
+        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+        }
+        return requestDataValueProcessor;
+    }
+
 }
