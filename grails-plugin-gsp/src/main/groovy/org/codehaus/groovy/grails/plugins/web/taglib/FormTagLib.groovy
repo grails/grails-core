@@ -218,6 +218,9 @@ class FormTagLib {
             attrs.remove 'escapeHtml'
         }
         //TODO Change this textarea to use requestDataValueProcessor
+        if(attrs.name) {
+            processFormFieldValueIfNecessary(attrs.name,(escapeHtml ? value.encodeAsHTML() : value),"textarea" )
+        }
         out << "<textarea "
         outputAttributes(attrs, out, true)
         out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
@@ -954,9 +957,8 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
         def checked = attrs.remove('checked') ? true : false
-        value = processFormFieldValueIfNecessary(attrs.name, "${value}","radio")
-        
-        out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
+        value = processFormFieldValueIfNecessary(name, "${value?.toString()?.encodeAsHTML()}","radio")
+        out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value}\" "
         if(!attrs.containsKey('id')) {
             out << """id="${name}" """
         }
