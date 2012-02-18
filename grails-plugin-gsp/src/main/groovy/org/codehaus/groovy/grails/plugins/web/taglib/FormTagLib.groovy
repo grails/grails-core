@@ -168,8 +168,8 @@ class FormTagLib {
         if (value == null) value = false
         def hiddenValue = null;
         
-        value = processFormFieldValueIfNecessary(request, name, "${value}","checkbox")
-        hiddenValue = processFormFieldValueIfNecessary(request, "_${name}", hiddenValue, "hidden")
+        value = processFormFieldValueIfNecessary(name, "${value}","checkbox")
+        hiddenValue = processFormFieldValueIfNecessary("_${name}", "${hiddenValue}", "hidden")
         
         out << "<input type=\"hidden\" name=\"_${name}\" value=\"${hiddenValue}\" /><input type=\"checkbox\" name=\"${name}\" "
         if (checkedAttributeWasSpecified) {
@@ -989,7 +989,7 @@ class FormTagLib {
             // Generate 
             def processedVal = processFormFieldValueIfNecessary(name, val.toString().encodeAsHTML(), "radio");
             
-            it.radio << "value=\"${newVal}\" "
+            it.radio << "value=\"${processedVal}\" "
 
             // process remaining attributes
             outputAttributes(attrs, it.radio)
@@ -1016,7 +1016,7 @@ class FormTagLib {
     private processFormFieldValueIfNecessary(name, value, type) {
         def requestDataValueProcessor = getRequestDataValueProcessor();  
         def processedValue = value;
-        if(requestDAtaValueProcessor != null) {
+        if(requestDataValueProcessor != null) {
             processedValue = requestDataValueProcessor.processFormFieldValue(request, name, value, type);
         } 
         return processedValue;
