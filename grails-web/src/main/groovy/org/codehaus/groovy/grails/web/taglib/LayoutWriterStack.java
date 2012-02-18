@@ -71,7 +71,7 @@ public class LayoutWriterStack {
      * @param body the body closure of the calling "layout" tag
      * @return a Map that contains the results of all the parts in the body and the body itself
      */
-    public static Map<String, Object> writeParts(Closure body) {
+    public static Map<String, Object> writeParts(Closure<?> body) {
         LayoutWriterStack stack = LayoutWriterStack.currentStack();
         stack.push();
         Map<String, Object> result = new HashMap<String, Object>();

@@ -1,7 +1,6 @@
 package grails.test.mixin
 
-import grails.test.mixin.*
-import org.junit.*
+import org.junit.Test
 
 @TestFor(MyService)
 class ServiceAndMockForTests {
@@ -24,9 +23,7 @@ class ServiceAndMockForTests {
     @Test
     void testProvaUsingMockForAgain() {
         def mockForUtilsControl = mockFor(MockForUtils2)
-        mockForUtilsControl.demand.isMockForWorking(1..1) {->
-            return true
-        }
+        mockForUtilsControl.demand.isMockForWorking(1..1) { -> true }
         service.utils = mockForUtilsControl.createMock()
         assert service.prova()
 

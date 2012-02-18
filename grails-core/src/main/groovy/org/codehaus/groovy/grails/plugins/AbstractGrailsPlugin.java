@@ -17,6 +17,12 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
@@ -24,10 +30,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -93,7 +95,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         this.isBase = isBase;
     }
 
-    public java.util.List<WatchPattern> getWatchedResourcePatterns() {
+    public List<WatchPattern> getWatchedResourcePatterns() {
         return Collections.emptyList();
     }
 
