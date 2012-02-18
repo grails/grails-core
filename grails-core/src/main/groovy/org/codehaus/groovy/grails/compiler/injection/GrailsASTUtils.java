@@ -648,6 +648,7 @@ public class GrailsASTUtils {
      */
     public static boolean hasAnyAnnotations(final ClassNode classNode, final Class<? extends Annotation>... annotationsToLookFor) {
         return CollectionUtils.exists(Arrays.asList(annotationsToLookFor), new Predicate() {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             public boolean evaluate(Object object) {
                 return hasAnnotation(classNode, (Class)object);
             }

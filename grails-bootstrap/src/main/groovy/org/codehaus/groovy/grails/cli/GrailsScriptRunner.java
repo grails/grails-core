@@ -150,8 +150,6 @@ public class GrailsScriptRunner {
             return;
         }
 
-        String version = System.getProperty("grails.version");
-
         ScriptAndArgs script = processArgumentsAndReturnScriptName(commandLine);
 
         // Get hold of the GRAILS_HOME environment variable if it is available.
@@ -205,7 +203,8 @@ public class GrailsScriptRunner {
             script.name = null;
         }
         if (script.name == null) {
-            console.updateStatus("Loading Grails " + (version != null ? version : build.getGrailsVersion()));
+            String version = System.getProperty("grails.version");
+            console.updateStatus("Loading Grails " + (version == null ? build.getGrailsVersion() : version));
 
             build.loadConfig();
             if (resolveDeps) {
@@ -285,7 +284,6 @@ public class GrailsScriptRunner {
 
         info.inputName = commandLine.getCommandName();
         info.name = GrailsNameUtils.getNameFromScript(commandLine.getCommandName());
-        info.args = commandLine.getRemainingArgsString();
         return info;
     }
 
@@ -812,6 +810,5 @@ public class GrailsScriptRunner {
         public String inputName;
         public String name;
         public String env;
-        public String args;
     }
 }

@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
-import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -62,21 +61,16 @@ import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.Janitor;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
-import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.validation.MapBindingResult;
-
 
 /**
  * Enhances controller classes by converting closures actions to method actions and binding
