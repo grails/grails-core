@@ -118,11 +118,9 @@ class FormTagLib {
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
-        def requestDataValueProcessor = getRequestDataValueProcessor()
-        if (requestDataValueProcessor != null) {
-            def newValue = requestDataValueProcessor.processFormFieldValue(request,attrs.name,attrs.value,attrs.type)
-            attrs.value= newValue
-        }
+        
+        attrs.value = processFormFieldValueIfNecessary(attrs.name, attrs.value, attrs.type);
+        
         out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs, out, true)
         out << "/>"
@@ -169,11 +167,10 @@ class FormTagLib {
 
         if (value == null) value = false
         def hiddenValue = null;
-        def requestDataValueProcessor = getRequestDataValueProcessor()
-        if (requestDataValueProcessor != null) {
-            value = requestDataValueProcessor.processFormFieldValue(request,name,""+value,"checkbox")
-            hiddenValue = requestDataValueProcessor.processFormFieldValue(request, "_${name}",hiddenValue,"hidden")
-        }
+        
+        value = processFormFieldValueIfNecessary(request, name, "${value}","checkbox")
+        hiddenValue = processFormFieldValueIfNecessary(request, "_${name}", hiddenValue, "hidden")
+        
         out << "<input type=\"hidden\" name=\"_${name}\" value=\"${hiddenValue}\" /><input type=\"checkbox\" name=\"${name}\" "
         if (checkedAttributeWasSpecified) {
             if (checked) {
@@ -832,10 +829,8 @@ class FormTagLib {
                 def keyValue = null
                 writer << '<option '
                 if (keys) {
-                    keyValue = keys[i]
-                    if(requestDataValueProcessor != null) {
-                        keyValue = requestDataValueProcessor.processFormFieldValue(request, attrs.name, "${keyValue}","option")
-                    }
+                    keyValue = processFormFieldValueIfNecessary(attrs.name, "${keys[i]}","option")
+                    
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 else if (optionKey) {
@@ -851,17 +846,13 @@ class FormTagLib {
                         keyValue = el[optionKey]
                         keyValueObject = el
                     }
-                    if(requestDataValueProcessor != null) {
-                        keyValue = requestDataValueProcessor.processFormFieldValue(request, attrs.name, "${keyValue}","option")
-                    }
+                    keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
                     writeValueAndCheckIfSelected(keyValue, value, writer, keyValueObject)
                 }
                 else {
                     keyValue = el
-                    if(requestDataValueProcessor != null) {
-                        keyValue = requestDataValueProcessor.processFormFieldValue(request, attrs.name, "${keyValue}","option")
-                    }
-
+                    keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
+                    
                     writeValueAndCheckIfSelected(keyValue, value, writer)
                 }
                 writer << '>'
@@ -963,10 +954,8 @@ class FormTagLib {
             attrs.disabled = 'disabled'
         }
         def checked = attrs.remove('checked') ? true : false
-        def requestDataValueProcessor = getRequestDataValueProcessor()
-        if(requestDataValueProcessor != null) {
-            value = requestDataValueProcessor.processFormFieldValue(request,name,"${value}","radio")
-        }
+        value = processFormFieldValueIfNecessary(attrs.name, "${value}","radio")
+        
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         if(!attrs.containsKey('id')) {
             out << """id="${name}" """
@@ -998,11 +987,8 @@ class FormTagLib {
                 it.radio << 'checked="checked" '
             }
             // Generate 
-            def newVal = val.toString().encodeAsHTML();
-            def requestDataValueProcessor = getRequestDataValueProcessor()
-            if(requestDataValueProcessor != null) {
-                newVal = requestDataValueProcessor.processFormFieldValue(request,name,"${newVal}","radio")
-            }
+            def processedVal = processFormFieldValueIfNecessary(name, val.toString().encodeAsHTML(), "radio");
+            
             it.radio << "value=\"${newVal}\" "
 
             // process remaining attributes
@@ -1017,14 +1003,23 @@ class FormTagLib {
     }
 
     /**
-    * getter to obtain RequestDataValueProcessor from 
-    */
+     * getter to obtain RequestDataValueProcessor from 
+     */
     private getRequestDataValueProcessor() {
         def requestDataValueProcessor = null
         if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
             requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
         }
         return requestDataValueProcessor;
+    }
+
+    private processFormFieldValueIfNecessary(name, value, type) {
+        def requestDataValueProcessor = getRequestDataValueProcessor();  
+        def processedValue = value;
+        if(requestDAtaValueProcessor != null) {
+            processedValue = requestDataValueProcessor.processFormFieldValue(request, name, value, type);
+        } 
+        return processedValue;
     }
 
 }
