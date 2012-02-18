@@ -100,12 +100,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String STATUS_DISABLED = "disabled";
 
     /**
-     * Defines the name of the property that defines a list of plugin names that this plugin influences.
-     * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
-     */
-    String INFLUENCES = "influences";
-
-    /**
      * Defines the name of the property that defines the closure that will be invoked
      * when a watched resource changes
      */
@@ -150,7 +144,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String ARTEFACTS = "artefacts";
 
     /**
-     * The name of the property that provides a list of shipped, but overridable artefactssw
+     * The name of the property that provides a list of shipped, but overridable artefacts
      */
     String PROVIDED_ARTEFACTS = "providedArtefacts";
 
