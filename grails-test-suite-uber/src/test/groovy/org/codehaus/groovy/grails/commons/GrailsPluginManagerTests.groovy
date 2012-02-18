@@ -98,12 +98,12 @@ hibernate {
         assertFalse manager.hasGrailsPlugin("disabled")
     }
 
-    void testDefaultGrailsPluginManager() throws Exception {
+    void testDefaultGrailsPluginManager() {
         DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(RESOURCE_PATH,ga)
         assertEquals(1, manager.getPluginResources().length)
     }
 
-    void testLoadPlugins() throws Exception {
+    void testLoadPlugins() {
         GrailsPluginManager manager = new DefaultGrailsPluginManager(RESOURCE_PATH,ga)
         manager.loadPlugins()
 
@@ -119,24 +119,21 @@ hibernate {
         assertNull(plugin)
     }
 
-    void testWithLoadLastPlugin() throws Exception {
+    void testWithLoadLastPlugin() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin,ShouldLoadLastGrailsPlugin] as Class[], ga)
         manager.loadPlugins()
     }
 
-    void testDependencyResolutionFailure() throws Exception {
+    void testDependencyResolutionFailure() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin] as Class[], ga)
 
-        try {
+        shouldFail(PluginException) {
             manager.loadPlugins()
             assert !manager.hasGrailsPlugin("my")
         }
-        catch (PluginException pe) {
-            // expected
-        }
     }
 
-    void testDependencyResolutionSucces() throws Exception {
+    void testDependencyResolutionSucces() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin,AnotherGrailsPlugin, SomeOtherGrailsPlugin] as Class[], ga)
 
         manager.loadPlugins()

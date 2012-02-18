@@ -462,8 +462,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     protected HttpServletResponse useWrappedOrOriginalResponse(HttpServletResponse response) {
         HttpServletResponse r = WrappedResponseHolder.getWrappedResponse();
-        if (r != null) return r;
-        return response;
+        return r == null ? response : r;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

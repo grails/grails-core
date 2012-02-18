@@ -16,14 +16,13 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import grails.web.Action;
-import org.apache.commons.beanutils.BeanMap;
-import org.apache.commons.collections.keyvalue.AbstractMapEntry;
 
 import java.lang.reflect.Method;
-import java.util.Iterator;
+
+import org.apache.commons.beanutils.BeanMap;
 
 /**
- * Filter action getters
+ * Filter action getters.
  *
  * @author Stephane Maldini
  * @since 2.0
@@ -37,10 +36,9 @@ public class GrailsControllerBeanMap extends BeanMap {
     @Override
     public Object get(Object name) {
         Method method = getReadMethod(name);
-        if (method.getAnnotation(Action.class) != null)
-            return null;
-        else
+        if (method.getAnnotation(Action.class) == null) {
             return super.get(name);
+        }
+        return null;
     }
-
 }

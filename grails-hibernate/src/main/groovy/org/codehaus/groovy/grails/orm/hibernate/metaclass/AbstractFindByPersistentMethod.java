@@ -53,7 +53,9 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
         return null;
     }
 
-    protected Criteria buildCriteria(Session session, DetachedCriteria detachedCriteria, Closure additionalCriteria, Class clazz, Object[] arguments, String operator, List expressions) {
+    protected Criteria buildCriteria(Session session, DetachedCriteria<?> detachedCriteria,
+            Closure<?> additionalCriteria, Class<?> clazz, Object[] arguments,
+            String operator, List<?> expressions) {
         Criteria crit = getCriteria(datastore, application, session, detachedCriteria, additionalCriteria, clazz);
         if (arguments.length > 0) {
             if (arguments[0] instanceof Map<?, ?>) {
