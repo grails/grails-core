@@ -50,6 +50,9 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class GrailsConsole {
 
     private static GrailsConsole instance;
+    
+    public static final String ENABLE_TERMINAL = "grails.console.enable.terminal";
+    public static final String ENABLE_INTERACTIVE = "grails.console.enable.interactive";
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
     public static final String CATEGORY_SEPARATOR = "|";
     public static final String PROMPT = "grails> ";
@@ -116,21 +119,53 @@ public class GrailsConsole {
 
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
+
+        if(isInteractiveEnabled()) {
+            reader = createConsoleReader();
+            reader.setBellEnabled(false);
+            reader.setCompletionHandler(new CandidateListCompletionHandler());
+            history = prepareHistory();
+            reader.setHistory(history);
+        }
+
+        if(isActivateTerminal()) {
+            terminal = createTerminal();
+        }
+
         out = new PrintStream(ansiWrap(System.out));
 
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
 
+<<<<<<< HEAD
         reader = createConsoleReader();
         reader.setBellEnabled(false);
         reader.setCompletionHandler(new CandidateListCompletionHandler());
 
         terminal = createTerminal();
+=======
+>>>>>>> 43c4c99... some initial changes to allow jline ConsoleReader and Terminal to be disabled
 
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
         out.println();
+    }
+
+    private boolean isInteractiveEnabled() {
+        return readPropOrTrue(ENABLE_INTERACTIVE);
+    }
+
+    private boolean isActivateTerminal() {
+        return readPropOrTrue(ENABLE_TERMINAL); 
+    }
+
+    private boolean readPropOrTrue(String prop) {
+        String property = System.getProperty(prop);
+        if(property != null) {
+            return Boolean.valueOf(property);
+        }
+        return true;
     }
 
     protected ConsoleReader createConsoleReader() throws IOException {
@@ -172,21 +207,26 @@ public class GrailsConsole {
      * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
      */
     protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
-        return AnsiConsole.wrapOutputStream(out);
+        if(isAnsiEnabled())
+            return AnsiConsole.wrapOutputStream(out);
+        else
+            return out;
     }
 
     // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
     private void fixCtrlC() {
-        try {
-            Field f = ConsoleReader.class.getDeclaredField("keybindings");
-            f.setAccessible(true);
-            short[] keybindings = (short[])f.get(reader);
-            if (keybindings[3] == -48) {
-                keybindings[3] = 3;
+        if(reader != null) {
+            try {
+                Field f = ConsoleReader.class.getDeclaredField("keybindings");
+                f.setAccessible(true);
+                short[] keybindings = (short[])f.get(reader);
+                if (keybindings[3] == -48) {
+                    keybindings[3] = 3;
+                }
             }
-        }
-        catch (Exception ignored) {
-            // shouldn't happen
+            catch (Exception ignored) {
+                // shouldn't happen
+            }
         }
     }
 
@@ -257,7 +297,12 @@ public class GrailsConsole {
      * @return The input stream being read from
      */
     public InputStream getInput() {
+        assertAllowInput();
         return reader.getInput();
+    }
+
+    private void assertAllowInput() {
+        if(reader == null) throw new IllegalStateException("User input is not enabled, cannot obtain input stream");
     }
 
     /**
@@ -462,7 +507,7 @@ public class GrailsConsole {
     }
 
     public boolean isAnsiEnabled() {
-        return Ansi.isEnabled() && terminal.isANSISupported() && ansiEnabled;
+        return Ansi.isEnabled() && (terminal != null && terminal.isANSISupported()) && ansiEnabled;
     }
 
     /**
@@ -603,7 +648,12 @@ public class GrailsConsole {
         return null;
     }
 
+<<<<<<< HEAD
     private String readLine(String prompt) {
+=======
+    private String readLine(String prompt, boolean secure) {
+        assertAllowInput();
+>>>>>>> 43c4c99... some initial changes to allow jline ConsoleReader and Terminal to be disabled
         userInputActive = true;
         try {
             return reader.readLine(prompt);
