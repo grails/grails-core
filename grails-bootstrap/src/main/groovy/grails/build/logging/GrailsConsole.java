@@ -124,8 +124,6 @@ public class GrailsConsole {
             reader = createConsoleReader();
             reader.setBellEnabled(false);
             reader.setCompletionHandler(new CandidateListCompletionHandler());
-            history = prepareHistory();
-            reader.setHistory(history);
         }
 
         if(isActivateTerminal()) {
@@ -137,14 +135,6 @@ public class GrailsConsole {
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
 
-<<<<<<< HEAD
-        reader = createConsoleReader();
-        reader.setBellEnabled(false);
-        reader.setCompletionHandler(new CandidateListCompletionHandler());
-
-        terminal = createTerminal();
-=======
->>>>>>> 43c4c99... some initial changes to allow jline ConsoleReader and Terminal to be disabled
 
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
@@ -648,12 +638,8 @@ public class GrailsConsole {
         return null;
     }
 
-<<<<<<< HEAD
     private String readLine(String prompt) {
-=======
-    private String readLine(String prompt, boolean secure) {
         assertAllowInput();
->>>>>>> 43c4c99... some initial changes to allow jline ConsoleReader and Terminal to be disabled
         userInputActive = true;
         try {
             return reader.readLine(prompt);
