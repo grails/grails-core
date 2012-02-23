@@ -31,6 +31,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.springframework.core.io.AbstractResource;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * @author Graeme Rocher
@@ -52,6 +54,27 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         BuildSettingsHolder.setSettings(null);
         PluginManagerHolder.setPluginManager(null);
     }
+
+    public void testGetTemplateTextFromClasspath() {
+        BuildSettings bs = BuildSettingsHolder.getSettings();
+        BuildSettingsHolder.setSettings(null);
+        try {
+            DefaultGrailsTemplateGenerator generator = new DefaultGrailsTemplateGenerator();
+            generator.setBasedir("/not/there");
+            AbstractResource templateResource = generator.getTemplateResource("list.gsp");
+            assertTrue(templateResource instanceof ClassPathResource);
+            ClassPathResource cpr = (ClassPathResource) templateResource;
+            assertEquals("src/grails/templates/scaffolding/list.gsp", cpr.getPath());
+
+            templateResource = generator.getTemplateResource("/list.gsp");
+            assertTrue(templateResource instanceof ClassPathResource);
+            cpr = (ClassPathResource) templateResource;
+            assertEquals("src/grails/templates/scaffolding/list.gsp", cpr.getPath());
+        } finally {
+            BuildSettingsHolder.setSettings(bs);
+        }
+    }
+
 
     public void testGenerateController() throws Exception {
         DefaultGrailsTemplateGenerator generator;
