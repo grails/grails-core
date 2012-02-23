@@ -534,11 +534,15 @@ public class GrailsHibernateUtil {
     public static List<String> getDatasourceNames(GrailsDomainClass domainClass) {
         // Mappings won't have been built yet when this is called from
         // HibernatePluginSupport.doWithSpring  so do a temporary evaluation but don't cache it
-        Mapping mapping = GrailsDomainBinder.evaluateMapping(domainClass, null, false);
-        if (mapping == null) {
+        Mapping mapping = isMappedWithHibernate(domainClass) ? GrailsDomainBinder.evaluateMapping(domainClass, null, false) : null;
+        if(mapping == null) {
             mapping = new Mapping();
         }
         return mapping.getDatasources();
+    }
+
+    public static boolean isMappedWithHibernate(GrailsDomainClass domainClass) {
+        return domainClass instanceof GrailsHibernateDomainClass || domainClass.getMappingStrategy().equals( GrailsDomainClass.GORM );
     }
 
     public static void autoAssociateBidirectionalOneToOnes(DefaultGrailsDomainClass domainClass, Object target) {

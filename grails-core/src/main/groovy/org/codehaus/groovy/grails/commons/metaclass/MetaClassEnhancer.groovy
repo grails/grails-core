@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.commons.metaclass
 import java.lang.reflect.Method
 
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
+import org.springframework.beans.BeanUtils
 
 /**
  * Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider.
@@ -29,6 +30,25 @@ import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
 class MetaClassEnhancer extends BaseApiProvider {
 
     void enhance(MetaClass metaClass) {
+        def cls = metaClass.theClass
+        for(c in constructors) {
+            def method = c
+            def paramTypes = method.parameterTypes.length == 1 ? [] : method.parameterTypes[1..-1] as Class[]
+            metaClass.constructor = new Closure(this) {
+                @Override
+                Class[] getParameterTypes() {
+                    return paramTypes
+                }
+
+                @Override
+                Object call(Object... args) {
+                    def instance = BeanUtils.instantiate(cls)
+                    method.invoke(method.getDeclaringClass(), instance, *args)
+                    return instance
+                }
+
+            }
+        }
         for (method in instanceMethods) {
             if (method instanceof ReflectionMetaMethod) {
                 metaClass.registerInstanceMethod(method)
@@ -37,7 +57,7 @@ class MetaClassEnhancer extends BaseApiProvider {
 
         for (Method method : staticMethods) {
             def methodName = method.name
-            metaClass."${methodName}" = method.declaringClass.&"${methodName}"
+            metaClass.static."${methodName}" = method.declaringClass.&"${methodName}"
         }
     }
 

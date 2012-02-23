@@ -28,6 +28,10 @@ import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.junit.Assert
+import org.junit.Before
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.junit.After
 
 /**
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
@@ -49,6 +53,23 @@ import org.junit.Assert
  * @since 2.0
  */
 class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
+
+    GroovyPageBinding pageScope
+
+    @Override
+    @Before
+    void bindGrailsWebRequest() {
+        super.bindGrailsWebRequest()
+        pageScope = new GroovyPageBinding()
+        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
+
+    }
+
+    @After
+    void clearPageScope() {
+        pageScope = null
+    }
+
 
     /**
      * Mocks a tag library, making it available to subsequent calls to controllers mocked via

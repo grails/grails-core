@@ -56,7 +56,7 @@ public class UaaIntegration {
            + "Enter Y or N:";
 
     private static boolean enabled = false;
-    public static final int ONE_MINUTE = 180000;
+    public static final int ONE_MINUTE = 1800;
 
     public static boolean isAvailable() {
         return ClassUtils.isPresent("org.springframework.uaa.client.UaaServiceFactory", UaaIntegration.class.getClassLoader());

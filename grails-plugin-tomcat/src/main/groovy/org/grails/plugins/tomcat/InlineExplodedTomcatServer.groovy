@@ -23,6 +23,8 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
+import org.apache.tomcat.util.scan.StandardJarScanner
+import org.springframework.util.ReflectionUtils
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -40,6 +42,27 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         tomcat.basedir = tomcatDir
         context = tomcat.addWebapp(contextPath, basedir)
+        def scanConfig = getConfigParam("scan")
+        def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
+        def extraJarsToSkip = scanConfig.excludes
+        if(extraJarsToSkip instanceof List && shouldScan) {
+
+            try {
+                def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
+                ReflectionUtils.makeAccessible(jarsToSkipField)
+                Set jarsToSkip = jarsToSkipField.get(StandardJarScanner)
+                jarsToSkip.addAll(extraJarsToSkip)
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        
+
+        def jarScanner = new StandardJarScanner()
+        jarScanner.setScanClassPath(shouldScan)
+        context.setJarScanner(jarScanner)
+
         tomcat.enableNaming()
 
         // we handle reloading manually

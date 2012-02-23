@@ -29,6 +29,8 @@ import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.springframework.validation.Errors
 import org.codehaus.groovy.grails.commons.*
+import grails.validation.ValidationErrors
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -71,6 +73,11 @@ class GrailsUnitTestCase extends GroovyTestCase {
         previousConfig = ConfigurationHolder.config
 
         PluginManagerHolder.pluginManager = [hasGrailsPlugin: { String name -> true }] as GrailsPluginManager
+        registerMetaClass(ValidationErrors)
+        ValidationErrors.metaClass.getAt = {String field ->
+            def code = getFieldError(field)?.code
+            return GrailsMockErrors.ERROR_CODE_TABLE[code] ?: code
+        }
     }
 
     protected void tearDown() {

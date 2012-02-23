@@ -60,6 +60,7 @@ GrailsPluginUtils.pluginBuildSettings = pluginSettings
 
 // Other useful properties.
 grailsApp = null
+projectWatcher = null
 
 isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 

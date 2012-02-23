@@ -186,7 +186,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         MethodNode lookupMethod = classNode.getMethod(lookupMethodName, ZERO_PARAMETERS);
         if(lookupMethod == null) {
             BlockStatement methodBody = new BlockStatement();
-            lookupMethod = populateAutowiredApiLookupMethod(implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
+            lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
             classNode.addMethod(lookupMethod);
         }
     }
@@ -201,10 +201,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return false;
     }
 
-    protected MethodNode populateAutowiredApiLookupMethod(ClassNode implementationNode,
-            @SuppressWarnings("unused") String apiInstanceProperty, String methodName, BlockStatement methodBody) {
+    protected MethodNode populateAutowiredApiLookupMethod(ClassNode classNode, ClassNode implementationNode,
+                                                          @SuppressWarnings("unused") String apiInstanceProperty, String methodName, BlockStatement methodBody) {
         ArgumentListExpression arguments = new ArgumentListExpression();
-        arguments.addExpression(new ConstantExpression("Cannot locate Grails API implementation. Grails code can only be run within the context of a Grails application."));
+        arguments.addExpression(new ConstantExpression("Method on class ["+classNode+"] was used outside of a Grails application. If running in the context of a test using the mocking API or bootstrap Grails correctly."));
         methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
         return new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);
     }

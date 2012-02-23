@@ -296,6 +296,34 @@ class GrailsMockTests extends GroovyTestCase {
         mockControl1.verify()
         mockControl2.verify()
     }
+    
+    /**
+     * GRAILS-8773
+     * Tests that passing an object that implements metaClass.getProperty to a mocked method works.
+     */
+    void testMockWithMetaClassGetProperty() {
+        def mockControl = new GrailsMock(GrailsMockCollaborator)
+        mockControl.demand.someMethod{ GrailsMockWithMetaClassGetProperty foo -> }
+        
+        def parameter = new GrailsMockWithMetaClassGetProperty()
+        def mock = mockControl.createMock()
+        mock.someMethod( parameter )
+        mockControl.verify()
+    }
+    
+    /**
+     * GRAILS-8773
+     * Tests that passing an object that implements metaClass.getProperty to a mocked method works.
+     */
+    void testMockWithNodeParameter() {
+        def mockControl = new GrailsMock(GrailsMockCollaborator)
+        mockControl.demand.someMethod{ Node node -> }
+        
+        def node = new Node( null, 'root' )
+        def mock = mockControl.createMock()
+        mock.someMethod( node )
+        mockControl.verify()
+    }
 }
 
 class GrailsMockTestClass {
@@ -372,4 +400,20 @@ interface GrailsMockInterface {
 
 class GrailsMockImpl implements GrailsMockInterface {
     String testMethod(String name, int quantity) { name * quantity }
+}
+
+class GrailsMockWithMetaClassGetProperty {
+    static {
+        setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(GrailsMockWithMetaClassGetProperty.class), GrailsMockWithMetaClassGetProperty.class);
+    }
+
+    protected static void setMetaClass(final MetaClass metaClass, Class nodeClass) {
+        final MetaClass newMetaClass = new DelegatingMetaClass(metaClass) {
+            @Override
+            public Object getProperty(Object object, String property) {
+                'string returned from metaClass getProperty()'
+            }
+        };
+        GroovySystem.getMetaClassRegistry().setMetaClass(nodeClass, newMetaClass);
+    }
 }

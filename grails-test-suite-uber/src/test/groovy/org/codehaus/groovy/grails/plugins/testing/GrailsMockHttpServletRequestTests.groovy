@@ -117,9 +117,7 @@ Second line
 
     void testGetJSONNoContent() {
         def request = new GrailsMockHttpServletRequest()
-        shouldFail {
-            request.JSON
-        }
+        assert request.JSON.size() == 0
     }
 
     void testGetJSONContentNotJson() {

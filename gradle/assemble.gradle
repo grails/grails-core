@@ -72,7 +72,7 @@ task pluginsFromSvn {
     plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
-        resources: "1.1.5",
+        resources: "1.1.6",
         webxml: "1.4.1",
         jquery: "1.7.1"
     ]

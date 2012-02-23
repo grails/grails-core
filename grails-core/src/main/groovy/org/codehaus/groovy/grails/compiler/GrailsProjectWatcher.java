@@ -67,6 +67,11 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         }
     }
 
+    public void setPluginManager(GrailsPluginManager pluginManager) {
+        this.pluginManager = pluginManager;
+        initPluginWatchPatterns();
+    }
+
     public static MultipleCompilationErrorsException getCurrentCompilationError() {
         return currentCompilationError;
     }
@@ -150,6 +155,15 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             }
         });
 
+        if(pluginManager != null) {
+            initPluginWatchPatterns();
+        }
+
+
+        super.run();
+    }
+
+    private void initPluginWatchPatterns() {
         GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
 
         for (GrailsPlugin plugin : allPlugins) {
@@ -179,8 +193,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
                 }
             }
         }
-
-        super.run();
     }
 
     private void reloadPlugin(File file) {
@@ -192,6 +204,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     }
 
     private void informPluginManager(final File file, boolean isNew) {
+        if(pluginManager == null)  return;
         if (!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);

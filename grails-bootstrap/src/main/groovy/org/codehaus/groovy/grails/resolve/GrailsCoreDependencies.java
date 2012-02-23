@@ -170,7 +170,7 @@ public class GrailsCoreDependencies {
                         registerDependencies(dependencyManager, "docs", docDependencies);
 
                         // dependencies needed during development, but not for deployment
-                        String tomcatVersion = "7.0.16";
+                        String tomcatVersion = "7.0.25";
                         ModuleRevisionId[] providedDependencies = {
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-core", tomcatVersion),
                             ModuleRevisionId.newInstance("org.apache.tomcat.embed", "tomcat-embed-jasper",tomcatVersion),
@@ -180,7 +180,7 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed at compile time
                         ModuleRevisionId[] groovyDependencies = {
-                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.5")
+                            ModuleRevisionId.newInstance("org.codehaus.groovy", "groovy-all", "1.8.6")
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, groovyDependencies, "jline");
 
@@ -191,7 +191,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
 
-                        String datastoreMappingVersion = "1.0.1.BUILD-SNAPSHOT";
+                        String datastoreMappingVersion = "1.0.2.RELEASE";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),

@@ -38,43 +38,58 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
         return getHibernateTemplate().execute(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
 
-                Criteria crit = getCriteria(datastore, application, session, detachedCriteria, additionalCriteria, clazz);
-                if (arguments.length > 0) {
-                    if (arguments[0] instanceof Map<?, ?>) {
-                        Map<?, ?> argMap = (Map<?, ?>)arguments[0];
-                        GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit,argMap);
-                        if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
-                            crit.setMaxResults(1);
-                        }
-                    }
-                }
+                Criteria crit = buildCriteria(session, detachedCriteria, additionalCriteria, clazz, arguments, operator, expressions);
 
-                if (operator.equals(OPERATOR_OR)) {
-                    if (firstExpressionIsRequiredBoolean()) {
-                        GrailsMethodExpression expression = (GrailsMethodExpression) expressions.remove(0);
-                        crit.add(expression.getCriterion());
-                    }
-                    Disjunction dis = Restrictions.disjunction();
-                    for (Object expression : expressions) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
-                        dis.add(current.getCriterion());
-                    }
-                    crit.add(dis);
-                }
-                else {
-                    for (Object expression : expressions) {
-                        GrailsMethodExpression current = (GrailsMethodExpression) expression;
-                        crit.add(current.getCriterion());
-                    }
-                }
-
-                final List<?> list = crit.list();
-                if (!list.isEmpty()) {
-                    return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
-                }
-                return null;
+                return getResult(crit);
             }
         });
+    }
+
+    protected Object getResult(Criteria crit) {
+        final List<?> list = crit.list();
+        if (!list.isEmpty()) {
+            return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
+        }
+        return null;
+    }
+
+    protected Criteria buildCriteria(Session session, DetachedCriteria detachedCriteria, Closure additionalCriteria, Class clazz, Object[] arguments, String operator, List expressions) {
+        Criteria crit = getCriteria(datastore, application, session, detachedCriteria, additionalCriteria, clazz);
+        if (arguments.length > 0) {
+            if (arguments[0] instanceof Map<?, ?>) {
+                Map<?, ?> argMap = (Map<?, ?>)arguments[0];
+                GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit, argMap);
+                if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
+                    crit.setMaxResults(1);
+                }
+            }
+            else {
+                crit.setMaxResults(1);
+            }
+        }
+        else {
+            crit.setMaxResults(1);
+        }
+
+        if (operator.equals(OPERATOR_OR)) {
+            if (firstExpressionIsRequiredBoolean()) {
+                GrailsMethodExpression expression = (GrailsMethodExpression) expressions.remove(0);
+                crit.add(expression.getCriterion());
+            }
+            Disjunction dis = Restrictions.disjunction();
+            for (Object expression : expressions) {
+                GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                dis.add(current.getCriterion());
+            }
+            crit.add(dis);
+        }
+        else {
+            for (Object expression : expressions) {
+                GrailsMethodExpression current = (GrailsMethodExpression) expression;
+                crit.add(current.getCriterion());
+            }
+        }
+        return crit;
     }
 
     /**
