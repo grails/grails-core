@@ -115,7 +115,7 @@ target(integrateGit:"Integrates Git with Grails") {
     ant.move(file: "${basedir}/grailsProject.gitignore", tofile: "${basedir}/.gitignore", overwrite: true)
 
     replaceTokens([".gitignore"])
-    grailsConsole.updateStatus "Created Git project files."
+    grailsConsole.updateStatus "Created Git '.gitignore' file."
 }
 
 target(unpackSupportFiles:"Unpacks the support files") {
