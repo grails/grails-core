@@ -27,7 +27,7 @@ import grails.util.GrailsNameUtils
 includeTargets << grailsScript("_GrailsInit")
 
 USAGE = """
-    integrate-with [--ant] [--eclipse] [--intellij] [--git] [--textmate]
+    integrate-with [--ant] [--eclipse] [--intellij] [--git] [--textmate] [--hg]
 
 where
     --ant = Generates an Ant build.xml with accompanying Ivy files.
@@ -35,6 +35,7 @@ where
     --intellij = Generates IntelliJ IDEA project files.
     --git = Generates a '.gitignore' file.
     --textmate = Generates a TextMate project file.
+    --hg = Generates a Mercurial '.hgignore' file.
 """
 
 integrationFiles = new File("${projectWorkDir}/integration-files")
@@ -115,7 +116,18 @@ target(integrateGit:"Integrates Git with Grails") {
     ant.move(file: "${basedir}/grailsProject.gitignore", tofile: "${basedir}/.gitignore", overwrite: true)
 
     replaceTokens([".gitignore"])
-    grailsConsole.updateStatus "Created Git project files."
+    grailsConsole.updateStatus "Created Git '.gitignore' file."
+}
+
+target(integrateHg:"Integrates Mercurial with Grails") {
+    depends unpackSupportFiles
+    ant.copy(todir:basedir) {
+        fileset(dir:"${integrationFiles}/hg")
+    }
+    ant.move(file: "${basedir}/grailsProject.hgignore", tofile: "${basedir}/.hgignore", overwrite: true)
+
+    replaceTokens([".hgignore"])
+    grailsConsole.updateStatus "Created Mercurial '.hgignore' file."
 }
 
 target(unpackSupportFiles:"Unpacks the support files") {
