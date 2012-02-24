@@ -704,6 +704,7 @@ public class GroovyPageParser implements Tokens {
             if (pluginAnnotation != null) {
                 out.println(pluginAnnotation);
             }
+            out.println("@groovy.transform.TypeChecked(pluginFactory=org.codehaus.groovy.grails.web.pages.GSPTypeCheckerPluginFactory)");
             out.print("class ");
             out.print(className);
             out.println(" extends GroovyPage {");
@@ -1111,7 +1112,7 @@ public class GroovyPageParser implements Tokens {
                 //out.print("def ");
                 bodyVarsDefined.add(tm.tagIndex);
             }
-            out.println("createTagBody(" + tm.tagIndex + ", {->");
+            out.println("createTagBody(" + tm.tagIndex + ", {");
             closureLevel++;
         }
     }
