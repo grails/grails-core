@@ -94,7 +94,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             ClassNode implementationNode = new ClassNode(instanceImplementation);
 
             String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
-            Expression apiInstance = new VariableExpression(apiInstanceProperty);
+            Expression apiInstance = new VariableExpression(apiInstanceProperty, implementationNode);
 
             if (requiresStaticLookupMethod()) {
                 final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();

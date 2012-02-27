@@ -75,12 +75,12 @@ public class GrailsASTUtils {
 
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
-    public static final Token EQUALS_OPERATOR = Token.newSymbol("==", 0, 0);
-    public static final Token NOT_EQUALS_OPERATOR = Token.newSymbol("!=", 0, 0);
+    public static final Token EQUALS_OPERATOR = Token.newSymbol(Types.COMPARE_EQUAL, 0, 0);
+    public static final Token NOT_EQUALS_OPERATOR = Token.newSymbol(Types.COMPARE_NOT_EQUAL, 0, 0);
 
+    public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.EQUAL, 0, 0);
     public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
-    public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
 
     
     public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
@@ -284,7 +284,8 @@ public class GrailsASTUtils {
     }
 
     private static VariableExpression addApiVariableDeclaration(Expression delegate, MethodNode declaredMethod, BlockStatement methodBody) {
-        VariableExpression apiVar = new VariableExpression("$api_" + declaredMethod.getName());
+        VariableExpression apiVar = new VariableExpression("$api_" + declaredMethod.getName(), delegate.getType());
+        apiVar.setAccessedVariable(apiVar);
         DeclarationExpression de = new DeclarationExpression(apiVar, ASSIGNMENT_OPERATOR, delegate);
         methodBody.addStatement(new ExpressionStatement(de));
         return apiVar;
