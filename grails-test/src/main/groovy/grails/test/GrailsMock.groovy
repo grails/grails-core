@@ -102,7 +102,12 @@ class GrailsMock {
                 def paramTypes = []
                 args.each {
                     if (it != null) {
-                        paramTypes << it.class
+                        if( it.class instanceof Class ) {
+                            paramTypes << it.class
+                        }
+                        else {
+                            paramTypes << it.getClass()
+                        }
                     }
                     else {
                         paramTypes << null

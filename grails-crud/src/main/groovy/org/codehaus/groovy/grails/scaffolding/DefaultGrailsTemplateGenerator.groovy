@@ -32,6 +32,7 @@ import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.Assert
+import org.springframework.core.io.AbstractResource
 
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
@@ -271,13 +272,20 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     }
 
 
-    private getTemplateText(String template) {
+    public getTemplateText(String template) {
         def application = grailsApplication
         // first check for presence of template in application
         if (resourceLoader && application?.warDeployed) {
             return resourceLoader.getResource("/WEB-INF/templates/scaffolding/${template}").inputStream.text
         }
 
+        AbstractResource templateFile = getTemplateResource(template)
+        if(templateFile.exists()) {
+            return templateFile.inputStream.getText()
+        }
+    }
+
+    AbstractResource getTemplateResource(String template) {
         def templateFile = new FileSystemResource(new File("${basedir}/src/templates/scaffolding/${template}").absoluteFile)
 
         if (!templateFile.exists()) {
@@ -294,12 +302,13 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 }
             }
             else {
+                if(template.startsWith('/')) {
+                    template = template.substring(1)
+                }
                 templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")
             }
         }
-        if(templateFile.exists()) {
-            return templateFile.inputStream.getText()
-        }
+        return templateFile
     }
 
     def getTemplateNames() {
