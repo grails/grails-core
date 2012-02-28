@@ -947,6 +947,8 @@ class Alert {
         assertNotNull(enumColumn)
         assertEquals(5, enumColumn.length)
         assertEquals('char', enumColumn.sqlType)
+        assertEquals(Column.DEFAULT_PRECISION, enumColumn.precision)
+        assertEquals(Column.DEFAULT_SCALE, enumColumn.scale)
     }
 
     private org.hibernate.mapping.Collection findCollection(DefaultGrailsDomainConfiguration config, String role) {
