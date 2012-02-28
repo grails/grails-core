@@ -520,6 +520,7 @@ class RenderTagLib implements RequestConstants {
         // determine column title
         def title = attrs.remove("title")
         def titleKey = attrs.remove("titleKey")
+        def mapping = attrs.remove('mapping')
         if (titleKey) {
             if (!title) title = titleKey
             def messageSource = grailsAttributes.messageSource
@@ -532,7 +533,17 @@ class RenderTagLib implements RequestConstants {
         attrs.each { k, v ->
             writer << "${k}=\"${v?.encodeAsHTML()}\" "
         }
-        writer << ">${link(action: action, params: linkParams) { title }}</th>"
+        writer << '>'
+        def linkAttrs = [params: linkParams]
+        if(mapping) {
+            linkAttrs.mapping = mapping
+        } else {
+            linkAttrs.action = action
+        }
+        writer << link(linkAttrs) {
+            title
+        }
+        writer << '</th>'
     }
 
     /**

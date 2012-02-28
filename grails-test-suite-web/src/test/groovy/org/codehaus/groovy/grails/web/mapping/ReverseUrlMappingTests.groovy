@@ -38,6 +38,11 @@ name showBooks: '/showSomeBooks' {
     controller = 'book'
     action = 'list'
 }
+
+name showBooks2: '/showSomeOtherBooks' {
+    controller = 'book'
+    action = 'list'
+}
 }}'''
 
         gcl.parseClass '''
@@ -74,5 +79,11 @@ class ProductController {
     void testPaginateWithNamedUrlMapping() {
         def template = '<g:paginate mapping="showBooks" total="15" max="5" />'
         assertOutputEquals '<span class="currentStep">1</span><a href="/showSomeBooks?offset=5&amp;max=5" class="step">2</a><a href="/showSomeBooks?offset=10&amp;max=5" class="step">3</a><a href="/showSomeBooks?offset=5&amp;max=5" class="nextLink">Next</a>', template
+   }
+
+    void testSortableColumnWithNamedUrlMapping() {
+        def template = '<g:sortableColumn property="releaseDate" title="Release Date" mapping="showBooks2" />'
+        webRequest.controllerName = 'book'
+        assertOutputEquals '<th class="sortable" ><a href="/showSomeOtherBooks?sort=releaseDate&amp;order=asc">Release Date</a></th>', template
    }
 }
