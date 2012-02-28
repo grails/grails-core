@@ -33,6 +33,11 @@ name myOtherNamedMapping: "/showPeople/$lastName" {
   controller = 'person'
   action = 'byLastName'
 }
+
+name showBooks: '/showSomeBooks' {
+    controller = 'book'
+    action = 'list'
+}
 }}'''
 
         gcl.parseClass '''
@@ -65,4 +70,9 @@ class ProductController {
         def template7 = '<g:link mapping="myOtherNamedMapping" params="[lastName:\'Keenan\']">List People</g:link>'
         assertOutputEquals '<a href="/showPeople/Keenan">List People</a>', template7, [:]
     }
+
+    void testPaginateWithNamedUrlMapping() {
+        def template = '<g:paginate mapping="showBooks" total="15" max="5" />'
+        assertOutputEquals '<span class="currentStep">1</span><a href="/showSomeBooks?offset=5&amp;max=5" class="step">2</a><a href="/showSomeBooks?offset=10&amp;max=5" class="step">3</a><a href="/showSomeBooks?offset=5&amp;max=5" class="nextLink">Next</a>', template
+   }
 }
