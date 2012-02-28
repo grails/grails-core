@@ -300,7 +300,7 @@ public class GrailsCoreDependencies {
 
                             ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", java5compatible ? "1.3": "1.4"),
                             ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
-                            ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
+                            ModuleRevisionId.newInstance("com.h2database", "h2", "1.3.164"),
                             // JSP support
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")

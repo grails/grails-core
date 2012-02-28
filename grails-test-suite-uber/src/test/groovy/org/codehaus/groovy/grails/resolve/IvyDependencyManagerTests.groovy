@@ -900,7 +900,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                   "org.apache.ant:ant-junit:1.8.2",
                   "org.apache.ant:ant-trax:1.7.1",
                   "org.grails:grails-radeox:1.0-b4",
-                  "com.h2database:h2:1.2.144",
+                  "com.h2database:h2:1.3.164",
                   "apache-tomcat:jasper-compiler:5.5.15",
                   "jline:jline:0.9.94",
                   "javax.servlet:servlet-api:2.5",
