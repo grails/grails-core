@@ -24,6 +24,16 @@
 
 includeTargets << grailsScript("_GrailsCreateProject")
 
+USAGE = """
+    create-app [--inplace] [NAME]
+
+where
+    --inplace  = Creates the project in the current directory rather than
+                 creating a new directory.
+    NAME       = The name of the project. If not provided, this command will
+                 ask you for the name.
+"""
+
 setDefaultTarget("createApp")
 
 USAGE = """
