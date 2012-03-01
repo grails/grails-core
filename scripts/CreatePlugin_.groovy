@@ -26,3 +26,10 @@
 includeTargets << grailsScript("_GrailsCreateProject")
 
 setDefaultTarget("createPlugin")
+
+USAGE = """
+    create-app <pluginName>
+
+where
+    pluginName = the name of the new plugin
+"""

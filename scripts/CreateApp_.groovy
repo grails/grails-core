@@ -35,3 +35,10 @@ where
 """
 
 setDefaultTarget("createApp")
+
+USAGE = """
+    create-app <appName>
+
+where
+    appName = the name of the new application
+"""
