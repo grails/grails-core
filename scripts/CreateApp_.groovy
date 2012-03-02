@@ -24,6 +24,8 @@
 
 includeTargets << grailsScript("_GrailsCreateProject")
 
+setDefaultTarget("createApp")
+
 USAGE = """
     create-app [--inplace] [NAME]
 
@@ -34,11 +36,3 @@ where
                  ask you for the name.
 """
 
-setDefaultTarget("createApp")
-
-USAGE = """
-    create-app <appName>
-
-where
-    appName = the name of the new application
-"""
