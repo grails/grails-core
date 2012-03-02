@@ -933,35 +933,40 @@ class MockUtils {
             constrainedProperties = constraintsEvaluator.evaluate(clazz, dc.properties)
         }
         else {
-            def constraintsBuilder = new ConstrainedPropertyBuilder(clazz)
-            // Get clazz's class hierarchy up to, but not including, Object
-            // as a linked list. The list starts with the ultimate base class
-            // and ends with "clazz".
-            LinkedList classChain = new LinkedList()
-            while (clazz != Object.class) {
-                classChain.addFirst(clazz)
-                clazz = clazz.getSuperclass()
-            }
+            def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
+            if(c instanceof Map) {
+                constrainedProperties = c
+            } else {
+                def constraintsBuilder = new ConstrainedPropertyBuilder(clazz)
+                // Get clazz's class hierarchy up to, but not including, Object
+                // as a linked list. The list starts with the ultimate base class
+                // and ends with "clazz".
+                LinkedList classChain = new LinkedList()
+                while (clazz != Object.class) {
+                    classChain.addFirst(clazz)
+                    clazz = clazz.getSuperclass()
+                }
 
-            // Now get build up our constraints from all "constraints"
-            // properties in all the classes in the hierarchy.
-            for (Iterator it = classChain.iterator(); it.hasNext();) {
-                clazz = (Class) it.next()
-                // Read the constraints.
-                def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
+                // Now get build up our constraints from all "constraints"
+                // properties in all the classes in the hierarchy.
+                for (Iterator it = classChain.iterator(); it.hasNext();) {
+                    clazz = (Class) it.next()
+                    // Read the constraints.
+                    c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
 
-                if (c) {
-                    c = c.clone()
-                    c.delegate = constraintsBuilder
-                    try {
-                        c.call()
-                    } finally {
+                    if (c) {
+                        c = c.clone()
+                        c.delegate = constraintsBuilder
+                        try {
+                            c.call()
+                        } finally {
                         c.delegate = null
+                        }
                     }
                 }
-            }
 
-            constrainedProperties = constraintsBuilder.constrainedProperties
+                constrainedProperties = constraintsBuilder.constrainedProperties
+            }
         }
 
 
