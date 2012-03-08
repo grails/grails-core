@@ -13,6 +13,8 @@ class DataBindingWithAssociationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+package databindingwithassociationtests
+
 import grails.persistence.*
 
 @Entity
@@ -55,8 +57,8 @@ class Captain {
     }
 
     void testDataBindingWithAssociation() {
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book3").clazz
+        def Author = ga.getDomainClass("databindingwithassociationtests.Author").clazz
+        def Book = ga.getDomainClass("databindingwithassociationtests.Book3").clazz
 
         def a = Author.newInstance(name:"Stephen").save(flush:true)
 
@@ -87,8 +89,8 @@ class Captain {
     }
 
     void testBindToSetCollection() {
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book3").clazz
+        def Author = ga.getDomainClass("databindingwithassociationtests.Author").clazz
+        def Book = ga.getDomainClass("databindingwithassociationtests.Book3").clazz
 
         def a = Author.newInstance(name:"Stephen King")
                     .addToBooks(title:"The Stand", isbn:"983479")
@@ -114,8 +116,8 @@ class Captain {
 
     void testBindToNewInstance() {
         super.buildMockRequest()
-        def Author = ga.getDomainClass("Author").clazz
-        def Book = ga.getDomainClass("Book3").clazz
+        def Author = ga.getDomainClass("databindingwithassociationtests.Author").clazz
+        def Book = ga.getDomainClass("databindingwithassociationtests.Book3").clazz
 
         def a = Author.newInstance(name:"Stephen King")
 
@@ -135,7 +137,7 @@ class Captain {
     }
 
     void testBindingToSetOfString() {
-        def shipClass = ga.getDomainClass('Ship').clazz
+        def shipClass = ga.getDomainClass('databindingwithassociationtests.Ship').clazz
         def ship = shipClass.newInstance()
 
         def request = new MockHttpServletRequest()
