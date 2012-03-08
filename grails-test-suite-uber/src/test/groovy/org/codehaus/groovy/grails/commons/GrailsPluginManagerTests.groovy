@@ -127,10 +127,8 @@ hibernate {
     void testDependencyResolutionFailure() {
         def manager = new DefaultGrailsPluginManager([MyGrailsPlugin] as Class[], ga)
 
-        shouldFail(PluginException) {
-            manager.loadPlugins()
-            assert !manager.hasGrailsPlugin("my")
-        }
+        manager.loadPlugins()
+        assert !manager.hasGrailsPlugin("my")
     }
 
     void testDependencyResolutionSucces() {
