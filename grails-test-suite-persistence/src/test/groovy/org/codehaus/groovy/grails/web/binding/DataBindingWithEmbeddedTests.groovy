@@ -14,6 +14,7 @@ class DataBindingWithEmbeddedTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass("""
+            package databindingwithembeddedtests
             import grails.persistence.*
 
             @Entity
@@ -42,7 +43,7 @@ class DataBindingWithEmbeddedTests extends AbstractGrailsHibernateTests {
 
 
     void testDataBindingWithEmbeddedProperty() {
-        def Book = ga.getDomainClass("Book").clazz
+        def Book = ga.getDomainClass("databindingwithembeddedtests.Book").clazz
 
         def request = new MockHttpServletRequest()
         request.addParameter("title", "Pattern Recognition")
@@ -60,7 +61,7 @@ class DataBindingWithEmbeddedTests extends AbstractGrailsHibernateTests {
     }
 
     void testDataBindingWithEmbeddedPropertyOfAssociation() {
-        def Reader = ga.getDomainClass("Reader").clazz
+        def Reader = ga.getDomainClass("databindingwithembeddedtests.Reader").clazz
 
         def request = new MockHttpServletRequest()
         request.addParameter("currentlyReading.title", "Pattern Recognition")

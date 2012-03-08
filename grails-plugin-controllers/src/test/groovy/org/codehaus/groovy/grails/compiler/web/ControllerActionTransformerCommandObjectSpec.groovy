@@ -107,8 +107,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             String name
             def theAnswer
 
+            String city
+            String state
+
             static constraints = {
                 name matches: /[A-Z]+/
+                bindable: false
+                city nullable: true, bindable: false
+                state nullable: true
             }
         }
 
@@ -309,6 +315,20 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
         then:
             model.person.theAnswer == 42
+    }
+    
+    void 'Test bindable command object constraint'() {
+        when:
+            testController.params.name = 'JFK'
+            testController.params.city = 'STL'
+            testController.params.state = 'Missouri'
+            def model = testController.methodAction()
+
+        then:
+            !model.person.hasErrors()
+            model.person.name == 'JFK'
+            model.person.state == 'Missouri'
+            model.person.city == null
     }
 
     void 'Test subscript operator on command object errors'() {
