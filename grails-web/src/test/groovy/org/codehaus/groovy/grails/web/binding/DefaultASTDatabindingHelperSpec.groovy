@@ -50,6 +50,8 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                 static constraints = {
                     nonBindableProperty bindable: false
                     secondNonBindableProperty bindable: false
+                    somePropertyThatDoesNotExistAtCompileTime bindable: true
+                    someOtherPropertyThatDoesNotExistAtCompileTime bindable: false
                 }
             }
             ''')
@@ -154,9 +156,10 @@ class DefaultASTDatabindingHelperSpec extends Specification {
            final whiteList = whiteListField.get(null)
 
        then:
-           whiteList?.size() == 2
+           whiteList?.size() == 3
            'bindableProperty' in whiteList
            'secondBindableProperty' in whiteList
+           'somePropertyThatDoesNotExistAtCompileTime' in whiteList
     }
     
     void 'Test that binding respects the generated white list'() {
@@ -222,10 +225,11 @@ class DefaultASTDatabindingHelperSpec extends Specification {
         final whiteList = whiteListField.get(null)
 
     then:
-        whiteList?.size() == 3
+        whiteList?.size() == 4
         'subclassBindableProperty' in whiteList
         'nonBindableProperty' in whiteList
         'secondBindableProperty' in whiteList
+        'somePropertyThatDoesNotExistAtCompileTime' in whiteList
     }
     
     void 'Test that binding respects the generated white list in subclass'() {
