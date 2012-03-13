@@ -26,6 +26,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
@@ -705,22 +707,37 @@ public class GrailsASTUtils {
      * @return the Map as described above
      */
     public static Map<String, Map<String, Expression>> getConstraintMetadata(final ClosureExpression closureExpression) {
+        
+        final List<MethodCallExpression> methodExpressions = new ArrayList<MethodCallExpression>();
+        
         final Map<String, Map<String, Expression>> results = new LinkedHashMap<String, Map<String, Expression>>();
         final Statement closureCode = closureExpression.getCode();
         if(closureCode instanceof BlockStatement) {
             final List<Statement> closureStatements = ((BlockStatement) closureCode).getStatements();
-            for(Statement closureStatement : closureStatements) {
+            for(final Statement closureStatement : closureStatements) {
                 if(closureStatement instanceof ExpressionStatement) {
                     final Expression expression = ((ExpressionStatement) closureStatement).getExpression();
                     if(expression instanceof MethodCallExpression) {
-                        final MethodCallExpression methodCallExpression = (MethodCallExpression) expression;
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                } else if(closureStatement instanceof ReturnStatement) {
+                    final ReturnStatement returnStatement = (ReturnStatement) closureStatement;
+                    Expression expression = returnStatement.getExpression();
+                    if(expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                }
+                
+                for(final MethodCallExpression methodCallExpression : methodExpressions) {
+                    final Expression objectExpression = methodCallExpression.getObjectExpression();
+                    if(objectExpression instanceof VariableExpression && "this".equals(((VariableExpression)objectExpression).getName())) {
                         final Expression methodCallArguments = methodCallExpression.getArguments();
                         if(methodCallArguments instanceof TupleExpression) {
                             final List<Expression> methodCallArgumentExpressions = ((TupleExpression) methodCallArguments).getExpressions();
                             if(methodCallArgumentExpressions != null && methodCallArgumentExpressions.size() == 1 && methodCallArgumentExpressions.get(0) instanceof NamedArgumentListExpression) {
                                 final Map<String, Expression> constraintNameToExpression = new LinkedHashMap<String, Expression>();
                                 final List<MapEntryExpression> mapEntryExpressions = ((NamedArgumentListExpression) methodCallArgumentExpressions.get(0)).getMapEntryExpressions();
-                                for (MapEntryExpression mapEntryExpression : mapEntryExpressions) {
+                                for (final MapEntryExpression mapEntryExpression : mapEntryExpressions) {
                                     final Expression keyExpression = mapEntryExpression.getKeyExpression();
                                     if(keyExpression instanceof ConstantExpression) {
                                         final Object value = ((ConstantExpression) keyExpression).getValue();
@@ -735,7 +752,7 @@ public class GrailsASTUtils {
                     }
                 }
             }
-        }        
+        }
         return results;
     }
 
