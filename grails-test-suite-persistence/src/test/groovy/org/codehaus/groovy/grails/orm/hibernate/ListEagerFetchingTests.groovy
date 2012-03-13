@@ -8,6 +8,8 @@ class ListEagerFetchingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+package listeagerfetchingtests
+
 import grails.persistence.*
 
 @Entity
@@ -39,8 +41,8 @@ class Category {
     }
 
     void testListEagerFetchResults() {
-        def Store = ga.getDomainClass("Store").clazz
-        def Category = ga.getDomainClass("Category").clazz
+        def Store = ga.getDomainClass("listeagerfetchingtests.Store").clazz
+        def Category = ga.getDomainClass("listeagerfetchingtests.Category").clazz
 
         Store.newInstance(name:"one")
              .addToCategories(name:"A")

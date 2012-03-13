@@ -10,6 +10,8 @@ class CustomValidatorAndDynamicFinderTests extends AbstractGrailsHibernateTests 
 
     protected void onSetUp() {
         gcl.parseClass '''
+package customvalidatoranddynamicfindertests
+
 import grails.persistence.*
 
 @Entity
@@ -31,7 +33,7 @@ class Foo {
     // test for GRAILS-4981
     void testCustomValidatorWithFinder() {
         session.setFlushMode(FlushMode.AUTO)
-        def Foo = ga.getDomainClass("Foo").clazz
+        def Foo = ga.getDomainClass("customvalidatoranddynamicfindertests.Foo").clazz
 
         def foo = Foo.newInstance(name: 'partner1')
         assertNotNull foo.save()

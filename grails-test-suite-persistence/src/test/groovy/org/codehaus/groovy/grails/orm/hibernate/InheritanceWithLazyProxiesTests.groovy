@@ -14,6 +14,7 @@ class InheritanceWithLazyProxiesTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+package inheritanceiwithlazyproxiestests
 
 import grails.persistence.*
 
@@ -32,10 +33,10 @@ class AttributeB extends AttributeA {}
     }
 
     void testLazyAssociationsWithInheritance() {
-        Class AttributeA = ga.getDomainClass("AttributeA").clazz
-        Class AttributeB = ga.getDomainClass("AttributeB").clazz
-        Class A = ga.getDomainClass("A").clazz
-        Class B = ga.getDomainClass("B").clazz
+        Class AttributeA = ga.getDomainClass("inheritanceiwithlazyproxiestests.AttributeA").clazz
+        Class AttributeB = ga.getDomainClass("inheritanceiwithlazyproxiestests.AttributeB").clazz
+        Class A = ga.getDomainClass("inheritanceiwithlazyproxiestests.A").clazz
+        Class B = ga.getDomainClass("inheritanceiwithlazyproxiestests.B").clazz
 
         def attrb = AttributeB.newInstance()
         attrb.save()
@@ -59,10 +60,10 @@ class AttributeB extends AttributeA {}
     }
 
     void testInstanceOfMethod() {
-        Class AttributeA = ga.getDomainClass("AttributeA").clazz
-        Class AttributeB = ga.getDomainClass("AttributeB").clazz
-        Class A = ga.getDomainClass("A").clazz
-        Class B = ga.getDomainClass("B").clazz
+        Class AttributeA = ga.getDomainClass("inheritanceiwithlazyproxiestests.AttributeA").clazz
+        Class AttributeB = ga.getDomainClass("inheritanceiwithlazyproxiestests.AttributeB").clazz
+        Class A = ga.getDomainClass("inheritanceiwithlazyproxiestests.A").clazz
+        Class B = ga.getDomainClass("inheritanceiwithlazyproxiestests.B").clazz
 
         def attrb = AttributeB.newInstance()
         attrb.save()
