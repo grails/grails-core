@@ -5,6 +5,7 @@ import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.builder.AstBuilder
 
 /**
  * @author Burt Beckwith
@@ -38,6 +39,37 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert GrailsASTUtils.hasAnnotation(widgetNode, SecondAnnotation)
         assert !GrailsASTUtils.hasAnnotation(widgetNode, ThirdAnnotation)
         assert !GrailsASTUtils.hasAnnotation(widgetNode, FourthAnnotation)
+    }
+    
+    void testConstraintMetadata() {
+        def result = new AstBuilder().buildFromString('''
+            return {
+                firstName bindable: true, size: 5..15
+                def sb = new StringBuffer()
+
+                // this should NOT be considered a constraint configuration method call because
+                // it isn't a method invoked on "this"
+                sb.append nullable: true, size: 115
+                lastName bindable: false
+            }
+        ''')
+        def closureExpression = result[0].statements[0].expression
+        
+        def constraintMetadata = GrailsASTUtils.getConstraintMetadata(closureExpression)
+        assert 2 == constraintMetadata.size()
+        
+        def firstNameMetadata = constraintMetadata['firstName']
+        assert 2 == firstNameMetadata.size()
+        def firstNameBindableExpression = firstNameMetadata['bindable']
+        assert true == firstNameBindableExpression.value
+        def firstNameSizeExpression = firstNameMetadata['size']
+        assert 5 == firstNameSizeExpression.from.value
+        assert 15 == firstNameSizeExpression.to.value
+
+        def lastNameMetaData = constraintMetadata['lastName']
+        assert 1 == lastNameMetaData.size()
+        def lastNameBindableExpression = lastNameMetaData['bindable']
+        assert false == lastNameBindableExpression.value
     }
 }
 
