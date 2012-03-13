@@ -51,12 +51,14 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
        add(new ClassNode(java.lang.Float.TYPE)); 
        add(new ClassNode(java.lang.Double.class)); 
        add(new ClassNode(java.lang.Double.TYPE)); 
+       add(new ClassNode(java.math.BigInteger.class)); 
+       add(new ClassNode(java.math.BigDecimal.class)); 
        add(new ClassNode(java.lang.String.class)); 
        add(new ClassNode(java.net.URL.class)); 
     }};
     
     @SuppressWarnings("serial")
-    private static final List<ClassNode> DATE_TYPES = new ArrayList<ClassNode>() {{
+    private static final List<ClassNode> STRUCTURED_EDITOR_TYPES = new ArrayList<ClassNode>() {{
         add(new ClassNode(java.sql.Date.class)); 
         add(new ClassNode(java.util.Date.class)); 
         add(new ClassNode(java.util.Calendar.class)); 
@@ -107,7 +109,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 if(declaredField != null) {
                     final ClassNode type = declaredField.getType();
                     if(!SIMPLE_TYPES.contains(type)) {
-                        if(DATE_TYPES.contains(type)) {
+                        if(STRUCTURED_EDITOR_TYPES.contains(type)) {
                             listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
                         } else {
                             listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
