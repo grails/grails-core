@@ -18,6 +18,8 @@ class ${className}Controller {
     }
 
     def save() {
+        // TODO: Limit what properties are bound to the domain class.
+        // http://grails.org/doc/latest/guide/single.html#dataBinding
         def ${propertyName} = new ${className}(params)
         if (!${propertyName}.save(flush: true)) {
             render(view: "create", model: [${propertyName}: ${propertyName}])
@@ -68,6 +70,8 @@ class ${className}Controller {
             }
         }
 
+        // TODO: Limit what properties are bound to the domain class.
+        // http://grails.org/doc/latest/guide/single.html#dataBinding
         ${propertyName}.properties = params
 
         if (!${propertyName}.save(flush: true)) {
