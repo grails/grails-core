@@ -385,9 +385,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                         if(binding != null) {
                             Map bindingVariables = binding.getVariables();
-                            Object parseRequest = getParseRequest(Collections.EMPTY_MAP,bindingVariables);
-                            if(parseRequest instanceof Boolean) {
-                                urlMapping.setParseRequest((Boolean)parseRequest);
+                            Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
+                            if (parse instanceof Boolean) {
+                                urlMapping.setParseRequest((Boolean)parse);
                             }
                         }
                         configureUrlMapping(urlMapping);

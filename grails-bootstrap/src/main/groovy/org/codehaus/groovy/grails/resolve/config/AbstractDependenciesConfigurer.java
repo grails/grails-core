@@ -201,18 +201,17 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         if (configurer != null) {
             dependencyDescriptor.configure(configurer);
         }
-        if(!isExcluded(context, dependencyDescriptor)) {
-
+        if (!isExcluded(dependencyDescriptor)) {
             addDependency(scope, dependencyDescriptor);
         }
     }
 
-    private boolean isExcluded(DependencyConfigurationContext context, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
+    private boolean isExcluded(EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
         ExcludeRule[] excludeRules = context.getExcludeRules();
-        if(excludeRules != null) {
+        if (excludeRules != null) {
             ArtifactId aid = new ArtifactId(dependencyDescriptor.getDependencyId(),PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION);
             for (ExcludeRule excludeRule : excludeRules) {
-                if(MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
+                if (MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
                     return true;
                 }
             }

@@ -122,7 +122,7 @@ STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/@groovy.versi
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then
-    STARTER_CLASSPATH="$STARTER_CLASSPATH:/System/Library/Java"
+    STARTER_CLASSPATH="$STARTER_CLASSPATH:/System/Library/Java/Support"
 fi
 
 # Create the final classpath

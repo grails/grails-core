@@ -119,7 +119,7 @@ public class GrailsCoreDependencies {
                         String junitVersion = "4.10";
                         ModuleRevisionId[] buildDependencies = {
                             ModuleRevisionId.newInstance("org.springframework.uaa", "org.springframework.uaa.client", "1.0.1.RELEASE"),
-                            ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.3.0"),
+                            ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.4.1"),
                             ModuleRevisionId.newInstance("com.googlecode.json-simple", "json-simple", "1.1"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcpg-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
@@ -300,7 +300,7 @@ public class GrailsCoreDependencies {
 
                             ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", java5compatible ? "1.3": "1.4"),
                             ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
-                            ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
+                            ModuleRevisionId.newInstance("com.h2database", "h2", "1.3.164"),
                             // JSP support
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")

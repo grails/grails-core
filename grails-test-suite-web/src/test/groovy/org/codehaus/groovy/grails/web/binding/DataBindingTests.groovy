@@ -12,6 +12,8 @@ class DataBindingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         gcl.parseClass('''
+package databindingtests
+
 import grails.persistence.*
 
 class TestController {
@@ -69,8 +71,8 @@ class Person {
     }
 
     void testBindingNullToANullableDateThatAlreadyHasAValue() {
-        def c = ga.getControllerClass('TestController').newInstance()
-        def person = ga.getDomainClass('Person').newInstance()
+        def c = ga.getControllerClass('databindingtests.TestController').newInstance()
+        def person = ga.getDomainClass('databindingtests.Person').newInstance()
 
         def params = c.params
         params.name = 'Douglas Adams'
@@ -94,8 +96,8 @@ class Person {
     }
 
     void testNamedBinding() {
-        def c = ga.getControllerClass('TestController').newInstance()
-        def author = ga.getDomainClass('Author').newInstance()
+        def c = ga.getControllerClass('databindingtests.TestController').newInstance()
+        def author = ga.getDomainClass('databindingtests.Author').newInstance()
 
         def params = c.params
         params.name = 'Douglas Adams'
@@ -107,8 +109,8 @@ class Person {
     }
 
     void testNamedBindingWithMultipleProperties() {
-        def c = ga.getControllerClass('TestController').newInstance()
-        def author = ga.getDomainClass('Author').newInstance()
+        def c = ga.getControllerClass('databindingtests.TestController').newInstance()
+        def author = ga.getDomainClass('databindingtests.Author').newInstance()
 
         def params = c.params
         params.name = 'Douglas Adams'
@@ -120,8 +122,8 @@ class Person {
     }
 
     void testThreeLevelDataBinding() {
-        def c = ga.getControllerClass("TestController").newInstance()
-        def b = ga.getDomainClass("Book").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
 
         def params = c.params
         params.title = "The Stand"
@@ -136,8 +138,8 @@ class Person {
     }
 
     void testBindBlankToNullWhenNullable() {
-        def c = ga.getControllerClass("TestController").newInstance()
-        def a = ga.getDomainClass("Author").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
+        def a = ga.getDomainClass("databindingtests.Author").newInstance()
 
         def params = c.params
         params.name =  ''
@@ -150,14 +152,14 @@ class Person {
     }
 
     void testTypeConversionErrorsWithNestedAssociations() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
         request.addParameter("author.name", "Stephen King")
         request.addParameter("author.hairColour", "Black")
 
         def params = c.params
 
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
 
         b.properties = params
 
@@ -168,13 +170,13 @@ class Person {
     }
 
     void testTypeConversionErrors() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
         request.addParameter("site", "not_a_valid_URL")
 
         def params = c.params
 
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
 
         b.properties = params
 
@@ -184,7 +186,7 @@ class Person {
     }
 
     void testValidationAfterBindingFails() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
         // binding should fail for this one
         request.addParameter("someIntProperty", "foo")
@@ -197,7 +199,7 @@ class Person {
 
         def params = c.params
 
-        def myBean = ga.getDomainClass("MyBean").newInstance()
+        def myBean = ga.getDomainClass("databindingtests.MyBean").newInstance()
 
         myBean.properties = params
 
@@ -207,7 +209,7 @@ class Person {
     }
 
     void testAssociationAutoCreation() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
         request.addParameter("title", "The Stand")
         request.addParameter("author.name", "Stephen King")
@@ -216,7 +218,7 @@ class Person {
 
         assertEquals "The Stand", params.title
 
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
 
         b.properties = params
         assertEquals "The Stand", b.title
@@ -224,14 +226,14 @@ class Person {
     }
 
     void testNullAssociations() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "null")
 
 
         def params = c.params
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
 
         b.properties = params
         assertEquals "Wrong 'title' property", "The Stand", b.title
@@ -239,16 +241,16 @@ class Person {
     }
 
     void testAssociationsBinding() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
-        def authorClass = ga.getDomainClass("Author").getClazz()
+        def authorClass = ga.getDomainClass("databindingtests.Author").getClazz()
 
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "5")
 
         def params = c.params
 
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
 
         b.properties = params
 
@@ -259,21 +261,21 @@ class Person {
     }
 
     void testMultiDBinding() {
-        def c = ga.getControllerClass("TestController").newInstance()
+        def c = ga.getControllerClass("databindingtests.TestController").newInstance()
 
         request.addParameter("author.name", "Stephen King")
         request.addParameter("author.hairColour", "Black")
         request.addParameter("title", "The Stand")
         def params = c.params
 
-        def a = ga.getDomainClass("Author").newInstance()
+        def a = ga.getDomainClass("databindingtests.Author").newInstance()
 
         assertEquals "Stephen King",params['author'].name
         a.properties = params['author']
         assertEquals "Stephen King", a.name
         assertEquals "Black", a.hairColour
 
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("databindingtests.Book").newInstance()
         b.properties = params
         assertEquals "The Stand", b.title
         assertEquals "Stephen King", b.author?.name

@@ -71,7 +71,6 @@ import java.util.Map;
 public class TestForTransformation extends TestMixinTransformation {
 
     private static final ClassNode MY_TYPE = new ClassNode(TestFor.class);
-    private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     private static final Token ASSIGN = Token.newSymbol("=", -1, -1);
 
     protected static final Map<String, Class> artefactTypeToTestMap = new HashMap<String, Class>();

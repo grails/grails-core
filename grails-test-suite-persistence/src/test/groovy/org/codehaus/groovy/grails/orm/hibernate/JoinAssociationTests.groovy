@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.orm.hibernate
 class JoinAssociationTests extends AbstractGrailsHibernateTests {
     @Override protected void onSetUp() {
         gcl.parseClass('''
+package joinassociationtests
+
 import grails.persistence.*
 
 @Entity
@@ -58,7 +60,7 @@ class Role {
     }
 
     private Class createData() {
-        def User = ga.getDomainClass("User").clazz
+        def User = ga.getDomainClass("joinassociationtests.User").clazz
         def user = User.newInstance(name: 'Name')
         user.save(flush: true)
 
@@ -72,7 +74,7 @@ class Role {
 
     // test for GRAILS-3045
     void testObtainCorrectResultWithDistinctPaginationAndJoin() {
-        def User = ga.getDomainClass("User").clazz
+        def User = ga.getDomainClass("joinassociationtests.User").clazz
 
         (1..30).each {
             def user = User.newInstance(name: "User $it")

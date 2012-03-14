@@ -26,8 +26,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -44,16 +47,21 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
@@ -648,6 +656,7 @@ public class GrailsASTUtils {
      */
     public static boolean hasAnyAnnotations(final ClassNode classNode, final Class<? extends Annotation>... annotationsToLookFor) {
         return CollectionUtils.exists(Arrays.asList(annotationsToLookFor), new Predicate() {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             public boolean evaluate(Object object) {
                 return hasAnnotation(classNode, (Class)object);
             }
@@ -687,6 +696,66 @@ public class GrailsASTUtils {
         catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("log"), "error", logArguments)));
         tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
     }
+    
+    /**
+     * Evaluates a constraints closure and returns metadata about the constraints configured in the closure.  The
+     * Map returned has property names as keys and the value associated with each of those property names is
+     * a Map<String, Expression> which has constraint names as keys and the Expression associated with that constraint
+     * as values
+     *  
+     * @param closureExpression the closure expression to evaluate
+     * @return the Map as described above
+     */
+    public static Map<String, Map<String, Expression>> getConstraintMetadata(final ClosureExpression closureExpression) {
+        
+        final List<MethodCallExpression> methodExpressions = new ArrayList<MethodCallExpression>();
+        
+        final Map<String, Map<String, Expression>> results = new LinkedHashMap<String, Map<String, Expression>>();
+        final Statement closureCode = closureExpression.getCode();
+        if(closureCode instanceof BlockStatement) {
+            final List<Statement> closureStatements = ((BlockStatement) closureCode).getStatements();
+            for(final Statement closureStatement : closureStatements) {
+                if(closureStatement instanceof ExpressionStatement) {
+                    final Expression expression = ((ExpressionStatement) closureStatement).getExpression();
+                    if(expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                } else if(closureStatement instanceof ReturnStatement) {
+                    final ReturnStatement returnStatement = (ReturnStatement) closureStatement;
+                    Expression expression = returnStatement.getExpression();
+                    if(expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                }
+                
+                for(final MethodCallExpression methodCallExpression : methodExpressions) {
+                    final Expression objectExpression = methodCallExpression.getObjectExpression();
+                    if(objectExpression instanceof VariableExpression && "this".equals(((VariableExpression)objectExpression).getName())) {
+                        final Expression methodCallArguments = methodCallExpression.getArguments();
+                        if(methodCallArguments instanceof TupleExpression) {
+                            final List<Expression> methodCallArgumentExpressions = ((TupleExpression) methodCallArguments).getExpressions();
+                            if(methodCallArgumentExpressions != null && methodCallArgumentExpressions.size() == 1 && methodCallArgumentExpressions.get(0) instanceof NamedArgumentListExpression) {
+                                final Map<String, Expression> constraintNameToExpression = new LinkedHashMap<String, Expression>();
+                                final List<MapEntryExpression> mapEntryExpressions = ((NamedArgumentListExpression) methodCallArgumentExpressions.get(0)).getMapEntryExpressions();
+                                for (final MapEntryExpression mapEntryExpression : mapEntryExpressions) {
+                                    final Expression keyExpression = mapEntryExpression.getKeyExpression();
+                                    if(keyExpression instanceof ConstantExpression) {
+                                        final Object value = ((ConstantExpression) keyExpression).getValue();
+                                        if(value instanceof String) {
+                                            constraintNameToExpression.put((String)value, mapEntryExpression.getValueExpression());
+                                        }
+                                    }
+                                }
+                                results.put(methodCallExpression.getMethodAsString(), constraintNameToExpression);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
 
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
