@@ -23,10 +23,13 @@ import org.apache.ivy.core.module.descriptor.*;
 import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.core.resolve.ResolveEngine;
 import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.matcher.PatternMatcher;
 import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser;
+import org.apache.ivy.util.Message;
+import org.apache.ivy.util.MessageLogger;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext;
 
@@ -144,6 +147,9 @@ public abstract class AbstractIvyDependencyManager {
     private boolean offline;
 
     private ChainResolver chainResolver;
+    ResolveEngine resolveEngine;
+    MessageLogger logger;
+
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
@@ -159,6 +165,24 @@ public abstract class AbstractIvyDependencyManager {
 
         chainResolver.setReturnFirst(true);
         updateChangingPattern();
+    }
+
+
+    public ResolveEngine getResolveEngine() {
+        return resolveEngine;
+    }
+
+    public void setResolveEngine(ResolveEngine resolveEngine) {
+        this.resolveEngine = resolveEngine;
+    }
+
+    public MessageLogger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(MessageLogger logger) {
+        Message.setDefaultLogger( logger );
+        this.logger = logger;
     }
 
     public void setOffline(boolean offline) {
@@ -183,8 +207,20 @@ public abstract class AbstractIvyDependencyManager {
     }
 
     public void setChainResolver(ChainResolver chainResolver) {
+        resolveEngine.setDictatorResolver(chainResolver);
         this.chainResolver = chainResolver;
         updateChangingPattern();
+    }
+
+    public IvyDependencyManager createCopy(BuildSettings buildSettings) {
+        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings);
+        copy.setOffline(isOffline());
+        copy.setChainResolver(getChainResolver());
+        copy.setResolveEngine(getResolveEngine());
+        if (getLogger() != null) {
+            copy.logger = getLogger();
+        }
+        return copy;
     }
 
     public boolean isOffline() {

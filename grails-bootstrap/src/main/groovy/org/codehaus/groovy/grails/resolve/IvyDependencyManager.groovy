@@ -44,8 +44,6 @@ import org.codehaus.groovy.grails.plugins.VersionComparator
  */
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
-    ResolveEngine resolveEngine
-    MessageLogger logger
 
     Collection repositoryData = new ConcurrentLinkedQueue()
 
@@ -82,37 +80,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         this.applicationVersion = applicationVersion
     }
 
-    IvyDependencyManager createCopy(BuildSettings buildSettings) {
-        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings)
-        copy.offline = offline
-        copy.chainResolver = chainResolver
-        copy.resolveEngine = resolveEngine
-        if (logger) {
-            copy.logger = logger
-        }
-        copy
-    }
 
-    /**
-     * Allows settings an alternative chain resolver to be used
-     * @param resolver The resolver to be used
-     */
-    void setChainResolver(ChainResolver resolver) {
-        resolveEngine.dictatorResolver = chainResolver
-        super.setChainResolver(chainResolver)
-    }
 
-    /**
-     * Sets the default message logger used by Ivy
-     *
-     * @param logger
-     */
-    void setLogger(MessageLogger logger) {
-        Message.setDefaultLogger logger
-        this.logger = logger
-    }
-
-    MessageLogger getLogger() { this.logger }
 
     /**
      * Resets the Grails plugin resolver if it is used
