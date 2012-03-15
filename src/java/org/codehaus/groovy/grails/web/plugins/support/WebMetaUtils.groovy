@@ -99,10 +99,10 @@ class WebMetaUtils {
                             }
                         }
 
+                        def newCommandObject = false
                         if (!commandObject) {
                             commandObject = paramType.newInstance()
-                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(
-                                commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                            newCommandObject = true
                             commandObjects << commandObject
                         }
 
@@ -121,6 +121,11 @@ class WebMetaUtils {
                                 constrainedProperty.getPropertyName()), errors)
                         }
                         commandObject.errors = errors
+                        
+                        if(newCommandObject) {
+                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(
+                                commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                        }
                     }
                     catch (Exception e) {
                         throw new ControllerExecutionException("Error occurred creating command object.", e)
