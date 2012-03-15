@@ -42,6 +42,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
 
 import org.springframework.beans.BeanUtils
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder as RCH
@@ -50,6 +51,7 @@ import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator
+
 
 /**
  * Handles the configuration of controllers for Grails.
@@ -197,9 +199,12 @@ class ControllersGrailsPlugin {
             def mc = domainClass.metaClass
 
             mc.constructor = { Map map ->
-                def instance = ctx.containsBean(dc.fullName) ? ctx.getBean(dc.fullName) : BeanUtils.instantiateClass(dc.clazz)
+                def instance = BeanUtils.instantiateClass(dc.clazz)
                 DataBindingUtils.bindObjectToDomainInstance(dc,instance, map)
                 DataBindingUtils.assignBidirectionalAssociations(instance,map,dc)
+                ctx.autowireCapableBeanFactory?.autowireBeanProperties(
+                    instance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                
                 return instance
             }
             mc.setProperties = {Object o ->
