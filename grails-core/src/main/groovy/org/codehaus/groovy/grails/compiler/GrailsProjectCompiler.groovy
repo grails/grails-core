@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
+import grails.util.Environment
 
 /**
  * Encapsulates the compilation logic required for a Grails application.
@@ -296,6 +297,10 @@ class GrailsProjectCompiler {
             classLoader.addURL(pluginClassesDir.toURI().toURL())
             classLoader.addURL(pluginProvidedClassesDir.toURI().toURL())
             classLoader.addURL(pluginBuildClassesDir.toURI().toURL())
+
+            if(Environment.current == Environment.TEST) {
+                classLoader.addURL(buildSettings.testClassesDir.toURI().toURL())
+            }
         }
         // First compile the plugins so that we can exclude any
         // classes that might conflict with the project's.

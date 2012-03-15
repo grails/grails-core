@@ -314,7 +314,7 @@ protected void resetClasspath() {
     classpathSet = false
     classpath()
     PluginManagerHolder.pluginManager = null
-    GrailsResourceLoaderHolder.resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResources())
+    GrailsResourceLoaderHolder.resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
 }
 
 doInstallPluginFromURL = { URL url ->
