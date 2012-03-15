@@ -66,6 +66,9 @@ test {
 }
 
 createTestTask("contentFormat", ["org/codehaus/groovy/grails/web/mime/ContentFormatControllerTests.class"], [])
+createTestTask("beanBuilder", ["grails/spring/BeanBuilderTests.class"], [])
+createTestTask("databinding", ["org/codehaus/groovy/grails/web/binding/DataBinding*Tests.class"], [])
+createTestTask("mockUtils", ["grails/test/MockUtilsTests.class"], [])
 createTestTask("transactionalService", ["org/codehaus/groovy/grails/reload/TransactionalServiceReloadTests.class"], [])
 createTestTask("packagePlugins", ["org/codehaus/groovy/grails/cli/PackagePluginTests.class"], [])
 createTestTask("installTemplates", ["org/codehaus/groovy/grails/cli/InstallTemplatesTests.class"], [])
@@ -80,7 +83,8 @@ createTestTask("webflow", ["**/webflow/**/*Tests.class"], ["**/Abstract*"])
 createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*", "**/JavascriptTagLib*"])
 createTestTask("javascriptTaglib", ["**/web/taglib/JavascriptTagLibTests.class"], [])
 createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
-        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class"])
+        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/webflow/**", "**/web/taglib/**", "**/cli/**Tests.class",
+        "grails/spring/BeanBuilderTests.class", "grails/test/MockUtilsTests.class", "org/codehaus/groovy/grails/web/binding/DataBinding*Tests.class"])
 
 def createTestTask(name, includes, excludes) {
     createTestTaskWithoutSuffix("${name}Test", includes, excludes)
