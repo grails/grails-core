@@ -813,11 +813,19 @@ public final class GrailsDomainBinder {
 
     private static void bindColumnConfigToColumn(Column column, ColumnConfig columnConfig) {
         if (columnConfig != null) {
-            column.setLength(columnConfig.getLength());
-            column.setPrecision(columnConfig.getPrecision());
-            column.setSqlType(columnConfig.getSqlType());
+            if(columnConfig.getLength() != -1) {
+                column.setLength(columnConfig.getLength());
+            }
+            if(columnConfig.getPrecision() != -1) {
+                column.setPrecision(columnConfig.getPrecision());
+            }
+            if(columnConfig.getScale() != -1) {
+                column.setScale(columnConfig.getScale());
+            }
+            if(columnConfig.getSqlType() != null && !columnConfig.getSqlType().isEmpty()) {
+                column.setSqlType(columnConfig.getSqlType());
+            }
             column.setUnique(columnConfig.getUnique());
-            column.setScale(columnConfig.getScale());
         }
     }
 

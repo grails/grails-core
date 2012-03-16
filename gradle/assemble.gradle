@@ -214,6 +214,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from("grails-resources/src/grails/grails-macros.xml") {
             into "src/grails"
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+            filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         }
         from('grails-resources/src/grails/home/dsl-support') {
             into "dsl-support"

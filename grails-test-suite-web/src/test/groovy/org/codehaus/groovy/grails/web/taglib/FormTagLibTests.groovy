@@ -181,4 +181,71 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             assertEquals '<textarea name="testField" id="testField" >1</textarea>', sw.toString()
         }
     }
+
+    private void doTestBoolean(def attributes, String expected) {
+        def sw = new StringWriter()
+        withTag('textField', new PrintWriter(sw)) { tag ->
+            tag.call(attributes)
+            assertEquals expected, sw.toString()
+        }
+    }
+
+    void testBooleanAttributes() {
+        // GRAILS-3468
+        // Test readonly for string as boolean true
+        def attributes = [name: 'myfield', value: '1', readonly: 'true']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" readonly="readonly" />')
+
+        // Test readonly for string as boolean false
+        attributes = [name: 'myfield', value: '1', readonly: 'false']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+
+        // Test readonly for real boolean true
+        attributes = [name: 'myfield', value: '1', readonly: true]
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" readonly="readonly" />')
+
+        // Test readonly for real boolean false
+        attributes = [name: 'myfield', value: '1', readonly: false]
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+
+        // Test readonly for its default value
+        attributes = [name: 'myfield', value: '1', readonly: 'readonly']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" readonly="readonly" />')
+
+        // Test readonly for a value different from the defined in the spec
+        attributes = [name: 'myfield', value: '1', readonly: 'other value']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" readonly="other value" />')
+
+        // Test readonly for null value
+        attributes = [name: 'myfield', value: '1', readonly: null]
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+
+        // Test disabled for string as boolean true
+        attributes = [name: 'myfield', value: '1', disabled: 'true']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" disabled="disabled" />')
+
+        // Test disabled for string as boolean false
+        attributes = [name: 'myfield', value: '1', disabled: 'false']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+
+        // Test disabled for real boolean true
+        attributes = [name: 'myfield', value: '1', disabled: true]
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" disabled="disabled" />')
+
+        // Test disabled for real boolean false
+        attributes = [name: 'myfield', value: '1', disabled: false]
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+
+        // Test disabled for its default value
+        attributes = [name: 'myfield', value: '1', disabled: 'disabled']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" disabled="disabled" />')
+
+        // Test disabled for a value different from the defined in the spec
+        attributes = [name: 'myfield', value: '1', disabled: 'other value']
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" disabled="other value" />')
+
+        // Test disabled for null value
+        attributes = [name: 'myfield', value: '1', disabled: null]
+        doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+    }
 }

@@ -125,6 +125,8 @@ public class GrailsScriptRunner {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
+        System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
+
         originalIn = System.in;
         originalOut = System.out;
 

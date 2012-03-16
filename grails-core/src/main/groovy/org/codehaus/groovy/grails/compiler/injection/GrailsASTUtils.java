@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import groovy.lang.MissingMethodException;
@@ -25,12 +26,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -42,20 +47,29 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
+import org.codehaus.groovy.control.Janitor;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
@@ -76,6 +90,37 @@ public class GrailsASTUtils {
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
 
+    
+    public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
+        final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
+        GrailsConsole.getInstance().warning(warningMessage + "\n\n" + sample);
+    }
+    
+    /**
+     * Generates a fatal compilation error
+     * 
+     * @param sourceUnit the SourceUnit
+     * @param astNode the ASTNode which caused the error
+     * @param message The error message
+     */
+    public static void error(final SourceUnit sourceUnit, final ASTNode astNode, final String message) {
+        error(sourceUnit, astNode, message, true);
+    }
+
+    /**
+     * Generates a fatal compilation error
+     * 
+     * @param sourceUnit the SourceUnit
+     * @param astNode the ASTNode which caused the error
+     * @param message The error message
+     * @param fatal indicates if this is a fatal error
+     */
+    public static void error(final SourceUnit sourceUnit, final ASTNode astNode, final String message, final boolean fatal) {
+        final SyntaxException syntaxException = new SyntaxException(message, astNode.getLineNumber(), astNode.getColumnNumber());
+        final SyntaxErrorMessage syntaxErrorMessage = new SyntaxErrorMessage(syntaxException, sourceUnit);
+        sourceUnit.getErrorCollector().addError(syntaxErrorMessage, fatal);
+    }
+    
     /**
      * Returns whether a classNode has the specified property or not
      *
@@ -650,6 +695,66 @@ public class GrailsASTUtils {
         catchBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("log"), "error", logArguments)));
         tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
     }
+    
+    /**
+     * Evaluates a constraints closure and returns metadata about the constraints configured in the closure.  The
+     * Map returned has property names as keys and the value associated with each of those property names is
+     * a Map<String, Expression> which has constraint names as keys and the Expression associated with that constraint
+     * as values
+     *  
+     * @param closureExpression the closure expression to evaluate
+     * @return the Map as described above
+     */
+    public static Map<String, Map<String, Expression>> getConstraintMetadata(final ClosureExpression closureExpression) {
+        
+        final List<MethodCallExpression> methodExpressions = new ArrayList<MethodCallExpression>();
+        
+        final Map<String, Map<String, Expression>> results = new LinkedHashMap<String, Map<String, Expression>>();
+        final Statement closureCode = closureExpression.getCode();
+        if(closureCode instanceof BlockStatement) {
+            final List<Statement> closureStatements = ((BlockStatement) closureCode).getStatements();
+            for(final Statement closureStatement : closureStatements) {
+                if(closureStatement instanceof ExpressionStatement) {
+                    final Expression expression = ((ExpressionStatement) closureStatement).getExpression();
+                    if(expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                } else if(closureStatement instanceof ReturnStatement) {
+                    final ReturnStatement returnStatement = (ReturnStatement) closureStatement;
+                    Expression expression = returnStatement.getExpression();
+                    if(expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                }
+                
+                for(final MethodCallExpression methodCallExpression : methodExpressions) {
+                    final Expression objectExpression = methodCallExpression.getObjectExpression();
+                    if(objectExpression instanceof VariableExpression && "this".equals(((VariableExpression)objectExpression).getName())) {
+                        final Expression methodCallArguments = methodCallExpression.getArguments();
+                        if(methodCallArguments instanceof TupleExpression) {
+                            final List<Expression> methodCallArgumentExpressions = ((TupleExpression) methodCallArguments).getExpressions();
+                            if(methodCallArgumentExpressions != null && methodCallArgumentExpressions.size() == 1 && methodCallArgumentExpressions.get(0) instanceof NamedArgumentListExpression) {
+                                final Map<String, Expression> constraintNameToExpression = new LinkedHashMap<String, Expression>();
+                                final List<MapEntryExpression> mapEntryExpressions = ((NamedArgumentListExpression) methodCallArgumentExpressions.get(0)).getMapEntryExpressions();
+                                for (final MapEntryExpression mapEntryExpression : mapEntryExpressions) {
+                                    final Expression keyExpression = mapEntryExpression.getKeyExpression();
+                                    if(keyExpression instanceof ConstantExpression) {
+                                        final Object value = ((ConstantExpression) keyExpression).getValue();
+                                        if(value instanceof String) {
+                                            constraintNameToExpression.put((String)value, mapEntryExpression.getValueExpression());
+                                        }
+                                    }
+                                }
+                                results.put(methodCallExpression.getMethodAsString(), constraintNameToExpression);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
 
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)

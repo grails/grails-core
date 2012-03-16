@@ -8,6 +8,8 @@ class TreeListAssociationTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+package databindingwithassociationtests
+
 import grails.persistence.*
 
 @Entity
@@ -29,7 +31,7 @@ class Customer {
     }
 
     void testTreeListAssociation() {
-        def Customer = ga.getDomainClass("Customer").clazz
+        def Customer = ga.getDomainClass("databindingwithassociationtests.Customer").clazz
 
         def root = Customer.newInstance(description:"root")
 

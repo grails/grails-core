@@ -314,7 +314,7 @@ protected void resetClasspath() {
     classpathSet = false
     classpath()
     PluginManagerHolder.pluginManager = null
-    GrailsResourceLoaderHolder.resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResources())
+    GrailsResourceLoaderHolder.resourceLoader = new GrailsResourceLoader(pluginSettings.getArtefactResourcesForCurrentEnvironment())
 }
 
 doInstallPluginFromURL = { URL url ->
@@ -343,7 +343,11 @@ eachRepository = { Closure callable ->
     for (resolver in dependencyManager.chainResolver.resolvers) {
         if (resolver instanceof GrailsRepoResolver) {
             pluginsList = resolver.getPluginList(new File("${grailsWorkDir}/plugins-list-${resolver.name}.xml"))
-            callable(resolver.name, resolver.repositoryRoot)
+            if(pluginsList != null) {
+                callable(resolver.name, resolver.repositoryRoot)
+            } else {
+                grailsConsole.error "An error occurred resolving plugin list from resolver [${resolver.name} - ${resolver.repositoryRoot}]."
+            }
         }
     }
 }
