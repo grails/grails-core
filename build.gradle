@@ -94,6 +94,8 @@ subprojects { project ->
     version = grailsVersion
     group = "org.grails"
 
+    isCiBuild = project.hasProperty("isCiBuild")
+
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
             "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
@@ -123,11 +125,15 @@ subprojects { project ->
     }
 
     repositories {
-		mavenLocal()
+        mavenRepo(urls: "http://repo.grails.org/grails/core")
+    }
 
-        mavenRepo(urls: "http://repo.grails.org/grails/core") {
-            if (project.hasProperty('snapshotTimeout')) {
-                setSnapshotTimeout(Long.parseLong(project.snapshotTimeout))
+    configurations {
+        all {
+            resolutionStrategy {
+                def cacheHours = isCiBuild ? 0 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
             }
         }
     }
