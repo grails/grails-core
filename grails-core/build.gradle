@@ -1,6 +1,3 @@
-configurations {
-    agent.extendsFrom compile
-}
 dependencies {
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
@@ -56,20 +53,12 @@ dependencies {
         exclude group: 'xml-apis', module:'xml-apis'
     }
 
-    agent "com.springsource.springloaded:springloaded-core:$springLoadedVersion"
+    compile ("com.springsource.springloaded:springloaded-core:$springLoadedVersion") {
+        notInPom = true
+    }
 
     compile "org.springframework:spring-tx:${springVersion}"
     compile project(":grails-bootstrap"), project(":grails-spring")
-}
-
-sourceSets {
-    main {
-        compileClasspath = configurations.agent
-    }
-}
-
-javadoc {
-    classpath += configurations.agent
 }
 
 compileGroovy.doFirst {
@@ -81,9 +70,3 @@ compileGroovy.doFirst {
 }
 
 jar.appendix = 'core'
-
-eclipse {
-    classpath {
-       plusConfigurations += configurations.agent
-    }
-}

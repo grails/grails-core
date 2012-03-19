@@ -234,6 +234,15 @@ subprojects { project ->
     project.poms*.whenConfigured {
         project.pomModifications*.call(it)
     }
+    
+    // Remove any dependencies that shouldn't be included in the POM
+    modifyPom { pom ->
+        configurations.runtime.allDependencies.each { dependency ->
+            if (dependency.hasProperty("notInPom") && dependency.notInPom) {
+                pom.dependencies.removeAll { it.groupId == dependency.group && it.artifactId == dependency.name }
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
