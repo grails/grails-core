@@ -194,8 +194,8 @@ subprojects { project ->
 
     artifacts {
         archives jar
-        meta sourcesJar
-        meta javadocJar
+        archives sourcesJar
+        archives javadocJar
     }
 
     signing {
