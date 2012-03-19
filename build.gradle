@@ -109,6 +109,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
+    apply plugin: 'signing'
     //apply plugin: 'duplicates'
 
     sourceCompatibility = "1.5"
@@ -192,8 +193,13 @@ subprojects { project ->
     }
 
     artifacts {
+        archives jar
         meta sourcesJar
         meta javadocJar
+    }
+
+    signing {
+        sign configurations.archives
     }
 
     uploadPublished {
@@ -201,17 +207,61 @@ subprojects { project ->
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
 
-        project.deployer = repositories.mavenDeployer {
-          repository(url: url) {
-              final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
-              final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
+        repositories {
+            mavenDeployer {
+                repository(url: url) {
+                    final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
+                    final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
 
-              if(username && password) {
-                org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
-              }
+                    if(username && password) {
+                        org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
+                    }
 
-              authentication(userName: username, password: password)
-          }
+                    authentication(userName: username, password: password)
+                }
+            }
+            project.deployer = mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: project.sonatypeUsername, password: project.sonatypePassword)
+                }
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: project.sonatypeUsername, password: project.sonatypePassword)
+                }
+
+                pom.project {
+                    name 'Grails'
+                    packaging 'jar'
+                    description 'Grails Web Application Framework'
+                    delegate.url 'http://grails.org/'
+
+                    scm {
+                        delegate.url 'scm:git@github.com:grails/grails-core.git'
+                        connection 'scm:git@github.com:grails/grails-core.git'
+                        developerConnection 'scm:git@github.com:grails/grails-core.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'graemerocher'
+                            name 'Graeme Rocher'
+                        }
+                        developer {
+                            id 'jeffscottbrown'
+                            name 'Jeff Brown'
+                        }
+                    }
+                }
+            }
         }
       }
     }
