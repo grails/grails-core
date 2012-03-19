@@ -47,7 +47,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     libsConfigurations[subproject] = externalLibs
 }
 
-task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
+task populateDependencies(type: Sync) {
     into homeLibDir
     includeEmptyDirs = false
 
