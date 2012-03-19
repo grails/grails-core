@@ -2,6 +2,9 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin: org.grails.gradle.GrailsBuildPlugin
 
+// This is a little fragile, need to find a way to ask Gradle for this info.
+def gradleArtifactCache = new File(gradle.gradleUserHomeDir, "cache")
+
 def libsConfigurations = []
 subprojects { subproject ->
     configurations {
@@ -78,6 +81,7 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     }
 }
 
+<<<<<<< HEAD
 
 task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources, dependsOn: libsConfigurations.values) {
    configurations = libsConfigurations.values() as List
@@ -86,13 +90,16 @@ task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources, dep
    }
 }
 
+=======
+>>>>>>> e37032a... Restructured the downloading of sources so it can be a sync task (to avoid issues with stale copies)
 // Can't use sync task here because this directory contains other things as well.
-task sourcesJars(type: Copy) {
+task sourcesJars(type: Sync) {
     into homeSrcDir
     from subprojects*.sourcesJar*.outputs*.files
-}
 
-sourcesJars.dependsOn downloadDatastoreSources
+    // sourcesFor comes from GrailsBuildPlugin
+    from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }) }
+}
 
 task pluginsFromSvn {
     plugins = [
