@@ -57,12 +57,19 @@ homeSrcDir = file("src")
 // configurations, so place the dependency in a shared variable. The
 // 'compile' is required so that Groovy appears as a dependency in the
 // artifacts' POMs.
-if(System.getProperty('groovy.jar')) {
-    groovyDependency = files(System.getProperty('groovy.jar'))
-    gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
+jointBuildGroovyJarProperty = System.getProperty('groovy.jar')
+if (jointBuildGroovyJarProperty) {
+    jointBuildGroovyJar = file(jointBuildGroovyJarProperty)
+    if (jointBuildGroovyJar.exists()) {
+        groovyDependency = dependencies.create(files(jointBuildGroovyJar))
+    } else {
+        throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
+    }
 } else {
-    groovyDependency = "org.codehaus.groovy:groovy-all:${groovyVersion}"
-    gradleGroovyDependency = "org.codehaus.groovy:groovy-all:${gradleGroovyVersion}"
+    groovyDependency = dependencies.create("org.codehaus.groovy:groovy-all:${groovyVersion}") {
+        exclude module:"commons-cli"
+        exclude module:"ant"
+    }
 }
 
 // Prevent multiple repositories being used, commented out as currently doesn't work.
@@ -139,18 +146,7 @@ subprojects { project ->
     }
 
     dependencies {
-        // Groovy
-        if(System.getProperty('groovy.jar')) {
-            // use the jar specified in the system property (the joint build specifies its own groovy jar)...
-            groovy gradleGroovyDependency
-        } else {
-            // resolve the dependency from a repo...
-            groovy( gradleGroovyDependency ) {
-                exclude module:"commons-cli"
-                exclude module:"ant"
-            }
-        }
-        compile groovyDependency
+        groovy groovyDependency
 
         if (project.name != "grails-docs") {
             // Logging
