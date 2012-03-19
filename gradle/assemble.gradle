@@ -81,17 +81,6 @@ task populateDependencies(type: Sync, dependsOn: libsConfigurations.values) {
     }
 }
 
-<<<<<<< HEAD
-
-task downloadDatastoreSources(type: org.grails.gradle.tasks.DownloadSources, dependsOn: libsConfigurations.values) {
-   configurations = libsConfigurations.values() as List
-   into(homeSrcDir) { dep ->
-       dep.moduleName.contains('grails-datastore')
-   }
-}
-
-=======
->>>>>>> e37032a... Restructured the downloading of sources so it can be a sync task (to avoid issues with stale copies)
 // Can't use sync task here because this directory contains other things as well.
 task sourcesJars(type: Sync) {
     into homeSrcDir
