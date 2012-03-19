@@ -224,10 +224,12 @@ subprojects { project ->
                 beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
 
                 repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: project.sonatypeUsername, password: project.sonatypePassword)
+                    authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+                                    password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
                 }
                 snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: project.sonatypeUsername, password: project.sonatypePassword)
+                    authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+                                    password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
                 }
 
                 pom.project {
