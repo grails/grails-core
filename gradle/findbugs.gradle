@@ -8,17 +8,17 @@ task findbugs(dependsOn: install) << {
         findbugs(home: findbugsHome, output: "xml:withMessages", outputFile: "$buildDir/findbugs-report/grails-fb.xml", jvmargs: "-Xmx768M") {
             auxClasspath() {
                 for(sub in subprojects) {
-                		pathElement(path: sub.sourceSets.main.compileClasspath.asPath)
-                }            	    
+                    pathElement(path: sub.sourceSets.main.compileClasspath.asPath)
+                }
             }
             sourcePath() {
-		    for (sub in subprojects) {
-			sub.sourceSets.main.groovy.srcDirs.each { srcDir ->
-			    if (srcDir.exists()) {
-			    	pathElement(path: srcDir.absolutePath)
-			    }
-			}
-		    }
+                for (sub in subprojects) {
+                    sub.sourceSets.main.groovy.srcDirs.each { srcDir ->
+                        if (srcDir.exists()) {
+                            pathElement(path: srcDir.absolutePath)
+                        }
+                    }
+                }
             }
             auxAnalyzepath() {
                 fileset dir: homeDistDir, includes: "grails-*.jar" 
