@@ -313,14 +313,14 @@ public class GrailsCoreDependencies {
                         ModuleRevisionId[] ehcacheDependencies = {
                             ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.6")
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "jms", "commons-logging", "servlet-api");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "javax.jms:jms", "commons-logging", "javax.servlet:servlet-api", "org.slf4j:slf4j-api");
 
                         ModuleRevisionId[] loggingDependencies = {
                             ModuleRevisionId.newInstance("log4j", "log4j", "1.2.16"),
                             ModuleRevisionId.newInstance("org.slf4j", "jcl-over-slf4j", slf4jVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "jul-to-slf4j", slf4jVersion)
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "mail", "jms", "jmxtools", "jmxri");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "javax.mail:mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri");
 
                         return null;
                     }
