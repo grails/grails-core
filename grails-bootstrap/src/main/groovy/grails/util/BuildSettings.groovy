@@ -1356,7 +1356,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!projectWarOsgiHeadersSet) {
-            projectWarOsgiHeaders = getPropertyValue(PROJECT_WAR_OSGI_HEADERS, props, 'true').toBoolean()
+            projectWarOsgiHeaders = getPropertyValue(PROJECT_WAR_OSGI_HEADERS, props, 'false').toBoolean()
         }
 
         if (!classesDirSet) {
