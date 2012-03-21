@@ -184,6 +184,25 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('foo', template, [c:[a:[b:'foo']]])
     }
 
+    void testInjectTagByName() {
+        def template = '<g:inject beanName="grailsApplication"/>${grailsApplication.initialised}'
+        assertOutputEquals('true', template)
+
+        template = '<g:inject beanName="grailsApplication" var="myVar"/>${myVar.initialised}'
+        assertOutputEquals('true', template)
+
+        template = '<g:inject beanName="grailsApplication" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+        assertOutputEquals('true', template)
+    }
+
+    void testInjectTagByType() {
+        def template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:inject beanType="${GrailsApplication}" var="myVar"/>${myVar.initialised}'
+        assertOutputEquals('true', template)
+
+        template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:inject beanType="${GrailsApplication}" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+        assertOutputEquals('true', template)
+    }
+
     void testIteration() {
         def template = '''<g:set var="counter" value="${1}" />
 <g:each in="${[10,11,12]}" var="myVal"><g:set var="counter" value="${myVal+counter}" />${counter}</g:each>'''
