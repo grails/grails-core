@@ -27,6 +27,7 @@ import java.awt.event.FocusListener
 
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.support.*
+import org.codehaus.groovy.grails.cli.interactive.*
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
@@ -38,11 +39,12 @@ target(console:"The console implementation target") {
     depends(loadApp, configureApp)
 
     try {
-        createConsole().run()
+        def console = createConsole()
+        console.run()
         def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
         watcher.start()
         // keep the console running
-        while (true) {
+        while (!InteractiveMode.isActive()) {
             sleep(Integer.MAX_VALUE)
         }
     } catch (Exception e) {
