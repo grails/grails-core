@@ -121,6 +121,38 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     }
 
     /**
+     * Injects a dependency into a variable in the pageContext or the specified scope.
+     *
+     * @attr beanName the bean name; either beanName or beanType must be specified
+     * @attr beanType type the bean must match; can be an interface or superclass; either beanName or beanType must be specified
+     * @attr var the variable name; mandatory if beanType is specified, otherwise defaults to beanName
+     * @attr scope the scope name; defaults to pageScope
+     */
+    Closure inject = { attrs, body ->
+        def bean
+        def var = attrs.var
+        if (attrs.beanName) {
+            bean = applicationContext.getBean(attrs.beanName)
+            if (!var) {
+                var = attrs.beanName
+            }
+        } else if (attrs.beanType) {
+            bean = applicationContext.getBean(attrs.beanType)
+            if (!var) {
+                throw new IllegalArgumentException("[var] attribute must be specified to for <g:inject> when the [beanType] attribute is also specified!")
+            }
+        } else {
+            throw new IllegalArgumentException("either the [beanName] or [beanType] attribute must be specified to for <g:inject>!")
+        }
+
+        def scope = attrs.scope ? ApplicationTagLib.SCOPES[attrs.scope] : 'pageScope'
+        if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:inject>!")
+
+        this."$scope"."$var" = bean
+        null
+    }
+
+    /**
      * Creates a link to a resource, generally used as a method rather than a tag.<br/>
      *
      * eg. &lt;link type="text/css" href="${createLinkTo(dir:'css',file:'main.css')}" /&gt;
