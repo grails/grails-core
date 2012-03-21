@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
+import grails.persistence.Entity
 
 /**
  * @author Graeme Rocher
@@ -12,74 +13,68 @@ import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
  */
 class InheritanceWithLazyProxiesTests extends AbstractGrailsHibernateTests {
 
-    protected void onSetUp() {
-        gcl.parseClass '''
 
-import grails.persistence.*
-
-@Entity
-class A { static belongsTo = [attr:AttributeB] }
-
-@Entity
-class B extends A { static belongsTo = [type:AttributeA] }
-
-@Entity
-class AttributeA {}
-
-@Entity
-class AttributeB extends AttributeA {}
-'''
-    }
 
     void testLazyAssociationsWithInheritance() {
-        Class AttributeA = ga.getDomainClass("AttributeA").clazz
-        Class AttributeB = ga.getDomainClass("AttributeB").clazz
-        Class A = ga.getDomainClass("A").clazz
-        Class B = ga.getDomainClass("B").clazz
 
-        def attrb = AttributeB.newInstance()
+        def attrb = new InheritanceWithLazyProxiesAttributeB()
         attrb.save()
 
-        def b = B.newInstance(type:attrb, attr:attrb).save(flush:true)
+        def b = new InheritanceWithLazyProxiesB(type:attrb, attr:attrb).save(flush:true)
 
         assertNotNull "subclass should have been saved", b
 
         session.clear()
 
-        b = B.get(1)
+        b = InheritanceWithLazyProxiesB.get(1)
         def type = GrailsHibernateUtil.getAssociationProxy(b, "type")
 
         assertFalse "should not have been initialized",GrailsHibernateUtil.isInitialized(b, "type")
         b.discard()
 
-        assertNotNull "dynamic finder should have worked with proxy", B.findByType(type)
+        assertNotNull "dynamic finder should have worked with proxy", InheritanceWithLazyProxiesB.findByType(type)
         session.clear()
         assertFalse "should not have been initialized",Hibernate.isInitialized(type)
-        assertNotNull "dynamic finder should have worked with proxy", A.findByAttr(type)
+        assertNotNull "dynamic finder should have worked with proxy", InheritanceWithLazyProxiesA.findByAttr(type)
     }
 
     void testInstanceOfMethod() {
-        Class AttributeA = ga.getDomainClass("AttributeA").clazz
-        Class AttributeB = ga.getDomainClass("AttributeB").clazz
-        Class A = ga.getDomainClass("A").clazz
-        Class B = ga.getDomainClass("B").clazz
 
-        def attrb = AttributeB.newInstance()
+        def attrb = new InheritanceWithLazyProxiesAttributeB()
         attrb.save()
 
-        def b = B.newInstance(type:attrb, attr:attrb).save(flush:true)
+        def b = new InheritanceWithLazyProxiesB(type:attrb, attr:attrb).save(flush:true)
 
         assertNotNull "subclass should have been saved", b
         session.clear()
 
-        b = B.get(1)
+        b = InheritanceWithLazyProxiesB.get(1)
 
         def type = GrailsHibernateUtil.getAssociationProxy(b, "type")
 
         assertFalse "should not have been initialized",GrailsHibernateUtil.isInitialized(b, "type")
         assertTrue "should be a hibernate proxy", (type instanceof HibernateProxy)
 
-        assertTrue "instanceOf method should have returned true",type.instanceOf(AttributeA)
-        assertTrue "instanceOf method should have returned true",type.instanceOf(AttributeB)
+        assertTrue "instanceOf method should have returned true",type.instanceOf(InheritanceWithLazyProxiesAttributeA)
+        assertTrue "instanceOf method should have returned true",type.instanceOf(InheritanceWithLazyProxiesAttributeB)
     }
+
+    @Override
+    protected getDomainClasses() {
+        [InheritanceWithLazyProxiesA,InheritanceWithLazyProxiesB, InheritanceWithLazyProxiesAttributeA, InheritanceWithLazyProxiesAttributeB]
+    }
+
+
 }
+
+@Entity
+class InheritanceWithLazyProxiesA { static belongsTo = [attr:InheritanceWithLazyProxiesAttributeB] }
+
+@Entity
+class InheritanceWithLazyProxiesB extends InheritanceWithLazyProxiesA { static belongsTo = [type:InheritanceWithLazyProxiesAttributeA] }
+
+@Entity
+class InheritanceWithLazyProxiesAttributeA {}
+
+@Entity
+class InheritanceWithLazyProxiesAttributeB extends InheritanceWithLazyProxiesAttributeA {}
