@@ -24,7 +24,9 @@ import org.apache.ivy.plugins.resolver.URLResolver;
 import org.apache.ivy.plugins.resolver.util.ResolvedResource;
 import org.apache.ivy.plugins.resolver.util.ResourceMDParser;
 import org.apache.ivy.util.url.IvyAuthenticator;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
@@ -105,7 +107,25 @@ public class GrailsRepoResolver extends URLResolver{
                                 if (localFile.lastModified() < remoteFile.getLastModified()) {
                                     repo.get(url, localFile);
                                 }
-                                parsedXml = new XmlSlurper().parse(localFile);
+
+                                XmlSlurper xmlSlurper = new XmlSlurper();
+                                xmlSlurper.setErrorHandler(new ErrorHandler() {
+                                    @Override
+                                    public void warning(SAXParseException e) throws SAXException {
+                                        // noop
+                                    }
+
+                                    @Override
+                                    public void error(SAXParseException e) throws SAXException {
+                                        // noop
+                                    }
+
+                                    @Override
+                                    public void fatalError(SAXParseException e) throws SAXException {
+                                        // noop
+                                    }
+                                });
+                                parsedXml = xmlSlurper.parse(localFile);
                                 parsedXmlCache.put(localFile, parsedXml);
                             }
                         }
