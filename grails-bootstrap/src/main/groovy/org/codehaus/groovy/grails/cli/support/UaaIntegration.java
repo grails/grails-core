@@ -92,32 +92,36 @@ public class UaaIntegration {
         if (isUaaAccepted(privacyLevel)) {
             Runnable r = new Runnable() {
                 public void run() {
-                    final UaaClient.Product product = VersionHelper.getProduct("Grails", settings.getGrailsVersion());
-                    uaaService.registerProductUsage(product);
+                    try {
+                        final UaaClient.Product product = VersionHelper.getProduct("Grails", settings.getGrailsVersion());
+                        uaaService.registerProductUsage(product);
 
-                    final ChainResolver chainResolver = settings.getDependencyManager().getChainResolver();
-                    GrailsRepoResolver centralRepo = findCentralRepoResolver(chainResolver);
-                    if (centralRepo != null) {
+                        final ChainResolver chainResolver = settings.getDependencyManager().getChainResolver();
+                        GrailsRepoResolver centralRepo = findCentralRepoResolver(chainResolver);
+                        if (centralRepo != null) {
 
-                        final GPathResult pluginList = centralRepo.getPluginList(new File(settings.getGrailsWorkDir() + "/plugin-list-" + centralRepo.getName() + ".xml"));
+                            final GPathResult pluginList = centralRepo.getPluginList(new File(settings.getGrailsWorkDir() + "/plugin-list-" + centralRepo.getName() + ".xml"));
 
-                        final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos(pluginSettings.getPluginDirPath());
-                        for (GrailsPluginInfo pluginInfo : pluginInfos) {
-                            boolean registerUsage = false;
+                            final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos(pluginSettings.getPluginDirPath());
+                            for (GrailsPluginInfo pluginInfo : pluginInfos) {
+                                boolean registerUsage = false;
 
-                            if (settings.getDefaultPluginSet().contains(pluginInfo.getName())) {
-                                registerUsage = true;
-                            }
-                            else {
-                                final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName());
-                                if (plugin != null) {
+                                if (settings.getDefaultPluginSet().contains(pluginInfo.getName())) {
                                     registerUsage = true;
                                 }
-                            }
-                            if (registerUsage) {
-                                uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                                else {
+                                    final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName());
+                                    if (plugin != null) {
+                                        registerUsage = true;
+                                    }
+                                }
+                                if (registerUsage) {
+                                    uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                                }
                             }
                         }
+                    } catch (Exception e) {
+                        // ignore, don't bother the user
                     }
                 }
             };
