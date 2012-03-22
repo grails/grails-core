@@ -1169,8 +1169,10 @@ class BuildSettings extends AbstractBuildSettings {
             switch (e.eventType) {
                 case TransferEvent.TRANSFER_STARTED:
                     def resourceName = e.resource.name
-                    resourceName = resourceName[resourceName.lastIndexOf('/') + 1..-1]
-                    console.updateStatus "Downloading: ${resourceName}"
+                    if(resourceName != 'plugins-list.xml') {
+                        resourceName = resourceName[resourceName.lastIndexOf('/') + 1..-1]
+                        console.updateStatus "Downloading: ${resourceName}"
+                    }
                     break
             }
         } as TransferListener
