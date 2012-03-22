@@ -6,7 +6,7 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 /**
  * Tests constraints building specific for command objects
  */
-class ConstrainedPropertyBuiderForCommandsTests extends AbstractGrailsControllerTests {
+class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControllerTests {
     protected void onSetUp() {
         parseDomainTestClasses()
     }
