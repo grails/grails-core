@@ -25,13 +25,12 @@ class InvalidVersionedObjectEvictionSpec extends GormSpec{
             foo.name = 'invalid'
             bar.save(failOnError:true, flush:true)
 
-            assert foo.version == 1
-
+            foo.version = 0
             foo.name = 'valid2'
 
 
         then:"The last saved is successful"
-            foo.save(failOnError:true, flush:true)
+            foo.merge(failOnError:true, flush:true)
     }
     
     @Override
