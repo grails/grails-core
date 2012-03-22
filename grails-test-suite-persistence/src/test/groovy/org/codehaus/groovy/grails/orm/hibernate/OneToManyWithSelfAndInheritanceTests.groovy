@@ -8,6 +8,8 @@ class OneToManyWithSelfAndInheritanceTests extends AbstractGrailsHibernateTests 
 
     protected void onSetUp() {
         gcl.parseClass '''
+package onetomanywithselfandinheritancetests
+        
 import grails.persistence.*
 
 @Entity
@@ -29,8 +31,8 @@ class ExtOrganization extends Organization{}
 
     // test for GRAILS-3210
     void testSubclassAssociationsWork() {
-        def Organization = ga.getDomainClass("Organization").clazz
-        def ExtOrganization = ga.getDomainClass("ExtOrganization").clazz
+        def Organization = ga.getDomainClass("onetomanywithselfandinheritancetests.Organization").clazz
+        def ExtOrganization = ga.getDomainClass("onetomanywithselfandinheritancetests.ExtOrganization").clazz
 
         def org1 = Organization.newInstance(name:'Org 1', description:'root organization').save()
         def orgA = Organization.newInstance(name:'Org A', description:'child A of Org 1', parent: org1).save()
