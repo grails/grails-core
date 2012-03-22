@@ -154,10 +154,6 @@ public class ConverterUtil {
             return DefaultGroovyMethods.asType((String) delegate, clazz);
         }
         
-        if(delegate instanceof Object[]) {
-            return DefaultGroovyMethods.asType((Object[]) delegate, clazz);
-        }
-
         return DefaultGroovyMethods.asType(delegate, clazz);
     }
 
