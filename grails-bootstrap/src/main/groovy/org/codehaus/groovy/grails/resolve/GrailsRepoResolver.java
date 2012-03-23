@@ -110,17 +110,14 @@ public class GrailsRepoResolver extends URLResolver{
 
                                 XmlSlurper xmlSlurper = new XmlSlurper();
                                 xmlSlurper.setErrorHandler(new ErrorHandler() {
-                                    @Override
                                     public void warning(SAXParseException e) throws SAXException {
                                         // noop
                                     }
 
-                                    @Override
                                     public void error(SAXParseException e) throws SAXException {
                                         // noop
                                     }
 
-                                    @Override
                                     public void fatalError(SAXParseException e) throws SAXException {
                                         // noop
                                     }
