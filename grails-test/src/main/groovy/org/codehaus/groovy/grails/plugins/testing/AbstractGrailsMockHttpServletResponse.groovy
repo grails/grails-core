@@ -30,7 +30,7 @@ import org.springframework.util.ReflectionUtils
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
  * left-shift operator, "<<".
  */
-class GrailsMockHttpServletResponse extends MockHttpServletResponse {
+abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResponse {
 
     @ApiDelegate(HttpServletResponse) ResponseMimeTypesApi responseMimeTypesApi = new ResponseMimeTypesApi()
 
@@ -109,4 +109,6 @@ class GrailsMockHttpServletResponse extends MockHttpServletResponse {
 
         return super.getRedirectedUrl()
     }
+
+
 }
