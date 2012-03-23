@@ -214,6 +214,31 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         boolean isRequestedSessionIdFromUrl() { false }
 
+        @Override
+        boolean authenticate(HttpServletResponse response) {
+            return false
+        }
+
+        @Override
+        void login(String username, String password) {
+            // no op
+        }
+
+        @Override
+        void logout() {
+            // no op
+        }
+
+        @Override
+        Collection<javax.servlet.http.Part> getParts() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        javax.servlet.http.Part getPart(String name) {
+            return null
+        }
+
         Object getAttribute(String name) {
             return attributes[name]
         }
@@ -313,6 +338,40 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         int getLocalPort() {
             return 80
         }
+
+        ServletContext getServletContext() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        javax.servlet.AsyncContext startAsync() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        javax.servlet.AsyncContext startAsync(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        boolean isAsyncStarted() {
+            return false  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        boolean isAsyncSupported() {
+            return false  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        javax.servlet.AsyncContext getAsyncContext() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        @Override
+        javax.servlet.DispatcherType getDispatcherType() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
     }
 
     class PageRenderResponse implements HttpServletResponse {
@@ -383,6 +442,22 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         void setStatus(int sc, String sm) {
             // no-op
+        }
+
+        int getStatus() {
+            return 0
+        }
+
+        String getHeader(String name) {
+            return null
+        }
+
+        Collection<String> getHeaders(String name) {
+            return null
+        }
+
+        Collection<String> getHeaderNames() {
+            return Collections.emptyList();
         }
 
         ServletOutputStream getOutputStream() {

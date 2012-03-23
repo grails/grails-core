@@ -154,7 +154,7 @@ subprojects { project ->
             compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
             // Specs
-            compile 'javax.servlet:servlet-api:2.5'
+            compile 'javax.servlet:javax.servlet-api:3.0.1'
             compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 
 
