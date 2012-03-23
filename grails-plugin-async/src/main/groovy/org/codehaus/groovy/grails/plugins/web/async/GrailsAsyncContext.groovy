@@ -42,7 +42,11 @@ class GrailsAsyncContext implements AsyncContext {
     GrailsAsyncContext(AsyncContext delegate, GrailsWebRequest webRequest) {
         this.delegate = delegate
         originalWebRequest = webRequest
-        groovyPageLayoutFinder = webRequest.getApplicationContext()?.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
+        def applicationContext = webRequest.getApplicationContext()
+        if(applicationContext && applicationContext.containsBean("groovyPageLayoutFinder")) {
+
+            groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
+        }
     }
 
     def <T extends AsyncListener> T createListener(Class<T> tClass) {

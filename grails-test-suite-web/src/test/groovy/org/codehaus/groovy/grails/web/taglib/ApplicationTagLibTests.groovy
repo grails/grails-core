@@ -406,8 +406,3 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
 }
 
-class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
-    String encodeURL(String url) {
-        super.encodeURL("$url;jsessionid=test")
-    }
-}
