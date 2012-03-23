@@ -47,7 +47,7 @@ class PluginTagLib {
      * eg. &lt;plugin:isAvailable name="hibernate"&gt;print me&lt;/plugin:isAvailable&gt;
      *
      * @attr name REQUIRED the plugin name
-     * @attr version REQUIRED the plugin version
+     * @attr version the plugin version
      */
     Closure isAvailable = { attrs, body ->
         if (checkPluginExists(attrs.version, attrs.name)) {
@@ -61,7 +61,7 @@ class PluginTagLib {
      * eg. &lt;plugin:isNotAvailable name="hibernate"&gt;print me&lt;/plugin:isNotAvailable&gt;
      *
      * @attr name REQUIRED the plugin name
-     * @attr version REQUIRED the plugin version
+     * @attr version the plugin version
      */
     Closure isNotAvailable = { attrs, body ->
         if (!checkPluginExists(attrs.version, attrs.name)) {
