@@ -155,7 +155,7 @@ class DocPublisher {
         ant.mkdir(dir: jsDir)
         ant.mkdir(dir: "${refDocsDir}/ref")
 
-        ant.copy(todir: imgsDir) {
+        ant.copy(todir: imgsDir, overwrite: true) {
             fileset(dir: "${docResources}/img")
         }
 
@@ -164,7 +164,7 @@ class DocPublisher {
                 fileset(dir: images)
             }
         }
-        ant.copy(todir: cssDir) {
+        ant.copy(todir: cssDir, overwrite: true) {
             fileset(dir: "${docResources}/css")
         }
         if (css && css.exists()) {
@@ -172,7 +172,7 @@ class DocPublisher {
                 fileset(dir: css)
             }
         }
-        ant.copy(todir: jsDir) {
+        ant.copy(todir: jsDir, overwrite: true) {
             fileset(dir: "${docResources}/js")
         }
         if (js && js.exists()) {
