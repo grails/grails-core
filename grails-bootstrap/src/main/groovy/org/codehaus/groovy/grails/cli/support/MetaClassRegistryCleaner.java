@@ -15,11 +15,7 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import groovy.lang.ExpandoMetaClass;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaClassRegistryChangeEvent;
-import groovy.lang.MetaClassRegistryChangeEventListener;
+import groovy.lang.*;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -44,16 +40,36 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private Map<IdentityWeakReference, Object> alteredInstances = new ConcurrentHashMap<IdentityWeakReference, Object>();
     private static final Object NO_CUSTOM_METACLASS = new Object();
     private static boolean cleaning;
+    private static final MetaClassRegistryCleaner INSTANCE = new MetaClassRegistryCleaner();
+
+
+    private MetaClassRegistryCleaner() {
+    }
 
     public static MetaClassRegistryCleaner createAndRegister() {
-        MetaClassRegistryCleaner mcr = new MetaClassRegistryCleaner();
-        GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(mcr);
-        return mcr;
+
+        MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+        MetaClassRegistryChangeEventListener[] listeners = metaClassRegistry.getMetaClassRegistryChangeEventListeners();
+        boolean registered = false;
+        for (MetaClassRegistryChangeEventListener listener : listeners) {
+            if(listener == INSTANCE) {
+                registered = true;break;
+            }
+        }
+        if(!registered) {
+            GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(INSTANCE);
+        }
+        return INSTANCE;
     }
 
     public static void cleanAndRemove(MetaClassRegistryCleaner cleaner) {
         cleaner.clean();
         GroovySystem.getMetaClassRegistry().removeMetaClassRegistryChangeEventListener(cleaner);
+    }
+    
+    
+    public static void addAlteredMetaClass(Class cls, MetaClass altered) {
+        INSTANCE.alteredClasses.put(cls, altered);
     }
 
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
@@ -84,7 +100,7 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private void updateMetaClassOfClass(MetaClass oldMetaClass, Class classToUpdate) {
         if (oldMetaClass != null) {
             Object current = alteredClasses.get(classToUpdate);
-            if (current == null || current == NO_CUSTOM_METACLASS) {
+            if (current == null ) {
                 alteredClasses.put(classToUpdate, oldMetaClass);
             }
         }

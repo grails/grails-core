@@ -42,7 +42,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
     Set loadedCodecs
     def applicationContext
     Map errorsMap
-    private MetaClassRegistryCleaner registryCleaner = new MetaClassRegistryCleaner()
+    private MetaClassRegistryCleaner registryCleaner = MetaClassRegistryCleaner.createAndRegister()
 
     /**
      * Keeps track of the domain classes mocked within a single test so
@@ -100,6 +100,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
      */
     protected void registerMetaClass(Class clazz) {
         // Create a new EMC for the class and attach it.
+        MetaClassRegistryCleaner.addAlteredMetaClass(clazz, GroovySystem.getMetaClassRegistry().getMetaClass(clazz))
         def emc = new ExpandoMetaClass(clazz, true, true)
         emc.initialize()
         GroovySystem.metaClassRegistry.setMetaClass(clazz, emc)
@@ -142,7 +143,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
         def dc = MockUtils.mockDomain(domainClass, errorsMap, instances)
 
         domainClassesInfo.addGrailsClass(dc)
-        addConverters(domainClass)
+        addConverters(domainClass, false)
     }
 
     /**
@@ -223,8 +224,9 @@ class GrailsUnitTestCase extends GroovyTestCase {
         Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
 
-    protected void addConverters(Class clazz) {
-        registerMetaClass(clazz)
+    protected void addConverters(Class clazz, boolean register = true) {
+        if(register)
+            registerMetaClass(clazz)
         clazz.metaClass.asType = {Class asClass ->
             if (ConverterUtil.isConverterClass(asClass)) {
                 return ConverterUtil.createConverter(asClass, delegate, applicationContext)

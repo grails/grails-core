@@ -55,7 +55,7 @@ class InteractiveMode {
     /** Options supported by the 'open' command. */
     def openOptions
 
-    private MetaClassRegistryCleaner registryCleaner = new MetaClassRegistryCleaner();
+    private MetaClassRegistryCleaner registryCleaner = MetaClassRegistryCleaner.createAndRegister()
 
     InteractiveMode(BuildSettings settings, GrailsScriptRunner scriptRunner) {
         this.scriptRunner = scriptRunner
