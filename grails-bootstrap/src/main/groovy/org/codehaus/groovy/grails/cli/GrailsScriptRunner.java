@@ -24,6 +24,7 @@ import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.util.AntBuilder;
@@ -126,7 +127,7 @@ public class GrailsScriptRunner {
      */
     public static void main(String[] args) {
         System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
-
+        ExpandoMetaClass.enableGlobally();
         originalIn = System.in;
         originalOut = System.out;
 
