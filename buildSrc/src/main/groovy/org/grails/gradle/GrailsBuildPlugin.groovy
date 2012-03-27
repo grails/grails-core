@@ -17,7 +17,7 @@ class GrailsBuildPlugin implements Plugin<Project> {
 
         // Add utility for getting sources, returns a configuration containing the source jar versions
         // of the dependencies in the given configuration(s)
-        project.sourcesFor = { configurations ->
+        project.ext.sourcesFor = { configurations ->
             
             // We can't use varargs for the closure signature due to an issue in the mixin mechanism in this
             // version of Gradle.
