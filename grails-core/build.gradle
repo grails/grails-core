@@ -54,7 +54,7 @@ dependencies {
     }
 
     compile ("com.springsource.springloaded:springloaded-core:$springLoadedVersion") {
-        notInPom = true
+        ext.notInPom = true
     }
 
     compile "org.springframework:spring-tx:${springVersion}"
