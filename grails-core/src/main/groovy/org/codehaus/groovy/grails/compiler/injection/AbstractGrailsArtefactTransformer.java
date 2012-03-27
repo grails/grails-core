@@ -21,6 +21,7 @@ import grails.util.GrailsUtil;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import groovy.lang.Mixin;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -169,6 +170,15 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             final AnnotationNode annotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
             annotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
             classNode.addAnnotation(annotationNode);
+
+            AnnotationNode annotation = GrailsASTUtils.findAnnotation(classNode, Mixin.class);
+            if(annotation != null) {
+                Expression value = annotation.getMember("value");
+                if(value != null) {
+                    annotationNode.setMember("mixins", value);
+                }
+
+            }
         }
     }
 
