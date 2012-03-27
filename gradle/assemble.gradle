@@ -57,13 +57,13 @@ task configurePopulateDependencies << {
         configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
             def dependency = artifact.moduleVersion.id
             if (!projectNames.contains(dependency.name)) {
-                populateDependencies.into("$dependency.group/$dependency.name/jars") {
+                populateDependencies.into("$dependency.group/$dependency.name/$dependency.version/jars") {
                     from artifact.file // this will trigger the actual download if necessary
                 }
                 
                 populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
                     include "*.ivy.xml"
-                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
+                    eachFile { it.path = "$dependency.group/$dependency.name/$dependency.version/ivy-${dependency.version}.xml" }
                 }
             }
         }
