@@ -637,6 +637,14 @@ public class GrailsASTUtils {
         }
         return null;
     }
+
+    public static AnnotationNode findAnnotation(ClassNode classNode, Class type) {
+        List<AnnotationNode> annotations = classNode.getAnnotations();
+        if(annotations != null) {
+            return findAnnotation(new ClassNode(type),annotations);
+        }
+        return null;
+    }
     
     /**
      * Returns true if classNode is marked with annotationClass
@@ -754,6 +762,8 @@ public class GrailsASTUtils {
         }
         return results;
     }
+
+
 
 
     @Target(ElementType.CONSTRUCTOR)

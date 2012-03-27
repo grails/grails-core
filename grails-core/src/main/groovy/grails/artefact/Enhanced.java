@@ -32,4 +32,5 @@ import java.lang.annotation.Target;
 public @interface Enhanced {
     String version();
     String[] enhancedFor() default {};
+    Class[] mixins() default {};
 }
