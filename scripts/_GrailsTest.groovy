@@ -325,7 +325,7 @@ unitTestPhaseCleanUp = {}
 /**
  * Initialises a persistence context and bootstraps the application.
  */
-def registryCleaner = new org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner()
+def registryCleaner = org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner.createAndRegister()
 
 integrationTestPhasePreparation = {
     GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
