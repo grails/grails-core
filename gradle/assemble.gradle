@@ -43,40 +43,36 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     }
 }
 
-task populateDependencies(type: Sync) {
-    into homeLibDir
-    includeEmptyDirs = false
+task configurePopulateDependencies << {
+    def projectNames = rootProject.subprojects*.name
 
-    // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
-    // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
-    // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
-    gradle.taskGraph.whenReady { taskGraph ->
-        if (taskGraph.hasTask(':populateDependencies')) {
-            def projectNames = rootProject.subprojects*.name
+    ext {
+        baseCachesDir = "$gradle.gradleUserHomeDir/caches"
+        cacheDir = "$baseCachesDir/artifacts-8"
+        metadata = "$cacheDir/module-metadata"
+        filestore = "$cacheDir/filestore"
+    }
 
-            ext.baseCachesDir = "$gradle.gradleUserHomeDir/caches"
-            ext.cacheDir = "$baseCachesDir/artifacts-8"
-            ext.metadata = "$cacheDir/module-metadata"
-            ext.filestore = "$cacheDir/filestore"
-
-            libsConfigurations.each { configuration ->
-                configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                    def dependency = artifact.moduleVersion.id
-                    into("$dependency.group/$dependency.name/jars") {
-                        from artifact.file // this will trigger the actual download if necessary
-                    }
-
-                    if (!projectNames.contains(dependency.name)) {
-                        def base = "${dependency.group}/${dependency.name}/${dependency.version}"
-                        from ("${metadata}/${base}") {
-                            include "*.ivy.xml"
-                            eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
-                        }
-                    }
+    libsConfigurations.each { configuration ->
+        configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+            def dependency = artifact.moduleVersion.id
+            if (!projectNames.contains(dependency.name)) {
+                populateDependencies.into("$dependency.group/$dependency.name/jars") {
+                    from artifact.file // this will trigger the actual download if necessary
+                }
+                
+                populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
+                    include "*.ivy.xml"
+                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
                 }
             }
         }
     }
+}
+
+task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) {
+    into homeLibDir
+    includeEmptyDirs = false
 }
 
 // Can't use sync task here because this directory contains other things as well.
