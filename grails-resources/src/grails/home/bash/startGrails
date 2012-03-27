@@ -182,16 +182,14 @@ if $cygwin ; then
     [ -n "$GRAILS_HOME" ] &&
         AGENT_GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
 fi
-# Process JVM args
-AGENT_STRING="-javaagent:$AGENT_GRAILS_HOME/$AGENT_LIBRARY -noverify -Dspringloaded=profile=grails"
-
+AGENT_GRAILS_JAR=$AGENT_GRAILS_HOME/$AGENT_LIBRARY
 # Fix the mingw bash shell not recognizing the agent jar path
 if $mingw ; then	
-	AGENT_GRAILS_JAR=`cmd //C echo $AGENT_GRAILS_HOME/$AGENT_LIBRARY`
-    [ -n "$GRAILS_HOME" ] &&
-        AGENT_STRING=`echo "-javaagent:$AGENT_GRAILS_JAR -noverify -Dspringloaded=profile=grails"`
+	[ -n "$GRAILS_HOME" ] &&
+		AGENT_GRAILS_JAR=`cmd //C echo $AGENT_GRAILS_HOME/$AGENT_LIBRARY`
 fi
-
+# Process JVM args
+AGENT_STRING="-javaagent:$AGENT_GRAILS_JAR -noverify -Dspringloaded=profile=grails"
 CMD_LINE_ARGS=""
 DISABLE_RELOADING=false
 
