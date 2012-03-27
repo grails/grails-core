@@ -234,6 +234,13 @@ public class ConstrainedProperty {
 
         List<Object> objects = getOrInitializeConstraint(name);
         objects.remove(constraintClass);
+        List<Object> toRemove = new ArrayList<Object>();
+        for (Object object : objects) {
+            if(constraintClass.isInstance(object)) {
+                toRemove.add(object);
+            }
+        }
+        objects.removeAll(toRemove);
     }
 
     public static void removeConstraint(String name) {
@@ -271,7 +278,7 @@ public class ConstrainedProperty {
     }
 
     public static boolean hasRegisteredConstraint(String constraintName) {
-        return constraints.containsKey(constraintName);
+        return constraints.containsKey(constraintName) && constraints.get(constraintName).size()>0;
     }
 
     /**
