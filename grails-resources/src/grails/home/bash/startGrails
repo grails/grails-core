@@ -185,7 +185,7 @@ fi
 AGENT_GRAILS_JAR=$AGENT_GRAILS_HOME/$AGENT_LIBRARY
 # Fix the mingw bash shell not recognizing the agent jar path
 if $mingw ; then	
-	[ -n "$GRAILS_HOME" ] &&
+	[ -n "$AGENT_GRAILS_HOME" ] &&
 		AGENT_GRAILS_JAR=`cmd //C echo $AGENT_GRAILS_HOME/$AGENT_LIBRARY`
 fi
 # Process JVM args
