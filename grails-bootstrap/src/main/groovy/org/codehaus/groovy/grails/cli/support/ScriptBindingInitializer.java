@@ -115,6 +115,7 @@ public class ScriptBindingInitializer {
          binding.setVariable("grailsWorkDir", grailsWork);
          binding.setVariable("projectWorkDir", settings.getProjectWorkDir().getPath());
          binding.setVariable("projectTargetDir", settings.getProjectTargetDir());
+         binding.setVariable("projectGeneratedSourcesDir", settings.getProjectGeneratedSourcesDir());
          binding.setVariable("classesDir", settings.getClassesDir());
          binding.setVariable("pluginClassesDir", settings.getPluginClassesDir());
          binding.setVariable("grailsTmp", grailsWork +"/tmp");

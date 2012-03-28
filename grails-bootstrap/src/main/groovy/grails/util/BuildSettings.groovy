@@ -153,6 +153,11 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_TARGET_DIR = "grails.project.target.dir"
 
     /**
+     * The name of the system property for {@link #projectGeneratedSourcesDir}.
+     */
+    public static final String PROJECT_GENERATED_SOURCES_DIR = "grails.project.generated.sources.dir"
+
+    /**
      * The name of the WAR file of the project
      */
     public static final String PROJECT_WAR_FILE = "grails.project.war.file"
@@ -254,6 +259,9 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** The location of the project target directory where reports, artifacts and so on are output.  */
     File projectTargetDir
+
+    /** The location of the project generated-sources directory where generated code is output.  */
+    File projectGeneratedSourcesDir
 
     /** The location of the Grails WAR directory where exploded WAR is built.  */
     File projectWarExplodedDir
@@ -701,6 +709,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean grailsWorkDirSet
     private boolean projectWorkDirSet
     private boolean projectTargetDirSet
+    private boolean projectGeneratedSourcesDirSet
     private boolean projectWarExplodedDirSet
     private boolean classesDirSet
     private boolean testClassesDirSet
@@ -845,6 +854,13 @@ class BuildSettings extends AbstractBuildSettings {
     void setProjectTargetDir(File dir) {
         projectTargetDir = dir
         projectTargetDirSet = true
+    }
+
+    File getProjectGeneratedSourcesDir() { projectGeneratedSourcesDir }
+
+    void setProjectGeneratedSourcesDir(File dir) {
+        projectGeneratedSourcesDir = dir
+        projectGeneratedSourcesDirSet = true
     }
 
     File getProjectWarFile() { projectWarFile }
@@ -1338,6 +1354,10 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectTargetDirSet) {
             projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
+        }
+
+        if (!projectGeneratedSourcesDir) {
+            projectGeneratedSourcesDir = new File(getPropertyValue(PROJECT_GENERATED_SOURCES_DIR, props, "$projectTargetDir/generated-sources"))
         }
 
         if (!projectWarFileSet) {

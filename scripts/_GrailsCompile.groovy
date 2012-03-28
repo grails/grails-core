@@ -17,6 +17,10 @@
 import org.apache.tools.ant.BuildException
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.codehaus.groovy.grails.web.pages.GspTagInfo
+import org.codehaus.groovy.grails.web.pages.GspTagParser
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
+import org.springframework.core.io.FileSystemResource
 
 /**
  * Gant script that compiles Groovy and Java files in the src tree.
@@ -42,7 +46,7 @@ target(setCompilerSettings: "Updates the compile build settings based on args") 
 }
 
 target(compile : "Implementation of compilation phase") {
-    depends(compilePlugins)
+    depends(compilePlugins, generateGspTags)
     profile("Compiling sources to location [$classesDirPath]") {
         withCompilationErrorHandling {
             projectCompiler.compile()
@@ -100,5 +104,33 @@ target(compilegsp : "Compile GSP files") {
             event("StatusError", ["Compilation error: ${e.cause?.message ?: e.message}"])
             exit(1)
         }
+    }
+}
+
+target(generateGspTags: "Generate taglib code for GSP tags") {
+    def gspTags = resolveResources("file:${basedir}/grails-app/taglib/**/*.gsp") as List
+    def pluginInfos = pluginSettings.compileScopePluginInfo.pluginInfos
+    if (pluginInfos) {
+        for (info in pluginInfos) {
+            gspTags.addAll(resolveResources("file:${info.pluginDir.file}/grails-app/taglib/**/*.gsp"))
+        }
+    }
+
+    File generatedTagsDir = new File(projectGeneratedSourcesDir, "grails-app/taglib")
+    projectCompiler.addSrcDirectory(generatedTagsDir.canonicalFile.absolutePath)
+    for (gsp in gspTags.file) {
+        def tagInfo = new GspTagInfo(gsp)
+        File destinationDir = new File(generatedTagsDir, tagInfo.packageName.replace('.', '/'))
+        File destination = new File(destinationDir, tagInfo.tagLibFileName)
+        GrailsResourceLoaderHolder.resourceLoader.addResource(new FileSystemResource(destination))
+        if (!destination.exists() || destination.lastModified() < gsp.lastModified()) {
+            destinationDir.mkdirs()
+            def parser = new GspTagParser(tagInfo)
+            destination.text = parser.parse().text
+        }
+    }
+    if (gspTags) {
+        //force reload of pluginSettings in order to pick up the new artifacts
+        pluginSettings.clearCache()
     }
 }

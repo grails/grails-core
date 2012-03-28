@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
 public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
 
     public static Pattern TAGLIB_PATTERN = Pattern.compile(".+/" +
-            GrailsResourceUtils.GRAILS_APP_DIR + "/taglib/(.+)TagLib\\.groovy");
+            GrailsResourceUtils.GRAILS_APP_DIR + "/taglib/(.+)TagLib\\.(gsp|groovy)");
 
     private static final String ATTRS_ARGUMENT = "attrs";
     private static final String BODY_ARGUMENT = "body";

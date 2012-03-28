@@ -105,7 +105,7 @@ class GrailsProjectCompiler {
                            "${srcdir}/java".toString()]
 
         def excludedPaths = EXCLUDED_PATHS
-
+    
         for (dir in new File(basedir, "grails-app").listFiles()) {
             if (dir == null) continue
             if (!excludedPaths?.contains(dir.name) && dir.isDirectory() && !DirectoryWatcher.SVN_DIR_NAME.equals(dir.name)) {
@@ -125,6 +125,12 @@ class GrailsProjectCompiler {
 
     void setAnt(AntBuilder ant) {
         this.ant = ant
+    }
+
+    void addSrcDirectory(String srcDir) {
+        if (!srcDirectories.contains(srcDir)) {
+            srcDirectories << srcDir
+        }
     }
 
     /**

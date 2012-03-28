@@ -22,8 +22,6 @@ import grails.util.*
 import java.lang.reflect.Modifier
 
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
@@ -45,6 +43,7 @@ import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.view.JstlView
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.springframework.core.io.FileSystemResource
 
 /**
  * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
@@ -53,10 +52,14 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
  * @since 1.1
  */
 class GroovyPagesGrailsPlugin {
+    BuildSettings buildSettings = BuildSettingsHolder.settings
 
     // monitor all resources that end with TagLib.groovy
     def watchedResources = ["file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
-                            "file:./grails-app/taglib/**/*TagLib.groovy"]
+                            "file:./grails-app/taglib/**/*TagLib.groovy",
+                            "file:./plugins/*/grails-app/taglib/**/*.gsp",
+                            "file:./grails-app/taglib/**/*.gsp",
+                            "file:${buildSettings?.projectGeneratedSourcesDir}/grails-app/taglib/**/*TagLib.groovy"]
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version]
@@ -301,33 +304,45 @@ class GroovyPagesGrailsPlugin {
     }
 
     def onChange = { event ->
-        def ctx = event.ctx ?: application.mainContext
+        if (event.source instanceof FileSystemResource && event.source.file.name.endsWith('.gsp')) {
+            log.info "generating GSP taglib code"
+            GspTagInfo tagInfo = new GspTagInfo(event.source.file)
+            File generatedTagSrcDir = new File(buildSettings.projectGeneratedSourcesDir, '/grails-app/taglib')
+            File destinationDir = new File(generatedTagSrcDir, tagInfo.packageName.replace((char) '.', File.separatorChar))
+            destinationDir.mkdirs()
+            File destination = new File(destinationDir, tagInfo.tagLibFileName)
+            def parser = new GspTagParser(tagInfo)
+            destination.text = parser.parse().text
+        } else {
+            def ctx = event.ctx ?: application.mainContext
 
-        if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
-            GrailsClass taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
-            if (taglibClass) {
-                // replace tag library bean
-                def beanName = taglibClass.fullName
-                def beans = beans {
-                    "$beanName"(taglibClass.clazz) { bean ->
-                        bean.autowire = true
+            if (application.isArtefactOfType(TagLibArtefactHandler.TYPE, event.source)) {
+                GrailsClass taglibClass = application.addArtefact(TagLibArtefactHandler.TYPE, event.source)
+                if (taglibClass) {
+                    // replace tag library bean
+                    def beanName = taglibClass.fullName
+                    def beans = beans {
+                        "$beanName"(taglibClass.clazz) { bean ->
+                            bean.autowire = true
+                        }
                     }
+                    beans.registerBeans(event.ctx)
+
+                    // The tag library lookup class caches "tag -> taglib class"
+                    // so we need to update it now.
+                    def lookup = event.ctx.getBean("gspTagLibraryLookup")
+                    lookup.registerTagLib(taglibClass)
+
+                    enhanceClasses([taglibClass.clazz], ctx.getBean("instanceTagLibraryApi"))
+                    WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
                 }
-                beans.registerBeans(event.ctx)
-
-                // The tag library lookup class caches "tag -> taglib class"
-                // so we need to update it now.
-                def lookup = event.ctx.getBean("gspTagLibraryLookup")
-                lookup.registerTagLib(taglibClass)
-
-                enhanceClasses([taglibClass.clazz], ctx.getBean("instanceTagLibraryApi"))
-                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
+            } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
+                enhanceClasses([event.source], ctx.getBean("instanceControllerTagLibraryApi"))
             }
-        } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            enhanceClasses([event.source], ctx.getBean("instanceControllerTagLibraryApi"))
-        }
 
-        // clear uri cache after changes
-        ctx.getBean("groovyPagesUriService").clear()
+            // clear uri cache after changes
+            ctx.getBean("groovyPagesUriService").clear()
+        }
     }
+
 }
