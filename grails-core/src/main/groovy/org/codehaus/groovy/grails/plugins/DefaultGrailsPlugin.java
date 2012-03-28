@@ -81,7 +81,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private static final String PLUGIN_CHANGE_EVENT_SOURCE = "source";
     private static final String PLUGIN_CHANGE_EVENT_MANAGER = "manager";
 
-    private static final String PLUGIN_OBSERVE = "observe";
     protected static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin.class);
     private static final String INCLUDES = "includes";
     private static final String EXCLUDES = "excludes";
@@ -90,17 +89,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private GroovyObject plugin;
     protected BeanWrapper pluginBean;
     private Closure onChangeListener;
-    private Resource[] watchedResources = new Resource[0];
+    private Resource[] watchedResources = {};
 
     private PathMatchingResourcePatternResolver resolver;
     private String[] watchedResourcePatternReferences;
-    private String[] loadAfterNames = new String[0];
-    private String[] loadBeforeNames = new String[0];
+    private String[] loadAfterNames = {};
+    private String[] loadBeforeNames = {};
     private String status = STATUS_ENABLED;
     private String[] observedPlugins;
     private Closure onConfigChangeListener;
     private Closure onShutdownListener;
-    private Class<?>[] providedArtefacts = new Class[0];
+    private Class<?>[] providedArtefacts = {};
     private Map pluginScopes;
     private Map pluginEnvs;
     private List<String> pluginExcludes = new ArrayList<String>();
@@ -227,9 +226,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     private void evaluateAndAddListOfValues(Map targetMap, List includeExcludeList, boolean include, Closure converter) {
-        for (Object scope : includeExcludeList) {
-            if (scope instanceof String) {
-                final String scopeName = (String) scope;
+        for (Object value : includeExcludeList) {
+            if (value instanceof String) {
+                final String scopeName = (String) value;
                 evaluateAndAddToIncludeExcludeSet(targetMap, scopeName, include, converter);
             }
         }
@@ -266,10 +265,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     private void evaluateObservedPlugins() {
-        if (pluginBean.isReadableProperty(PLUGIN_OBSERVE)) {
-            Object observeProperty = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, PLUGIN_OBSERVE);
+        if (pluginBean.isReadableProperty(OBSERVE)) {
+            Object observeProperty = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(plugin, OBSERVE);
             if (observeProperty instanceof Collection) {
-                Collection  observeList = (Collection)observeProperty;
+                Collection observeList = (Collection)observeProperty;
                 observedPlugins = new String[observeList.size()];
                 int j = 0;
                 for (Object anObserveList : observeList) {

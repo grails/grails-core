@@ -159,14 +159,19 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String PLUGIN_LOAD_AFTER_NAMES = "loadAfter";
 
     /**
-     * The field that reperesents the list of resources to exclude from plugin packaging
+     * The field that represents the list of resources to exclude from plugin packaging
      */
     String PLUGIN_EXCLUDES = "pluginExcludes";
 
     /**
-     * The field that reperesents the list of type filters a plugin provides
+     * The field that represents the list of type filters a plugin provides
      */
     String TYPE_FILTERS = "typeFilters";
+
+    /**
+     * The field that represents the plugin names that this plugin is observing for changes.
+     */
+    String OBSERVE = "observe";
 
     /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s

@@ -1,5 +1,4 @@
-/*
- * Copyright 2011 SpringSource
+/* Copyright 2008 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.artefact;
+package org.codehaus.groovy.grails.plugins.testing;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Collection;
+import java.util.Set;
 
 /**
- * An annotation for classes that are compile-time enhanced. Used to
- * fallback to runtime enhancement if compile time enhancement does not occur
+ * Refer to the groovydoc of {@link GrailsMockHttpServletResponse} for further information
  *
  * @author Graeme Rocher
- * @since 2.0
+ * @since 2.1
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface Enhanced {
-    String version();
-    String[] enhancedFor() default {};
-    Class[] mixins() default {};
-}
+    public class GrailsMockHttpServletResponse extends AbstractGrailsMockHttpServletResponse{
+    }

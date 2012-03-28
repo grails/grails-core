@@ -3,7 +3,7 @@
  * This target generates a set of stubs for the Groovy sources
  */
 task stubs {
-    destinationDir = "$buildDir/docs/stubs"
+    ext.destinationDir = "$buildDir/docs/stubs"
     doFirst {
         def isolatedAnt = services.get(org.gradle.api.internal.project.IsolatedAntBuilder)
         isolatedAnt.execute {
@@ -39,7 +39,7 @@ task stubs {
 }
 
 task docs {
-    destinationDir = file("${projectDir}/doc")
+    ext.destinationDir = file("${projectDir}/doc")
 }
 
 task javadoc(type:Javadoc) {

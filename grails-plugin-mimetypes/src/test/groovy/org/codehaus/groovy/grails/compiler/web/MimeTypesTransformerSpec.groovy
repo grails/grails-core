@@ -46,6 +46,12 @@ class MimeTypesTransformerSpec extends Specification {
     private Class getControllerClass(GrailsAwareClassLoader gcl) {
         return gcl.parseClass('''
 import org.codehaus.groovy.grails.web.mime.*
+import javax.servlet.AsyncContext
+import javax.servlet.AsyncEvent
+import javax.servlet.AsyncListener
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
+
 
 class MimeTypesCompiledController {
     def request = new MyMockRequest()
@@ -57,10 +63,29 @@ class MimeTypesCompiledController {
     }
 }
 class MyMockRequest extends org.springframework.mock.web.MockHttpServletRequest {
+    javax.servlet.DispatcherType dispatcherType;
+    AsyncContext asyncContext;
+
     String getFormat() { "html" }
 
     void putAt(String name, val) {}
     def getAt(String name) {}
+
+    Collection<javax.servlet.http.Part> getParts() {
+    }
+
+    javax.servlet.http.Part getPart(String name) {
+    }
+
+    javax.servlet.AsyncContext startAsync() {
+    }
+
+    javax.servlet.AsyncContext startAsync(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) {
+    }
+
+    boolean isAsyncStarted() {  }
+
+    boolean isAsyncSupported() { true }
 }
 
 ''')

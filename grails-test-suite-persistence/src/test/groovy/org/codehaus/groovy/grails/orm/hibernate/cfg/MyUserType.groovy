@@ -1,16 +1,19 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
-import java.sql.*
-import org.hibernate.*
-import org.hibernate.usertype.UserType
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
+import java.sql.Types
+
+import org.codehaus.groovy.grails.orm.hibernate.AbstractUserType
 import org.hibernate.usertype.ParameterizedType
 
 /**
  * Example single-column Hibernate user type for use in testing.
  */
-class MyUserType implements UserType, ParameterizedType {
+class MyUserType extends AbstractUserType implements ParameterizedType {
 
-    private static final int[] SQL_TYPES = [ Types.VARCHAR ] as int[]
+    private static final int[] SQL_TYPES = [Types.VARCHAR]
 
     /** Parameter for testing ParameterizedType. */
     private String param1
@@ -19,30 +22,23 @@ class MyUserType implements UserType, ParameterizedType {
 
     int[] sqlTypes() { SQL_TYPES }
     Class returnedClass() { MyType }
-    boolean equals(Object x, Object y) { x.name == y.name }
-    int hashCode(Object x) { x.name.hashCode() }
-    Object deepCopy(Object value) { value }
+    boolean equals(x, y) { x.name == y.name }
+    int hashCode(x) { x.name.hashCode() }
     boolean isMutable() { true }
 
-    Object nullSafeGet(ResultSet resultSet, String[] names, owner) throws SQLException {
-        String name = resultSet.getString(names[0])
-      resultSet.wasNull() ? null : new MyType(name: name)
+    Object nullSafeGet(ResultSet rs, String[] names, owner) throws SQLException {
+        String name = rs.getString(names[0])
+        rs.wasNull() ? null : new MyType(name: name)
     }
 
-    void nullSafeSet(PreparedStatement statement, value, int index) throws SQLException {
+    void nullSafeSet(PreparedStatement ps, value, int index) throws SQLException {
         if (value == null) {
-            statement.setNull(index, Types.VARCHAR)
+            ps.setNull(index, Types.VARCHAR)
         }
         else {
-            statement.setString(index, value.name)
+            ps.setString(index, value.name)
         }
     }
-
-    Serializable disassemble(Object value) { value }
-
-    Object assemble(Serializable cached, Object owner) { cached }
-
-    Object replace(Object original, Object target, Object owner) { original }
 
     void setParameterValues(Properties params) {
         param1 = params.param1

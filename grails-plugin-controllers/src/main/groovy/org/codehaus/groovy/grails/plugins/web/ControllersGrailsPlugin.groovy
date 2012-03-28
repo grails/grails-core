@@ -172,7 +172,7 @@ class ControllersGrailsPlugin {
             controllerApi.setGspEncoding(gspEnc.toString())
         }
 
-        def redirectListeners = ctx.getBeansOfType(RedirectEventListener.class)
+        def redirectListeners = ctx.getBeansOfType(RedirectEventListener)
         controllerApi.setRedirectListeners(redirectListeners.values())
 
         Object o = application.getFlatConfig().get(RedirectDynamicMethod.GRAILS_VIEWS_ENABLE_JSESSIONID);

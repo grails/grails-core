@@ -18,14 +18,20 @@ package grails.gsp
 import java.security.Principal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+
+import javax.servlet.AsyncContext
+import javax.servlet.DispatcherType
 import javax.servlet.RequestDispatcher
 import javax.servlet.ServletContext
 import javax.servlet.ServletInputStream
 import javax.servlet.ServletOutputStream
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
+import javax.servlet.http.Part
 import org.apache.commons.collections.iterators.IteratorEnumeration
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -214,6 +220,26 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         boolean isRequestedSessionIdFromUrl() { false }
 
+        boolean authenticate(HttpServletResponse response) {
+            return false
+        }
+
+        void login(String username, String password) {
+            // no op
+        }
+
+        void logout() {
+            // no op
+        }
+
+        Collection<Part> getParts() {
+            return Collections.emptyList()
+        }
+
+        Part getPart(String name) {
+            return null
+        }
+
         Object getAttribute(String name) {
             return attributes[name]
         }
@@ -313,6 +339,34 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         int getLocalPort() {
             return 80
         }
+
+        ServletContext getServletContext() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        AsyncContext startAsync() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        boolean isAsyncStarted() {
+            return false  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        boolean isAsyncSupported() {
+            return false  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        AsyncContext getAsyncContext() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
+
+        DispatcherType getDispatcherType() {
+            return null  //To change body of implemented methods use File | Settings | File Templates.
+        }
     }
 
     class PageRenderResponse implements HttpServletResponse {
@@ -383,6 +437,22 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         void setStatus(int sc, String sm) {
             // no-op
+        }
+
+        int getStatus() {
+            return 0
+        }
+
+        String getHeader(String name) {
+            return null
+        }
+
+        Collection<String> getHeaders(String name) {
+            return null
+        }
+
+        Collection<String> getHeaderNames() {
+            return Collections.emptyList()
         }
 
         ServletOutputStream getOutputStream() {
