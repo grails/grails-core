@@ -1905,24 +1905,33 @@ public final class GrailsDomainBinder {
     }
 
     private static void bindEnumType(GrailsDomainClassProperty property, Class<?> propertyType, SimpleValue simpleValue, String columnName) {
-        Properties enumProperties = new Properties();
-        enumProperties.put(ENUM_CLASS_PROP, propertyType.getName());
 
         PropertyConfig pc = getPropertyConfig(property);
-        String enumType = pc != null ? pc.getEnumType() : DEFAULT_ENUM_TYPE;
-        if (enumType.equals(DEFAULT_ENUM_TYPE) && IdentityEnumType.supports(propertyType)) {
-            simpleValue.setTypeName(IdentityEnumType.class.getName());
-        } else {
-            simpleValue.setTypeName(ENUM_TYPE_CLASS);
-            if (enumType.equals(DEFAULT_ENUM_TYPE) || "string".equalsIgnoreCase(enumType)) {
-                enumProperties.put(ENUM_TYPE_PROP, String.valueOf(Types.VARCHAR));
+        String typeName = getTypeName(property, getPropertyConfig(property), getMapping(property.getDomainClass()));
+        if (typeName == null) {
+            Properties enumProperties = new Properties();
+            enumProperties.put(ENUM_CLASS_PROP, propertyType.getName());
+
+            String enumType = pc == null ? DEFAULT_ENUM_TYPE : pc.getEnumType();
+            if (enumType.equals(DEFAULT_ENUM_TYPE) && IdentityEnumType.supports(propertyType)) {
+                simpleValue.setTypeName(IdentityEnumType.class.getName());
+            } else {
+                simpleValue.setTypeName(ENUM_TYPE_CLASS);
+                if (enumType.equals(DEFAULT_ENUM_TYPE) || "string".equalsIgnoreCase(enumType)) {
+                    enumProperties.put(ENUM_TYPE_PROP, String.valueOf(Types.VARCHAR));
+                }
+                else if (!"ordinal".equalsIgnoreCase(enumType)) {
+                    LOG.warn("Invalid enumType specified when mapping property [" + property.getName() +
+                            "] of class [" + property.getDomainClass().getClazz().getName() +
+                            "]. Using defaults instead.");
+                }
             }
-            else if (!"ordinal".equalsIgnoreCase(enumType)) {
-                LOG.warn("Invalid enumType specified when mapping property ["+property.getName()+"] of class ["+property.getDomainClass().getClazz().getName()+"]. Using defaults instead.");
-            }
+            simpleValue.setTypeParameters(enumProperties);
+        }
+        else {
+            simpleValue.setTypeName(typeName);
         }
 
-        simpleValue.setTypeParameters(enumProperties);
         Table t = simpleValue.getTable();
         Column column = new Column();
 
@@ -1931,8 +1940,10 @@ public final class GrailsDomainBinder {
         } else {
             Mapping mapping = getMapping(property.getDomainClass());
             if (mapping == null || mapping.getTablePerHierarchy()) {
-                if (LOG.isDebugEnabled())
-                    LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() + "] for column name ["+column.getName()+"] set to nullable");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[GrailsDomainBinder] Sub class property [" + property.getName() +
+                            "] for column name [" + column.getName() + "] set to nullable");
+                }
                 column.setNullable(true);
             } else {
                 column.setNullable(property.isOptional());
