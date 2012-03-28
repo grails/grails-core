@@ -37,6 +37,8 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
     private Binding parent;
     private GroovyPage owner;
     private Set<String> cachedParentVariableNames=new HashSet<String>();
+    private GroovyPageRequestBinding pageRequestBinding;
+    private boolean pageRequestBindingInitialized=false;
     private boolean root;
 
     public GroovyPageBinding() {
@@ -64,6 +66,24 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
     public Object getProperty(String property) {
         return getVariable(property);
     }
+    
+    private GroovyPageRequestBinding findPageRequestBinding() {
+        if(!pageRequestBindingInitialized && parent != null) {
+            Binding nextParent = parent;
+            while(nextParent != null && pageRequestBinding==null) {
+                if(nextParent instanceof GroovyPageRequestBinding) {
+                    pageRequestBinding = (GroovyPageRequestBinding)nextParent;
+                }
+                if (nextParent instanceof GroovyPageBinding) {
+                    nextParent = ((GroovyPageBinding)nextParent).parent;
+                } else {
+                    nextParent = null;
+                }
+            }
+            pageRequestBindingInitialized=true;
+        }
+        return pageRequestBinding;
+    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -76,9 +96,11 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
-                    // cache variable in this context since parent context cannot change during usage of this context
-                    getVariablesMap().put(name, val);
-                    cachedParentVariableNames.add(name);
+                    if(findPageRequestBinding()==null || !findPageRequestBinding().isRequestAttributeVariable(name)) {
+                        // cache variable in this context since parent context cannot change during usage of this context
+                        getVariablesMap().put(name, val);
+                        cachedParentVariableNames.add(name);
+                    }
                 }
             }
         }
