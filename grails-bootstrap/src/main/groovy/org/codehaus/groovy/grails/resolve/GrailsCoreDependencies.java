@@ -125,6 +125,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.5"),
                             ModuleRevisionId.newInstance("jline", "jline", "1.0"),
+                            ModuleRevisionId.newInstance("org.apache.ivy", "ivy", "2.2.0"),
                             ModuleRevisionId.newInstance("org.fusesource.jansi", "jansi", "1.2.1"),
                             ModuleRevisionId.newInstance("net.java.dev.jna", "jna", "3.2.3"),
                             ModuleRevisionId.newInstance("xalan","serializer", "2.7.1"),
