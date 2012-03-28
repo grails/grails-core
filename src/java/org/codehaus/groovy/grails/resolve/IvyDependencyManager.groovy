@@ -1023,8 +1023,7 @@ class IvyDomainSpecificLanguageEvaluator {
 
     void grailsCentral() {
         if (isResolverNotAlreadyDefined('grailsCentral')) {
-            grailsRepo("http://svn.codehaus.org/grails-plugins", "grailsCentral")
-            grailsRepo("http://svn.codehaus.org/grails/trunk/grails-plugins", "grailsCore")
+            grailsRepo("http://plugins.grails.org", "grailsCentral")
         }
     }
 
