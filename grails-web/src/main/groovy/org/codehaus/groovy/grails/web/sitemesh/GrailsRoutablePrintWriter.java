@@ -14,11 +14,15 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import groovy.lang.Writable;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
@@ -65,6 +69,7 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
                 setError();
             }
             super.out = destination;
+            super.setTarget(destination);
         }
         return destination;
     }
@@ -278,5 +283,23 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
     public void blockFlushAndClose() {
         this.blockClose = true;
         this.blockFlush = true;
+    }
+
+    @Override
+    public GrailsPrintWriter leftShift(Object value) throws IOException {
+        getDestination();
+        return super.leftShift(value);
+    }
+
+    @Override
+    public GrailsPrintWriter leftShift(StreamCharBuffer otherBuffer) {
+        getDestination();
+        return super.leftShift(otherBuffer);
+    }
+
+    @Override
+    public GrailsPrintWriter leftShift(Writable writable) {
+        getDestination();
+        return super.leftShift(writable);
     }
 }
