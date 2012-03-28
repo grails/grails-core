@@ -18,14 +18,20 @@ package grails.gsp
 import java.security.Principal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+
+import javax.servlet.AsyncContext
+import javax.servlet.DispatcherType
 import javax.servlet.RequestDispatcher
 import javax.servlet.ServletContext
 import javax.servlet.ServletInputStream
 import javax.servlet.ServletOutputStream
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
+import javax.servlet.http.Part
 import org.apache.commons.collections.iterators.IteratorEnumeration
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -214,28 +220,23 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         boolean isRequestedSessionIdFromUrl() { false }
 
-        @Override
         boolean authenticate(HttpServletResponse response) {
             return false
         }
 
-        @Override
         void login(String username, String password) {
             // no op
         }
 
-        @Override
         void logout() {
             // no op
         }
 
-        @Override
-        Collection<javax.servlet.http.Part> getParts() {
-            return Collections.emptyList();
+        Collection<Part> getParts() {
+            return Collections.emptyList()
         }
 
-        @Override
-        javax.servlet.http.Part getPart(String name) {
+        Part getPart(String name) {
             return null
         }
 
@@ -343,33 +344,27 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return null  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
-        javax.servlet.AsyncContext startAsync() {
+        AsyncContext startAsync() {
             return null  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
-        javax.servlet.AsyncContext startAsync(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) {
+        AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) {
             return null  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
         boolean isAsyncStarted() {
             return false  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
         boolean isAsyncSupported() {
             return false  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
-        javax.servlet.AsyncContext getAsyncContext() {
+        AsyncContext getAsyncContext() {
             return null  //To change body of implemented methods use File | Settings | File Templates.
         }
 
-        @Override
-        javax.servlet.DispatcherType getDispatcherType() {
+        DispatcherType getDispatcherType() {
             return null  //To change body of implemented methods use File | Settings | File Templates.
         }
     }
@@ -457,7 +452,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         }
 
         Collection<String> getHeaderNames() {
-            return Collections.emptyList();
+            return Collections.emptyList()
         }
 
         ServletOutputStream getOutputStream() {

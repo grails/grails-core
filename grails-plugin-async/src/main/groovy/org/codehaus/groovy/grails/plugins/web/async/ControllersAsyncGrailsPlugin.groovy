@@ -31,14 +31,16 @@ class ControllersAsyncGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithDynamicMethods = {
-        def original = HttpServletRequest.metaClass.getMetaMethod("startAsync", new Object[0])
-        if(original != null) {
-            HttpServletRequest.metaClass.startAsync = {->
-                def webRequest = GrailsWebRequest.lookup()
-                def ctx = request.startAsync(webRequest.currentRequest, webRequest.currentResponse)
-                delegate.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
-                return new GrailsAsyncContext(ctx, webRequest)
-            }
+        def original = HttpServletRequest.metaClass.getMetaMethod("startAsync", null)
+        if (original == null) {
+            return
+        }
+
+        HttpServletRequest.metaClass.startAsync = {->
+            def webRequest = GrailsWebRequest.lookup()
+            def ctx = request.startAsync(webRequest.currentRequest, webRequest.currentResponse)
+            delegate.setAttribute(GrailsApplicationAttributes.ASYNC_STARTED, true)
+            return new GrailsAsyncContext(ctx, webRequest)
         }
     }
 }

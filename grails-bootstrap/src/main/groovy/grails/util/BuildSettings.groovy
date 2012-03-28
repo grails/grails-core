@@ -1016,7 +1016,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (!modified) {
 
             if (configFile?.exists() && metadataFile?.exists()) {
-                this.resolveChecksum = ChecksumHelper.computeAsString(configFile, "md5") +
+                resolveChecksum = ChecksumHelper.computeAsString(configFile, "md5") +
                         ChecksumHelper.computeAsString(metadataFile, "md5")
             }
 
@@ -1047,7 +1047,7 @@ class BuildSettings extends AbstractBuildSettings {
                         if (compileDeps) {
                             compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
                             if (compileDeps.any({ File f -> !f.exists() })) modified = true
-                            this.internalCompileDependencies = compileDeps
+                            internalCompileDependencies = compileDeps
                         }else {
                             modified = true
                         }
@@ -1055,7 +1055,7 @@ class BuildSettings extends AbstractBuildSettings {
                         if (runtimeDeps) {
                             runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
                             if (runtimeDeps.any({ File f -> !f.exists() })) modified = true
-                            this.internalRuntimeDependencies = runtimeDeps
+                            internalRuntimeDependencies = runtimeDeps
                         }else {
                             modified = true
                         }
@@ -1063,7 +1063,7 @@ class BuildSettings extends AbstractBuildSettings {
                         if (testDeps) {
                             testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
                             if (testDeps.any({ File f -> !f.exists() })) modified = true
-                            this.internalTestDependencies = testDeps
+                            internalTestDependencies = testDeps
                         }else {
                             modified = true
                         }
@@ -1071,7 +1071,7 @@ class BuildSettings extends AbstractBuildSettings {
                         if (buildDeps) {
                             buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
                             if (buildDeps.any({ File f -> !f.exists() })) modified = true
-                            this.internalBuildDependencies = buildDeps
+                            internalBuildDependencies = buildDeps
                         }else {
                             modified = true
                         }
@@ -1079,7 +1079,7 @@ class BuildSettings extends AbstractBuildSettings {
                         if (providedDeps) {
                             providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
                             if (providedDeps.any({ File f -> !f.exists() })) modified = true
-                            this.internalProvidedDependencies = providedDeps
+                            internalProvidedDependencies = providedDeps
                         }else {
                             modified = true
                         }
@@ -1091,7 +1091,7 @@ class BuildSettings extends AbstractBuildSettings {
                 }
             }
             else {
-                this.modified = true
+                modified = true
             }
             if (modified) {
                 ClasspathConfigurer.cleanResolveCache(this)
@@ -1116,7 +1116,7 @@ class BuildSettings extends AbstractBuildSettings {
                 }
             }
 
-            this.proxySettingsFile = new File("$userHome/.grails/ProxySettings.groovy")
+            proxySettingsFile = new File("$userHome/.grails/ProxySettings.groovy")
             if (proxySettingsFile.exists()) {
                 slurper = createConfigSlurper()
                 try {

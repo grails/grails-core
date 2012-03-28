@@ -17,7 +17,7 @@ import java.util.Properties;
 public class DefaultCommandLine implements CommandLine {
 
     Properties systemProperties = new Properties();
-    Map<String, Object> undeclaredOptions = new HashMap<String, Object> ();
+    Map<String, Object> undeclaredOptions = new HashMap<String, Object>();
     Map<String, SpecifiedOption> declaredOptions = new HashMap<String, SpecifiedOption>();
     List<String> remainingArgs = new ArrayList<String>();
     private String environment;
@@ -79,7 +79,7 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void setCommandName(String cmd) {
-        if ("refresh-dependencies".equals(cmd)) {
+        if (REFRESH_DEPENDENCIES_ARGUMENT.equals(cmd)) {
             addUndeclaredOption(REFRESH_DEPENDENCIES_ARGUMENT);
         }
         this.commandName = cmd;
@@ -152,7 +152,7 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void addSystemProperty(String name, String value) {
-        if(Environment.KEY.equals(name)) {
+        if (Environment.KEY.equals(name)) {
             setEnvironment(value);
         }
         systemProperties.put(name, value);
