@@ -15,10 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.web;
 
-
 import grails.util.GrailsUtil
 
- /**
+/**
  * Adds methods to the Servlet API interfaces to make them more Grailsy. For example all classes
  * that implement HttpServletRequest will get new methods that allow access to attributes via
  * subscript operator.
@@ -30,7 +29,6 @@ class ServletsGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
-
 
     def doWithDynamicMethods = { ctx ->
         ServletsGrailsPluginSupport.enhanceServletApi()
