@@ -66,7 +66,7 @@ task configurePopulateDependencies << {
                 
                 populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
                     include "*.ivy.xml"
-                    eachFile { it.path = "$dependency.group/$dependency.name/$dependency.version}/ivy-${dependency.version}.xml" }
+                    eachFile { it.path = "$dependency.group/$dependency.name/${dependency.version}/ivy-${dependency.version}.xml" }
                 }
             }
         }
