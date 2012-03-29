@@ -107,7 +107,6 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                 RequestContextHolder.setRequestAttributes(webRequest);
                 urlMappingInfo.configure(webRequest);
             }
-            request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
 
             HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
 
