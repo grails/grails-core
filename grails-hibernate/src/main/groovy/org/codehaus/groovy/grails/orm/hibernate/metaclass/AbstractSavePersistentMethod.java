@@ -280,10 +280,9 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * if a validation error occurs. If save() is called again and validation passes the code will check if there
      * is a manual flush mode and flush manually if necessary
      *
-     *
+     * @param domainClass The domain class
      * @param target The target object that failed validation
-     * @param o
-     *@param errors The Errors instance  @return This method will return null signaling a validation failure
+     * @param errors The Errors instance  @return This method will return null signaling a validation failure
      */
     protected Object handleValidationError(GrailsDomainClass domainClass, final Object target, Errors errors) {
         // if a validation error occurs set the object to read-only to prevent a flush
