@@ -98,7 +98,7 @@ The following libraries are included in Grails because they are required either 
 - Hibernate Annotations 3.2.0 GA (http://annotations.hibernate.org) LGPL License
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
-* hibernate-core-3.6.8.Final.jar
+* hibernate-core-3.6.10.Final.jar
 - Hibernate 3.6.8 GA (http://www.hibernate.org) LGPL License
 - required for building Grails core
 - required for running Grails applications
