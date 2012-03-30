@@ -111,7 +111,7 @@ task pluginsFromSvn {
 }
 
 task installResources(type: Copy) {
-   into homeConfDir // not actually used, but has to be set to something
+    into projectDir // not actually used, but has to be set to something
 
     into(homeLibDir.name) {
         from('grails-resources/src/grails/home/tests')
