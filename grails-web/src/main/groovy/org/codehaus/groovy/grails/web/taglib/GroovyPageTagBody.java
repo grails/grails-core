@@ -65,7 +65,7 @@ public class GroovyPageTagBody extends Closure {
 
             Object bodyResult;
             
-            if(hasArgument) {
+            if (hasArgument) {
                 originalIt = saveItVariable(currentBinding, args);
             }
 
@@ -140,11 +140,11 @@ public class GroovyPageTagBody extends Closure {
     @SuppressWarnings("unchecked")
     private Map<String,Object> addAndSaveVariables(Binding binding, Map args) {
         Map<String,Object> savedVariablesMap = new LinkedHashMap<String,Object>();
-        for (Iterator<Object> i = ((Map)args).keySet().iterator(); i.hasNext(); ) {
+        for (Iterator<Object> i = args.keySet().iterator(); i.hasNext(); ) {
             String varname = String.valueOf(i.next());
             savedVariablesMap.put(varname, binding.getVariable(varname));
         }
-        if(binding instanceof GroovyPageBinding) {
+        if (binding instanceof GroovyPageBinding) {
             ((GroovyPageBinding)binding).addMap(args);
         } else {
             for (Iterator<Map.Entry> i = args.entrySet().iterator(); i.hasNext(); ) {

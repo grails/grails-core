@@ -56,7 +56,7 @@ dependencies {
     compile ("org.hibernate:hibernate-core:$hibernateVersion") {
         exclude group: 'commons-logging', module:'commons-logging'
         exclude group: 'commons-collections', module:'commons-collections'
-        exclude group: 'antlr', model: 'antlr'
+        exclude group: 'antlr', module: 'antlr'
     }
     compile 'javassist:javassist:3.12.0.GA'
     compile 'javax.transaction:jta:1.1'

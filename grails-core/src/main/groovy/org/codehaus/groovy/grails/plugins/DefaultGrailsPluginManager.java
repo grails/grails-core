@@ -550,38 +550,38 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     private void registerPlugin(GrailsPlugin plugin) {
-        if (canRegisterPlugin(plugin)) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Grails plug-in [" + plugin.getName() + "] with version [" + plugin.getVersion() + "] loaded successfully");
-            }
-
-            if (plugin instanceof ParentApplicationContextAware) {
-                ((ParentApplicationContextAware) plugin).setParentApplicationContext(parentCtx);
-            }
-            plugin.setManager(this);
-            String[] evictionNames = plugin.getEvictionNames();
-            if (evictionNames.length > 0) {
-                delayedEvictions.put(plugin, evictionNames);
-            }
-
-            String[] observedPlugins = plugin.getObservedPluginNames();
-            for (String observedPlugin : observedPlugins) {
-                Set<GrailsPlugin> observers = pluginToObserverMap.get(observedPlugin);
-                if (observers == null) {
-                    observers = new HashSet<GrailsPlugin>();
-                    pluginToObserverMap.put(observedPlugin, observers);
-                }
-                observers.add(plugin);
-            }
-            pluginList.add(plugin);
-            plugins.put(plugin.getName(), plugin);
-            classNameToPluginMap.put(plugin.getPluginClass().getName(), plugin);
-        }
-        else {
+        if (!canRegisterPlugin(plugin)) {
             if (LOG.isInfoEnabled()) {
                 LOG.info("Grails plugin " + plugin + " is disabled and was not loaded");
             }
+            return;
         }
+
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Grails plug-in [" + plugin.getName() + "] with version [" + plugin.getVersion() + "] loaded successfully");
+        }
+
+        if (plugin instanceof ParentApplicationContextAware) {
+            ((ParentApplicationContextAware) plugin).setParentApplicationContext(parentCtx);
+        }
+        plugin.setManager(this);
+        String[] evictionNames = plugin.getEvictionNames();
+        if (evictionNames.length > 0) {
+            delayedEvictions.put(plugin, evictionNames);
+        }
+
+        String[] observedPlugins = plugin.getObservedPluginNames();
+        for (String observedPlugin : observedPlugins) {
+            Set<GrailsPlugin> observers = pluginToObserverMap.get(observedPlugin);
+            if (observers == null) {
+                observers = new HashSet<GrailsPlugin>();
+                pluginToObserverMap.put(observedPlugin, observers);
+            }
+            observers.add(plugin);
+        }
+        pluginList.add(plugin);
+        plugins.put(plugin.getName(), plugin);
+        classNameToPluginMap.put(plugin.getPluginClass().getName(), plugin);
     }
 
     protected boolean canRegisterPlugin(GrailsPlugin plugin) {

@@ -35,6 +35,8 @@ import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
  */
 class GrailsAsyncContext implements AsyncContext {
 
+    private static final String PERSISTENCE_INTERCEPTORS = 'org.codehaus.groovy.grails.PERSISTENCE_INTERCEPTORS'
+
     @Delegate AsyncContext delegate
     GrailsWebRequest originalWebRequest
     GroovyPageLayoutFinder groovyPageLayoutFinder
@@ -42,7 +44,11 @@ class GrailsAsyncContext implements AsyncContext {
     GrailsAsyncContext(AsyncContext delegate, GrailsWebRequest webRequest) {
         this.delegate = delegate
         originalWebRequest = webRequest
-        groovyPageLayoutFinder = webRequest.getApplicationContext()?.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
+        def applicationContext = webRequest.getApplicationContext()
+        if(applicationContext && applicationContext.containsBean("groovyPageLayoutFinder")) {
+
+            groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
+        }
     }
 
     def <T extends AsyncListener> T createListener(Class<T> tClass) {
@@ -74,7 +80,7 @@ class GrailsAsyncContext implements AsyncContext {
         }
     }
 
-     void complete() {
+    void complete() {
         if (response instanceof GrailsContentBufferingResponse) {
             GrailsContentBufferingResponse bufferingResponse = (GrailsContentBufferingResponse) response
             def targetResponse = bufferingResponse.getTargetResponse()
@@ -82,7 +88,8 @@ class GrailsAsyncContext implements AsyncContext {
             if (content != null) {
                 def decorator = groovyPageLayoutFinder?.findLayout(request, content)
                 if (decorator) {
-                    decorator.render(content, new SiteMeshWebAppContext(request, targetResponse, request.servletContext))
+                    decorator.render content,
+                        new SiteMeshWebAppContext(request, targetResponse, request.servletContext)
                 } else {
                    content.writeOriginal(targetResponse.getWriter())
                 }
@@ -93,10 +100,10 @@ class GrailsAsyncContext implements AsyncContext {
 
     protected Collection<PersistenceContextInterceptor> getPersistenceInterceptors(GrailsWebRequest webRequest) {
         def servletContext = webRequest.servletContext
-        def interceptors = servletContext?.getAttribute("org.codehaus.groovy.grails.PERSISTENCE_INTERCEPTORS")
+        def interceptors = servletContext?.getAttribute(PERSISTENCE_INTERCEPTORS)
         if (interceptors == null) {
             interceptors = webRequest.applicationContext?.getBeansOfType(PersistenceContextInterceptor)?.values() ?: []
-            servletContext.setAttribute("org.codehaus.groovy.grails.PERSISTENCE_INTERCEPTORS", interceptors)
+            servletContext.setAttribute(PERSISTENCE_INTERCEPTORS, interceptors)
         }
         return interceptors
     }

@@ -323,6 +323,7 @@ class RenderTagLib implements RequestConstants {
      * @attr max The number of records displayed per page (defaults to 10). Used ONLY if params.max is empty
      * @attr maxsteps The number of steps displayed for pagination (defaults to 10). Used ONLY if params.maxsteps is empty
      * @attr offset Used only if params.offset is empty
+     * @attr mapping The named URL mapping to use to rewrite the link
      * @attr fragment The link fragment (often called anchor tag) to use
      */
     Closure paginate = { attrs ->
@@ -350,9 +351,14 @@ class RenderTagLib implements RequestConstants {
         if (params.sort) linkParams.sort = params.sort
         if (params.order) linkParams.order = params.order
 
-        def linkTagAttrs = [action: action]
-        if (attrs.controller) {
-            linkTagAttrs.controller = attrs.controller
+        def linkTagAttrs = [:]
+        if(attrs.containsKey('mapping')) {
+            linkTagAttrs.mapping = attrs.mapping
+        } else {
+            linkTagAttrs.action = action
+            if (attrs.controller) {
+                linkTagAttrs.controller = attrs.controller
+            }
         }
         if (attrs.id != null) {
             linkTagAttrs.id = attrs.id
@@ -514,6 +520,7 @@ class RenderTagLib implements RequestConstants {
         // determine column title
         def title = attrs.remove("title")
         def titleKey = attrs.remove("titleKey")
+        def mapping = attrs.remove('mapping')
         if (titleKey) {
             if (!title) title = titleKey
             def messageSource = grailsAttributes.messageSource
@@ -526,7 +533,17 @@ class RenderTagLib implements RequestConstants {
         attrs.each { k, v ->
             writer << "${k}=\"${v?.encodeAsHTML()}\" "
         }
-        writer << ">${link(action: action, params: linkParams) { title }}</th>"
+        writer << '>'
+        def linkAttrs = [params: linkParams]
+        if(mapping) {
+            linkAttrs.mapping = mapping
+        } else {
+            linkAttrs.action = action
+        }
+        writer << link(linkAttrs) {
+            title
+        }
+        writer << '</th>'
     }
 
     /**

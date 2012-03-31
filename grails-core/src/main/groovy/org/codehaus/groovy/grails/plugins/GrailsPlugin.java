@@ -100,12 +100,6 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String STATUS_DISABLED = "disabled";
 
     /**
-     * Defines the name of the property that defines a list of plugin names that this plugin influences.
-     * A influenced plugin will be refreshed (@see refresh()) when a watched resource changes
-     */
-    String INFLUENCES = "influences";
-
-    /**
      * Defines the name of the property that defines the closure that will be invoked
      * when a watched resource changes
      */
@@ -150,7 +144,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String ARTEFACTS = "artefacts";
 
     /**
-     * The name of the property that provides a list of shipped, but overridable artefactssw
+     * The name of the property that provides a list of shipped, but overridable artefacts
      */
     String PROVIDED_ARTEFACTS = "providedArtefacts";
 
@@ -165,14 +159,19 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
     String PLUGIN_LOAD_AFTER_NAMES = "loadAfter";
 
     /**
-     * The field that reperesents the list of resources to exclude from plugin packaging
+     * The field that represents the list of resources to exclude from plugin packaging
      */
     String PLUGIN_EXCLUDES = "pluginExcludes";
 
     /**
-     * The field that reperesents the list of type filters a plugin provides
+     * The field that represents the list of type filters a plugin provides
      */
     String TYPE_FILTERS = "typeFilters";
+
+    /**
+     * The field that represents the plugin names that this plugin is observing for changes.
+     */
+    String OBSERVE = "observe";
 
     /**
      * <p>This method is called to allow the plugin to add {@link org.springframework.beans.factory.config.BeanDefinition}s

@@ -10,6 +10,8 @@ class ListReorderingTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+package listreorderingtests
+
 import grails.persistence.*
 
 @Entity
@@ -30,7 +32,7 @@ class Foo {
     }
 
     void testReorderList() {
-        def fooClass = ga.getDomainClass("Foo").clazz
+        def fooClass = ga.getDomainClass("listreorderingtests.Foo").clazz
         def foo = fooClass.newInstance(name:"foo")
                           .addToBars(name:"bar1")
                           .addToBars(name:"bar2")

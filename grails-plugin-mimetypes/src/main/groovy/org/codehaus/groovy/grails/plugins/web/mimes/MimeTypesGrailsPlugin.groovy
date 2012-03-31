@@ -32,7 +32,7 @@ import org.springframework.context.ApplicationContext
  * @author Graeme Rocher
  * @since 1.0
  */
-class   MimeTypesGrailsPlugin {
+class MimeTypesGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version, servlets:version, controllers:version]
@@ -42,7 +42,6 @@ class   MimeTypesGrailsPlugin {
         "${MimeType.BEAN_NAME}"(MimeTypesFactoryBean)
         final mimeTypesBeanRef = ref(MimeType.BEAN_NAME)
         final grailsAppBeanRef = ref("grailsApplication")
-
 
         grailsMimeUtility(DefaultMimeUtility, mimeTypesBeanRef)
         requestMimeTypesApi(RequestMimeTypesApi, grailsAppBeanRef, mimeTypesBeanRef)
@@ -58,6 +57,4 @@ class   MimeTypesGrailsPlugin {
         responseEnhancer.addApi ctx.getBean("responseMimeTypesApi")
         responseEnhancer.enhance HttpServletResponse.metaClass
     }
-
 }
-

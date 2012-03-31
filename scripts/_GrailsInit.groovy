@@ -124,7 +124,5 @@ target(init: "main init target") {
     touch(file: "${basedir}/grails-app/i18n/messages.properties")
 
     // Set the default version number for the application
-    updateMetadata(
-        "app.version": grailsAppVersion ?: "0.1",
-        "app.servlet.version": servletVersion)
+    updateMetadata("app.version": grailsAppVersion ?: "0.1")
 }

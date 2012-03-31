@@ -43,43 +43,39 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     }
 }
 
-task populateDependencies(type: Sync) {
-    into homeLibDir
-    includeEmptyDirs = false
+task configurePopulateDependencies << {
+    def projectNames = rootProject.subprojects*.name
 
-    grailsRepoCacheHash = "a5610c5703557b062da6cb64b3488b38"
-    eachFile { file -> file.path -= "$grailsRepoCacheHash/" }
+    ext {
+        baseCachesDir = "$gradle.gradleUserHomeDir/caches"
+        cacheDir = "$baseCachesDir/artifacts-8"
+        metadata = "$cacheDir/module-metadata"
+        filestore = "$cacheDir/filestore"
+    }
 
-    // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
-    // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
-    // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
-    gradle.taskGraph.whenReady { taskGraph ->
-        if (taskGraph.hasTask(':populateDependencies')) {
-            def projectNames = rootProject.subprojects*.name
-
-            baseCacheDir = "$gradle.gradleUserHomeDir/caches"
-            versionedCacheDir = "$baseCacheDir/artifacts-7/artifacts"
-
-            from versionedCacheDir
-            libsConfigurations.each { configuration ->
-                configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                    def dependency = artifact.moduleVersion.id
-
-                    // Force the download of the binary artifact
-                    // Gradle 1.0-milestone-7 will get the file until this is called with the way 
-                    // we are using the API.
-                    artifact.file
-
-                    if (!projectNames.contains(dependency.name)) {
-                        def base = "${grailsRepoCacheHash}/${dependency.group}/${dependency.name}/${dependency.version}"
-                        include "${base}/*-${dependency.version}.*"
-                        include "${base}/jar/${dependency.name}-${dependency.version}.jar"
-                        include "${base}/bundle/${dependency.name}-${dependency.version}.jar"
-                    }
+    def seen = []
+    libsConfigurations.each { configuration ->
+        for (artifact in configuration.resolvedConfiguration.resolvedArtifacts) {
+            if (artifact in seen) continue
+            seen << artifact
+            def dependency = artifact.moduleVersion.id
+            if (!projectNames.contains(dependency.name)) {
+                populateDependencies.into("$dependency.group/$dependency.name/$dependency.version/jar") {
+                    from artifact.file // this will trigger the actual download if necessary
+                }
+                
+                populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
+                    include "*.ivy.xml"
+                    eachFile { it.path = "$dependency.group/$dependency.name/$dependency.version}/ivy-${dependency.version}.xml" }
                 }
             }
         }
     }
+}
+
+task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) {
+    into homeLibDir
+    includeEmptyDirs = false
 }
 
 // Can't use sync task here because this directory contains other things as well.
@@ -92,7 +88,7 @@ task sourcesJars(type: Sync) {
 }
 
 task pluginsFromSvn {
-    plugins = [
+    ext.plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
         resources: "1.1.6",
@@ -100,7 +96,7 @@ task pluginsFromSvn {
         jquery: "1.7.1"
     ]
 
-    dir = file("$buildDir/pluginsFromSvn")
+    ext.dir = file("$buildDir/pluginsFromSvn")
     outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
         ant {
@@ -237,6 +233,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from("grails-resources/src/grails/grails-macros.xml") {
             into "src/grails"
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+            filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         }
         from('grails-resources/src/grails/home/dsl-support') {
             into "dsl-support"

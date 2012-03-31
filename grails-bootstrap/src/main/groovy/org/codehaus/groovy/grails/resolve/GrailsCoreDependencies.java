@@ -119,12 +119,13 @@ public class GrailsCoreDependencies {
                         String junitVersion = "4.10";
                         ModuleRevisionId[] buildDependencies = {
                             ModuleRevisionId.newInstance("org.springframework.uaa", "org.springframework.uaa.client", "1.0.1.RELEASE"),
-                            ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.3.0"),
+                            ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.4.1"),
                             ModuleRevisionId.newInstance("com.googlecode.json-simple", "json-simple", "1.1"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcpg-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.5"),
                             ModuleRevisionId.newInstance("jline", "jline", "1.0"),
+                            ModuleRevisionId.newInstance("org.apache.ivy", "ivy", "2.2.0"),
                             ModuleRevisionId.newInstance("org.fusesource.jansi", "jansi", "1.2.1"),
                             ModuleRevisionId.newInstance("net.java.dev.jna", "jna", "3.2.3"),
                             ModuleRevisionId.newInstance("xalan","serializer", "2.7.1"),
@@ -180,7 +181,7 @@ public class GrailsCoreDependencies {
                         };
                         registerDependencies(dependencyManager, compileTimeDependenciesMethod, commonsExcludingLoggingAndXmlApis, "commons-logging", "xml-apis", "commons-digester");
 
-                        String datastoreMappingVersion = "1.0.2.BUILD-SNAPSHOT";
+                        String datastoreMappingVersion = "1.0.3.RELEASE";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
@@ -300,7 +301,7 @@ public class GrailsCoreDependencies {
 
                             ModuleRevisionId.newInstance("commons-dbcp", "commons-dbcp", java5compatible ? "1.3": "1.4"),
                             ModuleRevisionId.newInstance("commons-pool", "commons-pool", "1.5.6"),
-                            ModuleRevisionId.newInstance("com.h2database", "h2", "1.2.147"),
+                            ModuleRevisionId.newInstance("com.h2database", "h2", "1.3.164"),
                             // JSP support
                             ModuleRevisionId.newInstance("javax.servlet", "jstl", "1.1.2"),
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
@@ -313,14 +314,14 @@ public class GrailsCoreDependencies {
                         ModuleRevisionId[] ehcacheDependencies = {
                             ModuleRevisionId.newInstance("net.sf.ehcache", "ehcache-core", "2.4.6")
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "jms", "commons-logging", "servlet-api");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, ehcacheDependencies, "javax.jms:jms", "commons-logging", "javax.servlet:servlet-api", "org.slf4j:slf4j-api");
 
                         ModuleRevisionId[] loggingDependencies = {
                             ModuleRevisionId.newInstance("log4j", "log4j", "1.2.16"),
                             ModuleRevisionId.newInstance("org.slf4j", "jcl-over-slf4j", slf4jVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "jul-to-slf4j", slf4jVersion)
                         };
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "mail", "jms", "jmxtools", "jmxri");
+                        registerDependencies(dependencyManager, runtimeDependenciesMethod, loggingDependencies, "javax.mail:mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri");
 
                         return null;
                     }

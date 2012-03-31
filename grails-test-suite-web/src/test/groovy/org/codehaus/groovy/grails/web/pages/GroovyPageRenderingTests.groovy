@@ -43,6 +43,12 @@ class GroovyPageRenderingTests extends AbstractGrailsTagTests {
         def result = applyTemplate(template, [toplist: [[sublist:['a','b']],[sublist:['c','d']]]])
         assertEquals 'abcd', result
     }
+    
+    void testForeachIteratingMap() {
+        def template='<g:each var="k,v" in="[a:1,b:2,c:3]">${k}=${v},</g:each>'
+        def result = applyTemplate(template, [:])
+        assertEquals 'a=1,b=2,c=3,', result
+    }
 
     void testForeachRenaming() {
         def template='<g:each in="${list}"><g:each in="${list}">.</g:each></g:each>'

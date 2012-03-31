@@ -19,13 +19,12 @@ import groovy.lang.*;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.List;
-import groovy.lang.MetaClassRegistryChangeEvent;
-import groovy.lang.MetaClassRegistryChangeEventListener;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
 
 /**
@@ -41,26 +40,46 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private Map<IdentityWeakReference, Object> alteredInstances = new ConcurrentHashMap<IdentityWeakReference, Object>();
     private static final Object NO_CUSTOM_METACLASS = new Object();
     private static boolean cleaning;
+    private static final MetaClassRegistryCleaner INSTANCE = new MetaClassRegistryCleaner();
+
+
+    private MetaClassRegistryCleaner() {
+    }
 
     public static MetaClassRegistryCleaner createAndRegister() {
-        MetaClassRegistryCleaner mcr = new MetaClassRegistryCleaner();
-        GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(mcr);
-        return mcr;
+
+        MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
+        MetaClassRegistryChangeEventListener[] listeners = metaClassRegistry.getMetaClassRegistryChangeEventListeners();
+        boolean registered = false;
+        for (MetaClassRegistryChangeEventListener listener : listeners) {
+            if(listener == INSTANCE) {
+                registered = true;break;
+            }
+        }
+        if(!registered) {
+            GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(INSTANCE);
+        }
+        return INSTANCE;
     }
 
     public static void cleanAndRemove(MetaClassRegistryCleaner cleaner) {
         cleaner.clean();
         GroovySystem.getMetaClassRegistry().removeMetaClassRegistryChangeEventListener(cleaner);
     }
+    
+    
+    public static void addAlteredMetaClass(Class cls, MetaClass altered) {
+        INSTANCE.alteredClasses.put(cls, altered);
+    }
 
     public void updateConstantMetaClass(MetaClassRegistryChangeEvent cmcu) {
-        if(!cleaning) {
+        if (!cleaning) {
             MetaClass oldMetaClass = cmcu.getOldMetaClass();
             Class classToUpdate = cmcu.getClassToUpdate();
             Object instanceToUpdate = cmcu.getInstance();
             if (instanceToUpdate == null && (cmcu.getNewMetaClass() instanceof ExpandoMetaClass)) {
                 updateMetaClassOfClass(oldMetaClass, classToUpdate);
-            } else if(instanceToUpdate != null) {
+            } else if (instanceToUpdate != null) {
                 updateMetaClassOfInstance(oldMetaClass, instanceToUpdate);
             }
         }
@@ -81,7 +100,7 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private void updateMetaClassOfClass(MetaClass oldMetaClass, Class classToUpdate) {
         if (oldMetaClass != null) {
             Object current = alteredClasses.get(classToUpdate);
-            if(current == null || current == NO_CUSTOM_METACLASS) {
+            if (current == null ) {
                 alteredClasses.put(classToUpdate, oldMetaClass);
             }
         }
@@ -120,7 +139,7 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
         Set<Class> classes = new HashSet<Class>(alteredClasses.keySet());
         for (Class aClass : classes) {
             Object alteredMetaClass = alteredClasses.get(aClass);
-            if(alteredMetaClass == NO_CUSTOM_METACLASS) {
+            if (alteredMetaClass == NO_CUSTOM_METACLASS) {
                 registry.removeMetaClass(aClass);
             }
             else {
@@ -139,18 +158,17 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
             hash = System.identityHashCode(referent);
         }
 
+        @Override
         public int hashCode() {
             return hash;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
-            IdentityWeakReference ref = (IdentityWeakReference) obj;
-            return this.get() == ref.get();
+            return get() == ((IdentityWeakReference)obj).get();
         }
-
     }
-
 }

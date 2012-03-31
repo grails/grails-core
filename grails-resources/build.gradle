@@ -1,7 +1,7 @@
 task createSharedFilesJar(type: Jar, description: 'Package up the files that are shared by both applications and plugins.') {
     version = null
     appendix = "shared-files"
-    appFileJar = true
+    ext.appFileJar = true
     from("src/war/WEB-INF") {
         into "web-app/WEB-INF"
         include "applicationContext.xml", "sitemesh.xml", "tld/*.tld"
@@ -15,7 +15,7 @@ task createSharedFilesJar(type: Jar, description: 'Package up the files that are
 task createSharedApplicationFilesJar(type: Jar, description: 'Package up the files that are exclusive to applications.') {
     version = null
     appendix = "app-files"
-    appFileJar = true
+    ext.appFileJar = true
     from("src/war") {
         into "web-app"
         exclude "WEB-INF/**"
@@ -29,7 +29,7 @@ task createSharedApplicationFilesJar(type: Jar, description: 'Package up the fil
 task createSharedPluginFilesJar(type: Jar, description: 'Package up the files that are exclusive to plugins.') {
     version = null
     appendix = "plugin-files"
-    appFileJar = true
+    ext.appFileJar = true
     from("src/grails/templates/plugins")
     from("src/grails") {
         include "grails-app/views/error.gsp"
@@ -40,27 +40,23 @@ task createSharedPluginFilesJar(type: Jar, description: 'Package up the files th
 task createIntegrationFilesJar(type: Jar, description: 'Files to integrate Grails with IDEs and build systems.') {
     version = null
     appendix = "integration-files"
-    appFileJar = true
+    ext.appFileJar = true
     from("src/grails/templates/ide-support", "src/grails/ant")
 }
 
-allJarFileTasks = [createSharedFilesJar,createSharedApplicationFilesJar,createSharedPluginFilesJar,createIntegrationFilesJar]
-task resourceJarFiles(dependsOn:allJarFileTasks)
+ext.allJarFileTasks = tasks.matching { it.hasProperty("appFileJar") }
+task resourceJarFiles(dependsOn: allJarFileTasks)
 
-
-jar.dependsOn resourceJarFiles
-
-for (jarTask in allJarFileTasks) {
-    jar.from(jarTask.archivePath)
-}
-
-jar.from("src/war") {
-    into "src/war"
-    include "WEB-INF/**"
-    exclude 'WEB-INF/tld/grails.tld', 'WEB-INF/tld/spring.tld'
-}
-jar.from("src/grails/templates") {
-    into "src/grails/templates"
+jar {
+    from allJarFileTasks
+    from("src/war") {
+        into "src/war"
+        include "WEB-INF/**"
+        exclude 'WEB-INF/tld/grails.tld', 'WEB-INF/tld/spring.tld'
+    }
+    from("src/grails/templates") {
+        into "src/grails/templates"
+    }
 }
 
 jar.appendix = 'resources'

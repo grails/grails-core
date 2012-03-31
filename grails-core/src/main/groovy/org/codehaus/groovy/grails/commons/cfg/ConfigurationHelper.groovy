@@ -60,18 +60,18 @@ class ConfigurationHelper {
         ClassLoader classLoader
         Integer cacheKey = DEV_CACHE_KEY
 
-        if (application != null) {
+        if (application == null) {
+            classLoader = Thread.currentThread().contextClassLoader
+        }
+        else {
             classLoader = application.getClassLoader()
             if (Environment.isWarDeployed() || !Environment.isWithinShell()) {
                 // use unique cache keys for each config based on the application instance
-                // this to ensure each application gets a unique config and avoid the scenario
+                // to ensure each application gets a unique config and avoid the scenario
                 // where applications deployed in a shared library mode (shared jars) share the
                 // same config
                 cacheKey = System.identityHashCode(application)
             }
-        }
-        else {
-            classLoader = Thread.currentThread().contextClassLoader
         }
 
         co = getCachedConfigs().get(cacheKey)
@@ -80,22 +80,20 @@ class ConfigurationHelper {
             try {
                 try {
                     application?.config = new ConfigObject() // set empty config to avoid stack overflow
-                    Class scriptClass = classLoader.loadClass(GrailsApplication.CONFIG_CLASS)
-                    co = configSlurper.parse(scriptClass)
+                    co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
                     application?.config = co
                 }
                 catch (ClassNotFoundException e) {
-                    LOG.debug "Could not find config class [" + GrailsApplication.CONFIG_CLASS + "]. This is probably " +
-                            "nothing to worry about, it is not required to have a config: $e.message"
+                    LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
+                            "nothing to worry about; it is not required to have a config: $e.message"
                     // ignore, it is ok not to have a configuration file
                     co = new ConfigObject()
                 }
                 try {
-                    Class dataSourceClass = classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)
-                    co.merge(configSlurper.parse(dataSourceClass))
+                    co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
                 }
                 catch (ClassNotFoundException e) {
-                    LOG.debug "Cound not find data source class [" + GrailsApplication.DATA_SOURCE_CLASS + "]. This may " +
+                    LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
                         "be what you are expecting, but will result in Grails loading with an in-memory database"
                     // ignore
                 }
@@ -201,7 +199,8 @@ class ConfigurationHelper {
                             config.merge(newConfig)
                         }
                         else if (resource.filename.endsWith('.class')) {
-                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(null, stream.bytes)
+                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(
+                                null, stream.bytes)
                             def newConfig = configSlurper.parse(configClass)
                             config.merge(newConfig)
                         }

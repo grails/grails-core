@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -37,15 +38,16 @@ import org.springframework.util.ReflectionUtils;
 public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper {
 
     @Override
-    protected Object retrieveAction(GroovyObject controller, String actionName,
-                 HttpServletResponse response) {
-        Method mAction = ReflectionUtils.findMethod(controller.getClass(), actionName, MethodGrailsControllerHelper.NOARGS);
+    protected Object retrieveAction(GroovyObject controller, String actionName, HttpServletResponse response) {
+
+        Class<?> controllerClass = AopProxyUtils.ultimateTargetClass(controller);
+
+        Method mAction = ReflectionUtils.findMethod(controllerClass, actionName, MethodGrailsControllerHelper.NOARGS);
         if (mAction != null) {
             ReflectionUtils.makeAccessible(mAction);
-        }
-
-        if (mAction != null && mAction.getAnnotation(Action.class) != null) {
-            return mAction;
+            if (mAction.getAnnotation(Action.class) != null) {
+                return mAction;
+            }
         }
 
         try {

@@ -13,51 +13,55 @@ buildscript {
 
 apply plugin: 'idea'
 
-grailsVersion = '2.1.0.BUILD-SNAPSHOT'
-antTraxVersion = "1.7.1"
-antVersion = "1.8.2"
-aspectjVersion = "1.6.10"
-commonsBeanUtilsVersion = "1.8.3"
-commonsCliVersion = "1.2"
-commonsCollectionsVersion = "3.2.1"
-commonsIOVersion = "2.1"
-commonsLangVersion = "2.6"
-datastoreVersion = "1.0.2.BUILD-SNAPSHOT"
-gantVersion = "1.9.6"
-gdocEngineVersion = "1.0.1"
-groovyVersion = "1.8.6"
-gradleGroovyVersion = groovyVersion
-gradleGroovyVersion = "1.8.2"
-ivyVersion = "2.2.0"
-jansiVersion = "1.2.1"
-jlineVersion = "1.0"
-jnaVersion = "3.2.3"
-slf4jVersion = "1.6.2"
-springLoadedVersion = "1.0.2"
-springVersion = "3.1.0.RELEASE"
-springWebflowVersion= "2.0.8.RELEASE"
-hibernateVersion = "3.6.8.Final"
-ehcacheVersion = "2.4.6"
-junitVersion = "4.10"
-concurrentlinkedhashmapVersion = "1.2_jdk5"
+ext {
+    grailsVersion = '2.1.0.BUILD-SNAPSHOT'
+    antTraxVersion = "1.7.1"
+    antVersion = "1.8.2"
+    aspectjVersion = "1.6.10"
+    commonsBeanUtilsVersion = "1.8.3"
+    commonsCliVersion = "1.2"
+    commonsCollectionsVersion = "3.2.1"
+    commonsIOVersion = "2.1"
+    commonsLangVersion = "2.6"
+    datastoreVersion = "1.0.3.RELEASE"
+    gantVersion = "1.9.6"
+    gdocEngineVersion = "1.0.1"
+    groovyVersion = "1.8.6"
+    gradleGroovyVersion = groovyVersion
+    gradleGroovyVersion = "1.8.2"
+    ivyVersion = "2.2.0"
+    jansiVersion = "1.2.1"
+    jlineVersion = "1.0"
+    jnaVersion = "3.2.3"
+    slf4jVersion = "1.6.2"
+    springLoadedVersion = "1.0.5"
+    springVersion = "3.1.0.RELEASE"
+    springWebflowVersion= "2.0.8.RELEASE"
+    hibernateVersion = "3.6.10.Final"
+    ehcacheVersion = "2.4.6"
+    junitVersion = "4.10"
+    concurrentlinkedhashmapVersion = "1.2_jdk5"
+}
 
-archivesBaseName = 'grails'
 version = grailsVersion
 
 // directories created during the build which are related 
 // to turning the workspace root into a GRAILS_HOME
-homeDistDir = file("dist")
-homeBinDir = file("bin")
-homeConfDir = file("conf")
-homeDslSupportDir = file("dsl-support")
-homeLibDir = file("lib")
-homeSrcDir = file("src")
+ext {
+    homeDistDir = file("dist")
+    homeBinDir = file("bin")
+    homeConfDir = file("conf")
+    homeDslSupportDir = file("dsl-support")
+    homeLibDir = file("lib")
+    homeSrcDir = file("src")
+}
 
 // Groovy is added as a dependency to both the 'groovy' and 'compile'
 // configurations, so place the dependency in a shared variable. The
 // 'compile' is required so that Groovy appears as a dependency in the
 // artifacts' POMs.
-jointBuildGroovyJarProperty = System.getProperty('groovy.jar')
+ext.jointBuildGroovyJarProperty = System.getProperty('groovy.jar')
+ext.groovyDependency = null
 if (jointBuildGroovyJarProperty) {
     jointBuildGroovyJar = file(jointBuildGroovyJarProperty)
     if (jointBuildGroovyJar.exists()) {
@@ -69,21 +73,6 @@ if (jointBuildGroovyJarProperty) {
     groovyDependency = dependencies.create("org.codehaus.groovy:groovy-all:${groovyVersion}") {
         exclude module:"commons-cli"
         exclude module:"ant"
-    }
-}
-
-// Prevent multiple repositories being used because the populateDependencies task in assemble.gradle
-// will break down if this build uses multiple repositories.
-gradle.taskGraph.whenReady { taskGraph ->
-    if (taskGraph.hasTask(populateDependencies)) {
-        def projectsWithMultipleRepos = allprojects.findAll { repositories.size() > 1 }
-        if (projectsWithMultipleRepos) {
-            throw new GradleException(
-                "There are projects with more than one repository defined. \n" +
-                "This isn't allowed as it breaks the populateDependencies task. You can only use the grails central repo. \n" +
-                "This is a temporary workaround for the Gradle issue: http://issues.gradle.org/browse/GRADLE-1989"
-            )
-        }
     }
 }
 
@@ -109,6 +98,7 @@ subprojects { project ->
     apply plugin: 'eclipse'
     apply plugin: 'idea'
     apply plugin: 'project-report'
+    apply plugin: 'signing'
     //apply plugin: 'duplicates'
 
     sourceCompatibility = "1.5"
@@ -117,7 +107,7 @@ subprojects { project ->
     version = grailsVersion
     group = "org.grails"
 
-    isCiBuild = project.hasProperty("isCiBuild")
+    ext.isCiBuild = project.hasProperty("isCiBuild")
 
     manifest.mainAttributes(
             "Built-By": System.properties['user.name'],
@@ -153,7 +143,7 @@ subprojects { project ->
             compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
             // Specs
-            compile 'javax.servlet:servlet-api:2.5'
+            compile 'javax.servlet:javax.servlet-api:3.0.1'
             compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 
 
@@ -192,8 +182,13 @@ subprojects { project ->
     }
 
     artifacts {
-        meta sourcesJar
-        meta javadocJar
+        archives jar
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    signing {
+        sign configurations.archives
     }
 
     uploadPublished {
@@ -201,17 +196,63 @@ subprojects { project ->
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
 
-        project.deployer = repositories.mavenDeployer {
-          repository(url: url) {
-              final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
-              final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
+        repositories {
+            mavenDeployer {
+                repository(url: url) {
+                    final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
+                    final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
 
-              if(username && password) {
-                org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
-              }
+                    if(username && password) {
+                        org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
+                    }
 
-              authentication(userName: username, password: password)
-          }
+                    authentication(userName: username, password: password)
+                }
+            }
+            project.ext.deployer = mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+                                    password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+                }
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+                                    password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+                }
+
+                pom.project {
+                    name 'Grails'
+                    packaging 'jar'
+                    description 'Grails Web Application Framework'
+                    delegate.url 'http://grails.org/'
+
+                    scm {
+                        delegate.url 'scm:git@github.com:grails/grails-core.git'
+                        connection 'scm:git@github.com:grails/grails-core.git'
+                        developerConnection 'scm:git@github.com:grails/grails-core.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'graemerocher'
+                            name 'Graeme Rocher'
+                        }
+                        developer {
+                            id 'jeffscottbrown'
+                            name 'Jeff Brown'
+                        }
+                    }
+                }
+            }
         }
       }
     }
@@ -228,13 +269,15 @@ subprojects { project ->
         The pom argument is of the following type:
         http://maven.apache.org/ref/2.2.1/maven-model/apidocs/org/apache/maven/model/Model.html
     */
-    project.poms = [project.install.repositories.mavenInstaller.pom, project.deployer.pom]
-    project.pomModifications = []
-    project.modifyPom = { Closure modification -> project.pomModifications << modification }
-    project.poms*.whenConfigured {
-        project.pomModifications*.call(it)
+    ext {
+        poms = [project.install.repositories.mavenInstaller.pom, project.deployer.pom]
+        pomModifications = []
+        modifyPom = { Closure modification -> project.pomModifications << modification }
+        poms*.whenConfigured {
+            pomModifications*.call(it)
+        }
     }
-    
+
     // Remove any dependencies that shouldn't be included in the POM
     modifyPom { pom ->
         configurations.runtime.allDependencies.each { dependency ->
@@ -267,5 +310,5 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion "1.0-milestone-7"
+    gradleVersion "1.0-milestone-9"
 }

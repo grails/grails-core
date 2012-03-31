@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
@@ -36,6 +37,7 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.AbstractPersistentCon
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
@@ -174,7 +176,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                 }
 
                 if (errors.hasErrors()) {
-                    handleValidationError(target,errors);
+                    handleValidationError(domainClass,target,errors);
                     boolean shouldFail = shouldFail(application, domainClass);
                     if (argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
@@ -278,13 +280,27 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * if a validation error occurs. If save() is called again and validation passes the code will check if there
      * is a manual flush mode and flush manually if necessary
      *
+     * @param domainClass The domain class
      * @param target The target object that failed validation
-     * @param errors The Errors instance
-     * @return This method will return null signaling a validation failure
+     * @param errors The Errors instance  @return This method will return null signaling a validation failure
      */
-    protected Object handleValidationError(final Object target, Errors errors) {
+    protected Object handleValidationError(GrailsDomainClass domainClass, final Object target, Errors errors) {
         // if a validation error occurs set the object to read-only to prevent a flush
         setObjectToReadOnly(target);
+        if(domainClass instanceof DefaultGrailsDomainClass) {
+            DefaultGrailsDomainClass dgdc = (DefaultGrailsDomainClass) domainClass;
+            List<GrailsDomainClassProperty> associations = dgdc.getAssociations();
+            for (GrailsDomainClassProperty association : associations) {
+                if(association.isOneToOne() || association.isManyToOne()) {
+                    BeanWrapper bean = new BeanWrapperImpl(target);
+                    Object propertyValue = bean.getPropertyValue(association.getName());
+                    if(propertyValue != null) {
+                        setObjectToReadOnly(propertyValue);
+                    }
+
+                }
+            }
+        }
         setErrorsOnInstance(target, errors);
         return null;
     }

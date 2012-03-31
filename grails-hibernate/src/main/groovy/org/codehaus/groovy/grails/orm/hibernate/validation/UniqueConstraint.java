@@ -24,6 +24,8 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
@@ -53,6 +55,14 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
 
     private boolean unique;
     private List<String> uniquenessGroup = new ArrayList<String>();
+
+    public UniqueConstraint() {
+        ShutdownOperations.addOperation(new Runnable() {
+            public void run() {
+                ConstrainedProperty.removeConstraint(UNIQUE_CONSTRAINT, PersistentConstraintFactory.class);
+            }
+        });
+    }
 
     /**
      * @return Returns the unique.

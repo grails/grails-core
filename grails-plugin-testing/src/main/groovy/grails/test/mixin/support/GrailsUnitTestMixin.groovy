@@ -63,7 +63,7 @@ class GrailsUnitTestMixin {
     static ConfigObject config
     static MessageSource messageSource
 
-    private static metaClassRegistryListener = new MetaClassRegistryCleaner()
+    private static metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
 
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
