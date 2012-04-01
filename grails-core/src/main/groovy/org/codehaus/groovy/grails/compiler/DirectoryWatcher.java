@@ -43,11 +43,9 @@ public class DirectoryWatcher extends Thread {
     private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
-    private boolean windows;
 
     public DirectoryWatcher() {
         setDaemon(true);
-        windows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
     }
 
     /**
@@ -169,7 +167,7 @@ public class DirectoryWatcher extends Thread {
         for (File directory : directoryWatch.keySet()) {
             final Long currentTimestamp = directoryWatch.get(directory);
 
-            if (windows || currentTimestamp < directory.lastModified()) {
+            if (currentTimestamp < directory.lastModified()) {
                 cacheFilesForDirectory(directory, extensions, true);
             }
         }
