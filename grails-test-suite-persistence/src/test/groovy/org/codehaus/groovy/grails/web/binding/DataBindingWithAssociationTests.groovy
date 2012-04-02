@@ -26,14 +26,12 @@ class DataBindingWithAssociationTests extends AbstractGrailsHibernateTests {
 
 
     void testDataBindingViaConstructorCall() {
-        def Author = ga.getDomainClass("databindingwithassociationtests.Author").clazz
-        def Book = ga.getDomainClass("databindingwithassociationtests.Book3").clazz
 
-        def a = Author.newInstance(name:"Stephen").save(flush:true)
+        def a = new DataBindingWithAssociationAuthor(name:"Stephen").save(flush:true)
 
         assert a != null : "should have saved the Author"
 
-        def b = Book.newInstance(author: a, title:"Book 1", isbn: "308943")
+        def b = new DataBindingWithAssociationBook(author: a, title:"Book 1", isbn: "308943")
         assert b.author == a
         assert b.title == "Book 1"
     }
