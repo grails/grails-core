@@ -112,7 +112,7 @@ public class DataBindingUtils {
                 final Field whiteListField = objectClass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST);
                 if(whiteListField != null) {
                     if((whiteListField.getModifiers() & Modifier.STATIC) != 0) {
-                         final Object whiteListValue = whiteListField.get(null);
+                         final Object whiteListValue = whiteListField.get(objectClass);
                          if(whiteListValue instanceof List) {
                              includeList = (List)whiteListValue;
                          }

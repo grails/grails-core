@@ -22,48 +22,50 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 
 public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     public static final String CONSTRAINTS_FIELD_NAME = "constraints";
+    public static final String JODATIME_PACKAGE = "org.joda.time";
     public static final String BINDABLE_CONSTRAINT_NAME = "bindable";
+
     public static final String DEFAULT_DATABINDING_WHITELIST = "$defaultDatabindingWhiteList";
-    
+
     private static Map<ClassNode, Set<String>> CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES = new HashMap<ClassNode, Set<String>>();
-    
+
     @SuppressWarnings("serial")
     private static final List<ClassNode> SIMPLE_TYPES = new ArrayList<ClassNode>() {{
-       add(new ClassNode(java.lang.Boolean.class)); 
-       add(new ClassNode(java.lang.Boolean.TYPE)); 
-       add(new ClassNode(java.lang.Byte.class)); 
-       add(new ClassNode(java.lang.Byte.TYPE)); 
-       add(new ClassNode(java.lang.Character.class)); 
-       add(new ClassNode(java.lang.Character.TYPE)); 
-       add(new ClassNode(java.lang.Short.class)); 
-       add(new ClassNode(java.lang.Short.TYPE)); 
-       add(new ClassNode(java.lang.Integer.class)); 
-       add(new ClassNode(java.lang.Integer.TYPE)); 
-       add(new ClassNode(java.lang.Long.class)); 
-       add(new ClassNode(java.lang.Long.TYPE)); 
-       add(new ClassNode(java.lang.Float.class)); 
-       add(new ClassNode(java.lang.Float.TYPE)); 
-       add(new ClassNode(java.lang.Double.class)); 
-       add(new ClassNode(java.lang.Double.TYPE)); 
-       add(new ClassNode(java.math.BigInteger.class)); 
-       add(new ClassNode(java.math.BigDecimal.class)); 
-       add(new ClassNode(java.lang.String.class)); 
-       add(new ClassNode(java.net.URL.class)); 
+       add(new ClassNode(java.lang.Boolean.class));
+       add(new ClassNode(java.lang.Boolean.TYPE));
+       add(new ClassNode(java.lang.Byte.class));
+       add(new ClassNode(java.lang.Byte.TYPE));
+       add(new ClassNode(java.lang.Character.class));
+       add(new ClassNode(java.lang.Character.TYPE));
+       add(new ClassNode(java.lang.Short.class));
+       add(new ClassNode(java.lang.Short.TYPE));
+       add(new ClassNode(java.lang.Integer.class));
+       add(new ClassNode(java.lang.Integer.TYPE));
+       add(new ClassNode(java.lang.Long.class));
+       add(new ClassNode(java.lang.Long.TYPE));
+       add(new ClassNode(java.lang.Float.class));
+       add(new ClassNode(java.lang.Float.TYPE));
+       add(new ClassNode(java.lang.Double.class));
+       add(new ClassNode(java.lang.Double.TYPE));
+       add(new ClassNode(java.math.BigInteger.class));
+       add(new ClassNode(java.math.BigDecimal.class));
+       add(new ClassNode(java.lang.String.class));
+       add(new ClassNode(java.net.URL.class));
     }};
-    
     @SuppressWarnings("serial")
     private static final List<ClassNode> STRUCTURED_EDITOR_TYPES = new ArrayList<ClassNode>() {{
-        add(new ClassNode(java.sql.Date.class)); 
-        add(new ClassNode(java.util.Date.class)); 
-        add(new ClassNode(java.util.Calendar.class)); 
+        add(new ClassNode(java.sql.Date.class));
+        add(new ClassNode(java.util.Date.class));
+        add(new ClassNode(java.util.Calendar.class));
     }};
-    
+
     public void injectDatabindingCode(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
         addDefaultDatabindingWhitelistField(source, classNode);
         addDatabindingApi(source, context, classNode);
@@ -108,11 +110,16 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 final FieldNode declaredField = classNode.getDeclaredField(propertyName);
                 if(declaredField != null) {
                     final ClassNode type = declaredField.getType();
-                    if(!SIMPLE_TYPES.contains(type)) {
+                    if(type != null && !SIMPLE_TYPES.contains(type)) {
                         if(STRUCTURED_EDITOR_TYPES.contains(type)) {
                             listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
                         } else {
-                            listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
+                            String packageName = type.getPackageName();
+                            if(packageName != null && packageName.startsWith(JODATIME_PACKAGE)) {
+                                listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
+                            } else {
+                                listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
+                            }
                         }
                     }
                 }
@@ -176,6 +183,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         }
         
         final Set<String> fieldsInTransientsList = getPropertyNamesExpressedInTransientsList(classNode);
+
         propertyNamesToIncludeInWhiteList.addAll(bindablePropertyNames);
         final List<FieldNode> fields = classNode.getFields();
         for(FieldNode fieldNode : fields) {
@@ -208,6 +216,12 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
             }
         }
         CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList);
+        Map<String, ClassNode> allAssociationMap = GrailsASTUtils.getAllAssociationMap(classNode);
+        for (String associationName : allAssociationMap.keySet()) {
+            if(!propertyNamesToIncludeInWhiteList.contains(associationName)) {
+                propertyNamesToIncludeInWhiteList.add(associationName);
+            }
+        }
         return propertyNamesToIncludeInWhiteList;
     }
 
