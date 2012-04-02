@@ -168,7 +168,7 @@ class InteractiveMode {
     }
 
     protected void goodbye() {
-        updateStatus "Good Bye!"
+        updateStatus "Goodbye"
         System.exit(0)
     }
 
