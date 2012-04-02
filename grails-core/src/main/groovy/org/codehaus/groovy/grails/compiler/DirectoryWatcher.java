@@ -169,7 +169,7 @@ public class DirectoryWatcher extends Thread {
         for (File directory : directoryWatch.keySet()) {
             final Long currentTimestamp = directoryWatch.get(directory);
 
-            if (windows || currentTimestamp < directory.lastModified()) {
+            if (currentTimestamp < directory.lastModified()) {
                 cacheFilesForDirectory(directory, extensions, true);
             }
         }
