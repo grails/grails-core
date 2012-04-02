@@ -111,7 +111,7 @@ task pluginsFromSvn {
 }
 
 task installResources(type: Copy) {
-    into projectDir // not actually used, but has to be set to something
+    into "$buildDir/home-dir" // not actually used, but has to be set to something
 
     into(homeLibDir.name) {
         from('grails-resources/src/grails/home/tests')
@@ -129,6 +129,10 @@ task installResources(type: Copy) {
     // the fileMode property above should take care of the chmod work, but
     // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
     doLast {
+        ant.copy(todir:projectDir) {
+            fileset(dir:"$buildDir/home-dir")
+        }
+        
         ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
     }
 
