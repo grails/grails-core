@@ -190,6 +190,11 @@ class InteractiveMode {
     }
 
     protected void open(String scriptName) {
+        if (!Desktop.isDesktopSupported()) {
+            error "The Desktop API isn't supported for this platform"
+            return
+        }
+
         String fileName = scriptName[5..-1].trim()
 
         try {
