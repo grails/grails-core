@@ -60,7 +60,7 @@ task configurePopulateDependencies << {
             seen << artifact
             def dependency = artifact.moduleVersion.id
             if (!projectNames.contains(dependency.name)) {
-                populateDependencies.into("$dependency.group/$dependency.name/jar") {
+                populateDependencies.into("$dependency.group/$dependency.name/jars") {
                     from artifact.file // this will trigger the actual download if necessary
                 }
                 
