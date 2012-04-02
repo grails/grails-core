@@ -124,24 +124,25 @@ public class GrailsConsole {
 
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
-
-        if(isInteractiveEnabled()) {
-            reader = createConsoleReader();
-            reader.setBellEnabled(false);
-            reader.setCompletionHandler(new CandidateListCompletionHandler());
-            history = prepareHistory();
-            reader.setHistory(history);
-        }
-
-        if(isActivateTerminal()) {
-            terminal = createTerminal();
-        }
-
         out = new PrintStream(ansiWrap(System.out));
 
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
 
+        if(isInteractiveEnabled()) {
+            reader = createConsoleReader();
+            reader.setBellEnabled(false);
+            reader.setCompletionHandler(new CandidateListCompletionHandler());
+            if(isActivateTerminal()) {
+                terminal = createTerminal();
+            }
+
+            history = prepareHistory();
+            reader.setHistory(history);
+        }
+        else if(isActivateTerminal()) {
+            terminal = createTerminal();
+        }
 
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
@@ -166,7 +167,7 @@ public class GrailsConsole {
     }
 
     protected ConsoleReader createConsoleReader() throws IOException {
-        return new ConsoleReader();
+        return new ConsoleReader(System.in, new OutputStreamWriter(out));
     }
 
     /**
@@ -214,10 +215,7 @@ public class GrailsConsole {
      * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
      */
     protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
-        if(isAnsiEnabled())
-            return AnsiConsole.wrapOutputStream(out);
-        else
-            return out;
+        return AnsiConsole.wrapOutputStream(out);
     }
 
     // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
