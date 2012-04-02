@@ -26,11 +26,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -43,20 +39,7 @@ import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BinaryExpression;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
-import org.codehaus.groovy.ast.expr.TupleExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -69,6 +52,7 @@ import org.codehaus.groovy.control.Janitor;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -764,6 +748,38 @@ public class GrailsASTUtils {
     }
 
 
+    /**
+     * Returns a map containing the names and types of the given association type. eg. GrailsDomainClassProperty.HAS_MANY
+     * @param classNode The target class ndoe
+     * @param associationType The associationType
+     * @return A map
+     */
+    public static Map<String, ClassNode> getAssocationMap(ClassNode classNode, String associationType) {
+        PropertyNode property = classNode.getProperty(associationType);
+        Map<String, ClassNode> associationMap = new HashMap<String, ClassNode>();
+        if(property != null && property.isStatic()) {
+            Expression e = property.getInitialExpression();
+            if (e instanceof MapExpression) {
+                MapExpression me = (MapExpression) e;
+                for (MapEntryExpression mee : me.getMapEntryExpressions()) {
+                    String key = mee.getKeyExpression().getText();
+                    Expression valueExpression = mee.getValueExpression();
+                    if(valueExpression instanceof ClassExpression) {
+                        associationMap.put(key, valueExpression.getType());
+                    }
+                }
+            }
+        }
+        return associationMap;
+    }
+    
+    public static Map<String,ClassNode> getAllAssociationMap(ClassNode classNode) {
+        Map<String, ClassNode> associationMap = new HashMap<String, ClassNode>();
+        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_MANY));
+        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_ONE));
+        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.BELONGS_TO));
+        return associationMap;
+    }
 
 
     @Target(ElementType.CONSTRUCTOR)
