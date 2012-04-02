@@ -118,7 +118,7 @@ fi
 if [ -z "$STARTER_CONF" ]; then
     STARTER_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
-STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/@groovy.version@/jar/groovy-all-@groovy.version@.jar:$GRAILS_HOME/dist/grails-bootstrap-@grails.version@.jar"
+STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-@groovy.version@.jar:$GRAILS_HOME/dist/grails-bootstrap-@grails.version@.jar"
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then
@@ -188,8 +188,7 @@ if [ -n "$GRAILS_AGENT_CACHE_DIR" ]; then
 fi
 
 # Process JVM args
-AGENT_STRING="-javaagent:$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/@spring.loaded.version@/jar/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=$SPRINGLOADED_PARAMS"
-
+AGENT_STRING="-javaagent:$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=$SPRINGLOADED_PARAMS"
 CMD_LINE_ARGS=""
 DISABLE_RELOADING=false
 
