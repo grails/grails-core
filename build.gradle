@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'idea'
 
 ext {
-    grailsVersion = '2.0.3.BUILD-SNAPSHOT'
+    grailsVersion = '2.0.3'
     antTraxVersion = "1.7.1"
     antVersion = "1.8.2"
     aspectjVersion = "1.6.10"
@@ -23,7 +23,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.1"
     commonsLangVersion = "2.6"
-    datastoreVersion = "1.0.3.RELEASE"
+    datastoreVersion = "1.0.4.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "1.8.6"
