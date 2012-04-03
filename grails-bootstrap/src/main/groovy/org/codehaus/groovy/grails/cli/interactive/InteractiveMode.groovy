@@ -109,6 +109,9 @@ class InteractiveMode {
                     if (trimmed.startsWith("create-app")) {
                         error "You cannot create an application in interactive mode."
                     }
+                    else if (trimmed.startsWith("install-plugin")) {
+                        error "You cannot install a plugin in interactive mode."
+                    }
                     else if ("quit".equals(trimmed)) {
                         goodbye()
                     }
