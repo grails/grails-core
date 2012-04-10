@@ -139,7 +139,13 @@ public abstract class GroovySyntaxTag implements GrailsTag {
             var = "_it"+ Math.abs(System.identityHashCode(this));
             foreachRenamedIt = var;
         }
-
+        
+        String[] entryVars=null;
+        if(hasVar && var.indexOf(',') > -1) {
+            entryVars = var.split("\\s*,\\s*");
+            var = "_entry" + Math.abs(System.identityHashCode(this));
+        }
+        
         out.print("for( " + var);
         out.print(" in "); // dot de-reference
         out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
@@ -148,6 +154,9 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         out.println();
         if (!hasVar) {
             out.println("changeItVariable(" + foreachRenamedIt +")" );
+        } else if (entryVars != null) {
+            out.println("def " + entryVars[0].trim() + "=" + var + ".getKey()");
+            out.println("def " + entryVars[1].trim() + "=" + var + ".getValue()");
         }
     }
 

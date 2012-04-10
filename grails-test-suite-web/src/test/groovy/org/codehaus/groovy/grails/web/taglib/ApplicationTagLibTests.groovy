@@ -183,6 +183,12 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals('', template, [c:[:]])
         assertOutputEquals('foo', template, [c:[a:[b:'foo']]])
     }
+    
+    void testSetTagWithScope() {
+        def template = '<g:set var="var1" value="1"/>${var1}<g:set var="var1" value="2"/> ${var1}<g:set var="var2" value="3" scope="request"/> ${var2}<g:set var="var2" value="4" scope="request"/> ${var2}'
+        assertOutputEquals('1 2 3 4', template)
+    }
+    
 
     void testInjectTagByName() {
         def template = '<g:inject beanName="grailsApplication"/>${grailsApplication.initialised}'

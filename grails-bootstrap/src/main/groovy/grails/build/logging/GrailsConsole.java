@@ -124,24 +124,25 @@ public class GrailsConsole {
 
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
-
-        if(isInteractiveEnabled()) {
-            reader = createConsoleReader();
-            reader.setBellEnabled(false);
-            reader.setCompletionHandler(new CandidateListCompletionHandler());
-            history = prepareHistory();
-            reader.setHistory(history);
-        }
-
-        if(isActivateTerminal()) {
-            terminal = createTerminal();
-        }
-
         out = new PrintStream(ansiWrap(System.out));
 
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
 
+        if (isInteractiveEnabled()) {
+            reader = createConsoleReader();
+            reader.setBellEnabled(false);
+            reader.setCompletionHandler(new CandidateListCompletionHandler());
+            if (isActivateTerminal()) {
+                terminal = createTerminal();
+            }
+
+            history = prepareHistory();
+            reader.setHistory(history);
+        }
+        else if (isActivateTerminal()) {
+            terminal = createTerminal();
+        }
 
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
@@ -159,14 +160,11 @@ public class GrailsConsole {
 
     private boolean readPropOrTrue(String prop) {
         String property = System.getProperty(prop);
-        if(property != null) {
-            return Boolean.valueOf(property);
-        }
-        return true;
+        return property == null ? true : Boolean.valueOf(property);
     }
 
     protected ConsoleReader createConsoleReader() throws IOException {
-        return new ConsoleReader();
+        return new ConsoleReader(System.in, new OutputStreamWriter(out));
     }
 
     /**
@@ -214,26 +212,25 @@ public class GrailsConsole {
      * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
      */
     protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
-        if(isAnsiEnabled())
-            return AnsiConsole.wrapOutputStream(out);
-        else
-            return out;
+        return AnsiConsole.wrapOutputStream(out);
     }
 
     // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
     private void fixCtrlC() {
-        if(reader != null) {
-            try {
-                Field f = ConsoleReader.class.getDeclaredField("keybindings");
-                f.setAccessible(true);
-                short[] keybindings = (short[])f.get(reader);
-                if (keybindings[3] == -48) {
-                    keybindings[3] = 3;
-                }
+        if (reader == null) {
+            return;
+        }
+
+        try {
+            Field f = ConsoleReader.class.getDeclaredField("keybindings");
+            f.setAccessible(true);
+            short[] keybindings = (short[])f.get(reader);
+            if (keybindings[3] == -48) {
+                keybindings[3] = 3;
             }
-            catch (Exception ignored) {
-                // shouldn't happen
-            }
+        }
+        catch (Exception ignored) {
+            // shouldn't happen
         }
     }
 
@@ -258,7 +255,7 @@ public class GrailsConsole {
 
     public static GrailsConsole createInstance() throws IOException {
         String className = System.getProperty("grails.console.class");
-        if (className!=null) {
+        if (className != null) {
             try {
                 @SuppressWarnings("unchecked")
                 Class<? extends GrailsConsole> klass = (Class<? extends GrailsConsole>) Class.forName(className);
@@ -309,7 +306,9 @@ public class GrailsConsole {
     }
 
     private void assertAllowInput() {
-        if(reader == null) throw new IllegalStateException("User input is not enabled, cannot obtain input stream");
+        if (reader == null) {
+            throw new IllegalStateException("User input is not enabled, cannot obtain input stream");
+        }
     }
 
     /**
@@ -463,7 +462,7 @@ public class GrailsConsole {
 
     private void postPrintMessage() {
         progressIndicatorActive = false;
-        if(userInputActive) {
+        if (userInputActive) {
             showPrompt();
         }
     }
@@ -475,7 +474,7 @@ public class GrailsConsole {
      */
     public void addStatus(String msg) {
         outputMessage(msg, 0);
-        lastMessage="";
+        lastMessage = "";
     }
 
     /**
@@ -559,8 +558,8 @@ public class GrailsConsole {
         }
         StringWriter sw = new StringWriter();
         PrintWriter ps = new PrintWriter(sw);
-        message = message != null ? message : error.getMessage();
-        if(!isVerbose()) {
+        message = message == null ? error.getMessage() : message;
+        if (!isVerbose()) {
             message = message + STACKTRACE_FILTERED_MESSAGE;
         }
         ps.println(message);
@@ -678,7 +677,7 @@ public class GrailsConsole {
             return secure ? reader.readLine(prompt, SECURE_MASK_CHAR) : reader.readLine(prompt);
         } catch (IOException e) {
             throw new RuntimeException("Error reading input: " + e.getMessage());
-        }finally {
+        } finally {
             userInputActive = false;
         }
     }
@@ -759,7 +758,7 @@ public class GrailsConsole {
 
     private Ansi erasePreviousLine(String categoryName) {
         @SuppressWarnings("hiding") int cursorMove = this.cursorMove;
-        if(userInputActive) cursorMove++;
+        if (userInputActive) cursorMove++;
         if (cursorMove > 0) {
             int moveLeftLength = categoryName.length() + lastMessage.length();
             if (userInputActive) {
@@ -775,27 +774,29 @@ public class GrailsConsole {
     }
 
     public void error(String label, String message) {
-        if (message != null) {
-            cursorMove = 0;
-            try {
-                if (isAnsiEnabled()) {
-                    Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message);
+        if (message == null) {
+            return;
+        }
 
-                    if (message.endsWith(LINE_SEPARATOR)) {
-                        out.print(ansi);
-                    }
-                    else {
-                        out.println(ansi);
-                    }
+        cursorMove = 0;
+        try {
+            if (isAnsiEnabled()) {
+                Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message);
+
+                if (message.endsWith(LINE_SEPARATOR)) {
+                    out.print(ansi);
                 }
                 else {
-                    out.print(label);
-                    out.print(" ");
-                    logSimpleError(message);
+                    out.println(ansi);
                 }
-            } finally {
-                postPrintMessage();
             }
+            else {
+                out.print(label);
+                out.print(" ");
+                logSimpleError(message);
+            }
+        } finally {
+            postPrintMessage();
         }
     }
 }
