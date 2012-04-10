@@ -190,22 +190,16 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
     
 
-    void testInjectTagByName() {
-        def template = '<g:inject beanName="grailsApplication"/>${grailsApplication.initialised}'
+    void testSetTagWithBeanName() {
+        def template = '<g:set bean="grailsApplication" var="myVar"/>${myVar.initialised}'
         assertOutputEquals('true', template)
 
-        template = '<g:inject beanName="grailsApplication" var="myVar"/>${myVar.initialised}'
-        assertOutputEquals('true', template)
-
-        template = '<g:inject beanName="grailsApplication" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+        template = '<g:set bean="grailsApplication" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
         assertOutputEquals('true', template)
     }
 
-    void testInjectTagByType() {
-        def template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:inject beanType="${GrailsApplication}" var="myVar"/>${myVar.initialised}'
-        assertOutputEquals('true', template)
-
-        template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:inject beanType="${GrailsApplication}" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+    void testSetTagWithBeanType() {
+        def template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:set bean="${GrailsApplication}" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
         assertOutputEquals('true', template)
     }
 
