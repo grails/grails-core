@@ -113,10 +113,6 @@ class WebMetaUtils {
                         }
                         
                         bind.invoke(commandObject, "bindData", [commandObject, commandParams] as Object[])
-                        if(newCommandObject) {
-                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(
-                                commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-                        }
                         def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
                         def constrainedProperties = commandObject.constraints?.values()
                         for (constrainedProperty in constrainedProperties) {
@@ -126,6 +122,10 @@ class WebMetaUtils {
                         }
                         commandObject.errors = errors
                         
+                        if(newCommandObject) {
+                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(
+                                commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                        }
                     }
                     catch (Exception e) {
                         throw new ControllerExecutionException("Error occurred creating command object.", e)
