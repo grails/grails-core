@@ -188,7 +188,7 @@ subprojects { project ->
 
     signing {
         sign configurations.archives
-        required { !isBuildSnapshot && gradle.taskGraph.contains(uploadArchives) }
+        required { !isBuildSnapshot && gradle.taskGraph.contains(uploadPublished) }
     }
 
     uploadPublished {
