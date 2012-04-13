@@ -174,7 +174,8 @@
 				sb << '/>'
             } else {
 				sb << '<g:field type="number" name="' << property.name << '"'
-				if (cp.scale != null) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'                
+				if (cp.scale != null && cp.scale < 7) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'
+				else if (property.type in [float, double, Float, Double, BigDecimal]) sb << ' step="any"'
 				if (cp.min != null) sb << ' min="' << cp.min << '"'
 				if (cp.max != null) sb << ' max="' << cp.max << '"'
 				if (isRequired()) sb << ' required=""'
