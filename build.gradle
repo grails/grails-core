@@ -93,6 +93,18 @@ allprojects {
     }
 }
 
+
+idea {
+    project {
+        jdkName "1.6"
+        ipr {
+            withXml { provider ->
+                def node = provider.asNode()
+                node.component.find { it.'@name' == 'VcsDirectoryMappings' }?.mapping[0].'@vcs' = 'Git'
+            }
+        }
+    }
+}
 subprojects { project ->
     apply plugin: 'groovy'
     apply plugin: 'maven'
@@ -128,11 +140,13 @@ subprojects { project ->
         options.debug = true
     }
 
-    idea.module.iml.whenMerged { module ->
-        // adding slf4j-simple with scope TEST to .iml
-        module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
-            [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
-        )
+    idea {
+        module.iml.whenMerged { module ->
+            // adding slf4j-simple with scope TEST to .iml
+            module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
+                    [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
+            )
+        }
     }
 
     dependencies {
