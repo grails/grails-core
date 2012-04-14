@@ -49,4 +49,9 @@ class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
             dependency.put("group", "org.grails.plugins");
         }
     }
+
+    @Override
+    protected void addArtifacts(String scope, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
+
+    }
 }
