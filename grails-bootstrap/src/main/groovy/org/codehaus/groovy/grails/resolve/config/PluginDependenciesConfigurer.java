@@ -62,7 +62,7 @@ class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
             packaging = "zip";
         }
 
-        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependencyDescriptor.getDependencyId().getName(), packaging, packaging, null, null);
+        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependencyDescriptor.getDependencyId().getName(), packaging, packaging, null, dependencyDescriptor.getExtraAttributes());
         dependencyDescriptor.addDependencyArtifact(scope, artifact);
     }
 }
