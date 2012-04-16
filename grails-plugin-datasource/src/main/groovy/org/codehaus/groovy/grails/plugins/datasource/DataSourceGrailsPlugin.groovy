@@ -117,7 +117,7 @@ class DataSourceGrailsPlugin {
                 defaultReadOnly = readOnly
             }
 
-            url = ds.url ?: "jdbc:h2:mem:grailsDB;MVCC=TRUE"
+            url = ds.url ?: "jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000"
 
             String theUsername = ds.username ?: (defaultDriver ? "sa" : null)
             if (theUsername != null) {
