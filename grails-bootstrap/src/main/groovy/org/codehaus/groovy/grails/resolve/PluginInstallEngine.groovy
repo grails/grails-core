@@ -428,7 +428,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
 
     protected void resolvePluginJarDependencies(fullPluginName, pluginName, pluginInstallPath, Map runtimeDependencies = [:]) {
         def pluginDependencyDescriptor = new File("$pluginInstallPath/dependencies.groovy")
-        if (pluginDependencyDescriptor.exists()) {
+        if (pluginDependencyDescriptor.exists() && !settings.isDependenciesExternallyConfigured()) {
             eventHandler "StatusUpdate", "Resolving plugin JAR dependencies"
             def callable = settings.pluginDependencyHandler()
             callable.call(new File("$pluginInstallPath"))

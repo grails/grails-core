@@ -515,7 +515,7 @@ public abstract class AbstractIvyDependencyManager {
             setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
         }
 
-        doParseDependencies(definition, null, NO_EXCLUDE_RULES);
+        doParseDependencies(definition, null, null, NO_EXCLUDE_RULES);
 
         // The dependency config can use the pom(Boolean) method to declare
         // that this project has a POM and it has the dependencies, which means
@@ -550,8 +550,8 @@ public abstract class AbstractIvyDependencyManager {
         if (moduleDescriptor == null) {
             throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
         }
-
-        doParseDependencies(definition, pluginName, NO_EXCLUDE_RULES);
+        String scope = getParentScope(pluginName);
+        doParseDependencies(definition, pluginName, scope, NO_EXCLUDE_RULES);
     }
 
     /**
@@ -569,7 +569,18 @@ public abstract class AbstractIvyDependencyManager {
             throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
         }
 
-        doParseDependencies(definition, pluginName, excludeRules);
+        String scope = getParentScope(pluginName);
+
+        doParseDependencies(definition, pluginName, scope, excludeRules);
+    }
+
+    private String getParentScope(String pluginName) {
+        DependencyDescriptor pluginDependencyDescriptor = getPluginDependencyDescriptor(pluginName);
+        String scope = null;
+        if(pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
+            scope = ((EnhancedDefaultDependencyDescriptor)pluginDependencyDescriptor).getScope();
+        }
+        return scope;
     }
 
     /**
@@ -579,7 +590,7 @@ public abstract class AbstractIvyDependencyManager {
      *
      * @see EnhancedDefaultDependencyDescriptor#plugin
      */
-    private void doParseDependencies(Closure<?> definition, String pluginName, ExcludeRule[] excludeRules) {
+    private void doParseDependencies(Closure<?> definition, String pluginName, String scope, ExcludeRule[] excludeRules) {
         DependencyConfigurationContext context;
 
         // Temporary while we move all of the Groovy super class here
@@ -592,6 +603,7 @@ public abstract class AbstractIvyDependencyManager {
         }
 
         context.setOffline(this.offline);
+        context.setParentScope(scope);
         context.setExcludeRules(excludeRules);
 
         definition.setDelegate(new DependencyConfigurationConfigurer(context));

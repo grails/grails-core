@@ -30,6 +30,7 @@ public class DependencyConfigurationContext {
     final public boolean exported;
     private boolean offline;
     private ExcludeRule[] excludeRules;
+    private String parentScope;
 
     private DependencyConfigurationContext(IvyDependencyManager dependencyManager, String pluginName, boolean inherited) {
         this.dependencyManager = dependencyManager;
@@ -85,5 +86,12 @@ public class DependencyConfigurationContext {
 
     public ExcludeRule[] getExcludeRules() {
         return excludeRules;
+    }
+
+    public void setParentScope(String scope) {
+        this.parentScope = scope;
+    }
+    public String getParentScope() {
+        return parentScope;
     }
 }

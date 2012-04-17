@@ -28,6 +28,26 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
+    // test that when a plugin is declared as test scoped then its dependencies are test scoped as well
+    void testPluginScopeMapping() {
+        def settings = new BuildSettings()
+        def config = new ConfigObject()
+        config.grails.project.dependency.resolution = {
+            repositories {
+                grailsCentral()
+            }
+            plugins {
+                test ":hibernate:2.0.3"
+            }            
+        }
+        settings.loadConfig(config)
+    
+
+        assert settings.compileDependencies.size() == 0
+        assert settings.testDependencies.size() == 7
+        assert settings.testDependencies.find { it.name.contains("hibernate-commons")}  != null
+    }
+
     void testUseOriginSetting() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

@@ -27,6 +27,10 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
     @Override
     protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        DependencyConfigurationContext ctx = getContext();
+        if(ctx.getParentScope() != null) {
+            scope = ctx.getParentScope();
+        }
         getDependencyManager().registerDependency(scope, descriptor);
     }
 

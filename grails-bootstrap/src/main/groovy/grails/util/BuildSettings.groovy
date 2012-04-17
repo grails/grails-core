@@ -1256,6 +1256,8 @@ class BuildSettings extends AbstractBuildSettings {
 
             def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
             if(isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
+                // bail out of the dependencies handled by external tool
+                if(isDependenciesExternallyConfigured()) return
                 // Try BuildConfig.groovy first, which should work
                 // work for in-place plugins.
                 def path = dir.absolutePath
@@ -1275,6 +1277,7 @@ class BuildSettings extends AbstractBuildSettings {
                         def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
                         if (pluginDependencyConfig instanceof Closure) {
                             def excludeRules = pdd ? pdd.getExcludeRules(dependencyManager.configurationNames) : [] as ExcludeRule[]
+
                             dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, excludeRules)
                         }
 
