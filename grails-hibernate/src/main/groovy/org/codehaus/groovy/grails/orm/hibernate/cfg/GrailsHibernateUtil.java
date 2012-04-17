@@ -204,14 +204,14 @@ public class GrailsHibernateUtil {
         if (offset > -1) {
             c.setFirstResult(offset);
         }
-        if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_CACHE, argMap)) {
-            c.setCacheable(true);
-        }
         if (GrailsClassUtils.getBooleanFromMap(ARGUMENT_LOCK, argMap)) {
             c.setLockMode(LockMode.PESSIMISTIC_WRITE);
+            c.setCacheable(false);
         }
         else {
-            if (argMap.get(ARGUMENT_CACHE) == null) {
+            if (argMap.containsKey(ARGUMENT_CACHE)) {
+                c.setCacheable(GrailsClassUtils.getBooleanFromMap(ARGUMENT_CACHE, argMap));
+            } else {
                 cacheCriteriaByMapping(targetClass, c);
             }
         }
