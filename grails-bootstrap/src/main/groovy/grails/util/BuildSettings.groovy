@@ -1328,7 +1328,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         servletVersion = getPropertyValue(SERVLET_VERSION, props, "2.5")
-        compilerSourceLevel = getPropertyValue(COMPILER_SOURCE_LEVEL, props, null)
+        compilerSourceLevel = getPropertyValue(COMPILER_SOURCE_LEVEL, props, "1.6")
         compilerTargetLevel = getPropertyValue(COMPILER_TARGET_LEVEL, props, "1.6")
 
         if (!projectWorkDirSet) {
