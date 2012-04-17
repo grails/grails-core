@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import java.text.DecimalFormatSymbols;
 
 /**
  * Tests for the FormatTagLib.
@@ -176,4 +177,17 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:formatNumber type="number" number="${number}" locale="fi_FI" minFractionDigits="3" maxFractionDigits="3" />'
         assertOutputEquals("3,123", template, [number: number])
     }
+
+    void testFormatNumberNaN() {
+        def number = Double.NaN
+        def template = '<g:formatNumber number="${number}"/>'
+        assertOutputEquals(new DecimalFormatSymbols().getNaN(), template, [number: number])
+    }
+
+    void testFormatNumberNaNCustomized() {
+        def number = Double.NaN
+        def template = '<g:formatNumber number="${number}" nan="n/a"/>'
+        assertOutputEquals("n/a", template, [number: number])
+    }
+
 }
