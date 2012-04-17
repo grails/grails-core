@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * @author Graeme Rocher
  * @since 1.1
  */
-public class GrailsBuildEventListener implements BuildListener{
+public class GrailsBuildEventListener implements BuildListener {
 
     private static final Pattern EVENT_NAME_PATTERN = Pattern.compile("event([A-Z]\\w*)");
     private GroovyClassLoader classLoader;
@@ -96,7 +96,8 @@ public class GrailsBuildEventListener implements BuildListener{
                 addGrailsBuildListener((Class<?>)listener);
             }
             else {
-                throw new IllegalStateException("buildSettings.getBuildListeners() returned a " + listener.getClass().getName());
+                throw new IllegalStateException("buildSettings.getBuildListeners() returned a " +
+                        listener.getClass().getName());
             }
         }
     }
@@ -111,7 +112,7 @@ public class GrailsBuildEventListener implements BuildListener{
             Class<?> scriptClass = classLoader.parseClass(eventScript);
             if (scriptClass == null) {
                 console.error("Could not load event script (script may be empty): " + eventScript);
-               return;
+                return;
             }
 
             Script script = (Script) scriptClass.newInstance();
@@ -232,8 +233,7 @@ public class GrailsBuildEventListener implements BuildListener{
         }
 
         try {
-            GrailsBuildListener listener = (GrailsBuildListener)listenerClass.newInstance();
-            addGrailsBuildListener(listener);
+            addGrailsBuildListener((GrailsBuildListener)listenerClass.newInstance());
         }
         catch (Exception e) {
             throw new RuntimeException("Could not instantiate " + listenerClass.getName(), e);

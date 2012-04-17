@@ -43,11 +43,9 @@ public class DirectoryWatcher extends Thread {
     private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
-    private boolean windows;
 
     public DirectoryWatcher() {
         setDaemon(true);
-        windows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
     }
 
     /**
@@ -74,7 +72,7 @@ public class DirectoryWatcher extends Thread {
      * @param listener The file listener
      */
     public void addListener(FileChangeListener listener) {
-        this.listeners.add(listener);
+        listeners.add(listener);
     }
 
     /**
@@ -169,7 +167,7 @@ public class DirectoryWatcher extends Thread {
         for (File directory : directoryWatch.keySet()) {
             final Long currentTimestamp = directoryWatch.get(directory);
 
-            if (windows || currentTimestamp < directory.lastModified()) {
+            if (currentTimestamp < directory.lastModified()) {
                 cacheFilesForDirectory(directory, extensions, true);
             }
         }
@@ -212,7 +210,7 @@ public class DirectoryWatcher extends Thread {
 
     private String removeStartingDotIfPresent(String extension) {
         if (extension.startsWith(".")) {
-extension = extension.substring(1);
+            extension = extension.substring(1);
         }
         return extension;
     }

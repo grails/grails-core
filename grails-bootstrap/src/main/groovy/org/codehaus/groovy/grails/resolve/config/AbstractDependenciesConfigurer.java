@@ -201,6 +201,9 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         if (configurer != null) {
             dependencyDescriptor.configure(configurer);
         }
+
+        addArtifacts(scope, dependencyDescriptor);
+
         if (!isExcluded(dependencyDescriptor)) {
             addDependency(scope, dependencyDescriptor);
         }
@@ -234,4 +237,6 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
     abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor);
 
     abstract protected void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
+
+    abstract protected void addArtifacts(String scope, EnhancedDefaultDependencyDescriptor dependencyDescriptor);
 }

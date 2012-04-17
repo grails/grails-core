@@ -479,19 +479,6 @@ public abstract class AbstractIvyDependencyManager {
             }
         }
 
-
-
-        String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
-        String packaging;
-        if (classifierAttribute != null && classifierAttribute.equals("plugin")) {
-            packaging = "xml";
-        } else {
-            packaging = "zip";
-        }
-
-        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(descriptor, name, packaging, packaging, null, null);
-        descriptor.addDependencyArtifact(scope, artifact);
-
         registerDependencyCommon(scope, descriptor, true);
 
         pluginNameToDescriptorMap.put(name, descriptor);

@@ -37,16 +37,17 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     BuildSettings settings
     Map completorCache = new ConcurrentHashMap()
 
-    private ArgumentCompletor bangCompletor = new ArgumentCompletor(new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
+    private ArgumentCompletor bangCompletor = new ArgumentCompletor(
+        new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
 
     GrailsInteractiveCompletor(BuildSettings settings, List scriptResources) {
         super(getScriptNames(scriptResources))
-        this.settings = settings;
+        this.settings = settings
     }
 
     @Override
     int complete(String buffer, int cursor, List clist) {
-        final trimmedBuffer = buffer.trim()
+        final String trimmedBuffer = buffer.trim()
         if (!trimmedBuffer) {
             return super.complete(buffer, cursor, clist)
         }
@@ -82,6 +83,8 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     static String[] getScriptNames(scriptResources) {
         final scriptNames = scriptResources.collect { GrailsNameUtils.getScriptName(it.filename) }
         scriptNames.remove('create-app')
+        scriptNames.remove('install-plugin')
+        scriptNames.remove('uninstall-plugin')        
         scriptNames << "open"
         scriptNames as String[]
     }

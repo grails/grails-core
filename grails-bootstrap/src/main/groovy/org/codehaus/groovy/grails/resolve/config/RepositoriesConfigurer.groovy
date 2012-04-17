@@ -86,8 +86,8 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         fileSystemResolver.local = true
         fileSystemResolver.name = "grailsHome"
         fileSystemResolver.addIvyPattern("${grailsHome}/lib/[organisation]/[module]/ivy-[revision](-[classifier]).xml")
-        fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/[revision]/jar/[module]-[revision](-[classifier]).[ext]"
-        fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/[revision]/bundle/[module]-[revision](-[classifier]).[ext]"
+        fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/jars/[module]-[revision](-[classifier]).[ext]"
+        fileSystemResolver.addArtifactPattern "${grailsHome}/lib/[organisation]/[module]/bundles/[module]-[revision](-[classifier]).[ext]"
         fileSystemResolver.settings = dependencyManager.ivySettings
 
         addToChainResolver(fileSystemResolver)

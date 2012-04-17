@@ -239,9 +239,9 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         new ForeignKeys.Nullifier(entity, false, useIdentityColumn, source)
                 .nullifyTransientReferences(values, types);
-        new Nullability(source).checkNullability(values, persister, false);
-
+        
         if (useIdentityColumn) {
+            registerNullabilityCheckerAsLastEventListener(source);
             EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
                     values, entity, persister, source, shouldDelayIdentityInserts);
             if (!shouldDelayIdentityInserts) {
@@ -259,6 +259,8 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                 source.getActionQueue().addAction(insert);
                 key = insert.getDelayedEntityKey();
             }
+        } else {
+            new Nullability(source).checkNullability(values, persister, false);
         }
 
         if (key != null) {
@@ -289,5 +291,31 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         }
 
         return id;
+    }
+    
+    
+    private void registerNullabilityCheckerAsLastEventListener(EventSource source) {
+        PreInsertEventListener[] preListeners = source.getListeners().getPreInsertEventListeners();
+        if(preListeners==null || preListeners.length==0 || preListeners[preListeners.length-1]!=nullabilityCheckerInstance) {
+            // Register the nullability check as the last PreInsertEventListener
+            if(preListeners==null) {
+                preListeners=new PreInsertEventListener[1];
+            } else {
+                PreInsertEventListener[] newPreListeners=new PreInsertEventListener[preListeners.length+1];
+                System.arraycopy(preListeners, 0, newPreListeners, 0, preListeners.length);
+                preListeners=newPreListeners;
+            }
+            preListeners[preListeners.length-1]=nullabilityCheckerInstance;
+            source.getListeners().setPreInsertEventListeners(preListeners);
+        }
+    }
+
+    private static final NullabilityCheckerPreInsertEventListener nullabilityCheckerInstance = new NullabilityCheckerPreInsertEventListener();
+
+    private static class NullabilityCheckerPreInsertEventListener implements PreInsertEventListener {
+        public boolean onPreInsert(PreInsertEvent event) {
+            new Nullability(event.getSource()).checkNullability(event.getState(), event.getPersister(), false);
+            return false;
+        }
     }
 }

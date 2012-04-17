@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
+import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor;
+import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 import java.util.Map;
 
@@ -48,5 +50,19 @@ class PluginDependenciesConfigurer extends AbstractDependenciesConfigurer {
         if (groupValue == null || groupValue.toString().equals("")) {
             dependency.put("group", "org.grails.plugins");
         }
+    }
+
+    @Override
+    protected void addArtifacts(String scope, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
+        String classifierAttribute = dependencyDescriptor.getExtraAttribute("m:classifier");
+        String packaging;
+        if (classifierAttribute != null && classifierAttribute.equals("plugin")) {
+            packaging = "xml";
+        } else {
+            packaging = "zip";
+        }
+
+        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(dependencyDescriptor, dependencyDescriptor.getDependencyId().getName(), packaging, packaging, null, dependencyDescriptor.getExtraAttributes());
+        dependencyDescriptor.addDependencyArtifact(scope, artifact);
     }
 }
