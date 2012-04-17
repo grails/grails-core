@@ -112,6 +112,9 @@ class InteractiveMode {
                     else if (trimmed.startsWith("install-plugin")) {
                         error "You cannot install a plugin in interactive mode."
                     }
+                    else if (trimmed.startsWith("uninstall-plugin")) {
+                        error "You cannot uninstall a plugin in interactive mode."
+                    }                    
                     else if ("quit".equals(trimmed)) {
                         goodbye()
                     }
