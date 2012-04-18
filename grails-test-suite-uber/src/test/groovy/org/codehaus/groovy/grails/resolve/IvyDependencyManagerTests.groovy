@@ -44,7 +44,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     
 
         assert settings.compileDependencies.size() == 0
-        assert settings.testDependencies.size() == 7
+        assert settings.testDependencies.size() > 0
         assert settings.testDependencies.find { it.name.contains("hibernate-commons")}  != null
     }
 
@@ -425,9 +425,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             }
         }
 
-        final IvyNode[] buildDeps = manager.listDependencies("build")
-        assertEquals 1, buildDeps.size()
-        assertEquals "grails-test", buildDeps[0].moduleId.name
+        final IvyNode[] buildDeps = manager.listDependencies("runtime")
+        assert  4 == buildDeps.size()
+        assert  buildDeps.find{ it.moduleId.name == 'junit' } == null
     }
 
     void testIsPluginConfiguredByApplication() {
