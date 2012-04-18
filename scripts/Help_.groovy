@@ -23,6 +23,7 @@
  */
 
 import grails.util.GrailsNameUtils
+import grails.util.Environment
 
 includeTargets << grailsScript("_GrailsInit")
 
@@ -85,7 +86,11 @@ Available Targets (type grails help 'target-name' for more info):"""
 
         scripts.unique { it.name }. sort{ it.name }.each { file ->
             def scriptName = GrailsNameUtils.getScriptName(file.name)
-            println "grails ${scriptName}"
+            if (System.getProperty(Environment.INTERACTIVE_MODE_ENABLED)) {
+                println scriptName
+            } else {
+                println "grails ${scriptName}"
+            }
         }
     }
 }
