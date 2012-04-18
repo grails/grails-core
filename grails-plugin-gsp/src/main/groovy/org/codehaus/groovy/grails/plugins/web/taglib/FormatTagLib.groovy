@@ -223,6 +223,7 @@ class FormatTagLib {
      * @attr currencyCode The standard currency code ('EUR', 'USD', etc.), uses formatting settings for the currency. type='currency' attribute is recommended.
      * @attr currencySymbol Force the currency symbol to some symbol, recommended way is to use currencyCode attribute instead (takes symbol information from java.util.Currency)
      * @attr roundingMode Sets the RoundingMode used in this DecimalFormat. Usual values: HALF_UP, HALF_DOWN. If roundingMode is UNNECESSARY and ArithemeticException raises, the original number formatted with default number formatting will be returned.
+     * @attr nan String to be used for display if numberic value is NaN
      */
     Closure formatNumber = { attrs ->
         if (!attrs.containsKey('number')) {
@@ -268,6 +269,11 @@ class FormatTagLib {
             else {
                 throwTagError("Attribute [type] of Tag [formatNumber] specifies an unknown type. Known types are currency, number and percent.")
             }
+        }
+
+        if (attrs.nan) {
+            dcfs.naN = attrs.nan
+            decimalFormat.decimalFormatSymbols = dcfs
         }
 
         // ensure formatting accuracy
