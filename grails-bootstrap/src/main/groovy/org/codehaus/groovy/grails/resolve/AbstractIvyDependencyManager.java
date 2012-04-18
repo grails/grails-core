@@ -452,6 +452,38 @@ public abstract class AbstractIvyDependencyManager {
 
         dependencyDescriptors.add(descriptor);
         if (shouldIncludeDependency(descriptor)) {
+            addToModuleDescriptor(scope, descriptor, moduleDescriptor);
+        }
+    }
+
+    private boolean areSameLogicalDependency(ModuleRevisionId lhs, ModuleRevisionId rhs) {
+        return lhs.getModuleId().equals(rhs.getModuleId()) && lhs.getRevision().equals(rhs.getRevision());
+    }
+
+    private void addToModuleDescriptor(String scope, EnhancedDefaultDependencyDescriptor descriptor, DefaultModuleDescriptor moduleDescriptor) {
+        boolean foundDependency = false;
+        for (DependencyDescriptor existingDescriptor : moduleDescriptor.getDependencies()) {
+            if (areSameLogicalDependency(descriptor.getDependencyRevisionId(), existingDescriptor.getDependencyRevisionId())) {
+                foundDependency = true;
+                for (DependencyArtifactDescriptor artifactToAdd : descriptor.getAllDependencyArtifacts()) {
+                    boolean foundArtifact = false;
+                    for (DependencyArtifactDescriptor existingArtifact : existingDescriptor.getAllDependencyArtifacts()) {
+                        if (existingArtifact.equals(artifactToAdd)) {
+                            if (existingArtifact.getExtraAttributes().equals(artifactToAdd.getExtraAttributes())) {
+                                foundArtifact = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundArtifact) {
+                        ((DefaultDependencyDescriptor)existingDescriptor).addDependencyArtifact(scope, artifactToAdd);
+                    }
+                }
+                break;
+            }
+        }
+
+        if (!foundDependency) {
             moduleDescriptor.addDependency(descriptor);
         }
     }
@@ -484,7 +516,7 @@ public abstract class AbstractIvyDependencyManager {
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
         if (shouldIncludeDependency(descriptor)) {
-            moduleDescriptor.addDependency(descriptor);
+            addToModuleDescriptor(scope, descriptor, moduleDescriptor);
         }
     }
 
