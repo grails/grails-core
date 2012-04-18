@@ -404,7 +404,8 @@ class BuildSettings extends AbstractBuildSettings {
      * Sets the compile time dependencies for the project
      */
     void setCompileDependencies(List<File> deps) {
-        compileDependencies = deps
+        def jarFiles = findAndRemovePluginDependencies("compile", deps, internalPluginCompileDependencies)
+        compileDependencies = jarFiles
     }
 
     /**
@@ -423,6 +424,10 @@ class BuildSettings extends AbstractBuildSettings {
     /** List containing the default (resolved via the dependencyManager) compile-time dependencies of the app as File instances.  */
     private List<File> internalCompileDependencies
     @Lazy List<File> defaultCompileDependencies = {
+        if (dependenciesExternallyConfigured) {
+            return []
+        }
+
         if (internalCompileDependencies) return internalCompileDependencies
         Message.info "Resolving [compile] dependencies..."
         List<File> jarFiles
@@ -469,12 +474,18 @@ class BuildSettings extends AbstractBuildSettings {
      * Sets the test time dependencies for the project
      */
     void setTestDependencies(List<File> deps) {
-        testDependencies = deps
+        def jarFiles = findAndRemovePluginDependencies("test", deps, internalPluginTestDependencies)
+
+        testDependencies = jarFiles
     }
 
     /** List containing the default test-time dependencies of the app as File instances.  */
     private List<File> internalTestDependencies
     @Lazy List<File> defaultTestDependencies = {
+        if (dependenciesExternallyConfigured) {
+            return []
+        }
+
         Message.info "Resolving [test] dependencies..."
         if (internalTestDependencies) return internalTestDependencies
         if (shouldResolve()) {
@@ -506,12 +517,17 @@ class BuildSettings extends AbstractBuildSettings {
      * Sets the runtime dependencies for the project
      */
     void setRuntimeDependencies(List<File> deps) {
-        runtimeDependencies = deps
+        def jarFiles = findAndRemovePluginDependencies("runtime", deps, internalPluginRuntimeDependencies)
+        runtimeDependencies = jarFiles
     }
 
     /** List containing the default runtime-time dependencies of the app as File instances.  */
     private List<File> internalRuntimeDependencies
     @Lazy List<File> defaultRuntimeDependencies = {
+        if (dependenciesExternallyConfigured) {
+            return []
+        }
+
         Message.info "Resolving [runtime] dependencies..."
         if (internalRuntimeDependencies) return internalRuntimeDependencies
         if (shouldResolve()) {
@@ -542,7 +558,8 @@ class BuildSettings extends AbstractBuildSettings {
      * Sets the runtime dependencies for the project
      */
     void setProvidedDependencies(List<File> deps) {
-        providedDependencies = deps
+        def jarFiles = findAndRemovePluginDependencies("provided", deps, internalPluginProvidedDependencies)
+        providedDependencies = jarFiles
     }
 
     /** List containing the dependencies needed at development time, but provided by the container at runtime  **/
@@ -651,7 +668,8 @@ class BuildSettings extends AbstractBuildSettings {
      * Sets the runtime dependencies for the project
      */
     void setBuildDependencies(List<File> deps) {
-        buildDependencies = deps
+        def jarFiles = findAndRemovePluginDependencies("build", deps, internalPluginBuildDependencies)
+        buildDependencies = jarFiles
     }
 
     /**
