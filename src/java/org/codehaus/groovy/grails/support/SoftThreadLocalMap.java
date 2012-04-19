@@ -30,6 +30,6 @@ public class SoftThreadLocalMap extends InheritableThreadLocal<ReferenceMap> {
      */
     @Override
     protected ReferenceMap initialValue() {
-        return new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT);
+        return Collections.synchronizedMap(new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT));
     }
 }
