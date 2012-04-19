@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.support;
 
 import org.apache.commons.collections.map.ReferenceMap;
+import java.util.Collections;
 
 /**
  * Creates a InheritableThreadLocal with an intial value of a Map.
