@@ -173,10 +173,8 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     void grailsCentral() {
         if (!context.offline && isResolverNotAlreadyDefined('grailsCentral')) {
-            grailsRepo("http://plugins.grails.org", "grailsCentral")
-            mavenRepo("http://repo.grails.org/grails/plugins")
+            grailsRepo("http://grails.org/plugins", "grailsCentral")
             mavenRepo("http://repo.grails.org/grails/core")
-            grailsRepo("http://svn.codehaus.org/grails/trunk/grails-plugins", "grailsCore")
         }
     }
 
