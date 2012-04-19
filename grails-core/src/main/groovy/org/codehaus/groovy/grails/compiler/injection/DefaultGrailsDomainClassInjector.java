@@ -15,14 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.ReturnStatement;
-import org.codehaus.groovy.ast.stmt.Statement;
-import org.codehaus.groovy.classgen.GeneratorContext;
-import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import grails.build.logging.GrailsConsole;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
@@ -31,6 +24,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.GStringExpression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.classgen.GeneratorContext;
+import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 
 /**
  * Default implementation of domain class injector interface that adds the 'id'
@@ -105,24 +119,34 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     private void injectAssociations(ClassNode classNode) {
 
         List<PropertyNode> propertiesToAdd = new ArrayList<PropertyNode>();
-        for (PropertyNode pn : classNode.getProperties()) {
-            final String name = pn.getName();
+        for (PropertyNode propertyNode : classNode.getProperties()) {
+            final String name = propertyNode.getName();
             final boolean isHasManyProperty = name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) ||
                     name.equals(GrailsDomainClassProperty.HAS_MANY);
             if (isHasManyProperty) {
-                Expression e = pn.getInitialExpression();
+                Expression e = propertyNode.getInitialExpression();
                 propertiesToAdd.addAll(createPropertiesForHasManyExpression(e, classNode));
             }
-            final boolean isBelongsTo = name.equals(GrailsDomainClassProperty.BELONGS_TO) || name.equals(GrailsDomainClassProperty.HAS_ONE);
-            if (isBelongsTo) {
-                Expression e = pn.getInitialExpression();
-                propertiesToAdd.addAll(createPropertiesForBelongsToExpression(e, classNode));
+            final boolean isBelongsToOrHasOne = name.equals(GrailsDomainClassProperty.BELONGS_TO) || name.equals(GrailsDomainClassProperty.HAS_ONE);
+            if (isBelongsToOrHasOne) {
+                Expression initialExpression = propertyNode.getInitialExpression();
+                if((!(initialExpression instanceof MapExpression)) &&
+                        (!(initialExpression instanceof ClassExpression))) {
+                    if(name.equals(GrailsDomainClassProperty.HAS_ONE)) {
+                        final String message = "The hasOne property in class [" + classNode.getName() + "] should have an initial expression of type Map or Class.";
+                        GrailsConsole.getInstance().warn(message);
+                    } else if(!(initialExpression instanceof ListExpression)) {
+                        final String message = "The belongsTo property in class [" + classNode.getName() + "] should have an initial expression of type List, Map or Class.";
+                        GrailsConsole.getInstance().warn(message);
+                    }
+                }
+                propertiesToAdd.addAll(createPropertiesForBelongsToOrHasOneExpression(initialExpression, classNode));
             }
         }
         injectAssociationProperties(classNode, propertiesToAdd);
     }
 
-    private Collection<PropertyNode> createPropertiesForBelongsToExpression(Expression e, ClassNode classNode) {
+    private Collection<PropertyNode> createPropertiesForBelongsToOrHasOneExpression(Expression e, ClassNode classNode) {
         List<PropertyNode> properties = new ArrayList<PropertyNode>();
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
