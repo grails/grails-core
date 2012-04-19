@@ -356,9 +356,13 @@ public class GrailsScriptRunner {
         // settings.setGrailsEnv(env);
         // settings.setDefaultEnv(useDefaultEnv);
 
-        BuildSettingsHolder.setSettings(settings);
 
-        return callPluginOrGrailsScript(commandLine, scriptName, env);
+        try {
+            BuildSettingsHolder.setSettings(settings);
+            return callPluginOrGrailsScript(commandLine, scriptName, env);
+        } finally {
+            BuildSettingsHolder.setSettings(null);
+        }
     }
 
     private void setRunningEnvironment(CommandLine commandLine, String env) {
@@ -515,7 +519,8 @@ public class GrailsScriptRunner {
             }
         }
 
-        return executeWithGantInstance(gant, DO_NOTHING_CLOSURE).exitCode;
+
+        return executeWithGantInstance(gant, DO_NOTHING_CLOSURE, binding).exitCode;
     }
 
     private int executeScriptFile(CommandLine commandLine, String scriptName, String env, GantBinding binding, Resource scriptFile) {
@@ -533,7 +538,7 @@ public class GrailsScriptRunner {
         GantResult result = null;
         try {
             gant.loadScript(scriptFile.getURL());
-            result = executeWithGantInstance(gant, DO_NOTHING_CLOSURE);
+            result = executeWithGantInstance(gant, DO_NOTHING_CLOSURE, binding);
             return result.exitCode;
         } catch (IOException e) {
             console.error("I/O exception loading script [" + e.getMessage() + "]: " + e.getMessage());
@@ -723,14 +728,18 @@ public class GrailsScriptRunner {
         }
     }
 
-    private GantResult executeWithGantInstance(Gant gant, final Closure<?> doNothingClosure) {
+    private GantResult executeWithGantInstance(Gant gant, final Closure<?> doNothingClosure, GantBinding binding) {
         GantResult result = new GantResult();
-        result.script = gant.prepareTargets();
-        gant.setAllPerTargetPostHooks(doNothingClosure);
-        gant.setAllPerTargetPreHooks(doNothingClosure);
-        // Invoke the default target.
-        result.exitCode = gant.executeTargets();
-        return result;
+        try {
+            result.script = gant.prepareTargets();
+            gant.setAllPerTargetPostHooks(doNothingClosure);
+            gant.setAllPerTargetPreHooks(doNothingClosure);
+            // Invoke the default target.
+            result.exitCode = gant.executeTargets();
+            return result;
+        } finally {
+            cleanup(result, binding);
+        }
     }
 
     class GantResult {

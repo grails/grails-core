@@ -25,13 +25,14 @@ import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.core.resolve.ResolveEngine;
 import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.matcher.PatternMatcher;
-import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser;
 import org.apache.ivy.util.Message;
 import org.apache.ivy.util.MessageLogger;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext;
+import org.codehaus.groovy.grails.resolve.maven.PomModuleDescriptorParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -156,6 +157,7 @@ public abstract class AbstractIvyDependencyManager {
         this.buildSettings = buildSettings;
         this.metadata = metadata;
 
+        ModuleDescriptorParserRegistry.getInstance().addParser(org.codehaus.groovy.grails.resolve.maven.PomModuleDescriptorParser.getInstance());
         chainResolver = new ChainResolver();
 
         // Use the name cache because the root chain resolver is the one that is shown to have resolved the dependency
@@ -327,7 +329,7 @@ public abstract class AbstractIvyDependencyManager {
      * Tests whether the given ModuleId is defined in the list of dependencies
      */
     boolean hasDependency(ModuleId mid) {
-        return modules.contains(mid);
+        return modules.contains(mid) || mid.getName().equals("grails-dependencies");
     }
 
     /**
@@ -757,6 +759,7 @@ public abstract class AbstractIvyDependencyManager {
 
     private void registerPomDependency(DependencyDescriptor dependencyDescriptor) {
         ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId();
+        moduleRevisionId = ModuleRevisionId.newInstance(moduleRevisionId.getOrganisation(), moduleRevisionId.getName(), moduleRevisionId.getRevision());
         ModuleId moduleId = moduleRevisionId.getModuleId();
         if (hasDependency(moduleId)) {
             return;
@@ -770,7 +773,19 @@ public abstract class AbstractIvyDependencyManager {
             enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope);
         }
 
-        registerDependency(scope, enhancedDependencyDescriptor);
+        DependencyArtifactDescriptor[] allDependencyArtifacts = dependencyDescriptor.getAllDependencyArtifacts();
+        boolean isPlugin = false;
+        for (DependencyArtifactDescriptor dependencyArtifact : allDependencyArtifacts) {
+            if(dependencyArtifact.getType() != null && dependencyArtifact.getType().equals("zip")) {
+                isPlugin = true; break;
+            }
+        }
+        if(isPlugin) {
+            registerPluginDependency(scope, enhancedDependencyDescriptor);
+        }
+        else {
+            registerDependency(scope, enhancedDependencyDescriptor);
+        }
     }
 
     private void addMetadataPluginDependencies(Map<String, String> plugins) {
