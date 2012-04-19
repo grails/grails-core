@@ -117,7 +117,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
     }
 
     protected Collection<File> findTomcatJars(BuildSettings buildSettings) {
-        return buildSettings.buildDependencies.findAll { it.name.contains("tomcat") } + buildSettings.compileDependencies.findAll { it.name.contains("tomcat") }
+        return buildSettings.buildDependencies.findAll { it.name.contains("tomcat") } + buildSettings.compileDependencies.findAll { it.name.contains("tomcat") } + buildSettings.runtimeDependencies.findAll { it.name.contains("tomcat") }
     }
 
     void stop() {

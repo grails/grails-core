@@ -465,6 +465,12 @@ public abstract class AbstractIvyDependencyManager {
     private void addToModuleDescriptor(String scope, EnhancedDefaultDependencyDescriptor descriptor, DefaultModuleDescriptor moduleDescriptor) {
         boolean foundDependency = false;
         for (DependencyDescriptor existingDescriptor : moduleDescriptor.getDependencies()) {
+            if(existingDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
+                EnhancedDefaultDependencyDescriptor existingEnhancedDefaultDependencyDescriptor = (EnhancedDefaultDependencyDescriptor) existingDescriptor;
+                if(!descriptor.getScope().equals(existingEnhancedDefaultDependencyDescriptor.getScope())) {
+                    continue;
+                }
+            }
             if (areSameLogicalDependency(descriptor.getDependencyRevisionId(), existingDescriptor.getDependencyRevisionId())) {
                 foundDependency = true;
                 for (DependencyArtifactDescriptor artifactToAdd : descriptor.getAllDependencyArtifacts()) {
