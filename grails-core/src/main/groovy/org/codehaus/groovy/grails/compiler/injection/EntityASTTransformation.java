@@ -60,7 +60,7 @@ public class EntityASTTransformation implements ASTTransformation {
         }
 
         GrailsDomainClassInjector domainInjector = new DefaultGrailsDomainClassInjector();
-        domainInjector.performInjectionOnAnnotatedEntity(cNode);
+        domainInjector.performInjectionOnAnnotatedEntity(sourceUnit, cNode);
 
         ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
 
