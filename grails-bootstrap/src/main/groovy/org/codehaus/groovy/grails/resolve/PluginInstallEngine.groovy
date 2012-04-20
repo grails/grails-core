@@ -662,6 +662,10 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
         }
 
+        def resolvePlugins = settings.pluginDependencies.collect { File f ->  f.name }
+        pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
+            !resolvePlugins.find { String name -> name.contains(pluginInfo.fullName)}
+        }
 
         pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
             def pluginFullName = "${pluginInfo.name}-${pluginInfo.version}.zip".toString()
