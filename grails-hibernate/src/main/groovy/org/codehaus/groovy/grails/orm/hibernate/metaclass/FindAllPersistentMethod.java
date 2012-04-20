@@ -182,7 +182,7 @@ public class FindAllPersistentMethod extends AbstractStaticPersistentMethod {
                 }
 
                 private boolean useCache() {
-                    boolean useCache = false;
+                    boolean useCache = getHibernateTemplate().isCacheQueries();
                     if (arguments.length > 1 && arguments[arguments.length - 1] instanceof Map) {
                         useCache = retrieveBoolean(arguments[arguments.length - 1], GrailsHibernateUtil.ARGUMENT_CACHE);
                     }

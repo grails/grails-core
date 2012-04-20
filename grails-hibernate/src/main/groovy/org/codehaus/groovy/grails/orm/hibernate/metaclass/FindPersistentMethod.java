@@ -166,7 +166,7 @@ public class FindPersistentMethod extends AbstractStaticPersistentMethod {
                 }
 
                 private boolean useCache(Object[] args) {
-                    boolean useCache = false;
+                    boolean useCache = getHibernateTemplate().isCacheQueries();
                     if (args.length > 1 && args[args.length - 1] instanceof Map) {
                         Object param = args[args.length - 1];
                         String key = GrailsHibernateUtil.ARGUMENT_CACHE;

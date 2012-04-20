@@ -152,7 +152,7 @@
             if (property.type == Byte) {
                 return "<g:select name=\"${property.name}\" from=\"\${-128..127}\" class=\"range\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
             } else {
-                return "<g:field type=\"number\" name=\"${property.name}\" value=\"\${fieldValue(bean: ${domainInstance}, field: '${property.name}')}\" />"
+                return "<g:field type=\"number\" name=\"${property.name}\" value=\"\${${domainInstance}.${property.name}}\" />"
             }
         } else {
 	        def sb = new StringBuilder()
@@ -174,11 +174,12 @@
 				sb << '/>'
             } else {
 				sb << '<g:field type="number" name="' << property.name << '"'
-				if (cp.scale != null) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'                
+				if (cp.scale != null && cp.scale < 7) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'
+				else if (property.type in [float, double, Float, Double, BigDecimal]) sb << ' step="any"'
 				if (cp.min != null) sb << ' min="' << cp.min << '"'
 				if (cp.max != null) sb << ' max="' << cp.max << '"'
 				if (isRequired()) sb << ' required=""'
-				sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
+				sb << ' value="${' << domainInstance << '.' << property.name << '}"'
 				sb << '/>'
             }
 			sb as String

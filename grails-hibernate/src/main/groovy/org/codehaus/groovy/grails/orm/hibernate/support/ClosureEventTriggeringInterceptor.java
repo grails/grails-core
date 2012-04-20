@@ -191,9 +191,6 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         Serializable id = key == null ? null : key.getIdentifier();
 
-        boolean inTxn = source.getJDBCContext().isTransactionInProgress();
-        boolean shouldDelayIdentityInserts = !inTxn && !requiresImmediateIdAccess;
-
         // Put a placeholder in entries, so we don't recurse back and try to save() the
         // same object again. QUESTION: should this be done before onSave() is called?
         // likewise, should it be done before onUpdate()?
@@ -212,10 +209,8 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         cascadeBeforeSave(source, persister, entity, anything);
 
-        if (useIdentityColumn && !shouldDelayIdentityInserts) {
-            log.trace("executing insertions");
-            source.getActionQueue().executeInserts();
-        }
+        log.trace("executing insertions");
+        source.getActionQueue().executeInserts();
 
         Object[] values = persister.getPropertyValuesToInsert(entity, getMergeMap(anything), source);
         Type[] types = persister.getPropertyTypes();
@@ -239,29 +234,25 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         new ForeignKeys.Nullifier(entity, false, useIdentityColumn, source)
                 .nullifyTransientReferences(values, types);
-        new Nullability(source).checkNullability(values, persister, false);
-
+        
+        boolean insertVetoed = false;
+        
         if (useIdentityColumn) {
             EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
-                    values, entity, persister, source, shouldDelayIdentityInserts);
-            if (!shouldDelayIdentityInserts) {
-                log.debug("executing identity-insert immediately");
-                source.getActionQueue().execute(insert);
-                id = insert.getGeneratedId();
-                if (id != null) {
-                    // As of HHH-3904, if the id is null the operation was vetoed so we bail
-                    key = new EntityKey(id, persister, source.getEntityMode());
-                    source.getPersistenceContext().checkUniqueness(key, entity);
-                }
-            }
-            else {
-                log.debug("delaying identity-insert due to no transaction in progress");
-                source.getActionQueue().addAction(insert);
-                key = insert.getDelayedEntityKey();
+                    values, entity, persister, source, false);
+            log.debug("executing identity-insert immediately");
+            source.getActionQueue().execute(insert);
+            id = insert.getGeneratedId();
+            if (id != null) {
+                // As of HHH-3904, if the id is null the operation was vetoed so we bail
+                key = new EntityKey(id, persister, source.getEntityMode());
+                source.getPersistenceContext().checkUniqueness(key, entity);
+            } else {
+                insertVetoed = true;
             }
         }
 
-        if (key != null) {
+        if (!insertVetoed) {
             Object version = Versioning.getVersion(values, persister);
             source.getPersistenceContext().addEntity(
                     entity,
@@ -274,20 +265,49 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                     persister,
                     isVersionIncrementDisabled(),
                     false);
-            //source.getPersistenceContext().removeNonExist(new EntityKey(id, persister, source.getEntityMode()));
 
             if (!useIdentityColumn) {
-                source.getActionQueue().addAction(
-                        new EntityInsertAction(id, values, entity, version, persister, source));
+                EntityInsertAction insert = new EntityInsertAction(id, values, entity, version, persister, source); 
+                source.getActionQueue().execute(insert);
+                if(!source.getPersistenceContext().wasInsertedDuringTransaction(persister, id)) {
+                    insertVetoed=true;
+                }
             }
 
-            cascadeAfterSave(source, persister, entity, anything);
-            // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
-            if (markInterceptorDirtyMethod != null) {
-                ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this, entity, persister, source);
+            if(!insertVetoed) {
+                cascadeAfterSave(source, persister, entity, anything);
+                // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
+                if (markInterceptorDirtyMethod != null) {
+                    ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this, entity, persister, source);
+                }
             }
         }
 
         return id;
+    }
+    
+    public static final void addNullabilityCheckerPreInsertEventListener(EventListeners listenerRegistry) {
+        PreInsertEventListener[] preListeners = listenerRegistry.getPreInsertEventListeners();
+        
+        // Register the nullability check as the last PreInsertEventListener
+        if(preListeners==null) {
+            preListeners=new PreInsertEventListener[1];
+        } else {
+            PreInsertEventListener[] newPreListeners=new PreInsertEventListener[preListeners.length+1];
+            System.arraycopy(preListeners, 0, newPreListeners, 0, preListeners.length);
+            preListeners=newPreListeners;
+        }
+        
+        preListeners[preListeners.length-1]=NULLABILITY_CHECKER_INSTANCE;
+        listenerRegistry.setPreInsertEventListeners(preListeners);
+    }
+
+    private static final PreInsertEventListener NULLABILITY_CHECKER_INSTANCE = new NullabilityCheckerPreInsertEventListener();
+
+    private static class NullabilityCheckerPreInsertEventListener implements PreInsertEventListener {
+        public boolean onPreInsert(PreInsertEvent event) {
+            new Nullability(event.getSource()).checkNullability(event.getState(), event.getPersister(), false);
+            return false;
+        }
     }
 }
