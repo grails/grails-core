@@ -179,7 +179,7 @@ runServer = { Map args ->
 
         boolean isWindows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
         if (isWindows) {
-            grailsConsole.reader.addTriggeredAction((char)3, new ActionListener() {
+            grailsConsole?.reader?.addTriggeredAction((char)3, new ActionListener() {
                 void actionPerformed(ActionEvent e) {
                     stopServer()
                     exit(0)
