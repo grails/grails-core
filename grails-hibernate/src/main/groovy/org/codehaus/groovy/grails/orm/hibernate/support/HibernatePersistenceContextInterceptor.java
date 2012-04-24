@@ -36,9 +36,15 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class HibernatePersistenceContextInterceptor implements PersistenceContextInterceptor {
 
     private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
+    private static ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>();
+    private static ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>();
+
     private SessionFactory sessionFactory;
 
     static {
+        participate.set(Boolean.FALSE);
+        nestingCount.set(Integer.valueOf(0));
+
         ShutdownOperations.addOperation(new Runnable() {
             public void run() {
                 participate.remove();
@@ -46,20 +52,6 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
             }
         });
     }
-
-    private static ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
-        }
-    };
-
-    private static ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>() {
-        @Override
-        protected Integer initialValue() {
-            return Integer.valueOf(0);
-        }
-    };
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#destroy()
