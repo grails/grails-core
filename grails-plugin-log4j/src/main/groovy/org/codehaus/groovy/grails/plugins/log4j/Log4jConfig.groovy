@@ -87,6 +87,8 @@ class Log4jConfig {
         }
 
         LogLog.error "Property missing when configuring log4j: $name"
+        
+        throw new MissingPropertyException("Property missing when configuring log4j: $name")
     }
 
     def methodMissing(String name, args) {
