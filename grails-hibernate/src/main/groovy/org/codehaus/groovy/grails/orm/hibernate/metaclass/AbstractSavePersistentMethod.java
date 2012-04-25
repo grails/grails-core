@@ -69,14 +69,11 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * the value. Note that this only works because the session is
      * flushed when a domain instance is saved without validation.
      */
-    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>() {
-        @Override
-        protected Set<Integer> initialValue() {
-            return new HashSet<Integer>();
-        }
-    };
+    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>();
 
     static {
+        disableAutoValidationFor.set(new HashSet<Integer>());
+
         ShutdownOperations.addOperation(new Runnable() {
             public void run() {
                 disableAutoValidationFor.remove();
