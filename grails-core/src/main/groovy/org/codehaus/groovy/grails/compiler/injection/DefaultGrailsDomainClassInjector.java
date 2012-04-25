@@ -138,13 +138,13 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
                         GrailsASTUtils.warning(sourceUnit, propertyNode, message);
                     }
                 }
-                propertiesToAdd.addAll(createPropertiesForBelongsToOrHasOneExpression(sourceUnit, initialExpression, classNode));
+                propertiesToAdd.addAll(createPropertiesForBelongsToOrHasOneExpression(initialExpression, classNode));
             }
         }
         injectAssociationProperties(classNode, propertiesToAdd);
     }
 
-    private Collection<PropertyNode> createPropertiesForBelongsToOrHasOneExpression(SourceUnit sourceUnit, Expression e, ClassNode classNode) {
+    private Collection<PropertyNode> createPropertiesForBelongsToOrHasOneExpression(Expression e, ClassNode classNode) {
         List<PropertyNode> properties = new ArrayList<PropertyNode>();
         if (e instanceof MapExpression) {
             MapExpression me = (MapExpression) e;
