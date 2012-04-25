@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor;
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -67,11 +68,16 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
     protected Object performInsert(final Object target, final boolean shouldFlush) {
         return getHibernateTemplate().execute(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                session.save(target);
-                if (shouldFlush) {
-                    flushSession(session);
+                try {
+                    ClosureEventTriggeringInterceptor.markInsertActive();
+                    session.save(target);
+                    if (shouldFlush) {
+                        flushSession(session);
+                    }
+                    return target;
+                } finally {
+                    ClosureEventTriggeringInterceptor.resetInsertActive();
                 }
-                return target;
             }
         });
     }

@@ -85,6 +85,8 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     private Method markInterceptorDirtyMethod;
     private ApplicationContext ctx;
     private Map<SessionFactory, HibernateDatastore> datastores;
+    
+    private static final ThreadLocal<Boolean> insertActiveThreadLocal = new ThreadLocal<Boolean>();
 
     public ClosureEventTriggeringInterceptor() {
         try {
@@ -310,4 +312,30 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
             return false;
         }
     }
+    
+    /**
+     * Prevents hitting the database for an extra check if the row exists in the database
+     * 
+     * ThreadLocal is used to pass the "insert:true" information to Hibernate
+     * 
+     * @see org.hibernate.event.def.AbstractSaveEventListener#getAssumedUnsaved()
+     */
+    protected Boolean getAssumedUnsaved() {
+        return insertActiveThreadLocal.get();
+    }
+
+    /**
+     * Called by org.codehaus.groovy.grails.orm.hibernate.metaclass.SavePersistentMethod's performInsert 
+     * to set a ThreadLocal variable that determines the value for getAssumedUnsaved() 
+     */
+    public static void markInsertActive() {
+        insertActiveThreadLocal.set(Boolean.TRUE);
+    }
+
+    /**
+     * Clears the ThreadLocal variable set by markInsertActive() 
+     */
+    public static void resetInsertActive() {
+        insertActiveThreadLocal.remove();
+    }    
 }
