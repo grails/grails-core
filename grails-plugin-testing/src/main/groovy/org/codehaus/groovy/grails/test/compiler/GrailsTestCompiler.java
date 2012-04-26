@@ -39,7 +39,7 @@ public class GrailsTestCompiler extends Grailsc {
         ImportCustomizer importCustomizer = new ImportCustomizer();
         importCustomizer.addStarImports("grails.test.mixin");
         importCustomizer.addStarImports("org.junit");
-        importCustomizer.addStaticStars("org.junit.Assert");
+        importCustomizer.addStaticStars("groovy.util.GroovyTestCase");
 
         ASTTransformationCustomizer astTransformationCustomizer = new ASTTransformationCustomizer(TestFor.class);
 
