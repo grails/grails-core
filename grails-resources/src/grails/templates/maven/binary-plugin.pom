@@ -77,19 +77,6 @@
                 <artifactId>grails-maven-plugin</artifactId>
                 <version>${grails.version}</version>
                 <extensions>true</extensions>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>init</goal>
-                            <goal>maven-clean</goal>
-                            <goal>validate</goal>
-                            <goal>config-directories</goal>
-                            <goal>maven-compile</goal>
-                            <goal>maven-test</goal>
-                            <goal>maven-functional-test</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
         </plugins>
