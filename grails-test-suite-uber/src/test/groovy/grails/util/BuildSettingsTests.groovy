@@ -137,8 +137,8 @@ class BuildSettingsTests extends GroovyTestCase {
         // Project paths.
         assertEquals defaultWorkPath, settings.grailsWorkDir
         assertEquals new File("work"), settings.projectWorkDir
-        assertEquals new File("${settings.projectWorkDir}/classes"), settings.classesDir
-        assertEquals new File("${settings.projectWorkDir}/test-classes"), settings.testClassesDir
+        assertEquals new File(settings.baseDir, "${settings.projectWorkDir}/classes"), settings.classesDir
+        assertEquals new File(settings.baseDir, "${settings.projectWorkDir}/test-classes"), settings.testClassesDir
         assertEquals new File("${settings.projectWorkDir}/resources"), settings.resourcesDir
         assertEquals new File("${userHome}/my-plugins"), settings.projectPluginsDir
         assertEquals new File("$defaultWorkPath/global-plugins"), settings.globalPluginsDir
@@ -168,8 +168,8 @@ class BuildSettingsTests extends GroovyTestCase {
 
         assertEquals new File("workDir"), settings.grailsWorkDir
         assertEquals new File("projectDir"), settings.projectWorkDir
-        assertEquals new File("build/classes"), settings.classesDir
-        assertEquals new File("build/test-classes"), settings.testClassesDir
+        assertEquals new File(settings.baseDir, "build/classes"), settings.classesDir
+        assertEquals new File(settings.baseDir, "build/test-classes"), settings.testClassesDir
         assertEquals new File("projectDir/resources"), settings.resourcesDir
         assertEquals new File("target/pluginsDir"), settings.projectPluginsDir
         assertEquals new File("workDir/global-plugins"), settings.globalPluginsDir
@@ -231,8 +231,8 @@ class BuildSettingsTests extends GroovyTestCase {
         // Project paths.
         assertEquals defaultWorkPath, settings.grailsWorkDir
         assertEquals new File("work"), settings.projectWorkDir
-        assertEquals new File("build/classes"), settings.classesDir
-        assertEquals new File("build/test-classes"), settings.testClassesDir
+        assertEquals new File(settings.baseDir, "build/classes"), settings.classesDir
+        assertEquals new File(settings.baseDir, "build/test-classes"), settings.testClassesDir
         assertEquals new File("${settings.projectWorkDir}/resources"), settings.resourcesDir
         assertEquals new File("${userHome}/my-plugins"), settings.projectPluginsDir
         assertEquals new File("$defaultWorkPath/global-plugins"), settings.globalPluginsDir
@@ -248,8 +248,8 @@ class BuildSettingsTests extends GroovyTestCase {
         // Project paths.
         assertEquals defaultWorkPath, settings.grailsWorkDir
         assertEquals new File("work"), settings.projectWorkDir
-        assertEquals new File("${settings.projectWorkDir}/classes"), settings.classesDir
-        assertEquals new File("${settings.projectWorkDir}/test-classes"), settings.testClassesDir
+        assertEquals new File(settings.baseDir, "${settings.projectWorkDir}/classes"), settings.classesDir
+        assertEquals new File(settings.baseDir, "${settings.projectWorkDir}/test-classes"), settings.testClassesDir
         assertEquals new File("${settings.projectWorkDir}/resources"), settings.resourcesDir
         assertEquals new File("${userHome}/my-plugins"), settings.projectPluginsDir
         assertEquals new File("$defaultWorkPath/global-plugins"), settings.globalPluginsDir
