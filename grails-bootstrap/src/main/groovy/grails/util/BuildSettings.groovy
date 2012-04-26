@@ -1359,6 +1359,9 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectTargetDirSet) {
             projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
+            if(!projectTargetDir.absolute) {
+                projectTargetDir = new File(baseDir, projectTargetDir.path)
+            }
         }
 
         if (!projectWarFileSet) {
@@ -1367,6 +1370,9 @@ class BuildSettings extends AbstractBuildSettings {
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
 
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
+            if(!projectWarFile.absolute) {
+                projectWarFile = new File(baseDir, projectWarFile.path)
+            }
         }
 
         if (!projectWarExplodedDirSet) {
@@ -1384,22 +1390,41 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!classesDirSet) {
             classesDir = new File(getPropertyValue(PROJECT_CLASSES_DIR, props, "$projectWorkDir/classes"))
+            if(!classesDir.absolute) {
+                classesDir = new File(baseDir, classesDir.path)
+            }
         }
 
         if (!testClassesDirSet) {
             testClassesDir = new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes"))
+            if(!testClassesDir.absolute) {
+                testClassesDir = new File(baseDir, testClassesDir.path)
+            }
+
         }
 
         if (!pluginClassesDirSet) {
             pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
+            if(!pluginClassesDir.absolute) {
+                pluginClassesDir = new File(baseDir, pluginClassesDir.path)
+            }
+
         }
 
         if (!pluginBuildClassesDirSet) {
             pluginBuildClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes"))
+            if(!pluginBuildClassesDir.absolute) {
+                pluginBuildClassesDir = new File(baseDir, pluginBuildClassesDir.path)
+            }
+
         }
 
         if (!pluginProvidedClassesDirSet) {
             pluginProvidedClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes"))
+            if(!pluginProvidedClassesDir.absolute) {
+                pluginProvidedClassesDir = new File(baseDir, pluginProvidedClassesDir.path)
+            }
+
         }
 
         if (!resourcesDirSet) {
@@ -1424,10 +1449,16 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!testReportsDirSet) {
             testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
+            if(!testReportsDir.absolute) {
+                testReportsDir = new File(baseDir, testReportsDir.path)
+            } 
         }
 
         if (!docsOutputDirSet) {
             docsOutputDir = new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs"))
+            if(!docsOutputDir.absolute) {
+                docsOutputDir = new File(baseDir, docsOutputDir.path)
+            }            
         }
 
         if (!testSourceDirSet) {
