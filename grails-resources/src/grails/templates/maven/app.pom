@@ -30,6 +30,13 @@
             <type>pom</type>
         </dependency>
 
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-testing</artifactId>
+            <version>${grails.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         @plugins@
 
         <dependency>
