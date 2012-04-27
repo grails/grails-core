@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.validation.DeferredBindingActions;
 import groovy.lang.GroovyObject;
@@ -115,6 +116,8 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 @SuppressWarnings("rawtypes")
 public class GrailsDataBinder extends ServletRequestDataBinder {
 
+    private static final String BIND_EVENT_LISTENERS = "org.codehaus.groovy.grails.BIND_EVENT_LISTENERS";
+    private static final String PROPERTY_EDITOR_REGISTRARS = "org.codehaus.groovy.grails.PROPERTY_EDITOR_REGISTRARS";
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
     private static final String JSON_DATE_FORMAT = "yyyy-MM-dd'T'hh:mm:ss'Z'";
 
@@ -177,7 +180,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             return;
         }
 
-        Map<String, PropertyEditorRegistrar> editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+        @SuppressWarnings("unchecked")
+        Map<String, PropertyEditorRegistrar> editors = (Map<String, PropertyEditorRegistrar>)servletContext.getAttribute(PROPERTY_EDITOR_REGISTRARS);
+        if(editors==null) {
+            editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+            if(!Environment.isDevelopmentMode()) {
+                servletContext.setAttribute(PROPERTY_EDITOR_REGISTRARS, editors);
+            }
+        }
         for (PropertyEditorRegistrar editorRegistrar : editors.values()) {
             editorRegistrar.registerCustomEditors(registry);
         }
@@ -366,7 +376,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         if (webRequest != null) {
             final ApplicationContext applicationContext = webRequest.getApplicationContext();
             if (applicationContext != null) {
-                final Map<String, BindEventListener> bindEventListenerMap = applicationContext.getBeansOfType(BindEventListener.class);
+                ServletContext servletContext = webRequest.getServletContext();
+                @SuppressWarnings("unchecked")
+                Map<String, BindEventListener> bindEventListenerMap = (Map<String, BindEventListener>)servletContext.getAttribute(BIND_EVENT_LISTENERS);
+                if(bindEventListenerMap==null) {
+                    bindEventListenerMap = applicationContext.getBeansOfType(BindEventListener.class);
+                    if(!Environment.isDevelopmentMode()) {
+                        servletContext.setAttribute(BIND_EVENT_LISTENERS, bindEventListenerMap);
+                    }
+                }
                 for (BindEventListener bindEventListener : bindEventListenerMap.values()) {
                     bindEventListener.doBind(getTarget(), mpvs, getTypeConverter());
                 }
