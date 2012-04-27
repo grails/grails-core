@@ -45,6 +45,7 @@ public class DefaultCommandLine implements CommandLine {
 
     public void setEnvironment(String environment) {
         this.environment = environment;
+        System.setProperty(Environment.KEY, environment);
     }
 
     public void setCommand(String name) {
