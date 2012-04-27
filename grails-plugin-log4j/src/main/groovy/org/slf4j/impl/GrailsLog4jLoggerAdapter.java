@@ -24,7 +24,6 @@ import static org.apache.log4j.Level.WARN;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
@@ -188,7 +187,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
     }
 
     private final void logMessage(final Level level, final String msg, final Throwable t) {
-        Throwable filteredTrace = (t != null && log4jLogger.isEnabledFor(level) && !("StackTrace".equals(name) || (msg != null && msg.startsWith(StackTraceFilterer.FULL_STACK_TRACE_MESSAGE)))) ? cleanIfException(t) : t;
+        Throwable filteredTrace = (t != null && log4jLogger.isEnabledFor(level) && !DefaultStackTraceFilterer.STACK_LOG_NAME.equals(name)) ? cleanIfException(t) : t;
         log4jLogger.log(FQCN, level, msg, filteredTrace);
     }
 }

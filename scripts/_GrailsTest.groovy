@@ -290,6 +290,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def result = type.run(testEventPublisher)
             def end = new Date()
 
+            testCount = result.passCount + result.failCount
             grailsConsole.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
             grailsConsole.lastMessage = ""
 
