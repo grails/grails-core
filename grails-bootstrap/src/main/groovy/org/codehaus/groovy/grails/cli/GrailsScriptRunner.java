@@ -184,7 +184,11 @@ public class GrailsScriptRunner {
         }
 
         if (commandLine.hasOption(CommandLine.HELP_ARGUMENT)) {
-            console.log(parser.getHelpMessage());
+            if (commandLine.getCommandName() != null) {
+                console.log("The '-help' option is deprecated; use 'grails help [target]'");
+            } else {
+                console.log("The '-help' option is deprecated; use 'grails help'");
+            }
             System.exit(0);
         }
 
@@ -247,7 +251,6 @@ public class GrailsScriptRunner {
         parser.addOption(CommandLine.STACKTRACE_ARGUMENT, "Enable stack traces in output");
         parser.addOption(CommandLine.AGENT_ARGUMENT, "Enable the reloading agent");
         parser.addOption(CommandLine.NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
-        parser.addOption(CommandLine.HELP_ARGUMENT, "Command line help");
         parser.addOption(CommandLine.VERSION_ARGUMENT, "Current Grails version");
         parser.addOption(CommandLine.NOANSI_ARGUMENT, "Disables ANSI output");
         return parser;

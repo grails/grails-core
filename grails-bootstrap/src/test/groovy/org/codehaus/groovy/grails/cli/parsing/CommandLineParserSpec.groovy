@@ -151,7 +151,7 @@ class CommandLineParserSpec extends Specification {
 
         then:
             String ls = System.getProperty("line.separator");
-            parser.helpMessage == "usage: grails [options] [command]${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
+            parser.optionsHelpMessage == "Available options:${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
     }
 
     // STRING tests

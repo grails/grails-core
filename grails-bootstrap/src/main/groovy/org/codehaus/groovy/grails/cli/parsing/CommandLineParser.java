@@ -142,9 +142,9 @@ public class CommandLineParser {
         }
     }
 
-    public String getHelpMessage() {
+    public String getOptionsHelpMessage() {
         String ls = System.getProperty("line.separator");
-        usageMessage = "usage: grails [options] [command]";
+        usageMessage = "Available options:";
         StringBuilder sb = new StringBuilder(usageMessage);
         sb.append(ls);
         for (Option option : declaredOptions.values()) {
