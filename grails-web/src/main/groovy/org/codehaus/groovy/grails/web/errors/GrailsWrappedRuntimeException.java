@@ -133,8 +133,8 @@ public class GrailsWrappedRuntimeException extends GrailsException {
 
         LineNumberReader reader = null;
         try {
-            checkIfSourceCodeAware(cause);
             checkIfSourceCodeAware(t);
+            checkIfSourceCodeAware(cause);
 
             if (getLineNumber() > -1) {
                 String fileLocation;
@@ -244,9 +244,9 @@ public class GrailsWrappedRuntimeException extends GrailsException {
 
         final SourceCodeAware codeAware = (SourceCodeAware) t;
         if (codeAware.getFileName() != null) {
+            fileName = codeAware.getFileName();
             if (className == null || UNKNOWN.equals(className)) {
                 className = codeAware.getFileName();
-                fileName = codeAware.getFileName();
             }
         }
         if (codeAware.getLineNumber() > -1) {
