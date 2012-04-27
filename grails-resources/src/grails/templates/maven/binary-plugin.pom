@@ -83,6 +83,10 @@
                 <groupId>org.grails</groupId>
                 <artifactId>grails-maven-plugin</artifactId>
                 <version>${grails.version}</version>
+                <configuration>
+                    <!-- Whether for Fork a JVM to run Grails commands -->
+                    <fork>true</fork>
+                </configuration>
                 <extensions>true</extensions>
             </plugin>
 
