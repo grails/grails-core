@@ -203,9 +203,11 @@ class DomainClassGrailsPlugin {
                         return gormValidationApi
                     }
                 }
+                
+                AutowireCapableBeanFactory autowireCapableBeanFactory=ctx.autowireCapableBeanFactory
+                int byName=AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
                 metaClass.static.autowireDomain = { instance ->
-                    if(!Environment.isInitializing())
-                        ctx.autowireCapableBeanFactory.autowireBeanProperties(instance,AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                    autowireCapableBeanFactory.autowireBeanProperties(instance, byName, false)
                 }
             }
         }

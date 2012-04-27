@@ -93,6 +93,7 @@ public enum Environment {
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
+    private static boolean initializingState = false;
     private String name;
 
     Environment() {
@@ -400,8 +401,14 @@ public enum Environment {
      * @return Whether interactive mode is enabled
      */
     public static boolean isInitializing() {
-        return Boolean.getBoolean(INITIALIZING);
+        return initializingState;
     }
+    
+    public static void setInitializing(boolean initializing) {
+        initializingState=initializing;
+        System.setProperty(INITIALIZING, String.valueOf(initializing));
+    }
+    
     /**
      * @return true if the reloading agent is active
      */
