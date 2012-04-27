@@ -31,8 +31,8 @@ import java.util.List;
  * @author Graeme Rocher
  */
 public class DefaultStackTraceFilterer implements StackTraceFilterer {
-
-    public static final Log STACK_LOG = LogFactory.getLog("StackTrace");
+    public static final String STACK_LOG_NAME = "StackTrace";
+    public static final Log STACK_LOG = LogFactory.getLog(STACK_LOG_NAME);
 
     private static final String[] DEFAULT_INTERNAL_PACKAGES = new String[] {
         "org.grails.plugin.resource.DevMode",
