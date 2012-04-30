@@ -240,13 +240,24 @@ class RenderTagLib implements RequestConstants {
 
         def invokeBody = true
         for (i in 0..<names.size()) {
-            String propertyValue = htmlPage.getProperty(names[i])
+            def propertyValue = null
+            if (htmlPage instanceof GSPSitemeshPage) {
+                // check if there is an component content buffer
+                propertyValue = htmlPage.getContentBuffer(names[i])
+            }
+    
+            if (!propertyValue) {
+                propertyValue = htmlPage.getProperty(names[i])
+            }
+    
             if (propertyValue) {
-                if (attrs.equals instanceof List) {
-                    invokeBody = attrs.equals[i] == propertyValue
-                }
-                else if (attrs.equals instanceof String) {
-                    invokeBody = attrs.equals == propertyValue
+                if(attrs.containsKey('equals')) {
+                    if (attrs.equals instanceof List) {
+                        invokeBody = attrs.equals[i] == propertyValue
+                    }
+                    else {
+                        invokeBody = attrs.equals == propertyValue
+                    }
                 }
             }
             else {
