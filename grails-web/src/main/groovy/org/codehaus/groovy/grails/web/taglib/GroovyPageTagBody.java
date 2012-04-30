@@ -91,32 +91,34 @@ public class GroovyPageTagBody extends Closure {
 
             Object bodyResult;
             
-            if(hasArgument) {
-                originalIt = saveItVariable(currentBinding, args);
-            }
-
-            if (args instanceof Map && ((Map)args).size() > 0) {
-                // The body can be passed a set of variables as a map that
-                // are then made available in the binding. This allows the
-                // contents of the body to reference any of these variables
-                // directly.
-                //
-                // For example, body(foo: 1, bar: 'test') would allow this
-                // GSP fragment to work:
-                //
-                // <td>Foo: ${foo} and bar: ${bar}</td>
-                //
-                // Note that any variables with the same name as one of the
-                // new ones will be overridden for the scope of the host
-                // tag's body.
-
-                // GRAILS-2675: Copy the current binding so that we can
-                // restore
-                // it to its original state.
-
-                // Binding is only changed currently when body gets a map
-                // argument
-                savedVariablesMap = addAndSaveVariables(currentBinding, (Map)args);
+            if(currentBinding != null) {
+                if(hasArgument) {
+                    originalIt = saveItVariable(currentBinding, args);
+                }
+    
+                if (args instanceof Map && ((Map)args).size() > 0) {
+                    // The body can be passed a set of variables as a map that
+                    // are then made available in the binding. This allows the
+                    // contents of the body to reference any of these variables
+                    // directly.
+                    //
+                    // For example, body(foo: 1, bar: 'test') would allow this
+                    // GSP fragment to work:
+                    //
+                    // <td>Foo: ${foo} and bar: ${bar}</td>
+                    //
+                    // Note that any variables with the same name as one of the
+                    // new ones will be overridden for the scope of the host
+                    // tag's body.
+    
+                    // GRAILS-2675: Copy the current binding so that we can
+                    // restore
+                    // it to its original state.
+    
+                    // Binding is only changed currently when body gets a map
+                    // argument
+                    savedVariablesMap = addAndSaveVariables(currentBinding, (Map)args);
+                }
             }
             bodyResult = executeClosure(args);
 
@@ -126,9 +128,11 @@ public class GroovyPageTagBody extends Closure {
             return capturedOut.getBuffer();
         }
         finally {
-            restoreVariables(currentBinding, savedVariablesMap);
-            if (hasArgument) {
-                restoreItVariable(currentBinding, originalIt);
+            if(currentBinding != null) {
+                restoreVariables(currentBinding, savedVariablesMap);
+                if (hasArgument) {
+                    restoreItVariable(currentBinding, originalIt);
+                }
             }
             popCapturedOut();
         }
