@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.web.pages.AbstractGroovyPageBinding;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -43,14 +44,23 @@ public class GroovyPageTagBody extends Closure {
     private Closure<?> bodyClosure;
     private GrailsWebRequest webRequest;
 
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure) {
+        this(owner, webRequest, bodyClosure, false);
+    }
+
     public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,
-            Closure<?> bodyClosure) {
+            Closure<?> bodyClosure, boolean changeBodyClosureOwner) {
         super(owner);
 
         Assert.notNull(bodyClosure, "Argument [bodyClosure] cannot be null!");
         Assert.notNull(webRequest, "Argument [webRequest] cannot be null!");
 
-        this.bodyClosure = bodyClosure;
+        if(changeBodyClosureOwner && bodyClosure != null && !(bodyClosure instanceof GroovyPage.ConstantClosure)) {
+            this.bodyClosure = bodyClosure.rehydrate(bodyClosure.getDelegate(), owner, bodyClosure.getThisObject());
+            this.bodyClosure.setResolveStrategy(OWNER_ONLY);
+        } else {
+            this.bodyClosure = bodyClosure;
+        }
         this.webRequest = webRequest;
     }
 
