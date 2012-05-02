@@ -246,13 +246,24 @@ class RenderTagLib implements RequestConstants {
 
         def invokeBody = true
         for (i in 0..<names.size()) {
-            String propertyValue = htmlPage.getProperty(names[i])
+            def propertyValue = null
+            if (htmlPage instanceof GSPSitemeshPage) {
+                // check if there is an component content buffer
+                propertyValue = htmlPage.getContentBuffer(names[i])
+            }
+    
+            if (!propertyValue) {
+                propertyValue = htmlPage.getProperty(names[i])
+            }
+    
             if (propertyValue) {
-                if (attrs.equals instanceof List) {
-                    invokeBody = attrs.equals[i] == propertyValue
-                }
-                else if (attrs.equals instanceof String) {
-                    invokeBody = attrs.equals == propertyValue
+                if(attrs.containsKey('equals')) {
+                    if (attrs.equals instanceof List) {
+                        invokeBody = attrs.equals[i] == propertyValue
+                    }
+                    else {
+                        invokeBody = attrs.equals == propertyValue
+                    }
                 }
             }
             else {
@@ -336,7 +347,7 @@ class RenderTagLib implements RequestConstants {
         def locale = RCU.getLocale(request)
 
         def total = attrs.int('total') ?: 0
-        def action = (attrs.action ? attrs.action : (params.action ? params.action : "list"))
+        def action = (attrs.action ?: (params.action ?: ""))
         def offset = params.int('offset') ?: 0
         def max = params.int('max')
         def maxsteps = (attrs.int('maxsteps') ?: 10)

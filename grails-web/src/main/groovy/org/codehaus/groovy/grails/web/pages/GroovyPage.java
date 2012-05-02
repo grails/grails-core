@@ -608,7 +608,7 @@ public abstract class GroovyPage extends Script {
     }
 
     public final void createTagBody(int bodyClosureIndex, Closure<?> bodyClosure) {
-        GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
+        GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure, true);
         setBodyClosure(bodyClosureIndex, tagBody);
     }
 

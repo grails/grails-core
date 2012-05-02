@@ -182,6 +182,9 @@ public class ReloadAwareAutowireCapableBeanFactory extends
     @Override
     public void autowireBeanProperties(Object existingBean, int autowireMode,
             boolean dependencyCheck) throws BeansException {
+        if(Environment.isInitializing()) {
+            return;
+        }
         if(autowireMode == AUTOWIRE_BY_NAME) {
             if(DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS || dependencyCheck || existingBean instanceof Aware) {
                 super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);

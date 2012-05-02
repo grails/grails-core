@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.build.logging.GrailsConsole;
+
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -62,15 +64,15 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if (isDomainClass(classNode, source) && shouldInjectClass(classNode)) {
-            performInjectionOnAnnotatedEntity(source, classNode);
+            performInjectionOnAnnotatedEntity(classNode);
         }
     }
 
-    public void performInjectionOnAnnotatedEntity(SourceUnit sourceUnit, ClassNode classNode) {
+    public void performInjectionOnAnnotatedEntity(ClassNode classNode) {
         injectIdProperty(classNode);
         injectVersionProperty(classNode);
         injectToStringMethod(classNode);
-        injectAssociations(sourceUnit, classNode);
+        injectAssociations(classNode);
     }
 
     public boolean shouldInject(URL url) {
@@ -114,7 +116,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
         return className.replaceAll("\\.", "/") + ".hbm.xml";
     }
 
-    private void injectAssociations(SourceUnit sourceUnit, ClassNode classNode) {
+    private void injectAssociations(ClassNode classNode) {
 
         List<PropertyNode> propertiesToAdd = new ArrayList<PropertyNode>();
         for (PropertyNode propertyNode : classNode.getProperties()) {
@@ -132,10 +134,10 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
                         (!(initialExpression instanceof ClassExpression))) {
                     if(name.equals(GrailsDomainClassProperty.HAS_ONE)) {
                         final String message = "The hasOne property in class [" + classNode.getName() + "] should have an initial expression of type Map or Class.";
-                        GrailsASTUtils.warning(sourceUnit, propertyNode, message);
+                        GrailsConsole.getInstance().warn(message);
                     } else if(!(initialExpression instanceof ListExpression)) {
                         final String message = "The belongsTo property in class [" + classNode.getName() + "] should have an initial expression of type List, Map or Class.";
-                        GrailsASTUtils.warning(sourceUnit, propertyNode, message);
+                        GrailsConsole.getInstance().warn(message);
                     }
                 }
                 propertiesToAdd.addAll(createPropertiesForBelongsToOrHasOneExpression(initialExpression, classNode));

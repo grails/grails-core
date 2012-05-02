@@ -260,6 +260,23 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue result.contains("releaseDate|")
         assertTrue result.contains("publisherURL|")
     }
+    
+    
+    void testEachErrorTagInController() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.validate()
+
+        assertTrue b.hasErrors()
+    
+        def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher("g")
+        def errorFields = []
+        g.eachError(bean: b) {
+            errorFields << it.field
+        }
+        assertTrue errorFields.contains("title")
+        assertTrue errorFields.contains("releaseDate")
+        assertTrue errorFields.contains("publisherURL")
+    }
 
     void testRenderErrorsTag() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
