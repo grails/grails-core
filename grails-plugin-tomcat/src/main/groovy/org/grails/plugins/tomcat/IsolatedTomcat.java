@@ -125,34 +125,10 @@ public class IsolatedTomcat {
     }
 
     public static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
-        new Thread(new Runnable() {
-            public void run() {
-                int killListenerPort = serverPort + 1;
-                ServerSocket serverSocket = createKillSwitch(killListenerPort);
-                if (serverSocket != null) {
-                    try {
-                        serverSocket.accept();
-                        try {
-                            tomcat.stop();
-                        } catch (LifecycleException e) {
-                            System.err.println("Error stopping Tomcat: " + e.getMessage());
-                            System.exit(1);
-                        }
-                    } catch (IOException e) {
-                        // just exit
-                    }
-                }
-            }
-        }).start();
+        new Thread(new TomcatKillSwitch(tomcat, serverPort)).start();
     }
 
-    private static ServerSocket createKillSwitch(int killListenerPort) {
-        try {
-            return new ServerSocket(killListenerPort);
-        } catch (IOException e) {
-            return null;
-        }
-    }
+
 
     private static int argToNumber(String[] args, int i, int orDefault) {
         if (args.length > i) {
