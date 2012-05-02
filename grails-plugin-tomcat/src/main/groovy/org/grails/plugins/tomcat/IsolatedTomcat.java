@@ -111,6 +111,20 @@ public class IsolatedTomcat {
         }
 
         final int serverPort = port;
+        startKillSwitch(tomcat, serverPort);
+
+        try {
+            tomcat.start();
+            String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
+            System.out.println(message);
+        } catch (LifecycleException e) {
+            e.printStackTrace(System.err);
+            System.err.println("Error loading Tomcat: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    public static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
         new Thread(new Runnable() {
             public void run() {
                 int killListenerPort = serverPort + 1;
@@ -130,16 +144,6 @@ public class IsolatedTomcat {
                 }
             }
         }).start();
-
-        try {
-            tomcat.start();
-            String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
-            System.out.println(message);
-        } catch (LifecycleException e) {
-            e.printStackTrace(System.err);
-            System.err.println("Error loading Tomcat: " + e.getMessage());
-            System.exit(1);
-        }
     }
 
     private static ServerSocket createKillSwitch(int killListenerPort) {

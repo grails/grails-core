@@ -135,6 +135,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
         }
 
         tomcat.start()
+        IsolatedTomcat.startKillSwitch(tomcat, httpPort)
     }
 
     void stop() {
