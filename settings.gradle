@@ -10,6 +10,7 @@ include 'grails-bootstrap',
         'grails-resources',
         'grails-scripts',
         'grails-logging',
+        'grails-wrapper',
         
         // Plugins
         'grails-plugin-domain-class',

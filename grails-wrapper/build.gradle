@@ -1,0 +1,21 @@
+task runtimeJar(type: Jar) {
+    // TODO
+    from('build/classes/main')
+}
+
+jar {
+  from runtimeJar
+  from "src/main/scripts", {
+    filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [springLoadedVersion: springLoadedVersion, grailsVersion: grailsVersion]
+  }
+  // TODO
+  exclude 'org/**'
+}
+
+//supportJar.appendix = 'wrapper-support'
+jar.appendix = 'wrapper-support'
+runtimeJar.appendix = 'wrapper-runtime'
+
+artifacts {
+  runtime /*supportJar,*/ runtimeJar
+}
