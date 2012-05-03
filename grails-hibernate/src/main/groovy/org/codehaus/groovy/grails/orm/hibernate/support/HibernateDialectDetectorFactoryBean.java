@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.orm.hibernate.exceptions.CouldNotDetermineHibe
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.dialect.resolver.DialectFactory;
+import org.hibernate.service.jdbc.dialect.spi.DialectFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.datasource.DataSourceUtils;

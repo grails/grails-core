@@ -34,7 +34,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.Mappings;
 import org.hibernate.cfg.NamingStrategy;
-import org.hibernate.engine.FilterDefinition;
+import org.hibernate.engine.spi.FilterDefinition;
 
 /**
  * Allows configuring Grails' hibernate support to work in conjuntion with Hibernate's annotation

@@ -17,8 +17,8 @@ package org.codehaus.groovy.grails.orm.hibernate.events;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
-import org.hibernate.event.EventSource;
-import org.hibernate.event.def.DefaultFlushEventListener;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.internal.DefaultFlushEventListener;
 
 /**
  * Patches Hibernate to prevent this issue

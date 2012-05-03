@@ -94,12 +94,12 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications
 
-* hibernate-commons-annotations-3.2.0.Final.jar
-- Hibernate Annotations 3.2.0 GA (http://annotations.hibernate.org) LGPL License
+* hibernate-commons-annotations-3.3.0.ga.jar
+- Hibernate Annotations 3.3.0 GA (http://annotations.hibernate.org) LGPL License
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
-* hibernate-core-3.6.10.Final.jar
-- Hibernate 3.6.8 GA (http://www.hibernate.org) LGPL License
+* hibernate-core-4.1.2.Final.jar
+- Hibernate 4.1.2 FINAL (http://www.hibernate.org) LGPL License
 - required for building Grails core
 - required for running Grails applications
 
@@ -113,8 +113,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications (With an in-memory database)
 
-* javassist-3.12.0.GA.jar
-- Javassist 3.12.0 (http://www.jboss.org/javassist/) MPL or LGPL License
+* javassist-3.15.0.GA.jar
+- Javassist 3.15.0 (http://www.jboss.org/javassist/) MPL or LGPL License
 - required for running Grails applications 
 
 * jline-0.9.94.jar

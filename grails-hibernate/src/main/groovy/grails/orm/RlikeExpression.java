@@ -22,7 +22,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
-import org.hibernate.engine.TypedValue;
+import org.hibernate.engine.spi.TypedValue;
 
 /**
  * Adds support for rlike to Hibernate in supported dialects.
