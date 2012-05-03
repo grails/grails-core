@@ -7,10 +7,15 @@ task copyScript(type: Copy) {
         from("../grails-resources/src/grails/home/bash/startGrails") {
             rename 'startGrails', 'grailsw'
         }
+        from("../grails-resources/src/grails/home/bash/startGrails.bat") {
+            rename 'startGrails.bat', 'grailsw.bat'
+        }
         filter(ReplaceTokens, tokens: ['starter.main.class': 'org.grails.wrapper.GrailsWrapper'])
         filter(ReplaceTokens, tokens: ['starter.classpath': '@wrapperDir@/grails-wrapper-runtime-@grailsVersion@.jar:@wrapperDir@'])
         filter(ReplaceTokens, tokens: ['agent.string': '-javaagent:@wrapperDir@/springloaded-core-@springLoadedVersion@.jar -noverify  -Dspringloaded=$SPRINGLOADED_PARAMS'])
         filter(ReplaceTokens, tokens: ['startup.command': 'startGrails $STARTER_MAIN_CLASS "$@"'])
+        filter(ReplaceTokens, tokens: ['windows.starter.classpath': '@wrapperDir@/grails-wrapper-runtime-@grailsVersion@.jar;@wrapperDir@'])
+        filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:@wrapperDir@/springloaded-core-@springLoadedVersion@.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
         fileMode = 0755
     }
 
