@@ -124,6 +124,10 @@ task installResources(type: Copy) {
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
+        filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
+        filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
+        filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
+        filter(ReplaceTokens, tokens: ['startup.command': ''])
         fileMode = 0755
     }
 
@@ -213,6 +217,10 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
             filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
             filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
+            filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
+            filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
+            filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
+            filter(ReplaceTokens, tokens: ['startup.command': ''])
             fileMode = 0755
         }
         from("grails-resources/src/grails/home/conf") {

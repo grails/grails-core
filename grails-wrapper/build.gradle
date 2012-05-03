@@ -1,3 +1,21 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+task copyScript(type: Copy) {
+    into "$buildDir/"
+
+    into('scripts') {
+        from("../grails-resources/src/grails/home/bash/startGrails") {
+            rename 'startGrails', 'grailsw'
+        }
+        filter(ReplaceTokens, tokens: ['starter.main.class': 'org.grails.wrapper.GrailsWrapper'])
+        filter(ReplaceTokens, tokens: ['starter.classpath': '@wrapperDir@/grails-wrapper-runtime-@grailsVersion@.jar:@wrapperDir@'])
+        filter(ReplaceTokens, tokens: ['agent.string': '-javaagent:@wrapperDir@/springloaded-core-@springLoadedVersion@.jar -noverify  -Dspringloaded=$SPRINGLOADED_PARAMS'])
+        filter(ReplaceTokens, tokens: ['startup.command': 'startGrails $STARTER_MAIN_CLASS "$@"'])
+        fileMode = 0755
+    }
+
+}
+
 task runtimeJar(type: Jar) {
     // TODO
     from('build/classes/main')
@@ -5,7 +23,7 @@ task runtimeJar(type: Jar) {
 
 jar {
   from runtimeJar
-  from "src/main/scripts", {
+  from "${buildDir}/scripts", {
     filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [springLoadedVersion: springLoadedVersion, grailsVersion: grailsVersion]
   }
   // TODO
@@ -19,3 +37,5 @@ runtimeJar.appendix = 'wrapper-runtime'
 artifacts {
   runtime /*supportJar,*/ runtimeJar
 }
+
+jar.dependsOn copyScript

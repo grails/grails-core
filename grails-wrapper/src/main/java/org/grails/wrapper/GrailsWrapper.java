@@ -42,7 +42,6 @@ public class GrailsWrapper {
             extract(file, installDir);
         }
         final File grailsHome = new File(installDir, "grails-" + grailsVersion);
-        final File groovyStartConf = new File(grailsHome, "conf/groovy-starter.conf");
         
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
         final URL[] urls = new URL[2];
@@ -56,10 +55,15 @@ public class GrailsWrapper {
         final URLClassLoader urlClassLoader = new URLClassLoader(urls);
         final Class<?> loadClass = urlClassLoader.loadClass("org.codehaus.groovy.grails.cli.support.GrailsStarter");
         final Method mainMethod = loadClass.getMethod("main", String[].class);
-        final String[] args2 = new String[args.length + 2];
+        final String[] args2 = new String[args.length];
         System.arraycopy(args, 0, args2, 0, args.length);
-        args2[args.length] = "--conf";
-        args2[args.length + 1] = groovyStartConf.getAbsolutePath();
+        for(int i = 0; i < args2.length; i++) {
+            if("--conf".equals(args2[i]) && (i < (args2.length - 1))) {
+                final File groovyStarterConf = new File(grailsHome, "conf/groovy-starter.conf");
+                args2[i + 1] = groovyStarterConf.getAbsolutePath();
+                break;
+            }
+        }
         mainMethod.invoke(null, new Object[]{args2});
     }
     

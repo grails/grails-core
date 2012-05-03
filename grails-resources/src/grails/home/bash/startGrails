@@ -118,7 +118,7 @@ fi
 if [ -z "$STARTER_CONF" ]; then
     STARTER_CONF="$GRAILS_HOME/conf/groovy-starter.conf"
 fi
-STARTER_CLASSPATH="$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-@groovy.version@.jar:$GRAILS_HOME/dist/grails-bootstrap-@grails.version@.jar"
+STARTER_CLASSPATH="@starter.classpath@"
 
 # Allow access to Cocoa classes on OS X
 if $darwin; then
@@ -188,7 +188,7 @@ if [ -n "$GRAILS_AGENT_CACHE_DIR" ]; then
 fi
 
 # Process JVM args
-AGENT_STRING="-javaagent:$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=$SPRINGLOADED_PARAMS"
+AGENT_STRING="@agent.string@"
 CMD_LINE_ARGS=""
 DISABLE_RELOADING=false
 
@@ -207,6 +207,12 @@ while true; do
 
   if [ "$1" = "-noreloading" ]; then
     DISABLE_RELOADING=true
+    shift
+    break
+  fi
+
+  if [ "$1" = "-debug" ]; then
+    JAVA_OPTS="$JAVA_OPTS -Xdebug -Xnoagent -Dgrails.full.stacktrace=true -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
     shift
     break
   fi
@@ -285,7 +291,7 @@ if $cygwin; then
     done
 fi
 
-STARTER_MAIN_CLASS=org.codehaus.groovy.grails.cli.support.GrailsStarter
+STARTER_MAIN_CLASS=@starter.main.class@
 
 lateInit
 
@@ -325,3 +331,5 @@ startGrails() {
   	fi
   fi
 }
+
+@startup.command@
