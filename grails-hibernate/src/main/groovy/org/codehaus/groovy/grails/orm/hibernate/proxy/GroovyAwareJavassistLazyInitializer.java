@@ -29,12 +29,12 @@ import javassist.util.proxy.ProxyObject;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.proxy.pojo.BasicLazyInitializer;
 import org.hibernate.proxy.pojo.javassist.SerializableProxy;
 import org.hibernate.type.CompositeType;
-import org.hibernate.util.ReflectHelper;
+import org.hibernate.internal.util.ReflectHelper;
 
 /**
  * @author Graeme Rocher

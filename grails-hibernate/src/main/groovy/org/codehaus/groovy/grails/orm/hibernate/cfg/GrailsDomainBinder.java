@@ -86,7 +86,7 @@ import org.hibernate.type.LongType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.TimestampType;
 import org.hibernate.type.Type;
-import org.hibernate.util.StringHelper;
+import org.hibernate.internal.util.StringHelper;
 import org.springframework.context.ApplicationContext;
 
 /**

@@ -60,7 +60,7 @@ import org.hibernate.criterion.Property;
 import org.hibernate.criterion.PropertyProjection;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.criterion.SimpleExpression;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.type.AssociationType;

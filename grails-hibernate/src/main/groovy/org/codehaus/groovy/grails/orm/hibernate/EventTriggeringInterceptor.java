@@ -33,15 +33,15 @@ import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent;
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEventListener;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.HibernateException;
-import org.hibernate.event.PostDeleteEvent;
-import org.hibernate.event.PostInsertEvent;
-import org.hibernate.event.PostLoadEvent;
-import org.hibernate.event.PostUpdateEvent;
-import org.hibernate.event.PreDeleteEvent;
-import org.hibernate.event.PreInsertEvent;
-import org.hibernate.event.PreLoadEvent;
-import org.hibernate.event.PreUpdateEvent;
-import org.hibernate.event.SaveOrUpdateEvent;
+import org.hibernate.event.spi.PostDeleteEvent;
+import org.hibernate.event.spi.PostInsertEvent;
+import org.hibernate.event.spi.PostLoadEvent;
+import org.hibernate.event.spi.PostUpdateEvent;
+import org.hibernate.event.spi.PreDeleteEvent;
+import org.hibernate.event.spi.PreInsertEvent;
+import org.hibernate.event.spi.PreLoadEvent;
+import org.hibernate.event.spi.PreUpdateEvent;
+import org.hibernate.event.spi.SaveOrUpdateEvent;
 import org.springframework.context.ApplicationEvent;
 
 /**

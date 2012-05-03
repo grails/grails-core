@@ -38,7 +38,7 @@ ext {
     springLoadedVersion = "1.0.5"
     springVersion = "3.1.0.RELEASE"
     springWebflowVersion= "2.0.8.RELEASE"
-    hibernateVersion = "3.6.10.Final"
+    hibernateVersion = "4.1.2.Final"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.10"
     concurrentlinkedhashmapVersion = "1.2_jdk5"

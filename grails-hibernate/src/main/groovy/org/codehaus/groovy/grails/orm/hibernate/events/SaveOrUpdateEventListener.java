@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.events;
 
-import org.hibernate.event.def.DefaultSaveOrUpdateEventListener;
+import org.hibernate.event.internal.DefaultSaveOrUpdateEventListener;
 
 /**
  * Intermediary class, because def in package name is blocking IntelliJ from compiling.

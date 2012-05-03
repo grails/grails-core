@@ -29,7 +29,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.event.*;
+import org.hibernate.event.spi.*;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
