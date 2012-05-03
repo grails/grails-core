@@ -237,4 +237,8 @@ public class GroovyPageTagBody extends Closure {
     public Class[] getParameterTypes() {
         return PARAMETER_TYPES;
     }    
+
+    public Closure<?> getBodyClosure() {
+        return bodyClosure;
+    }
 }
