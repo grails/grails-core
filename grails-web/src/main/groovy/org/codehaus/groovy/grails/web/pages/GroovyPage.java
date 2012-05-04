@@ -47,6 +47,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -153,6 +154,10 @@ public abstract class GroovyPage extends Script {
         @Override
         public Object call(Object... args) {
             return retval;
+        }
+        
+        public boolean asBoolean() {
+            return DefaultTypeTransformation.castToBoolean(retval);
         }
     }
 
