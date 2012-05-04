@@ -11,8 +11,7 @@ if "%OS%"=="Windows_NT" setlocal
 set DIRNAME=%~1
 shift
 
-set CLASS=%~1
-shift
+set CLASS=@starter.main.class@
 
 if exist "%USERPROFILE%/.groovy/preinit.bat" call "%USERPROFILE%/.groovy/preinit.bat"
 
@@ -68,7 +67,7 @@ if not "%GRAILS_AGENT_CACHE_DIR%" == "" (
 set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
 )
-set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%
+set AGENT_STRING=@windows.agent.string@
 set DISABLE_RELOADING=
 if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
 
@@ -92,6 +91,11 @@ if "%CURR_ARG:~0,2%" == "-D" (
 if "x%~1" == "x-cp" (
 	set CP=%~2
 	shift
+	shift
+	goto win9xME_args_slurp
+)
+if "x%~1" == "x-debug" (
+	set JAVA_OPTS=%JAVA_OPTS% -Xdebug -Xnoagent -Dgrails.full.stacktrace=true -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005
 	shift
 	goto win9xME_args_slurp
 )
@@ -129,7 +133,7 @@ set CMD_LINE_ARGS=%$
 
 :execute
 @rem Setup the command line
-set STARTER_CLASSPATH=%GRAILS_HOME%\lib\org.codehaus.groovy\groovy-all\jars\groovy-all-@groovy.version@.jar;%GRAILS_HOME%\dist\grails-bootstrap-@grails.version@.jar
+set STARTER_CLASSPATH=@windows.starter.classpath@
 
 if exist "%USERPROFILE%/.groovy/init.bat" call "%USERPROFILE%/.groovy/init.bat"
 
@@ -148,7 +152,7 @@ if "x%DISABLE_RELOADING%" == "xtrue" (
 	)
 )
 
-set STARTER_MAIN_CLASS=org.codehaus.groovy.grails.cli.support.GrailsStarter
+set STARTER_MAIN_CLASS=@starter.main.class@
 set STARTER_CONF=%GRAILS_HOME%\conf\groovy-starter.conf
 
 set JAVA_EXE=%JAVA_HOME%\bin\java.exe

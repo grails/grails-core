@@ -63,6 +63,7 @@ target
 /grails-test/bin/
 /grails-web/bin/
 /grails-webflow/bin/
+/grails-wrapper/bin/
 /grails-plugin-log4j/bin/
 /grails-plugin-logging/bin/
 /grails-logging/bin/
