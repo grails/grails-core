@@ -49,7 +49,7 @@ public class GrailsWrapper {
         
         final List<String> newArgsList = new ArrayList<String>();
         for(int i = 0; i < args.length; i++) {
-            final String arg = args[0];
+            final String arg = args[i];
             if("--main".equals(arg) && i < args.length - 1) {
                 // skip --main and the following argument
                 i++;
@@ -57,12 +57,13 @@ public class GrailsWrapper {
                 newArgsList.add(arg);
                 final File groovyStarterConf = new File(grailsHome, "conf/groovy-starter.conf");
                 newArgsList.add(groovyStarterConf.getAbsolutePath());
+                i++;
             } else {
                 newArgsList.add(arg);
             }
         }
         
-        final Object[] newArgsArray = newArgsList.toArray();
+        final String[] newArgsArray = newArgsList.toArray(new String[0]);
         final URL[] urls = new URL[2];
         urls[0] = new File(grailsHome, "dist/grails-bootstrap-" + grailsVersion + ".jar").toURI().toURL();
         File[] groovyJarCandidates = new File(grailsHome, "lib/org.codehaus.groovy/groovy-all/jars/").listFiles(new FilenameFilter() {
