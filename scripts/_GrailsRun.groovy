@@ -240,7 +240,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         killFile.delete()
     }
 
-    while (keepRunning) {
+    while (keepRunning && org.grails.plugins.tomcat.TomcatKillSwitch.active) {
         sleep(recompileFrequency * 1000)
 
         // Check whether the kill file exists. This is a hack for the
