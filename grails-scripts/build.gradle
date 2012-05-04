@@ -9,7 +9,6 @@ dependencies {
             "org.apache.ivy:ivy:${ivyVersion}",
             "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
 
-    compile 'org.tmatesoft.svnkit:svnkit:1.3.5'
     compile project(":grails-web"),
             project(':grails-hibernate'),
             project(':grails-docs'),

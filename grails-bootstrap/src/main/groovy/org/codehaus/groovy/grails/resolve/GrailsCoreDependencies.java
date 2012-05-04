@@ -123,7 +123,6 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("com.googlecode.json-simple", "json-simple", "1.1"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcpg-jdk15", "1.45"),
                             ModuleRevisionId.newInstance("org.bouncycastle", "bcprov-jdk15", "1.45"),
-                            ModuleRevisionId.newInstance("org.tmatesoft.svnkit", "svnkit", "1.3.5"),
                             ModuleRevisionId.newInstance("jline", "jline", "1.0"),
                             ModuleRevisionId.newInstance("org.apache.ivy", "ivy", "2.2.0"),
                             ModuleRevisionId.newInstance("org.fusesource.jansi", "jansi", "1.2.1"),
