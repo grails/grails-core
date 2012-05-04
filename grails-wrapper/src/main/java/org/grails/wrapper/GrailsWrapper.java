@@ -11,7 +11,9 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -44,6 +46,23 @@ public class GrailsWrapper {
         final File grailsHome = new File(installDir, "grails-" + grailsVersion);
         
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
+        
+        final List<String> newArgsList = new ArrayList<String>();
+        for(int i = 0; i < args.length; i++) {
+            final String arg = args[0];
+            if("--main".equals(arg) && i < args.length - 1) {
+                // skip --main and the following argument
+                i++;
+            } else if("--conf".equals(arg) && i < args.length - 1) {
+                newArgsList.add(arg);
+                final File groovyStarterConf = new File(grailsHome, "conf/groovy-starter.conf");
+                newArgsList.add(groovyStarterConf.getAbsolutePath());
+            } else {
+                newArgsList.add(arg);
+            }
+        }
+        
+        final Object[] newArgsArray = newArgsList.toArray();
         final URL[] urls = new URL[2];
         urls[0] = new File(grailsHome, "dist/grails-bootstrap-" + grailsVersion + ".jar").toURI().toURL();
         File[] groovyJarCandidates = new File(grailsHome, "lib/org.codehaus.groovy/groovy-all/jars/").listFiles(new FilenameFilter() {
@@ -55,16 +74,8 @@ public class GrailsWrapper {
         final URLClassLoader urlClassLoader = new URLClassLoader(urls);
         final Class<?> loadClass = urlClassLoader.loadClass("org.codehaus.groovy.grails.cli.support.GrailsStarter");
         final Method mainMethod = loadClass.getMethod("main", String[].class);
-        final String[] args2 = new String[args.length];
-        System.arraycopy(args, 0, args2, 0, args.length);
-        for(int i = 0; i < args2.length; i++) {
-            if("--conf".equals(args2[i]) && (i < (args2.length - 1))) {
-                final File groovyStarterConf = new File(grailsHome, "conf/groovy-starter.conf");
-                args2[i + 1] = groovyStarterConf.getAbsolutePath();
-                break;
-            }
-        }
-        mainMethod.invoke(null, new Object[]{args2});
+        
+        mainMethod.invoke(null, new Object[]{newArgsArray});
     }
     
     public static void extract(final File zip, final File dest) throws IOException {
