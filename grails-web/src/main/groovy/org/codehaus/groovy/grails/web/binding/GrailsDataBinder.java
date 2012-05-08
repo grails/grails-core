@@ -26,6 +26,7 @@ import groovy.lang.MetaProperty;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 
+import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -71,6 +72,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -512,14 +514,29 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             if (JSONObject.NULL.getClass().isInstance(value)) {
                 mpvs.removePropertyValue(pv);
             }
-            if (isNotCandidateForBinding(value)) {
+            if (!isCandidateForBinding(pv)) {
                 mpvs.removePropertyValue(pv);
             }
         }
     }
 
-    private boolean isNotCandidateForBinding(Object value) {
-        return value instanceof Map;
+    private boolean isCandidateForBinding(PropertyValue pv) {
+        boolean isCandidate = true;
+        final Object value = pv.getValue();
+        if(value instanceof GrailsParameterMap || value instanceof JSONObject) {
+            isCandidate = false;
+        } else if(value instanceof Map) {
+            isCandidate = false;
+            final String propertyName = pv.getName();
+            final PropertyDescriptor property = BeanUtils.getPropertyDescriptor(getTarget().getClass(), propertyName);
+            if(property != null) {
+                final Class<?> propertyType = property.getPropertyType();
+                if(propertyType.isAssignableFrom(value.getClass())) {
+                    isCandidate = true;
+                }
+            }
+        }
+        return isCandidate;
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {

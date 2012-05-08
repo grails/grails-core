@@ -12,4 +12,4 @@ if "%OS%"=="Windows_NT" setlocal
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.\
 
-CALL "%DIRNAME%\startGrails.bat" "%DIRNAME%" %*
+CALL "%DIRNAME%\startGrails.bat" %*
