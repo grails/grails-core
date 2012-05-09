@@ -919,7 +919,10 @@ public class GrailsClassUtils {
     }
 
     private static String convertPropertyName(String prop) {
-        if (Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
+        if(prop.length() == 1) {
+            return prop.toLowerCase();
+        }
+        else if (Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
             return prop;
         }
         if (Character.isDigit(prop.charAt(0))) {
