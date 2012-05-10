@@ -337,7 +337,8 @@ public class GrailsScriptRunner {
     }
 
     private int executeCommand(CommandLine commandLine, String scriptName, String env) {
-        @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
+        GrailsConsole console = getConsole(commandLine);
+
         // Load the BuildSettings file for this project if it exists. Note
         // that this does not load any environment-specific settings.
         try {
@@ -370,6 +371,17 @@ public class GrailsScriptRunner {
             BuildSettingsHolder.setSettings(null);
         }
     }
+
+	private GrailsConsole getConsole(CommandLine commandLine) {
+		@SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
+	
+		// Set the console display properties
+		console.setAnsiEnabled(!commandLine.hasOption(CommandLine.NOANSI_ARGUMENT));
+		console.setStacktrace(commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT));
+		console.setVerbose(commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT));
+
+		return console;
+	}
 
     private void setRunningEnvironment(CommandLine commandLine, String env) {
         // Get the default environment if one hasn't been set.
