@@ -104,7 +104,7 @@ task pluginsFromSvn {
             mkdir(dir: dir)
             plugins.each { name, version ->
                 def versionTag = version.replaceAll(/\./, '_').toUpperCase()
-                get(src: "http://plugins.grails.org/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }
