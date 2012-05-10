@@ -56,12 +56,15 @@ public class GrailsWrapper {
         final String[] newArgsArray = newArgsList.toArray(new String[0]);
         final URL[] urls = new URL[2];
         urls[0] = new File(grailsHome, "dist/grails-bootstrap-" + grailsVersion + ".jar").toURI().toURL();
-        File[] groovyJarCandidates = new File(grailsHome, "lib/org.codehaus.groovy/groovy-all/jars/").listFiles(new FilenameFilter() {
-            public boolean accept(final File dir, final String name) {
-                return name.startsWith("groovy-all-") && name.endsWith(".jar");
-            }
-        });
-        urls[1] = groovyJarCandidates[0].toURI().toURL();
+        final File directoryToSearchForGroovyAllJar = new File(grailsHome, "/lib/org.codehaus.groovy");
+        final File groovyJar = findGroovyAllJar(directoryToSearchForGroovyAllJar);
+        if(groovyJar == null) {
+            System.err.println("An error occurred locating the groovy jar under " + directoryToSearchForGroovyAllJar.getAbsolutePath());
+            System.exit(-1);
+        }
+        final URI groovyJarUri = groovyJar.toURI();
+        final URL groovyJarUrl = groovyJarUri.toURL();
+        urls[1] = groovyJarUrl;
         final URLClassLoader urlClassLoader = new URLClassLoader(urls);
         final Class<?> loadClass = urlClassLoader.loadClass("org.codehaus.groovy.grails.cli.support.GrailsStarter");
         final Method mainMethod = loadClass.getMethod("main", String[].class);
@@ -69,9 +72,23 @@ public class GrailsWrapper {
         mainMethod.invoke(null, new Object[]{newArgsArray});
     }
 
+    private static File findGroovyAllJar(final File directoryToSearch) {
+        final File[] files = directoryToSearch.listFiles();
+        for(File file : files) {
+            if(file.isDirectory()) {
+                return findGroovyAllJar(file);
+            }
+            final String fileName = file.getName();
+            if(fileName.startsWith("groovy-all-") && fileName.endsWith(".jar")) {
+                return file;
+            }
+        }
+        return null;
+    }
+
     /**
      * 
-     * @param distUrl URL to directory where distribution zip is found
+     * @param distUrl URL to directory where the distribution zip is found
      * @param grailsVersion version of Grails to configure
      * @return a File pointing to the directory where this version of Grails is configured
      */
