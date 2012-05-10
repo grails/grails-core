@@ -22,28 +22,18 @@ import java.util.zip.ZipFile;
 public class GrailsWrapper {
     
     public static void main(final String[] args) throws Exception{
-        ResourceBundle bundle = ResourceBundle.getBundle("grails-wrapper");
-        final String grailsVersion = bundle.getString("wrapper.version");
-        final File grailsCacheDir =  new File(System.getProperty("user.home") + "/.grails/");
-        final File grailsVersionDir = new File(grailsCacheDir, grailsVersion);
-        final File wrapperDir = new File(grailsVersionDir, "wrapper");
-        String distUrl = bundle.getString("wrapper.dist.url");
+        final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
+        final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
+        final String grailsVersion = applicationBundle.getString("app.grails.version");
+        String distUrl = wrapperBundle.getString("wrapper.dist.url");
         if(distUrl == null) {
             distUrl = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/";
         }
         if(!distUrl.endsWith("/")) {
             distUrl += "/";
         }
-        final String src = distUrl + "grails-" + grailsVersion + ".zip";
-        final URI uri = new URI(src);
-        
-        final File file = new File(wrapperDir, "download.zip");
-        new RemoteFileHelper().retrieve(uri, file);
-        final File installDir = new File(wrapperDir, "install");
-        if(!installDir.exists()) {
-            extract(file, installDir);
-        }
-        final File grailsHome = new File(installDir, "grails-" + grailsVersion);
+
+        final File grailsHome = configureGrailsInstallation(distUrl, grailsVersion);
         
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
         
@@ -66,17 +56,57 @@ public class GrailsWrapper {
         final String[] newArgsArray = newArgsList.toArray(new String[0]);
         final URL[] urls = new URL[2];
         urls[0] = new File(grailsHome, "dist/grails-bootstrap-" + grailsVersion + ".jar").toURI().toURL();
-        File[] groovyJarCandidates = new File(grailsHome, "lib/org.codehaus.groovy/groovy-all/jars/").listFiles(new FilenameFilter() {
-            public boolean accept(final File dir, final String name) {
-                return name.startsWith("groovy-all-") && name.endsWith(".jar");
-            }
-        });
-        urls[1] = groovyJarCandidates[0].toURI().toURL();
+        final File directoryToSearchForGroovyAllJar = new File(grailsHome, "/lib/org.codehaus.groovy");
+        final File groovyJar = findGroovyAllJar(directoryToSearchForGroovyAllJar);
+        if(groovyJar == null) {
+            System.err.println("An error occurred locating the groovy jar under " + directoryToSearchForGroovyAllJar.getAbsolutePath());
+            System.exit(-1);
+        }
+        final URI groovyJarUri = groovyJar.toURI();
+        final URL groovyJarUrl = groovyJarUri.toURL();
+        urls[1] = groovyJarUrl;
         final URLClassLoader urlClassLoader = new URLClassLoader(urls);
         final Class<?> loadClass = urlClassLoader.loadClass("org.codehaus.groovy.grails.cli.support.GrailsStarter");
         final Method mainMethod = loadClass.getMethod("main", String[].class);
         
         mainMethod.invoke(null, new Object[]{newArgsArray});
+    }
+
+    private static File findGroovyAllJar(final File directoryToSearch) {
+        final File[] files = directoryToSearch.listFiles();
+        for(File file : files) {
+            if(file.isDirectory()) {
+                return findGroovyAllJar(file);
+            }
+            final String fileName = file.getName();
+            if(fileName.startsWith("groovy-all-") && fileName.endsWith(".jar")) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 
+     * @param distUrl URL to directory where the distribution zip is found
+     * @param grailsVersion version of Grails to configure
+     * @return a File pointing to the directory where this version of Grails is configured
+     */
+    private static File configureGrailsInstallation(String distUrl,
+            final String grailsVersion) throws Exception {
+        final String src = distUrl + "grails-" + grailsVersion + ".zip";
+        final URI uri = new URI(src);
+        
+        final File grailsCacheDir =  new File(System.getProperty("user.home") + "/.grails/");
+        final File wrapperDir = new File(grailsCacheDir, "wrapper");
+        final File downloadFile = new File(wrapperDir, "grails-" + grailsVersion + "-download.zip");
+        new RemoteFileHelper().retrieve(uri, downloadFile);
+        final File installDir = new File(wrapperDir, grailsVersion);
+        if(!installDir.exists()) {
+            extract(downloadFile, installDir);
+        }
+        final File grailsHome = new File(installDir, "grails-" + grailsVersion);
+        return grailsHome;
     }
     
     public static void extract(final File zip, final File dest) throws IOException {
