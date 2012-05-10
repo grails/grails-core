@@ -220,18 +220,20 @@ class PluginInstallEngine {
 
         def parentDir = zipFile.canonicalFile.parentFile
         final currentDependencyManager = resolveEngine.dependencyManager
-        IvyDependencyManager dependencyManager = new IvyDependencyManager(currentDependencyManager.applicationName, currentDependencyManager.applicationVersion, settings)
-        dependencyManager.chainResolver = new ChainResolver()
+        final ivySettings = currentDependencyManager.ivySettings
+        IvyDependencyManager dependencyManager = new IvyDependencyManager(currentDependencyManager.applicationName, currentDependencyManager.applicationVersion, settings, Metadata.current, ivySettings)
+        dependencyManager.chainResolver = new ChainResolver(name: "chain", settings: ivySettings)
         dependencyManager.parseDependencies {
             log "warn"
             useOrigin true
-            cacheDir currentDependencyManager.ivySettings.getDefaultCache().absolutePath
+            cacheDir ivySettings.getDefaultCache().absolutePath
             repositories {
+                grailsHome()
                 def pluginResolver = new FileSystemResolver(name: "$name plugin install resolver")
                 final parentPath = parentDir.canonicalPath
                 pluginResolver.addArtifactPattern("${parentPath}/[module]-[revision].[ext]")
                 pluginResolver.addArtifactPattern("${parentPath}/grails-[module]-[revision].[ext]")
-                pluginResolver.settings = dependencyManager.ivySettings
+                pluginResolver.settings = ivySettings
                 pluginResolver.latestStrategy = new LatestTimeStrategy()
                 pluginResolver.changingPattern = ".*SNAPSHOT"
                 pluginResolver.setCheckmodified(true)

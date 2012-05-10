@@ -139,30 +139,28 @@ class BeanBuilderTests extends GroovyTestCase {
 
     void testUseTwoSpringNamespaces() {
 
-        SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder()
-        try {
-
-            builder.bind("bar", "success")
-            builder.activate()
             TestScope scope = new TestScope()
 
             GenericApplicationContext appCtx = bb.getSpringConfig().getUnrefreshedApplicationContext()
             appCtx.getBeanFactory().registerScope("test", scope)
             bb.beans {
                 xmlns aop:"http://www.springframework.org/schema/aop"
-                xmlns jee:"http://www.springframework.org/schema/jee"
+                xmlns util:"http://www.springframework.org/schema/util"
                 scopedList(ArrayList) { bean ->
                     bean.scope = "test"
                     aop.'scoped-proxy'()
                 }
 
-                jee.'jndi-lookup'(id:"foo", 'jndi-name':"bar")
+                util.list(id:"foo") {
+                    value "one"
+                    value "two"
+                }
 
             }
 
             appCtx = bb.createApplicationContext()
 
-            assertEquals "success", appCtx.getBean("foo")
+            assert ['one', 'two'] == appCtx.getBean("foo")
 
             assertNotNull appCtx.getBean("scopedList")
             assertNotNull appCtx.getBean("scopedList").size()
@@ -177,18 +175,21 @@ class BeanBuilderTests extends GroovyTestCase {
             appCtx.getBeanFactory().registerScope("test", scope)
             bb.beans {
                 xmlns aop:"http://www.springframework.org/schema/aop",
-                      jee:"http://www.springframework.org/schema/jee"
+                      util:"http://www.springframework.org/schema/util"
                 scopedList(ArrayList) { bean ->
                     bean.scope = "test"
                     aop.'scoped-proxy'()
                 }
 
-                jee.'jndi-lookup'(id:"foo", 'jndi-name':"bar")
+                util.list(id:"foo") {
+                    value "one"
+                    value "two"
+                }
 
             }
             appCtx = bb.createApplicationContext()
 
-            assertEquals "success", appCtx.getBean("foo")
+            assert ['one', 'two'] == appCtx.getBean("foo")
 
             assertNotNull appCtx.getBean("scopedList")
             assertNotNull appCtx.getBean("scopedList").size()
@@ -196,10 +197,6 @@ class BeanBuilderTests extends GroovyTestCase {
 
             // should only be true because bean not initialized until proxy called
             assertEquals 4, scope.instanceCount
-        }
-        finally {
-            builder.deactivate()
-        }
     }
 
     void testSpringAOPSupport() {
@@ -256,25 +253,18 @@ class BeanBuilderTests extends GroovyTestCase {
     }
 
     void testSpringNamespaceBean() {
-
-        SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder()
-        try {
-
-            builder.bind("bar", "success")
-            builder.activate()
-
-            bb.beans {
-                xmlns jee:"http://www.springframework.org/schema/jee"
-                jee.'jndi-lookup'(id:"foo", 'jndi-name':"bar")
+        bb.beans {
+            xmlns util:"http://www.springframework.org/schema/util"
+            util.list(id:"foo") {
+                value "one"
+                value "two"
             }
 
-            ApplicationContext appCtx = bb.createApplicationContext()
+        }
 
-            assertEquals "success", appCtx.getBean("foo")
-        }
-        finally {
-            builder.deactivate()
-        }
+        ApplicationContext appCtx = bb.createApplicationContext()
+
+        assert ['one', 'two'] == appCtx.getBean("foo")
     }
 
     void testNamedArgumentConstructor() {
