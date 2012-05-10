@@ -1,20 +1,17 @@
 includeTargets << grailsScript("_GrailsInit")
 
 USAGE = """
-    wrapper [--wrapperVersion=version] [--wrapperDir=dir] [--distributionUrl=url]
+    wrapper [--wrapperDir=dir] [--distributionUrl=url]
 
 where
-    --wrapperVersion = The version of Grails that the wrapper should use
     --wrapperDir = Directory where wrapper support files are installed relative to project root
     --distributationUrl = URL to the directory where the release may be downloaded from if necessary
     
 examples
-    grails wrapper --wrapperVersion=2.0.3
-    grails wrapper --wrapperDir=grailsWrapper --wrapperVersion=2.0.3
-    grails wrapper --wrapperVersion=2.0.0.RC1 --distributionUrl=http://dist.springframework.org.s3.amazonaws.com/milestone/GRAILS/
+    grails wrapper --wrapperDir=grailsWrapper
+    grails wrapper --wrapperDir=grailsWrapper --distributionUrl=http://dist.springframework.org.s3.amazonaws.com/milestone/GRAILS/
     
 optional argument default values
-    wrapperVersion = the version of Grails that the wrapper is being generated with ($grailsVersion)
     wrapperDir = 'wrapper'
     distributionUrl = 'http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/'
     
@@ -24,7 +21,6 @@ target ('default': "Installs the Grails wrapper") {
     depends(checkVersion, parseArguments)
     event 'InstallWrapperStart', [ 'Installing Wrapper...' ]
     
-    grailsWrapperVersion = argsMap.wrapperVersion ?: grailsVersion
     grailsDistUrl =  argsMap.distributionUrl ?: 'http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/'
     grailsWrapperDir = argsMap.wrapperDir ?: 'wrapper'
     
@@ -53,7 +49,6 @@ target ('default': "Installs the Grails wrapper") {
             include(name: 'grailsw*')
         }
     }
-    ant.replace(dir: targetDir, includes: '*.properties', token: '@wrapperVersion@', value: grailsWrapperVersion)
     ant.replace(dir: targetDir, includes: '*.properties', token: '@distributationUrl@', value: grailsDistUrl)
     ant.replace(dir: basedir, includes: 'grailsw*', token: '@wrapperDir@', value: grailsWrapperDir)
     ant.chmod(file: 'grailsw', perm: 'u+x')

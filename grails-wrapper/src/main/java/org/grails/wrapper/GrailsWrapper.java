@@ -22,12 +22,13 @@ import java.util.zip.ZipFile;
 public class GrailsWrapper {
     
     public static void main(final String[] args) throws Exception{
-        ResourceBundle bundle = ResourceBundle.getBundle("grails-wrapper");
-        final String grailsVersion = bundle.getString("wrapper.version");
+        final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
+        final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
+        final String grailsVersion = applicationBundle.getString("app.grails.version");
         final File grailsCacheDir =  new File(System.getProperty("user.home") + "/.grails/");
         final File grailsVersionDir = new File(grailsCacheDir, grailsVersion);
         final File wrapperDir = new File(grailsVersionDir, "wrapper");
-        String distUrl = bundle.getString("wrapper.dist.url");
+        String distUrl = wrapperBundle.getString("wrapper.dist.url");
         if(distUrl == null) {
             distUrl = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/";
         }
