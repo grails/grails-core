@@ -283,7 +283,7 @@ public abstract class AbstractIvyDependencyManager {
     /**
      * Obtains a set of plugin dependency descriptors defined in the project
      */
-    Set<DependencyDescriptor> getPluginDependencyDescriptors() {
+    public Set<DependencyDescriptor> getPluginDependencyDescriptors() {
         return pluginDependencyDescriptors;
     }
 
