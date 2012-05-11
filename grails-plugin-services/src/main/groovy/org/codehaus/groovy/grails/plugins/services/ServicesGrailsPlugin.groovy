@@ -46,7 +46,7 @@ class ServicesGrailsPlugin {
         xmlns tx:"http://www.springframework.org/schema/tx"
         tx.'annotation-driven'('transaction-manager':'transactionManager')
 
-        def aliasNameToListOfBeanNames = [:]
+        def aliasNameToListOfBeanNames = [:].withDefault { key -> [] }
         def registeredBeanNames = []
         for (serviceGrailsClass in application.serviceClasses) {
             GrailsServiceClass serviceClass = serviceGrailsClass
@@ -56,7 +56,7 @@ class ServicesGrailsPlugin {
             if(providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
                 beanName = "${providingPlugin.name}${serviceClass.shortName}"
                 def aliasName = serviceClass.propertyName
-                aliasNameToListOfBeanNames.get(aliasName, []) << beanName 
+                aliasNameToListOfBeanNames[aliasName] << beanName 
             } else {
                 beanName = serviceClass.propertyName
             }
