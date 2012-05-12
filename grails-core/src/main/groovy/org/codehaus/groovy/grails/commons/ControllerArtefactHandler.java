@@ -18,15 +18,19 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Marc Palmer (marc@anyware.co.uk)
 */
 public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
+	private static final GrailsClass NO_CONTROLLER = new AbstractGrailsClass(Object.class, "Controller") {};
+	
     public static final String TYPE = "Controller";
     public static final String PLUGIN_NAME = "controllers";
     private ConcurrentHashMap<String, GrailsClass> uriToControllerClassCache;
+    private LinkedBlockingQueue<String> uriToControllerClassKeys;
     private ArtefactInfo artefactInfo;
 
     public ControllerArtefactHandler() {
@@ -37,6 +41,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
     @Override
     public void initialize(ArtefactInfo artefacts) {
         uriToControllerClassCache = new ConcurrentHashMap<String, GrailsClass>();
+        uriToControllerClassKeys = new LinkedBlockingQueue<String>(10000);
         artefactInfo = artefacts;
     }
 
@@ -63,12 +68,26 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
                     break;
                 }
             }
-            if (controllerClass != null) {
-                // don't cache for dev environment
-                if (Environment.getCurrent() != Environment.DEVELOPMENT) {
-                    uriToControllerClassCache.putIfAbsent(uri, controllerClass);
+            if (controllerClass == null) {
+            	controllerClass = NO_CONTROLLER;
+            }
+            
+            // don't cache for dev environment
+            if (Environment.getCurrent() != Environment.DEVELOPMENT) {
+            	
+            	// implement a soft limit on the max number of elements in cache
+            	// the actual count can be uriToControllerClassKeys' capacity + concurrent threads (which should be limited by the container)
+                if (uriToControllerClassCache.putIfAbsent(uri, controllerClass) == null) {
+                	while (!uriToControllerClassKeys.offer(uri)) {
+                		String oldest = uriToControllerClassKeys.poll();
+                		uriToControllerClassCache.remove(oldest);
+                	}
                 }
             }
+        }
+        
+        if (controllerClass == NO_CONTROLLER) {
+        	controllerClass = null;
         }
         return controllerClass;
     }
