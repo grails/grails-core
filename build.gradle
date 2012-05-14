@@ -35,7 +35,7 @@ ext {
     jlineVersion = "1.0"
     jnaVersion = "3.2.3"
     slf4jVersion = "1.6.2"
-    springLoadedVersion = "1.0.5"
+    springLoadedVersion = "1.0.6"
     springVersion = "3.1.0.RELEASE"
     springWebflowVersion= "2.0.8.RELEASE"
     hibernateVersion = "3.6.10.Final"
