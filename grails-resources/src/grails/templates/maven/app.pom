@@ -81,6 +81,14 @@
 
         <dependency>
             <groupId>org.grails.plugins</groupId>
+            <artifactId>cache</artifactId>
+            <version>1.0.0.M2</version>
+            <type>zip</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.grails.plugins</groupId>
             <artifactId>database-migration</artifactId>
             <version>1.1</version>
             <type>zip</type>
