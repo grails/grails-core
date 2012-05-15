@@ -333,7 +333,9 @@ class PluginInstallEngine {
         def installScript = new File("${pluginInstallPath}/scripts/_Install.groovy")
         runPluginScript(installScript, fullPluginName, "post-install script")
 
-        registerPluginWithMetadata(pluginName, pluginVersion)
+        if(!isResolve) {
+            registerPluginWithMetadata(pluginName, pluginVersion)
+        }
         pluginSettings.clearCache()
         pluginSettings.registerNewPluginInstall(pluginZip)
 

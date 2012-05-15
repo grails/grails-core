@@ -124,6 +124,9 @@ class PluginBuildSettings {
 
     void registerNewPluginInstall(File zip) {
          switch(zip) {
+             case buildSettings.pluginBuildDependencies:
+                 registerPluginZipWithScope(zip, buildScopePluginInfo)
+                 break
              case buildSettings.pluginCompileDependencies:
                   registerPluginZipWithScope(zip, compileScopePluginInfo)
                   break
@@ -136,9 +139,7 @@ class PluginBuildSettings {
              case buildSettings.pluginProvidedDependencies:
                   registerPluginZipWithScope(zip, providedScopePluginInfo)
                   break
-             case buildSettings.pluginBuildDependencies:
-                  registerPluginZipWithScope(zip, buildScopePluginInfo)
-                  break
+
          }
     }
 
