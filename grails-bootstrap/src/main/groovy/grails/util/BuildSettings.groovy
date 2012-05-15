@@ -446,6 +446,7 @@ class BuildSettings extends AbstractBuildSettings {
     }()
 
     private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
+        jarFiles = jarFiles?.findAll { it != null} ?: []
         def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
         for (z in pluginZips) {
             if (!pluginDependencies.contains(z)) {
