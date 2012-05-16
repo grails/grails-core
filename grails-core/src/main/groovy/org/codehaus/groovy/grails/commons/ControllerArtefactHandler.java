@@ -17,17 +17,30 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
 
-import java.util.concurrent.ConcurrentHashMap;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 /**
+ * Lookup controllers for uris.
+ * 
+ * <p>This class is responsible for looking up controller classes for uris.</p>
+ * 
+ * <p>Lookups are cached in non-development mode, and the cache size can be controlled using the grails.urlmapping.cache.maxsize config property.</p>
+ * 
  * @author Marc Palmer (marc@anyware.co.uk)
 */
-public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
+public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements GrailsApplicationAware {
 
+	private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
+	private static final GrailsClass NO_CONTROLLER = new AbstractGrailsClass(Object.class, "Controller") {};
+	
     public static final String TYPE = "Controller";
     public static final String PLUGIN_NAME = "controllers";
-    private ConcurrentHashMap<String, GrailsClass> uriToControllerClassCache;
+    private ConcurrentLinkedHashMap<String, GrailsClass> uriToControllerClassCache;
     private ArtefactInfo artefactInfo;
+
+	private GrailsApplication grailsApplication;
 
     public ControllerArtefactHandler() {
         super(TYPE, GrailsControllerClass.class, DefaultGrailsControllerClass.class,
@@ -36,7 +49,16 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
 
     @Override
     public void initialize(ArtefactInfo artefacts) {
-        uriToControllerClassCache = new ConcurrentHashMap<String, GrailsClass>();
+    	Object cacheSize = grailsApplication.getFlatConfig().get(URL_MAPPING_CACHE_MAX_SIZE);
+    	if (cacheSize == null) {
+    		cacheSize = 10000;
+    	}
+        
+    	uriToControllerClassCache = new ConcurrentLinkedHashMap.Builder<String, GrailsClass>()
+    			.initialCapacity(500)
+                .maximumWeightedCapacity(new Integer(cacheSize.toString()))
+                .build();
+    	
         artefactInfo = artefacts;
     }
 
@@ -63,13 +85,23 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter {
                     break;
                 }
             }
-            if (controllerClass != null) {
-                // don't cache for dev environment
-                if (Environment.getCurrent() != Environment.DEVELOPMENT) {
-                    uriToControllerClassCache.putIfAbsent(uri, controllerClass);
-                }
+            if (controllerClass == null) {
+            	controllerClass = NO_CONTROLLER;
             }
+            
+            // don't cache for dev environment
+            if (Environment.getCurrent() != Environment.DEVELOPMENT) {
+                uriToControllerClassCache.put(uri, controllerClass);
+            }
+        }
+        
+        if (controllerClass == NO_CONTROLLER) {
+        	controllerClass = null;
         }
         return controllerClass;
     }
+
+	public void setGrailsApplication(GrailsApplication grailsApplication) {
+		this.grailsApplication = grailsApplication;
+	}
 }
