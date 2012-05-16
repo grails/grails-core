@@ -137,24 +137,24 @@ class UrlMappingsTestMixinTests {
             }
         }
     }
-	
-	@Test
-	voide testGrails9110() {
-		mockController(UserController)
-		mockUrlMappings(GRAILS9110UrlMappings)
-		shouldfail(ComparisonFailure) {
-			assertForwardUrlMapping("/user", controller:"user", action:"publicProfile") {
-				param1 = "true"
-			}
-		}
-		assertForwardUrlMapping("/user", controller:"user", action:"publicProfile") {
-			boolParam = true
-			strParam = "string"
-			numParam = 123
-			objParam = [test:true]
-			dateParam = new Date(1)
-		}
-	}
+    
+    @Test
+    void testGrails9110() {
+        mockController(UserController)
+        mockUrlMappings(GRAILS9110UrlMappings)
+        shouldFail(ComparisonFailure) {
+            assertForwardUrlMapping("/user", controller:"user", action:"publicProfile") {
+                param1 = "true"
+            }
+        }
+        assertForwardUrlMapping("/user", controller:"user", action:"publicProfile") {
+            boolParam = true
+            strParam = "string"
+            numParam = 123
+            objParam = [test:true]
+            dateParam = new Date(1)
+        }
+    }
 }
 
 class AnotherUrlMappings {
@@ -200,12 +200,13 @@ class GRAILS5222UrlMappings {
 }
 
 class GRAILS9110UrlMappings {
-	static mappings = {
-		"/user"(controller:"user", action:"publicProfile") {
-			boolParam = true
-			strParam = "string"
-			numParam = 123
-			dateParam = new Date(1)
-		}
-	}
+    static mappings = {
+        "/user"(controller:"user", action:"publicProfile") {
+            boolParam = true
+            strParam = "string"
+            numParam = 123
+            objParam = [test:true]
+            dateParam = new Date(1)
+        }
+    }
 }
