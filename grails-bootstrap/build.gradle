@@ -25,10 +25,6 @@ dependencies {
         }
     }
 
-    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-	
     // These 3 are required by UAA but not Grails (non OSGI version of excludes above)
     compile 'com.google.protobuf:protobuf-java:2.4.1',
             'com.googlecode.json-simple:json-simple:1.1',
