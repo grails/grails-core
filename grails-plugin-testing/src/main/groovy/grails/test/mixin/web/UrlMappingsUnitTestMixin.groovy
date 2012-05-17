@@ -234,7 +234,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
                 paramAssertions.resolveStrategy = Closure.DELEGATE_ONLY
                 paramAssertions.call()
                 params.each {name, value ->
-                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value.toString(), mapping.params[name])
+                    assertEquals("Url mapping '$name' parameter assertion for '$url' failed", value, mapping.params[name])
                 }
             }
             return true

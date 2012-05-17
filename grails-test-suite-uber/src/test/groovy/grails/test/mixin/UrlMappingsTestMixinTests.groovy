@@ -137,6 +137,24 @@ class UrlMappingsTestMixinTests {
             }
         }
     }
+    
+    @Test
+    void testGrails9110() {
+        mockController(UserController)
+        mockUrlMappings(GRAILS9110UrlMappings)
+        shouldFail(ComparisonFailure) {
+            assertForwardUrlMapping("/user", controller:"user", action:"publicProfile") {
+                param1 = "true"
+            }
+        }
+        assertForwardUrlMapping("/user", controller:"user", action:"publicProfile") {
+            boolParam = true
+            strParam = "string"
+            numParam = 123
+            objParam = [test:true]
+            dateParam = new Date(1)
+        }
+    }
 }
 
 class AnotherUrlMappings {
@@ -177,6 +195,18 @@ class GRAILS5222UrlMappings {
         "/user/$idText?"{
             controller = "user"
             action = "publicProfile"
+        }
+    }
+}
+
+class GRAILS9110UrlMappings {
+    static mappings = {
+        "/user"(controller:"user", action:"publicProfile") {
+            boolParam = true
+            strParam = "string"
+            numParam = 123
+            objParam = [test:true]
+            dateParam = new Date(1)
         }
     }
 }
