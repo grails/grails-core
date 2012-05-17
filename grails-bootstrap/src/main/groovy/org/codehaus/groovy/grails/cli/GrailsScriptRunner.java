@@ -231,6 +231,7 @@ public class GrailsScriptRunner {
             try {
                 int exitCode = scriptRunner.executeCommand(commandLine,
                         script.name, script.env);
+                GrailsConsole.getInstance().flush();
                 System.exit(exitCode);
             }
             catch (ScriptNotFoundException ex) {
@@ -257,12 +258,14 @@ public class GrailsScriptRunner {
     }
 
     private static void exitWithError(String error, Throwable t) {
+        GrailsConsole grailsConsole = GrailsConsole.getInstance();
         if (t != null) {
-            GrailsConsole.getInstance().error(error, t);
+            grailsConsole.error(error, t);
         }
         else {
-            GrailsConsole.getInstance().error(error);
+            grailsConsole.error(error);
         }
+        grailsConsole.flush();
         System.exit(1);
     }
 
@@ -367,6 +370,7 @@ public class GrailsScriptRunner {
             BuildSettingsHolder.setSettings(settings);
             return callPluginOrGrailsScript(commandLine, scriptName, env);
         } finally {
+            GrailsConsole.getInstance().flush();
             BuildSettingsHolder.setSettings(null);
         }
     }
@@ -492,7 +496,7 @@ public class GrailsScriptRunner {
 
         // Get Gant to load the class by name using our class loader.
         ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(commandLine,
-                settings, pluginPathSupport, isInteractive);
+                classLoader, settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
 
         try {
@@ -537,7 +541,7 @@ public class GrailsScriptRunner {
 
         // Setup the script to call.
         ScriptBindingInitializer bindingInitializer = new ScriptBindingInitializer(
-                commandLine, settings, pluginPathSupport, isInteractive);
+                commandLine, classLoader,settings, pluginPathSupport, isInteractive);
         Gant gant = new Gant(bindingInitializer.initBinding(binding, scriptName), classLoader);
         gant.setUseCache(true);
         gant.setCacheDirectory(scriptCacheDir);

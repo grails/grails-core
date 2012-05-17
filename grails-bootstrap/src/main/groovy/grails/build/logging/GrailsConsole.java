@@ -799,4 +799,8 @@ public class GrailsConsole {
             postPrintMessage();
         }
     }
+
+    public void flush() {
+        out.flush();
+    }
 }
