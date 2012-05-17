@@ -26,7 +26,7 @@ import java.net.ServerSocket
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
-import org.grails.plugins.tomcat.TomcatKillSwitch
+
 
 /**
  * Gant script that executes Grails using an embedded server.
@@ -241,7 +241,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         killFile.delete()
     }
 
-    while (keepRunning && TomcatKillSwitch.active) {
+    while (keepRunning && Boolean.getBoolean("TomcatKillSwitch.active")) {
         sleep(recompileFrequency * 1000)
 
         // Check whether the kill file exists. This is a hack for the
