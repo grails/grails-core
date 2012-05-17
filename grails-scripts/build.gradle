@@ -16,8 +16,7 @@ dependencies {
             project(':grails-plugin-controllers'),
             project(':grails-plugin-log4j'),
             project(":grails-test"),
-            project(":grails-plugin-testing"),
-            project(":grails-plugin-tomcat"),
+            project(":grails-plugin-testing")
             project(":grails-resources")
 }
 
