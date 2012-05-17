@@ -19,6 +19,7 @@ import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
 import groovy.util.AntBuilder;
 
 import java.beans.IntrospectionException;
@@ -27,10 +28,8 @@ import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URLClassLoader;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,17 +53,30 @@ import org.springframework.util.ReflectionUtils;
 public class ScriptBindingInitializer {
 
     private static final Pattern pluginDescriptorPattern = Pattern.compile("^(\\S+)GrailsPlugin.groovy$");
+    public static final String GRAILS_SCRIPT = "grailsScript";
+    public static final String GRAILS_CONSOLE = "grailsConsole";
+    public static final String GRAILS_SETTINGS = "grailsSettings";
+    public static final String BASEDIR = "basedir";
+    public static final String SCAFFOLD_DIR = "scaffoldDir";
+    public static final String BASE_FILE = "baseFile";
+    public static final String BASE_NAME = "baseName";
+    public static final String GRAILS_HOME = "grailsHome";
+    public static final String GRAILS_VERSION = "grailsVersion";
+    public static final String USER_HOME = "userHome";
+    public static final String GRAILS_ENV = "grailsEnv";
 
     private BuildSettings settings;
     private PluginPathDiscoverySupport pluginPathSupport;
     private boolean isInteractive;
     private CommandLine commandLine;
+    private URLClassLoader classLoader;
 
-    public ScriptBindingInitializer(CommandLine commandLine, BuildSettings settings, PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
+    public ScriptBindingInitializer(CommandLine commandLine, URLClassLoader classLoader, BuildSettings settings, PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
         this.commandLine = commandLine;
         this.settings = settings;
         this.pluginPathSupport = pluginPathSupport;
         isInteractive = interactive;
+        this.classLoader = classLoader;
     }
 
     /**
@@ -90,21 +102,22 @@ public class ScriptBindingInitializer {
          argsMap.put("params", commandLine.getRemainingArgs());
          binding.setVariable("argsMap", argsMap);
          binding.setVariable("args", commandLine.getRemainingArgsLineSeparated());
-         binding.setVariable("grailsScript", c);
-         binding.setVariable("grailsConsole", GrailsConsole.getInstance());
-         binding.setVariable("grailsSettings", settings);
+         binding.setVariable(GRAILS_SCRIPT, c);
+         final GrailsConsole grailsConsole = GrailsConsole.getInstance();
+         binding.setVariable(GRAILS_CONSOLE, grailsConsole);
+         binding.setVariable(GRAILS_SETTINGS, settings);
 
          // Add other binding variables, such as Grails version and environment.
          final File basedir = settings.getBaseDir();
          final String baseDirPath = basedir.getPath();
-         binding.setVariable("basedir", baseDirPath);
-         binding.setVariable("scaffoldDir", baseDirPath + "/web-app/WEB-INF/templates/scaffolding");
-         binding.setVariable("baseFile", basedir);
-         binding.setVariable("baseName", basedir.getName());
-         binding.setVariable("grailsHome", (settings.getGrailsHome() != null ? settings.getGrailsHome().getPath() : null));
-         binding.setVariable("grailsVersion", settings.getGrailsVersion());
-         binding.setVariable("userHome", settings.getUserHome());
-         binding.setVariable("grailsEnv", settings.getGrailsEnv());
+         binding.setVariable(BASEDIR, baseDirPath);
+         binding.setVariable(SCAFFOLD_DIR, baseDirPath + "/web-app/WEB-INF/templates/scaffolding");
+         binding.setVariable(BASE_FILE, basedir);
+         binding.setVariable(BASE_NAME, basedir.getName());
+         binding.setVariable(GRAILS_HOME, (settings.getGrailsHome() != null ? settings.getGrailsHome().getPath() : null));
+         binding.setVariable(GRAILS_VERSION, settings.getGrailsVersion());
+         binding.setVariable(USER_HOME, settings.getUserHome());
+         binding.setVariable(GRAILS_ENV, settings.getGrailsEnv());
          binding.setVariable("defaultEnv", Boolean.valueOf(settings.getDefaultEnv()));
          binding.setVariable("buildConfig", settings.getConfig());
          binding.setVariable("rootLoader", settings.getRootLoader());
@@ -130,7 +143,14 @@ public class ScriptBindingInitializer {
          // setup Ant alias for older scripts
          binding.setVariable("Ant", binding.getVariable("ant"));
 
-         final BaseSettingsApi cla = new BaseSettingsApi(settings, isInteractive);
+         GroovyClassLoader eventsClassLoader = new GroovyClassLoader(classLoader);
+         GrailsBuildEventListener buildEventListener = new GrailsBuildEventListener(eventsClassLoader, binding, settings);
+         binding.setVariable("eventsClassLoader", eventsClassLoader);
+         binding.setVariable("eventListener", buildEventListener);
+         binding.addBuildListener(buildEventListener);
+
+
+         final BaseSettingsApi cla = new BaseSettingsApi(settings, buildEventListener, isInteractive);
 
          // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
          if (scriptName.equals("RunApp")) {
@@ -163,7 +183,7 @@ public class ScriptBindingInitializer {
                      descriptors.add(pluginDescriptor);
                  }
                  else {
-                     GrailsConsole.getInstance().log("Cannot find plugin descriptor for path '" + dir.getPath() + "'.");
+                     grailsConsole.log("Cannot find plugin descriptor for path '" + dir.getPath() + "'.");
                  }
              }
 
