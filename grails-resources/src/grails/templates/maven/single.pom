@@ -32,6 +32,15 @@
 
         @dependencies@
 
+        <dependency>
+            <groupId>org.grails.plugins</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${grails.version}</version>
+            <type>zip</type>
+            <scope>provided</scope>
+        </dependency>
+
+
         @plugins@
 
 

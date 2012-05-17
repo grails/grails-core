@@ -51,11 +51,13 @@ class MavenPomGenerator extends BaseSettingsApi{
         addDependenciesForScope(dependencyManager, "runtime", dependencies)
         addDependenciesForScope(dependencyManager, "test", dependencies)
         addDependenciesForScope(dependencyManager, "provided", dependencies)
+        addDependenciesForScope(dependencyManager, "build", dependencies, "provided")
         List<String> plugins = []
         addDependenciesForScope(dependencyManager, "compile", plugins, "<type>zip</type>")
         addDependenciesForScope(dependencyManager, "runtime", plugins, "<type>zip</type>")
         addDependenciesForScope(dependencyManager, "test", plugins, "<type>zip</type>")
         addDependenciesForScope(dependencyManager, "provided", plugins, "<type>zip</type>")
+        addDependenciesForScope(dependencyManager, "build", plugins, "<type>zip</type>", "provided")
 
 
         def ant = new AntBuilder()
@@ -70,7 +72,7 @@ class MavenPomGenerator extends BaseSettingsApi{
         }
     }
 
-    def addDependenciesForScope(IvyDependencyManager dependencyManager, String scope, ArrayList<String> dependencies, String type = "") {
+    def addDependenciesForScope(IvyDependencyManager dependencyManager, String scope, ArrayList<String> dependencies, String type = "", String newScope = null) {
         final appDependencies = type ? dependencyManager.pluginDependencyDescriptors : dependencyManager.getApplicationDependencyDescriptors(scope)
         dependencies.addAll(appDependencies.findAll {  EnhancedDefaultDependencyDescriptor dd -> dd.scope == scope }.collect() {  EnhancedDefaultDependencyDescriptor dd ->
             """
@@ -78,7 +80,7 @@ class MavenPomGenerator extends BaseSettingsApi{
         <groupId>$dd.dependencyId.organisation</groupId>
         <artifactId>$dd.dependencyId.name</artifactId>
         <version>$dd.dependencyRevisionId.revision</version>
-        <scope>runtime</scope>
+        <scope>${ newScope ?: scope }</scope>
         $type
     </dependency>
                     """.toString()
