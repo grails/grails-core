@@ -1260,13 +1260,15 @@ public final class GrailsDomainBinder {
         if (tableName == null) {
             String shortName = domainClass.getShortName();
             final GrailsApplication grailsApplication = domainClass.getGrailsApplication();
-            final ApplicationContext mainContext = grailsApplication.getMainContext();
-            if(mainContext != null && mainContext.containsBean("pluginManager")) {
-                final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
+            if(grailsApplication != null) {
                 if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.gorm.table.prefix.enabled"))) {
-                    final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
-                    if(pluginForClass != null) {
-                        shortName = pluginForClass.getName() + shortName;
+                    final ApplicationContext mainContext = grailsApplication.getMainContext();
+                    if(mainContext != null && mainContext.containsBean("pluginManager")) {
+                        final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
+                        final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
+                        if(pluginForClass != null) {
+                            shortName = pluginForClass.getName() + shortName;
+                        }
                     }
                 }
             }
