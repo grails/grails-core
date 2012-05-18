@@ -47,6 +47,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
         def resultProperty = "tomcat.result"
 
+        System.setProperty("TomcatKillSwitch.active", "true");
         Thread.start("tomcat process runner") {
             ant.java(classname: IsolatedTomcat.name, fork: true, failonerror: false, output: outFile, error: errFile, resultproperty: resultProperty) {
 
@@ -79,6 +80,20 @@ class IsolatedWarTomcatServer extends TomcatServer {
         }
 
         Runtime.addShutdownHook { this.stop() }
+        Thread.start {
+            // start a thread to monitor kill if server was killed
+            sleep(10000)
+            while(true) {
+                try {
+                    new Socket(host, httpPort)
+                    sleep(5000)
+                } catch (e) {
+                    println "bad"
+                    System.setProperty("TomcatKillSwitch.active", "false");
+                    break
+                }
+            }
+        }
 
         def timeoutSecs = getConfigParam('startupTimeoutSecs') ?: DEFAULT_STARTUP_TIMEOUT_SECS
         def interval = 500 // half a second
@@ -117,7 +132,10 @@ class IsolatedWarTomcatServer extends TomcatServer {
     }
 
     protected Collection<File> findTomcatJars(BuildSettings buildSettings) {
-        return buildSettings.buildDependencies.findAll { it.name.contains("tomcat") } + buildSettings.compileDependencies.findAll { it.name.contains("tomcat") } + buildSettings.runtimeDependencies.findAll { it.name.contains("tomcat") }
+        return buildSettings.buildDependencies.findAll { it.name.contains("tomcat") } +
+                buildSettings.compileDependencies.findAll { it.name.contains("tomcat") } +
+                    buildSettings.runtimeDependencies.findAll { it.name.contains("tomcat") } +
+                        buildSettings.providedDependencies.findAll { it.name.contains("tomcat") }
     }
 
     void stop() {
