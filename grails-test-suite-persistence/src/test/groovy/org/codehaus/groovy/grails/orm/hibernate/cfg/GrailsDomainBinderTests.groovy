@@ -19,11 +19,11 @@ import java.lang.reflect.Field
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.TestClass
 import org.hibernate.cfg.ImprovedNamingStrategy
@@ -817,6 +817,68 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testTableNamePrefixing() {
+        def widgetClass = new DefaultGrailsDomainClass(
+                    cl.parseClass('''
+class WidgetClass {
+    Long id
+    Long version
+}'''))
+        def gadgetClass = new DefaultGrailsDomainClass(
+                    cl.parseClass('''
+class GadgetClass {
+    Long id
+    Long version
+}'''))
+        
+        def grailsApplication = new DefaultGrailsApplication([widgetClass.clazz, gadgetClass.clazz] as Class[], cl)
+                
+        def pluginMap = [:]
+        pluginMap.getName = { -> 'MyPlugin' }
+        def myPlugin = pluginMap as org.codehaus.groovy.grails.plugins.GrailsPlugin
+                
+        def pluginManagerMap = [:]
+        pluginManagerMap.getPluginForClass = { Class clz ->
+            if(clz?.name == 'GadgetClass') {
+                return myPlugin
+            }
+            return null
+        }
+        def pluginManager = pluginManagerMap as org.codehaus.groovy.grails.plugins.GrailsPluginManager
+
+        // no config property specified        
+        def cfg = new ConfigSlurper().parse('''
+''')
+        grailsApplication.config = cfg
+        def config = getDomainConfig(grailsApplication, pluginManager)
+        def persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("gadget_class", persistentClass.table.name)
+        
+        // config property is true
+        cfg = new ConfigSlurper().parse('''
+grails.gorm.table.prefix.enabled = true
+''')
+        grailsApplication.config = cfg
+        config = getDomainConfig(grailsApplication, pluginManager)
+        persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("my_plugin_gadget_class", persistentClass.table.name)
+        
+        // config property is false
+        cfg = new ConfigSlurper().parse('''
+grails.gorm.table.prefix.enabled = false
+''')
+        grailsApplication.config = cfg
+        config = getDomainConfig(grailsApplication, pluginManager)
+        persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("gadget_class", persistentClass.table.name)
+    }
+    
     void testCustomNamingStrategy() {
 
         // somewhat artificial in that it doesn't test that setting the property
@@ -961,7 +1023,15 @@ class Alert {
     }
 
     private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, classes) {
-        GrailsApplication grailsApplication = new DefaultGrailsApplication(classes as Class[], cl)
+        def grailsApplication = new DefaultGrailsApplication(classes as Class[], cl)
+        def pluginManager = new MockGrailsPluginManager(grailsApplication);
+        getDomainConfig grailsApplication, pluginManager
+    }
+    
+    private DefaultGrailsDomainConfiguration getDomainConfig(grailsApplication, pluginManager) {
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean 'pluginManager', pluginManager
+        grailsApplication.setMainContext(mainContext);
         grailsApplication.initialise()
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration(
             grailsApplication: grailsApplication)

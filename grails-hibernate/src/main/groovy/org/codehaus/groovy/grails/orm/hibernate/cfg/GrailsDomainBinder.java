@@ -45,6 +45,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareJoinedSubclassEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareSingleTableEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
@@ -1256,7 +1258,19 @@ public final class GrailsDomainBinder {
             tableName = m.getTableName();
         }
         if (tableName == null) {
-            tableName = getNamingStrategy(sessionFactoryBeanName).classToTableName(domainClass.getShortName());
+            String shortName = domainClass.getShortName();
+            final GrailsApplication grailsApplication = domainClass.getGrailsApplication();
+            final ApplicationContext mainContext = grailsApplication.getMainContext();
+            if(mainContext != null && mainContext.containsBean("pluginManager")) {
+                final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
+                if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.gorm.table.prefix.enabled"))) {
+                    final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
+                    if(pluginForClass != null) {
+                        shortName = pluginForClass.getName() + shortName;
+                    }
+                }
+            }
+            tableName = getNamingStrategy(sessionFactoryBeanName).classToTableName(shortName);
         }
         return tableName;
     }
