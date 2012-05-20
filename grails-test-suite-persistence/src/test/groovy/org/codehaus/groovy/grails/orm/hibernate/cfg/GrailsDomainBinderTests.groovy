@@ -824,6 +824,13 @@ class WidgetClass {
     Long id
     Long version
 }'''))
+        def personClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class MyPluginPersonClass {
+    Long id
+    Long version
+}'''))
+
         def gadgetClass = new DefaultGrailsDomainClass(
                     cl.parseClass('''
 class GadgetClass {
@@ -831,15 +838,16 @@ class GadgetClass {
     Long version
 }'''))
         
-        def grailsApplication = new DefaultGrailsApplication([widgetClass.clazz, gadgetClass.clazz] as Class[], cl)
+        def grailsApplication = new DefaultGrailsApplication([widgetClass.clazz, gadgetClass.clazz, personClass.clazz] as Class[], cl)
                 
         def pluginMap = [:]
         pluginMap.getName = { -> 'MyPlugin' }
         def myPlugin = pluginMap as org.codehaus.groovy.grails.plugins.GrailsPlugin
                 
         def pluginManagerMap = [:]
+        def pluginDomainClassNames = ['GadgetClass', 'MyPluginPersonClass']
         pluginManagerMap.getPluginForClass = { Class clz ->
-            if(clz?.name == 'GadgetClass') {
+            if(pluginDomainClassNames.contains(clz?.name)) {
                 return myPlugin
             }
             return null
@@ -855,7 +863,9 @@ class GadgetClass {
         assertEquals("widget_class", persistentClass.table.name)
         persistentClass = config.getClassMapping("GadgetClass")
         assertEquals("gadget_class", persistentClass.table.name)
-        
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+
         // config property is true
         cfg = new ConfigSlurper().parse('''
 grails.gorm.table.prefix.enabled = true
@@ -866,7 +876,9 @@ grails.gorm.table.prefix.enabled = true
         assertEquals("widget_class", persistentClass.table.name)
         persistentClass = config.getClassMapping("GadgetClass")
         assertEquals("my_plugin_gadget_class", persistentClass.table.name)
-        
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+
         // config property is false
         cfg = new ConfigSlurper().parse('''
 grails.gorm.table.prefix.enabled = false
@@ -877,6 +889,8 @@ grails.gorm.table.prefix.enabled = false
         assertEquals("widget_class", persistentClass.table.name)
         persistentClass = config.getClassMapping("GadgetClass")
         assertEquals("gadget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
     }
     
     void testCustomNamingStrategy() {

@@ -1267,7 +1267,10 @@ public final class GrailsDomainBinder {
                         final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
                         final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
                         if(pluginForClass != null) {
-                            shortName = pluginForClass.getName() + shortName;
+                            final String pluginName = pluginForClass.getName();
+                            if(!shortName.toLowerCase().startsWith(pluginName.toLowerCase())) {
+                                shortName = pluginName + shortName;
+                            }
                         }
                     }
                 }
