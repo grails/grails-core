@@ -47,19 +47,8 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
         });
     }
 
-    private static ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
-        }
-    };
-
-    private static ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>() {
-        @Override
-        protected Integer initialValue() {
-            return Integer.valueOf(0);
-        }
-    };
+    private static ThreadLocal<Boolean> participate = new ThreadLocal<Boolean>();
+    private static ThreadLocal<Integer> nestingCount = new ThreadLocal<Integer>();
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.PersistenceContextInterceptor#destroy()
@@ -170,25 +159,28 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
     }
 
     private int incNestingCount() {
-        int value = nestingCount.get().intValue() + 1;
-        nestingCount.set(Integer.valueOf(value));
+        Integer current = nestingCount.get();
+        int value = (current != null) ? current + 1 : 1;
+        nestingCount.set(value);
         return value;
     }
 
     private int decNestingCount() {
-        int value = nestingCount.get().intValue() - 1;
+        Integer current = nestingCount.get();
+        int value = (current != null) ? current - 1 : 0;
         if (value < 0) {
             value = 0;
         }
-        nestingCount.set(Integer.valueOf(value));
+        nestingCount.set(value);
         return value;
     }
 
     private void setParticipate(boolean flag) {
-        participate.set(Boolean.valueOf(flag));
+        participate.set(flag);
     }
 
     private boolean getParticipate() {
-        return participate.get().booleanValue();
+        Boolean ret = participate.get();
+        return (ret != null) ? ret : false;
     }
 }

@@ -25,11 +25,11 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- * RemoteFileHelper class used by {@link GrailsWrapper} for wrapper.  This source code borrows
- * signicantly from Gradle's org.gradlew.rapper.Download.java.
  *
+ * RemoteFileHelper class used by {@link GrailsWrapper} for wrapper
+ *
+ * @author Jeff Brown
  * @author Hans Dockter
- * 
  * @since 2.1
  */
 public class RemoteFileHelper {
