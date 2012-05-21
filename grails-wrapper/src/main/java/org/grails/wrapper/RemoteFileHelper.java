@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URLConnection;
 
 /**
- *
  * RemoteFileHelper class used by {@link GrailsWrapper} for wrapper
  *
  * @author Jeff Brown
