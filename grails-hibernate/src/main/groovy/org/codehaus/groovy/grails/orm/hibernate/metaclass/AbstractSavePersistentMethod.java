@@ -69,12 +69,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * the value. Note that this only works because the session is
      * flushed when a domain instance is saved without validation.
      */
-    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>() {
-        @Override
-        protected Set<Integer> initialValue() {
-            return new HashSet<Integer>();
-        }
-    };
+    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>();
 
     static {
         ShutdownOperations.addOperation(new Runnable() {
@@ -84,17 +79,24 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         });
     }
 
-    public static boolean isAutoValidationDisabled(Object obj) {
+    private static Set<Integer> getDisableAutoValidationFor() {
         Set<Integer> identifiers = disableAutoValidationFor.get();
+        if (identifiers == null)
+            disableAutoValidationFor.set(identifiers = new HashSet<Integer>());
+        return identifiers;
+    }
+
+    public static boolean isAutoValidationDisabled(Object obj) {
+        Set<Integer> identifiers = getDisableAutoValidationFor();
         return obj != null && identifiers.contains(System.identityHashCode(obj));
     }
 
     public static void clearDisabledValidations(Object obj) {
-        disableAutoValidationFor.get().remove(System.identityHashCode(obj));
+        getDisableAutoValidationFor().remove(System.identityHashCode(obj));
     }
 
     public static void clearDisabledValidations() {
-        disableAutoValidationFor.get().clear();
+        getDisableAutoValidationFor().clear();
     }
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
@@ -199,7 +201,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         }
 
         if (!shouldValidate) {
-            Set<Integer> identifiers = disableAutoValidationFor.get();
+            Set<Integer> identifiers = getDisableAutoValidationFor();
             identifiers.add(System.identityHashCode(target));
         }
 
