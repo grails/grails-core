@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.util.CollectionUtils;
+import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
@@ -1260,22 +1261,31 @@ public final class GrailsDomainBinder {
         if (tableName == null) {
             String shortName = domainClass.getShortName();
             final GrailsApplication grailsApplication = domainClass.getGrailsApplication();
-            if(grailsApplication != null) {
-                if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.gorm.table.prefix.enabled"))) {
-                    final ApplicationContext mainContext = grailsApplication.getMainContext();
-                    if(mainContext != null && mainContext.containsBean("pluginManager")) {
-                        final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
-                        final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
-                        if(pluginForClass != null) {
-                            final String pluginName = pluginForClass.getName();
-                            if(!shortName.toLowerCase().startsWith(pluginName.toLowerCase())) {
-                                shortName = pluginName + shortName;
+            if (grailsApplication != null) {
+                final ApplicationContext mainContext = grailsApplication.getMainContext();
+                if (mainContext != null && mainContext.containsBean("pluginManager")) {
+                    final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
+                    final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
+                    if (pluginForClass != null) {
+                        final String pluginName = pluginForClass.getName();
+                        boolean shouldApplyPluginPrefix = false;
+                        if (!shortName.toLowerCase().startsWith(pluginName.toLowerCase())) {
+                            final String pluginSpecificConfigProperty = "grails.gorm." + GrailsNameUtils.getPropertyName(pluginName) + ".table.prefix.enabled";
+                            final Map<String, Object> flatConfig = grailsApplication.getFlatConfig();
+                            if(flatConfig.containsKey(pluginSpecificConfigProperty)) {
+                                shouldApplyPluginPrefix = Boolean.TRUE.equals(flatConfig.get(pluginSpecificConfigProperty));
+                            } else {
+                                shouldApplyPluginPrefix = Boolean.TRUE.equals(flatConfig.get("grails.gorm.table.prefix.enabled"));
                             }
+                        }
+                        if(shouldApplyPluginPrefix) {
+                            shortName = pluginName + shortName;
                         }
                     }
                 }
             }
-            tableName = getNamingStrategy(sessionFactoryBeanName).classToTableName(shortName);
+            tableName = getNamingStrategy(sessionFactoryBeanName)
+                    .classToTableName(shortName);
         }
         return tableName;
     }
