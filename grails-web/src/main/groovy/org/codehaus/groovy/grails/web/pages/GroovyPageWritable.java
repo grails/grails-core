@@ -135,10 +135,7 @@ class GroovyPageWritable implements Writable {
             boolean newParentCreated = false;
 
             if (hasRequest) {
-                boolean isIncludeRequest = WebUtils.isIncludeRequest(request);
-                if(!isIncludeRequest) {
-                    parentBinding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
-                }
+                parentBinding = (GroovyPageBinding) request.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
                 if (parentBinding == null) {
                     if (webRequest != null) {
                         parentBinding = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest));

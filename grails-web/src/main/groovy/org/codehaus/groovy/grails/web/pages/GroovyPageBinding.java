@@ -151,7 +151,7 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
         if (!GroovyPage.isReservedName(name)) {
             if (bindingToUse == null) {
                 bindingToUse = findBindingForVariable(name);
-                if (bindingToUse == null || (bindingToUse instanceof GroovyPageBinding && ((GroovyPageBinding)bindingToUse).isRoot())) {
+                if (bindingToUse == null || (bindingToUse instanceof GroovyPageBinding && ((GroovyPageBinding)bindingToUse).shouldUseChildBinding(this))) {
                     bindingToUse = this;
                 }
             }
@@ -170,6 +170,15 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
                 log.debug("Cannot override reserved variable '" + name + "'");
             }
         }
+    }
+
+    private boolean shouldUseChildBinding(GroovyPageBinding childBinding) {
+        return isRoot() || hasSameOwnerClass(childBinding);
+    }
+
+    private boolean hasSameOwnerClass(GroovyPageBinding otherBinding) {
+        // owner class can be same in recursive rendering; in that case, the child binding should be used for setting variable values
+        return (getOwner() != null && otherBinding.getOwner() != null && getOwner().getClass()==otherBinding.getOwner().getClass());
     }
 
     public String getPluginContextPath() {
