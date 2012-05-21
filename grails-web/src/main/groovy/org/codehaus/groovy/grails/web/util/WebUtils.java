@@ -337,6 +337,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         Map currentParams = null;
         if (webRequest != null) {
             currentPageBinding = (Binding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
+            webRequest.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
             currentController = webRequest.getControllerName();
             currentAction = webRequest.getActionName();
             currentId = webRequest.getId();
