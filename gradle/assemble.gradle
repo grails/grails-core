@@ -273,20 +273,18 @@ def mainClassesIncludeSpec(String[] args) {
     }
 }
 
-task pluginsFromSvn {
-    dir = "$buildDir/pluginsFromSvn"
-    grailsHibernateDest = "$dir/grails-hibernate-${version}.zip"
-    grailsTomcatDest = "$dir/grails-tomcat-${version}.zip"
-    outputs.files grailsHibernateDest, grailsTomcatDest
+task pluginsFromRepo {
+    pluginsToFetch = [hibernate: version, tomcat: version]
+    dir = file("$buildDir/pluginsFromRepo")
+    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
         ant {
             mkdir(dir: dir)
-			def versionTag = version.replaceAll(/\./, '_').toUpperCase()
-            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-hibernate/tags/RELEASE_${versionTag}/grails-hibernate-${version}.zip",
-                    dest: grailsHibernateDest, verbose: true, usetimestamp: true)
-            get(src: "http://svn.codehaus.org/grails/trunk/grails-plugins/grails-tomcat/tags/RELEASE_${versionTag}/grails-tomcat-${version}.zip",
-                    dest: grailsTomcatDest, verbose: true, usetimestamp: true)
-
+            pluginsToFetch.each { name, version ->
+                def versionTag = version.replaceAll(/\./, '_').toUpperCase()
+                get(src: "http://plugins.grails.org/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
+                    dest: dir, verbose: true, usetimestamp: true)
+            }
         }
     }
 }
@@ -312,7 +310,7 @@ distSpec = copySpec {
         into "grails-$version/doc"
     }
     exclude "**/CVS/**"
-    from(project.files(pluginsFromSvn.dir) { builtBy 'pluginsFromSvn' }) {
+    from(project.files(pluginsFromRepo.dir) { builtBy 'pluginsFromRepo' }) {
         into "grails-$version/plugins"
     }
     from('bin') {
