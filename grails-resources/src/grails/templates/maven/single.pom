@@ -3,17 +3,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>@parent.group@</groupId>
-        <artifactId>@parent@</artifactId>
-        <version>@parent.version@</version>
-        <relativePath>..</relativePath>
-    </parent>
     <groupId>@group@</groupId>
     <artifactId>@name@</artifactId>
     <packaging>grails-app</packaging>
     <version>@version@</version>
-
     <name>@name@</name>
     <description>@version@</description>
 
@@ -37,7 +30,7 @@
             <scope>test</scope>
         </dependency>
 
-        @plugins@
+        @dependencies@
 
         <dependency>
             <groupId>org.grails.plugins</groupId>
@@ -47,53 +40,10 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>hibernate</artifactId>
-            <version>${grails.version}</version>
-            <type>zip</type>
-            <scope>compile</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>webxml</artifactId>
-            <version>1.4.1</version>
-            <type>zip</type>
-            <scope>provided</scope>
-        </dependency>
+        @plugins@
 
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>jquery</artifactId>
-            <version>1.7.1</version>
-            <type>zip</type>
-            <scope>runtime</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>resources</artifactId>
-            <version>1.1.6</version>
-            <type>zip</type>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>cache</artifactId>
-            <version>1.0.0.RC1</version>
-            <type>zip</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>database-migration</artifactId>
-            <version>1.1</version>
-            <type>zip</type>
-            <scope>runtime</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -104,7 +54,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

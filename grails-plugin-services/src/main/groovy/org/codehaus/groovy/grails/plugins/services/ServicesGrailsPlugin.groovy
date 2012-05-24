@@ -46,9 +46,21 @@ class ServicesGrailsPlugin {
         xmlns tx:"http://www.springframework.org/schema/tx"
         tx.'annotation-driven'('transaction-manager':'transactionManager')
 
+        def aliasNameToListOfBeanNames = [:].withDefault { key -> [] }
+        def registeredBeanNames = []
         for (serviceGrailsClass in application.serviceClasses) {
             GrailsServiceClass serviceClass = serviceGrailsClass
-
+            def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
+            
+            def beanName
+            if(providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
+                beanName = "${providingPlugin.name}${serviceClass.shortName}"
+                def aliasName = serviceClass.propertyName
+                aliasNameToListOfBeanNames[aliasName] << beanName 
+            } else {
+                beanName = serviceClass.propertyName
+            }
+            registeredBeanNames << beanName
             def scope = serviceClass.getPropertyValue("scope")
             def lazyInit = serviceClass.hasProperty("lazyInit") ? serviceClass.getPropertyValue("lazyInit") : true
 
@@ -71,7 +83,7 @@ class ServicesGrailsPlugin {
                 }
                 props."*" = attributes
 
-                "${serviceClass.propertyName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
+                "${beanName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
                     if (scope) bean.scope = scope
                     bean.lazyInit = lazyInit
                     target = { innerBean ->
@@ -87,13 +99,18 @@ class ServicesGrailsPlugin {
                 }
             }
             else {
-                "${serviceClass.propertyName}"(serviceClass.getClazz()) { bean ->
+                "${beanName}"(serviceClass.getClazz()) { bean ->
                     bean.autowire =  true
                     bean.lazyInit = lazyInit
                     if (scope) {
                         bean.scope = scope
                     }
                 }
+            }
+        }
+        aliasNameToListOfBeanNames.each { aliasName, listOfBeanNames ->
+            if(listOfBeanNames.size() == 1 && !registeredBeanNames.contains(aliasName)) {
+                registerAlias listOfBeanNames[0], aliasName
             }
         }
     }

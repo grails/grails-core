@@ -23,6 +23,8 @@ import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 import groovy.util.ConfigSlurper;
+import org.codehaus.groovy.grails.cli.ScriptExitException;
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 import org.codehaus.groovy.grails.cli.support.UaaIntegration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -58,9 +60,14 @@ public class BaseSettingsApi {
     protected String grailsAppName;
     protected Object appClassName;
     protected ConfigSlurper configSlurper;
+    private GrailsBuildEventListener buildEventListener;
 
     public BaseSettingsApi(final BuildSettings buildSettings, boolean interactive) {
-        this.buildSettings = buildSettings;
+        this(buildSettings, null, interactive);
+    }
+
+    public BaseSettingsApi(BuildSettings settings, GrailsBuildEventListener buildEventListener, boolean interactive) {
+        this.buildSettings = settings;
         buildProps = buildSettings.getConfig().toProperties();
         grailsHome = buildSettings.getGrailsHome();
 
@@ -88,6 +95,7 @@ public class BaseSettingsApi {
         }
         configSlurper = buildSettings.createConfigSlurper();
         configSlurper.setEnvironment(buildSettings.getGrailsEnv());
+        this.buildEventListener = buildEventListener;
     }
 
     public void enableUaa() {
@@ -293,4 +301,51 @@ public class BaseSettingsApi {
     public String makeRelative(File file) {
         return makeRelative(file.getAbsolutePath());
     }
+
+    /**
+     * Exits the build immediately with a given exit code.
+     */
+   public void exit(int code){
+       if(buildEventListener != null) {
+           buildEventListener.triggerEvent("Exiting", code);
+       }
+       
+        // Prevent system.exit during unit/integration testing
+        if (System.getProperty("grails.cli.testing") != null || System.getProperty("grails.disable.exit") != null) {
+            throw new ScriptExitException(code);
+        }
+        GrailsConsole.getInstance().flush();
+        System.exit(code);       
+    }
+
+    /**
+     * Interactive prompt that can be used by any part of the build. Echos
+     * the given message to the console and waits for user input that matches
+     * either 'y' or 'n'. Returns <code>true</code> if the user enters 'y',
+     * <code>false</code> otherwise.
+     */
+    public boolean confirmInput(String message, String code ) {
+        if(code == null) code = "confirm.message";
+        GrailsConsole grailsConsole = GrailsConsole.getInstance();
+        if (!isInteractive) {
+            grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. Please switch back to interactive mode.");
+            exit(1);
+        }
+        return "y".equalsIgnoreCase(grailsConsole.userInput(message, new String[] { "y","n" }));
+    }
+
+    public boolean confirmInput(String message ) {
+        return confirmInput(message, "confirm.message");
+    }
+
+    // Note: the following only work if you also include _GrailsEvents.
+    public void logError( String message, Throwable t ) {
+        GrailsConsole.getInstance().error(message, t);
+    }
+
+    public void logErrorAndExit( String message, Throwable t ) {
+        logError(message, t);
+        exit(1);
+    }
+    
 }

@@ -30,13 +30,9 @@ _grails_events_called = true
 
 includeTargets << grailsScript("_GrailsClasspath")
 
-// Class loader to use for loading events scripts.
-eventsClassLoader = new GroovyClassLoader(classLoader)
-
 // A map of events to lists of handlers. The handlers provided by plugin
 // and application Events scripts are put in here.
 
-eventListener = new GrailsBuildEventListener(eventsClassLoader, binding, grailsSettings)
 eventListener.globalEventHooks = [
     StatusFinal: [ {message -> grailsConsole.addStatus message } ],
     StatusUpdate: [ {message -> grailsConsole.updateStatus message } ],
@@ -45,12 +41,10 @@ eventListener.globalEventHooks = [
 ]
 
 hooksLoaded = false
-binding.addBuildListener(eventListener)
 // Set up the classpath for the event hooks.
 classpath()
 
 // Now load them.
-eventListener.classLoader = new GroovyClassLoader(classLoader)
 eventListener.initialize()
 
 // Send a scripting event notification to any and all event hooks in plugins/user scripts

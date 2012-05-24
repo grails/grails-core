@@ -13,8 +13,9 @@ import java.net.ServerSocket;
  *  @since 2.1
  */
 public class TomcatKillSwitch implements Runnable {
-    
-    private static boolean active = true;
+
+
+    public static final String TOMCAT_KILL_SWITCH_ACTIVE = "TomcatKillSwitch.active";
 
     private Tomcat tomcat;
     private int serverPort;
@@ -25,11 +26,11 @@ public class TomcatKillSwitch implements Runnable {
     }
 
     public static boolean isActive() {
-        return active;
+        return Boolean.getBoolean("TomcatKillSwitch.active");
     }
 
     public void run() {
-        active = true;
+        System.setProperty("TomcatKillSwitch.active", "true");
         int killListenerPort = serverPort + 1;
         ServerSocket serverSocket = createKillSwitch(killListenerPort);
         if (serverSocket != null) {
@@ -38,7 +39,7 @@ public class TomcatKillSwitch implements Runnable {
                 try {
                     tomcat.stop();
                     tomcat.destroy();
-                    active = false;
+                    System.setProperty(TOMCAT_KILL_SWITCH_ACTIVE, "false");
                 } catch (LifecycleException e) {
                     System.err.println("Error stopping Tomcat: " + e.getMessage());
                     System.exit(1);

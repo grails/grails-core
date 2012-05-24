@@ -131,39 +131,3 @@ grailsUnpack = {Map args ->
 
 
 
-/**
- * Exits the build immediately with a given exit code.
- */
-exit = {
-    event("Exiting", [it])
-    // Prevent system.exit during unit/integration testing
-    if (System.getProperty("grails.cli.testing") || System.getProperty("grails.disable.exit")) {
-        throw new ScriptExitException(it)
-    }
-    System.exit(it)
-}
-
-/**
- * Interactive prompt that can be used by any part of the build. Echos
- * the given message to the console and waits for user input that matches
- * either 'y' or 'n'. Returns <code>true</code> if the user enters 'y',
- * <code>false</code> otherwise.
- */
-confirmInput = {String message, code="confirm.message" ->
-    if (!isInteractive) {
-        grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. Please switch back to interactive mode.")
-        exit(1)
-    }
-    return 'y'.equalsIgnoreCase(grailsConsole.userInput(message, ["y","n"] as String[]))
-}
-
-// Note: the following only work if you also include _GrailsEvents.
-logError = { String message, Throwable t ->
-    GrailsUtil.deepSanitize(t)
-    grailsConsole.error(message, t)
-}
-
-logErrorAndExit = { String message, Throwable t ->
-    logError(message, t)
-    exit(1)
-}
