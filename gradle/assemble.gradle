@@ -87,7 +87,7 @@ task sourcesJars(type: Sync) {
     from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
 }
 
-task pluginsFromSvn {
+task pluginsFromRepo {
     ext.plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
@@ -96,7 +96,7 @@ task pluginsFromSvn {
         jquery: "1.7.1"
     ]
 
-    ext.dir = file("$buildDir/pluginsFromSvn")
+    ext.dir = file("$buildDir/pluginsFromRepo")
     outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
         ant {
@@ -196,7 +196,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from(docs.destinationDir) {
             into "doc"
         }
-        from(pluginsFromSvn.outputs.files) {
+        from(pluginsFromRepo.outputs.files) {
             into "plugins"
             rename { it - "grails-" }
         }
