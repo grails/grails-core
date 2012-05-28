@@ -39,7 +39,7 @@ class ${className}Controller {
         def anEdit =  { 
             ${propertyName} -> [${propertyName}: ${propertyName}] 
         }
-        with${className} ( id, aEdit )
+        with${className} ( id, anEdit )
     }
 
     def update(Long id, Long version) {
