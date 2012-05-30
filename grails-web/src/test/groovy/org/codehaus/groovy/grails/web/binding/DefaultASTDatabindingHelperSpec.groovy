@@ -56,9 +56,9 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     someOtherPropertyThatDoesNotExistAtCompileTime bindable: false
                 }
             }
-class Person {
-String firstName
-}
+            class Person {
+                String firstName
+            }
             ''')
             widgetSubclass = gcl.parseClass('''
                 class WidgetSubclass extends Widget {
