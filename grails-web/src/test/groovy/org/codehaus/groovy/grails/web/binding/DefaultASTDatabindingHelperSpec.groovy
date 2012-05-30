@@ -18,6 +18,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     static widgetSubclass
     static setterGetterClass
     static dateBindingClass
+    
     def setupSpec() {
         final gcl = new GrailsAwareClassLoader()
         final transformer = new ClassInjector() {
@@ -46,6 +47,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                 def untypedProperty
                 transient Integer transientInteger
                 Integer integerListedInTransientsProperty
+                Person person
 
                 static constraints = {
                     nonBindableProperty bindable: false
@@ -54,6 +56,9 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     someOtherPropertyThatDoesNotExistAtCompileTime bindable: false
                 }
             }
+class Person {
+String firstName
+}
             ''')
             widgetSubclass = gcl.parseClass('''
                 class WidgetSubclass extends Widget {
@@ -156,10 +161,13 @@ class DefaultASTDatabindingHelperSpec extends Specification {
            final whiteList = whiteListField.get(null)
 
        then:
-           whiteList?.size() == 3
+           whiteList?.size() == 6
            'bindableProperty' in whiteList
            'secondBindableProperty' in whiteList
            'somePropertyThatDoesNotExistAtCompileTime' in whiteList
+           'person' in whiteList
+           'person.*' in whiteList
+           'person_*' in whiteList
     }
     
     void 'Test that binding respects the generated white list'() {
@@ -225,11 +233,14 @@ class DefaultASTDatabindingHelperSpec extends Specification {
         final whiteList = whiteListField.get(null)
 
     then:
-        whiteList?.size() == 4
+        whiteList?.size() == 7
         'subclassBindableProperty' in whiteList
         'nonBindableProperty' in whiteList
         'secondBindableProperty' in whiteList
         'somePropertyThatDoesNotExistAtCompileTime' in whiteList
+        'person' in whiteList
+        'person.*' in whiteList
+        'person_*' in whiteList
     }
     
     void 'Test that binding respects the generated white list in subclass'() {

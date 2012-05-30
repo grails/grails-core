@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 
 public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     public static final String CONSTRAINTS_FIELD_NAME = "constraints";
-    public static final String JODATIME_PACKAGE = "org.joda.time";
     public static final String BINDABLE_CONSTRAINT_NAME = "bindable";
 
     public static final String DEFAULT_DATABINDING_WHITELIST = "$defaultDatabindingWhiteList";
@@ -58,12 +57,6 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
        add(new ClassNode(java.math.BigDecimal.class));
        add(new ClassNode(java.lang.String.class));
        add(new ClassNode(java.net.URL.class));
-    }};
-    @SuppressWarnings("serial")
-    private static final List<ClassNode> STRUCTURED_EDITOR_TYPES = new ArrayList<ClassNode>() {{
-        add(new ClassNode(java.sql.Date.class));
-        add(new ClassNode(java.util.Date.class));
-        add(new ClassNode(java.util.Calendar.class));
     }};
 
     public void injectDatabindingCode(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
@@ -107,20 +100,12 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
             for(String propertyName : propertyNamesToIncludeInWhiteList) {
                 listExpression.addExpression(new ConstantExpression(propertyName));
 
-                final FieldNode declaredField = classNode.getDeclaredField(propertyName);
+                final FieldNode declaredField = getDeclaredFieldInInheritanceHierarchy(classNode, propertyName);
                 if(declaredField != null) {
                     final ClassNode type = declaredField.getType();
                     if(type != null && !SIMPLE_TYPES.contains(type)) {
-                        if(STRUCTURED_EDITOR_TYPES.contains(type)) {
-                            listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
-                        } else {
-                            String packageName = type.getPackageName();
-                            if(packageName != null && packageName.startsWith(JODATIME_PACKAGE)) {
-                                listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
-                            } else {
-                                listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
-                            }
-                        }
+                        listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
+                        listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
                     }
                 }
             }
@@ -129,6 +114,19 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                     Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL, new ClassNode(List.class),
                     listExpression);
          }
+    }
+
+
+    private FieldNode getDeclaredFieldInInheritanceHierarchy(
+            final ClassNode classNode, String propertyName) {
+        FieldNode fieldNode = null;
+        fieldNode = classNode.getDeclaredField(propertyName);
+        if(fieldNode == null) {
+            if(!classNode.getSuperClass().equals(new ClassNode(Object.class))) {
+                return getDeclaredFieldInInheritanceHierarchy(classNode.getSuperClass(), propertyName);
+            }
+        }
+        return fieldNode;
     }
 
     private Set<String> getPropertyNamesToIncludeInWhiteList(final SourceUnit sourceUnit, final ClassNode classNode) {

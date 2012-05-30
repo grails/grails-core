@@ -59,6 +59,7 @@ target
 /grails-test-suite-base/bin/
 /grails-test-suite-persistence/bin/
 /grails-test-suite-uber/bin/
+/grails-test-suite-uber/configured/
 /grails-test-suite-web/bin/
 /grails-test/bin/
 /grails-web/bin/
