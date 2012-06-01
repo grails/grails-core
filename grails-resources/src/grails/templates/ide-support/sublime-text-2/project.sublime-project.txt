@@ -1,0 +1,21 @@
+{
+    "folders":
+    [
+        { "path":"grails-app/conf",             "name":"Configuration"        },
+        { "path":"grails-app/controllers",      "name":"Controllers"          },
+        { "path":"grails-app/domain",           "name":"Domain Objects"       },
+        { "path":"grails-app/i18n",             "name":"Internationalization" },
+        { "path":"grails-app/services",         "name":"Services"             },
+        { "path":"grails-app/taglib",           "name":"Tag Libraries"        },
+        { "path":"grails-app/utils",            "name":"Utils"                },
+        { "path":"grails-app/views",            "name":"Views"                },
+        { "path":"scripts",                     "name":"Scripts"              },
+        { "path":"src/groovy",                  "name":"Groovy Source"        },
+        { "path":"src/java",                    "name":"Java Source"          },
+        { "path":"test/integration",            "name":"Integeration Tests"   },
+        { "path":"test/unit",                   "name":"Unit Tests"           },
+        { "path":"web-app",                     "name":"Web App"              }
+    ],
+    "settings": { },
+    "build_systems": [ ]
+}

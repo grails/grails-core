@@ -27,7 +27,7 @@ import grails.util.GrailsNameUtils
 includeTargets << grailsScript("_GrailsInit")
 
 USAGE = """
-    integrate-with [--ant] [--eclipse] [--intellij] [--git] [--textmate] [--hg]
+    integrate-with [--ant] [--eclipse] [--intellij] [--git] [--textmate] [--hg] [--sublimetext2]
 
 where
     --ant = Generates an Ant build.xml with accompanying Ivy files.
@@ -36,6 +36,7 @@ where
     --git = Generates a '.gitignore' file.
     --textmate = Generates a TextMate project file.
     --hg = Generates a Mercurial '.hgignore' file.
+    --sublimetext2 = Generates a Sublime Text 2 project file.
 """
 
 integrationFiles = new File("${projectWorkDir}/integration-files")
@@ -128,6 +129,18 @@ target(integrateHg:"Integrates Mercurial with Grails") {
 
     replaceTokens([".hgignore"])
     grailsConsole.updateStatus "Created Mercurial '.hgignore' file."
+}
+
+target(integrateSublimetext2:"Integrates Sublime Text 2 with Grails") {
+    depends unpackSupportFiles
+    ant.copy(todir:basedir) {
+        fileset(dir:"${integrationFiles}/sublime-text-2")
+    }
+
+    ant.move(file: "${basedir}/project.sublime-project.txt", tofile: "${basedir}/${grailsAppName}.sublime-project", overwrite: true)
+
+    replaceTokens(["*.sublime-project"])
+    grailsConsole.updateStatus "Created Sublime Text 2 project file."
 }
 
 target(unpackSupportFiles:"Unpacks the support files") {
