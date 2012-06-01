@@ -80,6 +80,9 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
+
+        // TODO configure this as a remote for repo.grails.org so we don't need this here...
+        maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     configurations {
@@ -164,7 +167,7 @@ subprojects { project ->
 
             // Testing
             testCompile "junit:junit:${junitVersion}"
-            testCompile('org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT') {
+            testCompile('org.spockframework:spock-core:0.7-groovy-2.0-SNAPSHOT') {
                 transitive = false
             }
         }
