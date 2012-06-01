@@ -22,7 +22,7 @@ class MultipleClassesPerFileTests extends GroovyTestCase {
 
     void testMultipleClassesPerFile() {
         GroovyClassLoader cl = new GroovyClassLoader()
-        cl.parseClass(getClass().classLoader.getResourceAsStream('org/codehaus/groovy/grails/commons/classes.groovy'))
+        cl.parseClass(getClass().classLoader.getResourceAsStream('org/codehaus/groovy/grails/commons/classes.groovy'), 'classes.groovy')
         assertNotNull cl.loadClass('TestClass1')
         assertNotNull cl.loadClass('TestClass2')
 
