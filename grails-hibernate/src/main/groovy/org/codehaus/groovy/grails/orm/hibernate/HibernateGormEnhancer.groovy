@@ -46,8 +46,9 @@ import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.springframework.orm.hibernate3.SessionFactoryUtils
 
- /**
+/**
  * Extended GORM Enhancer that fills out the remaining GORM for Hibernate methods
  * and implements string-based query support via HQL.
  *
@@ -521,21 +522,31 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         template.setExposeNativeSession(false)
         SessionHolder sessionHolder = TransactionSynchronizationManager.getResource(sessionFactory)
         Session previousSession = sessionHolder?.session
+        Session newSession
+        boolean newBind = false
         try {
-            template.alwaysUseNewSession = true
+            template.allowCreate = true
+            newSession = sessionFactory.openSession()
+            if (sessionHolder == null) {
+                sessionHolder = new SessionHolder(newSession)
+                TransactionSynchronizationManager.bindResource(sessionFactory, sessionHolder)
+                newBind = true
+            }
+            else {
+                sessionHolder.addSession(newSession)
+            }            
             template.execute({ Session session ->
-                if (sessionHolder == null) {
-                    sessionHolder = new SessionHolder(session)
-                    TransactionSynchronizationManager.bindResource(sessionFactory, sessionHolder)
-                }
-                else {
-                    sessionHolder.addSession(session)
-                }
-
                 return callable(session)
             } as HibernateCallback)
         }
         finally {
+            if(newSession) {
+                SessionFactoryUtils.closeSession(newSession)
+                sessionHolder?.removeSession(newSession)
+            }
+            if(newBind) {
+                TransactionSynchronizationManager.unbindResource(sessionFactory)
+            }
             if (previousSession) {
                 sessionHolder?.addSession(previousSession)
             }

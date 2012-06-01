@@ -103,7 +103,10 @@ dataSource {
     username = "sa"
     password = ""
     dbCreate = "create-drop"
-    url = "jdbc:h2:mem:grailsIntTestDB"
+    url = "jdbc:h2:mem:grailsIntTestDB;MVCC=TRUE;LOCK_TIMEOUT=10000"
+    properties {
+      maxWait = 10000
+    }
 }
 hibernate {
     cache.use_second_level_cache=true
