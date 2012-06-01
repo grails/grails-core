@@ -103,7 +103,7 @@ dataSource {
     username = "sa"
     password = ""
     dbCreate = "create-drop"
-    url = "jdbc:h2:mem:grailsIntTestDB;MVCC=TRUE;LOCK_TIMEOUT=10000"
+    url = "jdbc:h2:mem:grailsIntTestDB"
     properties {
       maxWait = 10000
     }
