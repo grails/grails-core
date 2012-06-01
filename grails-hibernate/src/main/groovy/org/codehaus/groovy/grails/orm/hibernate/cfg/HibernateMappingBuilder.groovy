@@ -521,7 +521,11 @@ class HibernateMappingBuilder {
      */
     void columns(Closure callable) {
         callable.resolveStrategy = Closure.DELEGATE_ONLY
-        callable.delegate = [invokeMethod:handleMethodMissing] as GroovyObjectSupport
+        callable.delegate = new Object() {
+            def invokeMethod(String methodName, args) {
+                handleMethodMissing(methodName, args)
+            }
+        }
         callable.call()
     }
 
