@@ -195,13 +195,34 @@ class PluginInstallEngine {
      * @param zipFile The plugin zip file
      */
     boolean installResolvedPlugin(File zipFile) {
+        def inlinePlugins = settings.config.grails.plugin.location
+
         if (!zipFile.exists()) {
             errorHandler "Plugin zip not found at location: ${zipFile.absolutePath}. Potential corrupt cache. Try running: grails --refresh-dependencies compile"
         }
 
         def (name, version) = readMetadataFromZip(zipFile.absolutePath)
 
-        installPluginZipInternal name, version, zipFile, false, false, true
+        /*
+         * Determine if the plugin is currently configured to be used inline by
+         * checking to see if the configured inline plugin names end with the
+         * name of the plugin to be installed.  This is necessary as the plugin
+         * can be declared using the full vector in settings.groovy for an 
+         * inline plugin (i.e. com.mycompany:my-plugin).  If the plugin is NOT
+         * configured to run inline, install it.  Otherwise, remove the previously
+         * installed ZIP file if present to prevent duplicate class errors during
+         * compilation.
+         *
+         * TODO:  Also remove the installed plugin's paths from the classpath to
+         *        avoid errors about not being able to find the src folders AFTER
+         *        the plugin has been uninstalled.
+         */
+		if(!inlinePlugins.find { it.key.endsWith(name) } ) {
+        	installPluginZipInternal name, version, zipFile, false, false, true
+		} else {
+			// Remove the plugin to prevent duplicate class compile errors with inline version.
+			uninstallPlugin name, version
+		}
     }
 
     /**
@@ -386,10 +407,22 @@ class PluginInstallEngine {
      */
     protected boolean checkExistingPluginInstall(String name, version, File pluginZip, boolean isResolve = true) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
+		def inlinePlugins = settings.config.grails.plugin.location
 
-        if (!currentInstall?.exists()) {
-            return false
+		if (!currentInstall?.exists()) {
+			return false
         }
+		
+		/*
+		 * If the plugin to be installed is currently configured to be inline,
+		 * do not install it.  This is because we want to use the inline over
+		 * the modified dependency artifact.  The comparison to find the inline
+		 * plugin uses "endsWith", as inline plugins can be declared with a full
+		 * vector in settings.groovy (i.e. 'com.mycompany:my-plugin")
+		 */
+		if(inlinePlugins.find { it.key.endsWith(name) } ) {
+			return true
+		}
 
         PluginBuildSettings pluginSettings = pluginSettings
         def pluginDir = currentInstall.file.canonicalFile
@@ -571,7 +604,7 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
             }
         }
         catch (e) {
-            errorHandler("An error occured installing the plugin [$name${version ? '-' + version : ''}]: ${e.message}")
+            errorHandler("An error occurred installing the plugin [$name${version ? '-' + version : ''}]: ${e.message}")
         }
     }
 
