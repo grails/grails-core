@@ -916,8 +916,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
         dependencies {
 
-            build "org.tmatesoft.svnkit:svnkit:1.2.0",
-                  "org.apache.ant:ant-junit:1.8.2",
+            build "org.apache.ant:ant-junit:1.8.2",
                   "org.apache.ant:ant-trax:1.7.1",
                   "org.grails:grails-radeox:1.0-b4",
                   "com.h2database:h2:1.3.164",
