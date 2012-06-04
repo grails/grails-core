@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.resolve
 
-import spock.lang.Specification
 import grails.util.BuildSettings
+import spock.lang.Ignore
+import spock.lang.Specification
 
-
+@Ignore
 class PluginResolveEngineSpec extends Specification {
 
     def "Test that plugin-info obtains relevant plugin information in a plugin exists"() {
