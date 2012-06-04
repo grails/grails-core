@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.orm.hibernate
 
 import grails.artefact.Enhanced
 import grails.util.GrailsNameUtils
+
 import org.apache.commons.beanutils.PropertyUtils
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
@@ -24,41 +25,46 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
+import org.codehaus.groovy.grails.orm.hibernate.*
+import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
 import org.codehaus.groovy.grails.orm.hibernate.proxy.HibernateProxyHandler
+import org.codehaus.groovy.grails.orm.hibernate.support.*
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsEvaluator
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.model.PersistentEntity
 import org.hibernate.EmptyInterceptor
 import org.hibernate.FlushMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
+import org.hibernate.cfg.Environment
 import org.hibernate.cfg.ImprovedNamingStrategy
 import org.hibernate.proxy.HibernateProxy
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
-import org.springframework.beans.factory.config.BeanDefinition
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.beans.factory.xml.XmlBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
 import org.springframework.orm.hibernate3.HibernateAccessor
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
 import org.springframework.orm.hibernate3.HibernateTransactionManager
-import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
-import org.codehaus.groovy.grails.orm.hibernate.*
-import org.codehaus.groovy.grails.orm.hibernate.support.*
+import org.springframework.transaction.PlatformTransactionManager
+import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -133,7 +139,7 @@ class HibernatePluginSupport {
 
             def ds = application.config["dataSource$suffix"]
             if (isDefault) {
-                BeanDefinition externalDefinition = checkExternalBeans(application, springConfig)
+                BeanDefinition externalDefinition = checkExternalBeans(application)
                 if (externalDefinition && !ds) {
                     ds = new ConfigObject()
                     application.config.dataSource = ds
@@ -649,7 +655,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         return shouldFlush
     }
 
-    private static checkExternalBeans(GrailsApplication application, springConfig) {
+    private static checkExternalBeans(GrailsApplication application) {
         ApplicationContext parent = application.parentContext
         try {
             def resourcesXml = parent?.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML)
@@ -665,8 +671,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         }
 
         // Check resources.groovy
-        //GRAILS-9130
-        //RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(parent,application.classLoader)
+        RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration(parent,application.classLoader)
         GrailsRuntimeConfigurator.loadExternalSpringConfig(springConfig, application)
         if (springConfig.containsBean("dataSource")) {
             LOG.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_GROOVY}")
