@@ -254,8 +254,6 @@ class JavascriptTagLib implements ApplicationContextAware {
         // These options should not be included as attributes of the anchor element.
         attrs.remove('method')
         attrs.remove('url')
-        attrs.remove('action')
-        attrs.remove('controller')
 
         // handle elementId like link
         def elementId = attrs.remove('elementId')
