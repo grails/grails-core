@@ -29,7 +29,7 @@ generateViews = true
 generateController = true
 
 target ('default': "Generates a CRUD interface (controller + views) for a domain class") {
-    depends(checkVersion, parseArguments, packageApp)
+    depends(checkVersion, parseArguments, packageApp, determineControllerNameParam)
     promptForName(type: "Domain Class")
 
     try {

@@ -30,11 +30,13 @@ includeTargets << grailsScript("_GrailsBootstrap")
 generateForName = null
 generateViews = true
 generateController = true
+generateForControllerName = null
 
 target(generateForOne: "Generates controllers and views for only one domain class.") {
     depends(loadApp)
 
     def name = generateForName
+    def controllerShortName = generateForControllerName
     name = name.indexOf('.') > -1 ? name : GrailsNameUtils.getClassNameRepresentation(name)
     def domainClass = grailsApp.getDomainClass(name)
 
@@ -45,12 +47,12 @@ target(generateForOne: "Generates controllers and views for only one domain clas
     }
 
     if (domainClass) {
-        generateForDomainClass(domainClass)
+        generateForDomainClass(domainClass, controllerShortName)
         event("StatusFinal", ["Finished generation for domain class ${domainClass.fullName}"])
     }
     else {
         event("StatusFinal", ["No domain class found for name ${name}. Please try again and enter a valid domain class name"])
-		exit(1)
+        exit(1)
     }
 }
 
@@ -74,20 +76,59 @@ target(uberGenerate: "Generates controllers and views for all domain classes.") 
     }
 }
 
-def generateForDomainClass(domainClass) {
+def generateForDomainClass(domainClass, controllerShortName) {
     def templateGenerator = new DefaultGrailsTemplateGenerator(classLoader)
 
     if (generateViews) {
-        event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])
-        templateGenerator.generateViews(domainClass, basedir)
+        if (controllerShortName) {
+            event(
+                "StatusUpdate",
+                ["Generating views for controller ${domainClass.packageName}.${controllerShortName}Controller and domain class ${domainClass.fullName}"])
+        }
+        else {
+            event("StatusUpdate", ["Generating views for domain class ${domainClass.fullName}"])
+        }
+
+        templateGenerator.generateViews(domainClass, basedir, controllerShortName)
         event("GenerateViewsEnd", [domainClass.fullName])
     }
 
     if (generateController) {
-        event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])
-        templateGenerator.generateController(domainClass, basedir)
-        createUnitTest(name: domainClass.fullName, suffix: "Controller",
-                       superClass: "ControllerUnitTestCase")
+        if (controllerShortName) {
+            event(
+                "StatusUpdate",
+                ["Generating controller ${domainClass.packageName}.${controllerShortName}Controller for domain class ${domainClass.fullName}"])
+        }
+        else {
+            event("StatusUpdate", ["Generating controller for domain class ${domainClass.fullName}"])
+        }
+
+        templateGenerator.generateController(domainClass, basedir, controllerShortName)
+
+        if (controllerShortName) {
+            createUnitTest(
+                    name: "${domainClass.packageName}.${controllerShortName}", suffix: "Controller",
+                    superClass: "ControllerUnitTestCase")
+        }
+        else {
+            createUnitTest(name: domainClass.fullName, suffix: "Controller", superClass: "ControllerUnitTestCase")
+        }
+
         event("GenerateControllerEnd", [domainClass.fullName])
+    }
+}
+
+target(determineControllerNameParam: "Parse the arguments to determine controllerName param") {
+    if (argsMap["controllerName"]) {
+        if (argsMap["controllerName"] instanceof Boolean) {
+            def message =
+                "Please, check your syntax. Maybe '=' is missing. Parameter 'controllerName' must be specified as " +
+                "follows: --controllerName=<YourControllerName>"
+
+            throw new IllegalArgumentException(message)
+        }
+        else {
+            generateForControllerName = argsMap["controllerName"].capitalize()
+        }
     }
 }

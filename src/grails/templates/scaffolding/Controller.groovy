@@ -1,4 +1,4 @@
-<%=packageName ? "package ${packageName}\n\n" : ''%>class ${className}Controller {
+<%=packageName ? "package ${packageName}\n\n" : ''%>class ${controllerName}Controller {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
 

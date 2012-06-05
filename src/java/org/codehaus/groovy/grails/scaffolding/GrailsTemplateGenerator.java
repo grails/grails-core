@@ -43,11 +43,27 @@ public interface GrailsTemplateGenerator {
     void generateViews(GrailsDomainClass domainClass, String destDir);
 
     /**
+     * Generates the necessary views for the supplied domain class and controller name.
+     * @param domainClass The DomainClass to generate views for
+     * @param destDir The destination directory to generate views to
+     * @param controllerName The name of the controller for which views are generated
+     */
+    void generateViews(GrailsDomainClass domainClass, String destDir, String controllerName);    
+
+    /**
      * Generates a controller for the supplied domain class.
      * @param domainClass The DomainClass to generate views for
      * @param destDir The destination directory to generate views to
      */
     void generateController(GrailsDomainClass domainClass, String destDir);
+
+    /**
+     * Generates a controller for the supplied domain class and controller name.
+     * @param domainClass The DomainClass to generate views for
+     * @param destDir The destination directory to generate views to
+     * @param controllerName The name of the controller for which views are generated
+     */
+    void generateController(GrailsDomainClass domainClass, String destDir, String controllerName);    
 
     /**
      * Whether the generator should overwrite existing files (defaults to false).
@@ -82,4 +98,14 @@ public interface GrailsTemplateGenerator {
      * @param out The Writer to write to
      */
     void generateController(GrailsDomainClass domainClass, Writer out);
+
+    /**
+     * Generates a controller for the specified domain class and controller name, writing the result to the specified
+     * java.io.Writer instance.
+     *
+     * @param domainClass The domain class to generate a controller for
+     * @param out The Writer to write to
+     * @param controllerName The name of the controller for which views are generated
+     */
+    void generateController(GrailsDomainClass domainClass, Writer out, String controllerName);
 }
