@@ -271,7 +271,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
             if (!useIdentityColumn) {
                 EntityInsertAction insert = new EntityInsertAction(id, values, entity, version, persister, source); 
                 source.getActionQueue().execute(insert);
-                if(!source.getPersistenceContext().wasInsertedDuringTransaction(persister, id)) {
+                if(persister.hasCache() && !source.getPersistenceContext().wasInsertedDuringTransaction(persister, id)) {
                     insertVetoed=true;
                 }
             }
