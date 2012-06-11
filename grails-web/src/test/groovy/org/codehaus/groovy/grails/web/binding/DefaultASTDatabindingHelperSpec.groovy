@@ -131,8 +131,12 @@ class DefaultASTDatabindingHelperSpec extends Specification {
             final whiteList = whiteListField.get(null)
 
         then:
-            whiteList?.size() == 2
+            whiteList?.size() == 6
+            'firstName_*' in whiteList
+            'firstName.*' in whiteList
             'firstName' in whiteList
+            'title_*' in whiteList
+            'title.*' in whiteList
             'title' in whiteList
             
         when:
@@ -161,10 +165,12 @@ class DefaultASTDatabindingHelperSpec extends Specification {
            final whiteList = whiteListField.get(null)
 
        then:
-           whiteList?.size() == 6
+           whiteList?.size() == 8
            'bindableProperty' in whiteList
            'secondBindableProperty' in whiteList
            'somePropertyThatDoesNotExistAtCompileTime' in whiteList
+           'somePropertyThatDoesNotExistAtCompileTime_*' in whiteList
+           'somePropertyThatDoesNotExistAtCompileTime.*' in whiteList
            'person' in whiteList
            'person.*' in whiteList
            'person_*' in whiteList
@@ -233,11 +239,13 @@ class DefaultASTDatabindingHelperSpec extends Specification {
         final whiteList = whiteListField.get(null)
 
     then:
-        whiteList?.size() == 7
+        whiteList?.size() == 9
         'subclassBindableProperty' in whiteList
         'nonBindableProperty' in whiteList
         'secondBindableProperty' in whiteList
         'somePropertyThatDoesNotExistAtCompileTime' in whiteList
+        'somePropertyThatDoesNotExistAtCompileTime_*' in whiteList
+        'somePropertyThatDoesNotExistAtCompileTime.*' in whiteList
         'person' in whiteList
         'person.*' in whiteList
         'person_*' in whiteList
