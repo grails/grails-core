@@ -100,12 +100,16 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 listExpression.addExpression(new ConstantExpression(propertyName));
 
                 final FieldNode declaredField = getDeclaredFieldInInheritanceHierarchy(classNode, propertyName);
+                boolean isSimpleType = false;
                 if(declaredField != null) {
                     final ClassNode type = declaredField.getType();
-                    if(type != null && !SIMPLE_TYPES.contains(type)) {
-                        listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
-                        listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
+                    if(type != null) {
+                        isSimpleType = SIMPLE_TYPES.contains(type);
                     }
+                }
+                if(!isSimpleType) {
+                    listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
+                    listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
                 }
             }
             
