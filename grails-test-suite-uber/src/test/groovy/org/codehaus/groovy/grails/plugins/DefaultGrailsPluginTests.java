@@ -39,11 +39,15 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
     protected void onSetUp() {
         versioned = gcl.parseClass("class MyGrailsPlugin {\n" +
                         "def version = 1.1;" +
+                        "def watchedResources = [\"file:./grails-app/taglib/**/*TagLib.groovy\", \"./grails-app/controller/**/*.groovy\", \"file:/absolutePath/**/*.gsp\" ]\n" +
                         "def doWithSpring = {" +
                         "classEditor(org.springframework.beans.propertyeditors.ClassEditor,application.classLoader)" +
                         "}\n" +
                         "def doWithApplicationContext = { ctx ->" +
                         "assert ctx != null" +
+                        "}\n" +
+                        "def onChange = { event ->" +
+                        "assert event != null" +
                         "}" +
                         "}");
         notVersion = gcl.parseClass("class AnotherGrailsPlugin {\n" +
@@ -147,5 +151,12 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
 
         assertEquals(1, observingPlugin.getObservedPluginNames().length);
         assertEquals("another", observingPlugin.getObservedPluginNames()[0]);
+    }
+
+    public void testWatchedResources(){
+        GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
+        assertEquals(versionPlugin.getWatchedResourcePatterns().get(0).getDirectory().getPath(), "./grails-app/taglib");
+        assertEquals(versionPlugin.getWatchedResourcePatterns().get(1).getDirectory().getPath(), "./grails-app/controller");
+        assertEquals(versionPlugin.getWatchedResourcePatterns().get(2).getDirectory().getPath(), "/absolutePath");
     }
 }
