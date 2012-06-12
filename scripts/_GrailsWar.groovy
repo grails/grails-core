@@ -417,12 +417,14 @@ private def warPluginForPluginInfo(GrailsPluginInfo info) {
                 include(name: "plugin.xml")
                 include(name: "grails-app/views/**")
                 exclude(name: "grails-app/**/*.groovy")
+                exclude(name: "grails-app/taglib/**/*.gsp")
             }
             def pluginResources = new File("$resourcesDirPath/plugins/${info.name}-${info.version}")
             if (pluginResources.exists()) {
                 fileset(dir: pluginResources) {
                     include(name: "grails-app/**")
                     exclude(name: "grails-app/**/*.groovy")
+                    exclude(name: "grails-app/taglib/**/*.gsp")
                 }
             }
         }

@@ -35,7 +35,7 @@ target (cleanAll: "Cleans a Grails project") {
 }
 
 target (clean: "Implementation of clean") {
-    depends(cleanCompiledSources, cleanWarFile)
+    depends(cleanCompiledSources, cleanGeneratedSources, cleanWarFile)
 }
 
 target (cleanCompiledSources: "Cleans compiled Java and Groovy sources") {
@@ -65,6 +65,10 @@ target (cleanTestReports: "Cleans the test reports") {
             exclude(name: "TESTS-TestSuites.xml")
         }
     }
+}
+
+target (cleanGeneratedSources: "Cleans generated sources") {
+    ant.delete(dir:projectGeneratedSourcesDir)
 }
 
 target (cleanWarFile: "Cleans the deployable .war file") {

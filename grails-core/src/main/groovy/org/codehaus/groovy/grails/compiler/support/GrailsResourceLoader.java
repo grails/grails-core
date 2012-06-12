@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
@@ -48,13 +49,17 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
 
     private void createPathToURLMappings() {
         for (Resource resource : resources) {
-            try {
-                String resourceURL = resource.getURL().toString();
-                String pathWithinRoot = GrailsResourceUtils.getPathFromRoot(resourceURL);
-                pathToResource.put(pathWithinRoot, resource);
-            } catch (IOException e) {
-                throw new GrailsConfigurationException("Unable to load Grails resource: " + e.getMessage(), e);
-            }
+            createPathToURLMapping(resource);
+        }
+    }
+
+    private void createPathToURLMapping(Resource resource) {
+        try {
+            String resourceURL = resource.getURL().toString();
+            String pathWithinRoot = GrailsResourceUtils.getPathFromRoot(resourceURL);
+            pathToResource.put(pathWithinRoot, resource);
+        } catch (IOException e) {
+            throw new GrailsConfigurationException("Unable to load Grails resource: " + e.getMessage(), e);
         }
     }
 
@@ -69,6 +74,11 @@ public class GrailsResourceLoader implements GroovyResourceLoader {
 
     public Resource[] getResources() {
         return resources;
+    }
+
+    public void addResource(Resource resource){
+        resources = (Resource[])ArrayUtils.add(resources, resource);
+        createPathToURLMapping(resource);
     }
 
     public URL loadGroovySource(String className) throws MalformedURLException {

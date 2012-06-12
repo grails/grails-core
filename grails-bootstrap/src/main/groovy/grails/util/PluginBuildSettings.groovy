@@ -517,6 +517,7 @@ class PluginBuildSettings {
      */
     Resource[] getArtefactResources() {
         def basedir = buildSettings.baseDir.absolutePath
+        def generatedSourcesDir = buildSettings.projectGeneratedSourcesDir.absolutePath
         def allArtefactResources = cache['allArtefactResources']
         if (!allArtefactResources) {
             def resources = [] as Resource[]
@@ -528,6 +529,7 @@ class PluginBuildSettings {
 
             // now build of application resources so that these can override plugin resources
             resources = ArrayUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
+            resources = ArrayUtils.addAll(resources, getArtefactResourcesForOne(new File(generatedSourcesDir).canonicalFile.absolutePath))
 
             allArtefactResources = resources
             cache['allArtefactResources'] = resources
@@ -546,6 +548,7 @@ class PluginBuildSettings {
             artefactResources = []
             artefactResources.addAll compileScopePluginInfo.artefactResources
             artefactResources.addAll getArtefactResourcesForOne(buildSettings.baseDir.path)
+            artefactResources.addAll getArtefactResourcesForOne(buildSettings.projectGeneratedSourcesDir.path)
             cache['compileScopedArtefactResources'] = artefactResources
         }
         return artefactResources
@@ -579,6 +582,7 @@ class PluginBuildSettings {
             artefactResources.addAll compileScopePluginInfo.getArtefactResources()
             artefactResources.addAll providedScopePluginInfo.getArtefactResources()
             artefactResources.addAll getArtefactResourcesForOne(buildSettings.baseDir.path)
+            artefactResources.addAll getArtefactResourcesForOne(buildSettings.projectGeneratedSourcesDir.path)
             if (Environment.getCurrent() == Environment.TEST) {
                 artefactResources.addAll testScopePluginInfo.getArtefactResources()
             }

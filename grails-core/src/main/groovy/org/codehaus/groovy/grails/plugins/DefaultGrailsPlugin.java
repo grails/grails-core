@@ -388,12 +388,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         String location = baseLocation;
         if (!location.endsWith(File.separator)) location = location + File.separator;
         if (resourcePath.startsWith(".")) {
-            resourcePath = resourcePath.substring(1);
+            return "file:" + location + resourcePath.substring(1);
         }
         else if (resourcePath.startsWith("file:./")) {
-            resourcePath = resourcePath.substring(7);
+            return "file:" + location + resourcePath.substring(7);
         }
-        resourcePath = "file:" + location + resourcePath;
         return resourcePath;
     }
 

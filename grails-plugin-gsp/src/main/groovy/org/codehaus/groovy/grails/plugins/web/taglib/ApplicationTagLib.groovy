@@ -99,9 +99,11 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     /**
      * Sets a variable in the pageContext or the specified scope.
+     * The value can be specified directly or can be a bean retrieved from the applicationContext.
      *
      * @attr var REQUIRED the variable name
      * @attr value the variable value; if not specified uses the rendered body
+     * @attr bean the name or the type of a bean in the applicationContext; the type can be an interface or superclass
      * @attr scope the scope name; defaults to pageScope
      */
     Closure set = { attrs, body ->
@@ -111,44 +113,17 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
         if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
 
-        def value = attrs.value
-        def containsValue = attrs.containsKey('value')
+        def value
 
-        if (!containsValue && body) value = body()
-
-        this."$scope"."$var" = value
-        null
-    }
-
-    /**
-     * Injects a dependency into a variable in the pageContext or the specified scope.
-     *
-     * @attr beanName the bean name; either beanName or beanType must be specified
-     * @attr beanType type the bean must match; can be an interface or superclass; either beanName or beanType must be specified
-     * @attr var the variable name; mandatory if beanType is specified, otherwise defaults to beanName
-     * @attr scope the scope name; defaults to pageScope
-     */
-    Closure inject = { attrs, body ->
-        def bean
-        def var = attrs.var
-        if (attrs.beanName) {
-            bean = applicationContext.getBean(attrs.beanName)
-            if (!var) {
-                var = attrs.beanName
-            }
-        } else if (attrs.beanType) {
-            bean = applicationContext.getBean(attrs.beanType)
-            if (!var) {
-                throw new IllegalArgumentException("[var] attribute must be specified to for <g:inject> when the [beanType] attribute is also specified!")
-            }
+        if (attrs.bean) {
+            value = applicationContext.getBean(attrs.bean)
         } else {
-            throw new IllegalArgumentException("either the [beanName] or [beanType] attribute must be specified to for <g:inject>!")
+            value = attrs.value
+            def containsValue = attrs.containsKey('value')
+            if (!containsValue && body) value = body()
         }
 
-        def scope = attrs.scope ? ApplicationTagLib.SCOPES[attrs.scope] : 'pageScope'
-        if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:inject>!")
-
-        this."$scope"."$var" = bean
+        this."$scope"."$var" = value
         null
     }
 
