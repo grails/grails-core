@@ -329,7 +329,5 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0'
-    jarFile = 'gradle/wrapper/gradle-wrapper.jar'
+    gradleVersion "1.0-milestone-9"
 }
-
