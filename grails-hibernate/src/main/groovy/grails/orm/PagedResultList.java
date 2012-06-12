@@ -15,6 +15,8 @@
  */
 package grails.orm;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -46,7 +48,7 @@ public class PagedResultList implements List, Serializable {
 
     protected int totalCount = Integer.MIN_VALUE;
 
-    private final GrailsHibernateTemplate hibernateTemplate;
+    private transient GrailsHibernateTemplate hibernateTemplate;
     private final Criteria criteria;
 
     public PagedResultList(GrailsHibernateTemplate template, Criteria crit) {
@@ -186,5 +188,14 @@ public class PagedResultList implements List, Serializable {
 
     public void setTotalCount(int totalCount) {
         this.totalCount = totalCount;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+
+        // find the total count if it hasn't been done yet so when this is deserialized
+        // the null GrailsHibernateTemplate won't be an issue
+        getTotalCount();
+
+        out.defaultWriteObject();
     }
 }
