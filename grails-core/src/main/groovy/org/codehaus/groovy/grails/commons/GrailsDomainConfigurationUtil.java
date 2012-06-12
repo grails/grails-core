@@ -55,7 +55,7 @@ public class GrailsDomainConfigurationUtil {
         String getterName = GrailsClassUtils.getGetterName(propertyName);
 
         try {
-            Method m = target.getClass().getDeclaredMethod(getterName, EMPTY_CLASS_ARRAY);
+            Method m = target.getClass().getMethod(getterName, EMPTY_CLASS_ARRAY);
             Object value = m.invoke(target);
             if (value != null && referencedDomainClass != null) {
                 String identifierGetter = GrailsClassUtils.getGetterName(referencedDomainClass.getIdentifier().getName());
