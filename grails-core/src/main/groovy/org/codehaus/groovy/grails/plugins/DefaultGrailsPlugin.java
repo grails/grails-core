@@ -387,13 +387,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private String getResourcePatternForBaseLocation(String baseLocation, String resourcePath) {
         String location = baseLocation;
         if (!location.endsWith(File.separator)) location = location + File.separator;
-        if (resourcePath.startsWith(".")) {
-            resourcePath = resourcePath.substring(1);
-        }
+        if (resourcePath.startsWith("./")) {
+            return "file:" + location + resourcePath.substring(2);        }
         else if (resourcePath.startsWith("file:./")) {
-            resourcePath = resourcePath.substring(7);
+            return "file:" + location + resourcePath.substring(7);
         }
-        resourcePath = "file:" + location + resourcePath;
         return resourcePath;
     }
 
