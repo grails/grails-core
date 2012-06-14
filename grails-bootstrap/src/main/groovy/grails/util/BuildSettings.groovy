@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.apache.ivy.core.module.descriptor.ExcludeRule
+import groovy.transform.CompileStatic
 
 /**
  * <p>Represents the project paths and other build settings
@@ -392,6 +393,7 @@ class BuildSettings extends AbstractBuildSettings {
     private List<File> internalPluginProvidedDependencies = []
 
     /** List containing the compile-time dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getCompileDependencies() {
         if (!defaultCompileDepsAdded) {
             compileDependencies += defaultCompileDependencies
@@ -403,6 +405,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the compile time dependencies for the project
      */
+    @CompileStatic
     void setCompileDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("compile", deps, internalPluginCompileDependencies)
         compileDependencies = jarFiles
@@ -445,6 +448,7 @@ class BuildSettings extends AbstractBuildSettings {
         return jarFiles
     }()
 
+
     private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
         jarFiles = jarFiles?.findAll { it != null} ?: []
         def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
@@ -463,6 +467,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultTestDepsAdded = false
 
     /** List containing the test-time dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getTestDependencies() {
         if (!defaultTestDepsAdded) {
             testDependencies += defaultTestDependencies
@@ -474,6 +479,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the test time dependencies for the project
      */
+    @CompileStatic
     void setTestDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("test", deps, internalPluginTestDependencies)
 
@@ -506,6 +512,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultRuntimeDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getRuntimeDependencies() {
         if (!defaultRuntimeDepsAdded) {
             runtimeDependencies += defaultRuntimeDependencies
@@ -517,6 +524,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the runtime dependencies for the project
      */
+    @CompileStatic
     void setRuntimeDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("runtime", deps, internalPluginRuntimeDependencies)
         runtimeDependencies = jarFiles
@@ -547,6 +555,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultProvidedDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getProvidedDependencies() {
         if (!defaultProvidedDepsAdded) {
             providedDependencies += defaultProvidedDependencies
@@ -558,6 +567,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the runtime dependencies for the project
      */
+    @CompileStatic
     void setProvidedDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("provided", deps, internalPluginProvidedDependencies)
         providedDependencies = jarFiles
@@ -588,6 +598,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultBuildDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getBuildDependencies() {
         if (!defaultBuildDepsAdded) {
             buildDependencies += defaultBuildDependencies
@@ -601,6 +612,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginCompileDependencies() {
         // ensure initialization
         if (!internalPluginCompileDependencies) {
@@ -615,6 +627,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginProvidedDependencies() {
         // ensure initialization
         if (!internalPluginProvidedDependencies) {
@@ -628,6 +641,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginRuntimeDependencies() {
         // ensure initialization
         if (!internalPluginRuntimeDependencies) {
@@ -642,6 +656,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginTestDependencies() {
         // ensure initialization
         if (!internalPluginTestDependencies) {
@@ -656,6 +671,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginBuildDependencies() {
         // ensure initialization
         if (!internalPluginBuildDependencies) {
@@ -668,6 +684,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the runtime dependencies for the project
      */
+    @CompileStatic
     void setBuildDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("build", deps, internalPluginBuildDependencies)
         buildDependencies = jarFiles
@@ -782,13 +799,14 @@ class BuildSettings extends AbstractBuildSettings {
         // otherwise it loads the script class using the Gant classloader.
     }
 
+    @CompileStatic
     void storeDependencyCache() {
         projectWorkDir.mkdirs()
         if (resolveChecksum) {
             try {
                 if (resolveCache.size() == 5 && !readFromCache) {
                     def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
-                    cachedResolve.withOutputStream { output ->
+                    cachedResolve.withOutputStream { OutputStream output ->
                         new ObjectOutputStream(output).writeObject(resolveCache)
                     }
                 }
@@ -799,6 +817,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
+    @CompileStatic
     protected def loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
         if (stream == null) {
@@ -823,6 +842,7 @@ class BuildSettings extends AbstractBuildSettings {
      * they have been set manually by the caller, then that information
      * will be lost!</p>
      */
+    @CompileStatic
     void setBaseDir(File newBaseDir) {
         baseDir = newBaseDir ?: establishBaseDir()
         // Initialize Metadata
@@ -1009,6 +1029,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
+    @CompileStatic
     ConfigObject loadConfig(ConfigObject config) {
         try {
             this.config.merge(config)
@@ -1123,13 +1144,14 @@ class BuildSettings extends AbstractBuildSettings {
 
     protected boolean settingsFileLoaded = false
 
+    @CompileStatic
     protected ConfigObject loadSettingsFile() {
         if (!settingsFileLoaded) {
             def settingsFile = new File("$userHome/.grails/settings.groovy")
             def gcl = obtainGroovyClassLoader()
             def slurper = createConfigSlurper()
             if (settingsFile.exists()) {
-                Script script = gcl.parseClass(settingsFile)?.newInstance()
+                Script script = (Script)gcl.parseClass(settingsFile)?.newInstance()
                 if (script) {
                     config = slurper.parse(script)
                 }
@@ -1139,18 +1161,18 @@ class BuildSettings extends AbstractBuildSettings {
             if (proxySettingsFile.exists()) {
                 slurper = createConfigSlurper()
                 try {
-                    Script script = gcl.parseClass(proxySettingsFile)?.newInstance()
+                    Script script = (Script)gcl.parseClass(proxySettingsFile)?.newInstance()
                     if (script) {
                         proxySettings = slurper.parse(script)
                         def current = proxySettings.currentProxy
                         if (current) {
-                            proxySettings[current]?.each { key, value ->
+                            proxySettings[current]?.each { String key, String value ->
                                 System.setProperty(key, value)
                             }
                         }
                     }
                 }
-                catch (e) {
+                catch (Throwable e) {
                     CONSOLE.error "WARNING: Error configuring proxy settings: ${e.message}", e
                 }
             }
@@ -1335,13 +1357,14 @@ class BuildSettings extends AbstractBuildSettings {
         return slurper
     }
 
+    @CompileStatic
     private void establishProjectStructure() {
         // The third argument to "getPropertyValue()" is either the
         // existing value of the corresponding field, or if that's
         // null, a default value. This ensures that we don't override
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
-        def metadata = Metadata.current
+        Metadata metadata = Metadata.getCurrent()
 
         offline = Boolean.valueOf(getPropertyValue(OFFLINE_MODE, props, String.valueOf(offline)))
 
@@ -1493,7 +1516,8 @@ class BuildSettings extends AbstractBuildSettings {
         buildListenersSet = true
     }
 
-    private getPropertyValue(String propertyName, Properties props, String defaultValue) {
+    @CompileStatic
+    private String getPropertyValue(String propertyName, Properties props, String defaultValue) {
         // First check whether we have a system property with the given name.
         def value = getValueFromSystemOrBuild(propertyName, props)
 
@@ -1502,6 +1526,7 @@ class BuildSettings extends AbstractBuildSettings {
         return value != null ? value : defaultValue
     }
 
+    @CompileStatic
     private getValueFromSystemOrBuild(String propertyName, Properties props) {
         def value = System.getProperty(propertyName)
         if (value != null) return value
@@ -1511,6 +1536,7 @@ class BuildSettings extends AbstractBuildSettings {
         return value
     }
 
+    @CompileStatic
     private File establishBaseDir() {
         def sysProp = System.getProperty(APP_BASE_DIR)
         def baseDir
