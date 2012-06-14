@@ -40,7 +40,8 @@ public interface UrlMappingEvaluator {
         "GET", "show",
         "POST", "save",
         "PUT", "update",
-        "DELETE", "delete");
+        "DELETE", "delete",
+        "HEAD", "head");
 
     /**
      * Evaluates URL mapping from the give Spring Resource
