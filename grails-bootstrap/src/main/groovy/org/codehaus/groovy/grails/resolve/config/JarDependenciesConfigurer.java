@@ -46,10 +46,10 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
     @Override
     protected void addArtifacts(String scope, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
-        ModuleId dependencyId = dependencyDescriptor.getDependencyId();
-        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(
-                dependencyDescriptor, dependencyId.getName(), "jar", "jar", null, dependencyDescriptor.getExtraAttributes()
-        );
-        dependencyDescriptor.addDependencyArtifact(scope, artifact);
+//        ModuleId dependencyId = dependencyDescriptor.getDependencyId();
+//        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(
+//                dependencyDescriptor, dependencyId.getName(), "jar", "jar", null, dependencyDescriptor.getExtraAttributes()
+//        );
+//        dependencyDescriptor.addDependencyArtifact(scope, artifact);
     }
 }
