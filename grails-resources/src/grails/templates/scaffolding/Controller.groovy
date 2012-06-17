@@ -29,72 +29,61 @@ class ${className}Controller {
     }
 
     def show(Long id) {
-        def ${propertyName} = ${className}.get(id)
-        if (!${propertyName}) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
-            redirect(action: "list")
-            return
+        def aShow = {
+            ${propertyName} -> [${propertyName}: ${propertyName}]
         }
-
-        [${propertyName}: ${propertyName}]
+        with${className} ( id, aShow)
     }
 
     def edit(Long id) {
-        def ${propertyName} = ${className}.get(id)
-        if (!${propertyName}) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
-            redirect(action: "list")
-            return
+        def anEdit =  { 
+            ${propertyName} -> [${propertyName}: ${propertyName}] 
         }
-
-        [${propertyName}: ${propertyName}]
+        with${className} ( id, anEdit )
     }
 
     def update(Long id, Long version) {
-        def ${propertyName} = ${className}.get(id)
-        if (!${propertyName}) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
-            redirect(action: "list")
-            return
-        }
-
-        if (version != null) {
-            if (${propertyName}.version > version) {<% def lowerCaseName = grails.util.GrailsNameUtils.getPropertyName(className) %>
-                ${propertyName}.errors.rejectValue("version", "default.optimistic.locking.failure",
-                          [message(code: '${domainClass.propertyName}.label', default: '${className}')] as Object[],
-                          "Another user has updated this ${className} while you were editing")
+        def anUpdate = { ${propertyName} ->
+            if (${propertyName}.version > version) {
+                <% def lowerCaseName = grails.util.GrailsNameUtils.getPropertyName(className) %>
+                ${propertyName}.errors.rejectValue("version", "default.optimistic.locking.failure", [message(code: '${domainClass.propertyName}.label', default: '${className}')] as Object[], "Another user has updated this ${className} while you were editing")
                 render(view: "edit", model: [${propertyName}: ${propertyName}])
                 return
             }
+            ${propertyName}.properties = params
+            if (!${propertyName}.hasErrors() && ${propertyName}.save(flush: true)) {
+                flash.message = "\${message(code: 'default.updated.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])}"
+                redirect(action: "show", id: ${propertyName}.id)
+            }
+            else {
+                render(view: "edit", model: [${propertyName}: ${propertyName}])
+            }
         }
-
-        ${propertyName}.properties = params
-
-        if (!${propertyName}.save(flush: true)) {
-            render(view: "edit", model: [${propertyName}: ${propertyName}])
-            return
-        }
-
-        flash.message = message(code: 'default.updated.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), ${propertyName}.id])
-        redirect(action: "show", id: ${propertyName}.id)
+        with${className} ( id, anUpdate )
     }
 
     def delete(Long id) {
+        def aDelete = { ${propertyName} ->
+            try {
+                ${propertyName}.delete(flush: true)
+                flash.message = "\${message(code: 'default.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])}"
+                redirect(action: "list")
+            }
+            catch (org.springframework.dao.DataIntegrityViolationException e) {
+                flash.message = "\${message(code: 'default.not.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])}"
+                redirect(action: "show", id: id)
+            }
+        }
+        with${className} ( id, aDelete )
+    }
+    
+    private def with${className}(Long id, Closure c) {
         def ${propertyName} = ${className}.get(id)
-        if (!${propertyName}) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
+        if(${propertyName}) {
+            c.call ${propertyName}
+        } else {
+            flash.message = "\${message(code: 'default.not.found.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), params.id])}"
             redirect(action: "list")
-            return
-        }
-
-        try {
-            ${propertyName}.delete(flush: true)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
-            redirect(action: "list")
-        }
-        catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: '${domainClass.propertyName}.label', default: '${className}'), id])
-            redirect(action: "show", id: id)
         }
     }
 }
