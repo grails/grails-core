@@ -92,7 +92,7 @@ task pluginsFromRepo {
     ext.plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
-        resources: "1.1.6",
+        resources: "1.2-RC1",
         webxml: "1.4.1",
         jquery: "1.7.1"
     ]
