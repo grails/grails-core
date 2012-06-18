@@ -42,6 +42,7 @@ import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.hibernate.Criteria;
 import org.hibernate.EntityMode;
 import org.hibernate.FetchMode;
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -602,6 +603,42 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             throwRuntimeException(new IllegalArgumentException("Call to [resultTransformer] not supported here"));
         }
         resultTransformer = transformer;
+    }
+
+    /**
+     * Join an association, assigning an alias to the joined association.
+     * <p/>
+     * Functionally equivalent to createAlias(String, String, int) using
+     * CriteriaSpecificationINNER_JOIN for the joinType.
+     *
+     * @param associationPath A dot-seperated property path
+     * @param alias The alias to assign to the joined association (for later reference).
+     *
+     * @return this (for method chaining)
+     * #see {@link #createAlias(String, String, int)}
+     * @throws HibernateException Indicates a problem creating the sub criteria
+     */
+    public Criteria createAlias(String associationPath, String alias) {
+        return criteria.createAlias(associationPath, alias);
+    }
+    
+    /**
+     * Join an association using the specified join-type, assigning an alias
+     * to the joined association.
+     * <p/>
+     * The joinType is expected to be one of CriteriaSpecification.INNER_JOIN (the default),
+     * CriteriaSpecificationFULL_JOIN, or CriteriaSpecificationLEFT_JOIN.
+     *
+     * @param associationPath A dot-seperated property path
+     * @param alias The alias to assign to the joined association (for later reference).
+     * @param joinType The type of join to use.
+     *
+     * @return this (for method chaining)
+     * @see #createAlias(String, String)
+     * @throws HibernateException Indicates a problem creating the sub criteria
+     */
+    public Criteria createAlias(String associationPath, String alias, int joinType) {
+        return criteria.createAlias(associationPath, alias, joinType);
     }
 
     /**
