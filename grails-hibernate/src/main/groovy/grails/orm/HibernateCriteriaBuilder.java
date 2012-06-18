@@ -593,6 +593,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     }
 
     /**
+     * Sets the resultTransformer.
+     * @param transformer The result transformer to use.
+     */
+    public void resultTransformer(ResultTransformer transformer) {
+        if (criteria == null) {
+            throwRuntimeException(new IllegalArgumentException("Call to [resultTransformer] not supported here"));
+        }
+        resultTransformer = transformer;
+    }
+
+    /**
      * Join an association, assigning an alias to the joined association.
      * <p/>
      * Functionally equivalent to createAlias(String, String, int) using
