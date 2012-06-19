@@ -1,0 +1,4 @@
+package foobar
+
+class FoobarController {}
+

@@ -1,0 +1,11 @@
+dependencies {
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "commons-io:commons-io:${commonsIOVersion}"
+
+    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    compile project(":grails-web"), project(":grails-plugin-controllers")
+}
+jar.appendix = 'plugin-url-mappings'

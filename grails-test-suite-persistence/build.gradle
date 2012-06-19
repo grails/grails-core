@@ -1,0 +1,37 @@
+dependencies {
+
+    testCompile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    testCompile ("net.sf.ehcache:ehcache-core:$ehcacheVersion") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    testCompile project(':grails-test-suite-base'),
+                project(':grails-plugin-domain-class'),
+                project(':grails-plugin-testing'),
+                project(':grails-plugin-datasource'),
+                project(':grails-plugin-i18n'),
+                project(':grails-plugin-servlets'),
+                project(':grails-plugin-url-mappings'),
+                project(':grails-plugin-services'),
+                project(':grails-plugin-scaffolding'),
+                project(':grails-plugin-controllers'),
+                project(':grails-hibernate'),
+                project(':grails-bootstrap'),
+                project(':grails-crud'),
+                project(':grails-plugin-log4j')
+}
+test {
+    maxParallelForks = 2
+    forkEvery = 200
+    jvmArgs = ['-Xmx1048M','-XX:MaxPermSize=256m']
+    excludes = ['**/GrailsDomainBinderTests.class']
+}
+
+task testGrailsDomainBinder(type: Test) {
+    includes = ['**/GrailsDomainBinderTests.class']
+}
+
+test.dependsOn testGrailsDomainBinder

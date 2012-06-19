@@ -1,0 +1,4 @@
+<% def hLevel = level == 0 ? 1 : 2 %>
+<% if (legacyLinks[name]) { %><a name="${legacyLinks[name].encodeAsHtml()}"><!-- Legacy link --></a><% } %>
+<h$hLevel id="${name.encodeAsHtml()}">${sectionNumber} ${title}</h$hLevel>
+${content}

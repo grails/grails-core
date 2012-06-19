@@ -1,0 +1,89 @@
+dependencies {
+
+    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile( "commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    compile project(":grails-bootstrap"),
+            project(":grails-core"),
+            project(":grails-spring"),
+            project(":grails-web"),
+            project(":grails-plugin-domain-class")
+
+    // Specs
+    compile 'javax.transaction:jta:1.1'
+
+    // Datastore APIs
+    compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
+        transitive = false
+        exclude group: 'org.grails', module:'grails-bootstrap'
+        exclude group: 'org.grails', module:'grails-core'
+        exclude group: 'org.grails', module:'grails-test'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jul-to-slf4j'
+        exclude group: 'org.slf4j', module:'slf4j-api'
+        exclude group: 'org.slf4j', module:'slf4j-simple'
+
+    }
+    compile("org.grails:grails-datastore-core:$datastoreVersion") {
+        exclude group: 'org.springframework', module:'spring-core'
+        exclude group: 'org.springframework', module:'spring-context'
+        exclude group: 'org.springframework', module:'spring-web'
+        exclude group: 'org.springframework', module:'spring-beans'
+        exclude group: 'org.springframework', module:'spring-tx'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jul-to-slf4j'
+        exclude group: 'org.slf4j', module:'slf4j-api'
+        exclude group: 'org.slf4j', module:'slf4j-simple'
+        exclude group: 'org.grails', module:'grails-bootstrap'
+        exclude group: 'org.grails', module:'grails-core'
+        exclude group: 'commons-collections', module:'commons-collections'
+        exclude group: 'commons-lang', module:'commons-lang'
+        exclude group: 'javassist', module:'javassist'
+        exclude group: 'java-persistence', module:'persistence-api'
+        exclude group: 'javax.persistence', module:'persistence-api'
+    }
+    compile("org.grails:grails-datastore-simple:$datastoreVersion") {
+        exclude group: 'org.grails', module:'grails-datastore-core'
+    }
+
+    compile "org.springframework:spring-jdbc:${springVersion}"
+    compile "org.springframework:spring-orm:${springVersion}"
+    compile "org.springframework:spring-tx:${springVersion}"
+
+    // Hibernate related
+    compile ("org.hibernate:hibernate-core:$hibernateVersion") {
+        exclude group: 'commons-logging', module:'commons-logging'
+        exclude group: 'commons-collections', module:'commons-collections'
+        exclude group: 'antlr', module: 'antlr'
+    }
+    compile 'javassist:javassist:3.12.0.GA'
+    compile 'javax.transaction:jta:1.1'
+
+    runtime( 'org.hibernate:hibernate-commons-annotations:3.2.0.Final') {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    runtime ("net.sf.ehcache:ehcache-core:$ehcacheVersion") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    runtime ('org.hibernate:hibernate-validator:4.1.0.Final') {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    runtime ("org.hibernate:hibernate-ehcache:$hibernateVersion") {
+        exclude group: 'commons-logging', module:'commons-logging'
+        exclude group: 'commons-collections', module:'commons-collections'
+    }
+    runtime ('antlr:antlr:2.7.7') {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    runtime 'javax.validation:validation-api:1.0.0.GA'
+}
+
+test {
+//    maxParallelForks = 4
+    forkEvery = 100
+    maxHeapSize = '1024m'
+}
+
+jar.appendix = 'hibernate'

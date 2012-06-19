@@ -1,0 +1,3 @@
+<plugin name='mimetypes'>
+  <type>org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin</type>
+</plugin>

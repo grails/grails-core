@@ -1,0 +1,58 @@
+dependencies {
+
+    testRuntime 'javax.servlet.jsp:jsp-api:2.1'
+    testRuntime 'jstl:jstl:1.1.2'
+    testRuntime 'javax.el:el-api:1.0'
+
+    testCompile "commons-io:commons-io:${commonsIOVersion}"
+    testCompile project(':grails-test-suite-base'),
+                project(':grails-plugin-testing'),
+                project(':grails-plugin-domain-class'),
+                project(':grails-plugin-codecs'),
+                project(':grails-plugin-datasource'),
+                project(':grails-plugin-i18n'),
+                project(':grails-plugin-servlets'),
+                project(':grails-plugin-async'),
+                project(':grails-plugin-log4j'),
+                project(':grails-plugin-url-mappings'),
+                project(':grails-plugin-services'),
+                project(':grails-hibernate'),
+                project(':grails-webflow')
+}
+test {
+    maxParallelForks = 4
+    forkEvery = 100
+    jvmArgs = ['-Xmx1024M','-XX:MaxPermSize=192m']
+    excludes = ["**/*TestCase.class",
+                "**/*\$*.class",
+                "**/ContentFormatControllerTests.class",
+                "**/JSONBindingTests.class",
+                "**/AutoParams*MarshallingTests.class",
+                "**/JSONBindingToNullTests.class",
+                "**/ControllerWithXmlConvertersTests.class",
+                "**/GroovyPageAttributesTests.class",
+                "**/BindingExcludeTests.class",
+                "**/NestedXmlBindingTests.class"]
+}
+
+task isolatedTestsOne(type:Test) {
+    includes = ["**/ContentFormatControllerTests.class"]
+}
+task isolatedTestsTwo(type:Test) {
+    includes = ["**/JSONBindingTests.class",
+                "**/AutoParams*MarshallingTests.class"]
+}
+task isolatedTestsThree(type:Test) {
+    includes = ["**/JSONBindingToNullTests.class",
+                "**/ControllerWithXmlConvertersTests.class"]
+}
+task isolatedTestsFour(type:Test) {
+    includes = ["**/BindingExcludeTests.class"]
+}
+task isolatedTestsFive(type:Test) {
+    includes = ["**/GroovyPageAttributesTests.class"]
+}
+task isolatedTestsSix(type:Test) {
+    includes = ["**/NestedXmlBindingTests.class"]
+}
+test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix

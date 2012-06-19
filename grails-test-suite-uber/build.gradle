@@ -1,0 +1,36 @@
+// dependencies
+dependencies {
+
+    compile project(':grails-hibernate'),
+            project(':grails-test-suite-base'),
+            project(':grails-plugin-testing')
+
+    testRuntime 'javax.servlet.jsp:jsp-api:2.1'
+    testRuntime 'jstl:jstl:1.1.2'
+    testRuntime 'javax.el:el-api:1.0'
+
+    testCompile "commons-io:commons-io:${commonsIOVersion}"
+    testCompile project(':grails-plugin-codecs'),
+                project(':grails-plugin-domain-class') ,
+                project(':grails-plugin-url-mappings') ,
+                project(':grails-plugin-validation'),
+                project(":grails-plugin-datasource"),
+                project(":grails-plugin-servlets"),
+                project(":grails-plugin-services"),
+                project(":grails-plugin-i18n"),
+                project(":grails-plugin-log4j")
+}
+
+test {
+     maxParallelForks = 4
+     forkEvery = 100
+     maxHeapSize = '1024m'
+     excludes = ["**/*TestCase.class","**/DataSourceGrailsPluginTests","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class"]
+}
+
+task isolatedTestsOne(type:Test) {
+    includes = [
+                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class"]
+}
+
+test.dependsOn isolatedTestsOne

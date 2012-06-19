@@ -1,0 +1,5 @@
+dependencies {
+    compile project(":grails-core"),
+            project(':grails-web')
+}
+jar.appendix = 'logging'

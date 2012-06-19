@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean id="handlerMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+
+	</bean>
+
+	<bean id="myHandlerInterceptor" class="org.codehaus.groovy.grails.web.plugins.support.MyHandlerInterceptor"/>
+
+	<bean id="myWebRequestInterceptor" class="org.codehaus.groovy.grails.web.plugins.support.MyWebRequestInterceptor"/>
+
+	<bean class="org.codehaus.groovy.grails.web.plugins.support.HandlerMappingInterceptorWiringBeanFactoryPostProcessor"/>
+
+	<bean id="machin" class="java.lang.Object"/>
+
+	<bean id="bidon" class="java.lang.Object"/>
+</beans>

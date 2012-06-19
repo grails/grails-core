@@ -1,0 +1,3 @@
+<plugin name='dataSource'>
+  <type>org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin</type>
+</plugin>

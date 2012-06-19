@@ -1,0 +1,3 @@
+<plugin name='controllers'>
+  <type>org.codehaus.groovy.grails.plugins.web.async.ControllersAsyncGrailsPlugin</type>
+</plugin>

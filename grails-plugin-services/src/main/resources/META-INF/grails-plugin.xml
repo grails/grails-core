@@ -1,0 +1,3 @@
+<plugin name='services'>
+  <type>org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin</type>
+</plugin>

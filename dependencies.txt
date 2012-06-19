@@ -1,0 +1,177 @@
+The following libraries are included in Grails because they are required either for building the framework or for running the command line tools or for running Grails applications themselves.
+
+* ant.jar, ant-junit.jar, ant-launcher.jar, ant-trax.jar
+- Ant 1.8.2 (http://ant.apache.org) Apache 2.0 License
+- used to build the framework and for the command line tools (Gant)
+- required for running Grails applications when using AntBuilder
+
+* antlr-2.7.7.jar
+- ANTLR 2.7.7 (http://www.antlr.org) BSD License
+- required for running Grails applications (Hibernate)
+
+* aspectjrt-1.6.8.jar, aspectjweaver-1.6.8.jar
+- AspectJ 1.6.8 (http://www.eclipse.org/aspectj/) Eclipse Public License (EPL) 
+- required for running Grails applications
+
+* cglib-nodep-2.1_3.jar
+- CGLIB 2.1_3 with ObjectWeb ASM 1.5.3 (http://cglib.sourceforge.net) Apache 1.1 License
+- required for running Grails applications (Spring AOP & Hibernate)
+
+* concurrentlinkedhashmap-lru-1.0_jdk5.jar
+- ConcurrentLinkedHashMap policy: least-recently-used, jdk: 5 (https://code.google.com/p/concurrentlinkedhashmap) Apache License 2.0
+- required for building Grails core
+- required for running Grails applications
+
+* commons-beanutils-1.8.0.jar
+- Commons BeanUtils 1.8.0 (http://commons.apache.org/beanutils/) Apache 2.0 License
+- required for running Grails applications 
+
+* commons-codec-1.4.jar
+- Commons Codec 1.4 (http://commons.apache.org/codec/) Apache 2.0 License
+- required for running Grails applications
+
+* commons-cli-1.0.jar
+- Commons CLI 1.0 (http://commons.apache.org/cli/) Apache 2.0 License
+- required for the command line tools (Gant)
+
+* commons-collections-3.2.1.jar
+- Commons Collections 3.2.1 (http://commons.apache.org/collections/) Apache 2.0 License
+- required for building Grails core
+- required for running Grails applications 
+
+* commons-dbcp-1.3.jar
+- Commons DBCP 1.3 (http://commons.apache.org/dbcp/) Apache 2.0 License
+- required for building Grails core
+- required for running Grails applications 
+
+* commons-el-1.0.jar
+- Commons Expression Language 1.0 (http://commons.apache.org/el/) Apache 2.0 License
+- required for running Grails applications
+
+* commons-fileupload-1.2.1.jar
+- Commons File Upload 1.2.1 (http://commons.apache.org/fileupload/) Apache 2.0 License
+- required for running Grails applications (When using file uploads)
+
+* commons-io-1.4.jar
+- Commons I/O 1.4 (http://commons.apache.org/io/) Apache 2.0 License
+- required for running Grails applications
+
+* commons-lang-2.4.jar
+- Commons Lang 2.4 (http://commons.apache.org/lang/) Apache 2.0 License
+- required for building Grails core
+- required for running Grails application
+
+* commons-pool-1.5.5.jar
+- Commons Pool 1.5.5 (http://commons.apache.org/pool/) Apache 2.0 License
+- required for running Grails applications
+
+* commons-validator-1.3.1.jar
+- Commons Validator 1.3.1 (http://commons.apache.org/validator/) Apache 2.0 License
+- required for building Grails core
+- required for running Grails applications
+
+* dom4j-1.6.1.jar
+- Dom4J 1.6.1 (http://dom4j.org/) BSD Style License (see http://www.dom4j.org/license.html)
+- required for building Grails core
+- required for running Grails applications
+
+* ejb3-persistence-1.0.2.GA.jar
+- EJB 3.0 Final Release
+- required for running Grails applications (When using Hibernate EJB3 annotations)
+
+* ehcache-1.5.0.jar
+- EHCache 1.5.0 (http://ehcache.sourceforge.net/) Apache 2.0 License
+- required if you want to use EHCache as your second-level cache
+- optional otherwise
+
+* gant_groovy1.8-1.9.5.jar
+- Gant 1.9.5 (http://gant.codehaus.org) Apache 2.0 License
+- required for the command line tools (Gant)
+
+* groovy-all-1.8.6.jar
+- Groovy 1.8.6 (http://groovy.codehaus.org) Apache 2.0 License
+- required for the command line tools (Gant)
+- required for building Grails core
+- required for running Grails applications
+
+* hibernate-commons-annotations-3.2.0.Final.jar
+- Hibernate Annotations 3.2.0 GA (http://annotations.hibernate.org) LGPL License
+- required for running Grails applications (When using Hibernate EJB3 annotations)
+
+* hibernate-core-3.6.10.Final.jar
+- Hibernate 3.6.8 GA (http://www.hibernate.org) LGPL License
+- required for building Grails core
+- required for running Grails applications
+
+* hsqldb-1.8.0.10.jar
+- HSQLDB 1.8.0.10 (http://hsqldb.org/) HSQLDB License (see http://hsqldb.org/web/hsqlLicense.html)
+- required for building Grails core
+- required for running Grails applications (With an in-memory database)
+
+* h2-1.3.164.jar
+- H2 1.3.164 (http://www.h2database.com/) H2 License (see http://www.h2database.com/html/license.html)
+- required for building Grails core
+- required for running Grails applications (With an in-memory database)
+
+* javassist-3.12.0.GA.jar
+- Javassist 3.12.0 (http://www.jboss.org/javassist/) MPL or LGPL License
+- required for running Grails applications 
+
+* jline-0.9.94.jar
+- JLine 0.9.94 (http://jline.sourceforge.net/)
+- required for the Grails shell
+
+* jsp-api-2.1.jar
+- Java Server Pages 2.1 Spec 
+- required for building Grails core
+- required for running Grails applications
+
+* jta-1.1.jar
+- Java Transaction API
+- required for running Grails applications
+
+* junit-4.8.1.jar
+- JUnit 4.8.1 (http://junit.org) CPL 1.0 License
+- required for building Grails core
+- required for the command line tools (Gant)
+
+* log4j-1.2.16.jar
+- Log4J 1.2.16 (http://logging.apache.org/log4j/) Apache 2.0 License
+- required for running Grails applications
+
+* ognl-2.7.3.jar
+- OGNL 2.7.3 (http://www.ognl.org/) OGNL License (http://www.ognl.org/copyright.html)
+- required for running Grails applications (When using Web Flows)
+
+* oro-2.0.8.jar
+- Jakarta ORO 2.0.8 (http://jakarta.apache.org/oro/) Apache 2.0 License
+- required for running Grails applications
+
+* protobuf-java-2.4.1.jar
+- Google's language-neutral, platform-neutral, extensible mechanism or serializing structured data
+
+* sitemesh-2.4.jar
+- Sitemesh 2.4 (http://www.opensymphony.com/sitemesh) OpenSymphony Software License (see http://www.opensymphony.com/sitemesh/license.action) 
+- required for building Grails core
+- required for running Grails applications
+
+* slf4j-api-1.5.6.jar, slf4j-log4j12-1.5.6.jar
+- Simple Logging Facade for Java 1.5.6 (http://www.slf4j.org/) MIT License (http://www.slf4j.org/license.html)
+- required for building Grails core
+- required for running Grails applications
+
+* org.springframework.*.jar
+- Spring Framework 3.1.0.RELEASE (http://www.springframework.org) Apache 2.0 License
+- required for building Grails core
+- required for the command line tools (Gant)
+- required for running Grails applications
+
+* org.springframework.webflow-2.0.8.RELEASE.jar, org.springframework.binding-2.0.8.RELEASE.jar, org.springframework.js-2.0.8.RELEASE.jar
+- Spring Web Flow 2.0.8 (http://www.springframework.org) Apache 2.0 License
+- required for building Grails core
+- required for running Grails applications (When using Web flows)
+
+* xpp3_min-1.1.3.4.O.jar
+- XML Pull Parser (XPP) 1.1.3.4.O (http://www.extreme.indiana.edu/xgws/xsoap/xpp/)  Indiana University Extreme! Lab Software License (see http://www.extreme.indiana.edu/viewcvs/~checkout~/XPP3/java/LICENSE.txt)
+- required for running Grails applications (dependency of XStream 1.2.1)
+

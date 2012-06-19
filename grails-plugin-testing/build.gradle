@@ -1,0 +1,32 @@
+dependencies {
+
+    compile project(':grails-plugin-url-mappings'),
+            project(':grails-plugin-servlets'),
+            project(':grails-plugin-controllers'),
+            project(':grails-plugin-domain-class'),
+            project(':grails-plugin-gsp'),
+            project(':grails-plugin-filters'),
+            project(':grails-plugin-mimetypes'),
+            project(':grails-plugin-converters'),
+            project(':grails-logging'),
+            project(':grails-test'),
+            project(':grails-hibernate')
+
+    // Datastore APIs
+    compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
+        transitive = false
+    }
+    compile("org.grails:grails-datastore-core:$datastoreVersion") {
+        transitive = false
+    }
+    compile("org.grails:grails-datastore-simple:$datastoreVersion") {
+        transitive = false
+    }
+
+    compile("org.springframework:spring-test:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+}
+
+jar.appendix = 'plugin-testing'

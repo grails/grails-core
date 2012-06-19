@@ -1,0 +1,441 @@
+/*
+ * Copyright 2011 SpringSource
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package dsld
+
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+
+/**
+ * DSL support for the Grails Framework when editing inside of STS.  Requires STS 2.7.0 or later.
+ * @author Andrew Eisenberg
+ * @since 2.0
+ */
+
+/*
+ * A note about using named parameters:
+ *
+ * DSLD supports various kinds of parameters: regular, named and optional.
+ * regular and named parameters appear in content assist, and optional does not.
+ * named and optional parameters are inserted with the argument name prefixed.
+ *
+ * Here is an example:
+ * method name:"meth",
+ *        params: [first:String, second: "foo.MyObj",
+ *        namedParams:[third:Integer, fourth:Long],
+ *        optionalParams:[fifth:"foo.Optional", sixth:"foo.OtherOptional"]
+ *
+ * note that the use of named and optional parameters deprecates the "useNamed" argument.
+ */
+
+// -----------------------------------------------------
+// Set-up
+
+def grailsArtifact = { String folder ->
+	sourceFolderOfCurrentType("grails-app/" + folder) &
+	nature("grails") & (~isScript())
+}
+
+// define the various kinds of grails artifacts
+def domainClass = grailsArtifact("domain")
+// so far we only require domainClass, but we can also reference other kinds of artifacts here
+//def controllerClass = grailsArtifact("controllers")
+//def serviceClass = grailsArtifact("services")
+//def taglibClass = grailsArtifact("taglib")
+def unitTest = sourceFolderOfCurrentType("test/unit")
+
+
+/**
+ * Extract the first generic type from the ClassNode, if it exists
+ * @param orig
+ * @return
+ */
+ClassNode extractGeneric(ClassNode orig) {
+     GenericsType[] gt = orig.genericsTypes
+     if (gt?.length == 1) {
+              return gt[0].type
+     }
+     null
+}
+
+Map<String,ClassNode> convertToParams(Collection<PropertyNode> props) {
+	def map = [:]
+	props.each {
+		map."${it.name}" = it.type
+	}
+	map
+}
+
+
+// Can't use ClassHelper.getUnwrapper since the ClassNodes will likely be
+// JDTClassNodes
+ClassNode unbox(ClassNode orig) {
+	def name = orig.name
+	if (!name.startsWith('java.lang.')) {
+		return orig
+	}
+	if (name.endsWith("Integer")) {
+		return ClassHelper.int_TYPE
+	} else if (name.endsWith("Boolean")) {
+		return ClassHelper.boolean_TYPE
+	} else if (name.endsWith("Byte")) {
+		return ClassHelper.byte_TYPE
+	} else if (name.endsWith("Char")) {
+		return ClassHelper.char_TYPE
+	} else if (name.endsWith("Double")) {
+		return ClassHelper.double_TYPE
+	} else if (name.endsWith("Float")) {
+		return ClassHelper.float_TYPE
+	} else if (name.endsWith("Long")) {
+		return ClassHelper.long_TYPE
+	} else if (name.endsWith("Short")) {
+		return ClassHelper.short_TYPE
+	} else {
+		return orig
+	}
+}
+
+// converts a type name to a property name by converting first char to lower case
+def toPropertyName(String typeName) {
+    // Check whether the name begins with two upper case letters.
+    if (typeName.length() > 1
+                   && Character.isUpperCase(typeName.charAt(0))
+                   && Character.isUpperCase(typeName.charAt(1)))  {
+          return typeName
+	}
+    return typeName[0].toLowerCase(Locale.ENGLISH) + typeName.substring(1);
+}
+
+void addSyntheticFieldToWormhole(String name, ClassNode type, Map wormhole) {
+	 def synth = wormhole["syntheticFields"]
+	 if (!synth) {
+		 synth = [:]
+		 wormhole["syntheticFields"] = synth
+	 }
+	 synth[name] = type
+ }
+
+// -----------------------------------------------------
+// constraints
+// The constraints DSL is only applicable inside of the static "constraints" field declaration
+(domainClass &
+	inClosure() &
+	enclosingField(name("constraints") & isStatic()) &
+	isThisType() &
+	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
+	).accept {
+
+	provider = "Grails Constraints DSL"  // this value will appear in content assist
+
+	// FIXJB : ensure that all constraints are correct below
+	// FIXJB : add documentation
+	// for each non-static property, there are numerous constraints "methods" that are available
+	// define them all here
+	for (PropertyNode prop in props) {
+		ClassNode proptype = unbox(prop.type)
+		String propname = prop.name
+		if (proptype == ClassHelper.STRING_TYPE) {
+			method isStatic: true, type: Void, name: propname, params: [blank:Boolean], useNamedArgs:true, doc: 'Validate that a String is is not blank. <a href="http://grails.org/doc/latest/ref/Constraints/blank.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [creditCard:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid credit card number. <a href="http://grails.org/doc/latest/ref/Constraints/creditCard.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [email:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid email address. <a href="http://grails.org/doc/latest/ref/Constraints/email.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [url:Boolean], useNamedArgs:true, doc: 'Validate that a String is a valid URL. <a href="http://grails.org/doc/latest/ref/Constraints/url.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [matches:String], useNamedArgs:true, doc: 'Validate that a String matches a regular expression. <a href="http://grails.org/doc/latest/ref/Constraints/matches.html">Details.</a>'
+		} else if (proptype.name == Date.name) {
+			method isStatic: true, type: Void, name: propname, params: [max:Date], useNamedArgs:true, doc: 'Validate that a Date is not after the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [min:Date], useNamedArgs:true, doc: 'Validate that a Date is not before the specified date. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
+		} else if (ClassHelper.isNumberType(proptype)) {
+			method isStatic: true, type: Void, name: propname, params: [max:proptype], useNamedArgs:true, doc: 'Validate that a number is not greater than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/max.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [min:proptype], useNamedArgs:true, doc: 'Validate that a number is not less than the specified value. <a href="http://grails.org/doc/latest/ref/Constraints/min.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [scale:proptype], useNamedArgs:true, doc: 'Sets to the desired scale for floating point numbers. <a href="http://grails.org/doc/latest/ref/Constraints/scale.html">Details.</a>'
+		} else if (proptype.implementsInterface(ClassHelper.LIST_TYPE)) {
+			method isStatic: true, type: Void, name: propname, params: [maxSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have more than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
+			method isStatic: true, type: Void, name: propname, params: [minSize:Number], useNamedArgs:true, doc: 'Validate that the collection does not have fewer than the specified number of elements.  <a href="http://grails.org/doc/latest/ref/Constraints/maxSize.html">Details.</a>'
+		}
+		method isStatic: true, type: Void, name: propname, params: [unique:Boolean], useNamedArgs:true, doc: 'Validate that the value is unique at the database level.  <a href="http://grails.org/doc/latest/ref/Constraints/unique.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [size:Integer], useNamedArgs:true, doc: 'Validate that the size of a value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/size.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [notEqual:Object], useNamedArgs:true, doc: 'Validate that the value is not equal to the specified value.  <a href="http://grails.org/doc/latest/ref/Constraints/notEqual.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [nullable:Boolean], useNamedArgs:true, doc: 'Specify if a value is allowed to be null.  <a href="http://grails.org/doc/latest/ref/Constraints/nullable.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [range:Range], useNamedArgs:true, doc: 'Validate that the value falls within the specified range.  <a href="http://grails.org/doc/latest/ref/Constraints/range.html">Details.</a>'
+		method isStatic: true, type: Void, name: propname, params: [inList:List], useNamedArgs:true, doc: 'Validate that the value is with a list of specified values.  <a href="http://grails.org/doc/latest/ref/Constraints/inList.html">Details.</a>'
+	}
+}
+
+// -----------------------------------------------------
+// GormStaticAPI
+// GormInstanceAPI
+// GormValidationAPI
+//
+// with a little bit of Criteria builder mixed in
+(domainClass & bind(props : properties(~isStatic()))).accept {
+	def currentTypeName = currentType.name
+	provider = "GORM Instance API"
+	delegatesTo type:"org.grails.datastore.gorm.GormInstanceApi<${currentTypeName}>", asCategory:true
+	provider = "GORM Validation API"
+	delegatesTo type:"org.grails.datastore.gorm.GormValidationApi<${currentTypeName}>", asCategory:true
+	provider = "GORM Static API"
+	delegatesTo type:"org.grails.datastore.gorm.GormStaticApi<${currentTypeName}>", isStatic:true, except:["withCriteria", "createCriteria", "where", "find", "findAll", "findWhere"]
+
+	method name:"find", type:currentType, params: [query : Closure],
+		declaringType:currentType, isStatic:true
+
+	method name:"findAll", type:"java.util.List<${currentTypeName}>", params: [query : Closure],
+		declaringType:currentType, isStatic:true
+
+	provider = "Criteria builder DSL"
+	method name:"createCriteria", type:"grails.orm.HibernateCriteriaBuilder",
+		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+	method name:"withCriteria", type:"java.util.List<${currentTypeName}>", params: [query : Closure],
+		declaringType:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+
+	method name:"findWhere", type:currentType, optionalParams:convertToParams(props), isStatic:true, declaringType:"org.grails.datastore.gorm.GormStaticApi<${currentTypeName}>"
+
+	provider = "Where query DSL"
+	method name:"where", type:"grails.gorm.DetachedCriteria<${currentTypeName}>", params: [query : Closure],
+		declaringType:currentType, isStatic:true
+}
+
+// -----------------------------------------------------
+// hasMany, hasOne, belongsTo
+
+// hasMany
+(domainClass & currentType(props : properties(isStatic() & name("hasMany")))).accept {
+	provider = "Grails hasMany"
+	props.each { PropertyNode hasMany ->
+		if (hasMany.initialExpression instanceof MapExpression) {
+			hasMany.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
+				if (!currentType.getProperty(entry.keyExpression.text)) {
+					def name = entry.keyExpression.text
+					def type = entry.valueExpression.type
+					property name : name, type : "java.util.Set<" + type.name +">"
+					addSyntheticFieldToWormhole(name, type, wormhole)
+				}
+			}
+		}
+	}
+}
+
+// hasOne
+(domainClass & currentType(props : properties(isStatic() & name("hasOne")))).accept {
+	provider = "Grails hasOne"
+	props.each { PropertyNode hasOne ->
+		if (hasOne.initialExpression instanceof MapExpression) {
+			hasOne.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
+				def name = entry.keyExpression.text
+				def type = entry.valueExpression.type
+				property name : name, type : type
+				addSyntheticFieldToWormhole(name, type, wormhole)
+			}
+		}
+	}
+}
+// belongsTo
+(domainClass & currentType(props : properties(isStatic() & name("belongsTo")))).accept {
+	provider = "Grails belongsTo"
+	props.each { PropertyNode belongsTo ->
+			if (belongsTo.initialExpression instanceof MapExpression) {
+				belongsTo.initialExpression.mapEntryExpressions.each { MapEntryExpression entry ->
+					def name = entry.keyExpression.text
+					def type = entry.valueExpression.type
+					property name : name, type : type
+					addSyntheticFieldToWormhole(name, type, wormhole)
+				}
+			} else if (belongsTo.initialExpression instanceof ClassExpression) {
+				def name = toPropertyName(belongsTo.type.nameWithoutPackage)
+				def type = belongsTo.type
+				property name : name, type : type
+				addSyntheticFieldToWormhole(name, type, wormhole)
+			}
+		}
+}
+
+
+// -----------------------------------------------------
+// where queries
+// see: http://hudson.grails.org/job/grails_docs_2.0.x/lastSuccessfulBuild/artifact/build/docs/guide/GORM.html#whereQueries
+// FIXADE the currentType("grails.gorm.DetachedCriteria") is not really correct...see below
+def whereQuery = ((domainClass | currentType("grails.gorm.DetachedCriteria")) & inClosure() & (enclosingCallName("where") | enclosingCallName("find") | enclosingCallName("findAll")))
+
+whereQuery.accept {
+	def currentTypeName = currentType.name
+	// FIXADE detachedName will be incorrect when currentType is DetachedCriteria. 
+	def detachedName = "grails.gorm.DetachedCriteria<${currentTypeName}>"
+	provider = "Where query DSL"
+	delegatesTo type:detachedName, isStatic:true
+	 
+	// add the extra functions
+	method name:"avg", type:detachedName, params:[prop:Object], doc:"The average of all values"
+	method name:"sum", type:detachedName, params:[prop:Object], doc:"The sum of all values"
+	method name:"max", type:detachedName, params:[prop:Object], doc:"The maximum value"
+	method name:"min", type:detachedName, params:[prop:Object], doc:"The minimum value"
+	method name:"count", type:detachedName, params:[prop:Object], doc:"The count of all values"
+	method name:"property", type:detachedName, params:[prop:Object], doc:"Retrieves a property of the resulting entities"
+
+	// extraction functions
+	method name:"second", type:Integer, params:[prop:Date], doc:"The second of a date property"
+	method name:"minute", type:Integer, params:[prop:Date], doc:"The minute of a date property"
+	method name:"hour", type:Integer, params:[prop:Date], doc:"The hour of a date property"
+	method name:"day", type:Integer, params:[prop:Date], doc:"The day of a date property"
+	method name:"year", type:Integer, params:[prop:Date], doc:"The year of a date property"
+	method name:"month", type:Integer, params:[prop:Date], doc:"The month of a date property"
+
+	method name:"lower", type:String, params:[prop:String], doc:"Converts a string property to lower case"
+	method name:"upper", type:String, params:[prop:String], doc:"Converts a string property to upper case"
+	method name:"length", type:Integer, params:[prop:String], doc:"The length of a string property"
+	method name:"trim", type:String, params:[prop:String], doc:"Trims a string property"
+}
+
+// here are nested queries
+(whereQuery & enclosingCallName(names : name())).accept {
+	// grab each enclosing name and see if it is a property of the current domain class
+	// it may be a synthetic property
+	names.each {
+		def prop = currentType.getProperty(it)
+		def maybe
+		if (prop) {
+			maybe = prop.type
+		} else {
+			// grab synthetic properties (hadOne, belongsTo, and hasMany) from the wormhole
+			Map<String,ClassNode> synth = wormhole["syntheticFields"]
+			if (synth) {
+				maybe = synth[it]
+			}
+		}
+		// perform the delegation to properties
+		if (maybe && currentType != maybe) {
+			maybe.properties.each { PropertyNode innerProp ->
+				property(name:innerProp.name, type:innerProp.type, declaringType: maybe, provider: "Inner query", )
+			}
+		}
+	}
+}
+
+// the 'of' method for DetachedCriteria
+currentType("grails.gorm.DetachedCriteria").accept {
+	provider = "Where query DSL"
+	method name:"of", params:[subquery:Closure], declaringType:extractGeneric(currentType), doc:"You can apply additional criteria to any subquery by using the of method and passing in a closure containing the criteria."
+}
+
+
+// Criteria builder ---
+currentType("grails.orm.HibernateCriteriaBuilder").accept {
+	provider = "Criteria builder DSL"
+	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "maxResults", type : void, params : [num : int]
+	
+	delegatesTo type:"org.hibernate.Criteria", except:["list", "scroll"]
+	method name : "list", declaringType : "grails.orm.HibernateCriteriaBuilder", type: List, params : [query : Closure]
+	method name : "scroll", declaringType : "grails.orm.HibernateCriteriaBuilder", type: "org.hibernate.ScrollableResults", params : [query : Closure]
+}
+
+
+// namedQueries field
+// not exactly right since HibernateCriteriaBuilder methods should only be available
+// inside of nested closures in the namedQueries field, but this formulation will
+// allow methods directly inside of the top-level namedQueries closure.
+contribute(enclosingField("namedQueries") & domainClass) {
+	provider = "Criteria builder DSL"
+	method name : "and", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "or", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
+	delegatesTo type:"grails.orm.HibernateCriteriaBuilder", isStatic:true
+	delegatesTo type:"org.hibernate.Criteria", isStatic:true
+} 
+
+
+// -----------------------------------------------------
+// mapping --- orm DSL
+// FIXJB : Ensure nothing is missed
+// FIXJB : Add documentation
+(domainClass & currentType(properties(isStatic() & name("mapping")) &
+	bind(props : properties(~isStatic())) // 'bind' props to the collection of properties in the domain class
+	)).accept {
+	provider = "Grails ORM DSL"
+
+	method name:"table", type:Void, namedParams: [tableName: String], isStatic:true
+	method name:"groups", type:Void, namedParams: [column:String], isStatic:true
+	method name:"tablePerHierarchy", type:Void, params: [val:Boolean], isStatic:true
+	method name:"cache", type:Void, params: [shouldCache:Boolean], isStatic:true
+	method name:"cache", type:Void, namedParams: [usage:String, include:String], uisStatic:true
+	method name:"version", type:Void, params: [shouldVersion:Boolean], isStatic:true
+	method name:"sort", type:Void, params: [propertyName:String], isStatic:true
+	method name:"column", type:Void, params: [name:String, index:String, unique:Boolean, sqlType:String], isStatic:true
+
+	props.each { PropertyNode prop ->
+		method name: prop.name, type: Void, namedParams:[column:String, cache:Boolean], isStatic:true
+		method name: prop.name, type: Void, namedParams:[lazy:Boolean], isStatic:true
+		method name: prop.name, type: Void, namedParams:[type:Class], isStatic:true
+		method name: prop.name, type: Void, namedParams:[type:String], isStatic:true
+		method name: prop.name, type: Void, namedParams:[cascade:String], isStatic:true
+		method name: prop.name, type: Void, namedParams:[formula:String], isStatic:true
+		method name: prop.name, type: Void, namedParams:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"],
+				isStatic:true
+	}
+
+	// now do the same for id
+	method name: 'id', type: Void, namedParams:[column:String, cache:Boolean], isStatic:true
+	method name: 'id', type: Void, namedParams:[lazy:Boolean], isStatic:true
+	method name: 'id', type: Void, namedParams:[type:Class], isStatic:true
+	method name: 'id', type: Void, namedParams:[type:String], isStatic:true
+	method name: 'id', type: Void, namedParams:[cascade:String], isStatic:true
+	method name: 'id', type: Void, namedParams:[joinTable:"java.util.Map<java.lang.String,java.lang.String>"], isStatic:true
+	method name: 'id', type :Void, namedParams:[composite:"java.util.List<java.lang.String>"], isStatic:true
+}
+
+
+
+(unitTest &
+		enclosingClass(annotatedBy(name("grails.test.mixin.TestFor") &
+		hasAttribute(types : value())))).accept {
+	types.each { String className ->
+		 if (className.contains("Controller")) {
+			 provider = "Controller unit test DSL"
+			 // assume controller test
+			 property name: "controller", type: className, doc: "The controller class under test"
+			 property name: "modelAndView", type: "org.springframework.web.servlet.ModelAndView"
+
+			 // FIXADE probably should be broken up into several contributions
+			 method name: "render", useNamedArgs: true,
+			 	params: [template: String, view:String, model:"java.util.Map<java.lang.String,java.lang.Object>", action: String]
+
+		 	 method name:"defineBeans", params:[beans:Closure]
+
+			 delegatesTo "grails.test.mixin.web.ControllerUnitTestMixin"
+		 } else if (className.endsWith("TagLib")) {
+		     delegatesTo "grails.test.mixin.web.GroovyPageUnitTestMixin"
+		 } else if (className.endsWith("Service")) {
+		 	 delegatesTo "grails.test.mixin.services.ServiceUnitTestMixin"
+		 } else if (className.endsWith("Filter")) {
+			 delegatesTo "grails.test.mixin.web.FiltersUnitTestMixin"
+			 delegatesTo "grails.test.mixin.web.ControllerUnitTestMixin"
+		 } else if (className.endsWith("UrlMappings")) {
+			 delegatesTo "grails.test.mixin.web.ControllerUnitTestMixin"
+			 delegatesTo "grails.test.mixin.web.UrlMappingsUnitTestMixin"
+		 }
+
+		 // must explicitly delegate to Assert since the junit classes are not in the type hierarchy until
+		 // after the AST transform is completed.
+		 delegatesTo "junit.framework.Assert"
+		 delegatesTo "grails.test.mixin.support.GrailsUnitTestMixin"
+	}
+}

@@ -1,0 +1,722 @@
+@import "custom.css";
+@import "tools.css";
+@import "skin.css";
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Body & Html.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+body {
+    font-family: Arial;
+}
+
+.body {
+    font-family: Arial;
+    text-align: justify;
+    font-size: 85%;
+    background: #F2F2F2;
+}
+
+/* Monospace should be same size as other fonts: this fix was taken from
+ *
+ *     http://meyerweb.com/eric/thoughts/2010/02/12/fixed-monospace-sizing/
+ */
+pre, code {
+    font-family: "Courier New", monospace, serif;
+    font-size: 1em;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Html Tag.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+strong {
+    font-weight: bold;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Content.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+#iframe {
+    overflow-x: hidden;
+}
+
+/*
+////////////////////////////////////////
+//  Colset.
+////////////////////////////////////////
+*/
+
+#colset {
+    width: 100%;
+}
+
+#colset #col2, #colset #col1 {
+    vertical-align: top;
+}
+
+#colset #col2 {
+    display: table-cell;
+    width: 250px;
+}
+
+/* Required for IE6 */
+#col2 .local { width: 250px; }
+
+/*
+////////////////////////////////////////
+//  Main & Local.
+////////////////////////////////////////
+*/
+
+#main {
+    margin: 10px;
+    border-width: 1px;
+    padding: 10px 15px;
+    margin-bottom: 0;
+}
+
+#main.reference h1 {
+    color: #7C9D00;
+}
+
+.local {
+    margin-right: 10px;
+}
+
+.local .local-title {
+    display: block;
+    padding: 6px 0;
+    padding-top: 10px;
+    margin: 0;
+}
+
+.local .local-title a {
+    text-decoration: none;
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.local .local-title .toggle {
+    display: none;
+}
+
+.js .local .local-title .toggle {
+    display: inline;
+}
+
+.local .local-title .toggle, .local .local-title .toggle a {
+    font-size: 1.05em;
+    font-weight: normal;
+}
+
+.local .local-title .toggle a:hover {
+    text-decoration: underline;
+}
+
+.next-right{
+    float:right;
+}
+
+.prev-left{
+    float:left;
+}
+
+/*
+////////////////////////////////////////
+//  Project.
+////////////////////////////////////////
+*/
+
+#main .project {
+	clear: left;
+	padding-top: 10px;
+}
+
+#main .project h1 {
+    padding: 0;
+    margin: 5px 0 8px;
+}
+
+#main .project p {
+    padding: 2px 0;
+    margin: 0;
+}
+
+/*
+////////////////////////////////////////
+//  Table of content.
+////////////////////////////////////////
+*/
+
+
+.section-block-right{
+    float:right;
+    clear:right;
+    width:50%;
+}
+
+.section-block-left{
+    float:left;
+    clear:left;
+    width:50%;
+}
+
+.toc-item span{
+    padding-left:10px;
+}
+
+#table-of-content a {
+    display: block;
+    padding: 4px 10px;
+    text-decoration: none;
+    color: #444;
+}
+
+#table-of-content a:hover {
+    text-decoration: none;
+    border-right: 2px solid #7c9d00;
+}
+
+/*
+////////////////////////////////////////
+//  Reference menu.
+////////////////////////////////////////
+*/
+
+.js .menu .menu-sub {
+    display: none;
+}
+.js .menu .selected {
+	display: block;
+}
+
+.menu .menu-block {
+    width: 210px;
+    padding: 0 2%;
+}
+
+.menu .menu-block h1 {
+    padding: 2px 0;
+    cursor:pointer;
+    padding-top: 8px;
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.menu .menu-sub .menu-item {
+    margin-left: 10px;
+    padding: 2px 0;
+    padding-left: 10px;
+}
+
+.menu .menu-sub .menu-item:first-child {
+    margin-bottom: 0.3em;
+    margin-top: 0.3em;
+}
+
+.menu a {
+    text-decoration: none;
+}
+
+
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Navigation.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+#navigation {
+    border-width: 0;
+    border-bottom-width: 1px;
+}
+
+#navigation ul {
+    margin: 0;
+    padding: 0;
+    height: 2.8em;
+}
+
+#navigation ul li {
+    list-style: none;
+    padding: 7px 3px;
+    padding-left: 6px;
+    margin: 0;
+    float: left;
+}
+
+#navigation ul li.separator {
+    display: none;
+}
+
+.js #navigation ul li.separator {
+    display: block;
+}
+
+#navigation a {
+    display: block;
+    padding: 0.3em 10px;
+    outline: none;
+    text-decoration: none;
+}
+
+#nav-summary {
+    position: relative;
+    margin: 0;
+    padding: 0;
+}
+
+#nav-summary #nav-summary-childs {
+    position: absolute;
+    top: 1.6em;
+    margin: 0;
+    border-width: 1px;
+    padding: 10px;
+    width: 25em;
+}
+
+#nav-summary #nav-summary-childs {
+    display: none;
+}
+
+#nav-summary #nav-summary-childs a {
+    float: none;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Footer.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+#footer {
+    padding: 10px 10px 10px 20px;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Header.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+#header {
+    padding: 15px 15px 5px 15px;
+}
+
+#header .images {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+#header p {
+	font-size: 1.1em;
+	margin: 0 0 0.5em 0;
+}
+
+#header {
+}
+
+#header #logo, #header #sponsor {
+    display: block;
+    width: 40%;
+    float: left;
+}
+
+#header #sponsor {
+    float: right;
+    text-align: right;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Default Style.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.warning {
+    background-image: url(../img/warning.gif);
+    background-repeat: no-repeat;
+    background-position: 10px 10px;
+    border: 1px solid #CC0000;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    padding: 10px;
+    padding-left: 40px;
+    line-height: 100%;
+    width: 80%;
+    background-color: #FFCCCC;
+}
+
+.note {
+    background-image: url(../img/note.gif);
+    background-repeat: no-repeat;
+    background-position: 10px 10px;
+    border: 1px solid #F0C000;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+    padding: 10px;
+    padding-left: 40px;
+    line-height: 100%;
+    width: 80%;
+    background-color: #FFFFCE;
+}
+
+.bq {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding: 5px 5px 5px 5px;
+    padding-bottom: 15px;
+    color: inherit;
+    background-color: #F0F0F0;
+    border: 1px dashed black;
+    font-family: courier, courier new, monospace;
+    font-size: 1em;
+    line-height: 1.1em;
+    white-space: pre;
+    width: 90%;
+    overflow: auto;
+    overflow: scroll -moz-scrollbars-horizontal;
+    overflow-x: auto;
+}
+
+/**
+* Wiki text stylesheet definitions.
+* @author Matthias L. Jugel
+* @version $Id: SnipSnap-Theme.snip,v 1.1.2.1 2004/01/26 14:07:31 leo Exp $
+*/
+
+.bold {
+    font-weight: bold;
+}
+
+.italic {
+    font-style: italic;
+}
+
+/************************************************/
+/* image positioning                            */
+img {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    vertical-align: middle;
+}
+
+img.left {
+    display: block;
+    left: 0px;
+}
+
+img.right {
+    display: block;
+    right: 0px;
+}
+
+img.center {
+    text-align: center;
+}
+
+img.float-left {
+    float: left;
+    margin-top: 3px;
+    margin-right: 3px;
+    margin-bottom: 3px;
+}
+
+img.float-right {
+    float: right;
+    margin-top: 3px;
+    margin-left: 3px;
+    margin-bottom: 3px;
+}
+
+/*
+.graph-image {
+  position: relative;
+  width: 100%;
+}
+*/
+
+.heading-1 {
+    font-weight: bold;
+    font-size: 1.05em;
+    font-variant: small-caps;
+}
+
+.heading-1-1 {
+    font-size: 1em;
+    font-variant: small-caps;
+}
+
+.heading-1-1-1 {
+    font-size: 1em;
+}
+
+.quote {
+    font-style: italic;
+    color: inherit;
+    background-color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/************************************************/
+/* code formatting */
+.code {
+    margin: 4px 0;
+    padding: 5px 15Px;
+    color: inherit;
+    border-width: 1px;
+    font-family: courier, courier new, monospace;
+    font-size: 1em;
+    line-height: 1.1em;
+    white-space: pre;
+    overflow: auto;
+    overflow: scroll -moz-scrollbars-horizontal;
+    overflow-x: auto;
+}
+
+.java-keyword {
+    font-weight: bold;
+    background-color: inherit;
+}
+
+.java-object {
+    background-color: inherit;
+}
+
+.java-quote {
+    background-color: inherit;
+}
+
+.xml-keyword {
+    font-weight: bold;
+}
+
+.xml-tag {
+    color: #0000aa;
+    background-color: inherit;
+}
+
+/* weblog formatting */
+.blog-date {
+    display: block;
+    background-color: #f8f8f8;
+    color: black;
+    font-family: verdana, sans-serif;
+    font-size: 1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+/* special formatting of a wiki table */
+.wiki-table {
+    border-style: solid;
+    border-color: black;
+    border-width: 0px 1px 1px 1px;
+    empty-cells: show;
+}
+
+.wiki-table td {
+    border-top: 1px solid black;
+    padding: 4px 4px 4px 4px;
+}
+
+.wiki-table th {
+    border-top: 1px solid black;
+    text-align: left;
+    color: inherit;
+    font-weight: bold; /* background-color: #DDEEFF; */
+    padding: 4px 4px 4px 4px;
+    font-size: 1em;
+}
+
+.wiki-table .table-odd {
+    color: inherit;
+    background-color: #F8F8F8;
+}
+
+.wiki-table .table-even {
+}
+
+/************************************************/
+/* list formatting                              */
+
+.list {
+}
+
+.list-title {
+    font-weight: bold;
+}
+
+.list ul {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    padding-left: 0px;
+    list-style-type: none;
+}
+
+/* wiki lists */
+
+ul.minus {
+    list-style-type: square;
+}
+
+ul.star {
+    list-style-type: disc;
+}
+
+ol.roman {
+    list-style-type: lower-roman;
+}
+
+ol.ROMAN {
+    list-style-type: upper-roman;
+}
+
+ol.alpha {
+    list-style-type: lower-alpha;
+}
+
+ol.ALPHA {
+    list-style-type: upper-alpha;
+}
+
+ol.greek {
+    list-style-type: lower-greek;
+}
+
+ol.GREEK {
+    list-style-type: upper-greek;
+}
+
+ol.hiragana {
+    list-style-type: hiragana;
+}
+
+ol.HIRAGANA {
+    list-style-type: hiragana-iroha;
+}
+
+ol.katakana {
+    list-style-type: katakana;
+}
+
+ol.KATAKANA {
+    list-style-type: katakana-iroha;
+}
+
+ol.HEBREW {
+    list-style-type: hebrew;
+}
+
+li {
+    margin-top: 0.7em;
+}
+
+/************************************************/
+/* index formatting                             */
+.index-top {
+}
+
+.index-top th {
+    padding: 1px 1px 1px 1px;
+    text-align: left;
+    color: inherit;
+    font-weight: bold;
+    background-color: #d9e4f9;
+}
+
+.index {
+}
+
+.index td {
+    padding: 1px 1px 1px 1px;
+}
+
+.index th {
+    padding: 1px 1px 1px 1px;
+    text-align: left;
+    color: inherit;
+    font-weight: bold;
+    background-color: #d9e4f9;
+}
+
+/************************************************/
+/* calendar display                             */
+.calendar {
+    border-spacing: 0px;
+    font-size: 0.7em;
+}
+
+.calendar td {
+    text-align: right;
+    padding: 0px;
+}
+
+.calendar caption {
+    font-size: 1em;
+    text-align: left;
+    font-weight: bold;
+}
+
+.calendar .today {
+    border: 3px solid #cccccc;
+}
+
+/*
+////////////////////////////////////////////////////////////////////////////////
+//
+//  CSS 3.
+//
+////////////////////////////////////////////////////////////////////////////////
+*/
+
+.corner-all, #nav-summary #nav-summary-childs {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+#navigation a {
+    border-radius: 18px;
+    -moz-border-radius: 18px;
+    -webkit-border-radius: 18px;
+}
+
+#footer, #table-of-content a:hover, #navigation #nav-summary-childs a {
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.9);
+}
+
+.wiki-table th strong {
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
+}
+
+#navigation a, #nav-summary #nav-summary-childs a:hover {
+    text-shadow: 0px 1px 0px rgba(0, 0, 0, 0.8);
+}

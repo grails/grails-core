@@ -1,0 +1,330 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+buildscript {
+    repositories {
+        maven { url "http://repo.grails.org/grails/core" }
+	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
+    }
+    dependencies {
+        classpath "commons-io:commons-io:2.1"
+        //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
+    }
+}
+
+apply plugin: 'idea'
+
+ext {
+    grailsVersion = '2.1.0.RC3'
+    isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
+    antTraxVersion = "1.7.1"
+    antVersion = "1.8.2"
+    aspectjVersion = "1.6.10"
+    commonsBeanUtilsVersion = "1.8.3"
+    commonsCliVersion = "1.2"
+    commonsCollectionsVersion = "3.2.1"
+    commonsIOVersion = "2.1"
+    commonsLangVersion = "2.6"
+    datastoreVersion = "1.0.9.RELEASE"
+    gantVersion = "1.9.6"
+    gdocEngineVersion = "1.0.1"
+    groovyVersion = "1.8.6"
+    gradleGroovyVersion = groovyVersion
+    gradleGroovyVersion = "1.8.2"
+    ivyVersion = "2.2.0"
+    jansiVersion = "1.2.1"
+    jlineVersion = "1.0"
+    jnaVersion = "3.2.3"
+    slf4jVersion = "1.6.2"
+    springLoadedVersion = "1.0.6"
+    springVersion = "3.1.0.RELEASE"
+    springWebflowVersion= "2.0.8.RELEASE"
+    hibernateVersion = "3.6.10.Final"
+    ehcacheVersion = "2.4.6"
+    junitVersion = "4.10"
+    concurrentlinkedhashmapVersion = "1.2_jdk5"
+}
+
+version = grailsVersion
+
+// directories created during the build which are related 
+// to turning the workspace root into a GRAILS_HOME
+ext {
+    homeDistDir = file("dist")
+    homeBinDir = file("bin")
+    homeConfDir = file("conf")
+    homeDslSupportDir = file("dsl-support")
+    homeLibDir = file("lib")
+    homeSrcDir = file("src")
+}
+
+// Groovy is added as a dependency to both the 'groovy' and 'compile'
+// configurations, so place the dependency in a shared variable. The
+// 'compile' is required so that Groovy appears as a dependency in the
+// artifacts' POMs.
+ext.jointBuildGroovyJarProperty = System.getProperty('groovy.jar')
+ext.groovyDependency = null
+if (jointBuildGroovyJarProperty) {
+    jointBuildGroovyJar = file(jointBuildGroovyJarProperty)
+    if (jointBuildGroovyJar.exists()) {
+        groovyDependency = dependencies.create(files(jointBuildGroovyJar))
+    } else {
+        throw new GradleException("The groovy.jar system property points to ${jointBuildGroovyJar.absolutePath} which does not exist.")
+    }
+} else {
+    groovyDependency = dependencies.create("org.codehaus.groovy:groovy-all:${groovyVersion}") {
+        exclude module:"commons-cli"
+        exclude module:"ant"
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url "http://repo.grails.org/grails/core" }
+    }
+
+    configurations {
+        all {
+            resolutionStrategy {
+                def cacheHours = isCiBuild ? 1 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
+            }
+        }
+    }
+}
+
+
+idea {
+    project {
+        jdkName "1.6"
+        ipr {
+            withXml { provider ->
+                def node = provider.asNode()
+                node.component.find { it.'@name' == 'VcsDirectoryMappings' }?.mapping[0].'@vcs' = 'Git'
+            }
+        }
+    }
+}
+subprojects { project ->
+    apply plugin: 'groovy'
+    apply plugin: 'maven'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'project-report'
+    apply plugin: 'signing'
+    //apply plugin: 'duplicates'
+
+    sourceCompatibility = "1.5"
+    targetCompatibility = "1.5"
+    archivesBaseName = 'grails'
+    version = grailsVersion
+    group = "org.grails"
+
+    ext.isCiBuild = project.hasProperty("isCiBuild")
+
+    manifest.mainAttributes(
+            "Built-By": System.properties['user.name'],
+            "Created-By": System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+            "Implementation-Title": "Grails",
+            "Implementation-Version": grailsVersion,
+            "Implementation-Vendor": 'grails.org')
+
+
+    configure([compileGroovy, compileTestGroovy]) {
+        groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
+        groovyOptions.encoding = "UTF-8"
+    }
+
+    configure([compileJava, compileTestJava]) {
+        options.deprecation = true
+        options.debug = true
+    }
+
+    idea {
+        module.iml.whenMerged { module ->
+            // adding slf4j-simple with scope TEST to .iml
+            module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
+                    [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
+            )
+        }
+    }
+
+    dependencies {
+        groovy groovyDependency
+
+        if (project.name != "grails-docs") {
+            // Logging
+            compile "org.slf4j:slf4j-api:$slf4jVersion"
+            compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
+
+            // Specs
+            compile 'javax.servlet:javax.servlet-api:3.0.1'
+            compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+
+
+            // Testing
+            testCompile "junit:junit:${junitVersion}"
+            testCompile('org.spockframework:spock-core:0.6-groovy-1.8-SNAPSHOT') {
+                transitive = false
+            }
+        }
+    }
+
+    test {
+        excludes = ["**/*TestCase.class", "**/*\$*.class"]
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        appendix = project.name[7..-1]
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn:javadoc) {
+        classifier = 'javadoc'
+        appendix = project.name[7..-1]
+        from javadoc.destinationDir
+    }
+
+    groovydoc.doLast {
+        delete("${buildDir}/tmp")
+    }
+
+    configurations {
+        meta
+        published.extendsFrom archives, meta
+        all*.exclude group:'commons-logging', module: 'commons-logging'
+    }
+
+    artifacts {
+        archives jar
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    signing {
+        sign configurations.archives
+        required { !isBuildSnapshot && gradle.taskGraph.hasTask(uploadPublished) }
+    }
+
+    uploadPublished {
+      repositories {
+        final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
+                                                           "http://repo.grails.org/grails/libs-releases-local"
+
+        repositories {
+            mavenDeployer {
+                repository(url: url) {
+                    final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
+                    final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
+
+                    if(username && password) {
+                        org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
+                    }
+
+                    authentication(userName: username, password: password)
+                }
+            }
+            project.ext.deployer = mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
+
+                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+                                    password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+                }
+                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+                                    password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+                }
+
+                pom.project {
+                    name 'Grails'
+                    packaging 'jar'
+                    description 'Grails Web Application Framework'
+                    delegate.url 'http://grails.org/'
+
+                    scm {
+                        delegate.url 'scm:git@github.com:grails/grails-core.git'
+                        connection 'scm:git@github.com:grails/grails-core.git'
+                        developerConnection 'scm:git@github.com:grails/grails-core.git'
+                    }
+
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id 'graemerocher'
+                            name 'Graeme Rocher'
+                        }
+                        developer {
+                            id 'jeffscottbrown'
+                            name 'Jeff Brown'
+                        }
+                    }
+                }
+            }
+        }
+      }
+    }
+
+    /*
+        Install a method that can be used to fine tune the poms, e.g…
+        
+        modifyPom { pom ->
+            pom.dependencies.removeAll(pom.dependencies.findAll { it.scope == "test" })
+        }
+        
+        Mods are run in order they are encountered in the build script.
+        
+        The pom argument is of the following type:
+        http://maven.apache.org/ref/2.2.1/maven-model/apidocs/org/apache/maven/model/Model.html
+    */
+    ext {
+        poms = [project.install.repositories.mavenInstaller.pom, project.deployer.pom]
+        pomModifications = []
+        modifyPom = { Closure modification -> project.pomModifications << modification }
+        poms*.whenConfigured {
+            pomModifications*.call(it)
+        }
+    }
+
+    // Remove any dependencies that shouldn't be included in the POM
+    modifyPom { pom ->
+        configurations.runtime.allDependencies.each { dependency ->
+            if (dependency.hasProperty("notInPom") && dependency.notInPom) {
+                pom.dependencies.removeAll { it.groupId == dependency.group && it.artifactId == dependency.name }
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete buildDir,
+           homeBinDir,
+           homeConfDir,
+           homeDistDir,
+           homeDslSupportDir,
+           homeLibDir,
+           homeSrcDir
+}
+
+task allDependencies(dependsOn: { subprojects*.implicitTasks*.dependencies })
+
+// From this point on we need the subprojects to be fully configured, so force their full evaluation
+subprojects.each { evaluationDependsOn it.path }
+
+apply {
+    from 'gradle/docs.gradle' // tasks for building the documentation (e.g. user guide, javadocs)
+    from 'gradle/assemble.gradle' // tasks for creating an installation or distribution
+    from 'gradle/findbugs.gradle'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion "1.0-milestone-9"
+}

@@ -1,0 +1,11 @@
+dependencies {
+
+    compile "org.springframework:spring-tx:${springVersion}"
+
+
+    // Testing
+    compile "junit:junit:${junitVersion}", project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
+
+    compile project(":grails-web")
+}
+jar.appendix = 'test'

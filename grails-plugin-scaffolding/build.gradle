@@ -1,0 +1,5 @@
+dependencies {
+    compile project(":grails-crud")
+    runtime project(":grails-resources")
+}
+jar.appendix = 'plugin-scaffolding'

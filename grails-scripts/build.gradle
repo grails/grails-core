@@ -1,0 +1,45 @@
+dependencies {
+    // Testing
+    compile "junit:junit:${junitVersion}"
+    // Ant
+    compile "org.apache.ant:ant:${antVersion}",
+            "org.apache.ant:ant-launcher:${antVersion}",
+            "org.apache.ant:ant-junit:${antVersion}",
+            "org.apache.ant:ant-trax:${antTraxVersion}",
+            "org.apache.ivy:ivy:${ivyVersion}",
+            "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
+
+    compile project(":grails-web"),
+            project(':grails-hibernate'),
+            project(':grails-docs'),
+            project(':grails-crud'),
+            project(':grails-plugin-controllers'),
+            project(':grails-plugin-log4j'),
+            project(":grails-test"),
+            project(":grails-plugin-testing")
+            project(":grails-resources")
+}
+
+sourceSets {
+    main {
+        groovy.srcDirs = ['../scripts']
+    }
+}
+
+jar.appendix = 'scripts'
+
+eclipse {
+    classpath {
+        file {
+            whenMerged { classpath ->
+                // update ../scripts -> scripts
+                def scriptsSrc = classpath.entries.find { entry -> entry?.kind == 'src' && entry?.path == '../scripts' }
+                if(scriptsSrc) scriptsSrc.path='scripts'
+            }
+        }
+    }    
+    
+    project {
+        linkedResource name: 'scripts', type: '2', location: new File('../scripts').canonicalPath
+    }
+}
