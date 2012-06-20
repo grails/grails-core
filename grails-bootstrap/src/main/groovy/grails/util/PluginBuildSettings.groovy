@@ -700,7 +700,6 @@ class PluginBuildSettings {
     /**
      * Obtains a plugin directory for the given name.
      */
-    @CompileStatic
     Resource getPluginDirForName(String pluginName) {
         Resource pluginResource = (Resource)pluginToDirNameMap[pluginName]
         if (!pluginResource) {
