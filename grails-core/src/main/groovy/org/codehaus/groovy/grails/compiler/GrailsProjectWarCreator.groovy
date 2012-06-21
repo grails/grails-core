@@ -26,6 +26,7 @@ import grails.util.Environment
 import grails.util.Metadata
 import grails.util.BuildScope
 import groovy.xml.MarkupBuilder
+import grails.build.logging.GrailsConsole
 
 /**
  * Creates a WAR file from a Grails project
@@ -37,7 +38,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
 
     boolean includeJars = true
     boolean buildExplodedWar
-    def warName = null
+    String warName = null
     BuildSettings grailsSettings
     def additionalEventArgs
 
@@ -53,7 +54,9 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
     private File stagingDir
     private File webXmlFile
     private BuildScope buildScope
-    private Closure defaultWarDependencies
+    private grailsEnv
+    private GrailsConsole grailsConsole = GrailsConsole.getInstance()
+    Closure defaultWarDependencies
 
     GrailsProjectWarCreator(BuildSettings settings, GrailsBuildEventListener buildEventListener,GrailsProjectPackager projectPackager, AntBuilder ant = new AntBuilder(), boolean interactive = false) {
         super(settings, buildEventListener, interactive)
@@ -61,6 +64,9 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
         this.projectPackager = projectPackager
         this.ant = ant
         this.grailsSettings = settings
+        this.buildConfig = grailsSettings.config
+        this.basedir = grailsSettings.baseDir.absolutePath
+        this.grailsEnv = grailsSettings.grailsEnv
         resourcesDirPath = grailsSettings.resourcesDir.absolutePath
         pluginClassesDirPath = grailsSettings.pluginClassesDir.absolutePath
         classesDirPath = grailsSettings.classesDir.absolutePath
@@ -104,9 +110,15 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
 
     void packageWar() {
 
+
         def includeOsgiHeaders = grailsSettings.projectWarOsgiHeaders
 
         try {
+            for (pluginDir in pluginSettings.inlinePluginDirectories) {
+                grailsConsole.updateStatus "Generating plugin.xml for inline plugin"
+                projectPackager.generatePluginXml(pluginSettings.getPluginDescriptor(pluginDir).file, false)
+            }
+
             configureWarName()
 
             ant.mkdir(dir:stagingDir)
@@ -346,35 +358,39 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
     }
 
     @CompileStatic
-    def configureWarName() {
-        def warFileDest = grailsSettings.projectWarFile.absolutePath
+    String configureWarName() {
+        if(warName == null ) {
 
-        if (warFileDest || !warName ) {
-            // Pick up the name of the WAR to create from the command-line
-            // argument or the 'grails.project.war.file' configuration option.
-            // The command-line argument takes precedence.
-            warName = warFileDest
+            def warFileDest = grailsSettings.projectWarFile.absolutePath
 
-            // Find out whether WAR name is an absolute file path or a
-            // relative one.
-            def warFile = new File(warName.toString())
-            if (!warFile.absolute) {
-                // It's a relative path, so adjust it for 'basedir'.
-                warFile = new File(basedir, warFile.path)
-                warName = warFile.canonicalPath
-            }
-        }
-        else {
-            def fileName = grailsAppName
-            def version = metadata.getApplicationVersion()
-            if (version) {
-                version = '-' + version
+            if (warFileDest || !warName ) {
+                // Pick up the name of the WAR to create from the command-line
+                // argument or the 'grails.project.war.file' configuration option.
+                // The command-line argument takes precedence.
+                warName = warFileDest
+
+                // Find out whether WAR name is an absolute file path or a
+                // relative one.
+                def warFile = new File(warName.toString())
+                if (!warFile.absolute) {
+                    // It's a relative path, so adjust it for 'basedir'.
+                    warFile = new File(basedir, warFile.path)
+                    warName = warFile.canonicalPath
+                }
             }
             else {
-                version = ''
+                def fileName = grailsAppName
+                def version = metadata.getApplicationVersion()
+                if (version) {
+                    version = '-' + version
+                }
+                else {
+                    version = ''
+                }
+                warName = "${basedir}/${fileName}${version}.war"
             }
-            warName = "${basedir}/${fileName}${version}.war"
         }
+        return warName
     }
 
     void warPluginsInternal(List<GrailsPluginInfo> pluginInfos) {
@@ -385,6 +401,19 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
                 }
             }
         }
+    }
+
+    @CompileStatic
+    void createDescriptor() {
+        PluginBuildSettings ps = pluginSettings
+        def pluginInfos = ps.supportedPluginInfos
+        def compileScopePluginInfo = ps.compileScopePluginInfo
+        def compileScopePluginInfos = compileScopePluginInfo.pluginInfos
+        compileScopePluginInfos = compileScopePluginInfos.findAll { GrailsPluginInfo info -> pluginInfos.any { GrailsPluginInfo it -> it.name == info.name } }
+
+        def resourceList = compileScopePluginInfo.artefactResources
+
+        createDescriptorInternal(compileScopePluginInfos, resourceList)
     }
 
     protected def createDescriptorInternal(pluginInfos, resourceList) {

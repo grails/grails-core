@@ -28,6 +28,11 @@ import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
+import grails.util.GrailsUtil
+import grails.util.GrailsNameUtils
+import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 /**
  * Encapsulates the logic to package a project ready for execution.
@@ -73,6 +78,61 @@ class GrailsProjectPackager extends BaseSettingsApi {
        return ant
     }
 
+    /**
+     * Generates a plugin.xml file for the given plugin descriptor
+     *
+     * @param descriptor The descriptor
+     * @param compilePlugin Whether the compile the plugin
+     * @return The plugin properties
+     */
+    @CompileStatic
+    def generatePluginXml(File descriptor, boolean compilePlugin = true ) {
+        def pluginBaseDir = descriptor.parentFile
+        def pluginProps = pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
+        def plugin
+        def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+
+        if (compilePlugin) {
+            try {
+                // Rather than compiling the descriptor via Ant, we just load
+                // the Groovy file into a GroovyClassLoader. We add the classes
+                // directory to the class loader in case it didn't exist before
+                // the associated plugin's sources were compiled.
+                def gcl = new GroovyClassLoader(classLoader)
+                gcl.addURL(buildSettings.classesDir.toURI().toURL())
+
+                def pluginClass = gcl.parseClass(descriptor)
+                plugin = pluginClass.newInstance()
+                pluginProps = DefaultGroovyMethods.getProperties(plugin)
+            }
+            catch (Throwable t) {
+                grailsConsole.error("Failed to compile plugin: ${t.message}", t)
+                exit(1)
+            }
+        }
+
+        if (pluginProps != null && pluginProps["grailsVersion"]) {
+            pluginGrailsVersion = pluginProps["grailsVersion"]
+        }
+
+        def resourceList = pluginSettings.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
+        // Work out what the name of the plugin is from the name of the descriptor file.
+        def pluginName = GrailsNameUtils.getPluginName(descriptor.name)
+
+        // Remove the existing 'plugin.xml' if there is one.
+        def pluginXml = new File(pluginBaseDir, "plugin.xml")
+        pluginXml.delete()
+
+        // Use MarkupBuilder with indenting to generate the file.
+        pluginXml.withWriter { Writer writer ->
+            def generator = new PluginDescriptorGenerator(buildSettings, pluginName, resourceList)
+
+            pluginProps["type"] = descriptor.name - '.groovy'
+            generator.generatePluginXml(pluginProps, writer)
+
+            return compilePlugin ? plugin : pluginProps
+        }
+    }
     /**
      * Packages an application
      *
