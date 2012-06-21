@@ -14,7 +14,11 @@ class BuildSettingsTests extends GroovyTestCase {
 
     protected void setUp() {
         def props = new Properties()
-        new File("../build.properties").withInputStream { InputStream is ->
+        final buildProps = new File("../build.properties")
+        if(!buildProps.exists()) {
+            buildProps = new File("build.properties")
+        }
+        buildProps.withInputStream { InputStream is ->
             props.load(is)
         }
 
@@ -191,20 +195,6 @@ class BuildSettingsTests extends GroovyTestCase {
         }
     }
 
-    void testWorkDirIsDotCoreWhenCreatingNewApp() {
-        // GRAILS-6232
-        def stubMetaData = new StubFor(Metadata)
-        stubMetaData.demand.getInstance(2) {}
-        stubMetaData.demand.getCurrent(2) {
-            [getApplicationName: {}, getApplicationVersion: {}]
-        }
-
-        stubMetaData.use {
-            def settings = new BuildSettings()
-            settings.baseDir = new File("base/dir")
-            assertEquals '.core', settings.projectWorkDir.name
-        }
-    }
 
     void testSetBaseDir() {
         def settings = new MockBuildSettings()
