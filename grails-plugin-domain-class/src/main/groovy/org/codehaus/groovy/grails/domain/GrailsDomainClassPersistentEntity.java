@@ -51,8 +51,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
     private List<PersistentProperty> properties = new ArrayList<PersistentProperty>();
     private List<Association> associations = new ArrayList<Association>();
 
-    public GrailsDomainClassPersistentEntity(GrailsDomainClass domainClass,
-            GrailsDomainClassMappingContext mappingContext) {
+    public GrailsDomainClassPersistentEntity(GrailsDomainClass domainClass, GrailsDomainClassMappingContext mappingContext) {
         this.domainClass = domainClass;
         this.mappingContext = mappingContext;
     }
@@ -103,8 +102,13 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
             else {
                 persistentProperty = new GrailsDomainClassPersistentProperty(this, grailsDomainClassProperty);
             }
+
             propertiesByName.put(grailsDomainClassProperty.getName(), persistentProperty);
             properties.add(persistentProperty);
+
+            if( persistentProperty instanceof Association ) {
+                associations.add((Association)persistentProperty);
+            }
         }
     }
 
@@ -233,7 +237,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         return domainClass.getIdentifier().getName().equals(propertyName);
     }
 
-    private PersistentProperty createManyToOne(
+    private Association createManyToOne(
             GrailsDomainClassMappingContext ctx,
             GrailsDomainClassProperty grailsDomainClassProperty) {
         final ManyToOne oneToOne = new ManyToOne(this, ctx, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getType()) {
@@ -246,7 +250,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         return oneToOne;
     }
 
-    private PersistentProperty createManyToMany(
+    private Association createManyToMany(
             GrailsDomainClassMappingContext ctx,
             GrailsDomainClassProperty grailsDomainClassProperty) {
         final ManyToMany oneToOne = new ManyToMany(this, ctx, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getType()) {
@@ -259,7 +263,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         return oneToOne;
     }
 
-    private PersistentProperty createOneToOne(
+    private Association createOneToOne(
             GrailsDomainClassMappingContext ctx,
             GrailsDomainClassProperty grailsDomainClassProperty) {
         final OneToOne oneToOne = new OneToOne(this, ctx, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getType()) {
@@ -272,7 +276,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         return oneToOne;
     }
 
-    private OneToMany createOneToMany(@SuppressWarnings("hiding") GrailsDomainClassMappingContext mappingContext,
+    private Association createOneToMany(@SuppressWarnings("hiding") GrailsDomainClassMappingContext mappingContext,
             GrailsDomainClassProperty grailsDomainClassProperty) {
         final OneToMany oneToMany = new OneToMany(this, mappingContext, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getType()) {
 
@@ -293,7 +297,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         association.setReferencedPropertyName(grailsDomainClassProperty.getReferencedPropertyName());
     }
 
-    private PersistentProperty createEmbedded(
+    private Association createEmbedded(
             @SuppressWarnings("hiding") GrailsDomainClassMappingContext mappingContext,
             GrailsDomainClassProperty grailsDomainClassProperty) {
         Embedded persistentProperty = new Embedded(this, mappingContext, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getClass()) {

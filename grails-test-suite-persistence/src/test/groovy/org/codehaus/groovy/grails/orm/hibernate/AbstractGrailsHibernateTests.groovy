@@ -281,4 +281,5 @@ class MockHibernateGrailsPlugin {
     def loadAfter = ['controllers']
     def doWithSpring = HibernatePluginSupport.doWithSpring
     def doWithDynamicMethods = HibernatePluginSupport.doWithDynamicMethods
+    def onChange = HibernatePluginSupport.onChange
 }
