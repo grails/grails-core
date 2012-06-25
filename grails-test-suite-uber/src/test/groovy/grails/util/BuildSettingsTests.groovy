@@ -180,21 +180,6 @@ class BuildSettingsTests extends GroovyTestCase {
         assertEquals new File("target").canonicalFile, settings.projectTargetDir
     }
 
-    void testWorkDirIsBasedOnAppNameNotBaseDirName() {
-        // GRAILS-6232
-        def stubMetaData = new StubFor(Metadata)
-        stubMetaData.demand.getInstance(2) {}
-        stubMetaData.demand.getCurrent(2) {
-            [getApplicationName: {'myappname'}, getApplicationVersion: {'1.1'}]
-        }
-
-        stubMetaData.use {
-            def settings = new BuildSettings()
-            settings.baseDir = new File("base/dir")
-            assertEquals 'myappname', settings.projectWorkDir.name
-        }
-    }
-
 
     void testSetBaseDir() {
         def settings = new MockBuildSettings()
