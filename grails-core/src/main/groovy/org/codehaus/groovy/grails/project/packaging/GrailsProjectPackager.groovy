@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.compiler
+package org.codehaus.groovy.grails.project.packaging
 
 import grails.build.logging.GrailsConsole
 import grails.util.Metadata
@@ -33,6 +33,8 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.compiler.PackagingException
 
 /**
  * Encapsulates the logic to package a project ready for execution.

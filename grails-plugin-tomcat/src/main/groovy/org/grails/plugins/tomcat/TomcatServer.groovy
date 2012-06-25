@@ -21,7 +21,8 @@ import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
- /**
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+/**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
  * @see IsolatedWarTomcatServer
@@ -44,7 +45,7 @@ abstract class TomcatServer implements EmbeddableServer {
 
     // These are set from the outside in _GrailsRun
     def grailsConfig
-    def eventListener
+    GrailsBuildEventListener eventListener
 
     TomcatServer() {
         buildSettings = BuildSettingsHolder.getSettings()

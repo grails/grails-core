@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.compiler.*
+import org.codehaus.groovy.grails.project.packaging.*
 
 /**
  * Gant script that creates a WAR file from a Grails project

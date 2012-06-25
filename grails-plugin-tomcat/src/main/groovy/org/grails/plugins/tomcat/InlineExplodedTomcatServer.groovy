@@ -150,7 +150,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
     }
 
     private preStart() {
-        eventListener?.event("ConfigureTomcat", [tomcat])
+        eventListener?.triggerEvent("ConfigureTomcat", tomcat)
         def jndiEntries = grailsConfig?.grails?.naming?.entries
 
         if (!(jndiEntries instanceof Map)) {

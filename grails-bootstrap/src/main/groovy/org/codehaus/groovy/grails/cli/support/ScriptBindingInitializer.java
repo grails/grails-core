@@ -157,8 +157,10 @@ public class ScriptBindingInitializer {
              cla.enableUaa();
          }
 
-         makeApiAvailableToScripts(binding, cla);
-         makeApiAvailableToScripts(binding, cla.getPluginSettings());
+
+
+         cla.makeApiAvailableToScripts(binding, cla);
+         cla.makeApiAvailableToScripts(binding, cla.getPluginSettings());
 
          // Hide the deprecation warnings that occur with plugins that
          // use "Ant" instead of "ant".
@@ -224,41 +226,6 @@ public class ScriptBindingInitializer {
          }
      }
 
-     protected void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
-         final Method[] declaredMethods = cla.getClass().getDeclaredMethods();
-         for (Method method : declaredMethods) {
-             final String name = method.getName();
 
-             final int modifiers = method.getModifiers();
-             if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
-                 binding.setVariable(name, new MethodClosure(cla, name));
-             }
-         }
 
-         PropertyDescriptor[] propertyDescriptors;
-         try {
-             propertyDescriptors = Introspector.getBeanInfo(cla.getClass()).getPropertyDescriptors();
-             for (PropertyDescriptor pd : propertyDescriptors) {
-                 final Method readMethod = pd.getReadMethod();
-                 if (readMethod != null) {
-                     if (isDeclared(cla, readMethod)) {
-                         binding.setVariable(pd.getName(), ReflectionUtils.invokeMethod(readMethod, cla));
-                     }
-                 }
-             }
-         }
-         catch (IntrospectionException e1) {
-             // ignore
-         }
-     }
-
-     protected boolean isDeclared(final Object cla, final Method readMethod) {
-         try {
-             return cla.getClass().getDeclaredMethod(readMethod.getName(),
-                 readMethod.getParameterTypes()) != null;
-         }
-         catch (Exception e) {
-             return false;
-         }
-     }
 }

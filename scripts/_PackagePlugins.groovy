@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.compiler.GrailsProjectPackager
+import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 
 /**
  * Gant script that handles the packaging of Grails plug-ins.
@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.compiler.GrailsProjectPackager
  * @since 0.4
  */
 
-projectPackager = new GrailsProjectPackager(projectCompiler, configFile, false)
+projectPackager = new GrailsProjectPackager(projectCompiler, eventListener, configFile, false)
 projectPackager.servletVersion = servletVersion
 
 packageFiles = { String from ->

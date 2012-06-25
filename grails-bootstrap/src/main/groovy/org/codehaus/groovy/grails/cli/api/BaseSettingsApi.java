@@ -23,19 +23,27 @@ import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 import groovy.util.ConfigSlurper;
+import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 import org.codehaus.groovy.grails.cli.support.UaaIntegration;
+import org.codehaus.groovy.runtime.MethodClosure;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.ReflectionUtils;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Properties;
 
@@ -60,7 +68,7 @@ public class BaseSettingsApi {
     protected String grailsAppName;
     protected Object appClassName;
     protected ConfigSlurper configSlurper;
-    private GrailsBuildEventListener buildEventListener;
+    protected GrailsBuildEventListener buildEventListener;
 
     public BaseSettingsApi(final BuildSettings buildSettings, boolean interactive) {
         this(buildSettings, null, interactive);
@@ -97,6 +105,7 @@ public class BaseSettingsApi {
         configSlurper.setEnvironment(buildSettings.getGrailsEnv());
         this.buildEventListener = buildEventListener;
     }
+
 
     public void enableUaa() {
         if (UaaIntegration.isAvailable()) {
@@ -347,5 +356,44 @@ public class BaseSettingsApi {
         logError(message, t);
         exit(1);
     }
-    
+
+
+
+    public void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
+        final Method[] declaredMethods = cla.getClass().getDeclaredMethods();
+        for (Method method : declaredMethods) {
+            final String name = method.getName();
+
+            final int modifiers = method.getModifiers();
+            if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
+                binding.setVariable(name, new MethodClosure(cla, name));
+            }
+        }
+
+        PropertyDescriptor[] propertyDescriptors;
+        try {
+            propertyDescriptors = Introspector.getBeanInfo(cla.getClass()).getPropertyDescriptors();
+            for (PropertyDescriptor pd : propertyDescriptors) {
+                final Method readMethod = pd.getReadMethod();
+                if (readMethod != null) {
+                    if (isDeclared(cla, readMethod)) {
+                        binding.setVariable(pd.getName(), ReflectionUtils.invokeMethod(readMethod, cla));
+                    }
+                }
+            }
+        }
+        catch (IntrospectionException e1) {
+            // ignore
+        }
+    }
+
+    protected boolean isDeclared(final Object cla, final Method readMethod) {
+        try {
+            return cla.getClass().getDeclaredMethod(readMethod.getName(),
+                    readMethod.getParameterTypes()) != null;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
 }

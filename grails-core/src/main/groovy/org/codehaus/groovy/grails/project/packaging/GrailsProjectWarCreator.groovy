@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.compiler
+package org.codehaus.groovy.grails.project.packaging
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.util.BuildSettings
@@ -40,13 +40,13 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
     boolean buildExplodedWar
     String warName = null
     BuildSettings grailsSettings
+    GrailsBuildEventListener eventListener
     def additionalEventArgs
 
     private String artefactPattern = /\S+?\/grails-app\/\S+?\/(\S+?)\.groovy/
     private String basedir
     private ConfigObject buildConfig
     private AntBuilder ant
-    private GrailsBuildEventListener eventListener
     private GrailsProjectPackager projectPackager
     private String resourcesDirPath
     private String pluginClassesDirPath
