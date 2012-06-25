@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 import org.codehaus.groovy.grails.project.container.*
-
-import grails.util.GrailsUtil
-import grails.util.Metadata
-import grails.web.container.EmbeddableServer
-import grails.web.container.EmbeddableServerFactory
-
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.net.ServerSocket
-
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher

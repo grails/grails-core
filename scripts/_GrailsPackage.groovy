@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
-
 /**
  * Gant script that packages a Grails application (note: does not create WAR).
  *
