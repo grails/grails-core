@@ -81,7 +81,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
      * Runs the application in dev mode, i.e. with class-reloading.
      */
     @CompileStatic
-    void runApp() {
+    EmbeddableServer runApp() {
         runInline(SCHEME_HTTP, serverHost, serverPort, serverPortHttps)
     }
 
@@ -89,7 +89,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
      * Runs the application in dev mode over HTTPS.
      */
     @CompileStatic
-    void runAppHttps() {
+    EmbeddableServer runAppHttps() {
         runInline(SCHEME_HTTPS, serverHost, serverPort, serverPortHttps)
     }
 
@@ -97,7 +97,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
      * Runs the application using the WAR file directly.
      */
     @CompileStatic
-    void runWar() {
+    EmbeddableServer runWar() {
         runWarInternal(SCHEME_HTTP, serverHost, serverPort, serverPortHttps)
     }
 
@@ -105,7 +105,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
      * Runs the application over HTTPS using the WAR file directly.
      */
     @CompileStatic
-    void runWarHttps() {
+    EmbeddableServer runWarHttps() {
         runWarInternal(SCHEME_HTTPS, serverHost, serverPort, serverPortHttps)
     }
 
@@ -133,14 +133,14 @@ class GrailsProjectRunner extends BaseSettingsApi{
     }
 
     @CompileStatic
-    private runInline(scheme, host, httpPort, httpsPort) {
+    private EmbeddableServer runInline(scheme, host, httpPort, httpsPort) {
         EmbeddableServerFactory serverFactory = loadServerFactory()
         grailsServer = serverFactory.createInline("${basedir}/web-app", webXmlFile.absolutePath, serverContextPath, classLoader)
         runServer server: grailsServer, host:host, httpPort: httpPort, httpsPort: httpsPort, scheme:scheme
     }
 
     @CompileStatic
-    private runWarInternal(scheme, host, httpPort, httpsPort) {
+    private EmbeddableServer runWarInternal(scheme, host, httpPort, httpsPort) {
         EmbeddableServerFactory serverFactory = loadServerFactory()
         grailsServer = serverFactory.createForWAR(warName, serverContextPath)
 
@@ -155,7 +155,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
      *   port - The network port the server is running on (used to display the URL) (required).
      *   scheme - The network scheme to display in the URL (optional; defaults to "http").
      */
-    def runServer( Map args ) {
+    EmbeddableServer runServer( Map args ) {
         try {
             eventListener.triggerEvent("StatusUpdate","Running Grails application")
             def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
@@ -205,6 +205,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
                     }
                 })
             }
+            return grailsServer
         }
         catch (Throwable t) {
             if (t instanceof ScriptExitException) throw t
