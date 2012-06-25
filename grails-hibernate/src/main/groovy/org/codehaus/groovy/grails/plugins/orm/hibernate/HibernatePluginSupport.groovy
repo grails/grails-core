@@ -75,6 +75,7 @@ import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
 class HibernatePluginSupport {
 
     static final Log LOG = LogFactory.getLog(this)
+    static final int RELOAD_RETRY_LIMIT = 3
 
     static doWithSpring = {
 
@@ -333,6 +334,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     }
 
     static final onChange = { event ->
+		LOG.debug "onChange() started"
 
         def datasourceNames = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
         for (name in application.config.keySet()) {
@@ -346,7 +348,6 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 LOG.debug "processing DataSource $datasourceName"
                 boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
                 String suffix = isDefault ? '' : '_' + datasourceName
-                String prefix = isDefault ? '' : datasourceName + '_'
 
                 "${SessionFactoryHolder.BEAN_ID}$suffix"(SessionFactoryHolder) {
                    sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
@@ -354,14 +355,14 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                        proxyIfReloadEnabled = false
                    }
                 }
-                for (GrailsDomainClass dc in application.domainClasses) {
-                    if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
-                        "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
-                            messageSource = ref("messageSource")
-                            domainClass = ref("${dc.fullName}DomainClass")
-                            sessionFactory = ref("sessionFactory$suffix")
-                            grailsApplication = ref("grailsApplication", true)
-                        }
+
+                GrailsDomainClass dc = application.getDomainClass(event.source.name)
+                if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+                    "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
+                        messageSource = ref("messageSource")
+                        domainClass = ref("${dc.fullName}DomainClass")
+                        sessionFactory = ref("sessionFactory$suffix")
+                        grailsApplication = ref("grailsApplication", true)
                     }
                 }
             }
@@ -369,6 +370,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
 
         ApplicationContext ctx = event.ctx
         beans.registerBeans(ctx)
+
         if (event.source instanceof Class) {
             def mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
             def entity = mappingContext.addPersistentEntity(event.source)
@@ -388,27 +390,35 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
             }
         }
 
-        enhanceSessionFactories(ctx, event.application)
+        int retryCount = 0
 
-        // Verify that the reload worked by executing a GORM method. If it failed try again
-        try {
-            event.source.count()
-        } catch (MissingMethodException mme) {
+        def enhanceAndTest
+        enhanceAndTest = {
+            // Re-enhance the given class
+            enhanceSessionFactories(ctx, application, event.source)
 
-           MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-           final sessionFactory = ctx.getBean("sessionFactory", SessionFactory)
-           final txMgr = ctx.getBean("transactionManager", HibernateTransactionManager)
-           final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx, application.config)
-           def enhancer = new HibernateGormEnhancer(datastore, txMgr, application)
-           def entity = mappingContext.getPersistentEntity(event.source.name)
-           if (entity.javaClass.getAnnotation(Enhanced) == null) {
-              enhancer.enhance entity
-           }
-           else {
-              enhancer.enhance entity, true
-           }
+            // Due to quantum tunneling and other class loader race conditions, attempts to
+            // enhance the entities may not work. Check a few static and non-static methods to see if it worked.
+            boolean hasMethods = event.source.metaClass.methods.any { MetaMethod method ->
+                method.name.startsWith("addTo") &&
+                        method.name.startsWith("list") &&
+                        method.name.startsWith("get") &&
+                        method.name.startsWith("count")
+            }
 
+            if( !hasMethods ) {
+                if( ++retryCount < RELOAD_RETRY_LIMIT ) {
+                    LOG.debug("Attempt ${retryCount} at enhancing ${event.source.name} failed, waiting and trying again")
+                    sleep(retryCount * 1000)
+                    enhanceAndTest()
+                }
+            }
         }
+
+        // Enhance the reloaded GORM objects
+        enhanceAndTest()
+
+		LOG.info "onChange() complete"
     }
 
     static final doWithDynamicMethods = { ApplicationContext ctx ->
@@ -416,7 +426,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         enhanceSessionFactories(ctx, grailsApplication)
     }
 
-    static void enhanceSessionFactories(ApplicationContext ctx, grailsApplication) {
+    static void enhanceSessionFactories(ApplicationContext ctx, grailsApplication, source = null) {
 
         Map<SessionFactory, HibernateDatastore> datastores = [:]
 
@@ -424,7 +434,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
             SessionFactory sessionFactory = entry.value
             String beanName = entry.key
             String suffix = beanName - 'sessionFactory'
-            enhanceSessionFactory sessionFactory, grailsApplication, ctx, suffix, datastores
+            enhanceSessionFactory sessionFactory, grailsApplication, ctx, suffix, datastores, source
         }
 
         ctx.eventTriggeringInterceptor.datastores = datastores
@@ -498,7 +508,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     }
 
     static enhanceSessionFactory(SessionFactory sessionFactory, GrailsApplication application,
-            ApplicationContext ctx, String suffix, Map<SessionFactory, HibernateDatastore> datastores) {
+            ApplicationContext ctx, String suffix, Map<SessionFactory, HibernateDatastore> datastores, source = null) {
 
         MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
         PlatformTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", PlatformTransactionManager)
@@ -507,10 +517,11 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         String datasourceName = suffix ? suffix[1..-1] : GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
 
         HibernateGormEnhancer enhancer = new HibernateGormEnhancer(datastore, transactionManager, application)
-        for (PersistentEntity entity in mappingContext.getPersistentEntities()) {
+
+        def enhanceEntity = { PersistentEntity entity ->
             GrailsDomainClass dc = application.getDomainClass(entity.javaClass.name)
             if (!GrailsHibernateUtil.isMappedWithHibernate(dc) || !GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
-                continue
+                return
             }
 
             if (!datasourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE)) {
@@ -518,14 +529,28 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 registerNamespaceMethods dc, datastore, datasourceName, transactionManager, application
             }
 
-            if (datasourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE) ||
-                    datasourceName.equals(GrailsHibernateUtil.getDefaultDataSource(dc))) {
+            if (datasourceName.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE) || datasourceName.equals(GrailsHibernateUtil.getDefaultDataSource(dc))) {
+                LOG.debug "Enhancing GORM entity ${entity.name}"
                 if (entity.javaClass.getAnnotation(Enhanced) == null) {
                     enhancer.enhance entity
                 }
                 else {
                     enhancer.enhance entity, true
                 }
+            }
+        }
+
+        // If we are reloading via an onChange event, the source indicates the specific
+        // entity that needs to be reloaded. Otherwise, just reload all of them.
+        if( source ) {
+            PersistentEntity entity = mappingContext.getPersistentEntity(source.name)
+            if( entity ) {
+                enhanceEntity(entity)
+            }
+        }
+        else {
+            for (PersistentEntity entity in mappingContext.getPersistentEntities()) {
+                enhanceEntity(entity)
             }
         }
     }
