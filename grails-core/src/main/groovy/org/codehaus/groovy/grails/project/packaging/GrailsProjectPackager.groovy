@@ -35,6 +35,10 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.compiler.PackagingException
+import java.util.concurrent.Future
+import org.springframework.core.io.FileSystemResource
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 
 /**
  * Encapsulates the logic to package a project ready for execution.
@@ -52,12 +56,18 @@ class GrailsProjectPackager extends BaseSettingsApi {
     boolean native2ascii = true
     File configFile
     String servletVersion = "2.5"
+
     ClassLoader classLoader
 
+
+    private String serverContextPath
+    private ConfigObject config
     private AntBuilder ant
-    private basedir
+    private File basedir
     private resourcesDirPath
     private boolean doCompile
+    private File webXmlFile
+
 
     GrailsProjectPackager(GrailsProjectCompiler compiler, File configFile, boolean doCompile = true) {
         super(compiler.buildSettings, false)
@@ -68,10 +78,50 @@ class GrailsProjectPackager extends BaseSettingsApi {
         pluginSettings = compiler.pluginSettings
         resourcesDirPath = buildSettings.resourcesDir.path
         basedir = buildSettings.baseDir
+        webXmlFile = buildSettings.webXmlLocation
         ant = compiler.ant
         this.configFile = configFile
         this.doCompile = doCompile
     }
+
+    GrailsProjectPackager(GrailsProjectCompiler compiler, GrailsBuildEventListener buildEventListener,File configFile, boolean doCompile = true) {
+        super(compiler.buildSettings, false)
+        projectCompiler = compiler
+        servletVersion = buildSettings.servletVersion
+        Metadata.current[Metadata.SERVLET_VERSION] = servletVersion
+        classLoader = compiler.classLoader
+        pluginSettings = compiler.pluginSettings
+        resourcesDirPath = buildSettings.resourcesDir.path
+        basedir = buildSettings.baseDir
+        webXmlFile = buildSettings.webXmlLocation
+        ant = compiler.ant
+        this.configFile = configFile
+        this.doCompile = doCompile
+        this.buildEventListener = buildEventListener
+    }
+
+    @CompileStatic
+    String configureServerContextPath() {
+        createConfig()
+        if(serverContextPath == null) {
+            // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
+            //    System properties
+            //    application.properties
+            //    config
+            //    default to grailsAppName if not specified
+
+            serverContextPath = System.getProperty("app.context")
+            serverContextPath = serverContextPath ?: metadata.get('app.context')
+            serverContextPath = serverContextPath ?: getServerContextPathFromConfig()
+            serverContextPath = serverContextPath ?: grailsAppName
+
+            if (!serverContextPath.startsWith('/')) {
+                serverContextPath = "/${serverContextPath}"
+            }
+        }
+        return serverContextPath
+    }
+
 
     AntBuilder getAnt() {
        if (this.ant == null) {
@@ -80,6 +130,57 @@ class GrailsProjectPackager extends BaseSettingsApi {
        return ant
     }
 
+    /**
+     * Generates the web.xml file used by Grails to startup
+     */
+    void generateWebXml(GrailsPluginManager pluginManager) {
+        File projectWorkDir = buildSettings.projectWorkDir
+        ConfigObject buildConfig = buildSettings.config
+        def webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
+        def tmpWebXml = "${projectWorkDir}/web.xml.tmp"
+
+        final baseWebXml = getBaseWebXml(buildConfig)
+        if(baseWebXml) {
+            def customWebXml = resolveResources(baseWebXml.toString())
+            def customWebXmlFile = customWebXml[0].file
+            if (customWebXmlFile.exists()) {
+                ant.copy(file:customWebXmlFile, tofile:tmpWebXml, overwrite:true)
+            }
+            else {
+                grailsConsole.error("Custom web.xml defined in config [${baseWebXml}] could not be found." )
+                exit(1)
+            }
+        } else {
+            if (!webXml.exists()) {
+                copyGrailsResource(tmpWebXml, grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"))
+            }
+            else {
+                ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
+            }
+        }
+        webXml = new FileSystemResource(tmpWebXml)
+        ant.replace(file:tmpWebXml, token:"@grails.project.key@",
+                value:"${grailsAppName}-${buildSettings.grailsEnv}-${grailsAppVersion}")
+
+        def sw = new StringWriter()
+
+        try {
+            profile("generating web.xml from $webXml") {
+                buildEventListener.triggerEvent("WebXmlStart", webXml.filename)
+                pluginManager.doWebDescriptor(webXml, sw)
+                webXmlFile.withWriter { it << sw.toString() }
+                buildEventListener.triggerEvent("WebXmlEnd", webXml.filename)
+            }
+        }
+        catch (Exception e) {
+            grailsConsole.error("Error generating web.xml file",e)
+            exit(1)
+        }
+    }
+
+    private getBaseWebXml(ConfigObject buildConfig) {
+        buildConfig.grails.config.base.webXml
+    }
     /**
      * Generates a plugin.xml file for the given plugin descriptor
      *
@@ -140,6 +241,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
      *
      * @return True if the packaging was successful, false otherwise
      */
+    @CompileStatic
     ConfigObject packageApplication() {
 
         if (doCompile) {
@@ -149,7 +251,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         try {
             packageTlds()
-        } catch (e) {
+        } catch (Throwable e) {
             throw new PackagingException("Error occurred packaging TLD files: ${e.message}", e)
         }
 
@@ -157,33 +259,37 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         try {
             packagePlugins()
-        } catch (e) {
+        } catch (Throwable e) {
             throw new PackagingException("Error occurred packaging plugin resources: ${e.message}", e)
         }
 
         try {
             packageJspFiles()
-        } catch (e) {
+        } catch (Throwable e) {
             throw new PackagingException("Error occurred packaging JSP files: ${e.message}", e)
         }
         try {
             processMessageBundles()
-        } catch (e) {
+        } catch (Throwable e) {
             throw new PackagingException("Error occurred processing message bundles: ${e.message}", e)
         }
 
         try {
             packageConfigFiles(basedir)
-        } catch (e) {
+        } catch (Throwable e) {
             throw new PackagingException("Error occurred packaging configuration files: ${e.message}", e)
         }
 
-        ant.copy(todir:buildSettings.getClassesDir(), failonerror:false) {
-            fileset(dir: basedir, includes:metadataFile.name)
-        }
+        packageMetadataFile()
 
         startLogging(config)
         return config
+    }
+
+    private void packageMetadataFile() {
+        ant.copy(todir: buildSettings.getClassesDir(), failonerror: false) {
+            fileset(dir: basedir, includes: metadataFile.name)
+        }
     }
 
     /**
@@ -209,42 +315,45 @@ class GrailsProjectPackager extends BaseSettingsApi {
      *
      * @return The application config
      */
+    @CompileStatic
     ConfigObject createConfig() {
-        def config = new ConfigObject()
-        if (configFile.exists()) {
-            def configClass
-            try {
-                configClass = classLoader.loadClass("Config")
-            }
-            catch (ClassNotFoundException cnfe) {
-                grailsConsole.error "Warning", "No config found for the application."
-            }
-            if (configClass) {
+        if(this.config == null) {
+            config = new ConfigObject()
+            if (configFile.exists()) {
+                Class configClass = null
                 try {
-                    config = configSlurper.parse(configClass)
-                    config.setConfigFile(configFile.toURI().toURL())
+                    configClass = classLoader.loadClass("Config")
                 }
-                catch (Exception e) {
-                    throw new PackagingException("Error loading Config.groovy: $e.message", e)
+                catch (ClassNotFoundException cnfe) {
+                    grailsConsole.error "Warning", "No config found for the application."
+                }
+                if (configClass) {
+                    try {
+                        config = configSlurper.parse(configClass)
+                        config.setConfigFile(configFile.toURI().toURL())
+                    }
+                    catch (Exception e) {
+                        throw new PackagingException("Error loading Config.groovy: $e.message", e)
+                    }
                 }
             }
-        }
 
-        def dataSourceFile = new File(basedir, "grails-app/conf/DataSource.groovy")
-        if (dataSourceFile.exists()) {
-            try {
-                def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
-                config.merge(dataSourceConfig)
+            def dataSourceFile = new File(basedir, "grails-app/conf/DataSource.groovy")
+            if (dataSourceFile.exists()) {
+                try {
+                    def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
+                    config.merge(dataSourceConfig)
+                }
+                catch(ClassNotFoundException e) {
+                    grailsConsole.error "Warning", "DataSource.groovy not found, assuming dataSource bean is configured by Spring"
+                }
+                catch(Exception e) {
+                    throw new PackagingException("Error loading DataSource.groovy: $e.message",e)
+                }
             }
-            catch(ClassNotFoundException e) {
-                grailsConsole.error "Warning", "DataSource.groovy not found, assuming dataSource bean is configured by Spring"
-            }
-            catch(Exception e) {
-                throw new PackagingException("Error loading DataSource.groovy: $e.message",e)
-            }
+            ConfigurationHelper.initConfig(config, null, classLoader)
+            ConfigurationHolder.config = config
         }
-        ConfigurationHelper.initConfig(config, null, classLoader)
-        ConfigurationHolder.config = config
         return config
     }
 
@@ -372,7 +481,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             }.curry(gpi) as Runnable)
         }
 
-        futures.each { it.get() }
+        futures.each {  Future it -> it.get() }
     }
 
     void packageTlds() {
@@ -439,5 +548,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 }
             }
         }
+    }
+
+
+    private String getServerContextPathFromConfig() {
+        final v = config.grails.app.context
+        if(v instanceof CharSequence) return v.toString()
     }
 }
