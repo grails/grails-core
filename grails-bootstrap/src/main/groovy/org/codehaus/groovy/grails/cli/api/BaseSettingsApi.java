@@ -23,6 +23,8 @@ import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
 import groovy.util.ConfigSlurper;
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
@@ -44,6 +46,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -274,6 +278,32 @@ public class BaseSettingsApi {
         updateMetadata(metadata, entries);
     }
 
+    /**
+     * Reads a plugin.xml descriptor for the given plugin name
+     */
+    public GPathResult readPluginXmlMetadata(String pluginName) throws Exception {
+        Resource pluginResource = pluginSettings.getPluginDirForName(pluginName);
+        if(pluginResource != null) {
+
+            File pluginDir = pluginResource.getFile();
+            return new XmlSlurper().parse(new File("${pluginDir}/plugin.xml"));
+        }
+        return null;
+    }
+
+    /**
+     * Reads all installed plugin descriptors returning a list
+     */
+    public List<GPathResult> readAllPluginXmlMetadata() throws Exception{
+        Resource[] allFiles = pluginSettings.getPluginXmlMetadata();
+        List<GPathResult> results = new ArrayList<GPathResult>();
+        for (Resource resource : allFiles) {
+            if(resource.exists()) {
+                results.add( new XmlSlurper().parse(resource.getFile())  );
+            }
+        }
+        return results;
+    }
     /**
      * Times the execution of a closure, which can include a target. For
      * example,

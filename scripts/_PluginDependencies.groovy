@@ -171,20 +171,6 @@ target(loadPlugins:"Loads Grails' plugins") {
     }
 }
 
-/**
- * Reads a plugin.xml descriptor for the given plugin name
- */
-readPluginXmlMetadata = { String pluginName ->
-    def pluginDir = getPluginDirForName(pluginName)?.file
-    new XmlSlurper().parse(new File("${pluginDir}/plugin.xml"))
-}
-
-/**
- * Reads all installed plugin descriptors returning a list
- */
-readAllPluginXmlMetadata = {->
-    pluginSettings.pluginXmlMetadata.findAll { it.file.exists() }.collect { new XmlSlurper().parse(it.file) }
-}
 
 /**
  * Runs a script contained within a plugin
