@@ -294,7 +294,7 @@ public class DataBindingUtils {
 
     private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
         updateAllowed(dataBinder, allowed);
-        updateDisallowed(dataBinder, disallowed);
+        updateDisallowed(dataBinder, allowed, disallowed);
     }
 
     @SuppressWarnings("unchecked")
@@ -312,14 +312,22 @@ public class DataBindingUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static void updateDisallowed(GrailsDataBinder binder, List disallowed) {
+    private static void updateDisallowed(GrailsDataBinder binder, List allowed, List disallowed) {
         if (disallowed == null) {
             return;
         }
 
         String[] currentDisallowed = binder.getDisallowedFields();
         List newDisallowed = new ArrayList(disallowed);
-        CollectionUtils.addAll(newDisallowed, currentDisallowed);
+        if(allowed == null) {
+        	CollectionUtils.addAll(newDisallowed, currentDisallowed);
+        } else {
+        	for(String s : currentDisallowed) {
+        		if(!allowed.contains(s)) {
+        			newDisallowed.add(s);
+        		}
+        	}
+        }
         String[] value = new String[newDisallowed.size()];
         newDisallowed.toArray(value);
         binder.setDisallowedFields(value);

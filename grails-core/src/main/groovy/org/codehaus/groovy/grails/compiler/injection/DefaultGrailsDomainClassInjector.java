@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.build.logging.GrailsConsole;
 
-import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
@@ -56,14 +55,10 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 @AstTransformer
 public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInjector {
 
-    private static final String DOMAIN_DIR = "domain";
-
-    private static final String GRAILS_APP_DIR = "grails-app";
-
     private List<ClassNode> classesWithInjectedToString = new ArrayList<ClassNode>();
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        if (isDomainClass(classNode, source) && shouldInjectClass(classNode)) {
+        if (GrailsASTUtils.isDomainClass(classNode, source) && shouldInjectClass(classNode)) {
             performInjectionOnAnnotatedEntity(classNode);
         }
     }
@@ -77,22 +72,6 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);
-    }
-
-    protected boolean isDomainClass(@SuppressWarnings("unused") ClassNode classNode, SourceUnit sourceNode) {
-        String sourcePath = sourceNode.getName();
-        File sourceFile = new File(sourcePath);
-        File parent = sourceFile.getParentFile();
-        while (parent != null) {
-            File parentParent = parent.getParentFile();
-            if (parent.getName().equals(DOMAIN_DIR) && parentParent != null &&
-                    parentParent.getName().equals(GRAILS_APP_DIR)) {
-                return true;
-            }
-            parent = parentParent;
-        }
-
-        return false;
     }
 
     protected boolean shouldInjectClass(ClassNode classNode) {

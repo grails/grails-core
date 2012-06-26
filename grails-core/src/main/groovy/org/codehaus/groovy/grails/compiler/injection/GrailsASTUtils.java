@@ -20,13 +20,19 @@ import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import groovy.lang.MissingMethodException;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -39,7 +45,21 @@ import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -65,6 +85,8 @@ import org.codehaus.groovy.syntax.Types;
  */
 public class GrailsASTUtils {
 
+    public static final String DOMAIN_DIR = "domain";
+    public static final String GRAILS_APP_DIR = "grails-app";
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
     public static final Token EQUALS_OPERATOR = Token.newSymbol("==", 0, 0);
@@ -570,6 +592,31 @@ public class GrailsASTUtils {
                 declaredMethod.getParameters().length >= 1 &&
                 declaredMethod.getParameters()[0].getType().equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS);
     }
+    
+    public static boolean isDomainClass(@SuppressWarnings("unused") final ClassNode classNode, final SourceUnit sourceNode) {
+        @SuppressWarnings("unchecked")
+		boolean isDomainClass = GrailsASTUtils.hasAnyAnnotations(classNode,
+                grails.persistence.Entity.class, 
+                javax.persistence.Entity.class);
+
+        if(!isDomainClass) {
+        	final String sourcePath = sourceNode.getName();
+        	final File sourceFile = new File(sourcePath);
+        	File parent = sourceFile.getParentFile();
+        	while (parent != null && !isDomainClass) {
+        		final File parentParent = parent.getParentFile();
+        		if (parent.getName().equals(DOMAIN_DIR) && 
+        			parentParent != null &&
+                    parentParent.getName().equals(GRAILS_APP_DIR)) {
+        			isDomainClass = true;
+        		}
+        		parent = parentParent;
+        	}
+        }
+        
+        return isDomainClass;
+    }
+
 
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
         addDelegateInstanceMethods(classNode, classNode,delegateNode, delegateInstance);

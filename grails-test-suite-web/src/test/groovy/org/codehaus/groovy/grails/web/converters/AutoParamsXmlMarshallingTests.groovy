@@ -77,12 +77,39 @@ import grails.persistence.*
         // "id" should not bind because we are binding to a domain class.
         assertNull model.book.id
     }
+    void testXmlMarshallingIntoParamsObjectWithBindableId() {
+        def controller = ga.getControllerClass(TestConverterController.name).newInstance()
+
+        controller.request.contentType = "text/xml"
+        controller.request.content = '''<?xml version="1.0" encoding="ISO-8859-1"?>
+<book id="1">
+  <author id="1">
+     <name>Stephen King</name>
+  </author>
+  <releaseDate>2007-11-27 11:52:53.447</releaseDate>
+  <title>The Stand</title>
+</book>
+'''.bytes
+
+        webRequest.informParameterCreationListeners()
+        def model = controller.createWithBindableId()
+
+        assert model
+        assert model.book
+        assertEquals "The Stand", model.book.title
+        assertEquals 1, model.book.author.id
+        assertEquals 'Stephen King', model.book.author.name
+		assertEquals 1, model.book.id
+    }
 }
 
 
 class TestConverterController {
     def create = {
         [book:new AutoParamsXmlMarshallingBook(params['book'])]
+    }
+    def createWithBindableId = {
+        [book:new AutoParamsXmlMarshallingBookWithBindableId(params['book'])]
     }
 }
 
@@ -92,6 +119,17 @@ class AutoParamsXmlMarshallingBook {
     Date releaseDate
 
     static belongsTo = [author:AutoParamsXmlMarshallingAuthor]
+}
+
+@Entity
+class AutoParamsXmlMarshallingBookWithBindableId {
+    String title
+    Date releaseDate
+
+    static belongsTo = [author:AutoParamsXmlMarshallingAuthor]
+	static constraints = {
+		id bindable: true
+	}
 }
 
 @Entity

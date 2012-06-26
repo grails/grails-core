@@ -189,8 +189,9 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         final List<FieldNode> fields = classNode.getFields();
         for(FieldNode fieldNode : fields) {
             final String fieldName = fieldNode.getName();
+            final boolean isDomainClass = GrailsASTUtils.isDomainClass(classNode, sourceUnit);
             if((!unbindablePropertyNames.contains(fieldName)) && 
-                    (bindablePropertyNames.contains(fieldName) || shouldFieldBeInWhiteList(fieldNode, fieldsInTransientsList))) {
+                    (bindablePropertyNames.contains(fieldName) || shouldFieldBeInWhiteList(fieldNode, fieldsInTransientsList, isDomainClass))) {
                 propertyNamesToIncludeInWhiteList.add(fieldName);
             }
         }
@@ -226,14 +227,19 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         return propertyNamesToIncludeInWhiteList;
     }
 
-    private boolean shouldFieldBeInWhiteList(final FieldNode fieldNode, final Set<String> fieldsInTransientsList) {
+    private boolean shouldFieldBeInWhiteList(final FieldNode fieldNode, final Set<String> fieldsInTransientsList, final boolean isDomainClass) {
         boolean shouldInclude = true;
         final int modifiers = fieldNode.getModifiers();
-        if((modifiers & Modifier.STATIC) != 0 ||
+        final String fieldName = fieldNode.getName();
+		if((modifiers & Modifier.STATIC) != 0 ||
                 (modifiers & Modifier.TRANSIENT) != 0 ||
-                fieldsInTransientsList.contains(fieldNode.getName()) ||
+                fieldsInTransientsList.contains(fieldName) ||
                 fieldNode.getType().equals(new ClassNode(Object.class))) {
             shouldInclude = false;
+        } else if(isDomainClass) {
+        	if("id".equals(fieldName) || "version".equals(fieldName)) {
+        		shouldInclude = false;
+        	}
         }
         return shouldInclude;
     }
