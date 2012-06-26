@@ -103,7 +103,8 @@ task pluginsFromRepo {
         ant {
             mkdir(dir: dir)
             plugins.each { name, version ->
-                get(src: "http://repo.grails.org/grails/plugins/org/grails/plugins/${name}/$version/${name}-${version}.zip",
+                def versionTag = version.replaceAll(/\./, '_').toUpperCase()
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }
