@@ -21,6 +21,7 @@ import org.springframework.core.io.Resource;
  * Holds references to all the Grails resource instances to support class reloading.
  *
  * @author Graeme Rocher
+ * @deprecated No longer used and will be removed from a future release
  */
 public class GrailsResourceHolder {
 

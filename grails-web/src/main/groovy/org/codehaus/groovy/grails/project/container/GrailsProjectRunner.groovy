@@ -35,7 +35,7 @@ import groovy.transform.TypeCheckingMode
  * Responsible for running the container embedded within the current JVM
  *
  * @author Graeme Rocher
- * @since 2.1
+ * @since 2.2
  */
 
 class GrailsProjectRunner extends BaseSettingsApi{

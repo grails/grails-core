@@ -28,6 +28,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.core.io.DefaultResourceLocator;
+import org.codehaus.groovy.grails.core.io.ResourceLocator;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.Resource;
@@ -46,26 +50,13 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
 
     private static Log LOG = LogFactory.getLog(GrailsApplicationFactoryBean.class);
     private GrailsApplication grailsApplication = null;
-    private GrailsResourceLoader resourceLoader;
     private Resource descriptor;
 
     public void afterPropertiesSet() throws Exception {
         if (descriptor != null && descriptor.exists()) {
             LOG.info("Loading Grails application with information from descriptor.");
 
-            ClassLoader classLoader = null;
-            if (Environment.getCurrent().isReloadEnabled()) {
-                LOG.info("Reloading is enabled, using GrailsClassLoader.");
-                // Enforce UTF-8 on source code for reloads
-                final ClassLoader parentLoader = Thread.currentThread().getContextClassLoader();
-                CompilerConfiguration config = CompilerConfiguration.DEFAULT;
-                config.setSourceEncoding("UTF-8");
-                classLoader = new GrailsClassLoader(parentLoader, config, resourceLoader);
-            }
-            else {
-                LOG.info("No reloading, using standard classloader.");
-                classLoader = Thread.currentThread().getContextClassLoader();
-            }
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
             List<Class<?>> classes = new ArrayList<Class<?>>();
             InputStream inputStream = null;
@@ -106,9 +97,12 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
             Class<?>[] loadedClasses = classes.toArray(new Class[classes.size()]);
             grailsApplication = new DefaultGrailsApplication(loadedClasses, classLoader);
         }
+        else if(!Environment.isWarDeployed()){
+            Resource[] resources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResourcesForCurrentEnvironment();
+            grailsApplication = new DefaultGrailsApplication(resources);
+        }
         else {
-            Assert.notNull(resourceLoader, "Property [resourceLoader] must be set!");
-            grailsApplication = new DefaultGrailsApplication(resourceLoader);
+            grailsApplication = new DefaultGrailsApplication();
         }
 
         ApplicationHolder.setApplication(grailsApplication);
@@ -126,8 +120,13 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
         return true;
     }
 
+    /**
+     * @deprecated No longer used will be removed in a future release
+     * @param resourceLoader
+     */
+    @Deprecated
     public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
+        // do nothing
     }
 
     public void setGrailsDescriptor(Resource r) {

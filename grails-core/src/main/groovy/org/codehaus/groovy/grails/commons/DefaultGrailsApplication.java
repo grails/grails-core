@@ -15,37 +15,20 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
-
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
-import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder;
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.core.io.ResourceLocator;
 import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.io.support.*;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;
@@ -53,6 +36,11 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -89,7 +77,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     protected ApplicationContext mainContext;
 
     protected List<Class<?>> loadedClasses = new ArrayList<Class<?>>();
-    protected GrailsResourceLoader resourceLoader;
     protected ArtefactHandler[] artefactHandlers;
     protected Map<String, ArtefactHandler> artefactHandlersByName = new HashMap<String, ArtefactHandler>();
     protected List<Class<?>> allArtefactClasses = new ArrayList<Class<?>>();
@@ -124,87 +111,24 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
     /**
-     * Constructs a GrailsApplication with the given set of groovy sources specified as Spring Resource instances.
+     * Loads a GrailsApplication using the given ResourceLocator instance which will search for appropriate class names
      *
-     * @param resources An array or Groovy sources provides by Spring Resource instances
      */
-    public DefaultGrailsApplication(final Resource[] resources) {
-        this(new GrailsResourceLoader(resources));
+    public DefaultGrailsApplication(Resource[] resources) {
+        this();
+        for (Resource resource : resources) {
+
+            Class<?> aClass;
+            try {
+                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource));
+            } catch (ClassNotFoundException e) {
+                throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
+            }
+            loadedClasses.add(aClass);
+        }
+
     }
 
-    public DefaultGrailsApplication(GrailsResourceLoader resourceLoader) {
-        this.resourceLoader = resourceLoader;
-
-        try {
-            loadGrailsApplicationFromResources(resourceLoader.getResources());
-        }
-        catch (IOException e) {
-            throw new GrailsConfigurationException("I/O exception loading Grails: " + e.getMessage(), e);
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected void loadGrailsApplicationFromResources(@SuppressWarnings("hiding") Resource[] resources) throws IOException {
-        GrailsResourceHolder resourceHolder = new GrailsResourceHolder();
-        cl = configureClassLoader();
-        GroovyClassLoader gcl = (GroovyClassLoader)cl;
-
-        Collection loadedResources = new ArrayList();
-        loadedClasses = new ArrayList<Class<?>>();
-
-        try {
-            for (int i = 0; resources != null && i < resources.length; i++) {
-
-                if (!loadedResources.contains(resources[i])) {
-                    try {
-                        String className = resourceHolder.getClassName(resources[i]);
-                        log.debug("Loading groovy file from resource loader :[" + resources[i].getFile().getAbsolutePath() + "] with name [" + className + "]");
-                        if (!StringUtils.isBlank(className)) {
-
-                            Class<?> c = gcl.loadClass(className, true, false);
-                            Assert.notNull(c, "Groovy Bug! GCL loadClass method returned a null class!");
-
-                            if (!loadedClasses.contains(c)) {
-                                loadedClasses.add(c);
-                            }
-                            log.debug("Added Groovy class [" + c + "] to loaded classes");
-                            loadedResources = resourceLoader.getLoadedResources();
-                        }
-                    }
-                    catch (ClassNotFoundException e) {
-                        log.error("The class ["+e.getMessage()+"] was not found when attempting to load Grails application. Skipping.");
-                    }
-                }
-                else {
-                    Class<?> c = null;
-                    try {
-                        log.debug("Loading groovy file from class loader :[" +
-                                resources[i].getFile().getAbsolutePath() + "]");
-                        c = cl.loadClass(resourceHolder.getClassName(resources[i]));
-                    }
-                    catch (ClassNotFoundException e) {
-                        log.error("Class not found attempting to load class " + e.getMessage(), e);
-                    }
-
-                    if (c != null) {
-                        loadedClasses.add(c);
-                    }
-                    log.debug("Added Groovy class [" + c + "] to loaded classes");
-                }
-            }
-        }
-        catch (CompilationFailedException e) {
-            if (Environment.getCurrent() == Environment.DEVELOPMENT) {
-                // if we're in the development environement then there is no point in this exception propagating up the stack as it
-                // just clouds the actual error so log it as fatal and kill the server
-                log.fatal("Compilation error loading Grails application: " + e.getMessage(), e);
-                System.exit(1);
-            }
-            else {
-                throw e;
-            }
-        }
-    }
 
     /**
      * Initialises the default set of ArtefactHandler instances.
@@ -257,30 +181,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
                 new ArtefactHandler[artefactHandlersByName.size()]);
     }
 
-    /**
-     * Configures a GroovyClassLoader for the given GrailsInjectionOperation and GrailsResourceLoader.
-     *
-     * @return A GroovyClassLoader
-     */
-    protected GroovyClassLoader configureClassLoader() {
-
-        final ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-
-        GrailsAwareClassLoader gcl = new GrailsAwareClassLoader(contextLoader);
-        if (resourceLoader != null) {
-            gcl.setResourceLoader(resourceLoader);
-        }
-        cl = gcl;
-
-        try {
-            Thread.currentThread().setContextClassLoader(cl);
-        }
-        catch (AccessControlException e) {
-            // container doesn't allow this, in WAR deployment this shouldn't be an issue
-        }
-
-        return gcl;
-    }
 
     /**
      * Returns all the classes identified as artefacts by ArtefactHandler instances.
@@ -359,9 +259,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         populateAllClasses();
     }
 
-    public GrailsResourceLoader getResourceLoader() {
-        return resourceLoader;
-    }
 
     public ClassLoader getClassLoader() {
         return cl;
@@ -483,14 +380,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         initArtefactHandlers();
 
         if (GrailsUtil.isDevelopmentEnv()) {
-            try {
-                loadGrailsApplicationFromResources(resources);
-                initialise();
-            }
-            catch (IOException e) {
-                throw new GrailsConfigurationException(
-                        "I/O error rebuilding GrailsApplication: " + e.getMessage(), e);
-            }
+            initialise();
         }
         else {
             throw new IllegalStateException("Cannot rebuild GrailsApplication when not in development mode!");
@@ -504,10 +394,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return Either a Spring Resource or null if no Resource was found for the given class
      */
     public Resource getResourceForClass(@SuppressWarnings("rawtypes") Class theClazz) {
-        if (resourceLoader == null) {
-            return null;
-        }
-        return resourceLoader.getResourceForClass(theClazz);
+
+        // TODO fix
+        return null;
     }
 
     /**
