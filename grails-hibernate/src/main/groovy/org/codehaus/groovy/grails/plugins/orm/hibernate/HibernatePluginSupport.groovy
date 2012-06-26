@@ -65,6 +65,7 @@ import org.springframework.orm.hibernate3.HibernateTransactionManager
 import org.springframework.validation.Validator
 import org.springframework.transaction.PlatformTransactionManager
 import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
+import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -537,6 +538,8 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 else {
                     enhancer.enhance entity, true
                 }
+
+                DomainClassGrailsPlugin.addRelationshipManagementMethods(application.getDomainClass(entity.javaClass.name), ctx)
             }
         }
 

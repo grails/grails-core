@@ -13,20 +13,20 @@ class DomainReloadTests extends AbstractGrailsHibernateTests {
 
     def domain1 = '''
 @grails.persistence.Entity
-class Face {
+class DomainReloadFace {
     String name
     String description
-    static hasMany = [eyes: Eye]
+    static hasMany = [eyes: DomainReloadEye]
 }
 
 @grails.persistence.Entity
-class Eye {
-    static belongsTo = [face: Face]
+class DomainReloadEye {
+    static belongsTo = [face: DomainReloadFace]
 }
 '''
 
     void testReloadDomainClass() {
-        def testDomain = ga.getDomainClass("Face").newInstance()
+        def testDomain = ga.getDomainClass("DomainReloadFace").newInstance()
         assert testDomain.respondsTo("getName")
         assert !testDomain.respondsTo("getDescription")
         assert !testDomain.respondsTo("addToEyes")
@@ -44,7 +44,7 @@ class Eye {
         eventHandler.delegate = plugin
         eventHandler.call(event)
 
-        def newDomain = ga.getDomainClass("Face").newInstance()
+        def newDomain = ga.getDomainClass("DomainReloadFace").newInstance()
         assert newDomain.respondsTo("getName")
         assert newDomain.respondsTo("getDescription")
         assert newDomain.respondsTo("save")
@@ -54,7 +54,7 @@ class Eye {
     void onSetUp() {
         gcl.parseClass '''
 @grails.persistence.Entity
-class Face {
+class DomainReloadFace {
     String name
 }
 '''
