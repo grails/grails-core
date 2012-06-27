@@ -45,13 +45,7 @@ target(loadApp:"Loads the Grails application object") {
     profile("Loading parent ApplicationContext") {
         def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
         beanDefinitions = builder.beans {
-            resourceHolder(GrailsResourceHolder) {
-                resources = pluginSettings.artefactResources
-            }
-            grailsResourceLoader(GrailsResourceLoaderFactoryBean) {
-                grailsResourceHolder = resourceHolder
-            }
-            grailsApplication(DefaultGrailsApplication, ref("grailsResourceLoader"))
+            grailsApplication(DefaultGrailsApplication, pluginSettings.getArtefactResourcesForCurrentEnvironment())
         }
     }
 

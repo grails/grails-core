@@ -143,5 +143,5 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
 }
 
 target(stopServer: "Stops the Grails servlet container") {
-    projectWatcher.stopServer()
+    projectWatcher?.stopServer()
 }
