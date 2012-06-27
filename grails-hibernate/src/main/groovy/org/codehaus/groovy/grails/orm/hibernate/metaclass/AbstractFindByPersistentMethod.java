@@ -76,7 +76,7 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
         return getResult(crit, useLimit);
     }
 
-    private Object getResult(Criteria crit, boolean useLimit) {
+    protected Object getResult(Criteria crit, boolean useLimit) {
         if(useLimit) {
             final List<?> list = crit.list();
             if (!list.isEmpty()) {

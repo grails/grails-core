@@ -43,7 +43,7 @@ class TestFindBy extends AbstractFindByPersistentMethod {
     }
 
     @Override
-    protected Object getResult(Criteria crit) {
+    protected Object getResult(Criteria crit, boolean useLimit) {
         return crit;    
     }
 
