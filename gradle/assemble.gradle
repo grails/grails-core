@@ -94,7 +94,7 @@ task pluginsFromRepo {
         tomcat: grailsVersion,
         resources: "1.1.6",
         webxml: "1.4.1",
-        jquery: "1.7.1"
+        jquery: "1.7.2"
     ]
 
     ext.dir = file("$buildDir/pluginsFromRepo")
