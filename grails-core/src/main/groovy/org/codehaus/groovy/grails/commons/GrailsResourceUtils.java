@@ -15,8 +15,11 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import org.codehaus.groovy.grails.core.io.SpringResource;
+import org.codehaus.groovy.grails.io.support.FileSystemResource;
 import org.springframework.core.io.Resource;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
@@ -97,7 +100,7 @@ public class GrailsResourceUtils {
      * @return The class name or null if the resource is not a Grails class
      */
     public static String getClassName(Resource resource) {
-        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource);
+        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(new SpringResource(resource));
     }
 
     /**
@@ -121,40 +124,10 @@ public class GrailsResourceUtils {
     }
 
     public static boolean isGrailsResource(Resource r) {
-        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.isGrailsResource(r);
-    }
-
-    public static Resource getViewsDir(Resource resource) {
-        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getViewsDir(resource);
-    }
-
-    public static Resource getAppDir(Resource resource) {
-        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getAppDir(resource);
+        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.isGrailsResource(new SpringResource(r));
     }
 
 
-    /**
-     * Takes a Grails resource (one located inside the grails-app dir) and gets its relative path inside the WEB-INF directory
-     * when deployed.
-     *
-     * @param resource The Grails resource, which is a file inside the grails-app dir
-     * @return The relative URL of the file inside the WEB-INF dir at deployment time or null if it cannot be established
-     */
-    public static String getRelativeInsideWebInf(Resource resource) {
-        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getRelativeInsideWebInf(resource);
-    }
-
-
-    /**
-     * Retrieves the static resource path for the given Grails resource artifact (controller/taglib etc.)
-     *
-     * @param resource The Resource
-     * @param contextPath The additonal context path to prefix
-     * @return The resource path
-     */
-    public static String getStaticResourcePathForResource(Resource resource, String contextPath) {
-        return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getStaticResourcePathForResource(resource, contextPath);
-    }
 
     /**
      * Get the path relative to an artefact folder under grails-app i.e:

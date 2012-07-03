@@ -45,6 +45,8 @@ import java.util.List;
  *
  * @author Graeme Rocher
  * @author Lari Hotari
+ *
+ * @deprecated
  * @since 1.1
  *
  */
@@ -68,7 +70,6 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 
     private void createClassLoader() {
         gcl = new GrailsAwareClassLoader(getClass().getClassLoader());
-        gcl.setResourceLoader(new GrailsResourceLoader(resolveGrailsResources()));
         customizeClassLoader(gcl);
     }
 
@@ -80,14 +81,14 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
         // do nothing by default
     }
 
-    private Resource[] resolveGrailsResources() {
-        Resource[] baseResources = pluginSettings.getArtefactResources();
-        List<Resource> grailsResources = new ArrayList<Resource>(Arrays.asList(baseResources));
+    private org.codehaus.groovy.grails.io.support.Resource[] resolveGrailsResources() {
+        org.codehaus.groovy.grails.io.support.Resource[] baseResources = pluginSettings.getArtefactResources();
+        List<org.codehaus.groovy.grails.io.support.Resource> grailsResources = new ArrayList<org.codehaus.groovy.grails.io.support.Resource>(Arrays.asList(baseResources));
         customizeGrailsResources(grailsResources);
-        return grailsResources.toArray(new Resource[grailsResources.size()]);
+        return grailsResources.toArray(new org.codehaus.groovy.grails.io.support.Resource[grailsResources.size()]);
     }
 
-    protected void customizeGrailsResources(@SuppressWarnings("unused") List<Resource> grailsResources) {
+    protected void customizeGrailsResources(@SuppressWarnings("unused") List<org.codehaus.groovy.grails.io.support.Resource> grailsResources) {
         // do nothing by default
     }
 

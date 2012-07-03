@@ -37,6 +37,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -120,8 +121,10 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
             Class<?> aClass;
             try {
-                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource));
+                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
             } catch (ClassNotFoundException e) {
+                throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
+            } catch (IOException e) {
                 throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
             }
             loadedClasses.add(aClass);

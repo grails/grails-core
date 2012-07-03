@@ -20,17 +20,18 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-import org.apache.commons.lang.ArrayUtils
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.util.AntPathMatcher
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver
+import org.codehaus.groovy.grails.io.support.AntPathMatcher
+import java.lang.reflect.Array
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -400,6 +401,7 @@ class PluginBuildSettings {
      * Obtains an array of all plugin provided source directories
      *
      */
+    //@CompileStatic
     Resource[] getPluginSourceDirectories() {
         def sourceFiles = cache['sourceFiles']
         if (!sourceFiles) {
@@ -407,15 +409,16 @@ class PluginBuildSettings {
             sourceFiles = new Resource[0]
             sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, true) { pluginDir ->
                 Resource[] pluginSourceFiles = resourceResolver("file:${pluginDir}/grails-app/*")
-                pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
-                pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
+                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
+                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
                 cache['sourceFilesPerPlugin'][pluginDir] = pluginSourceFiles
                 return pluginSourceFiles
             }
             cache['sourceFiles'] = sourceFiles
         }
-        return sourceFiles
+        return (Resource[])sourceFiles
     }
+
 
     /**
     * Gets all the plugin source directories for the given plugin directory
@@ -536,7 +539,7 @@ class PluginBuildSettings {
             }
 
             // now build of application resources so that these can override plugin resources
-            resources = ArrayUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
+            resources = IOUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
 
             allArtefactResources = resources
             cache['allArtefactResources'] = resources
@@ -837,7 +840,7 @@ class PluginBuildSettings {
      * A new array is then returned that contains any additiona plugin resources that were
      * resolved by the expression passed in the closure.
      */
-//    @CompileStatic
+    @CompileStatic
     private resolvePluginResourcesAndAdd(Resource[] originalResources, boolean processExcludes, Closure resolver) {
 
         Resource[] pluginDirs = getPluginDirectories()
@@ -854,7 +857,7 @@ class PluginBuildSettings {
                         }
                     }
                 }
-                originalResources = (Resource[])ArrayUtils.addAll(originalResources, newResources as Resource[])
+                originalResources = (Resource[])IOUtils.addAll(originalResources, newResources as Resource[])
             }
         }
         return originalResources

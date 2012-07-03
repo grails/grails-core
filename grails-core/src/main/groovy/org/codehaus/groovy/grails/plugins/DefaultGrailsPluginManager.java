@@ -523,7 +523,12 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             }
         }
         else {
-            String className = GrailsResourceUtils.getClassName(r);
+            String className = null;
+            try {
+                className = GrailsResourceUtils.getClassName(r.getFile().getAbsolutePath());
+            } catch (IOException e) {
+                throw new PluginException("Cannot find plugin class [" + className + "] resource: [" + r.getFilename()+"]", e);
+            }
             try {
                 pluginClass = Class.forName(className, true, cl);
             }

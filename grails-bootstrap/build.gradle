@@ -1,42 +1,26 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+configurations {
+    uaa.extendsFrom compile
+}
 dependencies {
-    compile("org.springframework:spring-core:${springVersion}") {
-        exclude module:"commons-logging"
-    }
-    compile("org.springframework:spring-beans:${springVersion}") {
-        exclude module:"commons-logging"
-    }
-    compile("org.springframework:spring-test:${springVersion}") {
-        exclude module:"commons-logging"
-    }
-    compile("org.springframework:spring-context:${springVersion}") {
-        exclude module:"commons-logging"
-    }
-    compile("org.springframework:spring-context-support:${springVersion}") {
-        exclude module:"commons-logging"
-    }
 
-    compile("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {
-        // Explicitly exclude OSGIified dependencies - GRAILS-7525
-        // Have to use excludes instead of transitive = false - GRADLE-1574
+
+    // UAA client dependency, optional
+    uaa("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {
         ["protobuf-java-lite", "json-simple", "bcpg-jdk15", "bcprov-jdk15"].each { dep ->
             exclude group: "org.springframework.roo.wrapping", module: "org.springframework.roo.wrapping." + dep
         }
     }
 
     // These 3 are required by UAA but not Grails (non OSGI version of excludes above)
-    compile 'com.google.protobuf:protobuf-java:2.4.1',
-            'com.googlecode.json-simple:json-simple:1.1',
-            "org.bouncycastle:bcpg-jdk15:1.45"
-
-    compile "commons-lang:commons-lang:$commonsLangVersion"
+    uaa 'com.google.protobuf:protobuf-java:2.4.1',
+             'com.googlecode.json-simple:json-simple:1.1',
+             "org.bouncycastle:bcpg-jdk15:1.45"
 
     compile "org.fusesource.jansi:jansi:$jansiVersion",
             "jline:jline:$jlineVersion",
             "net.java.dev.jna:jna:$jnaVersion"
-
-    compile "junit:junit:${junitVersion}"
 
     // Ant
     compile "org.apache.ant:ant:${antVersion}",
@@ -53,9 +37,19 @@ dependencies {
     }
 }
 
+sourceSets {
+    uaa {
+        compileClasspath = files(configurations.uaa, main.output)
+        groovy.srcDirs = ['src/uaa/groovy']
+        resources.srcDirs = []
+    }
+}
 processResources {
     inputs.property "version", version
     filter(ReplaceTokens, tokens:[version:version])
 }
 
 jar.appendix = 'bootstrap'
+jar {
+    from compileUaaGroovy.outputs.files
+}

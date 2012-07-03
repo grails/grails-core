@@ -21,18 +21,15 @@ import grails.util.PluginBuildSettings;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver;
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.uaa.client.UaaService;
 import org.springframework.uaa.client.UaaServiceFactory;
 import org.springframework.uaa.client.VersionHelper;
 import org.springframework.uaa.client.protobuf.UaaClient;
-import org.springframework.util.ClassUtils;
 
 /**
  * Integrates UAA usage tracking with Grails.
@@ -59,7 +56,11 @@ public class UaaIntegration {
     public static final int ONE_MINUTE = 1800;
 
     public static boolean isAvailable() {
-        return ClassUtils.isPresent("org.springframework.uaa.client.UaaServiceFactory", UaaIntegration.class.getClassLoader());
+        try {
+            return  UaaIntegration.class.getClassLoader().loadClass("org.springframework.uaa.client.UaaServiceFactory") != null;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 
     public static boolean isEnabled() {
@@ -93,6 +94,7 @@ public class UaaIntegration {
             Runnable r = new Runnable() {
                 public void run() {
                     try {
+                        Thread.sleep(ONE_MINUTE);
                         final UaaClient.Product product = VersionHelper.getProduct("Grails", settings.getGrailsVersion());
                         uaaService.registerProductUsage(product);
 
@@ -126,8 +128,7 @@ public class UaaIntegration {
                 }
             };
 
-            ConcurrentTaskScheduler scheduler = new ConcurrentTaskScheduler();
-            scheduler.schedule(r, new Date(System.currentTimeMillis() + ONE_MINUTE));
+            new Thread(r).start();
             enabled = true;
         }
     }

@@ -26,7 +26,6 @@ import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.springframework.core.io.Resource
 import org.springframework.util.ClassUtils
 import grails.util.GrailsUtil
 import grails.util.GrailsNameUtils
@@ -39,6 +38,7 @@ import java.util.concurrent.Future
 import org.springframework.core.io.FileSystemResource
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Encapsulates the logic to package a project ready for execution.

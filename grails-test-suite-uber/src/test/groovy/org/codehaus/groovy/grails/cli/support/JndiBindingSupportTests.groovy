@@ -1,8 +1,6 @@
 package org.codehaus.groovy.grails.cli.support
 
-import javax.naming.Context
-import javax.naming.Name
-import javax.naming.spi.ObjectFactory
+import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
 
 /**
  * @author Graeme Rocher

@@ -24,8 +24,6 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoaderHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
 import grails.util.Environment
@@ -93,9 +91,6 @@ class GrailsProjectCompiler {
         }
         javaOptions.target = buildSettings.compilerTargetLevel
 
-        GrailsResourceLoader resourceLoader = new GrailsResourceLoader(
-            pluginSettings.getArtefactResourcesForCurrentEnvironment())
-        GrailsResourceLoaderHolder.setResourceLoader(resourceLoader)
     }
 
     private initializeSrcDirectories() {

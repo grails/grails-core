@@ -19,7 +19,6 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
-import grails.util.PluginBuildSettings
 
 import java.awt.Desktop
 
@@ -29,7 +28,7 @@ import org.codehaus.groovy.grails.cli.ScriptNotFoundException
 import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.cli.support.UaaIntegration
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -90,9 +89,7 @@ class InteractiveMode {
         interactiveModeActive = true
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
-        if (UaaIntegration.isAvailable() && !UaaIntegration.isEnabled()) {
-            UaaIntegration.enable(settings, new PluginBuildSettings(settings), true)
-        }
+        new BaseSettingsApi(settings, false).enableUaa()
         String originalGrailsEnv = System.getProperty(Environment.KEY)
         String originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
         addStatus("Enter a script name to run. Use TAB for completion: ")

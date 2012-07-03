@@ -18,24 +18,19 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
+import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.codehaus.groovy.grails.core.io.DefaultResourceLocator;
-import org.codehaus.groovy.grails.core.io.ResourceLocator;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
 
 /**
  * Creates a Grails application object based on Groovy files.
@@ -98,7 +93,15 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
             grailsApplication = new DefaultGrailsApplication(loadedClasses, classLoader);
         }
         else if(!Environment.isWarDeployed()){
-            Resource[] resources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResourcesForCurrentEnvironment();
+            org.codehaus.groovy.grails.io.support.Resource[] buildResources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResourcesForCurrentEnvironment();
+
+            Resource[] resources = new Resource[buildResources.length];
+
+            for (int i = 0; i < buildResources.length; i++) {
+                org.codehaus.groovy.grails.io.support.Resource buildResource = buildResources[i];
+                resources[i] = new FileSystemResource(buildResource.getFile());
+            }
+
             grailsApplication = new DefaultGrailsApplication(resources);
         }
         else {

@@ -22,20 +22,16 @@ import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
-import org.codehaus.groovy.grails.cli.support.UaaIntegration;
+import org.codehaus.groovy.grails.io.support.*;
 import org.codehaus.groovy.runtime.MethodClosure;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.ReflectionUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -44,6 +40,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -112,9 +109,15 @@ public class BaseSettingsApi {
 
 
     public void enableUaa() {
-        if (UaaIntegration.isAvailable()) {
-            UaaIntegration.enable(buildSettings, pluginSettings, isInteractive);
+        try {
+            Class<?> uaaClass = BaseSettingsApi.class.getClassLoader().loadClass("org.codehaus.groovy.grails.cli.support.UaaIntegration");
+            MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(uaaClass);
+            metaClass.invokeMethod(uaaClass, "enable", new Object[]{buildSettings, pluginSettings, isInteractive});
+        } catch (ClassNotFoundException e) {
+            // UAA not present, ignore
         }
+
+
     }
 
     public ConfigSlurper getConfigSlurper() {
@@ -222,7 +225,7 @@ public class BaseSettingsApi {
     public void copyGrailsResource(Object targetFile, Resource resource, boolean overwrite) throws FileNotFoundException, IOException {
         File file = new File(targetFile.toString());
         if (overwrite || !file.exists()) {
-            FileCopyUtils.copy(resource.getInputStream(), new FileOutputStream(file));
+            IOUtils.copy(resource.getInputStream(), new FileOutputStream(file));
         }
     }
 
@@ -407,13 +410,23 @@ public class BaseSettingsApi {
                 final Method readMethod = pd.getReadMethod();
                 if (readMethod != null) {
                     if (isDeclared(cla, readMethod)) {
-                        binding.setVariable(pd.getName(), ReflectionUtils.invokeMethod(readMethod, cla));
+                        binding.setVariable(pd.getName(), invokeMethod(readMethod, cla));
                     }
                 }
             }
         }
         catch (IntrospectionException e1) {
             // ignore
+        }
+    }
+
+    private Object invokeMethod(Method readMethod, Object cla) {
+        try {
+            return readMethod.invoke(cla);
+        } catch (IllegalAccessException e) {
+            return null;
+        } catch (InvocationTargetException e) {
+            return null;
         }
     }
 

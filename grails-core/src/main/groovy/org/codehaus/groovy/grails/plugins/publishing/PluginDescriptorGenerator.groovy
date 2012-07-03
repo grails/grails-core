@@ -21,12 +21,12 @@ import groovy.xml.MarkupBuilder
 import org.codehaus.groovy.grails.documentation.DocumentationContext
 import org.codehaus.groovy.grails.documentation.DocumentedMethod
 import org.codehaus.groovy.grails.documentation.DocumentedProperty
-import org.springframework.core.io.Resource
 import grails.util.BuildSettings
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.plugins.resolver.URLResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Generates the plugin.xml descriptor.

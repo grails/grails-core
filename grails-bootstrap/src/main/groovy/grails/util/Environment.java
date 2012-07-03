@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.util.StringUtils;
 
 /**
  * Represents the current environment.
@@ -383,7 +382,7 @@ public enum Environment {
         final boolean reloadOverride = Boolean.getBoolean(RELOAD_ENABLED);
 
         final String reloadLocation = getReloadLocationInternal();
-        final boolean reloadLocationSpecified = StringUtils.hasLength(reloadLocation);
+        final boolean reloadLocationSpecified = hasLocation(reloadLocation);
         return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() ||
                 reloadOverride && reloadLocationSpecified;
     }
@@ -427,23 +426,28 @@ public enum Environment {
      */
     public String getReloadLocation() {
         String location = getReloadLocationInternal();
-        if (StringUtils.hasLength(location)) {
+        if (hasLocation(location)) {
             return location;
         }
         return "."; // default to the current directory
+    }
+
+    private boolean hasLocation(String location) {
+        return location != null && location.length() > 0;
     }
 
     /**
      * @return Whether a reload location is specified
      */
     public boolean hasReloadLocation() {
-        return StringUtils.hasLength(getReloadLocationInternal());
+        String reloadingLocation = getReloadLocationInternal();
+        return hasLocation(reloadingLocation);
     }
 
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
-        if (!StringUtils.hasLength(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
-        if (!StringUtils.hasLength(location)) {
+        if (!hasLocation(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
+        if (!hasLocation(location)) {
             BuildSettings settings = BuildSettingsHolder.getSettings();
             if (settings != null) {
                 location = settings.getBaseDir().getAbsolutePath();

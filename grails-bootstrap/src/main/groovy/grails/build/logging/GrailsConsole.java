@@ -32,7 +32,6 @@ import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
-import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -344,7 +343,7 @@ public class GrailsConsole {
     public void indicateProgress() {
         progressIndicatorActive = true;
         if (isAnsiEnabled()) {
-            if (StringUtils.hasText(lastMessage)) {
+            if (lastMessage != null && lastMessage.length() > 0) {
                 if (!lastMessage.contains(maxIndicatorString)) {
                     updateStatus(lastMessage + indicator);
                 }

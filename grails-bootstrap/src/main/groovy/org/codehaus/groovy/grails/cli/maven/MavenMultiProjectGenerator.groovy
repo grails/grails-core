@@ -17,10 +17,9 @@ package org.codehaus.groovy.grails.cli.maven
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.util.BuildSettings
-import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
-import org.springframework.core.io.FileSystemResource
 import grails.util.Metadata
+import org.codehaus.groovy.grails.io.support.FileSystemResource
 
 /**
  * Generates a Maven multi-module build structure for a Grails project and plugins

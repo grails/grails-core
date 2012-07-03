@@ -17,8 +17,7 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.PluginBuildSettings
 
 import groovy.util.slurpersupport.GPathResult
-
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Used mainly by the build system that encapsulates access to information

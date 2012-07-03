@@ -16,8 +16,8 @@
 
 package org.codehaus.groovy.grails.plugins.build.scopes
 
-import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Encapsulates information about plugins contained within a particular scope

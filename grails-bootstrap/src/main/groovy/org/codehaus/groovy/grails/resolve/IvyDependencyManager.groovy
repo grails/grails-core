@@ -17,24 +17,23 @@ package org.codehaus.groovy.grails.resolve
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
-
-import java.util.concurrent.ConcurrentLinkedQueue
-
 import org.apache.ivy.core.event.EventManager
-import org.apache.ivy.core.module.descriptor.*
-import org.apache.ivy.core.module.id.ArtifactId
+import org.apache.ivy.core.module.descriptor.Artifact
+import org.apache.ivy.core.module.descriptor.Configuration
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.report.*
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.repository.TransferListener
-import org.apache.ivy.plugins.resolver.ChainResolver
-import org.apache.ivy.util.Message
-import org.apache.ivy.util.MessageLogger
 import org.codehaus.groovy.grails.plugins.VersionComparator
+
+import java.util.concurrent.ConcurrentLinkedQueue
+
+import org.apache.ivy.core.report.*
 
 /**
  * Implementation that uses Apache Ivy under the hood.

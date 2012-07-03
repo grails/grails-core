@@ -90,7 +90,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
             String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
             String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
             String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);
-            Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
+            org.codehaus.groovy.grails.io.support.Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
             if (r != null) {
                 try {
                     return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;

@@ -16,7 +16,7 @@
 
 import grails.spring.WebBeanBuilder
 import org.codehaus.groovy.grails.support.CommandLineResourceLoader
-import org.codehaus.groovy.grails.cli.support.JndiBindingSupport
+import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication

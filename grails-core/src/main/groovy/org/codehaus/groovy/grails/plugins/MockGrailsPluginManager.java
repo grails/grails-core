@@ -27,12 +27,12 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import junit.framework.Assert;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * @author Graeme Rocher
@@ -83,7 +83,7 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void checkForChanges() {
-        Assert.assertTrue(this.checkForChangesExpected);
+        Assert.isTrue(this.checkForChangesExpected);
         this.checkForChangesExpected = false;
     }
 
@@ -122,12 +122,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void expectCheckForChanges() {
-        Assert.assertFalse(this.checkForChangesExpected);
+        Assert.state(!this.checkForChangesExpected);
         this.checkForChangesExpected = true;
     }
 
     public void verify() {
-        Assert.assertFalse(this.checkForChangesExpected);
+        Assert.state(!this.checkForChangesExpected);
     }
 
     public BuildSettings getBuildSettings() {

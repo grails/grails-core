@@ -28,11 +28,8 @@ import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorBuilder;
 import org.apache.ivy.plugins.parser.m2.PomReader;
 import org.apache.ivy.plugins.repository.Resource;
 import org.apache.ivy.util.Message;
-import org.springframework.util.ReflectionUtils;
-import org.w3c.dom.Element;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**

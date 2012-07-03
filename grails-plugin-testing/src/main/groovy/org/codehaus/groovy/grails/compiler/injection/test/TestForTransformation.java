@@ -143,7 +143,7 @@ public class TestForTransformation extends TestMixinTransformation {
                 if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
                 // no explicit class specified try by convention
                 String fileName = source.getName();
-                String className = GrailsResourceUtils.getClassName(new FileSystemResource(fileName));
+                String className = GrailsResourceUtils.getClassName(new org.codehaus.groovy.grails.io.support.FileSystemResource(fileName));
                 if (className != null) {
                     boolean isSpock = className.endsWith("Spec");
                     String targetClassName = null;

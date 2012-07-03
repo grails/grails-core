@@ -22,6 +22,8 @@ import grails.web.container.EmbeddableServer
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.springframework.util.ReflectionUtils
+import org.apache.tomcat.util.scan.StandardJarScanner
 /**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
@@ -74,6 +76,23 @@ abstract class TomcatServer implements EmbeddableServer {
         tomcatDir.deleteDir()
     }
 
+    protected boolean checkAndInitializingClasspathScanning() {
+        def scanConfig = getConfigParam("scan")
+        def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
+        def extraJarsToSkip = scanConfig.excludes
+        if (extraJarsToSkip instanceof List && shouldScan) {
+
+            try {
+                def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
+                ReflectionUtils.makeAccessible(jarsToSkipField)
+                Set jarsToSkip = jarsToSkipField.get(StandardJarScanner)
+                jarsToSkip.addAll(extraJarsToSkip)
+            } catch (e) {
+                // ignore
+            }
+        }
+        shouldScan
+    }
     /**
      * The host and port params will never be null, defaults will be passed if necessary.
      *

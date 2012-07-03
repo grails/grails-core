@@ -29,13 +29,13 @@ import org.apache.ivy.core.report.ResolveReport
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
-import org.springframework.core.io.FileSystemResource
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.plugins.resolver.ChainResolver
+import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.

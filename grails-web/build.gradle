@@ -22,6 +22,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compile 'opensymphony:sitemesh:2.4'
+    compile "junit:junit:${junitVersion}"
 
     compile "org.springframework:spring-webmvc:${springVersion}"
 

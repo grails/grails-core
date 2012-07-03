@@ -40,7 +40,7 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     private ArgumentCompletor bangCompletor = new ArgumentCompletor(
         new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
 
-    GrailsInteractiveCompletor(BuildSettings settings, List scriptResources) {
+    GrailsInteractiveCompletor(BuildSettings settings, List<File> scriptResources) {
         super(getScriptNames(scriptResources))
         this.settings = settings
     }
@@ -80,8 +80,8 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
         }
     }
 
-    static String[] getScriptNames(scriptResources) {
-        final scriptNames = scriptResources.collect { GrailsNameUtils.getScriptName(it.filename) }
+    static String[] getScriptNames(List<File> scriptResources) {
+        final scriptNames = scriptResources.collect {  File f -> GrailsNameUtils.getScriptName(f.name) }
         scriptNames.remove('create-app')
         scriptNames.remove('install-plugin')
         scriptNames.remove('uninstall-plugin')        

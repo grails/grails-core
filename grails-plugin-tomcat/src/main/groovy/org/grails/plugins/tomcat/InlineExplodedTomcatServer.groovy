@@ -42,22 +42,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         tomcat.basedir = tomcatDir
         context = tomcat.addWebapp(contextPath, basedir)
-        def scanConfig = getConfigParam("scan")
-        def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
-        def extraJarsToSkip = scanConfig.excludes
-        if(extraJarsToSkip instanceof List && shouldScan) {
-
-            try {
-                def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
-                ReflectionUtils.makeAccessible(jarsToSkipField)
-                Set jarsToSkip = jarsToSkipField.get(StandardJarScanner)
-                jarsToSkip.addAll(extraJarsToSkip)
-            } catch (e) {
-                // ignore
-            }
-        }
-
-        
+        boolean shouldScan = checkAndInitializingClasspathScanning()
 
         def jarScanner = new StandardJarScanner()
         jarScanner.setScanClassPath(shouldScan)
@@ -90,6 +75,8 @@ class InlineExplodedTomcatServer extends TomcatServer {
         loader.container = context
         context.loader = loader
     }
+
+
 
     void doStart(String host, int httpPort, int httpsPort) {
         preStart()
