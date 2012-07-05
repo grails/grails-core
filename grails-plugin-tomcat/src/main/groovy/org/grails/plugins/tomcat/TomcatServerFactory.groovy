@@ -16,56 +16,7 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
 
     @CompileStatic
     EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
-        TomcatExecutionContext ec = new TomcatExecutionContext()
-        List<File> buildDependencies = buildMinimalIsolatedClasspath()
-
-        ec.buildDependencies = buildDependencies
-
-
-
-        ec.runtimeDependencies = buildSettings.runtimeDependencies
-        ec.providedDependencies = buildSettings.providedDependencies
-        ec.contextPath = contextPath
-        ec.baseDir = buildSettings.baseDir
-        ec.env = Environment.current.name
-        ec.grailsHome = buildSettings.grailsHome
-        ec.classesDir = buildSettings.classesDir
-        ec.grailsWorkDir = buildSettings.grailsWorkDir
-        ec.projectWorkDir = buildSettings.projectWorkDir
-        ec.projectPluginsDir = buildSettings.projectPluginsDir
-        ec.testClassesDir = buildSettings.testClassesDir
-        ec.resourcesDir = buildSettings.resourcesDir
-
-        return new ForkedTomcatServer(ec)
-    }
-
-    @CompileStatic
-    private List<File> buildMinimalIsolatedClasspath() {
-        List<File> buildDependencies = []
-
-        buildDependencies.addAll(IsolatedWarTomcatServer.findTomcatJars(buildSettings))
-        buildDependencies.add findJarFile(GroovySystem)
-        buildDependencies.add findJarFile(Log)
-
-        buildDependencies.addAll buildSettings.buildDependencies.findAll { File f ->
-            final fileName = f.name
-            fileName.contains('grails-bootstrap') ||
-                    fileName.contains('jcl-over-slf4j') ||
-                    fileName.contains('slf4j-api') ||
-                    fileName.contains('ivy') ||
-                    fileName.contains('ant') ||
-                    fileName.contains('jline') ||
-                    fileName.contains('jansi')
-        }
-        buildDependencies
-    }
-
-    @CompileStatic
-    private File findJarFile(Class targetClass) {
-        def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
-        final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
-        final jarFile = new File(jarPath)
-        jarFile
+        return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
     }
 
     EmbeddableServer createForWAR(String warPath, String contextPath) {
