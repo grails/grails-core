@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import org.apache.tomcat.util.scan.StandardJarScanner
 import org.springframework.util.ReflectionUtils
+import org.apache.catalina.Loader
+import org.apache.catalina.Context
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -54,6 +56,14 @@ class InlineExplodedTomcatServer extends TomcatServer {
         context.reloadable = false
         context.setAltDDName(getWorkDirFile("resources/web.xml").absolutePath)
 
+        configureAliases(context)
+
+        def loader = createTomcatLoader(classLoader)
+        loader.container = context
+        context.loader = loader
+    }
+
+    protected void configureAliases(Context context) {
         def aliases = []
         def pluginManager = PluginManagerHolder.getPluginManager()
 
@@ -70,10 +80,10 @@ class InlineExplodedTomcatServer extends TomcatServer {
         if (aliases) {
             context.setAliases(aliases.join(','))
         }
+    }
 
-        def loader = new TomcatLoader(classLoader)
-        loader.container = context
-        context.loader = loader
+    protected Loader createTomcatLoader(ClassLoader classLoader) {
+        new TomcatLoader(classLoader)
     }
 
 

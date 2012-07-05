@@ -19,7 +19,7 @@ import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectWarCreator
 import grails.util.Metadata
 import grails.web.container.EmbeddableServerFactory
-import grails.util.GrailsUtil
+
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.build.logging.GrailsConsole
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
@@ -28,8 +28,8 @@ import grails.web.container.EmbeddableServer
 import java.awt.event.ActionListener
 import java.awt.event.ActionEvent
 import org.codehaus.groovy.grails.cli.ScriptExitException
-import grails.util.BuildSettings
-import groovy.transform.TypeCheckingMode
+
+import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 
 /**
  * Responsible for running the container embedded within the current JVM
@@ -117,7 +117,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
         def containerClass = getPropertyValue("grails.server.factory", defaultServer)
         EmbeddableServerFactory serverFactory = null
         try {
-            serverFactory = (EmbeddableServerFactory)load(containerClass.toString())
+            serverFactory = createServerFactory(load, containerClass, serverFactory)
         }
         catch (ClassNotFoundException cnfe) {
             if (containerClass == defaultServer) {
@@ -130,6 +130,14 @@ class GrailsProjectRunner extends BaseSettingsApi{
             exit(1)
         }
         return serverFactory
+    }
+
+    private EmbeddableServerFactory createServerFactory(Closure<Object> load, containerClass, EmbeddableServerFactory serverFactory) {
+        serverFactory = (EmbeddableServerFactory) load(containerClass.toString())
+        if (serverFactory instanceof BuildSettingsAware) {
+            ((BuildSettingsAware) serverFactory).buildSettings = buildSettings
+        }
+        serverFactory
     }
 
     @CompileStatic

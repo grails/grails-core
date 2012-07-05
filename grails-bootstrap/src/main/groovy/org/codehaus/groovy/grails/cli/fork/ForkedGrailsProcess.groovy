@@ -60,6 +60,8 @@ abstract class ForkedGrailsProcess {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
         cmd << getClass().name
+
+//        println "Forking Grails ${cmd.join(' ')}"
         processBuilder
                 .directory(executionContext.getBaseDir())
                 .redirectErrorStream(false)
@@ -91,13 +93,13 @@ abstract class ForkedGrailsProcess {
 
     ExecutionContext readExecutionContext() {
         String location = System.getProperty("grails.build.execution.context");
+
         if(location != null) {
             final file = new File(location)
             if(file.exists()) {
-                file.withInputStream { InputStream fis ->
+                return (ExecutionContext)file.withInputStream { InputStream fis ->
                     def ois = new ObjectInputStream(fis)
-                    ExecutionContext ec = (ExecutionContext) ois.readObject()
-                    return ec
+                    return (ExecutionContext)ois.readObject()
                 }
             }
         }

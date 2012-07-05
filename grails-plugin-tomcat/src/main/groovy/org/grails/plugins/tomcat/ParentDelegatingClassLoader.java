@@ -15,10 +15,11 @@
  */
 package org.grails.plugins.tomcat;
 
-import org.springframework.util.ReflectionUtils;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * A class loader that searches the parent
@@ -32,10 +33,24 @@ public class ParentDelegatingClassLoader extends ClassLoader{
 
     protected ParentDelegatingClassLoader(ClassLoader parent) {
         super(parent);
-        findClassMethod = ReflectionUtils.findMethod(ClassLoader.class, "findClass", String.class);
-        ReflectionUtils.makeAccessible(findClassMethod);
+        findClassMethod = findMethod(ClassLoader.class,"findClass", String.class);
+        findClassMethod.setAccessible(true);
     }
 
+    private Method findMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
+        Class<?> searchType = clazz;
+        while (searchType != null) {
+            Method[] methods = (searchType.isInterface() ? searchType.getMethods() : searchType.getDeclaredMethods());
+            for (Method method : methods) {
+                if (name.equals(method.getName())
+                        && (paramTypes == null || Arrays.equals(paramTypes, method.getParameterTypes()))) {
+                    return method;
+                }
+            }
+            searchType = searchType.getSuperclass();
+        }
+        return null;
+    }
     @Override
     protected Class<?> findClass(String className) throws ClassNotFoundException {
         try {

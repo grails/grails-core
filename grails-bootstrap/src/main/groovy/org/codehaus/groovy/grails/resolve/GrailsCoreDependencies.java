@@ -131,13 +131,8 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-docs", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-bootstrap", grailsVersion),
                             ModuleRevisionId.newInstance("org.grails", "grails-scripts", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-core", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-resources", grailsVersion),
-                            ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-test", springVersion),
-                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
-                            ModuleRevisionId.newInstance("junit", "junit", junitVersion),
+                            ModuleRevisionId.newInstance("org.slf4j", "jcl-over-slf4j", slf4jVersion),
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);
 

@@ -15,16 +15,16 @@
  */
 package org.grails.plugins.tomcat.fork
 
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
-import org.codehaus.groovy.grails.cli.fork.ExecutionContext
-import grails.web.container.EmbeddableServer
-import org.apache.catalina.startup.Tomcat
-import org.grails.plugins.tomcat.TomcatServer
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-import org.apache.tomcat.util.scan.StandardJarScanner
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import grails.web.container.EmbeddableServer
+import org.codehaus.groovy.grails.cli.fork.ExecutionContext
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+import org.grails.plugins.tomcat.InlineExplodedTomcatServer
+import org.grails.plugins.tomcat.IsolatedTomcat
+import org.apache.catalina.Context
 import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * An implementation of the Tomcat server that runs in forked mode
@@ -36,7 +36,18 @@ import org.codehaus.groovy.grails.io.support.Resource
 class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer{
 
     @Delegate TomcatRunner tomcatRunner
+    TomcatExecutionContext executionContext
 
+    ForkedTomcatServer(TomcatExecutionContext executionContext) {
+        this.executionContext = executionContext
+    }
+
+    private ForkedTomcatServer() {
+        executionContext = (TomcatExecutionContext)readExecutionContext()
+        if(executionContext == null) {
+            throw new IllegalStateException("Forked server created without first creating execution context and calling fork()")
+        }
+    }
 
     static void main(String[] args) {
         new ForkedTomcatServer().run()
@@ -44,59 +55,88 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     }
 
     def run() {
-        TomcatExecutionContext ec = (TomcatExecutionContext)readExecutionContext()
+        TomcatExecutionContext ec = executionContext
         def buildSettings = new BuildSettings(ec.grailsHome, ec.baseDir)
         buildSettings.loadConfig()
 
         BuildSettingsHolder.settings = buildSettings
 
-        tomcatRunner = new TomcatRunner()
+        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURL() }
+        urls.add(buildSettings.classesDir.toURL())
+        urls.add(buildSettings.pluginClassesDir.toURL())
+        urls.add(buildSettings.pluginProvidedClassesDir.toURL())
+        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+
+        tomcatRunner = new TomcatRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
+        tomcatRunner.start(ec.host, ec.port)
+
+        IsolatedTomcat.startKillSwitch(tomcatRunner.tomcat, ec.port)
 
     }
 
-
+    void start(String host, int port) {
+        executionContext.host = host
+        executionContext.port = port
+        fork()
+    }
 
 
     @Override
     ExecutionContext createExecutionContext() {
-        return null  //To change body of implemented methods use File | Settings | File Templates.
+        return executionContext
     }
 
+    void stop() {
+        try {
+            new URL("http://${executionContext?.host}:${executionContext?.port  + 1}").text
+        } catch(e) {
+            // ignore
+        }
+    }
 
-    class TomcatRunner extends TomcatServer {
+    class TomcatRunner extends InlineExplodedTomcatServer {
 
-        def context
+        private String currentHost
+        private int currentPort
+        TomcatRunner(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
+            super(basedir, webXml, contextPath, classLoader)
+        }
+
+
+
         @Override
-        protected void doStart(String host, int httpPort, int httpsPort) {
-            final Tomcat tomcat = new Tomcat()
-            tomcat.basedir = tomcatDir
-            context = tomcat.addWebapp(contextPath, basedir)
-
-            boolean shouldScan = checkAndInitializingClasspathScanning()
-
-            def jarScanner = new StandardJarScanner()
-            jarScanner.setScanClassPath(shouldScan)
-            context.setJarScanner(jarScanner)
-
-            tomcat.enableNaming()
-
-            context.reloadable = false
-            context.setAltDDName(getWorkDirFile("resources/web.xml").absolutePath)
+        protected void configureAliases(Context context) {
             def aliases = []
             final directories = GrailsPluginUtils.getPluginDirectories()
             for (Resource dir in directories) {
-
+                def webappDir = new File("${dir.file.absolutePath}/web-app")
+                if(webappDir.exists()) {
+                    aliases << "/plugins/${dir.file.name}=${webappDir.absolutePath}"
+                }
             }
+            if (aliases) {
+                context.setAliases(aliases.join(','))
+            }
+        }
 
+        @Override
+        void start(String host, int port) {
+            currentHost = host
+            currentPort = port
+            super.start(host, port)
         }
 
         @Override
         void stop() {
-            //To change body of implemented methods use File | Settings | File Templates.
+            try {
+                new URL("http://${currentHost}:${currentPort+ 1}").text
+            } catch(e) {
+                // ignore
+            }
         }
     }
 }
-class TomcatExecutionContext extends ExecutionContext {
+class TomcatExecutionContext extends ExecutionContext implements Serializable{
     String contextPath
     String host
     int port
