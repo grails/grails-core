@@ -95,7 +95,7 @@ task pluginsFromRepo {
         resources: "1.1.6",
         webxml: "1.4.1",
         jquery: "1.7.2",
-        database-migration: "1.1",
+        'database-migration': "1.1",
         cache: "1.0.0"
     ]
 
