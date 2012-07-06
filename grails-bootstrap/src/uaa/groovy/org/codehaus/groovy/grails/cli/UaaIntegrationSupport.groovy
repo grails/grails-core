@@ -1,5 +1,4 @@
-package org.codehaus.groovy.grails.cli.support
-
+package org.codehaus.groovy.grails.cli
 /**
  *  Groovy XML support class for UaaIntegration.
  */
