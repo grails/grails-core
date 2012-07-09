@@ -66,7 +66,7 @@
         <dependency>
             <groupId>org.grails.plugins</groupId>
             <artifactId>jquery</artifactId>
-            <version>1.7.1</version>
+            <version>1.7.2</version>
             <type>zip</type>
             <scope>runtime</scope>
         </dependency>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>org.grails.plugins</groupId>
             <artifactId>cache</artifactId>
-            <version>1.0.0.RC1</version>
+            <version>1.0.0</version>
             <type>zip</type>
             <scope>compile</scope>
         </dependency>
