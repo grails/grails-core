@@ -11,7 +11,7 @@ Getting Started
 
 You need a Java Development Kit (JDK) installed, but it is not necessary to install Groovy because it's bundled with the Grails distribution.
 
-To install Grails, visit http://grails.org/Download and download the version you would like to use. Set a GRAILS_HOME environment variable to point to the root of the extracted download and add GRAILS_HOME/bin to your executable PATH. Then in a shell, type the following:
+To install Grails, visit http://grails.org/Download and download the version you would like to use. Set a `GRAILS_HOME` environment variable to point to the root of the extracted download and add `GRAILS_HOME/bin` to your executable `PATH`. Then in a shell, type the following:
 	
 	grails create-app sampleapp
 	cd sampleapp
