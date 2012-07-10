@@ -20,9 +20,9 @@ import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
 import grails.util.BuildSettings
+import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.io.support.FileSystemResource
 
 /**
  * Packages a plugin in source or binary form.
