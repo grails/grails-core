@@ -289,7 +289,7 @@ public class BaseSettingsApi {
         if(pluginResource != null) {
 
             File pluginDir = pluginResource.getFile();
-            return new XmlSlurper().parse(new File("${pluginDir}/plugin.xml"));
+            return new XmlSlurper().parse(new File(pluginDir, "plugin.xml"));
         }
         return null;
     }
