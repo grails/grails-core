@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.io.support;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,13 +19,6 @@ import java.net.URL;
  * @see #getURL()
  * @see #getURI()
  * @see #getFile()
- * @see org.springframework.core.io.WritableResource
- * @see org.springframework.core.io.ContextResource
- * @see org.springframework.core.io.FileSystemResource
- * @see org.springframework.core.io.ClassPathResource
- * @see org.springframework.core.io.UrlResource
- * @see org.springframework.core.io.ByteArrayResource
- * @see org.springframework.core.io.InputStreamResource
  */
 public interface Resource  {
 
@@ -54,7 +46,6 @@ public interface Resource  {
      * @see #getInputStream()
      */
     boolean isReadable();
-
 
     /**
      * Return a URL handle for this resource.
