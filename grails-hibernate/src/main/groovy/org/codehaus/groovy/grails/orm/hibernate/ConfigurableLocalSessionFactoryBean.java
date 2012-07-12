@@ -14,29 +14,18 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
-import grails.orm.GormMappingPostProcessor;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 
 import javax.naming.NameNotFoundException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
@@ -76,7 +65,6 @@ import org.hibernate.event.PreUpdateEventListener;
 import org.hibernate.event.RefreshEventListener;
 import org.hibernate.event.ReplicateEventListener;
 import org.hibernate.event.SaveOrUpdateEventListener;
-import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -104,7 +92,6 @@ public class ConfigurableLocalSessionFactoryBean extends
     protected boolean proxyIfReloadEnabled = true;
     protected String sessionFactoryBeanName = "sessionFactory";
     protected String dataSourceName = GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
-    private List<Throwable> databaseSchemaExceptions = new ArrayList<Throwable>();
 
     /**
      * @param proxyIfReloadEnabled Sets whether a proxy should be created if reload is enabled
@@ -194,8 +181,6 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     @Override
     protected SessionFactory newSessionFactory(Configuration configuration) throws HibernateException {
-        configurePostProcessors(configuration);
-
         try {
 
             SessionFactory sf = super.newSessionFactory(configuration);
@@ -226,27 +211,6 @@ public class ConfigurableLocalSessionFactoryBean extends
                 }
             }
             throw e;
-        }
-    }
-
-    protected void configurePostProcessors(Configuration configuration) {
-        Collection<GormMappingPostProcessor> postProcessors = applicationContext.getBeansOfType(GormMappingPostProcessor.class).values();
-        GrailsClass[] domainClasses = grailsApplication.getArtefacts(
-                DomainClassArtefactHandler.TYPE);
-
-        List<GormMappingPostProcessor> sorted = new ArrayList<GormMappingPostProcessor>(postProcessors);
-        Collections.sort(sorted, new Comparator<GormMappingPostProcessor>() {
-            public int compare(GormMappingPostProcessor p1, GormMappingPostProcessor p2) {
-// TODO test
-                return Integer.valueOf(p1.getOrder()).compareTo(p2.getOrder());
-            }
-        });
-
-        for (GrailsClass domainClass : domainClasses) {
-            PersistentClass pc = configuration.getClassMapping(domainClass.getFullName());
-            for (GormMappingPostProcessor postProcessor : postProcessors) {
-                postProcessor.process(pc, (GrailsDomainClass)domainClass);
-            }
         }
     }
 
@@ -399,25 +363,5 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     public void setDataSourceName(String name) {
         dataSourceName = name;
-    }
-
-    @Override
-    protected void executeSchemaStatement(Statement stmt, String sql) throws SQLException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Executing schema statement: " + sql);
-        }
-        try {
-            stmt.executeUpdate(sql);
-        }
-        catch (SQLException ex) {
-            databaseSchemaExceptions.add(ex);
-            if (logger.isWarnEnabled()) {
-                logger.warn("Unsuccessful schema statement: " + sql, ex);
-            }
-        }
-    }
-
-    public List<Throwable> getDatabaseSchemaExceptions() {
-        return databaseSchemaExceptions;
     }
 }
