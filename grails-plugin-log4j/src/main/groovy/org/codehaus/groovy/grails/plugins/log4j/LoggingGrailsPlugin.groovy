@@ -28,7 +28,7 @@ import grails.util.Metadata
  */
 class LoggingGrailsPlugin {
 
-    def version = Metadata.current.getGrailsVersion()
+    def version = Metadata.current.getGrailsVersion() ?: "1.0"
     def loadBefore = ['core']
     def observe = ['*']
 
