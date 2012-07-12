@@ -40,7 +40,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
+import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
@@ -642,11 +642,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             if (lineNumber>0 && lineNumber < lineMappings.length) {
                 lineNumber = lineMappings[lineNumber-1];
             }
-            String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
+            String relativePageName = DefaultErrorsPrinter.makeRelativeIfPossible(pageName);
             throw new GroovyPagesException("Could not parse script [" + relativePageName + "]: " + e.getMessage(),e, lineNumber, pageName);
         }
         catch (IOException e) {
-            String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
+            String relativePageName = DefaultErrorsPrinter.makeRelativeIfPossible(pageName);
             throw new GroovyPagesException("IO exception parsing script ["+ relativePageName + "]: " + e.getMessage(), e);
         }
         GroovyPagesMetaUtils.registerMethodMissingForGSP(scriptClass, tagLibraryLookup);

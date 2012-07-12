@@ -2,12 +2,10 @@ package org.codehaus.groovy.grails.project.plugins
 
 import groovy.transform.CompileStatic
 import grails.util.BuildSettings
-import grails.util.PluginBuildSettings
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.util.Holders
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.ProfilingGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -15,6 +13,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import grails.build.logging.GrailsConsole
 import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 
 /**
  *
@@ -30,12 +29,13 @@ class GrailsProjectPluginLoader extends BaseSettingsApi{
     GrailsApplication grailsApplication
     ClassLoader classLoader
 
-    GrailsProjectPluginLoader(GrailsApplication grailsApplication, ClassLoader classLoader, BuildSettings buildSettings, boolean interactive) {
-        super(buildSettings, interactive)
+    GrailsProjectPluginLoader(GrailsApplication grailsApplication, ClassLoader classLoader, BuildSettings buildSettings, GrailsBuildEventListener buildEventListener) {
+        super(buildSettings, buildEventListener,false)
         this.grailsApplication = grailsApplication
         this.classLoader = classLoader
     }
 
+    @CompileStatic
     GrailsPluginManager loadPlugins() {
         if (Holders.pluginManager) {
             // Add the plugin manager to the binding so that it can be accessed from any target.
@@ -57,23 +57,24 @@ class GrailsProjectPluginLoader extends BaseSettingsApi{
 
                 profile("creating plugin manager with classes ${pluginClasses}") {
                     if (grailsApplication == null) {
-                        grailsApplication = new DefaultGrailsApplication(new Class[0], new GroovyClassLoader(classLoader))
+                        grailsApplication = new DefaultGrailsApplication()
                         Holders.grailsApplication = grailsApplication
                     }
 
-                    if (enableProfile) {
-                        pluginManager = new ProfilingGrailsPluginManager(pluginClasses as Class[], grailsApplication)
-                    }
-                    else {
+//                    if (isEnableProfile()) {
+//                        pluginManager = new ProfilingGrailsPluginManager(pluginClasses as Class[], grailsApplication)
+//                    }
+//                    else {
                         pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], grailsApplication)
-                    }
+//                    }
 
                     pluginSettings.pluginManager = pluginManager
                 }
             }
 
             profile("loading plugins") {
-                buildEventListener.triggerEvent("PluginLoadStart", pluginManager)
+                if(buildEventListener != null)
+                    buildEventListener.triggerEvent("PluginLoadStart", pluginManager)
                 pluginManager.loadPlugins()
                 Holders.setPluginManager(pluginManager)
                 def baseDescriptor = pluginSettings.basePluginDescriptor
@@ -86,7 +87,8 @@ class GrailsProjectPluginLoader extends BaseSettingsApi{
                 }
                 if (pluginManager.failedLoadPlugins) {
                     List<String> pluginNames = pluginManager.failedLoadPlugins.collect { GrailsPlugin plugin -> plugin.getName() }
-                    buildEventListener.triggerEvent("StatusError", "Error: The following plugins failed to load due to missing dependencies: ${pluginNames}")
+                    if(buildEventListener != null)
+                        buildEventListener.triggerEvent("StatusError", "Error: The following plugins failed to load due to missing dependencies: ${pluginNames}")
                     for (GrailsPlugin p in pluginManager.failedLoadPlugins) {
                         println "- Plugin: ${p.getName()}"
                         println "   - Dependencies:"
@@ -103,9 +105,11 @@ class GrailsProjectPluginLoader extends BaseSettingsApi{
                 pluginManager.doArtefactConfiguration()
                 grailsApplication.initialise()
 
-                buildEventListener.triggerEvent("PluginLoadEnd", [pluginManager])
-                return pluginManager
+                if(buildEventListener != null)
+                    buildEventListener.triggerEvent("PluginLoadEnd", [pluginManager])
+
             }
+            return pluginManager
         }
         catch (Exception e) {
             grailsConsole.error "Error loading plugin manager: " + e.message , e

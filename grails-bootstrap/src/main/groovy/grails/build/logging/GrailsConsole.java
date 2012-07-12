@@ -69,7 +69,7 @@ public class GrailsConsole {
     /**
      * Whether to enable verbose mode
      */
-    private boolean verbose;
+    private boolean verbose = Boolean.getBoolean("grails.verbose");;
 
     /**
      * Whether to show stack traces
@@ -294,6 +294,14 @@ public class GrailsConsole {
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     *
+     * @return Whether to show stack traces
+     */
+    public boolean isStacktrace() {
+        return stacktrace;
     }
 
     /**

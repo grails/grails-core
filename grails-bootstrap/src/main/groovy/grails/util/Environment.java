@@ -177,6 +177,14 @@ public enum Environment {
     }
 
     /**
+     * Whether this is a fork of the Grails command line environment
+     * @return True if it is a fork
+     */
+    public static boolean isFork() {
+        return Boolean.getBoolean("grails.fork.active");
+    }
+
+    /**
      * Returns whether the environment is running within the Grails shell (executed via the 'grails' command line in a terminal window)
      * @return True if is
      */

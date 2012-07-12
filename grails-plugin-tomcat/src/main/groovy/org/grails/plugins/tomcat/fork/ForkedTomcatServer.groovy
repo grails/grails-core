@@ -25,6 +25,9 @@ import org.grails.plugins.tomcat.IsolatedTomcat
 import org.apache.catalina.Context
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import java.lang.reflect.Method
+import grails.build.logging.GrailsConsole
+import groovy.transform.CompileStatic
 
 /**
  * An implementation of the Tomcat server that runs in forked mode
@@ -64,20 +67,53 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURL() }
         urls.add(buildSettings.classesDir.toURL())
         urls.add(buildSettings.pluginClassesDir.toURL())
+        urls.add(buildSettings.pluginBuildClassesDir.toURL())
         urls.add(buildSettings.pluginProvidedClassesDir.toURL())
+
         URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+
+        initializeLogging(ec.grailsHome,classLoader)
 
         tomcatRunner = new TomcatRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
         tomcatRunner.start(ec.host, ec.port)
 
-        IsolatedTomcat.startKillSwitch(tomcatRunner.tomcat, ec.port)
-
     }
 
+    protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
+        try {
+            Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator");
+            Method configure = cls.getMethod("configure", URL.class);
+            configure.setAccessible(true);
+            File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties");
+            configure.invoke(cls, f.toURI().toURL());
+        } catch (Throwable e) {
+            println("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
+        }
+    }
+
+    @CompileStatic
     void start(String host, int port) {
-        executionContext.host = host
-        executionContext.port = port
-        fork()
+        final ec = executionContext
+        ec.host = host
+        ec.port = port
+        def t = new Thread( {
+            fork()
+        } )
+
+        t.start()
+        while(!isAvailable(host, port)) {
+            sleep 100
+        }
+    }
+
+    @CompileStatic
+    boolean isAvailable(String host, int port) {
+        try {
+            new Socket(host, port)
+            return true
+        } catch (e) {
+            return false
+        }
     }
 
 

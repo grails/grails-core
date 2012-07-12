@@ -34,7 +34,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     final Tomcat tomcat = new Tomcat()
 
-    def context
+    Context context
 
     InlineExplodedTomcatServer(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
 
@@ -42,7 +42,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
             contextPath = ''
         }
 
-        tomcat.basedir = tomcatDir
+        tomcat.setBaseDir( tomcatDir.absolutePath )
         context = tomcat.addWebapp(contextPath, basedir)
         boolean shouldScan = checkAndInitializingClasspathScanning()
 

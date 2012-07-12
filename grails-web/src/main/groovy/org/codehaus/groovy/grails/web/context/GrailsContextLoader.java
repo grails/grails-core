@@ -113,6 +113,7 @@ public class GrailsContextLoader extends ContextLoader {
                 }
             }
 
+            LOG.error("Error initializing Grails: " + e.getMessage(), e);
             if (e instanceof BeansException) throw (BeansException)e;
 
             throw new BootstrapException("Error executing bootstraps", e);

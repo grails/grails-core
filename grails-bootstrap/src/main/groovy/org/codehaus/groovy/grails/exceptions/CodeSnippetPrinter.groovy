@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2012 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,13 @@
 package org.codehaus.groovy.grails.exceptions
 
 /**
- * Defines method for pretty printing Stack traces.
+ *
+ * Interfaces for classes to implement that print code snippets
  *
  * @author Graeme Rocher
- * @since 2.0
+ * @since 2.2
  */
-interface StackTracePrinter {
-
-    /**
-     * Pretty print the given stack trace and return the result
-     *
-     * @param throwable The throwable
-     * @return The result
-     */
-    String prettyPrint(Throwable throwable)
+public interface CodeSnippetPrinter {
 
     /**
      * Attempts to present a preview code snippet of the code that went wrong
@@ -38,5 +31,4 @@ interface StackTracePrinter {
      * @return The code snippet or nothing if it can't be previewed
      */
     String prettyPrintCodeSnippet(Throwable exception)
-
 }

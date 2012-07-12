@@ -26,11 +26,11 @@ import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
-import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.StackTracePrinter;
+import org.codehaus.groovy.grails.exceptions.*;
+import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * A Log4j appender that appends to the GrailsConsole instance.
@@ -46,7 +46,7 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     private StackTracePrinter stackTracePrinter;
     private StackTraceFilterer stackTraceFilterer;
 
-    GrailsConsoleAppender(ConfigObject config) {
+    public GrailsConsoleAppender(ConfigObject config) {
         createStackTracePrinter(config);
         createStackTraceFilterer(config);
     }
@@ -111,22 +111,39 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
 
     protected void createStackTracePrinter(ConfigObject config) {
        try {
-           stackTracePrinter = (StackTracePrinter)GrailsClassUtils.instantiateFromConfig(
+           stackTracePrinter = (StackTracePrinter) GrailsResourceUtils.instantiateFromConfig(
                    config, "grails.logging.stackTracePrinterClass", DefaultStackTracePrinter.class.getName());
        }
        catch (Throwable t) {
-           LogLog.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
-           stackTracePrinter = new DefaultStackTracePrinter();
+           LogLog.warn("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
+           try {
+               stackTracePrinter = new DefaultStackTracePrinter();
+           } catch (Throwable t1) {
+               stackTracePrinter = new StackTracePrinter() {
+                  /**
+                    * Pretty print the given stack trace and return the result
+                    *
+                    * @param throwable The throwable
+                    * @return The result
+                   */
+                   public String prettyPrint(Throwable throwable) {
+                       StringWriter sw = new StringWriter();
+                       PrintWriter pw = new PrintWriter(sw);
+                       throwable.printStackTrace(pw);
+                       return sw.toString();
+                   }
+               };
+           }
        }
     }
 
     protected void createStackTraceFilterer(ConfigObject config) {
         try {
-            stackTraceFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromConfig(
+            stackTraceFilterer = (StackTraceFilterer)GrailsResourceUtils.instantiateFromConfig(
                     config, "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
         }
         catch (Throwable t) {
-            LogLog.error("Problem instantiating StackTracePrinter class, using default: " + t.getMessage());
+            LogLog.error("Problem instantiating StackTraceFilter class, using default: " + t.getMessage());
             stackTraceFilterer = new DefaultStackTraceFilterer();
         }
     }

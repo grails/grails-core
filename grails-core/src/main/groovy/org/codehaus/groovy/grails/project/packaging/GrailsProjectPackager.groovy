@@ -123,6 +123,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
     }
 
 
+    @CompileStatic
     AntBuilder getAnt() {
        if (this.ant == null) {
            this.ant = new GrailsConsoleAntBuilder()
@@ -484,6 +485,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         futures.each {  Future it -> it.get() }
     }
 
+    @CompileStatic
     void packageTlds() {
         // We don't know until runtime what servlet version to use, so
         // install the relevant TLDs now.

@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import groovy.util.ConfigObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -823,5 +824,25 @@ public class GrailsResourceUtils {
             }
         }
         return builder.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Object instantiateFromConfig(ConfigObject config, String configKey, String defaultClassName)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
+        return instantiateFromFlatConfig(config.flatten(), configKey, defaultClassName);
+    }
+
+    public static Object instantiateFromFlatConfig(Map<String, Object> flatConfig, String configKey, String defaultClassName)
+            throws InstantiationException, IllegalAccessException, ClassNotFoundException, LinkageError {
+        String className = defaultClassName;
+        Object configName = flatConfig.get(configKey);
+        if (configName instanceof CharSequence) {
+            className = configName.toString();
+        }
+        return forName(className, DefaultResourceLoader.getDefaultClassLoader()).newInstance();
+    }
+
+    private static Class forName(String className, ClassLoader defaultClassLoader) throws ClassNotFoundException {
+        return defaultClassLoader.loadClass(className);
     }
 }

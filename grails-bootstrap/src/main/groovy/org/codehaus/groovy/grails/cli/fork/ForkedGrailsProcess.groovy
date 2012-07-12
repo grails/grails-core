@@ -16,6 +16,10 @@
 package org.codehaus.groovy.grails.cli.fork
 
 import groovy.transform.CompileStatic
+import grails.build.logging.GrailsConsole
+import org.apache.commons.logging.Log
+import gant.Gant
+import grails.util.BuildSettings
 
 /**
  *
@@ -28,9 +32,9 @@ import groovy.transform.CompileStatic
 abstract class ForkedGrailsProcess {
 
     int maxMemory = 1024;
-    int minMemory = 512;
+    int minMemory = 64;
     int maxPerm = 256;
-    boolean debug;
+    boolean debug = false;
     File reloadingAgent;
 
     void fork() {
@@ -52,16 +56,23 @@ abstract class ForkedGrailsProcess {
             oos.writeObject(executionContext)
         }
 
-        List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", cp.toString()]
+        List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(),"-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", cp.toString()]
         if(debug) {
             cmd.addAll( ["-Xdebug","-Xnoagent","-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"] )
+        }
+        final console = GrailsConsole.getInstance()
+        if(console.isVerbose()) {
+            cmd.add("-Dgrails.verbose=true")
+            cmd.add("-Dgrails.full.stacktrace=true")
+        }
+        if(console.isStacktrace()) {
+            cmd.add("-Dgrails.show.stacktrace=true")
         }
         if(reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
         cmd << getClass().name
 
-//        println "Forking Grails ${cmd.join(' ')}"
         processBuilder
                 .directory(executionContext.getBaseDir())
                 .redirectErrorStream(false)
@@ -106,6 +117,45 @@ abstract class ForkedGrailsProcess {
         return null
     }
 
+    @CompileStatic
+    public static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
+        List<File> buildDependencies = []
+
+
+        buildDependencies.add findJarFile(GroovySystem)
+        buildDependencies.add findJarFile(Log)
+        buildDependencies.add findJarFile(Gant)
+
+        List<File> bootstrapJars = []
+        for(File f in buildSettings.runtimeDependencies) {
+            final fileName = f.name
+            if( fileName.contains('log4j') ) {
+                bootstrapJars.add(f)
+            }
+        }
+        for(File f in buildSettings.buildDependencies) {
+            final fileName = f.name
+            if( fileName.contains('grails-bootstrap') ||
+                    fileName.contains('slf4j-api') ||
+                    fileName.contains('ivy') ||
+                    fileName.contains('ant') ||
+                    fileName.contains('jline') ||
+                    fileName.contains('jansi') ) {
+                bootstrapJars.add(f)
+            }
+        }
+
+        buildDependencies.addAll  bootstrapJars
+        buildDependencies
+    }
+
+    @CompileStatic
+    private static File findJarFile(Class targetClass) {
+        def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
+        final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
+        final jarFile = new File(jarPath)
+        jarFile
+    }
 
     static class TextDumper implements Runnable {
         InputStream input
@@ -120,10 +170,8 @@ abstract class ForkedGrailsProcess {
             def isr = new InputStreamReader(input)
             def br = new BufferedReader(isr)
             br.eachLine { String next ->
-                if (app != null) {
-                    app.append(next).append( '\n' )
-                }
-
+                if(next)
+                    app.append(next)
             }
         }
     }
