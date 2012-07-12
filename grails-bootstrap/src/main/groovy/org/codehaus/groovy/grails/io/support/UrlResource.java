@@ -3,10 +3,14 @@ package org.codehaus.groovy.grails.io.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
 
 /**
- * {@link org.springframework.core.io.Resource} implementation for <code>java.net.URL</code> locators.
+ * Resource implementation for <code>java.net.URL</code> locators.
  * Obviously supports resolution as URL, and also as File in case of
  * the "file:" protocol.
  *
@@ -69,7 +73,6 @@ public class UrlResource extends AbstractFileResolvingResource {
      * @param originalUrl the original URL
      * @param originalPath the original URL path
      * @return the cleaned URL
-     * @see org.springframework.util.StringUtils#cleanPath
      */
     private URL getCleanedUrl(URL originalUrl, String originalPath) {
         try {
@@ -131,7 +134,6 @@ public class UrlResource extends AbstractFileResolvingResource {
     /**
      * This implementation returns a File reference for the underlying URL/URI,
      * provided that it refers to a file in the file system.
-     * @see org.springframework.util.ResourceUtils#getFile(java.net.URL, String)
      */
     @Override
     public File getFile() throws IOException {

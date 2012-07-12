@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.io.support;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +10,7 @@ import java.net.URLConnection;
 
 /**
  * Abstract base class for resources which resolve URLs into File references,
- * such as {@link org.springframework.core.io.UrlResource} or {@link org.springframework.core.io.ClassPathResource}.
+ * such as <code>org.springframework.core.io.UrlResource</code> or <code>org.springframework.core.io.ClassPathResource</code>.
  *
  * <p>Detects the "file" protocol as well as the JBoss "vfs" protocol in URLs,
  * resolving file system references accordingly.
@@ -24,7 +23,6 @@ public abstract class AbstractFileResolvingResource implements Resource {
     /**
      * This implementation returns a File reference for the underlying class path
      * resource, provided that it refers to a file in the file system.
-     * @see org.springframework.util.ResourceUtils#getFile(java.net.URL, String)
      */
     public File getFile() throws IOException {
         URL url = getURL();
@@ -47,7 +45,6 @@ public abstract class AbstractFileResolvingResource implements Resource {
     /**
      * This implementation returns a File reference for the underlying class path
      * resource, provided that it refers to a file in the file system.
-     * @see org.springframework.util.ResourceUtils#getFile(java.net.URI, String)
      */
     protected File getFile(URI uri) throws IOException {
         return GrailsResourceUtils.getFile(uri, getDescription());

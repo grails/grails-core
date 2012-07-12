@@ -8,7 +8,7 @@ import java.net.URL;
 import java.util.Arrays;
 
 /**
- * {@link org.springframework.core.io.Resource} implementation for class path resources.
+ * Resource implementation for class path resources.
  * Uses either a given ClassLoader or a given Class for loading resources.
  *
  * <p>Supports resolution as <code>java.io.File</code> if the class path
@@ -37,7 +37,6 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      * loading the resource.
      * @param path the absolute path within the class path
      * @see java.lang.ClassLoader#getResourceAsStream(String)
-     * @see org.springframework.util.ClassUtils#getDefaultClassLoader()
      */
     public ClassPathResource(String path) {
         this(path, (ClassLoader) null);
@@ -166,7 +165,6 @@ public class ClassPathResource extends AbstractFileResolvingResource {
     /**
      * This implementation creates a ClassPathResource, applying the given path
      * relative to the path of the underlying resource of this descriptor.
-     * @see org.springframework.util.StringUtils#applyRelativePath(String, String)
      */
     public Resource createRelative(String relativePath) {
         String pathToUse = GrailsResourceUtils.applyRelativePath(path, relativePath);
@@ -176,7 +174,6 @@ public class ClassPathResource extends AbstractFileResolvingResource {
     /**
      * This implementation returns the name of the file that this class path
      * resource refers to.
-     * @see org.springframework.util.StringUtils#getFilename(String)
      */
     public String getFilename() {
         return GrailsResourceUtils.getFilename(path);

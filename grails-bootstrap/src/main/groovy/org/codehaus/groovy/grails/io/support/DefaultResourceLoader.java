@@ -4,19 +4,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Default implementation of the {@link org.springframework.core.io.ResourceLoader} interface.
- * Used by {@link org.springframework.core.io.ResourceEditor}, and serves as base class for
- * {@link org.springframework.context.support.AbstractApplicationContext}.
- * Can also be used standalone.
+ * Default implementation of the ResourceLoader interface.
  *
- * <p>Will return a {@link org.springframework.core.io.UrlResource} if the location value is a URL,
- * and a {@link org.springframework.core.io.ClassPathResource} if it is a non-URL path or a
+ * <p>Will return a UrlResource if the location value is a URL,
+ * and a ClassPathResource if it is a non-URL path or a
  * "classpath:" pseudo-URL.
  *
  * @author Juergen Hoeller
  * @since 10.03.2004
- * @see org.springframework.core.io.FileSystemResourceLoader
- * @see org.springframework.context.support.ClassPathXmlApplicationContext
  */
 public class DefaultResourceLoader implements ResourceLoader {
 
