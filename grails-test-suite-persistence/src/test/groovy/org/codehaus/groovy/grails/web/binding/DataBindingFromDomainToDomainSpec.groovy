@@ -12,16 +12,15 @@ class DataBindingFromDomainToDomainSpec extends GormSpec{
         given:"An existing instance"
             def source = new Person(firstName: "Homer", lastName: "Simpson", phoneNumber: "3083908043").save(flush:true)
 
-            
         when:"The source properties are accessed"
             def sourceProps = source.properties
-        
+
         then:"Only bindable properties are contained within the map"
             sourceProps.size() == 3
             sourceProps.containsKey "firstName"
             sourceProps.containsKey "lastName"
             sourceProps.containsKey "phoneNumber"
-        
+
         when:"Binding to a target"
             def target = new Person()
             target.properties = source.properties
@@ -30,7 +29,6 @@ class DataBindingFromDomainToDomainSpec extends GormSpec{
             target.firstName == 'Homer'
             target.lastName == "Simpson"
             target.phoneNumber == "3083908043"
-
     }
 
     @Override

@@ -17,8 +17,9 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
 import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.web.util.WebUtils
+
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.util.WebUtils
 
 /**
  * Additional methods added to the HttpServletRequest API.
@@ -32,7 +33,7 @@ class ServletRequestApi {
      * Whether the request has been redirected
      *
      * @param instance The request instance
-     * @return True if the request has been redirect
+     * @return true if the request has been redirect
      */
     boolean isRedirected(HttpServletRequest instance) {
         instance.getAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED) != null

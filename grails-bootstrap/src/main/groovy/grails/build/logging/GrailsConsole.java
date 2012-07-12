@@ -50,7 +50,7 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class GrailsConsole {
 
     private static GrailsConsole instance;
-    
+
     public static final String ENABLE_TERMINAL = "grails.console.enable.terminal";
     public static final String ENABLE_INTERACTIVE = "grails.console.enable.interactive";
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -154,7 +154,7 @@ public class GrailsConsole {
     }
 
     private boolean isActivateTerminal() {
-        return readPropOrTrue(ENABLE_TERMINAL); 
+        return readPropOrTrue(ENABLE_TERMINAL);
     }
 
     private boolean readPropOrTrue(String prop) {

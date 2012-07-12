@@ -14,11 +14,29 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import grails.orm.GormMappingPostProcessor;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.NameNotFoundException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainConfiguration;
@@ -29,18 +47,42 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.event.*;
+import org.hibernate.event.AutoFlushEventListener;
+import org.hibernate.event.DeleteEventListener;
+import org.hibernate.event.DirtyCheckEventListener;
+import org.hibernate.event.EventListeners;
+import org.hibernate.event.EvictEventListener;
+import org.hibernate.event.FlushEntityEventListener;
+import org.hibernate.event.FlushEventListener;
+import org.hibernate.event.InitializeCollectionEventListener;
+import org.hibernate.event.LoadEventListener;
+import org.hibernate.event.LockEventListener;
+import org.hibernate.event.MergeEventListener;
+import org.hibernate.event.PersistEventListener;
+import org.hibernate.event.PostCollectionRecreateEventListener;
+import org.hibernate.event.PostCollectionRemoveEventListener;
+import org.hibernate.event.PostCollectionUpdateEventListener;
+import org.hibernate.event.PostDeleteEventListener;
+import org.hibernate.event.PostInsertEventListener;
+import org.hibernate.event.PostLoadEventListener;
+import org.hibernate.event.PostUpdateEventListener;
+import org.hibernate.event.PreCollectionRecreateEventListener;
+import org.hibernate.event.PreCollectionRemoveEventListener;
+import org.hibernate.event.PreCollectionUpdateEventListener;
+import org.hibernate.event.PreDeleteEventListener;
+import org.hibernate.event.PreInsertEventListener;
+import org.hibernate.event.PreLoadEventListener;
+import org.hibernate.event.PreUpdateEventListener;
+import org.hibernate.event.RefreshEventListener;
+import org.hibernate.event.ReplicateEventListener;
+import org.hibernate.event.SaveOrUpdateEventListener;
+import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
-
-import javax.naming.NameNotFoundException;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 
 /**
  * A SessionFactory bean that allows the configuration class to
@@ -52,7 +94,7 @@ import java.util.Map;
 public class ConfigurableLocalSessionFactoryBean extends
         LocalSessionFactoryBean implements ApplicationContextAware {
 
-    private static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
+    protected static final Log LOG = LogFactory.getLog(ConfigurableLocalSessionFactoryBean.class);
     protected ClassLoader classLoader;
     protected GrailsApplication grailsApplication;
     protected Class<?> configClass;
@@ -60,8 +102,9 @@ public class ConfigurableLocalSessionFactoryBean extends
     protected HibernateEventListeners hibernateEventListeners;
     protected ApplicationContext applicationContext;
     protected boolean proxyIfReloadEnabled = true;
-    private String sessionFactoryBeanName = "sessionFactory";
-    private String dataSourceName = GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
+    protected String sessionFactoryBeanName = "sessionFactory";
+    protected String dataSourceName = GrailsDomainClassProperty.DEFAULT_DATA_SOURCE;
+    private List<Throwable> databaseSchemaExceptions = new ArrayList<Throwable>();
 
     /**
      * @param proxyIfReloadEnabled Sets whether a proxy should be created if reload is enabled
@@ -133,7 +176,7 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     @Override
     public void setBeanClassLoader(ClassLoader beanClassLoader) {
-        this.classLoader = beanClassLoader;
+        classLoader = beanClassLoader;
         super.setBeanClassLoader(beanClassLoader);
     }
 
@@ -151,7 +194,10 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     @Override
     protected SessionFactory newSessionFactory(Configuration configuration) throws HibernateException {
+        configurePostProcessors(configuration);
+
         try {
+
             SessionFactory sf = super.newSessionFactory(configuration);
 
             if (!grails.util.Environment.getCurrent().isReloadEnabled() || !proxyIfReloadEnabled) {
@@ -183,7 +229,28 @@ public class ConfigurableLocalSessionFactoryBean extends
         }
     }
 
-    private String getCauseMessage(HibernateException e) {
+    protected void configurePostProcessors(Configuration configuration) {
+        Collection<GormMappingPostProcessor> postProcessors = applicationContext.getBeansOfType(GormMappingPostProcessor.class).values();
+        GrailsClass[] domainClasses = grailsApplication.getArtefacts(
+                DomainClassArtefactHandler.TYPE);
+
+        List<GormMappingPostProcessor> sorted = new ArrayList<GormMappingPostProcessor>(postProcessors);
+        Collections.sort(sorted, new Comparator<GormMappingPostProcessor>() {
+            public int compare(GormMappingPostProcessor p1, GormMappingPostProcessor p2) {
+// TODO test
+                return Integer.valueOf(p1.getOrder()).compareTo(p2.getOrder());
+            }
+        });
+
+        for (GrailsClass domainClass : domainClasses) {
+            PersistentClass pc = configuration.getClassMapping(domainClass.getFullName());
+            for (GormMappingPostProcessor postProcessor : postProcessors) {
+                postProcessor.process(pc, (GrailsDomainClass)domainClass);
+            }
+        }
+    }
+
+    protected String getCauseMessage(HibernateException e) {
         Throwable cause = e.getCause();
         if (cause instanceof InvocationTargetException) {
             cause = ((InvocationTargetException)cause).getTargetException();
@@ -191,7 +258,7 @@ public class ConfigurableLocalSessionFactoryBean extends
         return cause.getMessage();
     }
 
-    private boolean isCacheConfigurationError(Throwable cause) {
+    protected boolean isCacheConfigurationError(Throwable cause) {
         if (cause instanceof InvocationTargetException) {
             cause = ((InvocationTargetException)cause).getTargetException();
         }
@@ -200,7 +267,7 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     @Override
     public void destroy() throws HibernateException {
-        if(this.grailsApplication.isWarDeployed()) {
+        if (grailsApplication.isWarDeployed()) {
             MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
             Map<?, ?> classMetaData = getSessionFactory().getAllClassMetadata();
             for (Object o : classMetaData.values()) {
@@ -213,7 +280,7 @@ public class ConfigurableLocalSessionFactoryBean extends
         try {
             super.destroy();
         } catch (HibernateException e) {
-            if(e.getCause() instanceof NameNotFoundException) {
+            if (e.getCause() instanceof NameNotFoundException) {
                 LOG.debug(e.getCause().getMessage(), e);
             }
             else {
@@ -301,7 +368,7 @@ public class ConfigurableLocalSessionFactoryBean extends
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void addNewListenerToConfiguration(final Configuration config, final String listenerType,
+    protected <T> void addNewListenerToConfiguration(final Configuration config, final String listenerType,
             final Class<? extends T> klass, final T[] currentListeners, final Map<String,Object> newlistenerMap) {
 
         Object newListener = newlistenerMap.get(listenerType);
@@ -332,5 +399,25 @@ public class ConfigurableLocalSessionFactoryBean extends
 
     public void setDataSourceName(String name) {
         dataSourceName = name;
+    }
+
+    @Override
+    protected void executeSchemaStatement(Statement stmt, String sql) throws SQLException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Executing schema statement: " + sql);
+        }
+        try {
+            stmt.executeUpdate(sql);
+        }
+        catch (SQLException ex) {
+            databaseSchemaExceptions.add(ex);
+            if (logger.isWarnEnabled()) {
+                logger.warn("Unsuccessful schema statement: " + sql, ex);
+            }
+        }
+    }
+
+    public List<Throwable> getDatabaseSchemaExceptions() {
+        return databaseSchemaExceptions;
     }
 }

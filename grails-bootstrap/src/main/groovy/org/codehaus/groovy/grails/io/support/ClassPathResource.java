@@ -58,7 +58,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
             pathToUse = pathToUse.substring(1);
         }
         this.path = pathToUse;
-        this.classLoader = (classLoader != null ? classLoader : DefaultResourceLoader.getDefaultClassLoader());
+        this.classLoader = classLoader == null ? DefaultResourceLoader.getDefaultClassLoader() : classLoader;
     }
 
     /**
@@ -92,16 +92,15 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      * Return the path for this resource (as resource path within the class path).
      */
     public final String getPath() {
-        return this.path;
+        return path;
     }
 
     /**
      * Return the ClassLoader that this resource will be obtained from.
      */
     public final ClassLoader getClassLoader() {
-        return (this.classLoader != null ? this.classLoader : this.clazz.getClassLoader());
+        return classLoader == null ? clazz.getClassLoader() : classLoader;
     }
-
 
     /**
      * This implementation checks for the resolution of a resource URL.
@@ -111,13 +110,13 @@ public class ClassPathResource extends AbstractFileResolvingResource {
     @Override
     public boolean exists() {
         URL url;
-        if (this.clazz != null) {
-            url = this.clazz.getResource(this.path);
+        if (clazz == null) {
+            url = classLoader.getResource(path);
         }
         else {
-            url = this.classLoader.getResource(this.path);
+            url = clazz.getResource(path);
         }
-        return (url != null);
+        return url != null;
     }
 
     /**
@@ -127,11 +126,11 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      */
     public InputStream getInputStream() throws IOException {
         InputStream is;
-        if (this.clazz != null) {
-            is = this.clazz.getResourceAsStream(this.path);
+        if (clazz == null) {
+            is = classLoader.getResourceAsStream(path);
         }
         else {
-            is = this.classLoader.getResourceAsStream(this.path);
+            is = clazz.getResourceAsStream(path);
         }
         if (is == null) {
             throw new FileNotFoundException(
@@ -147,11 +146,11 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      */
     public URL getURL() throws IOException {
         URL url;
-        if (this.clazz != null) {
-            url = this.clazz.getResource(this.path);
+        if (clazz == null) {
+            url = classLoader.getResource(path);
         }
         else {
-            url = this.classLoader.getResource(this.path);
+            url = clazz.getResource(path);
         }
         if (url == null) {
             throw new FileNotFoundException(
@@ -170,8 +169,8 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      * @see org.springframework.util.StringUtils#applyRelativePath(String, String)
      */
     public Resource createRelative(String relativePath) {
-        String pathToUse = GrailsResourceUtils.applyRelativePath(this.path, relativePath);
-        return new ClassPathResource(pathToUse, this.classLoader, this.clazz);
+        String pathToUse = GrailsResourceUtils.applyRelativePath(path, relativePath);
+        return new ClassPathResource(pathToUse, classLoader, clazz);
     }
 
     /**
@@ -180,7 +179,7 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      * @see org.springframework.util.StringUtils#getFilename(String)
      */
     public String getFilename() {
-        return GrailsResourceUtils.getFilename(this.path);
+        return GrailsResourceUtils.getFilename(path);
     }
 
     /**
@@ -189,12 +188,12 @@ public class ClassPathResource extends AbstractFileResolvingResource {
     public String getDescription() {
         StringBuilder builder = new StringBuilder("class path resource [");
 
-        if (this.clazz != null) {
-            builder.append(GrailsResourceUtils.classPackageAsResourcePath(this.clazz));
+        if (clazz != null) {
+            builder.append(GrailsResourceUtils.classPackageAsResourcePath(clazz));
             builder.append('/');
         }
 
-        builder.append(this.path);
+        builder.append(path);
         builder.append(']');
         return builder.toString();
     }
@@ -210,9 +209,9 @@ public class ClassPathResource extends AbstractFileResolvingResource {
         }
         if (obj instanceof ClassPathResource) {
             ClassPathResource otherRes = (ClassPathResource) obj;
-            return (this.path.equals(otherRes.path) &&
-                    nullSafeEquals(this.classLoader, otherRes.classLoader) &&
-                    nullSafeEquals(this.clazz, otherRes.clazz));
+            return (path.equals(otherRes.path) &&
+                    nullSafeEquals(classLoader, otherRes.classLoader) &&
+                    nullSafeEquals(clazz, otherRes.clazz));
         }
         return false;
     }
@@ -265,7 +264,6 @@ public class ClassPathResource extends AbstractFileResolvingResource {
      */
     @Override
     public int hashCode() {
-        return this.path.hashCode();
+        return path.hashCode();
     }
-
 }

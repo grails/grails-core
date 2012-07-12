@@ -7,13 +7,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 /**
- *  Allows the tomcat server to be killed by pinging a port one greater than the server port
+ *  Allows the tomcat server to be killed by pinging a port one greater than the server port.
  *
  *  @author Graeme Rocher
  *  @since 2.1
  */
 public class TomcatKillSwitch implements Runnable {
-
 
     public static final String TOMCAT_KILL_SWITCH_ACTIVE = "TomcatKillSwitch.active";
 

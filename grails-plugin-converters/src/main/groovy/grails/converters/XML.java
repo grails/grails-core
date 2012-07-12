@@ -139,7 +139,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> {
     }
 
     public void convertAnother(Object o) throws ConverterException {
-        o = this.config.getProxyHandler().unwrapIfProxy(o);
+        o = config.getProxyHandler().unwrapIfProxy(o);
 
         try {
             if (o == null) {

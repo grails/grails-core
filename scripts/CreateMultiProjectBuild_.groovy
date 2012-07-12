@@ -22,6 +22,7 @@
 import org.codehaus.groovy.grails.cli.maven.MavenMultiProjectGenerator
 
 includeTargets << grailsScript("_GrailsArgParsing")
+
 target(default: "Creates a multi-project build for Maven") {
     depends(parseArguments)
 
@@ -33,9 +34,9 @@ target(default: "Creates a multi-project build for Maven") {
     def generator = new MavenMultiProjectGenerator(grailsSettings)
     try {
         def (group, name, version) = argsMap.params[0].split(":")
-        if(group && name && version) {
-            generator.generate group, name, version      
-            grailsConsole.addStatus "Multi-module Maven build configured."  
+        if (group && name && version) {
+            generator.generate group, name, version
+            grailsConsole.addStatus "Multi-module Maven build configured."
         }
         else {
             println msg()

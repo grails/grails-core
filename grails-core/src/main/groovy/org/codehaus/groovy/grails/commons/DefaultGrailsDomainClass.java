@@ -206,7 +206,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      */
     public Map getAssociationMap() {
         if (relationshipMap == null) {
-            this.relationshipMap = getMergedConfigurationMap(GrailsDomainClassProperty.HAS_MANY);
+            relationshipMap = getMergedConfigurationMap(GrailsDomainClassProperty.HAS_MANY);
         }
         return relationshipMap;
     }
@@ -825,7 +825,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
     }
 
     public void addComponent(GrailsDomainClass component) {
-        this.components.add(component);
+        components.add(component);
     }
 
     public List<GrailsDomainClass> getComponents() {

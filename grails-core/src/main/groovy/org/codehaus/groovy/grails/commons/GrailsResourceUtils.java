@@ -15,13 +15,11 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import org.codehaus.groovy.grails.core.io.SpringResource;
-import org.codehaus.groovy.grails.io.support.FileSystemResource;
-import org.springframework.core.io.Resource;
-
-import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.grails.core.io.SpringResource;
+import org.springframework.core.io.Resource;
 
 /**
  * Utility methods for working with Grails resources and URLs that represent artifacts
@@ -87,7 +85,7 @@ public class GrailsResourceUtils {
      * Checks whether the file referenced by the given url is a domain class
      *
      * @param url The URL instance
-     * @return True if it is a domain class
+     * @return true if it is a domain class
      */
     public static boolean isDomainClass(URL url) {
         return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.isDomainClass(url);
@@ -117,7 +115,7 @@ public class GrailsResourceUtils {
      * Checks whether the specified path is a Grails path.
      *
      * @param path The path to check
-     * @return True if it is a Grails path
+     * @return true if it is a Grails path
      */
     public static boolean isGrailsPath(String path) {
         return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.isGrailsPath(path);
@@ -126,8 +124,6 @@ public class GrailsResourceUtils {
     public static boolean isGrailsResource(Resource r) {
         return org.codehaus.groovy.grails.io.support.GrailsResourceUtils.isGrailsResource(new SpringResource(r));
     }
-
-
 
     /**
      * Get the path relative to an artefact folder under grails-app i.e:

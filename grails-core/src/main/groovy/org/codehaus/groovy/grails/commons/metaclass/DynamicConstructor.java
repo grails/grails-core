@@ -27,7 +27,7 @@ public interface DynamicConstructor {
      * Test whether the specified arguments match this constructor.
      *
      * @param args The arguments to check
-     * @return True if the arguments match
+     * @return true if the arguments match
      */
     boolean isArgumentsMatch(Object[] args);
 

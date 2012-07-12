@@ -212,8 +212,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             UrlCreator creator=urlCreatorCache.lookup(key);
             if (creator==null) {
                 creator=resolveUrlCreator(controller, action, params, false);
-                if(creator != null)
-                    creator=urlCreatorCache.putAndDecorate(key, creator);
+                if (creator != null) {
+                    creator = urlCreatorCache.putAndDecorate(key, creator);
+                }
             }
             // preserve previous side-effect, remove mappingName from params
             params.remove("mappingName");
@@ -260,10 +261,11 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
         UrlCreator creator = null;
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            if(useDefault)
-                creator=new DefaultUrlCreator(controller, action);
+            if (useDefault) {
+                creator = new DefaultUrlCreator(controller, action);
+            }
         } else {
-            creator=mapping;
+            creator = mapping;
         }
         return creator;
     }
@@ -293,7 +295,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             secondAttempt = true;
         }
         if (null == mappingKeysSet) return null;
-        
+
         Set<String> lookupParams = new HashSet<String>(params.keySet());
         if (secondAttempt) {
             lookupParams.removeAll(DEFAULT_ACTION_PARAMS);

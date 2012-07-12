@@ -187,20 +187,20 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             }
-            else if(argMap.containsKey(ARGUMENT_FILE)) {
+            else if (argMap.containsKey(ARGUMENT_FILE)) {
                 renderView = false;
 
                 Object o = argMap.get(ARGUMENT_FILE);
                 Object fnO = argMap.get(ARGUMENT_FILE_NAME);
                 String fileName = fnO != null ? fnO.toString() : ((o instanceof File) ? ((File)o).getName(): null );
-                if(o != null) {
-                    if(fileName != null) {
+                if (o != null) {
+                    if (fileName != null) {
                         detectContentTypeFromFileName(webRequest, response, argMap, fileName, hasContentType);
-                        if(fnO != null) {
+                        if (fnO != null) {
                             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName);
                         }
                     }
-                    else if(!hasContentType) {
+                    else if (!hasContentType) {
                         throw new ControllerExecutionException(
                                 "Argument [file] of render method specified without valid [contentType] argument");
                     }
@@ -208,14 +208,14 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
                     InputStream input = null;
                     try {
-                        if(o instanceof File) {
+                        if (o instanceof File) {
                             File f = (File) o;
                             input = FileUtils.openInputStream(f);
                         }
-                        else if(o instanceof InputStream) {
+                        else if (o instanceof InputStream) {
                             input = (InputStream) o;
                         }
-                        else if(o instanceof byte[]) {
+                        else if (o instanceof byte[]) {
                             input = new ByteArrayInputStream((byte[])o);
                         }
                         else {
@@ -228,7 +228,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
                     }
                     finally {
-                        if(input != null) {
+                        if (input != null) {
                             try {
                                 input.close();
                             } catch (IOException e) {
@@ -246,7 +246,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             else {
                 Object object = arguments[0];
-                if(object instanceof JSONElement) {
+                if (object instanceof JSONElement) {
                     renderView = renderJSON((JSONElement)object, response);
                 }
                 else{
@@ -276,7 +276,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
-        if(hasContentType) return;
+        if (hasContentType) return;
         String contentType;
         @SuppressWarnings("hiding") MimeUtility mimeUtility = lookupMimeUtility(webRequest);
         if (mimeUtility != null) {
@@ -294,10 +294,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private MimeUtility lookupMimeUtility(GrailsWebRequest webRequest) {
-        if(this.mimeUtility == null) {
+        if (mimeUtility == null) {
             ApplicationContext applicationContext = webRequest.getApplicationContext();
-            if(applicationContext != null) {
-                this.mimeUtility = applicationContext.getBean("grailsMimeUtility", MimeUtility.class);
+            if (applicationContext != null) {
+                mimeUtility = applicationContext.getBean("grailsMimeUtility", MimeUtility.class);
             }
         }
         return mimeUtility;

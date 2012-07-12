@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.util.slurpersupport.GPathResult
 import org.apache.ivy.core.cache.ArtifactOrigin
@@ -23,7 +24,6 @@ import org.apache.ivy.plugins.repository.Repository
 import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.resolver.DependencyResolver
 import org.apache.ivy.plugins.resolver.RepositoryResolver
-import grails.build.logging.GrailsConsole
 
 /**
  * Utility methods for resolving plugin zips and information
@@ -67,7 +67,7 @@ final class PluginResolveEngine {
     GPathResult renderPluginInfo(String pluginName, String pluginVersion, Writer writer) {
         def pluginXml = resolvePluginMetadata(pluginName, pluginVersion)
 
-        if(pluginXml != null) {
+        if (pluginXml != null) {
             def output = new PrintWriter(writer)
             def line = "Name: ${pluginName}"
             line += "\t| Latest release: ${pluginXml.@version}"
@@ -104,19 +104,19 @@ final class PluginResolveEngine {
                 printSectionTitle(output, "Dependency Definition")
                 output.println("    :${pluginName}:${pluginXml.@version}")
                 output.println()
-                if(release.repositories.children().size()) {
+                if (release.repositories.children().size()) {
                     printSectionTitle(output, "Required Repositories")
                     release.repositories.repository.each { repo ->
                         output.println("     ${repo.@url}")
                     }
                 }
 
-                if(release.dependencies.children().size()) {
+                if (release.dependencies.children().size()) {
                     printSectionTitle(output, "Transitive Dependencies")
                     printDependencies(output, release.dependencies)
                 }
 
-                if(release.plugins.children().size()) {
+                if (release.plugins.children().size()) {
                     printSectionTitle(output, "Transitive Plugins")
                     printDependencies(output, release.plugins)
                 }
@@ -133,7 +133,7 @@ final class PluginResolveEngine {
         return pluginXml
     }
 
-    protected def printDependencies(output, dependencies) {
+    protected void printDependencies(output, dependencies) {
         dependencies.children().each { scope ->
             def scopeName = scope.name()
             scope.dependency.each { dep ->
@@ -142,13 +142,13 @@ final class PluginResolveEngine {
         }
     }
 
-    protected def printSectionTitle(PrintWriter output, String title) {
+    protected void printSectionTitle(PrintWriter output, String title) {
         output.println()
         output.println title
         printLineSeparator(output)
     }
 
-    protected def printLineSeparator(PrintWriter output) {
+    protected void printLineSeparator(PrintWriter output) {
         output.println '--------------------------------------------------------------------------'
     }
 
@@ -249,12 +249,13 @@ For further info visit http://grails.org/Plugins
                 }
             }
         }
+
         def report = dependencyManager.resolveDependencies("runtime", [download:false])
         if (report.getArtifactsReports(null, false)) {
             ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
             def location = origin.location
             def parent = location[0..location.lastIndexOf('/')-1]
-            for (DependencyResolver dr in this.dependencyManager.chainResolver.resolvers) {
+            for (DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
                 if (dr instanceof RepositoryResolver) {
                     Repository r = dr.repository
 

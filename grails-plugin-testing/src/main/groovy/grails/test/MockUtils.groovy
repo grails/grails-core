@@ -934,7 +934,7 @@ class MockUtils {
         }
         else {
             def c = GrailsClassUtils.getStaticPropertyValue(clazz, "constraints")
-            if(c instanceof Map) {
+            if (c instanceof Map) {
                 constrainedProperties = c
             } else {
                 def constraintsBuilder = new ConstrainedPropertyBuilder(clazz)

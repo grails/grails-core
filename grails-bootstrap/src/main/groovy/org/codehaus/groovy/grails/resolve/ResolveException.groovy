@@ -6,33 +6,29 @@ import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.module.id.ModuleRevisionId
 
 /**
- * Exception thrown when dependencies fail to resolve
+ * Thrown when dependencies fail to resolve.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
 class ResolveException extends RuntimeException {
 
-    ResolveReport resolveReport;
+    ResolveReport resolveReport
 
-    public ResolveException(ResolveReport resolveReport) {
-        this.resolveReport = resolveReport;
+    ResolveException(ResolveReport resolveReport) {
+        this.resolveReport = resolveReport
     }
 
     @Override
-    public String getMessage() {
-        def configurations = resolveReport.configurations
+    String getMessage() {
         def unresolvedDependencies = []
-        for(conf in configurations) {
+        for (conf in resolveReport.configurations) {
             final confReport = resolveReport.getConfigurationReport(conf)
-            for(IvyNode node in confReport.getUnresolvedDependencies()) {
+            for (IvyNode node in confReport.getUnresolvedDependencies()) {
                 unresolvedDependencies << node.id
             }
-            def failedDownloads = confReport.getFailedArtifactsReports()
-            if(failedDownloads) {
-                for(ArtifactDownloadReport dl in failedDownloads) {
-                    unresolvedDependencies << dl.artifact.moduleRevisionId
-                }
+            for (ArtifactDownloadReport dl in confReport.getFailedArtifactsReports()) {
+                unresolvedDependencies << dl.artifact.moduleRevisionId
             }
         }
         def dependencies = unresolvedDependencies.collect { ModuleRevisionId mid ->

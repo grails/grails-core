@@ -87,12 +87,12 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         String namespace = taglib.getNamespace();
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
         Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
-        if(tagsThatReturnObject==null) {
+        if (tagsThatReturnObject==null) {
             tagsThatReturnObject=new HashSet<String>();
             tagsThatReturnObjectForNamespace.put(namespace, tagsThatReturnObject);
         }
         Map<String, Object> tags = tagNamespaces.get(namespace);
-        if(tags==null) {
+        if (tags == null) {
             tags = new HashMap<String, Object>();
             tagNamespaces.put(namespace, tags);
         }
@@ -105,7 +105,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         }
     }
 
-    protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib){
+    protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib) {
         tags.put(name, applicationContext.getBean(taglib.getFullName()));
     }
 
@@ -118,8 +118,9 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      */
     public GroovyObject lookupTagLibrary(String namespace, String tagName) {
         Map<String, Object>tags = tagNamespaces.get(namespace);
-        if(tags==null)
+        if (tags == null) {
             return null;
+        }
         return (GroovyObject)tags.get(tagName);
     }
 
@@ -140,7 +141,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     /**
      * Returns whether the given namespace is in use
      * @param namespace The namespace
-     * @return True if it is in use
+     * @return true if it is in use
      */
     public boolean hasNamespace(String namespace) {
         return namespaceDispatchers.containsKey(namespace);

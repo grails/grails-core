@@ -30,7 +30,14 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
@@ -226,7 +233,7 @@ public class GrailsDomainConfigurationUtil {
      * Establish whether it's a basic type.
      *
      * @param prop The domain class property
-     * @return True if it is basic
+     * @return true if it is basic
      */
     public static boolean isBasicType(GrailsDomainClassProperty prop) {
         return prop == null ? false : isBasicType(prop.getType());
@@ -289,7 +296,7 @@ public class GrailsDomainConfigurationUtil {
      * Checks whether is property is configurational.
      *
      * @param descriptor The descriptor
-     * @return True if it is configurational
+     * @return true if it is configurational
      */
     public static boolean isNotConfigurational(PropertyDescriptor descriptor) {
 
@@ -431,5 +438,4 @@ public class GrailsDomainConfigurationUtil {
         }
         return classChain;
     }
-
 }

@@ -19,17 +19,17 @@ class SimpleOrFileNameCompletor implements Completor {
     }
 
     SimpleOrFileNameCompletor(String[] fixedOptions) {
-        this.simpleCompletor = new SimpleCompletor(fixedOptions)
-        this.fileNameCompletor = new EscapingFileNameCompletor()
+        simpleCompletor = new SimpleCompletor(fixedOptions)
+        fileNameCompletor = new EscapingFileNameCompletor()
     }
 
     int complete(String buffer, int cursor, List candidates) {
         // Try the simple completor first...
-        def retval = this.simpleCompletor.complete(buffer, cursor, candidates)
+        def retval = simpleCompletor.complete(buffer, cursor, candidates)
 
         // ...and then the file path completor. By using the given candidate
         // list with both completors we aggregate the results automatically.
-        def fileRetval = this.fileNameCompletor.complete(buffer, cursor, candidates)
+        def fileRetval = fileNameCompletor.complete(buffer, cursor, candidates)
 
         // If the simple completor has matched, we return its value, otherwise
         // we return whatever the file path matcher returned. This ensures that

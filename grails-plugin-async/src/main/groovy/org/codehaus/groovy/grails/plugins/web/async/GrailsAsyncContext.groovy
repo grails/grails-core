@@ -45,8 +45,7 @@ class GrailsAsyncContext implements AsyncContext {
         this.delegate = delegate
         originalWebRequest = webRequest
         def applicationContext = webRequest.getApplicationContext()
-        if(applicationContext && applicationContext.containsBean("groovyPageLayoutFinder")) {
-
+        if (applicationContext && applicationContext.containsBean("groovyPageLayoutFinder")) {
             groovyPageLayoutFinder = applicationContext.getBean("groovyPageLayoutFinder", GroovyPageLayoutFinder)
         }
     }

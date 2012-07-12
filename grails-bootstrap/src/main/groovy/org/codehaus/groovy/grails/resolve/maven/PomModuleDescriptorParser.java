@@ -92,6 +92,7 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
                 || res.getName().endsWith("project.xml");
     }
 
+    @Override
     public String toString() {
         return "pom parser";
     }
@@ -110,6 +111,7 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
         return parseDescriptor(ivySettings, descriptorURL, resource, validate);
     }
 
+    @SuppressWarnings("rawtypes")
     public ModuleDescriptor parseDescriptor(ParserSettings ivySettings, URL descriptorURL,
                                             Resource res, boolean validate) throws ParseException, IOException {
 
@@ -149,7 +151,7 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
                     Map parentPomProps = PomModuleDescriptorBuilder.extractPomProperties(
                             parentDescr.getExtraInfo());
                     for (Iterator iter = parentPomProps.entrySet().iterator(); iter.hasNext();) {
-                        Map.Entry prop = (Map.Entry) iter.next();
+                        Map.Entry prop = (Map.Entry)iter.next();
                         domReader.setProperty((String) prop.getKey(), (String) prop.getValue());
                     }
                 }
@@ -354,11 +356,11 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
         if (resolver == null) {
             // TODO: Throw exception here?
             return null;
-        } else {
-            dd = NameSpaceHelper.toSystem(dd, ivySettings.getContextNamespace());
-            ResolvedModuleRevision otherModule = resolver.getDependency(dd, data);
-            return otherModule;
         }
+
+        dd = NameSpaceHelper.toSystem(dd, ivySettings.getContextNamespace());
+        ResolvedModuleRevision otherModule = resolver.getDependency(dd, data);
+        return otherModule;
     }
 
     private ParseException newParserException(Exception e) {
@@ -367,5 +369,4 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
         pe.initCause(e);
         return pe;
     }
-
 }

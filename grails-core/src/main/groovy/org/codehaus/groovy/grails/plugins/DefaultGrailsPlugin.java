@@ -861,7 +861,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void setDescriptor(Resource descriptor) {
-        this.pluginDescriptor = descriptor;
+        pluginDescriptor = descriptor;
     }
 
     public org.codehaus.groovy.grails.io.support.Resource getPluginDir() {

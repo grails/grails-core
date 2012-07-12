@@ -47,7 +47,7 @@ public abstract class AbstractGrailsEnvChangingSpec extends Specification {
 
     protected void changeGrailsEnv(String newEnv) {
         resetGrailsEnvironment()
-        if(newEnv != null) {
+        if (newEnv != null) {
             System.setProperty(Environment.KEY, newEnv)
         }
     }

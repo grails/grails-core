@@ -17,18 +17,17 @@ package org.codehaus.groovy.grails.commons.cfg
 import grails.util.Environment
 import grails.util.Holder
 import grails.util.Metadata
+import groovy.transform.CompileStatic
 
-import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.apache.commons.logging.Log
 
 /**
  * Helper methods for initialising config object.

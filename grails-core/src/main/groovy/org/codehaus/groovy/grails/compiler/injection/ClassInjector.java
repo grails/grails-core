@@ -55,7 +55,7 @@ public interface ClassInjector {
      * Returns whether this injector should inject
      *
      * @param url The URL of the source file
-     * @return True if injection should occur
+     * @return true if injection should occur
      */
     boolean shouldInject(URL url);
 }

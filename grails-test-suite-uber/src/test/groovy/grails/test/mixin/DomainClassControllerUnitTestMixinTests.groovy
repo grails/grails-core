@@ -15,9 +15,9 @@ class DomainClassControllerUnitTestMixinTests {
     @Test
     void testRelationshipManagementMethods() {
        def a = new Author(name: "Stephen King")
-        
+
        a.addToBooks(title: "The Stand", pages: 1100)
-        
+
        assert a.save(flush: true) != null
     }
     @Test
@@ -221,7 +221,7 @@ class Book {
     String title
     Date releaseDate = new Date()
     int pages
-    
+
     static belongsTo = [author:Author]
     static constraints = {
         title blank:false, nullable:false
@@ -235,7 +235,7 @@ class Book {
 @Entity
 class Author {
     String name
-    
+
     static hasMany = [books: Book]
 }
 

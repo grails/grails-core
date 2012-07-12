@@ -60,7 +60,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
 
     public void setSearchLocation(String searchLocation) {
         ResourceLoader resourceLoader = getDefaultResourceLoader();
-        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(resourceLoader);
+        patchMatchingResolver = new PathMatchingResourcePatternResolver(resourceLoader);
         initializeForSearchLocation(searchLocation);
     }
 
@@ -69,7 +69,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     }
 
     public void setSearchLocations(Collection<String> searchLocations) {
-        this.patchMatchingResolver = new PathMatchingResourcePatternResolver(getDefaultResourceLoader());
+        patchMatchingResolver = new PathMatchingResourcePatternResolver(getDefaultResourceLoader());
         for (String searchLocation : searchLocations) {
             initializeForSearchLocation(searchLocation);
         }
@@ -139,10 +139,11 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                 resource = findResourceInBinaryPlugins(info);
             }
 
-            if(resource == null || !resource.exists()) {
+            if (resource == null || !resource.exists()) {
                 Resource tmp = defaultResourceLoader != null ? defaultResourceLoader.getResource(uri) : null;
-                if(tmp != null && tmp.exists())
+                if (tmp != null && tmp.exists()) {
                     resource = tmp;
+                }
             }
 
             if (resource != null) {
@@ -233,7 +234,7 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     }
 
     public void setResourceLoader(ResourceLoader resourceLoader) {
-        this.defaultResourceLoader = resourceLoader;
+        defaultResourceLoader = resourceLoader;
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {

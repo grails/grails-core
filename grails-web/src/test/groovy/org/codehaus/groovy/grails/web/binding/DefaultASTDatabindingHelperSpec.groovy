@@ -18,7 +18,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     static widgetSubclass
     static setterGetterClass
     static dateBindingClass
-    
+
     def setupSpec() {
         final gcl = new GrailsAwareClassLoader()
         final transformer = new ClassInjector() {
@@ -80,19 +80,19 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                 private internalMiddleName
                 private internalLastName
                 private internalTitle
-            
+
                 void setFirstName(String s) {
                     internalFirstName = s
                 }
-                
+
                 void setMiddleName(String s, int i) {
                     internalMiddleName = s
                 }
-                
+
                 void getLastName() {
                     internalLastName
                 }
-                
+
                 void setTitle(String s) {
                     internalTitle = s
                 }
@@ -101,7 +101,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     internalTitle
                 }
             }
-            ''') 
+            ''')
             dateBindingClass = gcl.parseClass('''
                 class DateBindingClass {
                     String name
@@ -114,7 +114,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     }
                 }
             ''')
-            
+
             // there must be a request bound in order for the structured date editor to be registered
             GrailsWebUtil.bindMockWebRequest()
     }
@@ -138,21 +138,21 @@ class DefaultASTDatabindingHelperSpec extends Specification {
             'title_*' in whiteList
             'title.*' in whiteList
             'title' in whiteList
-            
+
         when:
             def obj = setterGetterClass.newInstance()
             obj.properties = [firstName: 'a',
                               middleName: 'b',
                               lastName: 'c',
                               title: 'd']
-            
+
         then:
             'a' == obj.@internalFirstName
             null == obj.@internalMiddleName
             null == obj.@internalLastName
             'd' == obj.title
     }
-    
+
     void 'Test default generated data binding white list'() {
        when:
            final whiteListField = widgetClass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
@@ -175,11 +175,11 @@ class DefaultASTDatabindingHelperSpec extends Specification {
            'person.*' in whiteList
            'person_*' in whiteList
     }
-    
+
     void 'Test that binding respects the generated white list'() {
         given:
             def obj = widgetClass.newInstance()
-            
+
         when:
             obj.properties = [bindableProperty: 1,
                               secondBindableProperty: 2,
@@ -189,7 +189,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                               untypedProperty: 6,
                               transientInteger: 7,
                               integerListedInTransientsProperty: 8]
-            
+
         then:
             1 == obj.bindableProperty
             2 == obj.secondBindableProperty
@@ -204,9 +204,9 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     void 'Test explicit white list overrides default white list in class'() {
         given:
             def obj = widgetClass.newInstance()
-            
+
         when:
-            obj.properties['bindableProperty', 'nonBindableProperty'] = 
+            obj.properties['bindableProperty', 'nonBindableProperty'] =
                              [bindableProperty: 1,
                               secondBindableProperty: 2,
                               nonBindableProperty: 3,
@@ -215,7 +215,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                               untypedProperty: 6,
                               transientInteger: 7,
                               integerListedInTransientsProperty: 8]
-            
+
         then:
             1 == obj.bindableProperty
             null == obj.secondBindableProperty
@@ -226,7 +226,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
             null == obj.transientInteger
             null == obj.integerListedInTransientsProperty
     }
-    
+
     void 'Test default generated data binding white list on a subclass'() {
         when:
         final whiteListField = widgetSubclass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
@@ -250,11 +250,11 @@ class DefaultASTDatabindingHelperSpec extends Specification {
         'person.*' in whiteList
         'person_*' in whiteList
     }
-    
+
     void 'Test that binding respects the generated white list in subclass'() {
         given:
             def obj = widgetSubclass.newInstance()
-            
+
         when:
             obj.properties = [bindableProperty: 1,
                               secondBindableProperty: 2,
@@ -268,7 +268,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                               subclassUntypedProperty: 10,
                               transientInteger: 11,
                               integerListedInTransientsProperty: 12]
-            
+
         then:
             null == obj.bindableProperty
             2 == obj.secondBindableProperty
@@ -287,9 +287,9 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     void 'Test explicit white list overrides default white list in subclass'() {
         given:
             def obj = widgetSubclass.newInstance()
-            
+
         when:
-            obj.properties['nonBindableProperty', 'subclassNonBindableProperty'] = 
+            obj.properties['nonBindableProperty', 'subclassNonBindableProperty'] =
                  [bindableProperty: 1,
                   secondBindableProperty: 2,
                   nonBindableProperty: 3,
@@ -302,7 +302,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                   subclassUntypedProperty: 10,
                   transientInteger: 11,
                   integerListedInTransientsProperty: 12]
-            
+
         then:
             null == obj.bindableProperty
             null == obj.secondBindableProperty
@@ -317,11 +317,11 @@ class DefaultASTDatabindingHelperSpec extends Specification {
             null == obj.transientInteger
             null == obj.integerListedInTransientsProperty
     }
-    
+
     void 'Test structured Date binding'() {
         given:
             def obj = dateBindingClass.newInstance()
-            
+
         when:
             obj.properties = [birthDate_month: '11',
                               birthDate_day: '15',
@@ -341,7 +341,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
             def exitDate = obj.exitDate
             def sqlDate = obj.sqlDate
             def name = obj.name
-            
+
         then:
             'Jose' == name
             !hireDate

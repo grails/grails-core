@@ -1210,7 +1210,7 @@ class BuildSettings extends AbstractBuildSettings {
             switch (e.eventType) {
                 case TransferEvent.TRANSFER_STARTED:
                     def resourceName = e.resource.name
-                    if(!resourceName?.endsWith('plugins-list.xml')) {
+                    if (!resourceName?.endsWith('plugins-list.xml')) {
                         resourceName = resourceName[resourceName.lastIndexOf('/') + 1..-1]
                         console.updateStatus "Downloading: ${resourceName}"
                     }
@@ -1291,14 +1291,14 @@ class BuildSettings extends AbstractBuildSettings {
             // The logic here tries to establish if the plugin has been declared anywhere by the application. Only plugins that have
             // been declared should have their transitive dependencies resolved. Unfortunately it is fairly complicated to establish what plugins are declared since
             // there may be a mixture of plugins defined in BuildConfig, inline plugins and plugins installed via install-plugin
-            if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
+            if (!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
                 return
             }
 
             def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
-            if(isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
+            if (isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
                 // bail out of the dependencies handled by external tool
-                if(isDependenciesExternallyConfigured()) return
+                if (isDependenciesExternallyConfigured()) return
                 // Try BuildConfig.groovy first, which should work
                 // work for in-place plugins.
                 def path = dir.absolutePath
@@ -1383,7 +1383,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectTargetDirSet) {
             projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
-            if(!projectTargetDir.absolute) {
+            if (!projectTargetDir.absolute) {
                 projectTargetDir = new File(baseDir, projectTargetDir.path)
             }
         }
@@ -1394,7 +1394,7 @@ class BuildSettings extends AbstractBuildSettings {
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
 
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
-            if(!projectWarFile.absolute) {
+            if (!projectWarFile.absolute) {
                 projectWarFile = new File(baseDir, projectWarFile.path)
             }
         }
@@ -1414,14 +1414,14 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!classesDirSet) {
             classesDir = new File(getPropertyValue(PROJECT_CLASSES_DIR, props, "$projectWorkDir/classes"))
-            if(!classesDir.absolute) {
+            if (!classesDir.absolute) {
                 classesDir = new File(baseDir, classesDir.path)
             }
         }
 
         if (!testClassesDirSet) {
             testClassesDir = new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes"))
-            if(!testClassesDir.absolute) {
+            if (!testClassesDir.absolute) {
                 testClassesDir = new File(baseDir, testClassesDir.path)
             }
 
@@ -1429,7 +1429,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!pluginClassesDirSet) {
             pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
-            if(!pluginClassesDir.absolute) {
+            if (!pluginClassesDir.absolute) {
                 pluginClassesDir = new File(baseDir, pluginClassesDir.path)
             }
 
@@ -1437,7 +1437,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!pluginBuildClassesDirSet) {
             pluginBuildClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes"))
-            if(!pluginBuildClassesDir.absolute) {
+            if (!pluginBuildClassesDir.absolute) {
                 pluginBuildClassesDir = new File(baseDir, pluginBuildClassesDir.path)
             }
 
@@ -1445,7 +1445,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!pluginProvidedClassesDirSet) {
             pluginProvidedClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes"))
-            if(!pluginProvidedClassesDir.absolute) {
+            if (!pluginProvidedClassesDir.absolute) {
                 pluginProvidedClassesDir = new File(baseDir, pluginProvidedClassesDir.path)
             }
 
@@ -1473,16 +1473,16 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!testReportsDirSet) {
             testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
-            if(!testReportsDir.absolute) {
+            if (!testReportsDir.absolute) {
                 testReportsDir = new File(baseDir, testReportsDir.path)
-            } 
+            }
         }
 
         if (!docsOutputDirSet) {
             docsOutputDir = new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs"))
-            if(!docsOutputDir.absolute) {
+            if (!docsOutputDir.absolute) {
                 docsOutputDir = new File(baseDir, docsOutputDir.path)
-            }            
+            }
         }
 
         if (!testSourceDirSet) {

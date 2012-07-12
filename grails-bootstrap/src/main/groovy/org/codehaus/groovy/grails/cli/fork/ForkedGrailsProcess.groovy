@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.cli.fork
 import groovy.transform.CompileStatic
 
 /**
- *
- * Helper class for kicking off forked JVM processes, helpful in managing the setup and execution of the forked process. Subclasses should provided a static void main method
+ * Helper class for kicking off forked JVM processes, helpful in managing the setup and
+ * execution of the forked process. Subclasses should provided a static void main method.
  *
  * @author Graeme Rocher
  * @since 2.2
@@ -41,7 +41,6 @@ abstract class ForkedGrailsProcess {
             cp << file << File.pathSeparator
         }
 
-
         def baseName = executionContext.getBaseDir().canonicalFile.name
         File tempFile = File.createTempFile(baseName, "grails-execution-context")
 
@@ -53,10 +52,10 @@ abstract class ForkedGrailsProcess {
         }
 
         List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", cp.toString()]
-        if(debug) {
+        if (debug) {
             cmd.addAll( ["-Xdebug","-Xnoagent","-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"] )
         }
-        if(reloadingAgent != null) {
+        if (reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
         cmd << getClass().name
@@ -77,16 +76,14 @@ abstract class ForkedGrailsProcess {
         t2.start()
 
         int result = process.waitFor()
-        if(result == 1) {
+        if (result == 1) {
             try { t1.join() } catch (InterruptedException ignore) {}
             try { t1.join() } catch (InterruptedException ignore) {}
             try { es.close() } catch (IOException ignore) {}
             try { is.close() } catch (IOException ignore) {}
 
-
             throw new RuntimeException("Forked Grails VM exited with error")
         }
-
     }
 
     abstract ExecutionContext createExecutionContext()
@@ -94,9 +91,9 @@ abstract class ForkedGrailsProcess {
     ExecutionContext readExecutionContext() {
         String location = System.getProperty("grails.build.execution.context");
 
-        if(location != null) {
+        if (location != null) {
             final file = new File(location)
-            if(file.exists()) {
+            if (file.exists()) {
                 return (ExecutionContext)file.withInputStream { InputStream fis ->
                     def ois = new ObjectInputStream(fis)
                     return (ExecutionContext)ois.readObject()
@@ -105,7 +102,6 @@ abstract class ForkedGrailsProcess {
         }
         return null
     }
-
 
     static class TextDumper implements Runnable {
         InputStream input
@@ -123,7 +119,6 @@ abstract class ForkedGrailsProcess {
                 if (app != null) {
                     app.append(next).append( '\n' )
                 }
-
             }
         }
     }

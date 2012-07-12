@@ -39,7 +39,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -113,7 +112,7 @@ public class GrailsScriptRunner {
             originalOut = System.out;
         }
         this.settings = settings;
-        this.pluginPathSupport = new PluginPathDiscoverySupport(settings);
+        pluginPathSupport = new PluginPathDiscoverySupport(settings);
     }
 
     public void setInteractive(boolean interactive) {
@@ -196,11 +195,11 @@ public class GrailsScriptRunner {
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
         boolean resolveDeps = commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT);
-        if(resolveDeps) {
-            if(commandLine.hasOption("include-source")) {
+        if (resolveDeps) {
+            if (commandLine.hasOption("include-source")) {
                 build.setIncludeSource(true);
             }
-            if(commandLine.hasOption("include-javadoc")) {
+            if (commandLine.hasOption("include-javadoc")) {
                 build.setIncludeJavadoc(true);
             }
         }
@@ -311,7 +310,7 @@ public class GrailsScriptRunner {
     }
 
     public void setOut(PrintStream outputStream) {
-        this.out = outputStream;
+        out = outputStream;
     }
 
     public int executeCommand(String scriptName, String args) {
@@ -333,7 +332,7 @@ public class GrailsScriptRunner {
 
         CommandLineParser parser = getCommandLineParser();
         DefaultCommandLine commandLine = (DefaultCommandLine) parser.parseString(scriptName,args);
-        if(env != null) {
+        if (env != null) {
             commandLine.setEnvironment(env);
         }
 
@@ -341,6 +340,7 @@ public class GrailsScriptRunner {
     }
 
     private int executeCommand(CommandLine commandLine, String scriptName, String env) {
+        @SuppressWarnings("hiding")
         GrailsConsole console = getConsole(commandLine);
 
         // Load the BuildSettings file for this project if it exists. Note
@@ -377,22 +377,22 @@ public class GrailsScriptRunner {
         }
     }
 
-	private GrailsConsole getConsole(CommandLine commandLine) {
-		@SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
-	
-		// Set the console display properties
-		console.setAnsiEnabled(!commandLine.hasOption(CommandLine.NOANSI_ARGUMENT));
-		console.setStacktrace(commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT));
-		console.setVerbose(commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT));
+    private GrailsConsole getConsole(CommandLine commandLine) {
+        @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
 
-		return console;
-	}
+        // Set the console display properties
+        console.setAnsiEnabled(!commandLine.hasOption(CommandLine.NOANSI_ARGUMENT));
+        console.setStacktrace(commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT));
+        console.setVerbose(commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT));
+
+        return console;
+    }
 
     private void setRunningEnvironment(CommandLine commandLine, String env) {
         // Get the default environment if one hasn't been set.
         System.setProperty("base.dir", settings.getBaseDir().getPath());
 
-        if(env != null) {
+        if (env != null) {
             // Add some extra binding variables that are now available.
             settings.setGrailsEnv(env);
             settings.setDefaultEnv(false);
@@ -427,21 +427,21 @@ public class GrailsScriptRunner {
 
         // Now find what scripts match the one requested by the user.
         potentialScripts = getPotentialScripts(scriptName, allScripts);
-        
-        if(potentialScripts.size() == 0) {
+
+        if (potentialScripts.size() == 0) {
             try {
                 File aliasFile = new File(settings.getUserHome(), ".grails/.aliases");
-                if(aliasFile.exists()) {
+                if (aliasFile.exists()) {
                     Properties aliasProperties = new Properties();
                     aliasProperties.load(new FileReader(aliasFile));
-                    if(aliasProperties.containsKey(commandLine.getCommandName())) {
+                    if (aliasProperties.containsKey(commandLine.getCommandName())) {
                         String aliasValue = (String) aliasProperties.get(commandLine.getCommandName());
                         String[] aliasPieces = aliasValue.split(" ");
                         String commandName = aliasPieces[0];
                         String correspondingScriptName = GrailsNameUtils.getNameFromScript(commandName);
                         potentialScripts = getPotentialScripts(correspondingScriptName, allScripts);
-                        
-                        if(potentialScripts.size() > 0) {
+
+                        if (potentialScripts.size() > 0) {
                             String[] additionalArgs = new String[aliasPieces.length - 1];
                             System.arraycopy(aliasPieces, 1, additionalArgs, 0, additionalArgs.length);
                             insertArgumentsInFrontOfExistingArguments(commandLine, additionalArgs);
@@ -497,7 +497,7 @@ public class GrailsScriptRunner {
     private void insertArgumentsInFrontOfExistingArguments(CommandLine commandLine,
             String[] argumentsToInsert) {
         List<String> remainingArgs = commandLine.getRemainingArgs();
-        for(int i = argumentsToInsert.length - 1; i >= 0; i-- ) {
+        for (int i = argumentsToInsert.length - 1; i >= 0; i-- ) {
             remainingArgs.add(0, argumentsToInsert[i]);
         }
     }
@@ -608,8 +608,8 @@ public class GrailsScriptRunner {
 
     private void initializeState(String scriptName) {
         // The directory where scripts are cached.
-        this.scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
-        this.console = GrailsConsole.getInstance();
+        scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
+        console = GrailsConsole.getInstance();
         // Add the remaining JARs (from 'grailsHome', the app, and
         // the plugins) to the root loader.
 
@@ -617,10 +617,10 @@ public class GrailsScriptRunner {
 
         console.updateStatus("Configuring classpath");
         ClasspathConfigurer configurer = new ClasspathConfigurer(pluginPathSupport, settings, skipPlugins);
-        if("DependencyReport".equals(scriptName) || "Upgrade".equals(scriptName)) {
+        if ("DependencyReport".equals(scriptName) || "Upgrade".equals(scriptName)) {
             configurer.setExitOnResolveError(false);
         }
-        this.classLoader = configurer.configuredClassLoader();
+        classLoader = configurer.configuredClassLoader();
         initializeLogging();
     }
 

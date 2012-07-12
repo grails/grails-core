@@ -15,15 +15,17 @@
  */
 package org.grails.plugins.tomcat
 
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.springframework.util.ReflectionUtils
+
 import org.apache.tomcat.util.scan.StandardJarScanner
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.springframework.util.ReflectionUtils
+
 /**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
@@ -98,7 +100,7 @@ abstract class TomcatServer implements EmbeddableServer {
      *
      * If httpsPort is > 0, the server should listen for https requests on that port.
      */
-    abstract protected void doStart(String host, int httpPort, int httpsPort)
+    protected abstract void doStart(String host, int httpPort, int httpsPort)
 
     /**
      * Shutdown the server.
@@ -185,4 +187,3 @@ abstract class TomcatServer implements EmbeddableServer {
         }
     }
 }
-

@@ -16,12 +16,11 @@ class PluginBuildSettingsTests extends GroovyTestCase {
 
     private static File locateRelativeFile(String path) {
         def file = new File(path)
-        if(!file.exists()) {
+        if (!file.exists()) {
             file = new File("grails-test-suite-uber/$path")
         }
         return file
     }
-
 
     def absoluteTestDir
 
@@ -124,8 +123,8 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         def ps = new PluginBuildSettings(bs)
 
         assert 0 == ps.availableScripts.size()
-
     }
+
     void testGetAvailableScripts() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
         def scripts = pluginSettings.getAvailableScripts()

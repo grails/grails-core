@@ -121,7 +121,7 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
 
     private GrailsContentBufferingResponse getContentBufferingResponse(HttpServletResponse response) {
         while(response instanceof HttpServletResponseWrapper) {
-            if(response instanceof GrailsContentBufferingResponse) {
+            if (response instanceof GrailsContentBufferingResponse) {
                 return (GrailsContentBufferingResponse) response;
             }
             response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();

@@ -73,7 +73,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
 
         for (Object key : keys) {
             String name = (String) key;
-            Object param = this.params.get(name);
+            Object param = params.get(name);
             if (param instanceof Closure) {
                 param = evaluateNameForValue(param);
             }

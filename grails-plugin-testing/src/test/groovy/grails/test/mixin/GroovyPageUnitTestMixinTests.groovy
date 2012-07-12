@@ -33,7 +33,6 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
         def result = render(template:"/bar/foo")
 
         assert result == 'Hello /foo'
-
     }
 
     void testRenderView() {
@@ -50,12 +49,12 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
         assert result == null
     }
 
-    void testCanCallRenderMultipleTimesInOneTest() {		
+    void testCanCallRenderMultipleTimesInOneTest() {
         views['/_h1.gsp'] = '<h1>${text}</h1>'
-		views['/_h2.gsp'] = '<h2>${text}</h2>'
+        views['/_h2.gsp'] = '<h2>${text}</h2>'
 
-		assert applyTemplate('<g:render template="/h1" model="[text: text]"/>', [text: 'A main heading']) == '<h1>A main heading</h1>'
-		assert applyTemplate('<g:render template="/h2" model="[text: text]"/>', [text: 'A sub-heading']) == '<h2>A sub-heading</h2>'
+        assert applyTemplate('<g:render template="/h1" model="[text: text]"/>', [text: 'A main heading']) == '<h1>A main heading</h1>'
+        assert applyTemplate('<g:render template="/h2" model="[text: text]"/>', [text: 'A sub-heading']) == '<h2>A sub-heading</h2>'
     }
 
     void testMockTagLibrary() {
@@ -66,7 +65,6 @@ class GroovyPageUnitTestMixinTests extends GroovyTestCase {
         assert result != null
         assert result == 'tag contents good'
     }
-
 }
 
 @Artefact("TagLibrary")

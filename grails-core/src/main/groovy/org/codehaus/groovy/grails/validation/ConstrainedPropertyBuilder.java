@@ -55,7 +55,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
     public ConstrainedPropertyBuilder(Class<?> targetClass) {
         this.targetClass = targetClass;
         classPropertyFetcher = ClassPropertyFetcher.forClass(targetClass);
-        this.targetMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(targetClass);
+        targetMetaClass = GroovySystem.getMetaClassRegistry().getMetaClass(targetClass);
     }
 
     public String getSharedConstraint(String propertyName) {
@@ -103,7 +103,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
             }
             else {
                 Class<?> propertyType = classPropertyFetcher.getPropertyType(property);
-                if(propertyType == null) {
+                if (propertyType == null) {
                     throw new MissingMethodException(property, targetClass, new Object[]{attributes}, true);
                 }
                 cp = new ConstrainedProperty(targetClass, property, propertyType);

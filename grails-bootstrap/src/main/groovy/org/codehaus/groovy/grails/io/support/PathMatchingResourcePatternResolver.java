@@ -16,7 +16,6 @@ import java.util.jar.JarFile;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
  * A {@link org.springframework.core.io.support.ResourcePatternResolver} implementation that is able to resolve a
  * specified resource location path into one or more matching Resources.
@@ -139,12 +138,9 @@ public class PathMatchingResourcePatternResolver {
 
     private static final Log logger = LogFactory.getLog(PathMatchingResourcePatternResolver.class);
 
-
-
     private final ResourceLoader resourceLoader;
 
     private AntPathMatcher pathMatcher = new AntPathMatcher();
-
 
     /**
      * Create a new PathMatchingResourcePatternResolver with a DefaultResourceLoader.
@@ -152,7 +148,7 @@ public class PathMatchingResourcePatternResolver {
      * @see org.springframework.core.io.DefaultResourceLoader
      */
     public PathMatchingResourcePatternResolver() {
-        this.resourceLoader = new DefaultResourceLoader();
+        resourceLoader = new DefaultResourceLoader();
     }
 
     /**
@@ -163,7 +159,7 @@ public class PathMatchingResourcePatternResolver {
      * @see org.springframework.core.io.DefaultResourceLoader
      */
     public PathMatchingResourcePatternResolver(ClassLoader classLoader) {
-        this.resourceLoader = new DefaultResourceLoader(classLoader);
+        resourceLoader = new DefaultResourceLoader(classLoader);
     }
 
     /**
@@ -180,7 +176,7 @@ public class PathMatchingResourcePatternResolver {
      * Return the ResourceLoader that this pattern resolver works with.
      */
     public ResourceLoader getResourceLoader() {
-        return this.resourceLoader;
+        return resourceLoader;
     }
 
     /**
@@ -204,9 +200,8 @@ public class PathMatchingResourcePatternResolver {
      * Return the PathMatcher that this resource pattern resolver uses.
      */
     public AntPathMatcher getPathMatcher() {
-        return this.pathMatcher;
+        return pathMatcher;
     }
-
 
     public Resource getResource(String location) {
         return getResourceLoader().getResource(location);
@@ -219,24 +214,18 @@ public class PathMatchingResourcePatternResolver {
                 // a class path resource pattern
                 return findPathMatchingResources(locationPattern);
             }
-            else {
-                // all class path resources with the given name
-                return findAllClassPathResources(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()));
-            }
+            // all class path resources with the given name
+            return findAllClassPathResources(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()));
         }
-        else {
-            // Only look for a pattern after a prefix here
-            // (to not get fooled by a pattern symbol in a strange prefix).
-            int prefixEnd = locationPattern.indexOf(":") + 1;
-            if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
-                // a file pattern
-                return findPathMatchingResources(locationPattern);
-            }
-            else {
-                // a single resource with the given name
-                return new Resource[] {getResourceLoader().getResource(locationPattern)};
-            }
+        // Only look for a pattern after a prefix here
+        // (to not get fooled by a pattern symbol in a strange prefix).
+        int prefixEnd = locationPattern.indexOf(":") + 1;
+        if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
+            // a file pattern
+            return findPathMatchingResources(locationPattern);
         }
+        // a single resource with the given name
+        return new Resource[] {getResourceLoader().getResource(locationPattern)};
     }
 
     /**
@@ -448,9 +437,7 @@ public class PathMatchingResourcePatternResolver {
                 return new JarFile(jarFileUrl.substring(GrailsResourceUtils.FILE_URL_PREFIX.length()));
             }
         }
-        else {
-            return new JarFile(jarFileUrl);
-        }
+        return new JarFile(jarFileUrl);
     }
 
     /**
@@ -582,9 +569,4 @@ public class PathMatchingResourcePatternResolver {
             }
         }
     }
-
-
-
-
-
 }

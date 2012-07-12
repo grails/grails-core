@@ -17,23 +17,29 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.Writable;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -145,7 +151,7 @@ class GroovyPageWritable implements Writable {
                 }
             }
 
-            if(allowSettingContentType && response != null) {
+            if (allowSettingContentType && response != null) {
                 // only try to set content type when evaluating top level GSP
                 boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
                 if (!contentTypeAlreadySet) {

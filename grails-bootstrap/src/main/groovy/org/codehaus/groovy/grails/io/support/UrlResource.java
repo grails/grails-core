@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.io.support;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +38,8 @@ public class UrlResource extends AbstractFileResolvingResource {
      */
     public UrlResource(URL url) {
         this.url = url;
-        this.cleanedUrl = getCleanedUrl(this.url, url.toString());
-        this.uri = null;
+        cleanedUrl = getCleanedUrl(url, url.toString());
+        uri = null;
     }
 
     /**
@@ -49,8 +48,8 @@ public class UrlResource extends AbstractFileResolvingResource {
      * @throws java.net.MalformedURLException if the given URL path is not valid
      */
     public UrlResource(URI uri) throws MalformedURLException {
-        this.url = uri.toURL();
-        this.cleanedUrl = getCleanedUrl(this.url, uri.toString());
+        url = uri.toURL();
+        cleanedUrl = getCleanedUrl(url, uri.toString());
         this.uri = uri;
     }
 
@@ -60,9 +59,9 @@ public class UrlResource extends AbstractFileResolvingResource {
      * @throws MalformedURLException if the given URL path is not valid
      */
     public UrlResource(String path) throws MalformedURLException {
-        this.url = new URL(path);
-        this.cleanedUrl = getCleanedUrl(this.url, path);
-        this.uri = null;
+        url = new URL(path);
+        cleanedUrl = getCleanedUrl(url, path);
+        uri = null;
     }
 
     /**
@@ -93,7 +92,7 @@ public class UrlResource extends AbstractFileResolvingResource {
      * @see java.net.URLConnection#getInputStream()
      */
     public InputStream getInputStream() throws IOException {
-        URLConnection con = this.url.openConnection();
+        URLConnection con = url.openConnection();
         useCachesIfNecessary(con);
         try {
             return con.getInputStream();
@@ -115,7 +114,7 @@ public class UrlResource extends AbstractFileResolvingResource {
      * This implementation returns the underlying URL reference.
      */
     public URL getURL() throws IOException {
-        return this.url;
+        return url;
     }
 
     /**
@@ -123,12 +122,10 @@ public class UrlResource extends AbstractFileResolvingResource {
      * if possible.
      */
     public URI getURI() throws IOException {
-        if (this.uri != null) {
-            return this.uri;
+        if (uri != null) {
+            return uri;
         }
-        else {
-            return getFile().toURI();
-        }
+        return getFile().toURI();
     }
 
     /**
@@ -138,12 +135,7 @@ public class UrlResource extends AbstractFileResolvingResource {
      */
     @Override
     public File getFile() throws IOException {
-        if (this.uri != null) {
-            return super.getFile(this.uri);
-        }
-        else {
-            return super.getFile();
-        }
+        return uri == null ? super.getFile() : super.getFile(uri);
     }
 
     /**
@@ -156,7 +148,7 @@ public class UrlResource extends AbstractFileResolvingResource {
             relativePath = relativePath.substring(1);
         }
         try {
-            return new UrlResource(new URL(this.url, relativePath));
+            return new UrlResource(new URL(url, relativePath));
         } catch (MalformedURLException e) {
             return null;
         }
@@ -168,14 +160,14 @@ public class UrlResource extends AbstractFileResolvingResource {
      * @see java.io.File#getName()
      */
     public String getFilename() {
-        return new File(this.url.getFile()).getName();
+        return new File(url.getFile()).getName();
     }
 
     /**
      * This implementation returns a description that includes the URL.
      */
     public String getDescription() {
-        return "URL [" + this.url + "]";
+        return "URL [" + url + "]";
     }
 
 
@@ -185,7 +177,7 @@ public class UrlResource extends AbstractFileResolvingResource {
     @Override
     public boolean equals(Object obj) {
         return (obj == this ||
-                (obj instanceof UrlResource && this.cleanedUrl.equals(((UrlResource) obj).cleanedUrl)));
+                (obj instanceof UrlResource && cleanedUrl.equals(((UrlResource) obj).cleanedUrl)));
     }
 
     /**
@@ -193,7 +185,7 @@ public class UrlResource extends AbstractFileResolvingResource {
      */
     @Override
     public int hashCode() {
-        return this.cleanedUrl.hashCode();
+        return cleanedUrl.hashCode();
     }
 
 }

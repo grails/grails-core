@@ -32,7 +32,7 @@ public class Option {
         }
 
         this.name = name;
-        this.description = description != null ? description : "";
+        this.description = description == null ? "" : description;
     }
 
     public String getName() {

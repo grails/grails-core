@@ -1,7 +1,6 @@
 package grails.util
 
 import grails.build.GrailsBuildListener
-import groovy.mock.interceptor.StubFor
 
 /**
  * Test case for {@link BuildSettings}.
@@ -15,7 +14,7 @@ class BuildSettingsTests extends GroovyTestCase {
     protected void setUp() {
         def props = new Properties()
         final buildProps = new File("../build.properties")
-        if(!buildProps.exists()) {
+        if (!buildProps.exists()) {
             buildProps = new File("build.properties")
         }
         buildProps.withInputStream { InputStream is ->
@@ -180,7 +179,6 @@ class BuildSettingsTests extends GroovyTestCase {
         assertEquals new File("target").canonicalFile, settings.projectTargetDir
     }
 
-
     void testSetBaseDir() {
         def settings = new MockBuildSettings()
         settings.baseDir = new File("base/dir")
@@ -286,6 +284,7 @@ class BuildSettingsTests extends GroovyTestCase {
         }
     }
 }
+
 class MockBuildSettings extends BuildSettings {
 
     MockBuildSettings() {
@@ -300,9 +299,8 @@ class MockBuildSettings extends BuildSettings {
     @Override protected loadBuildPropertiesFromClasspath(Properties buildProps) {
         buildProps['grails.version'] = version
     }
-
-
 }
+
 class BuildSettingsTestsGrailsBuildListener implements GrailsBuildListener {
     void receiveGrailsBuildEvent(String name, Object[] args) {}
 }

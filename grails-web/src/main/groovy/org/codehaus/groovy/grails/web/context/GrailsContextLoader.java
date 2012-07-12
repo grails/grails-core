@@ -15,12 +15,18 @@
 package org.codehaus.groovy.grails.web.context;
 
 import grails.util.Environment;
+import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.grape.Grape;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
+
+import java.security.AccessControlException;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -33,9 +39,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import javax.servlet.ServletContext;
-import java.security.AccessControlException;
 
 /**
  * @author graemerocher
@@ -101,14 +104,16 @@ public class GrailsContextLoader extends ContextLoader {
                     }
                 }
             });
-            ctx =  GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
+            ctx = GrailsConfigUtils.configureWebApplicationContext(servletContext, ctx);
             GrailsConfigUtils.executeGrailsBootstraps(application, ctx, servletContext);
         }
         catch (Throwable e) {
+            GrailsUtil.deepSanitize(e);
+            LOG.error("Error initializing the application: " + e.getMessage(), e);
+
             if (Environment.isDevelopmentMode() && !Environment.isWarDeployed()) {
-                LOG.error("Error executing bootstraps: " + e.getMessage(), e);
                 // bail out early in order to show appropriate error
-                if(System.getProperty("grails.disable.exit") == null) {
+                if (System.getProperty("grails.disable.exit") == null) {
                     System.exit(1);
                 }
             }
@@ -119,7 +124,6 @@ public class GrailsContextLoader extends ContextLoader {
         }
         return ctx;
     }
-
 
     @Override
     public void closeWebApplicationContext(ServletContext servletContext) {

@@ -16,13 +16,13 @@
 
 package org.codehaus.groovy.grails.exceptions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.Assert;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.Assert;
 
 /**
  * Default implementation of StackTraceFilterer.
@@ -135,7 +135,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     /**
      * Whether the given class name is an internal class and should be filtered
      * @param className The class name
-     * @return True if is internal
+     * @return true if is internal
      */
     protected boolean isApplicationClass(String className) {
         for (String packageName : packagesToFilter) {

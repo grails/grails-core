@@ -61,7 +61,7 @@ class DocEngine extends BaseRenderEngine implements WikiRenderEngine {
 
     DocEngine(InitialRenderContext context) {
         super(context)
-        this.basedir = context.get(BASE_DIR) ?: "."
+        basedir = context.get(BASE_DIR) ?: "."
     }
 
     boolean exists(String name) {

@@ -66,12 +66,12 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
     public Object getProperty(String property) {
         return getVariable(property);
     }
-    
+
     private GroovyPageRequestBinding findPageRequestBinding() {
-        if(!pageRequestBindingInitialized && parent != null) {
+        if (!pageRequestBindingInitialized && parent != null) {
             Binding nextParent = parent;
             while(nextParent != null && pageRequestBinding==null) {
-                if(nextParent instanceof GroovyPageRequestBinding) {
+                if (nextParent instanceof GroovyPageRequestBinding) {
                     pageRequestBinding = (GroovyPageRequestBinding)nextParent;
                 }
                 if (nextParent instanceof GroovyPageBinding) {
@@ -96,7 +96,7 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
-                    if(findPageRequestBinding()==null || !findPageRequestBinding().isRequestAttributeVariable(name)) {
+                    if (findPageRequestBinding() == null || !findPageRequestBinding().isRequestAttributeVariable(name)) {
                         // cache variable in this context since parent context cannot change during usage of this context
                         getVariablesMap().put(name, val);
                         cachedParentVariableNames.add(name);

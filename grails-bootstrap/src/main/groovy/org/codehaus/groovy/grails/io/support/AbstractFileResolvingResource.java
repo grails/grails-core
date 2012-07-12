@@ -41,9 +41,7 @@ public abstract class AbstractFileResolvingResource implements Resource {
             URL actualUrl = GrailsResourceUtils.extractJarFileURL(url);
             return GrailsResourceUtils.getFile(actualUrl, "Jar URL");
         }
-        else {
-            return getFile();
-        }
+        return getFile();
     }
 
     /**
@@ -72,37 +70,35 @@ public abstract class AbstractFileResolvingResource implements Resource {
                 // Proceed with file system resolution...
                 return getFile().exists();
             }
-            else {
-                // Try a URL connection content-length header...
-                URLConnection con = url.openConnection();
-                useCachesIfNecessary(con);
-                HttpURLConnection httpCon =
-                        (con instanceof HttpURLConnection ? (HttpURLConnection) con : null);
-                if (httpCon != null) {
-                    httpCon.setRequestMethod("HEAD");
-                    int code = httpCon.getResponseCode();
-                    if (code == HttpURLConnection.HTTP_OK) {
-                        return true;
-                    }
-                    else if (code == HttpURLConnection.HTTP_NOT_FOUND) {
-                        return false;
-                    }
-                }
-                if (con.getContentLength() >= 0) {
+
+            // Try a URL connection content-length header...
+            URLConnection con = url.openConnection();
+            useCachesIfNecessary(con);
+            HttpURLConnection httpCon =
+                    (con instanceof HttpURLConnection ? (HttpURLConnection) con : null);
+            if (httpCon != null) {
+                httpCon.setRequestMethod("HEAD");
+                int code = httpCon.getResponseCode();
+                if (code == HttpURLConnection.HTTP_OK) {
                     return true;
                 }
-                if (httpCon != null) {
-                    // no HTTP OK status, and no content-length header: give up
-                    httpCon.disconnect();
+                if (code == HttpURLConnection.HTTP_NOT_FOUND) {
                     return false;
                 }
-                else {
-                    // Fall back to stream existence: can we open the stream?
-                    InputStream is = getInputStream();
-                    is.close();
-                    return true;
-                }
             }
+            if (con.getContentLength() >= 0) {
+                return true;
+            }
+            if (httpCon != null) {
+                // no HTTP OK status, and no content-length header: give up
+                httpCon.disconnect();
+                return false;
+            }
+
+            // Fall back to stream existence: can we open the stream?
+            InputStream is = getInputStream();
+            is.close();
+            return true;
         }
         catch (IOException ex) {
             return false;
@@ -117,9 +113,7 @@ public abstract class AbstractFileResolvingResource implements Resource {
                 File file = getFile();
                 return (file.canRead() && !file.isDirectory());
             }
-            else {
-                return true;
-            }
+            return true;
         }
         catch (IOException ex) {
             return false;
@@ -132,15 +126,13 @@ public abstract class AbstractFileResolvingResource implements Resource {
             // Proceed with file system resolution...
             return getFile().length();
         }
-        else {
-            // Try a URL connection content-length header...
-            URLConnection con = url.openConnection();
-            useCachesIfNecessary(con);
-            if (con instanceof HttpURLConnection) {
-                ((HttpURLConnection) con).setRequestMethod("HEAD");
-            }
-            return con.getContentLength();
+        // Try a URL connection content-length header...
+        URLConnection con = url.openConnection();
+        useCachesIfNecessary(con);
+        if (con instanceof HttpURLConnection) {
+            ((HttpURLConnection) con).setRequestMethod("HEAD");
         }
+        return con.getContentLength();
     }
 
     public long lastModified() throws IOException {
@@ -149,16 +141,12 @@ public abstract class AbstractFileResolvingResource implements Resource {
             // Proceed with file system resolution...
             return getFile().lastModified();
         }
-        else {
-            // Try a URL connection last-modified header...
-            URLConnection con = url.openConnection();
-            useCachesIfNecessary(con);
-            if (con instanceof HttpURLConnection) {
-                ((HttpURLConnection) con).setRequestMethod("HEAD");
-            }
-            return con.getLastModified();
+        // Try a URL connection last-modified header...
+        URLConnection con = url.openConnection();
+        useCachesIfNecessary(con);
+        if (con instanceof HttpURLConnection) {
+            ((HttpURLConnection) con).setRequestMethod("HEAD");
         }
+        return con.getLastModified();
     }
-
-
 }

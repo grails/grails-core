@@ -29,7 +29,7 @@ public interface Constraint extends MessageSourceAware {
      * Returns whether the constraint supports being applied against the specified type;
      *
      * @param type The type to support
-     * @return True if the constraint can be applied against the specified type
+     * @return true if the constraint can be applied against the specified type
      */
     @SuppressWarnings("rawtypes")
     boolean supports(Class type);
@@ -37,7 +37,7 @@ public interface Constraint extends MessageSourceAware {
     /**
      * Return whether the constraint is valid for the owning class
      *
-     * @return True if it is
+     * @return true if it is
      */
     boolean isValid();
 

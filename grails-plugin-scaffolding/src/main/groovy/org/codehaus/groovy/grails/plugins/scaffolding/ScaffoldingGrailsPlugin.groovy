@@ -142,7 +142,7 @@ class ScaffoldingGrailsPlugin {
 
     def onChange = { event ->
         ScaffoldingViewResolver.clearViewCache()
-        if(event.ctx?.groovyPagesTemplateRenderer) {
+        if (event.ctx?.groovyPagesTemplateRenderer) {
             GroovyPagesTemplateRenderer renderer = event.ctx?.groovyPagesTemplateRenderer
             renderer.clearCache()
         }

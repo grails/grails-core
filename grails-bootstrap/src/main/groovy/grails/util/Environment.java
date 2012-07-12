@@ -161,7 +161,7 @@ public enum Environment {
 
     /**
      * Returns true if the application is running in development mode (within grails run-app)
-     * @return True if the application is running in development mode
+     * @return true if the application is running in development mode
      */
     public static boolean isDevelopmentMode() {
         return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
@@ -170,7 +170,7 @@ public enum Environment {
 
     /**
      * Check whether the application is deployed
-     * @return True if is
+     * @return true if is
      */
     public static boolean isWarDeployed() {
         return Metadata.getCurrent().isWarDeployed();
@@ -178,7 +178,7 @@ public enum Environment {
 
     /**
      * Returns whether the environment is running within the Grails shell (executed via the 'grails' command line in a terminal window)
-     * @return True if is
+     * @return true if is
      */
     public static boolean isWithinShell() {
         return DefaultGroovyMethods.getRootLoader(Environment.class.getClassLoader()) != null;
@@ -314,7 +314,7 @@ public enum Environment {
         }
 
         private EnvironmentBlockEvaluator(Environment e) {
-            this.current = e;
+            current = e;
         }
 
         @SuppressWarnings("unused")
@@ -327,19 +327,19 @@ public enum Environment {
         @SuppressWarnings("unused")
         public void production(Closure<?> c) {
             if (current == Environment.PRODUCTION) {
-                this.callable = c;
+                callable = c;
             }
         }
         @SuppressWarnings("unused")
         public void development(Closure<?> c) {
             if (current == Environment.DEVELOPMENT) {
-                this.callable = c;
+                callable = c;
             }
         }
         @SuppressWarnings("unused")
         public void test(Closure<?> c) {
             if (current == Environment.TEST) {
-                this.callable = c;
+                callable = c;
             }
         }
 
@@ -348,7 +348,7 @@ public enum Environment {
             Object[] argsArray = (Object[])args;
             if (args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
                 if (current == Environment.CUSTOM && current.getName().equals(name)) {
-                    this.callable = (Closure<?>) argsArray[0];
+                    callable = (Closure<?>) argsArray[0];
                 }
                 return null;
             }
@@ -402,12 +402,12 @@ public enum Environment {
     public static boolean isInitializing() {
         return initializingState;
     }
-    
+
     public static void setInitializing(boolean initializing) {
-        initializingState=initializing;
+        initializingState = initializing;
         System.setProperty(INITIALIZING, String.valueOf(initializing));
     }
-    
+
     /**
      * @return true if the reloading agent is active
      */

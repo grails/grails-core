@@ -52,9 +52,9 @@ public class PagedResultList implements List, Serializable {
     private final Criteria criteria;
 
     public PagedResultList(GrailsHibernateTemplate template, Criteria crit) {
-        this.list = crit.list();
-        this.criteria = crit;
-        this.hibernateTemplate = template;
+        list = crit.list();
+        criteria = crit;
+        hibernateTemplate = template;
     }
 
     public int size() {

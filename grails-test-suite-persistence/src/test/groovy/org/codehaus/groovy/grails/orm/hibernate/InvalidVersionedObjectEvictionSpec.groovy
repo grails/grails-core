@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
-import spock.lang.Issue
-import spock.lang.FailsWith
+
 import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException
 
-/**
- */
-class InvalidVersionedObjectEvictionSpec extends GormSpec{
+import spock.lang.FailsWith
+import spock.lang.Issue
+
+class InvalidVersionedObjectEvictionSpec extends GormSpec {
 
     @Issue('GRAILS-8937')
     @FailsWith(HibernateOptimisticLockingFailureException)
@@ -32,7 +32,7 @@ class InvalidVersionedObjectEvictionSpec extends GormSpec{
         then:"The last saved is successful"
             foo.merge(failOnError:true, flush:true)
     }
-    
+
     @Override
     List getDomainClasses() {
         [Bar, Foo]
@@ -47,6 +47,7 @@ class Bar {
     static constraints = {
     }
 }
+
 @Entity
 class Foo {
 
@@ -56,4 +57,3 @@ class Foo {
         name(validator:{ it != 'invalid' })
     }
 }
-

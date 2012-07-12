@@ -14,14 +14,11 @@
  */
 package org.codehaus.groovy.grails.plugins.testing;
 
-import java.util.Collection;
-import java.util.Set;
-
 /**
- * Refer to the groovydoc of {@link GrailsMockHttpServletResponse} for further information
+ * Refer to the groovydoc of {@link GrailsMockHttpServletResponse} for further information.
  *
  * @author Graeme Rocher
  * @since 2.1
  */
-    public class GrailsMockHttpServletResponse extends AbstractGrailsMockHttpServletResponse{
-    }
+public class GrailsMockHttpServletResponse extends AbstractGrailsMockHttpServletResponse {
+}

@@ -93,9 +93,9 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     public DefaultConverterConfiguration(ConverterConfiguration<C> delegate) {
         this();
         this.delegate = delegate;
-        this.prettyPrint = delegate.isPrettyPrint();
-        this.circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
-        this.encoding = delegate.getEncoding();
+        prettyPrint = delegate.isPrettyPrint();
+        circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
+        encoding = delegate.getEncoding();
     }
 
     public DefaultConverterConfiguration(ProxyHandler proxyHandler) {
@@ -105,9 +105,9 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     public DefaultConverterConfiguration(ConverterConfiguration<C> delegate, ProxyHandler proxyHandler) {
         this(proxyHandler);
         this.delegate = delegate;
-        this.prettyPrint = delegate.isPrettyPrint();
-        this.circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
-        this.encoding = delegate.getEncoding();
+        prettyPrint = delegate.isPrettyPrint();
+        circularReferenceBehaviour = delegate.getCircularReferenceBehaviour();
+        encoding = delegate.getEncoding();
     }
 
     public DefaultConverterConfiguration(List<ObjectMarshaller<C>> oms) {
@@ -156,7 +156,7 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
         private Entry(ObjectMarshaller<C> marshaller, int priority) {
             this.marshaller = marshaller;
             this.priority = priority;
-            this.seq = MARSHALLER_SEQUENCE.incrementAndGet();
+            seq = MARSHALLER_SEQUENCE.incrementAndGet();
         }
 
         public int compareTo(Entry entry) {

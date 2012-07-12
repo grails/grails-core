@@ -14,24 +14,23 @@
  */
 package grails.util
 
+import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
+import org.codehaus.groovy.grails.io.support.AntPathMatcher
+import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver
+import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.io.support.Resource
-import org.codehaus.groovy.grails.io.support.FileSystemResource
-import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver
-import org.codehaus.groovy.grails.io.support.AntPathMatcher
-import java.lang.reflect.Array
-import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -102,8 +101,8 @@ class PluginBuildSettings {
         // lots of unit tests will fail.
         this.buildSettings = buildSettings
         this.pluginManager = pluginManager
-        this.pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
-        this.pluginLocations = buildSettings?.config?.grails?.plugin?.location
+        pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
+        pluginLocations = buildSettings?.config?.grails?.plugin?.location
 
         if (buildSettings == null) {
             return
@@ -164,7 +163,7 @@ class PluginBuildSettings {
     }
 
     @CompileStatic
-    protected def addPluginScopeInfoForDirAndInfo(PluginScopeInfo compileInfo, GrailsPluginInfo info, Resource dir) {
+    protected void addPluginScopeInfoForDirAndInfo(PluginScopeInfo compileInfo, GrailsPluginInfo info, Resource dir) {
         def excludedPaths = PLUGIN_EXCLUDE_PATHS // conf gets special handling
         compileInfo.pluginInfos << info
         compileInfo.pluginNames << info.name
@@ -191,7 +190,7 @@ class PluginBuildSettings {
     /**
      * Returns an array of PluginInfo objects
      */
-    GrailsPluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
+    GrailsPluginInfo[] getPluginInfos(String pluginDirPath = this.pluginDirPath) {
         if (pluginInfosMap) {
             return cache['pluginInfoList']
         }
@@ -357,7 +356,7 @@ class PluginBuildSettings {
             def userHome = System.getProperty("user.home")
             def grailsHome = buildSettings.grailsHome?.absolutePath
             def basedir = buildSettings.baseDir.absolutePath
-            if(grailsHome != null) {
+            if (grailsHome != null) {
                 resourceResolver("file:${grailsHome}/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             }
             resourceResolver("file:${basedir}/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
@@ -391,7 +390,6 @@ class PluginBuildSettings {
      * Obtains an array of all plugin provided source directories
      *
      * @deprecated Use getPluginSourceDirectories
-     *
      */
     Resource[] getPluginSourceFiles() {
         return getPluginSourceDirectories()
@@ -421,8 +419,8 @@ class PluginBuildSettings {
 
 
     /**
-    * Gets all the plugin source directories for the given plugin directory
-    */
+     * Gets all the plugin source directories for the given plugin directory
+     */
     Resource[] getPluginSourceDirectories(File pluginDir) {
         getPluginSourceDirectories() // initialize cache
 
@@ -430,7 +428,7 @@ class PluginBuildSettings {
     }
 
     /**
-    * @deprecated Use getPluginSourceDirectories
+     * @deprecated Use getPluginSourceDirectories
      */
     Resource[] getPluginSourceFiles(File pluginDir) {
         return getPluginSourceDirectories(pluginDir)
@@ -549,7 +547,6 @@ class PluginBuildSettings {
 
 
     /**
-     *
      * @return A list of plugin infos that are supported and scoped for compile or runtime
      */
     @CompileStatic
@@ -563,6 +560,7 @@ class PluginBuildSettings {
         }
         return artefactResources
     }
+
     /**
      *
      * @return A list of plugin infos that are supported and scoped for compile or runtime
@@ -722,7 +720,7 @@ class PluginBuildSettings {
                     if (pluginLoc?.value) pluginFile = new File(pluginLoc.value.toString())
                 }
 
-                if(pluginFile != null) {
+                if (pluginFile != null) {
                     pluginResource =  new FileSystemResource(pluginFile)
                 }
                 if (pluginResource) {

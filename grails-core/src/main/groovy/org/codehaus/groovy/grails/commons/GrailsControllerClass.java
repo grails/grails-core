@@ -75,7 +75,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      *
      * @param controller The instance of the controller
      * @param action The action to check
-     * @return True if it is intercepted
+     * @return true if it is intercepted
      */
     boolean isInterceptedBefore(GroovyObject controller, String action);
 
@@ -85,7 +85,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      *
      * @param controller The controller instance
      * @param action The action to check
-     * @return True if it is intercepted
+     * @return true if it is intercepted
      */
     boolean isInterceptedAfter(GroovyObject controller, String action);
 
@@ -176,7 +176,7 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * Returns true if the given action name is a flow action.
      *
      * @param actionName The name of the action
-     * @return True if it is a flow action
+     * @return true if it is a flow action
      */
     boolean isFlowAction(String actionName);
 

@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import grails.persistence.Entity
 import grails.orm.HibernateCriteriaBuilder
+import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -193,7 +193,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                 }
         assertEquals 1, results.size()
     }
-
 
     void testWithGString() {
         def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
@@ -495,8 +494,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 2 , results.size()
     }
 
-
-     void testNestedAssociationIsNullField() {
+    void testNestedAssociationIsNullField() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             CriteriaBuilderTestClass.name)
 
@@ -571,7 +569,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.setProperty("parent", obj)
         obj3.invokeMethod("save", null)
 
-
         List results = parse(
             ".list { \n" +
                 "or { \n" +
@@ -616,7 +613,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj4.setProperty("lastName", "rubble")
         obj4.setProperty("age", 45)
         obj4.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "or { " +
@@ -796,7 +792,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                     "projections { " +
                         "avg('age',)" +
@@ -826,7 +821,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "projections { " +
@@ -941,7 +935,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "projections { " +
@@ -1063,7 +1056,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.setProperty("age", 35)
 
         obj3.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "eqProperty('firstName','lastName')" +
@@ -1628,8 +1620,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 1 , results.size()
         assertTrue 'Result list should contain Strings', results[0] instanceof String
     }
-    
-    
+
     void testCriteriaInvolvingNestedRelationshipsSomeOfWhichAreEmbedded() {
         def newBook = new Book(title: 'First Popular Book')
         newBook.popularity = new Popularity(liked: 42)
@@ -1638,11 +1629,11 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         def newAuthor = new OneBookAuthor()
         newAuthor.book = newBook
         assert newAuthor.save(flush: true)
-        
+
         def newPublisher = new OneAuthorPublisher(name: 'First Good Publisher')
         newPublisher.author = newAuthor
         assert newPublisher.save(flush: true)
-        
+
         newBook = new Book(title: 'Second Popular Book')
         newBook.popularity = new Popularity(liked: 2112)
         assert newBook.save(flush: true)
@@ -1650,11 +1641,11 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         newAuthor = new OneBookAuthor()
         newAuthor.book = newBook
         assert newAuthor.save(flush: true)
-        
+
         newPublisher = new OneAuthorPublisher(name: 'Second Good Publisher')
         newPublisher.author = newAuthor
         assert newPublisher.save(flush: true)
-        
+
         newBook = new Book(title: 'First Unppular Book')
         newBook.popularity = new Popularity(liked: 0)
         assert newBook.save(flush: true)
@@ -1662,7 +1653,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         newAuthor = new OneBookAuthor()
         newAuthor.book = newBook
         assert newAuthor.save(flush: true)
-        
+
         newPublisher = new OneAuthorPublisher(name: 'First Bad Publisher')
         newPublisher.author = newAuthor
         assert newPublisher.save(flush: true)
@@ -1676,9 +1667,9 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                 }
             }
         }
-        
+
         assertEquals 2, result?.size()
-        
+
         def names = result.name
         assert 'First Good Publisher' in names
         assert 'Second Good Publisher' in names
@@ -1689,7 +1680,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         GroovyClassLoader cl = grailsApplication.getClassLoader()
         String unique =(uniqueResult?",true":"")
         Class clazz =
-         cl.parseClass("package test\n" +
+        cl.parseClass("package test\n" +
                          "import grails.orm.*\n" +
                          "import org.hibernate.*\n" +
                          "class "+testClassName+" {\n" +
@@ -1708,8 +1699,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         Closure closure = (Closure)go.getProperty("test")
         return closure.call()
-
-
     }
 
     private Object parse(String groovy,String testClassName, String criteriaClassName) {
@@ -1737,4 +1726,3 @@ class CriteriaBuilderTestClass2 {
    String firstName
    Date dateCreated
 }
-

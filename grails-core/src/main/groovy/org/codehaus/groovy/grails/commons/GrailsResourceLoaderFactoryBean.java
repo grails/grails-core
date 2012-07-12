@@ -35,6 +35,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  *
  * @since 0.4
  */
+@Deprecated
 public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResourceLoader>, InitializingBean {
 
     private GrailsResourceHolder grailsResourceHolder;

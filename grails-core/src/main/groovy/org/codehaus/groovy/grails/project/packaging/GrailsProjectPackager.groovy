@@ -17,28 +17,30 @@
 package org.codehaus.groovy.grails.project.packaging
 
 import grails.build.logging.GrailsConsole
+import grails.util.GrailsNameUtils
+import grails.util.GrailsUtil
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
+import groovy.transform.CompileStatic
+
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.springframework.util.ClassUtils
-import grails.util.GrailsUtil
-import grails.util.GrailsNameUtils
-import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.compiler.PackagingException
-import java.util.concurrent.Future
-import org.springframework.core.io.FileSystemResource
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.publishing.PluginDescriptorGenerator
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.springframework.core.io.FileSystemResource
+import org.springframework.util.ClassUtils
 
 /**
  * Encapsulates the logic to package a project ready for execution.
@@ -56,9 +58,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
     boolean native2ascii = true
     File configFile
     String servletVersion = "2.5"
-
     ClassLoader classLoader
-
 
     private String serverContextPath
     private ConfigObject config
@@ -67,7 +67,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
     private resourcesDirPath
     private boolean doCompile
     private File webXmlFile
-
 
     GrailsProjectPackager(GrailsProjectCompiler compiler, File configFile, boolean doCompile = true) {
         super(compiler.buildSettings, false)
@@ -103,7 +102,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
     @CompileStatic
     String configureServerContextPath() {
         createConfig()
-        if(serverContextPath == null) {
+        if (serverContextPath == null) {
             // Get the application context path by looking for a property named 'app.context' in the following order of precedence:
             //    System properties
             //    application.properties
@@ -122,12 +121,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
         return serverContextPath
     }
 
-
     AntBuilder getAnt() {
-       if (this.ant == null) {
-           this.ant = new GrailsConsoleAntBuilder()
+       if (ant == null) {
+           ant = new GrailsConsoleAntBuilder()
        }
-       return ant
+       ant
     }
 
     /**
@@ -140,7 +138,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         def tmpWebXml = "${projectWorkDir}/web.xml.tmp"
 
         final baseWebXml = getBaseWebXml(buildConfig)
-        if(baseWebXml) {
+        if (baseWebXml) {
             def customWebXml = resolveResources(baseWebXml.toString())
             def customWebXmlFile = customWebXml[0].file
             if (customWebXmlFile.exists()) {
@@ -160,7 +158,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
         webXml = new FileSystemResource(tmpWebXml)
         ant.replace(file:tmpWebXml, token:"@grails.project.key@",
-                value:"${grailsAppName}-${buildSettings.grailsEnv}-${grailsAppVersion}")
+                    value:"${grailsAppName}-${buildSettings.grailsEnv}-${grailsAppVersion}")
 
         def sw = new StringWriter()
 
@@ -181,6 +179,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
     private getBaseWebXml(ConfigObject buildConfig) {
         buildConfig.grails.config.base.webXml
     }
+
     /**
      * Generates a plugin.xml file for the given plugin descriptor
      *
@@ -236,10 +235,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
             return compilePlugin ? plugin : pluginProps
         }
     }
+
     /**
-     * Packages an application
+     * Packages an application.
      *
-     * @return True if the packaging was successful, false otherwise
+     * @return true if the packaging was successful, false otherwise
      */
     @CompileStatic
     ConfigObject packageApplication() {
@@ -298,15 +298,17 @@ class GrailsProjectPackager extends BaseSettingsApi {
      * @param config The config object
      */
     void startLogging(ConfigObject config) {
-        if (ClassUtils.isPresent(LOGGING_INITIALIZER_CLASS, classLoader)) {
-            try {
-                classLoader
-                    .loadClass(LOGGING_INITIALIZER_CLASS)
-                    .newInstance()
-                    .initialize(config)
-            } catch (e) {
-                throw new PackagingException("Error initializing logging: $e.message",e)
-            }
+        if (!ClassUtils.isPresent(LOGGING_INITIALIZER_CLASS, classLoader)) {
+            return
+        }
+
+        try {
+            classLoader
+                .loadClass(LOGGING_INITIALIZER_CLASS)
+                .newInstance()
+                .initialize(config)
+        } catch (e) {
+            throw new PackagingException("Error initializing logging: $e.message",e)
         }
     }
 
@@ -317,7 +319,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
      */
     @CompileStatic
     ConfigObject createConfig() {
-        if(this.config == null) {
+        if (config == null) {
             config = new ConfigObject()
             if (configFile.exists()) {
                 Class configClass = null
@@ -362,50 +364,55 @@ class GrailsProjectPackager extends BaseSettingsApi {
      */
     void processMessageBundles() {
         String i18nDir = "${resourcesDirPath}/grails-app/i18n"
-        if (native2ascii) {
 
-            def ant = new GrailsConsoleAntBuilder(ant.project)
-            ant.native2ascii(src: "${basedir}/grails-app/i18n",
-                    dest: i18nDir,
-                    includes: "**/*.properties",
-                    encoding: "UTF-8")
-
-            PluginBuildSettings settings = pluginSettings
-            def i18nPluginDirs = settings.pluginI18nDirectories
-            if (i18nPluginDirs) {
-                ExecutorService pool = Executors.newFixedThreadPool(5)
-                for (Resource r in i18nPluginDirs) {
-                    pool.execute({ Resource srcDir ->
-                        if (srcDir.exists()) {
-                            def file = srcDir.file
-                            def pluginDir = file.parentFile.parentFile
-                            def info = settings.getPluginInfo(pluginDir.absolutePath)
-
-                            if (info) {
-                                def pluginDirName = pluginDir.name
-                                def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
-                                try {
-                                    def localAnt = new GrailsConsoleAntBuilder(ant.project)
-                                    localAnt.project.defaultInputStream = System.in
-                                    localAnt.mkdir(dir: destDir)
-                                    localAnt.native2ascii(src: file,
-                                            dest: destDir,
-                                            includes: "**/*.properties",
-                                            encoding: "UTF-8")
-                                }
-                                catch (e) {
-                                    grailsConsole.error "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
-                                }
-                            }
-                        }
-                    }.curry(r))
-                }
-            }
-        }
-        else {
+        if (!native2ascii) {
             ant.copy(todir:i18nDir) {
                 fileset(dir:"${basedir}/grails-app/i18n", includes:"**/*.properties")
             }
+            return
+        }
+
+        def ant = new GrailsConsoleAntBuilder(ant.project)
+        ant.native2ascii(src: "${basedir}/grails-app/i18n",
+                dest: i18nDir,
+                includes: "**/*.properties",
+                encoding: "UTF-8")
+
+        PluginBuildSettings settings = pluginSettings
+        def i18nPluginDirs = settings.pluginI18nDirectories
+        if (!i18nPluginDirs) {
+            return
+        }
+
+        ExecutorService pool = Executors.newFixedThreadPool(5)
+        for (Resource r in i18nPluginDirs) {
+            pool.execute({ Resource srcDir ->
+                if (!srcDir.exists()) {
+                    return
+                }
+
+                def file = srcDir.file
+                def pluginDir = file.parentFile.parentFile
+                def info = settings.getPluginInfo(pluginDir.absolutePath)
+                if (!info) {
+                    return
+                }
+
+                def pluginDirName = pluginDir.name
+                def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
+                try {
+                    def localAnt = new GrailsConsoleAntBuilder(ant.project)
+                    localAnt.project.defaultInputStream = System.in
+                    localAnt.mkdir(dir: destDir)
+                    localAnt.native2ascii(src: file,
+                            dest: destDir,
+                            includes: "**/*.properties",
+                            encoding: "UTF-8")
+                }
+                catch (e) {
+                    grailsConsole.error "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                }
+            }.curry(r))
         }
     }
 
@@ -487,7 +494,8 @@ class GrailsProjectPackager extends BaseSettingsApi {
     void packageTlds() {
         // We don't know until runtime what servlet version to use, so
         // install the relevant TLDs now.
-        copyGrailsResources("${basedir}/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*", false)
+        copyGrailsResources("${basedir}/web-app/WEB-INF/tld",
+                            "src/war/WEB-INF/tld/${servletVersion}/*", false)
     }
 
     void packageTemplates(scaffoldDir) {
@@ -550,9 +558,8 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
     }
 
-
     private String getServerContextPathFromConfig() {
         final v = config.grails.app.context
-        if(v instanceof CharSequence) return v.toString()
+        if (v instanceof CharSequence) return v.toString()
     }
 }

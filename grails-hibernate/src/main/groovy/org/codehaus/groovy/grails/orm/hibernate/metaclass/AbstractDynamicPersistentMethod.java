@@ -48,7 +48,7 @@ public abstract class AbstractDynamicPersistentMethod extends AbstractDynamicMet
         this.classLoader = classLoader;
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
         this.application = application;
-        hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, this.application);
+        hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, application);
     }
 
     protected HibernateTemplate getHibernateTemplate() {
@@ -59,7 +59,7 @@ public abstract class AbstractDynamicPersistentMethod extends AbstractDynamicMet
     public Object invoke(Object target, String methodName, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(this.classLoader);
+            Thread.currentThread().setContextClassLoader(classLoader);
             return doInvokeInternal(target, arguments);
         }
         finally {

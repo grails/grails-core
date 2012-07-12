@@ -274,11 +274,11 @@ def whereQuery = ((domainClass | currentType("grails.gorm.DetachedCriteria")) & 
 
 whereQuery.accept {
 	def currentTypeName = currentType.name
-	// FIXADE detachedName will be incorrect when currentType is DetachedCriteria. 
+	// FIXADE detachedName will be incorrect when currentType is DetachedCriteria.
 	def detachedName = "grails.gorm.DetachedCriteria<${currentTypeName}>"
 	provider = "Where query DSL"
 	delegatesTo type:detachedName, isStatic:true
-	 
+
 	// add the extra functions
 	method name:"avg", type:detachedName, params:[prop:Object], doc:"The average of all values"
 	method name:"sum", type:detachedName, params:[prop:Object], doc:"The sum of all values"
@@ -341,7 +341,7 @@ currentType("grails.orm.HibernateCriteriaBuilder").accept {
 	method name : "not", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	method name : "maxResults", type : void, params : [num : int]
-	
+
 	delegatesTo type:"org.hibernate.Criteria", except:["list", "scroll"]
 	method name : "list", declaringType : "grails.orm.HibernateCriteriaBuilder", type: List, params : [query : Closure]
 	method name : "scroll", declaringType : "grails.orm.HibernateCriteriaBuilder", type: "org.hibernate.ScrollableResults", params : [query : Closure]
@@ -360,7 +360,7 @@ contribute(enclosingField("namedQueries") & domainClass) {
 	method name : "projections", type : "grails.orm.HibernateCriteriaBuilder", params : [components : Closure]
 	delegatesTo type:"grails.orm.HibernateCriteriaBuilder", isStatic:true
 	delegatesTo type:"org.hibernate.Criteria", isStatic:true
-} 
+}
 
 
 // -----------------------------------------------------

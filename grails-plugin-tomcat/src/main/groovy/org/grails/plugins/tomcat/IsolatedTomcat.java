@@ -15,14 +15,12 @@
  */
 package org.grails.plugins.tomcat;
 
+import javax.servlet.ServletException;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.coyote.http11.Http11NioProtocol;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.net.ServerSocket;
 
 /**
  * An isolated version of Tomcat used to run Grails applications with run-war.
@@ -127,8 +125,6 @@ public class IsolatedTomcat {
     public static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
         new Thread(new TomcatKillSwitch(tomcat, serverPort)).start();
     }
-
-
 
     private static int argToNumber(String[] args, int i, int orDefault) {
         if (args.length > i) {

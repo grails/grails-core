@@ -293,8 +293,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         return preferSubChunkWhenWritingToOtherBuffer;
     }
 
-    public void setPreferSubChunkWhenWritingToOtherBuffer(boolean preferSubChunkWhenWritingToOtherBuffer) {
-        this.preferSubChunkWhenWritingToOtherBuffer = preferSubChunkWhenWritingToOtherBuffer;
+    public void setPreferSubChunkWhenWritingToOtherBuffer(boolean prefer) {
+        preferSubChunkWhenWritingToOtherBuffer = prefer;
     }
 
     public final void reset() {
@@ -319,15 +319,13 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         allocBuffer = new AllocatedBuffer(chunkSize);
         dynamicChunkMap = new HashMap<StreamCharBufferKey, StreamCharBufferSubChunk>();
     }
-    
-    
+
     /**
-     * Clears the buffer and notifies the parents of this buffer of the change
-     * 
+     * Clears the buffer and notifies the parents of this buffer of the change.
      */
     public final void clear() {
         reset();
-        notifyBufferChange();        
+        notifyBufferChange();
     }
 
     /**
@@ -388,16 +386,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      *
      * @param stringChunkMinSize
      */
-    public void setSubStringChunkMinSize(int stringChunkMinSize) {
-        this.subStringChunkMinSize = stringChunkMinSize;
+    public void setSubStringChunkMinSize(int size) {
+        subStringChunkMinSize = size;
     }
 
     public int getSubBufferChunkMinSize() {
         return subBufferChunkMinSize;
     }
 
-    public void setSubBufferChunkMinSize(int subBufferChunkMinSize) {
-        this.subBufferChunkMinSize = subBufferChunkMinSize;
+    public void setSubBufferChunkMinSize(int size) {
+        subBufferChunkMinSize = size;
     }
 
     public int getWriteDirectlyToConnectedMinSize() {
@@ -409,16 +407,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
      *
      * @param writeDirectlyToConnectedMinSize
      */
-    public void setWriteDirectlyToConnectedMinSize(int writeDirectlyToConnectedMinSize) {
-        this.writeDirectlyToConnectedMinSize = writeDirectlyToConnectedMinSize;
+    public void setWriteDirectlyToConnectedMinSize(int size) {
+        writeDirectlyToConnectedMinSize = size;
     }
 
     public int getChunkMinSize() {
         return chunkMinSize;
     }
 
-    public void setChunkMinSize(int chunkMinSize) {
-        this.chunkMinSize = chunkMinSize;
+    public void setChunkMinSize(int size) {
+        chunkMinSize = size;
     }
 
     /**
@@ -924,7 +922,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             }
             else if (subBuffer.preferSubChunkWhenWritingToOtherBuffer ||
                     subBuffer.isSizeLarger(Math.max(subBufferChunkMinSize, getNewChunkMinSize()))) {
-                if(subBuffer.preferSubChunkWhenWritingToOtherBuffer) {
+                if (subBuffer.preferSubChunkWhenWritingToOtherBuffer) {
                     StreamCharBuffer.this.preferSubChunkWhenWritingToOtherBuffer = true;
                 }
                 appendStreamCharBufferChunk(subBuffer);
@@ -1044,8 +1042,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         ChunkReader lastChunkReader;
         boolean removeAfterReading;
 
-        public StreamCharBufferReader(boolean removeAfterReading) {
-            this.removeAfterReading = removeAfterReading;
+        public StreamCharBufferReader(boolean remove) {
+            removeAfterReading = remove;
         }
 
         private int prepareRead(int len) {
@@ -1409,7 +1407,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         public CharBufferChunkReader(CharBufferChunk parent, boolean removeAfterReading) {
             super(parent, removeAfterReading);
             this.parent = parent;
-            this.pointer = parent.offset;
+            pointer = parent.offset;
         }
 
         @Override
@@ -1528,7 +1526,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         }
 
         public StreamCharBuffer getSubBuffer() {
-            return this.streamCharBuffer;
+            return streamCharBuffer;
         }
 
         public boolean resetSize() {
@@ -1577,7 +1575,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
         public AllocatedBufferReader(AllocatedBuffer parent, boolean removeAfterReading) {
             this.parent = parent;
-            this.position = parent.chunkStart;
+            position = parent.chunkStart;
             if (hasReaders) {
                 writerUsedCounter = writer.writerUsedCounter;
             } else {

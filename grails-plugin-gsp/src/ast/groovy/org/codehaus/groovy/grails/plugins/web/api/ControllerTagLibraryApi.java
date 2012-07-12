@@ -56,13 +56,13 @@ public class ControllerTagLibraryApi extends CommonWebApi {
     }
 
     @Autowired
-    public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
-        this.tagLibraryLookup = tagLibraryLookup;
+    public void setTagLibraryLookup(TagLibraryLookup lookup) {
+        tagLibraryLookup = lookup;
     }
 
     @Autowired
-    public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
-        this.tagLibraryLookup = gspTagLibraryLookup;
+    public void setGspTagLibraryLookup(TagLibraryLookup lookup) {
+        tagLibraryLookup = lookup;
     }
 
     /**
@@ -79,7 +79,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         if (lookup != null) {
             GroovyObject tagLibrary = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, methodName);
             if (tagLibrary != null) {
-                if(!developmentMode) {
+                if (!developmentMode) {
                     MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(instance);
                     WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
                 }
@@ -104,7 +104,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         TagLibraryLookup lookup = getTagLibraryLookup();
         NamespacedTagDispatcher namespacedTagDispatcher = lookup.lookupNamespaceDispatcher(propertyName);
         if (namespacedTagDispatcher != null) {
-            if(!developmentMode) {
+            if (!developmentMode) {
                 WebMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
             }
             return namespacedTagDispatcher;
@@ -114,7 +114,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
     }
 
     public TagLibraryLookup getTagLibraryLookup() {
-        if (this.tagLibraryLookup == null) {
+        if (tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);
             if (applicationContext != null) {
                 try {

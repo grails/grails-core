@@ -113,8 +113,9 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     @After
     void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
-        if(currentSession != null)
+        if (currentSession != null) {
             DatastoreUtils.unbindSession(currentSession)
+        }
         simpleDatastore.clearData()
     }
 

@@ -123,13 +123,13 @@ class FormTagLib {
     }
 
     private outputNameAsIdIfIdDoesNotExist(attrs, out) {
-        if(!attrs.containsKey('id') && attrs.containsKey('name')) {
+        if (!attrs.containsKey('id') && attrs.containsKey('name')) {
             out << 'id="'
             out << attrs.name?.encodeAsHTML()
-            out << '" '   
+            out << '" '
         }
     }
-    
+
     /**
      * A helper tag for creating checkboxes.
      *
@@ -179,7 +179,7 @@ class FormTagLib {
         // process remaining attributes
         outputAttributes(attrs, out)
 
-        if(!attrs.containsKey('id')) {
+        if (!attrs.containsKey('id')) {
             out << """id="${name}" """
         }
 
@@ -204,7 +204,7 @@ class FormTagLib {
         }
 
         boolean escapeHtml = true
-        if(attrs.containsKey('escapeHtml')) {
+        if (attrs.containsKey('escapeHtml')) {
             escapeHtml = attrs.boolean('escapeHtml')
             attrs.remove 'escapeHtml'
         }
@@ -213,17 +213,17 @@ class FormTagLib {
         outputAttributes(attrs, out, true)
         out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
     }
-    
+
     /**
      * Some attributes can be defined as Boolean values, but the html specification
-     * mandates the attribute must have the same value as its name. For example, 
+     * mandates the attribute must have the same value as its name. For example,
      * disabled, readonly and checked.
      */
     private void booleanToAttribute(def attrs, String attrName) {
         def attrValue = attrs.remove(attrName)
         // If the value is the same as the name or if it is a boolean value,
         // reintroduce the attribute to the map according to the w3c rules, so it is output later
-        if (Boolean.valueOf(attrValue) || 
+        if (Boolean.valueOf(attrValue) ||
            (attrValue instanceof String && attrValue?.equalsIgnoreCase(attrName))) {
             attrs.put(attrName, attrName)
         } else if (attrValue instanceof String && !attrValue?.equalsIgnoreCase('false')) {
@@ -254,7 +254,7 @@ class FormTagLib {
             attrs.value = val
         }
         attrs.value = attrs.value != null ? attrs.value : "" // can't use ?: since 0 is groovy false
-        
+
         // Some attributes can be treated as boolean, but must be converted to the
         // expected value.
         booleanToAttribute(attrs, 'disabled')
@@ -273,7 +273,7 @@ class FormTagLib {
             writer << v.encodeAsHTML()
             writer << '" '
         }
-        if(useNameAsIdIfIdDoesNotExist) {
+        if (useNameAsIdIfIdDoesNotExist) {
             outputNameAsIdIfIdDoesNotExist(attrs, writer)
         }
     }
@@ -311,7 +311,7 @@ class FormTagLib {
     Closure form = { attrs, body ->
 
         def useToken = false
-        if(attrs.containsKey('useToken')) {
+        if (attrs.containsKey('useToken')) {
             useToken = attrs.boolean('useToken')
             attrs.remove('useToken')
         }
@@ -572,7 +572,7 @@ class FormTagLib {
                 years = (tempyear - 100)..(tempyear + 100)
             }
         }
-        
+
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
 
@@ -838,7 +838,7 @@ class FormTagLib {
         }
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
-        
+
         writer << "<select "
         // process remaining attributes
         outputAttributes(attrs, writer, true)
@@ -976,10 +976,10 @@ class FormTagLib {
         def name = attrs.remove('name')
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
-        
+
         def checked = attrs.remove('checked') ? true : false
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
-        if(!attrs.containsKey('id')) {
+        if (!attrs.containsKey('id')) {
             out << """id="${name}" """
         }
         // process remaining attributes
@@ -1006,7 +1006,7 @@ class FormTagLib {
         def name = attrs.remove('name')
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
-        
+
         values.eachWithIndex {val, idx ->
             def it = new Expando()
             it.radio = new StringBuilder("<input type=\"radio\" name=\"${name}\" ")

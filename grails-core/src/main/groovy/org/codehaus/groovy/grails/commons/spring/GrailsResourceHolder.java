@@ -14,10 +14,10 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
+import java.io.IOException;
+
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
 
 /**
  * Holds references to all the Grails resource instances to support class reloading.
@@ -25,6 +25,7 @@ import java.io.IOException;
  * @author Graeme Rocher
  * @deprecated No longer used and will be removed from a future release
  */
+@Deprecated
 public class GrailsResourceHolder {
 
     public static final String APPLICATION_CONTEXT_ID = "grailsResourceHolder";

@@ -70,8 +70,8 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void registerMockPlugin(GrailsPlugin plugin) {
-        this.plugins.put(plugin.getName(), plugin);
-        this.pluginList.add(plugin);
+        plugins.put(plugin.getName(), plugin);
+        pluginList.add(plugin);
     }
 
     public GrailsPlugin[] getUserPlugins() {
@@ -79,12 +79,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void loadPlugins() throws PluginException {
-        this.initialised = true;
+        initialised = true;
     }
 
     public void checkForChanges() {
-        Assert.isTrue(this.checkForChangesExpected);
-        this.checkForChangesExpected = false;
+        Assert.isTrue(checkForChangesExpected);
+        checkForChangesExpected = false;
     }
 
     public void doWebDescriptor(Resource descriptor, Writer target) {
@@ -122,12 +122,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void expectCheckForChanges() {
-        Assert.state(!this.checkForChangesExpected);
-        this.checkForChangesExpected = true;
+        Assert.state(!checkForChangesExpected);
+        checkForChangesExpected = true;
     }
 
     public void verify() {
-        Assert.state(!this.checkForChangesExpected);
+        Assert.state(!checkForChangesExpected);
     }
 
     public BuildSettings getBuildSettings() {

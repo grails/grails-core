@@ -82,7 +82,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
      * <p>Tags must return the correct value to indicate whether or not whitespace before this tag should be kept in the output.</p>
      * <p>This is for tags that must follow other tags, such as g:else or g:elseif that do not allow content between them and the
      * previous tag, and need to swallow the whitespace between them.</p>
-     * @return True if any whitespace immediately before the tag should be kept in the output - false if it is to be discarded
+     * @return true if any whitespace immediately before the tag should be kept in the output - false if it is to be discarded
      */
     public abstract boolean isKeepPrecedingWhiteSpace();
 
@@ -91,7 +91,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
      * <p>This is for tags that must follow other tags, such as g:else or g:elseif that do not allow content between them and the
      * previous tag. It is simply used as a safety mechanism to trap incorrect usage of tags.</p>
      * TODO rework this and combine with isKeepPrecedingWhiteSpace as really they are used in the same situations
-     * @return True if any content is allowed immediately before the tag - false if it is an error to have such content before it
+     * @return true if any content is allowed immediately before the tag - false if it is an error to have such content before it
      */
     public abstract boolean isAllowPrecedingContent();
 
@@ -131,21 +131,21 @@ public abstract class GroovySyntaxTag implements GrailsTag {
                     "] cannot have the same value as attribute [" + ATTRIBUTES_STATUS + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
-        if (hasStatus){
+        if (hasStatus) {
             out.println("loop:{");
             out.println("int "+ status +" = 0");
         }
-        if (!hasVar){
+        if (!hasVar) {
             var = "_it"+ Math.abs(System.identityHashCode(this));
             foreachRenamedIt = var;
         }
-        
-        String[] entryVars=null;
-        if(hasVar && var.indexOf(',') > -1) {
+
+        String[] entryVars = null;
+        if (hasVar && var.indexOf(',') > -1) {
             entryVars = var.split("\\s*,\\s*");
             var = "_entry" + Math.abs(System.identityHashCode(this));
         }
-        
+
         out.print("for( " + var);
         out.print(" in "); // dot de-reference
         out.print(parser != null ? parser.getExpressionText(in, false) : extractAttributeValue(in));  // object
@@ -160,12 +160,12 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         }
     }
 
-    protected void endEachMethod(){
+    protected void endEachMethod() {
         String status = attributes.get(ATTRIBUTES_STATUS);
         status = extractAttributeValue(status);
         boolean hasStatus = !StringUtils.isBlank(status);
 
-        if (hasStatus){
+        if (hasStatus) {
             out.println(status +"++");
             out.println("}");
         }
@@ -188,5 +188,4 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     public String getForeachRenamedIt() {
         return foreachRenamedIt;
     }
-
 }

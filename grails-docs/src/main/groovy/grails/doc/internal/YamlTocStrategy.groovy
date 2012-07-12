@@ -6,11 +6,10 @@ import org.yaml.snakeyaml.Yaml
  * Class representing a Grails user guide table of contents defined in YAML.
  */
 class YamlTocStrategy {
-    private final parser
+    private final parser = new Yaml()
     private resourceChecker
 
     YamlTocStrategy(resourceChecker) {
-        this.parser = new Yaml()
         this.resourceChecker = resourceChecker
     }
 

@@ -18,10 +18,20 @@ import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import grails.converters.XML
 
+import javax.servlet.AsyncContext
+import javax.servlet.AsyncEvent
+import javax.servlet.AsyncListener
+import javax.servlet.DispatcherType
+import javax.servlet.ServletContext
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Part
 
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -31,15 +41,6 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.multipart.MultipartHttpServletRequest
-import javax.servlet.DispatcherType
-import javax.servlet.http.Part
-import javax.servlet.AsyncContext
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.AsyncEvent
-import javax.servlet.AsyncListener
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
 
 /**
  * A custom mock HTTP servlet request that provides the extra properties
@@ -60,7 +61,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
 
     private cachedJson
     private cachedXml
-    javax.servlet.DispatcherType dispatcherType;
+    DispatcherType dispatcherType;
     AsyncContext asyncContext;
 
     /**
@@ -392,27 +393,27 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         requestMethod = method;
     }
 
-    Collection<javax.servlet.http.Part> getParts() {
+    Collection<Part> getParts() {
         getFileMap().values().collect {new MockPart(it)}
     }
 
-    javax.servlet.http.Part getPart(String name) {
+    Part getPart(String name) {
         MultipartFile file = getFile(name)
-        if(file) {
+        if (file) {
             return new MockPart(file)
         }
     }
 
-    javax.servlet.AsyncContext startAsync() {
+    AsyncContext startAsync() {
         def webRequest = GrailsWebRequest.lookup()
         def response = webRequest?.currentResponse
-        if(response == null) {
+        if (response == null) {
             response = new GrailsMockHttpServletResponse()
         }
         startAsync(this,response)
     }
 
-    javax.servlet.AsyncContext startAsync(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) {
+    AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) {
         return new MockAsyncContext(servletRequest, servletResponse)
     }
 
@@ -494,7 +495,7 @@ class MockAsyncContext implements AsyncContext {
         dispatchUri = path
     }
 
-    void dispatch(javax.servlet.ServletContext context, String path) {
+    void dispatch(ServletContext context, String path) {
         dispatchUri = path
     }
 
@@ -504,18 +505,18 @@ class MockAsyncContext implements AsyncContext {
 
     void start(Runnable run) {
         try {
-            for(listener in asyncListeners) {
+            for (listener in asyncListeners) {
                 AsyncListener al = listener.listener
                 al.onStartAsync(listener.event)
             }
             run.run()
-            for(listener in asyncListeners) {
+            for (listener in asyncListeners) {
                 AsyncListener al = listener.listener
                 al.onComplete(listener.event)
             }
 
         } catch (e) {
-            for(listener in asyncListeners) {
+            for (listener in asyncListeners) {
                 AsyncListener al = listener.listener
                 al.onError(new AsyncEvent(this, e))
             }
@@ -523,17 +524,15 @@ class MockAsyncContext implements AsyncContext {
         }
     }
 
-    void addListener(javax.servlet.AsyncListener listener) {
+    void addListener(AsyncListener listener) {
         asyncListeners << [listener:listener, event:new AsyncEvent(this, request, response)]
     }
 
-    void addListener(javax.servlet.AsyncListener listener, javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) {
+    void addListener(AsyncListener listener, ServletRequest servletRequest, ServletResponse servletResponse) {
         asyncListeners << [listener:listener, event:new AsyncEvent(this, servletRequest, servletResponse)]
     }
 
-    def <T extends javax.servlet.AsyncListener> T createListener(Class<T> clazz) {
+    def <T extends AsyncListener> T createListener(Class<T> clazz) {
         return clazz.newInstance()
     }
-
-
 }

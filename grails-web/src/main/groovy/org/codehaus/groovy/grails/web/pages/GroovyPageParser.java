@@ -1096,6 +1096,7 @@ public class GroovyPageParser implements Tokens {
                     }
                 }
                 attrsVarsMapDefinition.put(tagIndex, buffer.toString());
+                buffer.close();
             }
 
             if (!emptyTag) {
@@ -1168,11 +1169,11 @@ public class GroovyPageParser implements Tokens {
                 }
                 String quoteStr;
                 // use multiline groovy string if the value contains newlines
-                if(val.indexOf('\n')!=-1 || val.indexOf('\r')!=-1) {
-                    if(quoteChar=='"') {
-                        quoteStr=MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
+                if (val.indexOf('\n') != -1 || val.indexOf('\r') != -1) {
+                    if (quoteChar=='"') {
+                        quoteStr = MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
                     } else {
-                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;
+                        quoteStr = MULTILINE_GROOVY_STRING_SINGLEQUOTES;
                     }
                 } else {
                     quoteStr = String.valueOf(quoteChar);

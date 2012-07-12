@@ -102,7 +102,7 @@ class GrailsMock {
                 def paramTypes = []
                 args.each {
                     if (it != null) {
-                        if( it.class instanceof Class ) {
+                        if (it.class instanceof Class) {
                             paramTypes << it.class
                         }
                         else {
@@ -140,13 +140,12 @@ class GrailsMock {
             def methods = demand.mockMetaClass.getMetaMethods()
             def mockMetaClass = new ExpandoMetaClass(mock.getClass(), false, true)
             mockMetaClass.initialize()
-            for(MetaMethod m in methods) {
+            for (MetaMethod m in methods) {
                 mockMetaClass.registerInstanceMethod(m)
             }
-            
         }
 
-        if(!mockedClass.isInterface()) {
+        if (!mockedClass.isInterface()) {
             mock.metaClass = demand.mockMetaClass
         }
         return mock

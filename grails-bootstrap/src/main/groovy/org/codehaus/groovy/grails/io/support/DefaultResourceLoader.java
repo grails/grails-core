@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.io.support;
 
-
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -23,7 +22,6 @@ public class DefaultResourceLoader implements ResourceLoader {
 
     private ClassLoader classLoader;
 
-
     /**
      * Create a new DefaultResourceLoader.
      * <p>ClassLoader access will happen using the thread context class loader
@@ -31,7 +29,7 @@ public class DefaultResourceLoader implements ResourceLoader {
      * @see java.lang.Thread#getContextClassLoader()
      */
     public DefaultResourceLoader() {
-        this.classLoader = getDefaultClassLoader();
+        classLoader = getDefaultClassLoader();
     }
 
     public static ClassLoader getDefaultClassLoader() {
@@ -58,7 +56,6 @@ public class DefaultResourceLoader implements ResourceLoader {
         this.classLoader = classLoader;
     }
 
-
     /**
      * Specify the ClassLoader to load class path resources with, or <code>null</code>
      * for using the thread context class loader at the time of actual resource access.
@@ -73,24 +70,22 @@ public class DefaultResourceLoader implements ResourceLoader {
      * Return the ClassLoader to load class path resources with.
      */
     public ClassLoader getClassLoader() {
-        return (this.classLoader != null ? this.classLoader : getDefaultClassLoader());
+        return classLoader == null ? getDefaultClassLoader() : classLoader;
     }
-
 
     public Resource getResource(String location) {
         if (location.startsWith(CLASSPATH_URL_PREFIX)) {
             return new ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), getClassLoader());
         }
-        else {
-            try {
-                // Try to parse the location as a URL...
-                URL url = new URL(location);
-                return new UrlResource(url);
-            }
-            catch (MalformedURLException ex) {
-                // No URL -> resolve as resource path.
-                return getResourceByPath(location);
-            }
+
+        try {
+            // Try to parse the location as a URL...
+            URL url = new URL(location);
+            return new UrlResource(url);
+        }
+        catch (MalformedURLException ex) {
+            // No URL -> resolve as resource path.
+            return getResourceByPath(location);
         }
     }
 
@@ -106,7 +101,6 @@ public class DefaultResourceLoader implements ResourceLoader {
     protected Resource getResourceByPath(String path) {
         return new ClassPathContextResource(path, getClassLoader());
     }
-
 
     /**
      * ClassPathResource that explicitly expresses a context-relative path
@@ -128,5 +122,4 @@ public class DefaultResourceLoader implements ResourceLoader {
             return new ClassPathContextResource(pathToUse, getClassLoader());
         }
     }
-
 }

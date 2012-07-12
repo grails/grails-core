@@ -18,11 +18,12 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 import grails.util.Metadata;
 import groovy.util.ConfigObject;
+
+import java.util.Map;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
-
-import java.util.Map;
 
 /**
  * <p>The main interface representing a running Grails application. This interface's
@@ -256,7 +257,7 @@ public interface GrailsApplication extends ApplicationContextAware {
     /**
      * <p>Call this to find out if the class you have is an artefact loaded by grails.</p>
      * @param theClazz A class to test
-     * @return True if and only if the class was loaded from grails-app/
+     * @return true if and only if the class was loaded from grails-app/
      * @since 0.5
      */
     @SuppressWarnings("rawtypes")
@@ -267,7 +268,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * of the type expected</p>
      * @param artefactType A string identifying the artefact type to check for
      * @param theClazz The class to check
-     * @return True if Grails considers the class to be managed as an artefact of the type specified.
+     * @return true if Grails considers the class to be managed as an artefact of the type specified.
      * @since 0.5
      */
     @SuppressWarnings("rawtypes")
@@ -277,7 +278,7 @@ public interface GrailsApplication extends ApplicationContextAware {
      * <p>Check if the artefact Class with the name specified is of the type expected</p>
      * @param artefactType A string identifying the artefact type to check for
      * @param className The name of a class to check
-     * @return True if Grails considers the class to be managed as an artefact of the type specified.
+     * @return true if Grails considers the class to be managed as an artefact of the type specified.
      * @since 0.5
      */
     boolean isArtefactOfType(String artefactType, String className);
@@ -355,7 +356,7 @@ public interface GrailsApplication extends ApplicationContextAware {
     /**
      * <p>Test whether an artefact handler exists for a given type</p>
      * @param type The type of the handler
-     * @return True if it does
+     * @return true if it does
      */
     boolean hasArtefactHandler(String type);
 
@@ -372,7 +373,7 @@ public interface GrailsApplication extends ApplicationContextAware {
 
     /**
      * Returns whether this GrailsApplication has been initialised or not.
-     * @return True if it has been initialised
+     * @return true if it has been initialised
      */
     boolean isInitialised();
 
@@ -403,7 +404,7 @@ public interface GrailsApplication extends ApplicationContextAware {
     /**
      * Returns true if this application has been deployed as a WAR file
      *
-     * @return True if the application is WAR deployed
+     * @return true if the application is WAR deployed
      */
     boolean isWarDeployed();
 

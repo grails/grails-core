@@ -108,27 +108,27 @@ class PluginDescriptorGenerator {
                     }
                 }
                 final dependencyManager = buildSettings?.dependencyManager
-                if(dependencyManager) {
+                if (dependencyManager) {
                     repositories {
                         final resolvers = dependencyManager.chainResolver.resolvers
-                        for(r in resolvers) {
-                            if(r instanceof IBiblioResolver) {
+                        for (r in resolvers) {
+                            if (r instanceof IBiblioResolver) {
                                 xml.repository(name:r.name, url:r.root )
                             }
-                            else if(r instanceof GrailsRepoResolver) {
+                            else if (r instanceof GrailsRepoResolver) {
                                 xml.repository(name:r.name, url:r.repositoryRoot.toString() )
                             }
                         }
                     }
                     final scopes = dependencyManager.configurationNames
                     dependencies {
-                        for(scope in scopes) {
+                        for (scope in scopes) {
 
                             final jarDependencies = dependencyManager.getApplicationDependencyDescriptors(scope)
 
-                            if(jarDependencies) {
+                            if (jarDependencies) {
                                 xml."$scope" {
-                                    for(DependencyDescriptor dd in jarDependencies) {
+                                    for (DependencyDescriptor dd in jarDependencies) {
                                         final mrid = dd.dependencyRevisionId
                                         xml.dependency(group:mrid.organisation, name:mrid.name, version:mrid.revision)
                                     }
@@ -138,22 +138,21 @@ class PluginDescriptorGenerator {
                         }
                     }
                     plugins {
-                        for(scope in scopes) {
+                        for (scope in scopes) {
 
                             final pluginDependencies = dependencyManager.getApplicationPluginDependencyDescriptors(scope)
-                            if(pluginDependencies) {
+                            if (pluginDependencies) {
                                 xml."$scope" {
-                                    for(DependencyDescriptor dd in pluginDependencies) {
+                                    for (DependencyDescriptor dd in pluginDependencies) {
                                         final mrid = dd.dependencyRevisionId
                                         xml.plugin(group:mrid.organisation, name:mrid.name, version:mrid.revision)
                                     }
                                 }
                             }
-
                         }
-
                     }
                 }
+
                 runtimePluginRequirements {
                     if (pluginProps["dependsOn"]) {
                         for (d in pluginProps.dependsOn) {

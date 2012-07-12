@@ -20,6 +20,37 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import groovy.xml.DOMBuilder;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.ServletContext;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,7 +60,7 @@ import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -41,20 +72,6 @@ import org.springframework.util.ClassUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
-
-import javax.servlet.ServletContext;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.lang.reflect.Modifier;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URI;
-import java.net.URL;
-import java.util.*;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -308,7 +325,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
             }
         }
 
-        List<GrailsPlugin>  orderedPlugins = new ArrayList<GrailsPlugin> ();
+        List<GrailsPlugin> orderedPlugins = new ArrayList<GrailsPlugin> ();
         orderedPlugins.addAll(orderedCorePlugins);
         orderedPlugins.addAll(orderedUserPlugins);
 
@@ -469,7 +486,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
      *
      * @param plugin     The plugin to check
      * @param dependency The plugin which the first argument may be dependant on
-     * @return True if it is
+     * @return true if it is
      */
     private boolean isDependentOn(GrailsPlugin plugin, GrailsPlugin dependency) {
         for (String name : plugin.getDependencyNames()) {
@@ -495,7 +512,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
      * Returns true if there are no plugins left that should, if possible, be loaded before this plugin.
      *
      * @param plugin The plugin
-     * @return True if there are
+     * @return true if there are
      */
     private boolean areNoneToLoadBefore(GrailsPlugin plugin) {
         for (String name : plugin.getLoadAfterNames()) {
@@ -513,7 +530,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Parsing & compiling " + r.getFilename());
                 }
-                pluginClass = ((GroovyClassLoader)cl).parseClass(DefaultGroovyMethods.getText(r.getInputStream()));
+                pluginClass = ((GroovyClassLoader)cl).parseClass(IOGroovyMethods.getText(r.getInputStream()));
             }
             catch (CompilationFailedException e) {
                 throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);

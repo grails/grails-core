@@ -9,7 +9,7 @@ class OneToManyWithSelfAndInheritanceTests extends AbstractGrailsHibernateTests 
     protected void onSetUp() {
         gcl.parseClass '''
 package onetomanywithselfandinheritancetests
-        
+
 import grails.persistence.*
 
 @Entity
