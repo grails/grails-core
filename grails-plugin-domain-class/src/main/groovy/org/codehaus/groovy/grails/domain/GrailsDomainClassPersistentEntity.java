@@ -66,8 +66,9 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
     public void initialize() {
         @SuppressWarnings("hiding")
         final GrailsDomainClassProperty identifier = domainClass.getIdentifier();
-        if(identifier != null)
+        if (identifier != null) {
             this.identifier = new GrailsDomainClassPersistentProperty(this, identifier);
+        }
 
         mappingContext.addEntityValidator(this, domainClass.getValidator());
 
@@ -106,7 +107,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
             propertiesByName.put(grailsDomainClassProperty.getName(), persistentProperty);
             properties.add(persistentProperty);
 
-            if( persistentProperty instanceof Association ) {
+            if (persistentProperty instanceof Association) {
                 associations.add((Association)persistentProperty);
             }
         }
@@ -201,13 +202,13 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         if (isRoot()) return this;
 
         PersistentEntity parent = getParentEntity();
-        if(parent == null) {
+        if (parent == null) {
             return this;
         }
 
         while (!parent.isRoot()) {
             PersistentEntity current = parent.getParentEntity();
-            if(current != null) {
+            if (current != null) {
                 parent = current;
             }
             else {

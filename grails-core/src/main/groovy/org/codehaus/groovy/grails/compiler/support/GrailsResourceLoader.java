@@ -36,6 +36,7 @@ import org.springframework.core.io.Resource;
  *
  * @since 0.1
  */
+@Deprecated
 public class GrailsResourceLoader implements GroovyResourceLoader {
 
     private Resource[] resources;

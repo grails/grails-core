@@ -335,7 +335,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     }
 
     static final onChange = { event ->
-		LOG.debug "onChange() started"
+        LOG.debug "onChange() started"
 
         def datasourceNames = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
         for (name in application.config.keySet()) {
@@ -407,8 +407,8 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                         method.name.startsWith("count")
             }
 
-            if( !hasMethods ) {
-                if( ++retryCount < RELOAD_RETRY_LIMIT ) {
+            if (!hasMethods) {
+                if (++retryCount < RELOAD_RETRY_LIMIT) {
                     LOG.debug("Attempt ${retryCount} at enhancing ${event.source.name} failed, waiting and trying again")
                     sleep(retryCount * 1000)
                     enhanceAndTest()
@@ -419,7 +419,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         // Enhance the reloaded GORM objects
         enhanceAndTest()
 
-		LOG.info "onChange() complete"
+        LOG.info "onChange() complete"
     }
 
     static final doWithDynamicMethods = { ApplicationContext ctx ->
@@ -545,9 +545,9 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
 
         // If we are reloading via an onChange event, the source indicates the specific
         // entity that needs to be reloaded. Otherwise, just reload all of them.
-        if( source ) {
+        if (source) {
             PersistentEntity entity = mappingContext.getPersistentEntity(source.name)
-            if( entity ) {
+            if (entity) {
                 enhanceEntity(entity)
             }
         }

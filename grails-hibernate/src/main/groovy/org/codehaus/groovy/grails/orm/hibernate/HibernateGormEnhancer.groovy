@@ -43,10 +43,10 @@ import org.springframework.core.convert.ConversionService
 import org.springframework.dao.DataAccessException
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
+import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.springframework.orm.hibernate3.SessionFactoryUtils
 
 /**
  * Extended GORM Enhancer that fills out the remaining GORM for Hibernate methods
@@ -146,8 +146,8 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
         super.transactionManager = transactionManager
         this.classLoader = classLoader
-        this.sessionFactory = datastore.getSessionFactory()
-        this.conversionService = datastore.mappingContext.conversionService
+        sessionFactory = datastore.getSessionFactory()
+        conversionService = datastore.mappingContext.conversionService
 
         identityType = persistentEntity.identity?.type
 
@@ -159,18 +159,18 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
             identityType = domainClass.identifier?.type
 
-            this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
-            this.listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
-            this.hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
-            this.hibernateTemplate.setCacheQueries(this.cacheQueriesByDefault)
+            mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
+            listMethod = new ListPersistentMethod(grailsApplication, sessionFactory, classLoader)
+            hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
+            hibernateTemplate.setCacheQueries(cacheQueriesByDefault)
         } else {
-            this.hibernateTemplate = new GrailsHibernateTemplate(sessionFactory)
+            hibernateTemplate = new GrailsHibernateTemplate(sessionFactory)
         }
 
-        this.executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader, grailsApplication)
-        this.executeUpdateMethod = new ExecuteUpdatePersistentMethod(sessionFactory, classLoader, grailsApplication)
-        this.findMethod = new FindPersistentMethod(sessionFactory, classLoader, grailsApplication)
-        this.findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader, grailsApplication)
+        executeQueryMethod = new ExecuteQueryPersistentMethod(sessionFactory, classLoader, grailsApplication)
+        executeUpdateMethod = new ExecuteUpdatePersistentMethod(sessionFactory, classLoader, grailsApplication)
+        findMethod = new FindPersistentMethod(sessionFactory, classLoader, grailsApplication)
+        findAllMethod = new FindAllPersistentMethod(sessionFactory, classLoader, grailsApplication)
     }
 
     @Override
@@ -532,17 +532,17 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             }
             else {
                 sessionHolder.addSession(newSession)
-            }            
+            }
             template.execute({ Session session ->
                 return callable(session)
             } as HibernateCallback)
         }
         finally {
-            if(newSession) {
+            if (newSession) {
                 SessionFactoryUtils.closeSession(newSession)
                 sessionHolder?.removeSession(newSession)
             }
-            if(newBind) {
+            if (newBind) {
                 TransactionSynchronizationManager.unbindResource(sessionFactory)
             }
             if (previousSession) {
@@ -751,11 +751,11 @@ class HibernateGormInstanceApi extends GormInstanceApi {
             GrailsDomainClassMappingContext domainClassMappingContext = mappingContext
             def grailsApplication = domainClassMappingContext.getGrailsApplication()
             def domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.name)
-            this.config = grailsApplication.config?.grails?.gorm
-            this.saveMethod = new SavePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
-            this.mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
-            this.hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
-            this.cacheQueriesByDefault = GrailsHibernateUtil.isCacheQueriesByDefault(grailsApplication)
+            config = grailsApplication.config?.grails?.gorm
+            saveMethod = new SavePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
+            mergeMethod = new MergePersistentMethod(sessionFactory, classLoader, grailsApplication, domainClass, datastore)
+            hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, grailsApplication)
+            cacheQueriesByDefault = GrailsHibernateUtil.isCacheQueriesByDefault(grailsApplication)
         } else {
             hibernateTemplate = new GrailsHibernateTemplate(sessionFactory)
         }
@@ -767,7 +767,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
      * @param instance The instance
      * @param fieldName The name of the field
      *
-     * @return True if the field is dirty
+     * @return true if the field is dirty
      */
     boolean isDirty(instance, String fieldName) {
         def session = sessionFactory.currentSession
@@ -786,7 +786,7 @@ class HibernateGormInstanceApi extends GormInstanceApi {
      * Checks whether an entity is dirty
      *
      * @param instance The instance
-     * @return True if it is dirty
+     * @return true if it is dirty
      */
     boolean isDirty(instance) {
         def session = sessionFactory.currentSession

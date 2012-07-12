@@ -53,7 +53,7 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         this.classLoader = classLoader;
         Assert.notNull(application, "Constructor argument 'application' cannot be null");
         this.application = application;
-        hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, this.application);
+        hibernateTemplate = new GrailsHibernateTemplate(sessionFactory, application);
     }
 
     protected GrailsHibernateTemplate getHibernateTemplate() {
@@ -68,7 +68,7 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
     public Object invoke(Class clazz, String methodName, Closure additionalCriteria, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(this.classLoader);
+            Thread.currentThread().setContextClassLoader(classLoader);
             return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
         }
         finally {
@@ -79,7 +79,7 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
     public Object invoke(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(this.classLoader);
+            Thread.currentThread().setContextClassLoader(classLoader);
             return doInvokeInternal(clazz, methodName, additionalCriteria, arguments);
         }
         finally {
@@ -95,11 +95,10 @@ public abstract class AbstractStaticPersistentMethod extends AbstractStaticMetho
         }
 
         Criteria criteria = session.createCriteria(clazz);
-        if(detachedCriteria != null) {
-
+        if (detachedCriteria != null) {
             HibernateSession hibernateSession = new HibernateSession(datastore, session.getSessionFactory());
             PersistentEntity persistentEntity = datastore.getMappingContext().getPersistentEntity(clazz.getName());
-            if(persistentEntity != null) {
+            if (persistentEntity != null) {
                 DynamicFinder.applyDetachedCriteria(new HibernateQuery(criteria, hibernateSession, persistentEntity), detachedCriteria);
             }
         }

@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.io.support;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +10,7 @@ import java.net.URLConnection;
 
 /**
  * Abstract base class for resources which resolve URLs into File references,
- * such as {@link org.springframework.core.io.UrlResource} or {@link org.springframework.core.io.ClassPathResource}.
+ * such as <code>org.springframework.core.io.UrlResource</code> or <code>org.springframework.core.io.ClassPathResource</code>.
  *
  * <p>Detects the "file" protocol as well as the JBoss "vfs" protocol in URLs,
  * resolving file system references accordingly.
@@ -24,7 +23,6 @@ public abstract class AbstractFileResolvingResource implements Resource {
     /**
      * This implementation returns a File reference for the underlying class path
      * resource, provided that it refers to a file in the file system.
-     * @see org.springframework.util.ResourceUtils#getFile(java.net.URL, String)
      */
     public File getFile() throws IOException {
         URL url = getURL();
@@ -41,15 +39,12 @@ public abstract class AbstractFileResolvingResource implements Resource {
             URL actualUrl = GrailsResourceUtils.extractJarFileURL(url);
             return GrailsResourceUtils.getFile(actualUrl, "Jar URL");
         }
-        else {
-            return getFile();
-        }
+        return getFile();
     }
 
     /**
      * This implementation returns a File reference for the underlying class path
      * resource, provided that it refers to a file in the file system.
-     * @see org.springframework.util.ResourceUtils#getFile(java.net.URI, String)
      */
     protected File getFile(URI uri) throws IOException {
         return GrailsResourceUtils.getFile(uri, getDescription());
@@ -72,37 +67,35 @@ public abstract class AbstractFileResolvingResource implements Resource {
                 // Proceed with file system resolution...
                 return getFile().exists();
             }
-            else {
-                // Try a URL connection content-length header...
-                URLConnection con = url.openConnection();
-                useCachesIfNecessary(con);
-                HttpURLConnection httpCon =
-                        (con instanceof HttpURLConnection ? (HttpURLConnection) con : null);
-                if (httpCon != null) {
-                    httpCon.setRequestMethod("HEAD");
-                    int code = httpCon.getResponseCode();
-                    if (code == HttpURLConnection.HTTP_OK) {
-                        return true;
-                    }
-                    else if (code == HttpURLConnection.HTTP_NOT_FOUND) {
-                        return false;
-                    }
-                }
-                if (con.getContentLength() >= 0) {
+
+            // Try a URL connection content-length header...
+            URLConnection con = url.openConnection();
+            useCachesIfNecessary(con);
+            HttpURLConnection httpCon =
+                    (con instanceof HttpURLConnection ? (HttpURLConnection) con : null);
+            if (httpCon != null) {
+                httpCon.setRequestMethod("HEAD");
+                int code = httpCon.getResponseCode();
+                if (code == HttpURLConnection.HTTP_OK) {
                     return true;
                 }
-                if (httpCon != null) {
-                    // no HTTP OK status, and no content-length header: give up
-                    httpCon.disconnect();
+                if (code == HttpURLConnection.HTTP_NOT_FOUND) {
                     return false;
                 }
-                else {
-                    // Fall back to stream existence: can we open the stream?
-                    InputStream is = getInputStream();
-                    is.close();
-                    return true;
-                }
             }
+            if (con.getContentLength() >= 0) {
+                return true;
+            }
+            if (httpCon != null) {
+                // no HTTP OK status, and no content-length header: give up
+                httpCon.disconnect();
+                return false;
+            }
+
+            // Fall back to stream existence: can we open the stream?
+            InputStream is = getInputStream();
+            is.close();
+            return true;
         }
         catch (IOException ex) {
             return false;
@@ -117,9 +110,7 @@ public abstract class AbstractFileResolvingResource implements Resource {
                 File file = getFile();
                 return (file.canRead() && !file.isDirectory());
             }
-            else {
-                return true;
-            }
+            return true;
         }
         catch (IOException ex) {
             return false;
@@ -132,15 +123,13 @@ public abstract class AbstractFileResolvingResource implements Resource {
             // Proceed with file system resolution...
             return getFile().length();
         }
-        else {
-            // Try a URL connection content-length header...
-            URLConnection con = url.openConnection();
-            useCachesIfNecessary(con);
-            if (con instanceof HttpURLConnection) {
-                ((HttpURLConnection) con).setRequestMethod("HEAD");
-            }
-            return con.getContentLength();
+        // Try a URL connection content-length header...
+        URLConnection con = url.openConnection();
+        useCachesIfNecessary(con);
+        if (con instanceof HttpURLConnection) {
+            ((HttpURLConnection) con).setRequestMethod("HEAD");
         }
+        return con.getContentLength();
     }
 
     public long lastModified() throws IOException {
@@ -149,16 +138,12 @@ public abstract class AbstractFileResolvingResource implements Resource {
             // Proceed with file system resolution...
             return getFile().lastModified();
         }
-        else {
-            // Try a URL connection last-modified header...
-            URLConnection con = url.openConnection();
-            useCachesIfNecessary(con);
-            if (con instanceof HttpURLConnection) {
-                ((HttpURLConnection) con).setRequestMethod("HEAD");
-            }
-            return con.getLastModified();
+        // Try a URL connection last-modified header...
+        URLConnection con = url.openConnection();
+        useCachesIfNecessary(con);
+        if (con instanceof HttpURLConnection) {
+            ((HttpURLConnection) con).setRequestMethod("HEAD");
         }
+        return con.getLastModified();
     }
-
-
 }

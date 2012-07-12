@@ -134,7 +134,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     /**
      * Whether the given class name is an internal class and should be filtered
      * @param className The class name
-     * @return True if is internal
+     * @return true if is internal
      */
     protected boolean isApplicationClass(String className) {
         for (String packageName : packagesToFilter) {

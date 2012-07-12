@@ -153,7 +153,7 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals("another", observingPlugin.getObservedPluginNames()[0]);
     }
 
-    public void testWatchedResources(){
+    public void testWatchedResources() {
         GrailsPlugin versionPlugin = new DefaultGrailsPlugin(versioned, ga);
         assertEquals(versionPlugin.getWatchedResourcePatterns().get(0).getDirectory().getPath(), "./grails-app/taglib");
         assertEquals(versionPlugin.getWatchedResourcePatterns().get(1).getDirectory().getPath(), "./grails-app/controller");

@@ -19,12 +19,12 @@ class NamedCriteriaPublication {
             eq 'paperback', true
             order 'datePublished', 'desc'
         }
-        
+
         paperbacksOrderedByDatePublished {
             eq 'paperback', true
             order 'datePublished'
         }
-        
+
         lastPublishedBefore { date ->
             uniqueResult = true
             le 'datePublished', date
@@ -54,7 +54,7 @@ class NamedCriteriaPublication {
         }
 
         publishedAfter { date ->
-            if(date != null) {
+            if (date != null) {
                 gt 'datePublished', date
             }
         }

@@ -582,7 +582,7 @@ public class GrailsClassUtils {
      *
      * @param leftType The type of the left hand part of a notional assignment
      * @param rightType The type of the right hand part of a notional assignment
-     * @return True if values of the right hand type can be assigned in Groovy to variables of the left hand type.
+     * @return true if values of the right hand type can be assigned in Groovy to variables of the left hand type.
      */
     public static boolean isGroovyAssignableFrom(Class<?> leftType, Class<?> rightType) {
         if (leftType == null) {
@@ -651,7 +651,7 @@ public class GrailsClassUtils {
     /**
      * Determine whether the method is declared public static
      * @param m
-     * @return True if the method is declared public static
+     * @return true if the method is declared public static
      */
     public static boolean isPublicStatic(Method m) {
         final int modifiers = m.getModifiers();
@@ -661,7 +661,7 @@ public class GrailsClassUtils {
     /**
      * Determine whether the field is declared public static
      * @param f
-     * @return True if the field is declared public static
+     * @return true if the field is declared public static
      */
     public static boolean isPublicStatic(Field f) {
         final int modifiers = f.getModifiers();
@@ -770,7 +770,7 @@ public class GrailsClassUtils {
      *
      * @param obj
      * @param name
-     * @return True if a public field with the name exists
+     * @return true if a public field with the name exists
      */
     public static boolean isPublicField(Object obj, String name) {
         Class<?> clazz = obj.getClass();
@@ -788,7 +788,7 @@ public class GrailsClassUtils {
      *
      * @param clz The class to check
      * @param propertyName The property name
-     * @return True if the property is inherited
+     * @return true if the property is inherited
      */
     @SuppressWarnings("rawtypes")
     public static boolean isPropertyInherited(Class clz, String propertyName) {
@@ -881,7 +881,7 @@ public class GrailsClassUtils {
      *
      * @param name True if its a Javabean property
      * @param args The arguments
-     * @return True if it is a javabean property method
+     * @return true if it is a javabean property method
      */
     public static boolean isGetter(String name, Class<?>[] args) {
         if (StringUtils.isBlank(name) || args == null)return false;
@@ -919,10 +919,10 @@ public class GrailsClassUtils {
     }
 
     private static String convertPropertyName(String prop) {
-        if(prop.length() == 1) {
+        if (prop.length() == 1) {
             return prop.toLowerCase();
         }
-        else if (Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
+        if (Character.isUpperCase(prop.charAt(0)) && Character.isUpperCase(prop.charAt(1))) {
             return prop;
         }
         if (Character.isDigit(prop.charAt(0))) {
@@ -991,7 +991,7 @@ public class GrailsClassUtils {
      *
      * @param clazz
      * @param type
-     * @return True if the class is a taglib
+     * @return true if the class is a taglib
      * @see java.lang.Class#isAssignableFrom(Class)
      */
     public static boolean isAssignableOrConvertibleFrom(Class<?> clazz, Class<?> type) {
@@ -1052,7 +1052,7 @@ public class GrailsClassUtils {
      * Checks whether the given class is a JDK 1.5 enum or not
      *
      * @param type The class to check
-     * @return True if it is an enum
+     * @return true if it is an enum
      */
     public static boolean isJdk5Enum(Class<?> type) {
         if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
@@ -1098,7 +1098,7 @@ public class GrailsClassUtils {
      *
      * @param theClass The class
      * @param packageList The list of packages
-     * @return True if it is within the list of specified packages
+     * @return true if it is within the list of specified packages
      */
     public static boolean isClassBelowPackage(Class<?> theClass, List<?> packageList) {
         String classPackage = theClass.getPackage().getName();

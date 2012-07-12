@@ -89,7 +89,7 @@ class PluginPackager {
     }
 
     AntBuilder getAnt() {
-        if (this.ant == null) ant = new AntBuilder()
+        if (ant == null) ant = new AntBuilder()
         return ant
     }
 
@@ -108,7 +108,7 @@ class PluginPackager {
      * @return The plugin properties
      */
     def generatePluginXml(File descriptor) {
-        this.pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor));
+        pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor));
         def pluginBaseDir = descriptor.parentFile
         def pluginProps = pluginInfo
         // Work out what the name of the plugin is from the name of the descriptor file.

@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.compiler.web;
 
-
 import java.net.URL;
 
 import org.codehaus.groovy.ast.ClassNode;
@@ -51,7 +50,7 @@ public class ControllerDomainTransformer extends AbstractGrailsArtefactTransform
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);
     }
-    
+
     @Override
     public void performInjection(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
         super.performInjection(source,  context, classNode);

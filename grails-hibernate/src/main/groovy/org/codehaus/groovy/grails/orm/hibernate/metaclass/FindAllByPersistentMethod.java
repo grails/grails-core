@@ -94,7 +94,7 @@ public class FindAllByPersistentMethod extends AbstractClausedStaticPersistentMe
                             dis.add(current.getCriterion());
                         }
                     }
-                    if(numberOfForceNoResultsCriterion > 0 && numberOfForceNoResultsCriterion == expressions.size()) {
+                    if (numberOfForceNoResultsCriterion > 0 && numberOfForceNoResultsCriterion == expressions.size()) {
                         return Collections.EMPTY_LIST;
                     }
                     c.add(dis);

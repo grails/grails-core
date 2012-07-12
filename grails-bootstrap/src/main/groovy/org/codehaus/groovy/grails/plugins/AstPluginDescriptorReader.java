@@ -78,7 +78,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
         private MetaClass pluginInfoMetaClass;
         public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo) {
             this.pluginInfo = pluginInfo;
-            this.pluginInfoMetaClass = pluginInfo.getMetaClass();
+            pluginInfoMetaClass = pluginInfo.getMetaClass();
         }
 
         @Override

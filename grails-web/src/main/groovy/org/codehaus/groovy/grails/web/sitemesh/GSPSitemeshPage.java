@@ -48,7 +48,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
     public GSPSitemeshPage() {
         this(false);
     }
-    
+
     public GSPSitemeshPage(boolean renderingLayout) {
         this.renderingLayout=renderingLayout;
     }
@@ -70,7 +70,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
         }
 
         if (titleCaptured) {
-            if(titleBuffer != null) {
+            if (titleBuffer != null) {
                 titleBuffer.clear();
                 headBuffer.writeTo(out);
             } else {
@@ -140,7 +140,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
     }
 
     private void applyStreamCharBufferSettings(StreamCharBuffer buffer) {
-        if(!renderingLayout && buffer != null) {
+        if (!renderingLayout && buffer != null) {
             buffer.setPreferSubChunkWhenWritingToOtherBuffer(true);
         }
     }
@@ -155,12 +155,12 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
         this.pageBuffer = pageBuffer;
         applyStreamCharBufferSettings(pageBuffer);
     }
-    
+
     public void setTitleBuffer(StreamCharBuffer titleBuffer) {
         this.titleBuffer = titleBuffer;
         applyStreamCharBufferSettings(titleBuffer);
     }
-    
+
     public StreamCharBuffer getTitleBuffer() {
         return titleBuffer;
     }

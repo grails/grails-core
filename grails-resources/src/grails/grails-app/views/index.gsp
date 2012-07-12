@@ -29,7 +29,7 @@
 				margin-bottom: 0.6em;
 				padding: 0;
 			}
-            
+
 			#status li {
 				line-height: 1.3;
 			}

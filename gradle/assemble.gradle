@@ -63,7 +63,7 @@ task configurePopulateDependencies << {
                 populateDependencies.into("$dependency.group/$dependency.name/jars") {
                     from artifact.file // this will trigger the actual download if necessary
                 }
-                
+
                 populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
                     include "*.ivy.xml"
                     eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
@@ -94,7 +94,9 @@ task pluginsFromRepo {
         tomcat: grailsVersion,
         resources: "1.1.6",
         webxml: "1.4.1",
-        jquery: "1.7.2"
+        jquery: "1.7.2",
+        'database-migration': "1.1",
+        cache: "1.0.0"
     ]
 
     ext.dir = file("$buildDir/pluginsFromRepo")
@@ -137,7 +139,7 @@ task installResources(type: Copy) {
         ant.copy(todir:projectDir) {
             fileset(dir:"$buildDir/home-dir")
         }
-        
+
         ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
     }
 

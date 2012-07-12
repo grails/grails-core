@@ -70,7 +70,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
     @CompileStatic
     void grailsPlugins() {
-        if(!context.offline) {
+        if (!context.offline) {
             if (isResolverNotAlreadyDefined('grailsPlugins')) {
                 dependencyManager.repositoryData << [type: 'grailsPlugins', name:"grailsPlugins"]
                 if (dependencyManager.buildSettings != null) {
@@ -106,9 +106,10 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         flatDir(name:"grailsHome", dirs:"${grailsHome}/src/libs")
         flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
         final workDir = dependencyManager.buildSettings?.grailsWorkDir
-        if(workDir)
+        if (workDir) {
             flatDir(name:"grailsHome", dirs:"${workDir}/cached-installed-plugins")
-        if (grailsHome!='.') {
+        }
+        if (grailsHome != '.') {
             def resolver = createLocalPluginResolver("grailsHome", grailsHome)
             addToChainResolver(resolver)
         }

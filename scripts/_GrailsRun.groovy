@@ -83,17 +83,17 @@ target (runWarHttps : "Main implementation that executes a Grails application WA
     grailsServer = projectRunner.runWarHttps()
 }
 
-
-
 /**
  * Starts the plugin scanner. Call this after starting the server if you
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-    if(GrailsProjectWatcher.isReloadingAgentPresent() && !GrailsProjectWatcher.isActive()) {
-        projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-        projectWatcher.start()        
+    if (!GrailsProjectWatcher.isReloadingAgentPresent() || GrailsProjectWatcher.isActive()) {
+        return
     }
+
+    projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
+    projectWatcher.start()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {

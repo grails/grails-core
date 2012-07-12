@@ -120,7 +120,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
     /**
      * Whether the mapping has a runtime variable with the given name such as "/$foo"
      * @param name The name of the variable
-     * @return True if the mapping has the variable
+     * @return true if the mapping has the variable
      */
     boolean hasRuntimeVariable(String name);
 }

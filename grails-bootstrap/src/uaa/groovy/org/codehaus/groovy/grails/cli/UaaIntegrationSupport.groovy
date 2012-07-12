@@ -1,5 +1,4 @@
-package org.codehaus.groovy.grails.cli.support
-
+package org.codehaus.groovy.grails.cli
 /**
  *  Groovy XML support class for UaaIntegration.
  */
@@ -18,7 +17,7 @@ class UaaIntegrationSupport {
         }
 
         def p = pluginList.plugin.find { plugin -> plugin.@name?.text() == pluginName }
-        if(p) {
+        if (p) {
             return p
         }
 

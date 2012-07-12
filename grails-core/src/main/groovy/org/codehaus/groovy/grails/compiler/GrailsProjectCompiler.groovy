@@ -293,7 +293,7 @@ class GrailsProjectCompiler {
             classLoader.addURL(pluginProvidedClassesDir.toURI().toURL())
             classLoader.addURL(pluginBuildClassesDir.toURI().toURL())
 
-            if(Environment.current == Environment.TEST) {
+            if (Environment.current == Environment.TEST) {
                 classLoader.addURL(buildSettings.testClassesDir.toURI().toURL())
             }
         }

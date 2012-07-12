@@ -22,6 +22,7 @@
 import org.codehaus.groovy.grails.cli.maven.MavenPomGenerator
 
 includeTargets << grailsScript("_GrailsArgParsing")
+
 target(default: "Creates a POM for a Grails project") {
     depends(parseArguments)
 
@@ -33,15 +34,14 @@ target(default: "Creates a POM for a Grails project") {
     def generator = new MavenPomGenerator(grailsSettings)
     try {
         def group = argsMap.params[0]?.trim()
-        if(group) {
+        if (group) {
             generator.generate group
-            grailsConsole.addStatus "POM generated."  
+            grailsConsole.addStatus "POM generated."
         }
         else {
             println msg()
             exit 1
         }
-
     }
     catch(e) {
         grailsConsole.error "Error occurred creating POM: ${e.message}", e

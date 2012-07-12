@@ -16,7 +16,21 @@ package org.codehaus.groovy.grails.resolve.maven;
 
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
-import org.apache.ivy.core.module.descriptor.*;
+
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor;
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
+import org.apache.ivy.core.module.descriptor.DefaultExcludeRule;
+import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
+import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
@@ -29,27 +43,23 @@ import org.apache.ivy.plugins.parser.m2.PomReader;
 import org.apache.ivy.plugins.repository.Resource;
 import org.apache.ivy.util.Message;
 
-import java.lang.reflect.Field;
-import java.util.*;
-
 /**
  * A POM module descriptor builder that is aware of Grails packaging types
  *
  * @author Graeme Rocher
- *
  */
-public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDescriptorBuilder{
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDescriptorBuilder {
     private static final String DEPENDENCY_MANAGEMENT = "m:dependency.management";
-    private static final String PROPERTIES = "m:properties";
     private static final String EXTRA_INFO_DELIMITER = "__";
     private static final String WRONG_NUMBER_OF_PARTS_MSG = "what seemed to be a dependency "
             + "management extra info exclusion had the wrong number of parts (should have 2) ";
-    
+
     private static final Collection/*<String>*/ JAR_PACKAGINGS = Arrays.asList(
             new String[] {"ejb", "bundle", "maven-plugin"});
 
     static final Map MAVEN2_CONF_MAPPING = new HashMap();
-    
+
     static {
         try {
             Field field = PomModuleDescriptorBuilder.class.getDeclaredField("MAVEN2_CONF_MAPPING");
@@ -60,8 +70,7 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
             throw new RuntimeException("Cannot obtain reference to ivy module descriptor to configure POM data correctly. Message: " + e.getMessage());
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Cannot obtain reference to ivy module descriptor to configure POM data correctly. Message: " + e.getMessage());
-        }        
-
+        }
     }
 
     public static final String GRAILS_PLUGIN_PACKAGING = "grails-plugin";
@@ -73,17 +82,17 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
     }
 
     @Override
-    public void addMainArtifact(String artifactId, String packaging) {        
+    public void addMainArtifact(String artifactId, String packaging) {
         super.addMainArtifact(artifactId, getPackagingForGrailsType(packaging));
     }
 
     private String getPackagingForGrailsType(String packaging) {
-        if(GRAILS_PLUGIN_PACKAGING.equals(packaging)) {
+        if (GRAILS_PLUGIN_PACKAGING.equals(packaging)) {
             packaging = "zip";
         }
-        else if(GRAILS_BINARY_PLUGIN_PACKAGING.equals(packaging)) {
+        else if (GRAILS_BINARY_PLUGIN_PACKAGING.equals(packaging)) {
             packaging = "jar";
-        } else if(GRAILS_APP_PACKAGING.equals(packaging)) {
+        } else if (GRAILS_APP_PACKAGING.equals(packaging)) {
             packaging = "war";
         }
         return packaging;
@@ -102,7 +111,7 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
         ModuleRevisionId moduleRevId = ModuleRevisionId.newInstance(dep.getGroupId(), dep
                 .getArtifactId(), version);
 
-        if(moduleRevId.getName().equals("grails-dependencies")) return;
+        if (moduleRevId.getName().equals("grails-dependencies")) return;
 
         // Some POMs depend on theirselfves, don't add this dependency: Ivy doesn't allow this!
         // Example: http://repo2.maven.org/maven2/net/jini/jsk-platform/2.1/jsk-platform-2.1.pom
@@ -136,7 +145,7 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
             } else if (JAR_PACKAGINGS.contains(type)) {
                 ext = "jar";
             }
-            
+
             ext = getPackagingForGrailsType(type);
 
             // we deal with classifiers by setting an extra attribute and forcing the
@@ -173,7 +182,7 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
             }
         }
 
-        ivyModuleDescriptor.addDependency(dd);  
+        ivyModuleDescriptor.addDependency(dd);
     }
 
     private DefaultModuleDescriptor getIvyModuleDescriptor() {
@@ -231,7 +240,7 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
             String groupId, String artifaceId) {
         return DEPENDENCY_MANAGEMENT + EXTRA_INFO_DELIMITER + groupId
                 + EXTRA_INFO_DELIMITER + artifaceId + EXTRA_INFO_DELIMITER + "version";
-    }    
+    }
 
     private String getDefaultScope(PomReader.PomDependencyData dep) {
         String key = getDependencyMgtExtraInfoKeyForScope(dep.getGroupId(), dep.getArtifactId());
@@ -245,5 +254,5 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
     private String getDefaultVersion(PomReader.PomDependencyData dep) {
         String key = getDependencyMgtExtraInfoKeyForVersion(dep.getGroupId(), dep.getArtifactId());
         return (String) getIvyModuleDescriptor().getExtraInfo().get(key);
-    }    
+    }
 }

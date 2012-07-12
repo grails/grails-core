@@ -14,7 +14,7 @@ class BidirectionalOneToOneCascadeSpec extends GormSpec{
             face.nose = nose
             face.save(flush:true)
             session.clear()
-        
+
             face = BidirectionalOneToOneCascadeFace.get(1)
 
         then:"Both sides are correctly associated"

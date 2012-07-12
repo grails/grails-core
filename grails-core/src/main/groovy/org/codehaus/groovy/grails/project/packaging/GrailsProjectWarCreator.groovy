@@ -16,17 +16,18 @@
 
 package org.codehaus.groovy.grails.project.packaging
 
-import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
+import grails.build.logging.GrailsConsole
+import grails.util.BuildScope
 import grails.util.BuildSettings
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import grails.util.PluginBuildSettings
 import grails.util.Environment
 import grails.util.Metadata
-import grails.util.BuildScope
+import grails.util.PluginBuildSettings
+import groovy.transform.CompileStatic
 import groovy.xml.MarkupBuilder
-import grails.build.logging.GrailsConsole
+
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**
  * Creates a WAR file from a Grails project
@@ -34,7 +35,7 @@ import grails.build.logging.GrailsConsole
  * @author Graeme Rocher
  * @since 2.1
  */
-class GrailsProjectWarCreator extends BaseSettingsApi{
+class GrailsProjectWarCreator extends BaseSettingsApi {
 
     boolean includeJars = true
     boolean buildExplodedWar
@@ -205,8 +206,8 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
             }
 
             ant.copy(file: webXmlFile.absolutePath,
-                    tofile: "${stagingDir}/WEB-INF/web.xml",
-                    overwrite:true, preservelastmodified:true)
+                     tofile: "${stagingDir}/WEB-INF/web.xml",
+                     overwrite:true, preservelastmodified:true)
 
             def webXML = new File("${stagingDir}/WEB-INF/web.xml")
             def xmlInput = new XmlParser().parse(webXML)
@@ -359,7 +360,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
 
     @CompileStatic
     String configureWarName() {
-        if(warName == null ) {
+        if (warName == null) {
 
             def warFileDest = grailsSettings.projectWarFile.absolutePath
 
@@ -395,10 +396,8 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
 
     void warPluginsInternal(List<GrailsPluginInfo> pluginInfos) {
         ant.sequential {
-            if (pluginInfos) {
-                for (GrailsPluginInfo info in pluginInfos) {
-                    warPluginForPluginInfo(info)
-                }
+            for (GrailsPluginInfo info in pluginInfos) {
+                warPluginForPluginInfo(info)
             }
         }
     }
@@ -416,9 +415,9 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
         createDescriptorInternal(compileScopePluginInfos, resourceList)
     }
 
-    protected def createDescriptorInternal(pluginInfos, resourceList) {
+    protected void createDescriptorInternal(pluginInfos, resourceList) {
 
-        return new File("${stagingDir}/WEB-INF/grails.xml").withWriter { writer ->
+        new File(stagingDir, "WEB-INF/grails.xml").withWriter { writer ->
             def xml = new MarkupBuilder(writer)
             xml.grails {
                 xml.resources {
@@ -468,9 +467,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi{
         }
     }
 
-
-
-    private def warPluginForPluginInfo(GrailsPluginInfo info) {
+    private void warPluginForPluginInfo(GrailsPluginInfo info) {
         def pluginBase = info.pluginDir.file
         ant.sequential {
             // Note that with in-place plugins, the name of the plugin's

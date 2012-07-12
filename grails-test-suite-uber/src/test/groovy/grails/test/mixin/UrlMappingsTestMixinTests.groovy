@@ -137,7 +137,7 @@ class UrlMappingsTestMixinTests {
             }
         }
     }
-    
+
     @Test
     void testGrails9110() {
         mockController(UserController)

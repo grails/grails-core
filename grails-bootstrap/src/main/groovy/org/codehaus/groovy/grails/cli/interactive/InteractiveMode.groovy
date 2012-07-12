@@ -111,7 +111,7 @@ class InteractiveMode {
                     }
                     else if (trimmed.startsWith("uninstall-plugin")) {
                         error "You cannot uninstall a plugin in interactive mode."
-                    }                    
+                    }
                     else if ("quit".equals(trimmed)) {
                         goodbye()
                     }
@@ -208,7 +208,7 @@ class InteractiveMode {
                 arg = unescape(arg)
 
                 // Is this arg one of the fixed options for 'open'?
-                String fixedOption = openOptions.find { option, value ->
+                def fixedOption = openOptions.find { option, value ->
                     // No match if a file matching the name of the
                     // option exists.
                     arg == option && !new File(option).exists()

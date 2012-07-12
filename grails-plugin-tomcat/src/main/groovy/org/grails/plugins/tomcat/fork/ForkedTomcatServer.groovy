@@ -18,25 +18,23 @@ package org.grails.plugins.tomcat.fork
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.web.container.EmbeddableServer
+import groovy.transform.CompileStatic
+import org.apache.catalina.Context
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
-import org.grails.plugins.tomcat.InlineExplodedTomcatServer
-import org.grails.plugins.tomcat.IsolatedTomcat
-import org.apache.catalina.Context
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+
 import java.lang.reflect.Method
-import grails.build.logging.GrailsConsole
-import groovy.transform.CompileStatic
+import org.grails.plugins.tomcat.InlineExplodedTomcatServer
 
 /**
- * An implementation of the Tomcat server that runs in forked mode
- *
+ * An implementation of the Tomcat server that runs in forked mode.
  *
  * @author Graeme Rocher
  * @since 2.2
  */
-class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer{
+class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer {
 
     @Delegate TomcatRunner tomcatRunner
     TomcatExecutionContext executionContext
@@ -47,14 +45,13 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     private ForkedTomcatServer() {
         executionContext = (TomcatExecutionContext)readExecutionContext()
-        if(executionContext == null) {
+        if (executionContext == null) {
             throw new IllegalStateException("Forked server created without first creating execution context and calling fork()")
         }
     }
 
     static void main(String[] args) {
         new ForkedTomcatServer().run()
-
     }
 
     def run() {
@@ -116,7 +113,6 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
     }
 
-
     @Override
     ExecutionContext createExecutionContext() {
         return executionContext
@@ -134,11 +130,10 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
         private String currentHost
         private int currentPort
+
         TomcatRunner(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
             super(basedir, webXml, contextPath, classLoader)
         }
-
-
 
         @Override
         protected void configureAliases(Context context) {
@@ -146,7 +141,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
             final directories = GrailsPluginUtils.getPluginDirectories()
             for (Resource dir in directories) {
                 def webappDir = new File("${dir.file.absolutePath}/web-app")
-                if(webappDir.exists()) {
+                if (webappDir.exists()) {
                     aliases << "/plugins/${dir.file.name}=${webappDir.absolutePath}"
                 }
             }
@@ -172,7 +167,8 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
     }
 }
-class TomcatExecutionContext extends ExecutionContext implements Serializable{
+
+class TomcatExecutionContext extends ExecutionContext implements Serializable {
     String contextPath
     String host
     int port

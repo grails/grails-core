@@ -21,7 +21,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assertEquals Foo.name, GrailsASTUtils.getFurthestParent(barNode).name
         assertEquals Foo.name, GrailsASTUtils.getFurthestParent(bazNode).name
     }
-    
+
     void testHasAnyAnnotations() {
         def widgetNode = new ClassNode(Widget)
         assert GrailsASTUtils.hasAnyAnnotations(widgetNode, FirstAnnotation, SecondAnnotation)
@@ -32,7 +32,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert !GrailsASTUtils.hasAnyAnnotations(widgetNode, FourthAnnotation)
         assert !GrailsASTUtils.hasAnyAnnotations(widgetNode)
     }
-    
+
     void testHasAnnotation() {
         def widgetNode = new ClassNode(Widget)
         assert GrailsASTUtils.hasAnnotation(widgetNode, FirstAnnotation)
@@ -40,7 +40,7 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert !GrailsASTUtils.hasAnnotation(widgetNode, ThirdAnnotation)
         assert !GrailsASTUtils.hasAnnotation(widgetNode, FourthAnnotation)
     }
-    
+
     void testConstraintMetadata() {
         def result = new AstBuilder().buildFromString('''
             return {
@@ -54,10 +54,10 @@ class GrailsASTUtilsTests extends GroovyTestCase {
             }
         ''')
         def closureExpression = result[0].statements[0].expression
-        
+
         def constraintMetadata = GrailsASTUtils.getConstraintMetadata(closureExpression)
         assert 2 == constraintMetadata.size()
-        
+
         def firstNameMetadata = constraintMetadata['firstName']
         assert 2 == firstNameMetadata.size()
         def firstNameBindableExpression = firstNameMetadata['bindable']

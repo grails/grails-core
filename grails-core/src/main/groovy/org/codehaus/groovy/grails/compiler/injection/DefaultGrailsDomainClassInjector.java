@@ -109,12 +109,12 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
             final boolean isBelongsToOrHasOne = name.equals(GrailsDomainClassProperty.BELONGS_TO) || name.equals(GrailsDomainClassProperty.HAS_ONE);
             if (isBelongsToOrHasOne) {
                 Expression initialExpression = propertyNode.getInitialExpression();
-                if((!(initialExpression instanceof MapExpression)) &&
+                if ((!(initialExpression instanceof MapExpression)) &&
                         (!(initialExpression instanceof ClassExpression))) {
-                    if(name.equals(GrailsDomainClassProperty.HAS_ONE)) {
+                    if (name.equals(GrailsDomainClassProperty.HAS_ONE)) {
                         final String message = "The hasOne property in class [" + classNode.getName() + "] should have an initial expression of type Map or Class.";
                         GrailsConsole.getInstance().warn(message);
-                    } else if(!(initialExpression instanceof ListExpression)) {
+                    } else if (!(initialExpression instanceof ListExpression)) {
                         final String message = "The belongsTo property in class [" + classNode.getName() + "] should have an initial expression of type List, Map or Class.";
                         GrailsConsole.getInstance().warn(message);
                     }

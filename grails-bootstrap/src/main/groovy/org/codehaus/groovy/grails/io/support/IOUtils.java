@@ -16,8 +16,19 @@
 
 package org.codehaus.groovy.grails.io.support;
 
-
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Array;
 
 /**
@@ -48,9 +59,9 @@ public class IOUtils {
         try {
             System.arraycopy(array2, 0, joinedArray, array1.length, array2.length);
         } catch (ArrayStoreException ase) {
-            final Class type1 = array1.getClass().getComponentType();
-            final Class type2 = array2.getClass().getComponentType();
-            if (!type1.isAssignableFrom(type2)){
+            final Class<?> type1 = array1.getClass().getComponentType();
+            final Class<?> type2 = array2.getClass().getComponentType();
+            if (!type1.isAssignableFrom(type2)) {
                 throw new IllegalArgumentException("Cannot store "+type2.getName()+" in an array of "+type1.getName());
             }
             throw ase; // No, so rethrow original
@@ -177,7 +188,6 @@ public class IOUtils {
         copy(in, out);
         return out.toByteArray();
     }
-
 
     //---------------------------------------------------------------------
     // Copy methods for java.io.Reader / java.io.Writer

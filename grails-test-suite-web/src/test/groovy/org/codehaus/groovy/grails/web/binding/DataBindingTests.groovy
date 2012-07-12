@@ -75,12 +75,12 @@ class Pet {
 }
         ''')
     }
-    
+
     void testBindingMapValue() {
         def petClass = ga.getDomainClass('databindingtests.Pet')
         def pet = petClass.newInstance()
         pet.properties = [name: 'lemur', detailMap: [first: 'one', second: 'two'], owner: [name: 'Jeff'], foo: 'bar', bar: [a: 'a', b: 'b']]
-        
+
         assert pet.name == 'lemur'
         assert pet.detailMap.first == 'one'
         assert pet.detailMap.second == 'two'

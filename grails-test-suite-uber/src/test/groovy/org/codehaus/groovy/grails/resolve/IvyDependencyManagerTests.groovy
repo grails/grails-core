@@ -38,10 +38,9 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             }
             plugins {
                 test ":hibernate:2.0.3"
-            }            
+            }
         }
         settings.loadConfig(config)
-    
 
         assert settings.compileDependencies.size() == 0
         assert settings.testDependencies.size() > 0

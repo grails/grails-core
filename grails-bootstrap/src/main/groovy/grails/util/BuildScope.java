@@ -64,7 +64,7 @@ public enum BuildScope {
      * Returns whether the specified scope name(s) are valid given the current scope.
      *
      * @param scopeNames The list of scope names
-     * @return True if they are valid
+     * @return true if they are valid
      */
     public static boolean isValid(String... scopeNames) {
         BuildScope currentScope = getCurrent();
@@ -80,6 +80,6 @@ public enum BuildScope {
      * Enables this build scope as the curent system wide instance.
      */
     public void enable() {
-        System.setProperty(KEY, this.toString());
+        System.setProperty(KEY, toString());
     }
 }

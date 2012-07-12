@@ -22,7 +22,7 @@ import org.apache.ivy.core.module.id.ModuleId
 import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.plugins.matcher.ExactPatternMatcher
 
- /**
+/**
  * Adds new methods to make access to this class Groovier
  *
  * @author Graeme Rocher
@@ -81,7 +81,7 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
     }
 
     void setExport(boolean b) {
-        this.exported = b
+        exported = b
     }
 
     void excludes(Object... args) {
@@ -90,24 +90,24 @@ class EnhancedDefaultDependencyDescriptor extends DefaultDependencyDescriptor {
         }
     }
 
-    void exclude(def exclude) {
+    void exclude(exclude) {
         if (exclude instanceof String) {
             excludeForString(exclude)
         }
         else if (exclude instanceof Map) {
             excludeForMap(exclude)
         }
-        else if(exclude instanceof ModuleId) {
+        else if (exclude instanceof ModuleId) {
             addRuleForModuleId(exclude, scope, WILDCARD, WILDCARD)
         }
     }
 
-    private excludeForString(String dep) {
+    private void excludeForString(String dep) {
         def mid = ModuleId.newInstance(WILDCARD, dep)
         addRuleForModuleId(mid, scope, WILDCARD, WILDCARD)
     }
 
-    private excludeForMap(Map args) {
+    private void excludeForMap(Map args) {
         def mid = ModuleId.newInstance(args?.group ?: WILDCARD, args?.name ?: WILDCARD)
         addRuleForModuleId(mid, scope, args?.type ?: WILDCARD, args?.ext ?: WILDCARD)
     }

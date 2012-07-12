@@ -53,7 +53,7 @@ public class GrailsHttpSession implements HttpSession {
     /* (non-Javadoc)
      * @see javax.servlet.http.HttpSession#getAttributeNames()
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Enumeration getAttributeNames() {
         createSessionIfNecessary();
         synchronized (this) {

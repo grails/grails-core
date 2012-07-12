@@ -51,12 +51,12 @@ class ServicesGrailsPlugin {
         for (serviceGrailsClass in application.serviceClasses) {
             GrailsServiceClass serviceClass = serviceGrailsClass
             def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
-            
+
             def beanName
-            if(providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
+            if (providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
                 beanName = "${providingPlugin.name}${serviceClass.shortName}"
                 def aliasName = serviceClass.propertyName
-                aliasNameToListOfBeanNames[aliasName] << beanName 
+                aliasNameToListOfBeanNames[aliasName] << beanName
             } else {
                 beanName = serviceClass.propertyName
             }
@@ -109,7 +109,7 @@ class ServicesGrailsPlugin {
             }
         }
         aliasNameToListOfBeanNames.each { aliasName, listOfBeanNames ->
-            if(listOfBeanNames.size() == 1 && !registeredBeanNames.contains(aliasName)) {
+            if (listOfBeanNames.size() == 1 && !registeredBeanNames.contains(aliasName)) {
                 registerAlias listOfBeanNames[0], aliasName
             }
         }

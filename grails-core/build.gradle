@@ -10,7 +10,7 @@ dependencies {
     }
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'
-    }    
+    }
     compile("org.springframework:spring-aop:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }

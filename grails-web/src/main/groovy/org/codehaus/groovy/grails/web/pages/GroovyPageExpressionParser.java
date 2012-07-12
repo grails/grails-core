@@ -28,7 +28,7 @@ class GroovyPageExpressionParser {
         this.startPos = startPos;
         this.terminationChar = terminationChar;
         this.nextTerminationChar = nextTerminationChar;
-        if(startInExpression) {
+        if (startInExpression) {
             parsingStateStack.push(ParsingState.EXPRESSION);
         } else {
             parsingStateStack.push(ParsingState.NORMAL);
@@ -77,7 +77,7 @@ class GroovyPageExpressionParser {
                     case '\'':
                     case '"':
                         if (parsingState==ParsingState.EXPRESSION) {
-                            if(nextChar != ch && previousChar != ch) {
+                            if (nextChar != ch && previousChar != ch) {
                                 changeState(ch=='"' ? ParsingState.QUOTEDVALUE_DOUBLE : ParsingState.QUOTEDVALUE_SINGLE);
                             } else if (previousChar==ch && previousPreviousChar==ch) {
                                 changeState(ch=='"' ? ParsingState.TRIPLEQUOTED_DOUBLE : ParsingState.TRIPLEQUOTED_SINGLE);
@@ -105,7 +105,7 @@ class GroovyPageExpressionParser {
     private void changeState(ParsingState newState) {
         ParsingState currentState = parsingStateStack.peek();
         // check if expression contains GStrings
-        if(relativeCharIndex > 1 && newState==ParsingState.EXPRESSION && (currentState==ParsingState.QUOTEDVALUE_DOUBLE || currentState==ParsingState.TRIPLEQUOTED_DOUBLE || currentState==ParsingState.NORMAL)) {
+        if (relativeCharIndex > 1 && newState==ParsingState.EXPRESSION && (currentState==ParsingState.QUOTEDVALUE_DOUBLE || currentState==ParsingState.TRIPLEQUOTED_DOUBLE || currentState==ParsingState.NORMAL)) {
             containsGstrings=true;
         }
         parsingStateStack.push(newState);

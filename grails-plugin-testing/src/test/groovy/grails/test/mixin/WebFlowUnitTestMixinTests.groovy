@@ -174,7 +174,7 @@ class WebFlowUnitTestMixinTests {
         ]
 
         prepareBaconFlow.input(inputParams)
-        
+
         assert 'bacon' == flow.notRequiredWithValueBaconInput
     }
 
@@ -184,7 +184,7 @@ class WebFlowUnitTestMixinTests {
         mockController(MealController)
 
         flow.closureBaconInputValue = 'bacon'
-        
+
         def inputParams = [
                 requiredWithoutValueBaconInput: 'bacon',
         ]
@@ -312,7 +312,7 @@ class MealController {
                 baconValue(value: "bacon")
                 baconFlow { flow.baconFlow }
             }
-}
+        }
     }
     final breakfastFlow = {
         init {
@@ -326,7 +326,7 @@ class MealController {
             on('eggs').to('prepareEggs')
             on('toast').to('prepareToast')
             on('bacon').to('prepareBacon')
-            on('nothing'){
+            on('nothing') {
                 conversation.meal.skip(params.reason)
                 if (!conversation.meal.save()) {
                     return error()
@@ -378,7 +378,7 @@ class MealController {
             }.to('end')
             on('eatMore').to('chooseMainDish')
         }
-        
+
         end()
     }
 }

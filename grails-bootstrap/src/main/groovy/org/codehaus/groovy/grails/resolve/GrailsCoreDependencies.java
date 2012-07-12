@@ -35,13 +35,12 @@ public class GrailsCoreDependencies {
     private final String springVersion = "3.1.1.RELEASE";
 
     public GrailsCoreDependencies(String grailsVersion) {
-        this.grailsVersion = grailsVersion;
-        this.servletVersion = "2.5";
+        this(grailsVersion, "2.5");
     }
 
     public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
         this.grailsVersion = grailsVersion;
-        this.servletVersion = servletVersion != null ? servletVersion : "2.5";
+        this.servletVersion = servletVersion == null ? "2.5" : servletVersion;
     }
 
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, boolean transitive) {
@@ -76,7 +75,7 @@ public class GrailsCoreDependencies {
     /**
      * Returns a closure suitable for passing to a DependencyDefinitionParser that will configure
      * the necessary core dependencies for Grails.
-     * 
+     *
      * This method is used internally and should not be called in user code.
      */
     @SuppressWarnings({ "serial", "rawtypes" })
@@ -301,7 +300,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("xpp3", "xpp3_min", "1.1.4c")
                         };
                         registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies);
-                        if(java5compatible) {
+                        if (java5compatible) {
                             registerDependencies(dependencyManager, runtimeDependenciesMethod, new ModuleRevisionId[] { ModuleRevisionId.newInstance("javax.xml", "jaxb-api", "2.0"), } );
                         }
 
@@ -330,6 +329,6 @@ public class GrailsCoreDependencies {
      * The version of core spring dependencies such as {@code spring-core}, {@code spring-beans} etc.
      */
     public String getSpringVersion() {
-        return this.springVersion;
+        return springVersion;
     }
 }

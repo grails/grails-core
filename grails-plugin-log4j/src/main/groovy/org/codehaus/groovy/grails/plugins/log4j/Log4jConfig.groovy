@@ -89,7 +89,7 @@ class Log4jConfig {
         }
 
         LogLog.error "Property missing when configuring log4j: $name"
-        
+
         throw new MissingPropertyException("Property missing when configuring log4j: $name")
     }
 
@@ -473,10 +473,10 @@ class EnvironmentsLog4JConfig {
     }
 
     def methodMissing(String name, args) {
-        if(args && args[0] instanceof Closure) {
+        if (args && args[0] instanceof Closure) {
             // treat all method calls that take a closure as custom environment
             // names
-            if(Environment.current == Environment.CUSTOM &&
+            if (Environment.current == Environment.CUSTOM &&
                 Environment.current.name == name) {
                 config.invokeCallable(args[0])
             }

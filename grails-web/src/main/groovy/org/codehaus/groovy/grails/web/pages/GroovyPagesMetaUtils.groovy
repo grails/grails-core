@@ -29,7 +29,7 @@ class GroovyPagesMetaUtils {
             if (method != null) {
                 if (addMethodsToMetaClass) {
                     // add all methods with the same name to metaclass at once to prevent "wrong number of arguments" exception
-                    for(MetaMethod m in tagBean.respondsTo(name)) {
+                    for (MetaMethod m in tagBean.respondsTo(name)) {
                         addTagLibMethodToMetaClass(tagBean, m, mc)
                     }
                 }
@@ -54,7 +54,7 @@ class GroovyPagesMetaUtils {
                 }
                 break
             case 1:
-                if(paramTypes[0]==Closure) {
+                if (paramTypes[0] == Closure) {
                     methodMissingClosure = { Closure body ->
                         method.invoke(tagBean, body)
                     }
@@ -65,12 +65,12 @@ class GroovyPagesMetaUtils {
                 }
                 break
             case 2:
-                if(paramTypes[0]==Map) {
-                    if(paramTypes[1]==Closure) {
+                if (paramTypes[0] == Map) {
+                    if (paramTypes[1] == Closure) {
                         methodMissingClosure = { Map attrs, Closure body ->
                             method.invoke(tagBean, attrs, body)
                         }
-                    } else if (paramTypes[1]==CharSequence) {
+                    } else if (paramTypes[1] == CharSequence) {
                         methodMissingClosure = { Map attrs, CharSequence body ->
                             method.invoke(tagBean, attrs, body)
                         }
@@ -78,7 +78,7 @@ class GroovyPagesMetaUtils {
                 }
                 break
         }
-        if(methodMissingClosure != null) {
+        if (methodMissingClosure != null) {
             synchronized(mc) {
                 mc."${method.name}" = methodMissingClosure
             }
@@ -96,7 +96,7 @@ class GroovyPagesMetaUtils {
         mc."$name" = {Map attrs ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, RCH.currentRequestAttributes())
         }
-        if(addAll) {
+        if (addAll) {
             mc."$name" = {Closure body ->
                 GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, RCH.currentRequestAttributes())
             }

@@ -1,12 +1,14 @@
 package org.codehaus.groovy.grails.io.support;
 
-
-
-import org.codehaus.groovy.runtime.StringGroovyMethods;
-
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 
 /**
  * PathMatcher implementation for Ant-style path patterns. Examples are provided below.
@@ -42,9 +44,8 @@ public class AntPathMatcher {
 
     /** Set the path separator to use for pattern parsing. Default is "/", as in Ant. */
     public void setPathSeparator(String pathSeparator) {
-        this.pathSeparator = (pathSeparator != null ? pathSeparator : DEFAULT_PATH_SEPARATOR);
+        this.pathSeparator = pathSeparator == null ? DEFAULT_PATH_SEPARATOR : pathSeparator;
     }
-
 
     public boolean isPattern(String path) {
         return (path.indexOf('*') != -1 || path.indexOf('?') != -1);
@@ -58,7 +59,6 @@ public class AntPathMatcher {
         return doMatch(pattern, path, false, null);
     }
 
-
     /**
      * Actually match the given <code>path</code> against the given <code>pattern</code>.
      * @param pattern the pattern to match against
@@ -70,7 +70,7 @@ public class AntPathMatcher {
     protected boolean doMatch(String pattern, String path, boolean fullMatch,
                               Map<String, String> uriTemplateVariables) {
 
-        if (path.startsWith(this.pathSeparator) != pattern.startsWith(this.pathSeparator)) {
+        if (path.startsWith(pathSeparator) != pattern.startsWith(pathSeparator)) {
             return false;
         }
 
@@ -98,13 +98,13 @@ public class AntPathMatcher {
         if (pathIdxStart > pathIdxEnd) {
             // Path is exhausted, only match if rest of pattern is * or **'s
             if (pattIdxStart > pattIdxEnd) {
-                return (pattern.endsWith(this.pathSeparator) ? path.endsWith(this.pathSeparator) :
-                        !path.endsWith(this.pathSeparator));
+                return (pattern.endsWith(pathSeparator) ? path.endsWith(pathSeparator) :
+                        !path.endsWith(pathSeparator));
             }
             if (!fullMatch) {
                 return true;
             }
-            if (pattIdxStart == pattIdxEnd && pattDirs[pattIdxStart].equals("*") && path.endsWith(this.pathSeparator)) {
+            if (pattIdxStart == pattIdxEnd && pattDirs[pattIdxStart].equals("*") && path.endsWith(pathSeparator)) {
                 return true;
             }
             for (int i = pattIdxStart; i <= pattIdxEnd; i++) {
@@ -195,7 +195,7 @@ public class AntPathMatcher {
     }
 
     private String[] tokenize(String pattern) {
-        List<String> list = StringGroovyMethods.tokenize(pattern, this.pathSeparator);
+        List<String> list = StringGroovyMethods.tokenize(pattern, pathSeparator);
         return list.toArray(new String[list.size()]);
     }
 
@@ -235,8 +235,8 @@ public class AntPathMatcher {
         for (int i = 0; i < patternParts.length; i++) {
             String patternPart = patternParts[i];
             if ((patternPart.indexOf('*') > -1 || patternPart.indexOf('?') > -1) && pathParts.length >= i + 1) {
-                if (puts > 0 || (i == 0 && !pattern.startsWith(this.pathSeparator))) {
-                    builder.append(this.pathSeparator);
+                if (puts > 0 || (i == 0 && !pattern.startsWith(pathSeparator))) {
+                    builder.append(pathSeparator);
                 }
                 builder.append(pathParts[i]);
                 puts++;
@@ -246,7 +246,7 @@ public class AntPathMatcher {
         // Append any trailing path parts.
         for (int i = patternParts.length; i < pathParts.length; i++) {
             if (puts > 0 || i > 0) {
-                builder.append(this.pathSeparator);
+                builder.append(pathSeparator);
             }
             builder.append(pathParts[i]);
         }
@@ -256,7 +256,7 @@ public class AntPathMatcher {
 
     public Map<String, String> extractUriTemplateVariables(String pattern, String path) {
         Map<String, String> variables = new LinkedHashMap<String, String>();
-        boolean result = doMatch(pattern, path, true, variables);
+        /*boolean result =*/ doMatch(pattern, path, true, variables);
         return variables;
     }
 
@@ -283,64 +283,56 @@ public class AntPathMatcher {
         if (!hasText(pattern1) && !hasText(pattern2)) {
             return "";
         }
-        else if (!hasText(pattern1)) {
+        if (!hasText(pattern1)) {
             return pattern2;
         }
-        else if (!hasText(pattern2)) {
+        if (!hasText(pattern2)) {
             return pattern1;
         }
-        else if (!pattern1.contains("{") && match(pattern1, pattern2)) {
+        if (!pattern1.contains("{") && match(pattern1, pattern2)) {
             return pattern2;
         }
-        else if (pattern1.endsWith("/*")) {
+        if (pattern1.endsWith("/*")) {
             if (pattern2.startsWith("/")) {
                 // /hotels/* + /booking -> /hotels/booking
                 return pattern1.substring(0, pattern1.length() - 1) + pattern2.substring(1);
             }
-            else {
-                // /hotels/* + booking -> /hotels/booking
-                return pattern1.substring(0, pattern1.length() - 1) + pattern2;
-            }
+            // /hotels/* + booking -> /hotels/booking
+            return pattern1.substring(0, pattern1.length() - 1) + pattern2;
         }
-        else if (pattern1.endsWith("/**")) {
+        if (pattern1.endsWith("/**")) {
             if (pattern2.startsWith("/")) {
                 // /hotels/** + /booking -> /hotels/**/booking
                 return pattern1 + pattern2;
             }
-            else {
-                // /hotels/** + booking -> /hotels/**/booking
-                return pattern1 + "/" + pattern2;
+            // /hotels/** + booking -> /hotels/**/booking
+            return pattern1 + "/" + pattern2;
+        }
+        int dotPos1 = pattern1.indexOf('.');
+        if (dotPos1 == -1) {
+            // simply concatenate the two patterns
+            if (pattern1.endsWith("/") || pattern2.startsWith("/")) {
+                return pattern1 + pattern2;
             }
+            return pattern1 + "/" + pattern2;
+        }
+        String fileName1 = pattern1.substring(0, dotPos1);
+        String extension1 = pattern1.substring(dotPos1);
+        String fileName2;
+        String extension2;
+        int dotPos2 = pattern2.indexOf('.');
+        if (dotPos2 != -1) {
+            fileName2 = pattern2.substring(0, dotPos2);
+            extension2 = pattern2.substring(dotPos2);
         }
         else {
-            int dotPos1 = pattern1.indexOf('.');
-            if (dotPos1 == -1) {
-                // simply concatenate the two patterns
-                if (pattern1.endsWith("/") || pattern2.startsWith("/")) {
-                    return pattern1 + pattern2;
-                }
-                else {
-                    return pattern1 + "/" + pattern2;
-                }
-            }
-            String fileName1 = pattern1.substring(0, dotPos1);
-            String extension1 = pattern1.substring(dotPos1);
-            String fileName2;
-            String extension2;
-            int dotPos2 = pattern2.indexOf('.');
-            if (dotPos2 != -1) {
-                fileName2 = pattern2.substring(0, dotPos2);
-                extension2 = pattern2.substring(dotPos2);
-            }
-            else {
-                fileName2 = pattern2;
-                extension2 = "";
-            }
-            String fileName = fileName1.endsWith("*") ? fileName2 : fileName1;
-            String extension = extension1.startsWith("*") ? extension2 : extension1;
-
-            return fileName + extension;
+            fileName2 = pattern2;
+            extension2 = "";
         }
+        String fileName = fileName1.endsWith("*") ? fileName2 : fileName1;
+        String extension = extension1.startsWith("*") ? extension2 : extension1;
+
+        return fileName + extension;
     }
 
     private boolean hasText(String txt) {
@@ -478,12 +470,12 @@ public class AntPathMatcher {
             this.pattern = createPattern(pattern);
         }
 
-        private Pattern createPattern(String pattern) {
+        private Pattern createPattern(String p) {
             StringBuilder patternBuilder = new StringBuilder();
-            Matcher m = GLOB_PATTERN.matcher(pattern);
+            Matcher m = GLOB_PATTERN.matcher(p);
             int end = 0;
             while (m.find()) {
-                patternBuilder.append(quote(pattern, end, m.start()));
+                patternBuilder.append(quote(p, end, m.start()));
                 String match = m.group();
                 if ("?".equals(match)) {
                     patternBuilder.append('.');
@@ -508,7 +500,7 @@ public class AntPathMatcher {
                 }
                 end = m.end();
             }
-            patternBuilder.append(quote(pattern, end, pattern.length()));
+            patternBuilder.append(quote(p, end, p.length()));
             return Pattern.compile(patternBuilder.toString());
         }
 
@@ -526,21 +518,18 @@ public class AntPathMatcher {
          */
         public boolean matchStrings() {
             Matcher matcher = pattern.matcher(str);
-            if (matcher.matches()) {
-                if (uriTemplateVariables != null) {
-                    for (int i = 1; i <= matcher.groupCount(); i++) {
-                        String name = this.variableNames.get(i - 1);
-                        String value = matcher.group(i);
-                        uriTemplateVariables.put(name, value);
-                    }
-                }
-                return true;
-            }
-            else {
+            if (!matcher.matches()) {
                 return false;
             }
+            if (uriTemplateVariables != null) {
+                for (int i = 1, count = matcher.groupCount(); i <= count; i++) {
+                    String name = variableNames.get(i - 1);
+                    String value = matcher.group(i);
+                    uriTemplateVariables.put(name, value);
+                }
+            }
+            return true;
         }
-
     }
 
     /**
@@ -562,4 +551,3 @@ public class AntPathMatcher {
         return count;
     }
 }
-

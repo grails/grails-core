@@ -269,7 +269,7 @@ class GroovyPagesGrailsPlugin {
                 superClass = superClass.superclass
             }
         }
-        if(nonEnhancedClasses) {
+        if (nonEnhancedClasses) {
             def enhancer = new MetaClassEnhancer()
             enhancer.addApi apiObject
             nonEnhancedClasses.each { enhancer.enhance it.getMetaClass() }

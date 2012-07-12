@@ -28,8 +28,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.commons.beanutils.PropertyUtils;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -37,7 +41,6 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.AbstractPersistentCon
 import org.codehaus.groovy.grails.validation.CascadingValidator;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.SessionFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.InvalidPropertyException;
@@ -147,7 +150,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         if (shouldValidate) {
             Validator validator = domainClass.getValidator();
 
-            if(domainClass instanceof DefaultGrailsDomainClass) {
+            if (domainClass instanceof DefaultGrailsDomainClass) {
                 GrailsHibernateUtil.autoAssociateBidirectionalOneToOnes((DefaultGrailsDomainClass) domainClass, target);
             }
             Errors errors = setupErrorsProperty(target);
@@ -289,14 +292,14 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     protected Object handleValidationError(GrailsDomainClass domainClass, final Object target, Errors errors) {
         // if a validation error occurs set the object to read-only to prevent a flush
         setObjectToReadOnly(target);
-        if(domainClass instanceof DefaultGrailsDomainClass) {
+        if (domainClass instanceof DefaultGrailsDomainClass) {
             DefaultGrailsDomainClass dgdc = (DefaultGrailsDomainClass) domainClass;
             List<GrailsDomainClassProperty> associations = dgdc.getAssociations();
             for (GrailsDomainClassProperty association : associations) {
-                if(association.isOneToOne() || association.isManyToOne()) {
+                if (association.isOneToOne() || association.isManyToOne()) {
                     BeanWrapper bean = new BeanWrapperImpl(target);
                     Object propertyValue = bean.getPropertyValue(association.getName());
-                    if(propertyValue != null) {
+                    if (propertyValue != null) {
                         setObjectToReadOnly(propertyValue);
                     }
 
@@ -325,7 +328,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     /**
      * Checks whether validation should be performed
-     * @return True if the domain class should be validated
+     * @return true if the domain class should be validated
      * @param arguments  The arguments to the validate method
      * @param domainClass The domain class
      */
@@ -362,7 +365,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * @param shouldFlush Whether to flush
      * @return The target object
      */
-    abstract protected Object performSave(Object target, boolean shouldFlush);
+    protected abstract Object performSave(Object target, boolean shouldFlush);
 
     /**
      * Subclasses should override and perform an insert operation, flushing the session if the second argument is true

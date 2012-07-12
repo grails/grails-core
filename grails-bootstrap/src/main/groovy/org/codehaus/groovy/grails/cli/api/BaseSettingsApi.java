@@ -76,7 +76,7 @@ public class BaseSettingsApi {
     }
 
     public BaseSettingsApi(BuildSettings settings, GrailsBuildEventListener buildEventListener, boolean interactive) {
-        this.buildSettings = settings;
+        buildSettings = settings;
         buildProps = buildSettings.getConfig().toProperties();
         grailsHome = buildSettings.getGrailsHome();
 
@@ -107,7 +107,6 @@ public class BaseSettingsApi {
         this.buildEventListener = buildEventListener;
     }
 
-
     public void enableUaa() {
         try {
             Class<?> uaaClass = BaseSettingsApi.class.getClassLoader().loadClass("org.codehaus.groovy.grails.cli.support.UaaIntegration");
@@ -116,8 +115,6 @@ public class BaseSettingsApi {
         } catch (ClassNotFoundException e) {
             // UAA not present, ignore
         }
-
-
     }
 
     public ConfigSlurper getConfigSlurper() {
@@ -286,10 +283,9 @@ public class BaseSettingsApi {
      */
     public GPathResult readPluginXmlMetadata(String pluginName) throws Exception {
         Resource pluginResource = pluginSettings.getPluginDirForName(pluginName);
-        if(pluginResource != null) {
-
+        if (pluginResource != null) {
             File pluginDir = pluginResource.getFile();
-            return new XmlSlurper().parse(new File("${pluginDir}/plugin.xml"));
+            return new XmlSlurper().parse(new File(pluginDir, "plugin.xml"));
         }
         return null;
     }
@@ -301,7 +297,7 @@ public class BaseSettingsApi {
         Resource[] allFiles = pluginSettings.getPluginXmlMetadata();
         List<GPathResult> results = new ArrayList<GPathResult>();
         for (Resource resource : allFiles) {
-            if(resource.exists()) {
+            if (resource.exists()) {
                 results.add( new XmlSlurper().parse(resource.getFile())  );
             }
         }
@@ -347,17 +343,17 @@ public class BaseSettingsApi {
     /**
      * Exits the build immediately with a given exit code.
      */
-   public void exit(int code){
-       if(buildEventListener != null) {
+   public void exit(int code) {
+       if (buildEventListener != null) {
            buildEventListener.triggerEvent("Exiting", code);
        }
-       
+
         // Prevent system.exit during unit/integration testing
         if (System.getProperty("grails.cli.testing") != null || System.getProperty("grails.disable.exit") != null) {
             throw new ScriptExitException(code);
         }
         GrailsConsole.getInstance().flush();
-        System.exit(code);       
+        System.exit(code);
     }
 
     /**
@@ -367,7 +363,7 @@ public class BaseSettingsApi {
      * <code>false</code> otherwise.
      */
     public boolean confirmInput(String message, String code ) {
-        if(code == null) code = "confirm.message";
+        if (code == null) code = "confirm.message";
         GrailsConsole grailsConsole = GrailsConsole.getInstance();
         if (!isInteractive) {
             grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. Please switch back to interactive mode.");

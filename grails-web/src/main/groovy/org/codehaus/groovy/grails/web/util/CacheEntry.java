@@ -35,13 +35,13 @@ public class CacheEntry<T> {
      * @return The atomic reference
      */
     public T getValue(long timeout, PrivilegedAction<T> updater) {
-        if(timeout < 0 || updater==null) return valueRef.get();
+        if (timeout < 0 || updater==null) return valueRef.get();
 
-        if(hasExpired(timeout)) {
+        if (hasExpired(timeout)) {
             try {
                 long beforeLockingCreatedMillis = createdMillis;
                 writeLock.lock();
-                if(shouldUpdate(beforeLockingCreatedMillis)) {
+                if (shouldUpdate(beforeLockingCreatedMillis)) {
                     valueRef.set(updater.run());
                     resetTimestamp();
                 }

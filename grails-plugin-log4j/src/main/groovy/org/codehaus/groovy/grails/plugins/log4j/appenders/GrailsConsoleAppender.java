@@ -55,8 +55,7 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
     protected void append(LoggingEvent event) {
         Level level = event.getLevel();
         String message = buildMessage(event);
-        if(System.out instanceof GrailsConsolePrintStream) {
-
+        if (System.out instanceof GrailsConsolePrintStream) {
             if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
                 console.error(message);
             }
@@ -70,7 +69,7 @@ public class GrailsConsoleAppender extends AppenderSkeleton {
             }
             else {
                 System.out.println(message);
-            }            
+            }
         }
     }
 

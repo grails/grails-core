@@ -156,7 +156,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
             detectContentTypeFromPage(content, response);
             com.opensymphony.module.sitemesh.Decorator decorator = decoratorMapper.getDecorator(request, GSPSitemeshPage.content2htmlPage(content));
             persistenceInterceptor.reconnect();
-            if(decorator instanceof Decorator) {
+            if (decorator instanceof Decorator) {
                 ((Decorator)decorator).render(content, webAppContext);
             } else {
                 new OldDecorator2NewDecorator(decorator).render(content, webAppContext);

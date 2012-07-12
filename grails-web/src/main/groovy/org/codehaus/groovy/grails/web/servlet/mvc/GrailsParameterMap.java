@@ -66,7 +66,7 @@ public class GrailsParameterMap extends TypeConvertingMap {
      */
     public GrailsParameterMap(Map values,HttpServletRequest request) {
         this.request = request;
-        this.wrappedMap.putAll(values);
+        wrappedMap.putAll(values);
     }
 
     /**
@@ -92,7 +92,7 @@ public class GrailsParameterMap extends TypeConvertingMap {
         }
         if (request instanceof MultipartHttpServletRequest) {
             Map<String,MultipartFile> fileMap = ((MultipartHttpServletRequest)request).getFileMap();
-            for(Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
+            for (Map.Entry<String, MultipartFile> entry : fileMap.entrySet()) {
                 requestMap.put(entry.getKey(), entry.getValue());
             }
         }
@@ -110,7 +110,7 @@ public class GrailsParameterMap extends TypeConvertingMap {
 
     @Override
     public Object clone() {
-        return new GrailsParameterMap(new LinkedHashMap(this.wrappedMap), request);
+        return new GrailsParameterMap(new LinkedHashMap(wrappedMap), request);
     }
 
     private Object getParameterValue(Map requestMap, String key) {
@@ -188,7 +188,7 @@ public class GrailsParameterMap extends TypeConvertingMap {
         if (nestedDateMap.containsKey(key)) {
             returnValue = nestedDateMap.get(key);
         } else {
-            returnValue = this.wrappedMap.get(key);
+            returnValue = wrappedMap.get(key);
             if (returnValue instanceof String[]) {
                 String[] valueArray = (String[])returnValue;
                 if (valueArray.length == 1) {
@@ -235,13 +235,13 @@ public class GrailsParameterMap extends TypeConvertingMap {
     public Object put(Object key, Object value) {
         if (value instanceof CharSequence) value = value.toString();
         if (nestedDateMap.containsKey(key)) nestedDateMap.remove(key);
-        return this.wrappedMap.put(key, value);
+        return wrappedMap.put(key, value);
     }
 
     @Override
     public Object remove(Object key) {
         nestedDateMap.remove(key);
-        return this.wrappedMap.remove(key);
+        return wrappedMap.remove(key);
     }
 
     @Override
@@ -261,24 +261,25 @@ public class GrailsParameterMap extends TypeConvertingMap {
     @Override
     public Date getDate(String name) {
         Date date = super.getDate(name);
-        if(date == null) {
+        if (date == null) {
             // try lookup format from messages.properties
             String format = lookupFormat(name);
-            if(format != null)
+            if (format != null) {
                 return getDate(name, format);
+            }
         }
         return date;
     }
 
     private String lookupFormat(String name) {
         String format = CACHED_DATE_FORMATS.get(name);
-        if(format == null) {
+        if (format == null) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-            if(webRequest != null) {
+            if (webRequest != null) {
                 MessageSource messageSource = webRequest.getApplicationContext();
-                if(messageSource != null) {
+                if (messageSource != null) {
                     format = messageSource.getMessage("date." + name + ".format", EMPTY_ARGS, webRequest.getLocale());
-                    if(format != null) {
+                    if (format != null) {
                         CACHED_DATE_FORMATS.put(name, format);
                     }
                 }

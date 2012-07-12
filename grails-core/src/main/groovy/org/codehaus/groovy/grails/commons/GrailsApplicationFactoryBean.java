@@ -92,7 +92,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
             Class<?>[] loadedClasses = classes.toArray(new Class[classes.size()]);
             grailsApplication = new DefaultGrailsApplication(loadedClasses, classLoader);
         }
-        else if(!Environment.isWarDeployed()){
+        else if (!Environment.isWarDeployed()) {
             org.codehaus.groovy.grails.io.support.Resource[] buildResources = GrailsPluginUtils.getPluginBuildSettings().getArtefactResourcesForCurrentEnvironment();
 
             Resource[] resources = new Resource[buildResources.length];

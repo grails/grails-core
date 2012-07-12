@@ -34,16 +34,17 @@ import org.slf4j.helpers.MessageFormatter;
  * @author Graeme Rocher
  * @since 2.0
  */
-@SuppressWarnings("serial")
-public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.slf4j.Logger {
-    private static final long serialVersionUID = 1L;
+public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
+
+    private static final long serialVersionUID = 1;
+
     static final String FQCN = GrailsLog4jLoggerAdapter.class.getName();
 
     private final Logger log4jLogger;
 
     public GrailsLog4jLoggerAdapter(org.apache.log4j.Logger logger) {
-        this.log4jLogger = logger;
-        this.name = logger.getName();
+        log4jLogger = logger;
+        name = logger.getName();
     }
 
     public boolean isTraceEnabled() {
@@ -180,7 +181,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase implements org.
     }
 
     private final void logMessageFormat(final Level level, final String format, final Object... args) {
-        if(log4jLogger.isEnabledFor(level)) {
+        if (log4jLogger.isEnabledFor(level)) {
             FormattingTuple ft = getMessageFormat(format, args);
             log4jLogger.log(FQCN, level, ft.getMessage(), ft.getThrowable());
         }

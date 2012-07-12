@@ -40,7 +40,7 @@ target (configureRunningScript: "Sets the currently running script, in case call
 
 target (war: "The implementation target") {
     depends(parseArguments, configureRunningScript, cleanWarFile, packageApp, compilegsp)
-    warCreator.packageWar() 
+    warCreator.packageWar()
 }
 
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {

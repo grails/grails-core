@@ -18,8 +18,16 @@ package org.codehaus.groovy.grails.io.support;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.*;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,8 +48,6 @@ public class GrailsResourceUtils {
     private static final String TOP_PATH = "..";
 
     private static final String CURRENT_PATH = ".";
-
-    private static final char EXTENSION_SEPARATOR = '.';
 
     private static final String FOLDER_SEPARATOR = "/";
     public static final String JAR_URL_SEPARATOR = "!/";
@@ -171,7 +177,7 @@ public class GrailsResourceUtils {
      * Checks whether the file referenced by the given url is a domain class
      *
      * @param url The URL instance
-     * @return True if it is a domain class
+     * @return true if it is a domain class
      */
     public static boolean isDomainClass(URL url) {
         if (url == null) return false;
@@ -368,9 +374,7 @@ public class GrailsResourceUtils {
             }
             return newPath + relativePath;
         }
-        else {
-            return relativePath;
-        }
+        return relativePath;
     }
     /**
      * Normalize the path by suppressing sequences like "path/.." and
@@ -584,10 +588,9 @@ public class GrailsResourceUtils {
                 return new URL(FILE_URL_PREFIX + jarFile);
             }
         }
-        else {
-            return jarUrl;
-        }
+        return jarUrl;
     }
+
     /**
      * Create a URI instance for the given location String,
      * replacing spaces with "%20" quotes first.
@@ -598,11 +601,12 @@ public class GrailsResourceUtils {
     public static URI toURI(String location) throws URISyntaxException {
         return new URI(replace(location, " ", "%20"));
     }
+
     /**
      * Checks whether the specified path is a Grails path.
      *
      * @param path The path to check
-     * @return True if it is a Grails path
+     * @return true if it is a Grails path
      */
     public static boolean isGrailsPath(String path) {
         for (Pattern pattern : patterns) {
@@ -807,10 +811,10 @@ public class GrailsResourceUtils {
         // join parts && strip double slashes
         StringBuilder builder = new StringBuilder(16 * pieces.length);
         char previous = 0;
-        for(int i=0; i < pieces.length;i++) {
+        for (int i=0; i < pieces.length;i++) {
             String piece = pieces[i];
             if (piece != null && piece.length() > 0) {
-                for(int j=0, maxlen=piece.length();j < maxlen;j++) {
+                for (int j=0, maxlen=piece.length();j < maxlen;j++) {
                     char current=piece.charAt(j);
                     if (!(previous=='/' && current=='/')) {
                         builder.append(current);

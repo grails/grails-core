@@ -63,7 +63,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public Class<?> getType() {
-        if(type == null) {
+        if (type == null) {
             attemptResolveType();
         }
         return type;
@@ -71,11 +71,11 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 
     private void attemptResolveType() {
         PropertyDescriptor propertyDescriptor = BeanUtils.getPropertyDescriptor(domainClass.getClazz(), name);
-        this.type = propertyDescriptor != null ? propertyDescriptor.getPropertyType() : null;
-        if(this.type == null) {
+        type = propertyDescriptor == null ? null : propertyDescriptor.getPropertyType();
+        if (type == null) {
             Field field = ReflectionUtils.findField(domainClass.getClazz(), name);
-            if(field  != null) {
-                this.type = field.getType();
+            if (field  != null) {
+                type = field.getType();
             }
         }
     }
@@ -101,7 +101,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     }
 
     public void setReferencedDomainClass(GrailsDomainClass referencedGrailsDomainClass) {
-        this.referencedDomainClass =   referencedGrailsDomainClass;
+        this.referencedDomainClass = referencedGrailsDomainClass;
     }
 
     public void setOtherSide(GrailsDomainClassProperty referencedProperty) {

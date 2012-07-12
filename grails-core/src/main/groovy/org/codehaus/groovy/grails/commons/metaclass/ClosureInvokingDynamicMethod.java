@@ -49,7 +49,7 @@ public class ClosureInvokingDynamicMethod implements DynamicMethodInvocation, St
         Assert.notNull(closure, "Argument [closure] cannot be null");
 
         this.pattern = Pattern.compile(pattern);
-        this.callable = closure;
+        callable = closure;
     }
 
     public boolean isMethodMatch(String methodName) {

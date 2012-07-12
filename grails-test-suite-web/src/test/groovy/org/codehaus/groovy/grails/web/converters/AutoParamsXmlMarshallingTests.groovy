@@ -99,7 +99,7 @@ import grails.persistence.*
         assertEquals "The Stand", model.book.title
         assertEquals 1, model.book.author.id
         assertEquals 'Stephen King', model.book.author.name
-		assertEquals 1, model.book.id
+        assertEquals 1, model.book.id
     }
 }
 
@@ -127,9 +127,9 @@ class AutoParamsXmlMarshallingBookWithBindableId {
     Date releaseDate
 
     static belongsTo = [author:AutoParamsXmlMarshallingAuthor]
-	static constraints = {
-		id bindable: true
-	}
+    static constraints = {
+        id bindable: true
+    }
 }
 
 @Entity

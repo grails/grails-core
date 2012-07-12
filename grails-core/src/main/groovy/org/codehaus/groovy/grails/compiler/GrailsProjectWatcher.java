@@ -35,7 +35,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -61,7 +60,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
-        this.compilerExtensions = compiler.getCompilerExtensions();
+        compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
         if (isReloadingAgentPresent()) {
             GrailsPluginManagerReloadPlugin.register();
@@ -95,7 +94,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
     /**
      * Whether the watcher is active
-     * @return True if it is
+     * @return true if it is
      */
     public static boolean isActive() {
         return active;
@@ -156,10 +155,9 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             }
         });
 
-        if(pluginManager != null) {
+        if (pluginManager != null) {
             initPluginWatchPatterns();
         }
-
 
         super.run();
     }
@@ -205,7 +203,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     }
 
     private void informPluginManager(final File file, boolean isNew) {
-        if(pluginManager == null)  return;
+        if (pluginManager == null)  return;
+
         if (!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);

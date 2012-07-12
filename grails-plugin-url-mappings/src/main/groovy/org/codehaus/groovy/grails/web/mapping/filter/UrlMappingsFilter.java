@@ -93,17 +93,17 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         urlHelper.setUrlDecode(false);
         final ServletContext servletContext = getServletContext();
         final WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        this.handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
-        this.application = WebUtils.lookupApplication(servletContext);
-        this.viewResolver = WebUtils.lookupViewResolver(servletContext);
+        handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
+        application = WebUtils.lookupApplication(servletContext);
+        viewResolver = WebUtils.lookupViewResolver(servletContext);
         ApplicationContext mainContext = application.getMainContext();
-        this.urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
+        urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
         if (application != null) {
             grailsConfig = new GrailsConfig(application);
         }
 
         if (applicationContext.containsBean(MimeType.BEAN_NAME)) {
-            this.mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
+            mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
         }
         createStackTraceFilterer();
     }
@@ -199,7 +199,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         checkDevelopmentReloadingState(request);
                     }
 
-
                     request = checkMultipart(request);
 
                     if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
@@ -294,7 +293,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             throw compilationError;
         }
         Throwable currentReloadError = GrailsProjectWatcher.getCurrentReloadError();
-        if(currentReloadError != null) {
+        if (currentReloadError != null) {
             throw new RuntimeException(currentReloadError);
         }
     }

@@ -73,7 +73,7 @@ public class CodecPrintWriterTest {
         GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         GrailsPrintWriter out = outputStack.getProxyWriter();
         webRequest.setOut(out);
-        GrailsPrintWriter codecOut=new CodecPrintWriter(new MockGrailsApplication(), out, CodecWithClosureProperties.class);
+        GrailsPrintWriter codecOut = new CodecPrintWriter(new MockGrailsApplication(), out, CodecWithClosureProperties.class);
 
         // print some output
         codecOut.print("hola");
@@ -105,6 +105,8 @@ public class CodecPrintWriterTest {
         RequestContextHolder.setRequestAttributes(null);
 
         assertEquals("-> hola <-123added-> too <-4-> A <--> B <-5-> C <-", target.getValue());
+
+        codecOut.close();
     }
 
     private GrailsWebRequest bindMockHttpRequest() {

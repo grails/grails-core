@@ -237,7 +237,7 @@ public class ConstrainedProperty {
         objects.remove(constraintClass);
         List<Object> toRemove = new ArrayList<Object>();
         for (Object object : objects) {
-            if(constraintClass.isInstance(object)) {
+            if (constraintClass.isInstance(object)) {
                 toRemove.add(object);
             }
         }
@@ -264,7 +264,7 @@ public class ConstrainedProperty {
 
     private static List<Object> getOrInitializeConstraint(String name) {
         List<Object> objects = constraints.get(name);
-        if(objects == null) {
+        if (objects == null) {
             objects = new ArrayList<Object>();
             constraints.put(name, objects);
         }
@@ -1005,7 +1005,7 @@ public class ConstrainedProperty {
      * Checks with this ConstraintedProperty instance supports applying the specified constraint.
      *
      * @param constraintName The name of the constraint
-     * @return True if the constraint is supported
+     * @return true if the constraint is supported
      */
     public boolean supportsContraint(String constraintName) {
 
@@ -1042,7 +1042,7 @@ public class ConstrainedProperty {
             else {
                 try {
                     Constraint c = instantiateConstraint(constraintName, true);
-                    if(c != null) {
+                    if (c != null) {
                         c.setParameter(constrainingValue);
                         appliedConstraints.put(constraintName, c);
                     }
@@ -1080,11 +1080,10 @@ public class ConstrainedProperty {
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
 
-            if(validate && c.isValid()) {
-
+            if (validate && c.isValid()) {
                 return c;
             }
-            else if(!validate) {
+            if (!validate) {
                 return c;
             }
 

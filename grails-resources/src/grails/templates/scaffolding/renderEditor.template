@@ -24,7 +24,7 @@
         out << renderManyToOne(domainClass, property)
     else if ((property.oneToMany && !property.bidirectional) || (property.manyToMany && property.isOwningSide())) {
         def str = renderManyToMany(domainClass, property)
-        if(str != null) {
+        if (str != null) {
             out << str
         }
     }
@@ -109,13 +109,13 @@
 
     private renderManyToMany(domainClass, property) {
         def cls = property.referencedDomainClass?.clazz
-        if(cls == null) {
-            if(property.type instanceof Collection) {
+        if (cls == null) {
+            if (property.type instanceof Collection) {
                 cls = org.springframework.core.GenericCollectionTypeResolver.getCollectionType(property.type)
             }
         }
 
-        if(cls != null) {
+        if (cls != null) {
             def sb = new StringBuilder()
             sb << '<g:select name="' << property.name << '"'
             sb << ' from="${' << cls.name << '.list()}"'
@@ -218,7 +218,7 @@
                 cp.attributes.each { k, v ->
                     sb << "${k}=\"${v}\" "
                 }
-                if (!cp.attributes.precision){
+                if (!cp.attributes.precision) {
                     sb << "precision=\"${precision}\" "
                 }
                 sb << " value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
@@ -260,7 +260,7 @@
 	}
 
 	private boolean isOptional() {
-	    if(!cp) {
+	    if (!cp) {
 	        return false
 	    }
 	    else {

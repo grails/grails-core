@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -837,38 +838,39 @@ class GadgetClass {
     Long id
     Long version
 }'''))
-        
+
         def authorClass = new DefaultGrailsDomainClass(
                     cl.parseClass('''
 class AuthorClass {
     Long id
     Long version
 }'''))
-        
+
         def grailsApplication = new DefaultGrailsApplication([widgetClass.clazz, gadgetClass.clazz, personClass.clazz, authorClass.clazz] as Class[], cl)
-                
+
         def myPluginMap = [:]
         myPluginMap.getName = { -> 'MyPlugin' }
         def myPlugin = myPluginMap as org.codehaus.groovy.grails.plugins.GrailsPlugin
-                
+
         def publisherPluginMap = [:]
         publisherPluginMap.getName = { -> 'Publisher' }
         def publisherPlugin = publisherPluginMap as org.codehaus.groovy.grails.plugins.GrailsPlugin
-                
+
         def pluginManagerMap = [:]
         def myPluginDomainClassNames = ['GadgetClass', 'MyPluginPersonClass']
         def publisherPluginDomainClassNames = ['AuthorClass']
         pluginManagerMap.getPluginForClass = { Class clz ->
-            if(myPluginDomainClassNames.contains(clz?.name)) {
+            if (myPluginDomainClassNames.contains(clz?.name)) {
                 return myPlugin
-            } else if(publisherPluginDomainClassNames.contains(clz?.name)) {
+            }
+            if (publisherPluginDomainClassNames.contains(clz?.name)) {
                 return publisherPlugin
             }
             return null
         }
-        def pluginManager = pluginManagerMap as org.codehaus.groovy.grails.plugins.GrailsPluginManager
+        def pluginManager = pluginManagerMap as GrailsPluginManager
 
-        // no config property specified        
+        // no config property specified
         def cfg = new ConfigSlurper().parse('''
 ''')
         grailsApplication.config = cfg
@@ -942,9 +944,8 @@ grails.gorm.myPlugin.table.prefix.enabled = false
         assertEquals("my_plugin_person_class", persistentClass.table.name)
         persistentClass = config.getClassMapping("AuthorClass")
         assertEquals("publisher_author_class", persistentClass.table.name)
-
     }
-    
+
     void testCustomNamingStrategy() {
 
         // somewhat artificial in that it doesn't test that setting the property
@@ -1093,7 +1094,7 @@ class Alert {
         def pluginManager = new MockGrailsPluginManager(grailsApplication);
         getDomainConfig grailsApplication, pluginManager
     }
-    
+
     private DefaultGrailsDomainConfiguration getDomainConfig(grailsApplication, pluginManager) {
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean 'pluginManager', pluginManager

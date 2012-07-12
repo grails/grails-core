@@ -38,7 +38,7 @@ public interface BeanConfiguration {
     String getName();
 
     /**
-     * @return True if the bean is singleton
+     * @return true if the bean is singleton
      */
     boolean isSingleton();
 
@@ -103,7 +103,7 @@ public interface BeanConfiguration {
     /**
      * Returns true if the bean config has the name property set.
      * @param name The name of the property
-     * @return True if it does have a property with the given name
+     * @return true if it does have a property with the given name
      */
     boolean hasProperty(String name);
 

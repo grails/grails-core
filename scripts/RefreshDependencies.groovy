@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import groovy.xml.NamespaceBuilder
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import groovy.xml.MarkupBuilder
 import org.apache.commons.io.*
+
 /**
  * Refreshes application dependencies, installing any necessary plugins as necessary
  *
@@ -35,7 +35,7 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
         def f = new File(argsMap.params[0])
 
         f.withWriter { writer ->
-            def xml = new groovy.xml.MarkupBuilder(writer)
+            def xml = new MarkupBuilder(writer)
             xml.dependencies {
                 xml.build {
                    handleArtifactReport(grailsSettings.buildResolveReport.allArtifactsReports, xml)
@@ -67,7 +67,7 @@ private handleArtifactReport(allReports, xml) {
             xml.jar downloadReport.localFile
             def baseName = FilenameUtils.getBaseName(downloadReport.localFile.name)
             def sourceJar = allReports.find { "$baseName-sources.jar" == it.localFile?.name}
-            if(sourceJar) {
+            if (sourceJar) {
                 xml.source sourceJar.localFile
             }
             def javadocJar = allReports.find { "$baseName-javadoc.jar" == it.localFile?.name}
@@ -77,4 +77,5 @@ private handleArtifactReport(allReports, xml) {
         }
     }
 }
+
 setDefaultTarget(refreshDependencies)

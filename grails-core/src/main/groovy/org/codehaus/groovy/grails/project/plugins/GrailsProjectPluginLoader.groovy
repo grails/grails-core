@@ -1,29 +1,28 @@
 package org.codehaus.groovy.grails.project.plugins
 
-import groovy.transform.CompileStatic
-import grails.util.BuildSettings
-import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
-import grails.util.Holders
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.apache.commons.io.FilenameUtils
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import grails.build.logging.GrailsConsole
-import org.codehaus.groovy.grails.io.support.Resource
+import grails.util.BuildSettings
+import grails.util.Holders
+import groovy.transform.CompileStatic
+import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
- *
  * Loads the PluginManager and sets appropriate state
  *
  * @author Graeme Rocher
  * @since 2.2
  */
 @CompileStatic
-class GrailsProjectPluginLoader extends BaseSettingsApi{
+class GrailsProjectPluginLoader extends BaseSettingsApi {
 
     private static final GrailsConsole grailsConsole = GrailsConsole.getInstance()
     GrailsApplication grailsApplication

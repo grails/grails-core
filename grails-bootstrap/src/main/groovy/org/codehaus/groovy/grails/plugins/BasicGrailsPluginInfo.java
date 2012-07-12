@@ -17,13 +17,12 @@ package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingPropertyException;
-import org.codehaus.groovy.grails.io.support.Resource;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.codehaus.groovy.grails.io.support.Resource;
 
 /**
  * Simple Javabean implementation of the GrailsPluginInfo interface.

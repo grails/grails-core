@@ -28,9 +28,38 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.GrailsNameUtils;
 import groovy.util.GroovyTestCase;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
-import org.codehaus.groovy.ast.stmt.*;
+
+import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.IfStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -48,16 +77,7 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-
-import java.io.IOException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Transformation used by the {@link grails.test.mixin.TestFor} annotation to signify the
@@ -129,7 +149,7 @@ public class TestForTransformation extends TestMixinTransformation {
         boolean spockTest = isSpockTest(classNode);
         boolean isJunit = classNode.getName().endsWith("Tests");
 
-        if(!junit3Test && !spockTest && !isJunit) return;
+        if (!junit3Test && !spockTest && !isJunit) return;
 
         Expression value = node.getMember("value");
         ClassExpression ce;
@@ -138,7 +158,7 @@ public class TestForTransformation extends TestMixinTransformation {
             testFor(classNode, ce);
         }
         else {
-            if (!junit3Test){
+            if (!junit3Test) {
                 List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
                 if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
                 // no explicit class specified try by convention
@@ -366,12 +386,11 @@ public class TestForTransformation extends TestMixinTransformation {
         }
 
         MethodNode getter = classNode.getMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
-        if(getter == null) {
+        if (getter == null) {
             BlockStatement getterBody = new BlockStatement();
             getter = new MethodNode(getterName, Modifier.PUBLIC, targetClass.getType().getPlainNodeReference(),GrailsArtefactClassInjector.ZERO_PARAMETERS,null, getterBody);
 
             BinaryExpression testTargetAssignment = new BinaryExpression(fieldExpression, ASSIGN, new ConstructorCallExpression(targetClass.getType(), GrailsArtefactClassInjector.ZERO_ARGS));
-
 
             IfStatement autowiringIfStatement = getAutowiringIfStatement(targetClass,fieldExpression, testTargetAssignment);
             getterBody.addStatement(autowiringIfStatement);
