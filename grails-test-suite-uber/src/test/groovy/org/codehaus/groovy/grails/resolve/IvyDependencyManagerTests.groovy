@@ -823,7 +823,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     }
 
     void testParseDependencyDefinition() {
-        def manager = new IvyDependencyManager("test", "0.1")
+        def manager = new IvyDependencyManager("test", "0.1", new BuildSettings(new File('.')))
 
         manager.parseDependencies TEST_DATA
 
@@ -839,7 +839,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "1.8.2", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
-        assertEquals 6, resolvers.size()
+        assertEquals 7, resolvers.size()
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
         assertEquals "mine", resolvers[0].name
