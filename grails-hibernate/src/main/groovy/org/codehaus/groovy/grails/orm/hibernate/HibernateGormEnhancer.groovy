@@ -246,6 +246,8 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
     }
 
     private List getAllInternal(ids) {
+        if (!ids) return []
+
         hibernateTemplate.execute({Session session ->
             ids = ids.collect { convertIdentifier(it) }
             def criteria = session.createCriteria(persistentClass)

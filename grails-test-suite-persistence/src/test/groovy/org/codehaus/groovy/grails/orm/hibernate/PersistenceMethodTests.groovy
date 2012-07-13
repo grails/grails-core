@@ -389,6 +389,18 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
 
         obj3.invokeMethod("save", null)
 
+        // empty list
+        def empty = []
+        assertTrue domainClass.getAll(empty).isEmpty()
+
+        // empty Serializable array - not in the in-memory impl
+        // empty = [] as Serializable[]
+        // assertTrue domainClass.getAll(empty).isEmpty()
+
+        // empty Long array
+        empty = [] as Long[]
+        assertTrue domainClass.getAll(empty).isEmpty()
+
         // get wilma and fred by ids passed as method arguments
         List args = [2, 1]
 
