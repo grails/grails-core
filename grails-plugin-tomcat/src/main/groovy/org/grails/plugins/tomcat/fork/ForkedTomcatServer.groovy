@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 import java.lang.reflect.Method
 import org.grails.plugins.tomcat.InlineExplodedTomcatServer
+import org.grails.plugins.tomcat.IsolatedTomcat
+import org.grails.plugins.tomcat.TomcatKillSwitch
 
 /**
  * An implementation of the Tomcat server that runs in forked mode.
@@ -94,13 +96,14 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         ec.host = host
         ec.port = port
         def t = new Thread( {
-            fork()
+            final process = fork()
+            Runtime.addShutdownHook {
+                process.destroy()
+            }
         } )
 
         t.start()
-        while(!isAvailable(host, port)) {
-            sleep 100
-        }
+        System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
     }
 
     @CompileStatic
@@ -170,8 +173,8 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
 class TomcatExecutionContext extends ExecutionContext implements Serializable {
     String contextPath
-    String host
-    int port
-    int securePort
+    String host = EmbeddableServer.DEFAULT_HOST
+    int port = EmbeddableServer.DEFAULT_PORT
+    int securePort = EmbeddableServer.DEFAULT_SECURE_PORT
     File grailsHome
 }

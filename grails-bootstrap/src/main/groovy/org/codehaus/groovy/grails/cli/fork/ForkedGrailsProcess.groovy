@@ -37,7 +37,7 @@ abstract class ForkedGrailsProcess {
     boolean debug = false;
     File reloadingAgent;
 
-    void fork() {
+    Process fork() {
         ExecutionContext executionContext = createExecutionContext()
         def processBuilder = new ProcessBuilder()
         def cp = new StringBuilder()
@@ -95,6 +95,7 @@ abstract class ForkedGrailsProcess {
 
             throw new RuntimeException("Forked Grails VM exited with error")
         }
+        return process
     }
 
     abstract ExecutionContext createExecutionContext()
