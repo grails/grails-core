@@ -41,6 +41,8 @@ class FormTagLib {
                                                    'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
                                                    'XPF', 'ILS', 'ROL', 'TRL']
 
+    def requestDataValueProcessor = null;
+
     /**
      * Creates a new text field.
      *
@@ -217,13 +219,14 @@ class FormTagLib {
             escapeHtml = attrs.boolean('escapeHtml')
             attrs.remove 'escapeHtml'
         }
-        //TODO Change this textarea to use requestDataValueProcessor
+        // Add textarea field to requestDataValueProcessor
+        def content = (escapeHtml ? value.encodeAsHTML() : value)
         if(attrs.name) {
-            processFormFieldValueIfNecessary(attrs.name,(escapeHtml ? value.encodeAsHTML() : value),"textarea" )
+            content = processFormFieldValueIfNecessary(attrs.name,content,"textarea" )
         }
         out << "<textarea "
         outputAttributes(attrs, out, true)
-        out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
+        out << ">" << content << "</textarea>"
     }
 
     /**
@@ -415,7 +418,8 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
-        //TODO Change this submit to use requestDataValueProcessor
+        // Change value if necessary in requestDataValueProcessor
+        value = processFormFieldValueIfNecessary("_action_${action}","${value}","submit")
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
 
         // process remaining attributes
@@ -449,7 +453,8 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
-        //TODO Change this image to use requestDataValueProcessor
+        //Change this button to use requestDataValueProcessor
+        value = processFormFieldValueIfNecessary("_action_${action}","${value}","image")
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
 
         // add image src
@@ -577,8 +582,9 @@ class FormTagLib {
                 years = (tempyear - 100)..(tempyear + 100)
             }
         }
-        //TODO Change this hidden to use requestDataValueProcessor
-        out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"
+        // Change this hidden to use requestDataValueProcessor
+        def dateStructValue = processFormFieldValueIfNecessary("${name}","date.struct","hidden")
+        out.println "<input type=\"hidden\" name=\"${name}\" value=\"${dateStructValue}\" />"
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
@@ -590,8 +596,9 @@ class FormTagLib {
             }
 
             for (i in 1..31) {
-                //TODO Change this options to use requestDataValueProcessor
-                out.println "<option value=\"${i}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
+                // Change this option to use requestDataValueProcessor
+                def dayIndex = processFormFieldValueIfNecessary("${name}_day","${i}","option")
+                out.println "<option value=\"${dayIndex}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -609,6 +616,7 @@ class FormTagLib {
                 if (m) {
                     def monthIndex = i + 1
                     //TODO Change this option to use requestDataValueProcessor
+                    monthIndex = processFormFieldValueIfNecessary("${name}_month","${monthIndex}","option")
                     out.println "<option value=\"${monthIndex}\"${i == month ? ' selected="selected"' : ''}>$m</option>"
                 }
             }
@@ -625,8 +633,9 @@ class FormTagLib {
             }
 
             for (i in years) {
-                //TODO Change this option to use requestDataValueProcessor
-                out.println "<option value=\"${i}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
+                // Change this year option to use requestDataValueProcessor
+                def yearIndex  = processFormFieldValueIfNecessary("${name}_year","${i}","option")
+                out.println "<option value=\"${yearIndex}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -643,7 +652,8 @@ class FormTagLib {
             for (i in 0..23) {
                 def h = '' + i
                 if (i < 10) h = '0' + h
-                //TODO Change this option to use requestDataValueProcessor
+                // This option add hour to requestDataValueProcessor
+                h  = processFormFieldValueIfNecessary("${name}_hour","${h}","option")
                 out.println "<option value=\"${h}\"${i == hour ? ' selected="selected"' : ''}>$h</option>"
             }
             out.println '</select> :'
@@ -667,6 +677,7 @@ class FormTagLib {
                 def m = '' + i
                 if (i < 10) m = '0' + m
                 //TODO Change this option to use requestDataValueProcessor
+                m  = processFormFieldValueIfNecessary("${name}_minute","${m}","option")
                 out.println "<option value=\"${m}\"${i == minute ? ' selected="selected"' : ''}>$m</option>"
             }
             out.println '</select>'
@@ -1016,6 +1027,7 @@ class FormTagLib {
     }
 
     private processFormFieldValueIfNecessary(name, value, type) {
+        // TODO Cacheatu hau
         def requestDataValueProcessor = getRequestDataValueProcessor();  
         def processedValue = value;
         if(requestDataValueProcessor != null) {
